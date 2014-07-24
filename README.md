@@ -1,4 +1,3 @@
-radical.ensemblemd
-==================
+# radical.ensemblemd
 
-The Radical Ensemble Molecular Dynamics (MD) Toolkit
+This is the Radical Ensemble Molecular Dynamics (MD) Toolkit.
