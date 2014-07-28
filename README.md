@@ -1,6 +1,7 @@
 # radical.ensemblemd
 
-This is the Radical Ensemble Molecular Dynamics (MD) Toolkit.
+radical.ensemblemd is a Python API for developing and running large-scale 
+Molecular Dynamics (MD) workflows. 
 
 
 ### Build Status
