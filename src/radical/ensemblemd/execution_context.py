@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+from radical.ensemblemd.engine import Engine
 
 #-------------------------------------------------------------------------------
 #
@@ -23,3 +24,5 @@ class ExecutionContext(object):
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """
+
+        self._engine = Engine()

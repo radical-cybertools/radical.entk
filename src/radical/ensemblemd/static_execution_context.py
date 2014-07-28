@@ -20,3 +20,4 @@ class StaticExecutionContext(ExecutionContext):
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """
+        super(StaticExecutionContext, self).__init__()

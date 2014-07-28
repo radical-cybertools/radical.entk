@@ -33,3 +33,11 @@ class ExecutionContextAPITestCases(unittest.TestCase):
         """
         from radical.ensemblemd import StaticExecutionContext
         from radical.ensemblemd import DynamicExecutionContext
+
+    #-------------------------------------------------------------------------
+    #
+    def test__static_execution_context_api(self):
+
+        from radical.ensemblemd import StaticExecutionContext
+
+        sec = StaticExecutionContext()
