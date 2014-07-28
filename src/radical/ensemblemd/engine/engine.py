@@ -43,3 +43,26 @@ class Engine(object):
         for plugin_name in plugin_registry:
 
             self._logger.info ("Loading  plugin %s"  %  plugin_name)
+
+            # first, import the module
+            adaptor_module = None
+            try :
+                adaptor_module = __import__ (plugin_name, fromlist=['Adaptor'])
+
+            except Exception as e:
+                self._logger.error ("Skipping adaptor {0}: module loading failed: {1}".format(plugin_name, e))
+                continue # skip to next adaptor
+
+            # we expect the plugin module to have an 'Adaptor' class
+            # implemented, which, on calling 'register()', returns
+            # a info dict for all implemented adaptor classes.
+            plugin_instance = None
+            plugin_info     = None
+
+            try: 
+                plugin_instance = adaptor_module.Adaptor()
+                plugin_info     = plugin_instance.register()
+
+            except Exception as e:
+                self._logger.error ("Skipping adaptor {0}: loading failed: '{1}'".format(plugin_name, e))
+

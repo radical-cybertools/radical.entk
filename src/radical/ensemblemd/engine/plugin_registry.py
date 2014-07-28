@@ -12,6 +12,6 @@ __license__   = "MIT"
 
 
 plugin_registry = [
-                    "radical.ensemblemd.dummy.static",
-                    "radical.ensemblemd.dummy.dynamic"
+                    "radical.ensemblemd.execplugins.dummy.static",
+                    "radical.ensemblemd.execplugins.dummy.dynamic"
                   ]
