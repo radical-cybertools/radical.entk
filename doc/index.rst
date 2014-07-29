@@ -6,11 +6,12 @@
 Welcome to radical.ensemblemd's documentation!
 ==============================================
 
-Contents:
+API Documentation:
 
 .. toctree::
    :maxdepth: 2
 
+   library.rst
 
 
 Indices and tables
