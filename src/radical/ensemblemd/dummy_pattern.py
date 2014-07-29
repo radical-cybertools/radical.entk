@@ -9,6 +9,8 @@ __license__   = "MIT"
 
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
+PATTERN_NAME = "dummy"
+
 
 #-------------------------------------------------------------------------------
 #
@@ -24,3 +26,10 @@ class DummyPattern(ExecutionPattern):
         """
         super(DummyPattern, self).__init__()
 
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_name(self):
+        """Implements base class ExecutionPattern.get_name().
+        """
+        return PATTERN_NAME

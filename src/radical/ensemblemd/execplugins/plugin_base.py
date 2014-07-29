@@ -14,6 +14,8 @@ import radical.utils         as ru
 import radical.utils.config  as ruc
 import radical.utils.logger  as rul
 
+from radical.ensemblemd.exceptions import *
+
 
 # ------------------------------------------------------------------------------
 # plugin base class
@@ -62,7 +64,7 @@ class PluginBase() :
             exception if it will not be able to function properly in the given
             environment, e.g. due to missing dependencies etc.
         """
-        raise Exception("Adaptor {0} does not implement sanity_check()".format(self._name))
+        raise NotImplementedError("Plugin {0} does not implement sanity_check()".format(self._name))
 
     # --------------------------------------------------------------------------
     #

@@ -33,3 +33,5 @@ class ExecutionContextAPITestCases(unittest.TestCase):
         from radical.ensemblemd import StaticExecutionContext
 
         sec = StaticExecutionContext()
+
+        sec.run(1)

@@ -18,8 +18,19 @@ class EnsemblemdError(Exception):
 # ------------------------------------------------------------------------------
 #
 class NotImplementedError(EnsemblemdError):
-    """NotImplementedError is thrown if a class method or function is 
-    not implemented.
+    """NotImplementedError is thrown if a class method or function is not 
+    implemented.
     """
     def __init__ (self, msg):
         super(NotImplementedError, self).__init__ (msg)
+
+
+# ------------------------------------------------------------------------------
+#
+class TypeError(EnsemblemdError):
+    """TypeError is thrown if a parameter of a wrong type is passed to a method 
+    or function.
+    """
+    def __init__ (self, expected_type, actual_type):
+        msg = "Expected type {0}, but got {1}".format(str(expected_type), str(actual_type))
+        super(TypeError, self).__init__ (msg)
