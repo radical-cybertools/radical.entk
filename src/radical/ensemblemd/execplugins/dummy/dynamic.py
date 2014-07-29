@@ -12,8 +12,9 @@ from radical.ensemblemd.execplugins.plugin_base import PluginBase
 # ------------------------------------------------------------------------------
 # 
 _ADAPTOR_INFO = {
-    "name"    :    "radical.ensemblemd.dummy.dynamic",
-    "pattern" :    "dummy"
+    "name":         "dummy.execpattern.dynamic",
+    "pattern":      "dummy",
+    "context_type": "dynamic"
 }
 
 _ADAPTOR_OPTIONS = []

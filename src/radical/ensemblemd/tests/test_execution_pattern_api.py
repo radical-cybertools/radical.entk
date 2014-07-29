@@ -7,7 +7,7 @@ import unittest
 
 #-----------------------------------------------------------------------------
 #
-class ExecutionContextAPITestCases(unittest.TestCase):
+class ExecutionPatternAPITestCases(unittest.TestCase):
     # silence deprecation warnings under py3
 
     def setUp(self):
@@ -21,15 +21,16 @@ class ExecutionContextAPITestCases(unittest.TestCase):
     #-------------------------------------------------------------------------
     #
     def test__import(self):
-        """ Tests whether we can import the execution context classes.
+        """ Tests whether we can import the various pattern classes.
         """
-        from radical.ensemblemd import StaticExecutionContext
-        from radical.ensemblemd import DynamicExecutionContext
+        from radical.ensemblemd import DummyPattern
 
     #-------------------------------------------------------------------------
     #
-    def test__static_execution_context_api(self):
+    def test__dummy_execution_pattern_api(self):
+        """ Tests the dummy execution pattern API.
+        """
 
-        from radical.ensemblemd import StaticExecutionContext
+        from radical.ensemblemd import DummyPattern
 
-        sec = StaticExecutionContext()
+        dp = DummyPattern()
