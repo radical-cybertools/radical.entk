@@ -4,6 +4,8 @@ import os
 import sys
 import unittest
 
+from radical.ensemblemd.exceptions import *
+from radical.ensemblemd.tests.helpers import *
 
 #-----------------------------------------------------------------------------
 #
@@ -34,4 +36,7 @@ class ExecutionContextAPITestCases(unittest.TestCase):
 
         sec = StaticExecutionContext()
 
-        sec.run(1)
+        try: 
+            sec.run("wrong_type")
+        except Exception, ex:
+            test_exception(exception=ex, expected_type=TypeError)

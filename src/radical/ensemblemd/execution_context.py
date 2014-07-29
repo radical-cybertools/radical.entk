@@ -37,7 +37,7 @@ class ExecutionContext(object):
         """Creates a new ExecutionContext instance.
         """
 
-        # Some basic type checks.
+        # Some basic type checks.g
         if type(pattern) != ExecutionPattern:
             raise TypeError(
               expected_type=ExecutionPattern, 
