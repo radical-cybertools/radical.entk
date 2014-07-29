@@ -17,6 +17,10 @@ class DummyPattern(ExecutionPattern):
     internal purposes by the ensemblemd testing framework. 
     """
 
+    #-------------------------------------------------------------------------------
+    #
     def __init__(self):
         """Creates a new DummyPattern instance.
         """
+        super(DummyPattern, self).__init__()
+

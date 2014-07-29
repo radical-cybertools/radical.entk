@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+from radical.ensemblemd.exceptions import *
 from radical.ensemblemd.engine import Engine
 
 #-------------------------------------------------------------------------------
@@ -22,8 +23,15 @@ class ExecutionPattern(object):
          * ...`
     """
 
+    #---------------------------------------------------------------------------
+    #
     def __init__(self):
         """Creates a new ExecutionPattern instance.
         """
 
         self._engine = Engine()
+
+    def get_name(self):
+        """Returns the name of the execution pattern.
+        """
+        raise NotImplementedError("Method get_name() is not implemented.")

@@ -21,6 +21,8 @@ class ExecutionContext(object):
          * :class:`radical.ensemblemd.DynamicExecutionContext`
     """
 
+    #---------------------------------------------------------------------------
+    #
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """

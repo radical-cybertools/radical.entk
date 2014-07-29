@@ -34,3 +34,4 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
         from radical.ensemblemd import DummyPattern
 
         dp = DummyPattern()
+        assert dp.get_name() == "dummy"

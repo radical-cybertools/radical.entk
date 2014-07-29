@@ -17,6 +17,9 @@ class DynamicExecutionContext(ExecutionContext):
        computational resources. 
     """
 
+    #---------------------------------------------------------------------------
+    #
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """
+        super(DynamicExecutionContext, self).__init__()
