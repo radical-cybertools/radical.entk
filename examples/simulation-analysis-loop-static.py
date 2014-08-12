@@ -15,6 +15,7 @@ __license__   = "MIT"
 
 import sys
 
+from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import StaticExecutionContext
 from radical.ensemblemd import SimulationAnalysisPattern
 
@@ -27,8 +28,12 @@ if __name__ == "__main__":
         # number of cores and runtime.
         sec = StaticExecutionContext()
 
-        # Instantiate a new Simulation-Analysis pattern 
+        # Instantiate a new simulation-analysis pattern 
         loop = SimulationAnalysisPattern()
+
+        # Pass the simulation-analysis pattern definition to the execution
+        # context for execution.
+        sec.execute(loop)
 
     except EnsemblemdError, er:
 

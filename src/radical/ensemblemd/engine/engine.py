@@ -11,6 +11,7 @@ __license__   = "MIT"
 import radical.utils.logger as rul
 from radical.utils import Singleton
 
+from radical.ensemblemd.exceptions import *
 from radical.ensemblemd.engine.plugin_registry import plugin_registry
 
 #-------------------------------------------------------------------------------
@@ -31,7 +32,8 @@ class Engine(object):
         self._logger = rul.logger.getLogger('radical.ensemblemd', "Engine")
 
         # Load Execution Plugins
-        self._load_plugins ()
+        self._plugins = list()
+        self._load_plugins()
 
     #---------------------------------------------------------------------------
     #
@@ -42,15 +44,13 @@ class Engine(object):
         # attempt to load all registered plugins
         for plugin_name in plugin_registry:
 
-            self._logger.info ("Loading  plugin %s"  %  plugin_name)
-
             # first, import the module
             adaptor_module = None
             try :
                 adaptor_module = __import__ (plugin_name, fromlist=['Adaptor'])
 
             except Exception as e:
-                self._logger.error ("Skipping adaptor {0}: module loading failed: {1}".format(plugin_name, e))
+                self._logger.error("Skipping execution context plugin {0}: module loading failed: {1}".format(plugin_name, e))
                 continue # skip to next adaptor
 
             # we expect the plugin module to have an 'Adaptor' class
@@ -63,6 +63,38 @@ class Engine(object):
                 plugin_instance = adaptor_module.Adaptor()
                 plugin_info     = plugin_instance.register()
 
+                self._logger.info("Loaded execution context plugin '{0}' from {1}".format(
+                    plugin_instance.get_name(),
+                    plugin_info))
+                self._plugins.append(plugin_instance)
+
             except Exception as e:
-                self._logger.error ("Skipping adaptor {0}: loading failed: '{1}'".format(plugin_name, e))
+                self._logger.error ("Skipping execution context plugin {0}: loading failed: '{1}'".format(plugin_name, e))
+
+    #---------------------------------------------------------------------------
+    #
+    def get_plugin_for_pattern(self, pattern_name, context_name):
+        """Returns an execution plug-in for a given pattern and context.
+        """
+        plugin = None
+
+        for candidate_plugin in self._plugins:
+            for_pattern = candidate_plugin.get_info()['pattern']
+            for_context = candidate_plugin.get_info()['context_type']
+            if (for_pattern == pattern_name) and (for_context == context_name):
+                plugin = candidate_plugin
+                break
+
+        if plugin != None:
+            self._logger.info("!")
+            return plugin
+        else:
+            error = NoExecutionPluginError(
+                pattern_name=pattern_name,
+                context_name=context_name)
+            self._logger.error(str(error))
+            raise error
+
+
+
 

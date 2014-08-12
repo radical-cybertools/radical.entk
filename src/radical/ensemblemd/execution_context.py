@@ -33,15 +33,24 @@ class ExecutionContext(object):
 
     #---------------------------------------------------------------------------
     #
-    def run(self, pattern):
+    def get_name(self):
+        """Returns the name of the execution pattern.
+        """
+        raise NotImplementedError(
+          method_name="get_name",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def execute(self, pattern):
         """Creates a new ExecutionContext instance.
         """
 
         # Some basic type checks.g
-        if type(pattern) != ExecutionPattern:
+        if not isinstance(pattern, ExecutionPattern):
             raise TypeError(
               expected_type=ExecutionPattern, 
               actual_type=type(pattern))
 
         self._engine = Engine()
-
+        self._engine.get_plugin_for_pattern()

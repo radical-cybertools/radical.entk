@@ -21,9 +21,12 @@ class NotImplementedError(EnsemblemdError):
     """NotImplementedError is thrown if a class method or function is not 
     implemented.
     """
-    def __init__ (self, msg):
+    def __init__ (self, method_name, class_name):
+        msg = "Method {0}() missing implementation in {1}.".format(
+            method_name, 
+            class_name
+        )
         super(NotImplementedError, self).__init__ (msg)
-
 
 # ------------------------------------------------------------------------------
 #
@@ -32,5 +35,21 @@ class TypeError(EnsemblemdError):
     or function.
     """
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected type {0}, but got {1}".format(str(expected_type), str(actual_type))
+        msg = "Expected type {0}, but got {1}.".format(
+            str(expected_type), 
+            str(actual_type)
+        )
         super(TypeError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class NoExecutionPluginError(EnsemblemdError):
+    """NoExecutionPluginError is thrown if a patterns is passed to an execution
+    context via execut() but no execution plugin for the pattern exist.
+    """
+    def __init__ (self, pattern_name, context_name):
+        msg = "Couldn't find an execution plug-in for pattern '{0}' and execution context '{1}'.".format(
+            pattern_name, 
+            context_name
+        )
+        super(NoExecutionPluginError, self).__init__ (msg)

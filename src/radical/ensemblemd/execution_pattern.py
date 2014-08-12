@@ -31,7 +31,11 @@ class ExecutionPattern(object):
 
         self._engine = Engine()
 
+    #---------------------------------------------------------------------------
+    #
     def get_name(self):
         """Returns the name of the execution pattern.
         """
-        raise NotImplementedError("Method get_name() is not implemented.")
+        raise NotImplementedError(
+          method_name="get_name",
+          class_name=type(self))
