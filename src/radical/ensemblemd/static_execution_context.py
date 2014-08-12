@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 from radical.ensemblemd.engine import Engine
+from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 from radical.ensemblemd.execution_context import ExecutionContext
 

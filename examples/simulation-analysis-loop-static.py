@@ -37,5 +37,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "Exception in EnsembleMD: {0}".format(str(er))
+        print "EnsembleMD Error: {0}".format(str(er))
         sys.exit(1)

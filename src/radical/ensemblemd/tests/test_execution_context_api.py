@@ -37,6 +37,6 @@ class ExecutionContextAPITestCases(unittest.TestCase):
         sec = StaticExecutionContext()
 
         try: 
-            sec.run("wrong_type")
+            sec.execute("wrong_type")
         except Exception, ex:
             test_exception(exception=ex, expected_type=TypeError)
