@@ -73,7 +73,7 @@ class Engine(object):
 
     #---------------------------------------------------------------------------
     #
-    def get_plugin_for_pattern(self, pattern_name, context_name):
+    def get_plugin_for_pattern(self, pattern_name, context_name, plugin_name):
         """Returns an execution plug-in for a given pattern and context.
         """
         plugin = None
@@ -82,8 +82,13 @@ class Engine(object):
             for_pattern = candidate_plugin.get_info()['pattern']
             for_context = candidate_plugin.get_info()['context_type']
             if (for_pattern == pattern_name) and (for_context == context_name):
-                plugin = candidate_plugin
-                break
+                if plugin_name is None:
+                    plugin = candidate_plugin
+                    break
+                else:
+                    if candidate_plugin.get_name() == plugin_name:
+                        plugin = candidate_plugin
+                        break
 
         if plugin != None:
             self._logger.info("Selected execution plug-in '{0}' for pattern '{1}' and context type '{2}'.".format(
@@ -95,6 +100,7 @@ class Engine(object):
         else:
             error = NoExecutionPluginError(
                 pattern_name=pattern_name,
-                context_name=context_name)
+                context_name=context_name,
+                plugin_name=plugin_name)
             self._logger.error(str(error))
             raise error

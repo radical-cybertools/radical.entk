@@ -51,4 +51,8 @@ class StaticExecutionContext(ExecutionContext):
         self._engine = Engine()
         plugin = self._engine.get_plugin_for_pattern(
             pattern_name=pattern.get_name(),
-            context_name=self.get_name())
+            context_name=self.get_name(),
+            plugin_name=force_plugin)
+
+        plugin.verify_pattern(pattern)
+        plugin.execute_pattern(pattern)

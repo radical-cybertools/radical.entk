@@ -14,7 +14,7 @@ import radical.utils         as ru
 import radical.utils.config  as ruc
 import radical.utils.logger  as rul
 
-from radical.ensemblemd.exceptions import *
+from radical.ensemblemd.exceptions import NotImplementedError
 
 
 # ------------------------------------------------------------------------------
@@ -64,7 +64,9 @@ class PluginBase() :
             exception if it will not be able to function properly in the given
             environment, e.g. due to missing dependencies etc.
         """
-        raise NotImplementedError("Plugin {0} does not implement sanity_check()".format(self._name))
+        raise NotImplementedError(
+          method_name="get_name",
+          class_name=type(self))
 
     # --------------------------------------------------------------------------
     #
@@ -84,3 +86,21 @@ class PluginBase() :
     #
     def get_info (self) :
         return self._info
+
+    # --------------------------------------------------------------------------
+    #
+    def verify_pattern(self, pattern):
+        """Verify the pattern.
+        """
+        raise NotImplementedError(
+          method_name="verify_pattern",
+          class_name=type(self))
+
+    # --------------------------------------------------------------------------
+    #
+    def execute_pattern(self, pattern):
+        """Execute the pattern.
+        """
+        raise NotImplementedError(
+          method_name="execute_pattern",
+          class_name=type(self))

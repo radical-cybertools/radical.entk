@@ -111,8 +111,17 @@ to it so that it gets loaded properly on ``execute()``:
         # --------------------------------------------------------------------------
         #
         def __init__(self):
-
             super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
+
+        # --------------------------------------------------------------------------
+        #
+        def verify_pattern(self, pattern):
+            pass
+
+        # --------------------------------------------------------------------------
+        #
+        def execute_pattern(self, pattern):
+            pass
 
 The most important part is the ``_PLUGIN_INFO`` dictionary:
 

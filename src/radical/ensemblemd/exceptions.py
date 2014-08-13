@@ -47,9 +47,16 @@ class NoExecutionPluginError(EnsemblemdError):
     """NoExecutionPluginError is thrown if a patterns is passed to an execution
     context via execut() but no execution plugin for the pattern exist.
     """
-    def __init__ (self, pattern_name, context_name):
-        msg = "Couldn't find an execution plug-in for pattern '{0}' and execution context '{1}'.".format(
-            pattern_name, 
-            context_name
-        )
+    def __init__ (self, pattern_name, context_name, plugin_name):
+        if plugin_name is None:
+            msg = "Couldn't find an execution plug-in for pattern '{0}' and execution context '{1}'.".format(
+                pattern_name, 
+                context_name
+            )
+        else:
+            msg = "Couldn't find an execution plug-in named '{0}' for pattern '{1}' and execution context '{2}'.".format(
+                plugin_name,
+                pattern_name, 
+                context_name,
+            )         
         super(NoExecutionPluginError, self).__init__ (msg)
