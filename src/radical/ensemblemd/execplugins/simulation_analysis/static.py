@@ -32,9 +32,9 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-        pass
+        self.get_logger().info("Verifying pattern...")
 
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern):
-        pass
+        self.get_logger().info("Executing pattern...")

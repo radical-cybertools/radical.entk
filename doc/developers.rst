@@ -119,12 +119,12 @@ to it so that it gets loaded properly on ``execute()``:
         # --------------------------------------------------------------------------
         #
         def verify_pattern(self, pattern):
-            pass
+            self.get_logger().info("Verifying pattern...")
 
         # --------------------------------------------------------------------------
         #
         def execute_pattern(self, pattern):
-            pass
+            self.get_logger().info("Executing pattern...")
 
 The most important part is the ``_PLUGIN_INFO`` dictionary:
 

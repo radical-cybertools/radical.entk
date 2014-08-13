@@ -89,6 +89,11 @@ class PluginBase() :
 
     # --------------------------------------------------------------------------
     #
+    def get_logger(self):
+        return self._logger
+
+    # --------------------------------------------------------------------------
+    #
     def verify_pattern(self, pattern):
         """Verify the pattern.
         """
