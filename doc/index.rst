@@ -4,13 +4,13 @@
    contain the root `toctree` directive.
 
 radical.ensemblemd
-==================
+##################
 
 radical.ensemblemd is a Python API and library  for developing and running 
 large-scale Molecular Dynamics (MD) workflows. 
 
 Examples
---------
+********
 
 .. toctree::
    :maxdepth: 2
@@ -18,7 +18,7 @@ Examples
    examples.rst
 
 API Documentation
------------------
+*****************
 
 .. toctree::
    :maxdepth: 2
@@ -26,18 +26,9 @@ API Documentation
    library.rst
 
 Developer Documentation
------------------------
+***********************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    developers.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

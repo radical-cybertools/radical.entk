@@ -1,5 +1,5 @@
 Exceptions 
-----------
+==========
 
 .. automodule:: radical.ensemblemd.exceptions
    :show-inheritance:
@@ -7,7 +7,7 @@ Exceptions
 
 
 Execution Contexts
-------------------
+==================
 
 .. autoclass:: radical.ensemblemd.StaticExecutionContext
     :members:
@@ -18,7 +18,7 @@ Execution Contexts
     :inherited-members:
 
 Execution Patterns
-------------------
+==================
 
 .. autoclass:: radical.ensemblemd.DummyPattern
     :members:
