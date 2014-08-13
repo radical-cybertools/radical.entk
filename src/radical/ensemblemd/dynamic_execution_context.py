@@ -7,7 +7,12 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+from radical.ensemblemd.engine import Engine
+from radical.ensemblemd.exceptions import TypeError
+from radical.ensemblemd.execution_pattern import ExecutionPattern
 from radical.ensemblemd.execution_context import ExecutionContext
+
+CONTEXT_NAME = "Dynamic"
 
 
 #-------------------------------------------------------------------------------
@@ -23,3 +28,10 @@ class DynamicExecutionContext(ExecutionContext):
         """Creates a new ExecutionContext instance.
         """
         super(DynamicExecutionContext, self).__init__()
+
+    #---------------------------------------------------------------------------
+    #
+    def get_name(self):
+        """Returns the name of the execution context.
+        """
+        return CONTEXT_NAME

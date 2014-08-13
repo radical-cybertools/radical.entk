@@ -14,6 +14,7 @@ from radical.ensemblemd.execution_context import ExecutionContext
 
 CONTEXT_NAME = "Static"
 
+
 #-------------------------------------------------------------------------------
 #
 class StaticExecutionContext(ExecutionContext):
@@ -27,6 +28,13 @@ class StaticExecutionContext(ExecutionContext):
         """Creates a new ExecutionContext instance.
         """
         super(StaticExecutionContext, self).__init__()
+
+    #---------------------------------------------------------------------------
+    #
+    def get_name(self):
+        """Returns the name of the execution context.
+        """
+        return CONTEXT_NAME
 
     #---------------------------------------------------------------------------
     #
@@ -44,10 +52,3 @@ class StaticExecutionContext(ExecutionContext):
         plugin = self._engine.get_plugin_for_pattern(
             pattern_name=pattern.get_name(),
             context_name=self.get_name())
-
-    #---------------------------------------------------------------------------
-    #
-    def get_name(self):
-        """Returns the name of the execution context.
-        """
-        return CONTEXT_NAME

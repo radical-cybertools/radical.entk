@@ -11,21 +11,21 @@ from radical.ensemblemd.execplugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
 # 
-_ADAPTOR_INFO = {
-    "name":         "dummy.execpattern.static",
-    "pattern":      "dummy",
-    "context_type": "static"
+_PLUGIN_INFO = {
+    "name":         "dummy.static.default",
+    "pattern":      "Dummy",
+    "context_type": "Static"
 }
 
-_ADAPTOR_OPTIONS = []
+_PLUGIN_OPTIONS = []
 
 
 # ------------------------------------------------------------------------------
 # 
-class Adaptor(PluginBase):
+class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
     def __init__(self):
 
-        super(Adaptor, self).__init__(_ADAPTOR_INFO, _ADAPTOR_OPTIONS)
+        super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)

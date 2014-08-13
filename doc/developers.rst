@@ -82,6 +82,52 @@ environment), we should see the following error::
 
 The error message **''module' object has no attribute 'Adaptor''** is expected 
 since our plug-in is at this point just an empty file without an implementation.
-Let's work on this.
+
+Let's open the file ``static_improved.py`` and add a skeleton implementation
+to it so that it gets loaded properly on ``execute()``:
+
+.. code-block:: python
+   :emphasize-lines: 8,9,10
+
+    #!/usr/bin/env python
+
+    from radical.ensemblemd.execplugins.plugin_base import PluginBase
+
+    # ------------------------------------------------------------------------------
+    # 
+    _PLUGIN_INFO = {
+        "name":         "mypattern.static.improved",
+        "pattern":      "MyPattern",
+        "context_type": "Static"
+    }
+
+    _PLUGIN_OPTIONS = []
 
 
+    # ------------------------------------------------------------------------------
+    # 
+    class Plugin(PluginBase):
+
+        # --------------------------------------------------------------------------
+        #
+        def __init__(self):
+
+            super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
+
+The most important part is the ``_PLUGIN_INFO`` dictionary:
+
+* ``name`` can be anything. If you use the ``force_plugin`` parameter
+   with ``execute()``, ``name`` will be matched.
+
+* ``pattern`` the pattern this plug-in waas written for. It needs to be the same
+   as the string returned by ``Pattern.get_name()``.
+
+* ``context_type`` the execution context type for which this plug-in was written 
+   for. The two options are ``Dynamic`` or ``Static``. 
+
+If we install the source distribution and run our test code one more time, the
+plug-in should get loaded and selected properly::
+
+    [...]
+    2014:08:13 14:43:02 46140  MainThread   radical.ensemblemd.Engine: [INFO    ] Loaded execution context plugin 'mypattern.static.improved' from radical.ensemblemd.execplugins.mypattern.static_improved
+    2014:08:13 14:43:02 46140  MainThread   radical.ensemblemd.Engine: [INFO    ] Selected execution plug-in 'mypattern.static.improved' for pattern 'MyPattern' and context type 'Static'.

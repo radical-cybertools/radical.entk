@@ -60,7 +60,7 @@ class Engine(object):
             plugin_info     = None
 
             try: 
-                plugin_instance = adaptor_module.Adaptor()
+                plugin_instance = adaptor_module.Plugin()
                 plugin_info     = plugin_instance.register()
 
                 self._logger.info("Loaded execution context plugin '{0}' from {1}".format(
