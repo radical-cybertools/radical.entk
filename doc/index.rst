@@ -25,6 +25,14 @@ API Documentation
 
    library.rst
 
+Developer Documentation
+-----------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   developers.rst
+
 
 Indices and tables
 ==================

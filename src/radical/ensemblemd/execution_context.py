@@ -42,15 +42,9 @@ class ExecutionContext(object):
 
     #---------------------------------------------------------------------------
     #
-    def execute(self, pattern):
+    def execute(self, pattern, force_plugin=None):
         """Creates a new ExecutionContext instance.
         """
-
-        # Some basic type checks.g
-        if not isinstance(pattern, ExecutionPattern):
-            raise TypeError(
-              expected_type=ExecutionPattern, 
-              actual_type=type(pattern))
-
-        self._engine = Engine()
-        self._engine.get_plugin_for_pattern()
+        raise NotImplementedError(
+          method_name="execute",
+          class_name=type(self))

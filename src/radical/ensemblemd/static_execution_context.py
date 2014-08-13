@@ -30,7 +30,7 @@ class StaticExecutionContext(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def execute(self, pattern):
+    def execute(self, pattern, force_plugin=None):
         """Creates a new StaticExecutionContext instance.
         """
 

@@ -42,15 +42,15 @@ class Engine(object):
         """
         
         # attempt to load all registered plugins
-        for plugin_name in plugin_registry:
+        for plugin_module_name in plugin_registry:
 
             # first, import the module
             adaptor_module = None
             try :
-                adaptor_module = __import__ (plugin_name, fromlist=['Adaptor'])
+                adaptor_module = __import__ (plugin_module_name, fromlist=['Adaptor'])
 
             except Exception as e:
-                self._logger.error("Skipping execution context plugin {0}: module loading failed: {1}".format(plugin_name, e))
+                self._logger.error("Skipping execution context plugin {0}: module loading failed: {1}".format(plugin_module_name, e))
                 continue # skip to next adaptor
 
             # we expect the plugin module to have an 'Adaptor' class
@@ -65,11 +65,11 @@ class Engine(object):
 
                 self._logger.info("Loaded execution context plugin '{0}' from {1}".format(
                     plugin_instance.get_name(),
-                    plugin_info))
+                    plugin_module_name))
                 self._plugins.append(plugin_instance)
 
             except Exception as e:
-                self._logger.error ("Skipping execution context plugin {0}: loading failed: '{1}'".format(plugin_name, e))
+                self._logger.error ("Skipping execution context plugin {0}: loading failed: '{1}'".format(plugin_module_name, e))
 
     #---------------------------------------------------------------------------
     #
@@ -86,7 +86,11 @@ class Engine(object):
                 break
 
         if plugin != None:
-            self._logger.info("!")
+            self._logger.info("Selected execution plug-in '{0}' for pattern '{1}' and context type '{2}'.".format(
+                plugin.get_name(),
+                pattern_name,
+                context_name)
+            )
             return plugin
         else:
             error = NoExecutionPluginError(
@@ -94,7 +98,3 @@ class Engine(object):
                 context_name=context_name)
             self._logger.error(str(error))
             raise error
-
-
-
-
