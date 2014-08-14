@@ -29,13 +29,10 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         sec = StaticExecutionContext()
-
-        # Create a new, emtpy task instance.
-        task = Task()
  
         # Create a new preprocessing operation.
         pre = Subtask()
-        pre.set_kernel(Kernel(kernel="util.mkfile", args=["10M"]))          # base64 /dev/urandom | head -c 10000000 > file.txt
+        pre.set_kernel(Kernel(kernel="util.mkfile", args=["10M"]))                 # base64 /dev/urandom | head -c 10000000 > file.txt
         pre_out = pre.add_output(filename="file.txt")                              # expects the kernel to generate a file "file.txt", fails otherwise
 
         # Create a new processing operation.
@@ -50,10 +47,8 @@ if __name__ == "__main__":
         post.add_input(proc_out, label="sim_out")
         post.add_output(filename="output-6-6-2014.dat")
 
-        # Add the three individual steps to the task.
-        task.set_preprocessing_subtask(pre)
-        task.set_processing_subtask(proc)
-        task.set_postprocessing_subtask(post)
+        # Create a new task instance and add the three subprocesses.
+        task = Task(preprocessing=pre, processing=proc, postprocessing=post)
 
         sec.execute(task)
 
