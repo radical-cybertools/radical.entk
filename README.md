@@ -6,8 +6,8 @@ Molecular Dynamics (MD) workflows.
 
 ### Mailing Lists
 
-* https://groups.google.com/forum/#!forum/ensemblemd-users
-* https://groups.google.com/forum/#!forum/ensemblemd-developers
+* https://groups.google.com/d/forum/ensemblemd-users
+* https://groups.google.com/d/forum/ensemblemd-developers
 
 ### Build Status
 * `master` branch: 
