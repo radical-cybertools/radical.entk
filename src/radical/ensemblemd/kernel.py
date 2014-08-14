@@ -16,5 +16,14 @@ class Kernel(object):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self):
-        pass
+    def __init__(self, kernel, args):
+
+        if type(kernel) != str:
+            raise TypeError(
+                expected_type=str, 
+                actual_type=type(kernel))
+
+        if type(args) != list:
+            raise TypeError(
+                expected_type=list, 
+                actual_type=type(args))

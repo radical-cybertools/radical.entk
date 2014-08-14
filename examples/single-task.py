@@ -35,18 +35,18 @@ if __name__ == "__main__":
  
         # Create a new preprocessing operation.
         pre = Subtask()
-        pre.set_kernel(None) #Kernel(kernel="util.mkfile", args=["10M"]))          # base64 /dev/urandom | head -c 10000000 > file.txt
+        pre.set_kernel(Kernel(kernel="util.mkfile", args=["10M"]))          # base64 /dev/urandom | head -c 10000000 > file.txt
         pre_out = pre.add_output(filename="file.txt")                              # expects the kernel to generate a file "file.txt", fails otherwise
 
         # Create a new processing operation.
         proc = Subtask()                                                     
-        proc.set_kernel(None) #Kernel(kernel="do_whatever", args="-f {pre_out}"))
+        proc.set_kernel(Kernel(kernel="do_whatever", args=["-f {pre_out}"]))
         proc.add_input(pre_out, label="pre_out")                                   # Takes the output of the preproc step as input
         proc_out = proc.add_output(filename="output.txt")                          # returns "Port"
 
         # Create a new postprocessing operation.
         post = Subtask()                                                  
-        post.set_kernel(None) #"mv {sim_out} output-6-6-2014.dat")
+        post.set_kernel(Kernel(kernel="util.move", args=["{sim_out}", "output-6-6-2014.dat"]))
         post.add_input(proc_out, label="sim_out")
         post.add_output(filename="output-6-6-2014.dat")
 
