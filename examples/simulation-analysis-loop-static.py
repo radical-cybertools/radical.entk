@@ -37,14 +37,14 @@ if __name__ == "__main__":
         # THIS IS A STEP #
         ##################
  
-        pre = Preprocessing()                                    # Preprocessing (sub-)step
-        pre.set_kernel(Kernel(kernel="base64 make text"))        # base64 /dev/urandom | head -c 10000000 > file.txt
-        pre_out = proc.add_output(output_filename="file.txt")    # expects the kernel to generate a file "file.txt", fails otherwise
+        pre = Preprocessing()                                               # Preprocessing (sub-)step
+        pre.set_kernel(Kernel(kernel="base64 make text"))                   # base64 /dev/urandom | head -c 10000000 > file.txt
+        pre_out = proc.add_output(output_filename="file.txt")               # expects the kernel to generate a file "file.txt", fails otherwise
 
-        proc = Processing()                                      # Processing (sub-)step
+        proc = Processing()                                                 # Processing (sub-)step
         proc.set_kernel(Kernel(kernel="do_whatever", args="-f {pre_out}"))
-        proc.add_input(pre_out, label="pre_out")                 # Takes the output of the preproc step as input
-        proc_out = proc.add_output(output_filename="output.txt") # returns "Port"
+        proc.add_input(pre_out, label="pre_out")                            # Takes the output of the preproc step as input
+        proc_out = proc.add_output(output_filename="output.txt")            # returns "Port"
 
         post = Postprocessing()                                  # Postprocessing (sub-)step
         post.set_kernel("mv {sim_out} output-6-6-2014.dat")
