@@ -1,3 +1,8 @@
+Single Tasks
+============
+
+.. literalinclude:: ../examples/single-task.py
+
 Static Simulation-Analysis Loops
 ================================
 
