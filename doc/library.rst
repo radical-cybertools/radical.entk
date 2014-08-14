@@ -1,10 +1,27 @@
-Exceptions 
-==========
+Exceptions & Errors
+===================
 
 .. automodule:: radical.ensemblemd.exceptions
    :show-inheritance:
    :members: EnsemblemdError, NotImplementedError, TypeError
 
+Tasks and Subtasks 
+==================
+
+.. autoclass:: radical.ensemblemd.Task
+    :members:
+    :inherited-members:
+
+.. autoclass:: radical.ensemblemd.Subtask
+    :members:
+    :inherited-members:
+
+Application Kernels 
+===================
+
+.. autoclass:: radical.ensemblemd.Kernel
+    :members:
+    :inherited-members:
 
 Execution Contexts
 ==================

@@ -16,8 +16,8 @@ __license__   = "MIT"
 import sys
 
 from radical.ensemblemd import Task
+from radical.ensemblemd import Kernel
 from radical.ensemblemd import Subtask
-#from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import StaticExecutionContext
 

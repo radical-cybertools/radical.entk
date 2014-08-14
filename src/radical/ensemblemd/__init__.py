@@ -5,6 +5,7 @@ from radical.ensemblemd.exceptions import NotImplementedError
 
 # Primitives / Building Blocks
 from radical.ensemblemd.task import Task
+from radical.ensemblemd.kernel import Kernel
 from radical.ensemblemd.subtask import Subtask
 
 # Execution Contexts
