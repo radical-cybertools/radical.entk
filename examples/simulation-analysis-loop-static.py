@@ -46,7 +46,7 @@ if __name__ == "__main__":
         proc.add_input(pre_out, label="pre_out")                            # Takes the output of the preproc step as input
         proc_out = proc.add_output(output_filename="output.txt")            # returns "Port"
 
-        post = Postprocessing()                                  # Postprocessing (sub-)step
+        post = Postprocessing()                                             # Postprocessing (sub-)step
         post.set_kernel("mv {sim_out} output-6-6-2014.dat")
         post.add_input(proc_out, label="sim_out")
         post.output(filename="output-6-6-2014.dat")

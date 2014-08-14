@@ -7,8 +7,8 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.ensemblemd.exceptions import *
 from radical.ensemblemd.engine import Engine
+from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
 #-------------------------------------------------------------------------------
