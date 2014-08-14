@@ -4,6 +4,11 @@ radical.ensemblemd is a Python API for developing and running large-scale
 Molecular Dynamics (MD) workflows. 
 
 
+### Mailing Lists
+
+* https://groups.google.com/forum/#!forum/ensemblemd-users
+* https://groups.google.com/forum/#!forum/ensemblemd-developers
+
 ### Build Status
 * `master` branch: 
 
