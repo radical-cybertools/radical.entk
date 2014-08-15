@@ -43,8 +43,32 @@ class TypeError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
-class NoPluginError(EnsemblemdError):
-    """NoPluginError is thrown if a patterns is passed to an execution
+class NoKernelPluginError(EnsemblemdError):
+    """NoKernelPluginError is thrown if no kernel plug-in could be found for a 
+       given kernel name.
+    """
+    def __init__ (self, kernel_name):
+        msg = "Couldn't find a kernel plug-in named '{0}'".format(kernel_name)
+        super(NoKernelPluginError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class ArgumentError(EnsemblemdError):
+    """A BadArgumentError is thrown if a wrong set of arguments were passed 
+       to a kernel.
+    """
+    def __init__ (self, kernel_name, message, valid_arguments_set):
+        msg = "Invalid argument(s) for kernel '{0}': {1}. Valid arguments are {2}.".format(
+            kernel_name,
+            message,
+            valid_arguments_set
+        )
+        super(ArgumentError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class NoExecutionPluginError(EnsemblemdError):
+    """NoExecutionPluginError is thrown if a patterns is passed to an execution
     context via execut() but no execution plugin for the pattern exist.
     """
     def __init__ (self, pattern_name, context_name, plugin_name):
@@ -59,4 +83,4 @@ class NoPluginError(EnsemblemdError):
                 pattern_name, 
                 context_name,
             )         
-        super(NoPluginError, self).__init__ (msg)
+        super(NoExecutionPluginError, self).__init__ (msg)

@@ -32,8 +32,8 @@ if __name__ == "__main__":
  
         # Create a new preprocessing operation.
         pre = Subtask()
-        pre.set_kernel(Kernel(kernel="util.mkfile", args=["10M"]))                 # base64 /dev/urandom | head -c 10000000 > file.txt
-        pre_out = pre.add_output(filename="file.txt")                              # expects the kernel to generate a file "file.txt", fails otherwise
+        pre.set_kernel(Kernel(kernel="misc.mkfile", args=["--size 10000000", "--filename mkfile.out"]))                 # base64 /dev/urandom | head -c 10000000 > file.txt
+        pre_out = pre.add_output(filename="mkfile.out")                              # expects the kernel to generate a file "file.txt", fails otherwise
 
         # Create a new processing operation.
         proc = Subtask()                                                     
@@ -55,4 +55,5 @@ if __name__ == "__main__":
     except EnsemblemdError, er:
 
         print "EnsembleMD Error: {0}".format(str(er))
+        raise
         sys.exit(1)

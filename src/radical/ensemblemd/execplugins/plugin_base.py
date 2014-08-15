@@ -20,7 +20,7 @@ from radical.ensemblemd.exceptions import NotImplementedError
 # ------------------------------------------------------------------------------
 # plugin base class
 #
-class PluginBase() :
+class PluginBase(object):
 
     __metaclass__ = ru.Singleton
     

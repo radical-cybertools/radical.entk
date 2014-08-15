@@ -11,7 +11,8 @@ __license__   = "MIT"
 import radical.utils.logger as rul
 from radical.utils import Singleton
 
-from radical.ensemblemd.exceptions import NoPluginError
+from radical.ensemblemd.exceptions import NoKernelPluginError
+from radical.ensemblemd.exceptions import NoExecutionPluginError
 from radical.ensemblemd.engine.plugin_registry import plugin_registry
 from radical.ensemblemd.engine.kernel_registry import kernel_registry
 
@@ -66,13 +67,13 @@ class Engine(object):
             kernel_info     = None
 
             try: 
-                kernel_instance = kernel_module.Kernel()
-                kernel_info     = kernel_instance.register()
+                kernel_class = kernel_module.Kernel
+                #kernel_info     = kernel_instance.register()
 
                 self._logger.info(" > Loaded kernel plug-in '{0}' from {1}".format(
-                    kernel_instance.get_name(),
+                    kernel_class.get_name(),
                     kernel_module_name))
-                self._kernel_plugins.append(kernel_instance)
+                self._kernel_plugins.append(kernel_class)
 
             except Exception as e:
                 self._logger.warning (" > Skipping kernel plug-in {0}: loading failed: '{1}'".format(kernel_module_name, e))
@@ -142,7 +143,7 @@ class Engine(object):
             )
             return plugin
         else:
-            error = NoPluginError(
+            error = NoExecutionPluginError(
                 pattern_name=pattern_name,
                 context_name=context_name,
                 plugin_name=plugin_name)
@@ -157,18 +158,16 @@ class Engine(object):
         kernel = None
 
         for candidate_kernel in self._kernel_plugins:
-            if candidate_kernel.get_name() == kernel_name:
+            if candidate_kernel().get_name() == kernel_name:
                 kernel = candidate_kernel
                 break
 
-        if plugin != None:
+        if kernel != None:
             self._logger.debug("Selected kernel plug-in '{0}'.".format(kernel.get_name()))
-            return kernel
+            # Create a new instance of 'kernel' and return it to the caller.
+            return kernel()
         else:
-            error = NoPluginError(
-                pattern_name=pattern_name,
-                context_name=context_name,
-                plugin_name=plugin_name)
+            error = NoKernelPluginError(kernel_name=kernel_name)
             self._logger.error(str(error))
             raise error
 
