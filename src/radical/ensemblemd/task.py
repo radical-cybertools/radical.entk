@@ -11,7 +11,7 @@ from radical.ensemblemd.subtask import Subtask
 from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
-PATTERN_NAME = "task"
+PATTERN_NAME = "Task"
 
 
 # ------------------------------------------------------------------------------

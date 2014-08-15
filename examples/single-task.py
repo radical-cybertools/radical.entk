@@ -3,10 +3,10 @@
 """This example shows how to use EnsembleMD Toolkit to execute a single 
 task, including an integrated pre-processing and post-processing step.
 
-Run this example with RADICAL_ENSEMBLEMD_VERBOSE set to info if you want to see 
+Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
 log messages about plug-in invocation and simulation progress:
 
-    RADICAL_ENSEMBLEMD_VERBOSE=info python single-task.py
+    RADICAL_ENMD_VERBOSE=info python single-task.py
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"

@@ -33,7 +33,7 @@ class PluginBase() :
         self._name    = adaptor_info['name']
 
         self._lock    = ru.RLock      (self._name)
-        self._logger  = rul.getLogger ('radical.ensemblemd', self._name)
+        self._logger  = rul.getLogger ('radical.enmd', self._name)
 
         # has_enabled = False
         # for option in self._opts :

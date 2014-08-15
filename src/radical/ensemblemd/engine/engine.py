@@ -11,8 +11,9 @@ __license__   = "MIT"
 import radical.utils.logger as rul
 from radical.utils import Singleton
 
-from radical.ensemblemd.exceptions import *
+from radical.ensemblemd.exceptions import NoPluginError
 from radical.ensemblemd.engine.plugin_registry import plugin_registry
+from radical.ensemblemd.engine.kernel_registry import kernel_registry
 
 #-------------------------------------------------------------------------------
 #
@@ -29,28 +30,71 @@ class Engine(object):
         """
 
         # Initialize the logging
-        self._logger = rul.logger.getLogger('radical.ensemblemd', "Engine")
+        self._logger = rul.logger.getLogger('radical.enmd', "Engine")
 
-        # Load Execution Plugins
-        self._plugins = list()
-        self._load_plugins()
+        # Load execution plug-ins
+        self._execution_plugins = list()
+        self._load_execution_plugins()
+
+        # Load kernel plug-ins
+        self._kernel_plugins = list()
+        self._load_kernel_plugins()
 
     #---------------------------------------------------------------------------
     #
-    def _load_plugins(self):
+    def _load_kernel_plugins(self):
+        """Loads the kernel plugins.
+        """
+        self._logger.info("Loading kernel plug-ins...")
+
+        # attempt to load all registered kernels
+        for kernel_module_name in kernel_registry:
+
+            # first, import the module
+            kernel_module = None
+            try :
+                kernel_module = __import__ (kernel_module_name, fromlist=['Kernel'])
+
+            except Exception as e:
+                self._logger.warning(" > Skipping kernel plug-in {0}: module loading failed: {1}".format(kernel_module_name, e))
+                continue # skip to next adaptor
+
+            # we expect the plugin module to have a 'Kernel' class
+            # implemented, which, on calling 'register()', returns
+            # a info dict for all implemented plug-ing classes.
+            kernel_instance = None
+            kernel_info     = None
+
+            try: 
+                kernel_instance = kernel_module.Kernel()
+                kernel_info     = kernel_instance.register()
+
+                self._logger.info(" > Loaded kernel plug-in '{0}' from {1}".format(
+                    kernel_instance.get_name(),
+                    kernel_module_name))
+                self._kernel_plugins.append(kernel_instance)
+
+            except Exception as e:
+                self._logger.warning (" > Skipping kernel plug-in {0}: loading failed: '{1}'".format(kernel_module_name, e))
+
+
+    #---------------------------------------------------------------------------
+    #
+    def _load_execution_plugins(self):
         """Loads the execution plugins.
         """
-        
+        self._logger.info("Loading execution plug-ins...")
+
         # attempt to load all registered plugins
         for plugin_module_name in plugin_registry:
 
             # first, import the module
             adaptor_module = None
             try :
-                adaptor_module = __import__ (plugin_module_name, fromlist=['Adaptor'])
+                adaptor_module = __import__ (plugin_module_name, fromlist=['Plugin'])
 
             except Exception as e:
-                self._logger.error("Skipping execution context plugin {0}: module loading failed: {1}".format(plugin_module_name, e))
+                self._logger.warning(" > Skipping execution plug-in {0}: module loading failed: {1}".format(plugin_module_name, e))
                 continue # skip to next adaptor
 
             # we expect the plugin module to have an 'Adaptor' class
@@ -63,22 +107,22 @@ class Engine(object):
                 plugin_instance = adaptor_module.Plugin()
                 plugin_info     = plugin_instance.register()
 
-                self._logger.info("Loaded execution context plugin '{0}' from {1}".format(
+                self._logger.info(" > Loaded execution plug-in '{0}' from {1}".format(
                     plugin_instance.get_name(),
                     plugin_module_name))
-                self._plugins.append(plugin_instance)
+                self._execution_plugins.append(plugin_instance)
 
             except Exception as e:
-                self._logger.error ("Skipping execution context plugin {0}: loading failed: '{1}'".format(plugin_module_name, e))
+                self._logger.warning(" > Skipping execution plug-in {0}: loading failed: '{1}'".format(plugin_module_name, e))
 
     #---------------------------------------------------------------------------
     #
-    def get_plugin_for_pattern(self, pattern_name, context_name, plugin_name):
+    def get_execution_plugin_for_pattern(self, pattern_name, context_name, plugin_name):
         """Returns an execution plug-in for a given pattern and context.
         """
         plugin = None
 
-        for candidate_plugin in self._plugins:
+        for candidate_plugin in self._execution_plugins:
             for_pattern = candidate_plugin.get_info()['pattern']
             for_context = candidate_plugin.get_info()['context_type']
             if (for_pattern == pattern_name) and (for_context == context_name):
@@ -98,9 +142,33 @@ class Engine(object):
             )
             return plugin
         else:
-            error = NoExecutionPluginError(
+            error = NoPluginError(
                 pattern_name=pattern_name,
                 context_name=context_name,
                 plugin_name=plugin_name)
             self._logger.error(str(error))
             raise error
+
+    #---------------------------------------------------------------------------
+    #
+    def get_kernel_plugin(self, kernel_name):
+        """Returns a kernel plug-in for a given name.
+        """
+        kernel = None
+
+        for candidate_kernel in self._kernel_plugins:
+            if candidate_kernel.get_name() == kernel_name:
+                kernel = candidate_kernel
+                break
+
+        if plugin != None:
+            self._logger.debug("Selected kernel plug-in '{0}'.".format(kernel.get_name()))
+            return kernel
+        else:
+            error = NoPluginError(
+                pattern_name=pattern_name,
+                context_name=context_name,
+                plugin_name=plugin_name)
+            self._logger.error(str(error))
+            raise error
+

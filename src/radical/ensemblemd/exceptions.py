@@ -43,8 +43,8 @@ class TypeError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
-class NoExecutionPluginError(EnsemblemdError):
-    """NoExecutionPluginError is thrown if a patterns is passed to an execution
+class NoPluginError(EnsemblemdError):
+    """NoPluginError is thrown if a patterns is passed to an execution
     context via execut() but no execution plugin for the pattern exist.
     """
     def __init__ (self, pattern_name, context_name, plugin_name):
@@ -59,4 +59,4 @@ class NoExecutionPluginError(EnsemblemdError):
                 pattern_name, 
                 context_name,
             )         
-        super(NoExecutionPluginError, self).__init__ (msg)
+        super(NoPluginError, self).__init__ (msg)
