@@ -32,9 +32,12 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
+        workload = pattern._get_workload()
         self.get_logger().info("Verifying pattern...")
 
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern):
+        workload = pattern._get_workload()
+        self.get_logger().info("Pattern workload: {0}".format(workload))
         self.get_logger().info("Executing pattern...")

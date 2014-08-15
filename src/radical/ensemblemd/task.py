@@ -20,22 +20,22 @@ class Task(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, preprocessing, processing, postprocessing):
+    def __init__(self, preprocessing=None, processing=None, postprocessing=None):
         """Creates a new Task instance.
         """
         super(Task, self).__init__()
 
-        if type(preprocessing) != Subtask:
+        if preprocessing is not None and type(preprocessing) != Subtask:
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(preprocessing))
 
-        if type(processing) != Subtask:
+        if processing is not None and type(processing) != Subtask:
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(processing))
 
-        if type(postprocessing) != Subtask:
+        if postprocessing is not None and type(postprocessing) != Subtask:
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(postprocessing))

@@ -57,10 +57,10 @@ class KernelBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def get_args(self):
-        """Returns the arguments passed to the kernel during construction.
+    def get_arg(self, arg_name):
+        """Returns the value of the argument given by 'arg_name'.
         """
-        return self._args
+        return self._args[arg_name]["_value"]
 
     # --------------------------------------------------------------------------
     #
@@ -73,6 +73,7 @@ class KernelBase(object):
         arg_config = deepcopy(self._info['arguments'])
         for (arg, arg_info) in arg_config.iteritems():
             arg_config[arg]["_is_set"] = False
+            arg_config[arg]["_value"] = None
 
         # Check if only valid args are passed.
         for kernel_arg in args:
@@ -81,12 +82,13 @@ class KernelBase(object):
                 if kernel_arg.startswith(arg):
                     kernel_arg_ok = True
                     arg_config[arg]["_is_set"] = True
+                    arg_config[arg]["_value"] = kernel_arg.replace(arg, '')
                     break
 
             if kernel_arg_ok is False:
                 raise ArgumentError(
                     kernel_name=self.get_name(),
-                    offending_argument=arg,
+                    message="Unknown / malformed argument '{0}'".format(kernel_arg),
                     valid_arguments_set=arg_config
                 )
 
@@ -99,4 +101,4 @@ class KernelBase(object):
                     valid_arguments_set=self._info['arguments']
                 )
 
-        self._args = args
+        self._args = arg_config

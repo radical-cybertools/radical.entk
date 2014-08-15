@@ -28,7 +28,7 @@ class ExecutionPattern(object):
     def __init__(self):
         """Creates a new ExecutionPattern instance.
         """
-
+        self._workload = None
         self._engine = Engine()
 
     #---------------------------------------------------------------------------
@@ -39,3 +39,11 @@ class ExecutionPattern(object):
         raise NotImplementedError(
           method_name="get_name",
           class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def _get_workload(self):
+      """Returns the workload description (tasks) of the execution pattern
+         instance.
+      """
+      return self._workload
