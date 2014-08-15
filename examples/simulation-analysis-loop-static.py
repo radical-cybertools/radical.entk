@@ -3,10 +3,10 @@
 """This example shows how to use the SimulationAnalysisPattern with a fixed 
 (static) number of three iterations.
 
-Run this example with RADICAL_ENSEMBLEMD_VERBOSE set to info if you want to see 
+Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
 log messages about plug-in invocation and simulation progress:
 
-    RADICAL_ENSEMBLEMD_VERBOSE=info python simulation-analysis-loop-static.py
+    RADICAL_ENMD_VERBOSE=info python simulation-analysis-loop-static.py
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"

@@ -9,15 +9,43 @@ __license__   = "MIT"
 
 from radical.ensemblemd.subtask import Subtask
 from radical.ensemblemd.exceptions import TypeError
+from radical.ensemblemd.execution_pattern import ExecutionPattern
+
+PATTERN_NAME = "Task"
+
 
 # ------------------------------------------------------------------------------
 #
-class Task(object):
+class Task(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self):
-        pass
+    def __init__(self, preprocessing, processing, postprocessing):
+        """Creates a new Task instance.
+        """
+        super(Task, self).__init__()
+
+        if type(preprocessing) != Subtask:
+            raise TypeError(
+                expected_type=Subtask, 
+                actual_type=type(preprocessing))
+
+        if type(processing) != Subtask:
+            raise TypeError(
+                expected_type=Subtask, 
+                actual_type=type(processing))
+
+        if type(postprocessing) != Subtask:
+            raise TypeError(
+                expected_type=Subtask, 
+                actual_type=type(postprocessing))
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_name(self):
+        """Implements base class ExecutionPattern.get_name().
+        """
+        return PATTERN_NAME
 
     #---------------------------------------------------------------------------
     #

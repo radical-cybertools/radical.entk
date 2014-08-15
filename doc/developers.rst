@@ -74,7 +74,7 @@ to the plug-in registry in ``src/radical/ensemblemd/engine/plugin_registry.py``:
                       ]
 
 If we now install the current source branch again (``easy_install .``) and run 
-our test-rig again (with ``RADICAL_ENSEMBLEMD_VERBOSE=info`` set in the 
+our test-rig again (with ``RADICAL_ENMD_VERBOSE=info`` set in the 
 environment), we should see the following error::
 
     [...]

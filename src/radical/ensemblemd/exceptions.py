@@ -35,11 +35,35 @@ class TypeError(EnsemblemdError):
     or function.
     """
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected type {0}, but got {1}.".format(
+        msg = "Expected (base) type {0}, but got {1}.".format(
             str(expected_type), 
             str(actual_type)
         )
         super(TypeError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class NoKernelPluginError(EnsemblemdError):
+    """NoKernelPluginError is thrown if no kernel plug-in could be found for a 
+       given kernel name.
+    """
+    def __init__ (self, kernel_name):
+        msg = "Couldn't find a kernel plug-in named '{0}'".format(kernel_name)
+        super(NoKernelPluginError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class ArgumentError(EnsemblemdError):
+    """A BadArgumentError is thrown if a wrong set of arguments were passed 
+       to a kernel.
+    """
+    def __init__ (self, kernel_name, message, valid_arguments_set):
+        msg = "Invalid argument(s) for kernel '{0}': {1}. Valid arguments are {2}.".format(
+            kernel_name,
+            message,
+            valid_arguments_set
+        )
+        super(ArgumentError, self).__init__ (msg)
 
 # ------------------------------------------------------------------------------
 #

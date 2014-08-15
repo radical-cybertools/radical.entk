@@ -49,7 +49,7 @@ class StaticExecutionContext(ExecutionContext):
               actual_type=type(pattern))
 
         self._engine = Engine()
-        plugin = self._engine.get_plugin_for_pattern(
+        plugin = self._engine.get_execution_plugin_for_pattern(
             pattern_name=pattern.get_name(),
             context_name=self.get_name(),
             plugin_name=force_plugin)
