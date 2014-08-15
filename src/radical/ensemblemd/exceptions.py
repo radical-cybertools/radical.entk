@@ -35,7 +35,7 @@ class TypeError(EnsemblemdError):
     or function.
     """
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected type {0}, but got {1}.".format(
+        msg = "Expected (base) type {0}, but got {1}.".format(
             str(expected_type), 
             str(actual_type)
         )
