@@ -12,8 +12,8 @@ from radical.ensemblemd.execplugins.plugin_base import PluginBase
 # ------------------------------------------------------------------------------
 # 
 _PLUGIN_INFO = {
-    "name":         "task.static.default",
-    "pattern":      "Task",
+    "name":         "pipeline.static.default",
+    "pattern":      "Pipeline",
     "context_type": "Static"
 }
 
@@ -32,12 +32,14 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-        workload = pattern._get_workload()
+        workload = pattern._get_task_description()
+
         self.get_logger().info("Verifying pattern...")
 
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern):
-        workload = pattern._get_workload()
+        workload = pattern._get_task_description()
+
         self.get_logger().info("Pattern workload: {0}".format(workload))
         self.get_logger().info("Executing pattern...")

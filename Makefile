@@ -11,7 +11,4 @@ test:
 	python setup.py test
 
 doc:
-	virtualenv /tmp/radical.ensemblemd.docgen
-	. /tmp/radical.ensemblemd.docgen/bin/activate
-	easy_install -U sphinx
 	(cd ./doc && make html)

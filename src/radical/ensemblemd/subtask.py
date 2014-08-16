@@ -25,9 +25,8 @@ class Subtask(object):
 
     #---------------------------------------------------------------------------
     #
-    def add_output(self, filename):
-        """Creates a new DataObject referncing a physical output file 
-           genereated by this Subtask.
+    def assert_output(self, filename):
+        """Asserts the existence of a specific file after the step has completed.
         """
         pass
 

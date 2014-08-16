@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This module defines and implements the Task class.
+"""This module defines and implements the Pipeline class.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -11,19 +11,19 @@ from radical.ensemblemd.subtask import Subtask
 from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
-PATTERN_NAME = "Task"
+PATTERN_NAME = "Pipeline"
 
 
 # ------------------------------------------------------------------------------
 #
-class Task(ExecutionPattern):
+class Pipeline(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
     def __init__(self, preprocessing=None, processing=None, postprocessing=None):
         """Creates a new Task instance.
         """
-        super(Task, self).__init__()
+        super(Pipeline, self).__init__()
 
         if preprocessing is not None and type(preprocessing) != Subtask:
             raise TypeError(
@@ -39,6 +39,10 @@ class Task(ExecutionPattern):
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(postprocessing))
+
+        self._preprocessing = preprocessing
+        self._processing = processing
+        self._postprocessing = postprocessing
 
     #-------------------------------------------------------------------------------
     #
@@ -57,6 +61,7 @@ class Task(ExecutionPattern):
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(subtask))
+        self._preprocessing = preprocessing
 
     #---------------------------------------------------------------------------
     #
@@ -68,6 +73,7 @@ class Task(ExecutionPattern):
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(subtask))
+        self._processing = processing
 
     #---------------------------------------------------------------------------
     #
@@ -79,3 +85,13 @@ class Task(ExecutionPattern):
             raise TypeError(
                 expected_type=Subtask, 
                 actual_type=type(subtask))
+        self._postprocessing = postprocessing
+
+    #---------------------------------------------------------------------------
+    #
+    def _get_task_description(self):
+        return {
+            'preprocessing' : self._preprocessing,
+            'processing'    : self._processing,
+            'postprocessing': self._postprocessing
+        }
