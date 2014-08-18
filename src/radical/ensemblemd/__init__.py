@@ -6,6 +6,7 @@ from radical.ensemblemd.exceptions import NotImplementedError
 # Primitives / Building Blocks
 from radical.ensemblemd.file import File
 from radical.ensemblemd.task import Task
+from radical.ensemblemd.batch import Batch
 from radical.ensemblemd.kernel import Kernel
 from radical.ensemblemd.pipeline import Pipeline
 

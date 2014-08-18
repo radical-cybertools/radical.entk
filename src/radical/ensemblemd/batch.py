@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This module defines and implements the Task class.
+"""This module defines and implements the Batch class.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -11,7 +11,7 @@ from radical.ensemblemd.file import File
 
 # ------------------------------------------------------------------------------
 #
-class Task(object):
+class Batch(object):
 
     #---------------------------------------------------------------------------
     #

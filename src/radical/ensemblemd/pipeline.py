@@ -20,30 +20,15 @@ class Pipeline(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, preprocessing=None, processing=None, postprocessing=None):
+    def __init__(self, steps=[]):
         """Creates a new Task instance.
         """
         super(Pipeline, self).__init__()
 
-        if preprocessing is not None and type(preprocessing) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(preprocessing))
-
-        if processing is not None and type(processing) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(processing))
-
-        if postprocessing is not None and type(postprocessing) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(postprocessing))
-
-        self._preprocessing = preprocessing
-        self._processing = processing
-        self._postprocessing = postprocessing
-
+        # self._steps contains the list of tasks in this pipeline.
+        self._steps = list()
+        self.add_steps(steps)
+        
     #-------------------------------------------------------------------------------
     #
     def get_name(self):
@@ -61,43 +46,17 @@ class Pipeline(ExecutionPattern):
                 expected_type=list, 
                 actual_type=type(steps))
 
-    #---------------------------------------------------------------------------
-    #
-    def set_preprocessing_subtask(self, subtask):
-        """Sets the :class:`radical.ensemblemd.Subtask` that gets executed as 
-           the preprocessing step.
-        """
-        if type(subtask) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(subtask))
-        self._preprocessing = preprocessing
+        for step in steps:
+            if type(step) != Task:
+                raise TypeError(
+                    expected_type=Task, 
+                    actual_type=type(step))
+            else:
+                self._steps.append(step)
 
     #---------------------------------------------------------------------------
     #
-    def set_processing_subtask(self, subtask):
-        """Sets the :class:`radical.ensemblemd.Subtask` that gets executed as 
-           the main processing step.
+    def _get_pattern_workload(self):
+        """Returns a structured description of the tasks in the pipeline.
         """
-        if type(subtask) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(subtask))
-        self._processing = processing
-
-    #---------------------------------------------------------------------------
-    #
-    def set_postprocessing_subtask(self, subtask):
-        """Sets the :class:`radical.ensemblemd.Subtask` that gets executed as
-           the postprocessing step.
-        """
-        if type(subtask) != Subtask:
-            raise TypeError(
-                expected_type=Subtask, 
-                actual_type=type(subtask))
-        self._postprocessing = postprocessing
-
-    #---------------------------------------------------------------------------
-    #
-    def _get_task_description(self):
-        pass
+        return self._steps

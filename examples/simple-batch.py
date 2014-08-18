@@ -35,7 +35,7 @@ if __name__ == "__main__":
         batch = Batch(size=16)
         proc.add_input(["file1.dat, file2.dat"])
         batch.set_kernel(Kernel(kernel="misc.mkfile", args=["--size=10000000", "--filename=asciifile.dat"])) 
-        output = pre.add_output(["asciifile-%{task}.dat")
+        output_files = pre.add_output("asciifile-%{task}.dat")
 
 
         sec.execute(pipeline)
