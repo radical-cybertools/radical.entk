@@ -18,6 +18,18 @@ https://github.com/radical-cybertools/radical.ensemblemd
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-developers
 
+Installation
+************
+
+To install EnsembleMD Toolkit in a virtual environment, open a terminal and run:
+
+.. code-block:: bash
+
+    virtualenv $HOME/enmd
+    source $HOME/enmd/bin/activate
+    git clone git@github.com:radical-cybertools/radical.ensemblemd.git
+
+
 Examples
 ********
 
