@@ -43,16 +43,6 @@ class TypeError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
-class NoKernelPluginError(EnsemblemdError):
-    """NoKernelPluginError is thrown if no kernel plug-in could be found for a 
-       given kernel name.
-    """
-    def __init__ (self, kernel_name):
-        msg = "Couldn't find a kernel plug-in named '{0}'".format(kernel_name)
-        super(NoKernelPluginError, self).__init__ (msg)
-
-# ------------------------------------------------------------------------------
-#
 class ArgumentError(EnsemblemdError):
     """A BadArgumentError is thrown if a wrong set of arguments were passed 
        to a kernel.
@@ -64,6 +54,16 @@ class ArgumentError(EnsemblemdError):
             valid_arguments_set
         )
         super(ArgumentError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
+class NoKernelPluginError(EnsemblemdError):
+    """NoKernelPluginError is thrown if no kernel plug-in could be found for a 
+       given kernel name.
+    """
+    def __init__ (self, kernel_name):
+        msg = "Couldn't find a kernel plug-in named '{0}'".format(kernel_name)
+        super(NoKernelPluginError, self).__init__ (msg)
 
 # ------------------------------------------------------------------------------
 #

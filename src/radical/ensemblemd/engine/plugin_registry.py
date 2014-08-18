@@ -11,8 +11,8 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 
-plugin_registry = [ "radical.ensemblemd.execplugins.task.static",
-                    "radical.ensemblemd.execplugins.dummy.static",
+plugin_registry = [ "radical.ensemblemd.execplugins.dummy.static",
                     "radical.ensemblemd.execplugins.dummy.dynamic",
+                    "radical.ensemblemd.execplugins.pipeline.static",
                     "radical.ensemblemd.execplugins.simulation_analysis.static"
                   ]

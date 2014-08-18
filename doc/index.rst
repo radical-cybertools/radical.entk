@@ -9,11 +9,26 @@ radical.ensemblemd
 radical.ensemblemd is a Python API and library  for developing and running 
 large-scale Molecular Dynamics (MD) workflows. 
 
-Mailing Lists
--------------
+**Project Github Page**
+
+https://github.com/radical-cybertools/radical.ensemblemd
+
+**Mailing Lists**
 
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-developers
+
+Installation
+************
+
+To install EnsembleMD Toolkit in a virtual environment, open a terminal and run:
+
+.. code-block:: bash
+
+    virtualenv $HOME/enmd
+    source $HOME/enmd/bin/activate
+    git clone git@github.com:radical-cybertools/radical.ensemblemd.git
+
 
 Examples
 ********

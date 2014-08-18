@@ -11,5 +11,8 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 
-kernel_registry = [ "radical.ensemblemd.kernels.misc.mkfile"
-                  ]
+kernel_registry = [
+    "radical.ensemblemd.kernels.misc.mkfile",
+    "radical.ensemblemd.kernels.misc.ccount",
+    "radical.ensemblemd.kernels.misc.chksum"            
+]

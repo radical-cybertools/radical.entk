@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import sys
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
@@ -15,17 +16,18 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "misc.mkfile",
-    "arguments":   {"--size=":     
+    "name":         "misc.chksum",
+    "description":  "Calculates an SHA1 checksum for a given file.",
+    "arguments":   {"--inputfile=":     
                         {
                         "mandatory": True,
-                        "description": "File size in bytes."
+                        "description": "The input file."
                         },
-                    "--filename=": 
+                    "--outputfile=":     
                         {
                         "mandatory": True,
-                        "description": "Output filename."
-                        }
+                        "description": "The output file containing SHA1 sum."
+                        },
                     }
 }
 
@@ -53,10 +55,18 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. Returns the kernel
            description as a dictionary.
         """
+        if sys.platform == 'darwin':
+            # On OS X (all BSDs?) the tool is called shasum
+            chksum_tool = 'shasum'
+        else:
+            # On Linux the tool is called sha1sum
+            chksum_tool = 'sha1sum'
+
         executable = "/bin/bash"
-        arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
-            self.get_arg("--size="),
-            self.get_arg("--filename="))
+        arguments  = ["-c \"{0} {1} > {2}\"".format(
+            chksum_tool,
+            self.get_arg("--inputfile="),
+            self.get_arg("--outputfile="))
         ]
 
         return {

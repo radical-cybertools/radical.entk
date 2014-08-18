@@ -15,17 +15,18 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "misc.mkfile",
-    "arguments":   {"--size=":     
+    "name":         "misc.ccount",
+    "description":  "Counts the character frequency in an ASCII file.",
+    "arguments":   {"--inputfile=":     
                         {
                         "mandatory": True,
-                        "description": "File size in bytes."
+                        "description": "The input ASCII file."
                         },
-                    "--filename=": 
+                    "--outputfile=":     
                         {
                         "mandatory": True,
-                        "description": "Output filename."
-                        }
+                        "description": "The output file containing the character counts."
+                        },
                     }
 }
 
@@ -53,10 +54,10 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. Returns the kernel
            description as a dictionary.
         """
-        executable = "/bin/bash"
-        arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
-            self.get_arg("--size="),
-            self.get_arg("--filename="))
+        executable = "/bin/bash" 
+        arguments  = ["-c \"grep -o . {0} | sort | uniq -c > {1}\"".format(
+            self.get_arg("--inputfile="),
+            self.get_arg("--outputfile="))
         ]
 
         return {
@@ -67,3 +68,4 @@ class Kernel(KernelBase):
             "arguments"   : arguments,
             "use_mpi"     : False
         }
+

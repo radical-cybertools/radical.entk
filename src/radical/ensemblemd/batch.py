@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This module defines and implements the Task class.
+"""This module defines and implements the Batch class.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -8,19 +8,24 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import uuid
-from radical.ensemblemd.exceptions import TypeError
+
 from radical.ensemblemd.file import File
 
 # ------------------------------------------------------------------------------
 #
-class Task(object):
+class Batch(object):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self):
-        """ Creates a new Task object.
-        """
-        self._id = uuid.uuid4()
+    def __init__(self, size):
+        
+        self._batch_id = uuid.uuid4()
+        self._task_ids = list()
+        for i in range(0, size):
+            self._task_ids.append(uuid.uuid4())
+
+        self._size = size
+
         self._kernel = None
         self._expected_output = list()
         self._requires_input = dict()
@@ -32,7 +37,7 @@ class Task(object):
             If called for a Batch, size() returns the number of tasks in the 
             Batch.
         """
-        return 1
+        return self._size
 
     #---------------------------------------------------------------------------
     #
@@ -47,7 +52,7 @@ class Task(object):
         """Asserts the existence of a specific file after the step has completed.
         """
         self._expected_output.append(filename)
-        return File._create_from_task_output(task_id=self._id, filename=filename)
+        return File._create_from_task_output(task_id=self._batch_id, filename=filename)
         
     #---------------------------------------------------------------------------
     #
@@ -58,25 +63,24 @@ class Task(object):
 
     #---------------------------------------------------------------------------
     #
-    def add_input(self, file, label):
-        """TODO: document me
+    def add_input(self, dataobject, label):
+        """Creates a new OutputFile object referncing a physical output file 
+           genereated by this Subtask.
         """
-        # if type(file) != File:
-        #     raise TypeError(
-        #         expected_type=File, 
-        #         actual_type=type(file))
-
         self._requires_input[label] = file
 
     #---------------------------------------------------------------------------
     #
-    def _get_task_description(self):
+    def _get_batch_description(self):
         """Returns the task description.
         """
-        description = {
-            "kernel"          : self._kernel._get_kernel_description(),
-            "requires_input"  : self._requires_input,
-            "expected_output" : self._expected_output
-        }
+        tasks = list()
 
-        return description
+        for i in range(0, self.size()):
+            tasks.append({
+                "kernel"          : self._kernel._get_kernel_description(),
+                "requires_input"  : self._requires_input,
+                "expected_output" : self._expected_output
+            })
+
+        return tasks
