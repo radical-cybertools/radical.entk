@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import sys
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
@@ -50,12 +51,29 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def create_cu_description(self, args):
+    def _get_kernel_description(self):
+        """(PRIVATE) Implements parent class method. Returns the kernel
+           description as a dictionary.
+        """
+        if sys.platform == 'darwin':
+            # On OS X (all BSDs?) the tool is called shasum
+            chksum_tool = 'shasum'
+        else:
+            # On Linux the tool is called sha1sum
+            chksum_tool = 'sha1sum'
 
         executable = "/bin/bash"
-        arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
-            self.get_args("--size="),
-            self.get_args("--filename=")
-        )]
+        arguments  = ["-c \"{0} {1} > {2}\"".format(
+            chksum_tool,
+            self.get_arg("--inputfile="),
+            self.get_arg("--outputfile="))
+        ]
 
-        self.get_logger().info("Created %s" % arguments)
+        return {
+            "environment" : None,
+            "pre_exec"    : None,
+            "post_exec"   : None,
+            "executable"  : executable,
+            "arguments"   : arguments,
+            "use_mpi"     : False
+        }

@@ -42,3 +42,11 @@ class Kernel(object):
         """Returns the value of the kernel argument given by 'arg_name'.
         """
         return self._kernel.get_arg(name)
+
+    #---------------------------------------------------------------------------
+    #
+    def _get_kernel_description(self):
+        """Returns the kernel description as a dictionary that can be 
+           translated into a CU description.
+        """
+        return self._kernel._get_kernel_description()

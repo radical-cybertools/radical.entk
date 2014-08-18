@@ -49,12 +49,21 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def create_cu_description(self, args):
-
+    def _get_kernel_description(self):
+        """(PRIVATE) Implements parent class method. Returns the kernel
+           description as a dictionary.
+        """
         executable = "/bin/bash"
         arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
-            self.get_args("--size="),
-            self.get_args("--filename=")
-        )]
+            self.get_arg("--size="),
+            self.get_arg("--filename="))
+        ]
 
-        self.get_logger().info("Created %s" % arguments)
+        return {
+            "environment" : None,
+            "pre_exec"    : None,
+            "post_exec"   : None,
+            "executable"  : executable,
+            "arguments"   : arguments,
+            "use_mpi"     : False
+        }

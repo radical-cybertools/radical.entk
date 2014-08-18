@@ -56,10 +56,7 @@ class Plugin(PluginBase):
             self.get_logger().info("Executing pipeline step {0}/{1} with {2} task(s)".format(
                 step_count,
                 total_steps,
-                1))
+                step.size()))
             step_count += 1
 
-            print str(steps)
-
-        self.get_logger().info("Pattern workload: {0}".format(steps))
-        self.get_logger().info("Executing pattern...")
+            self.get_logger().info(" > {0}".format(step._get_task_description()))

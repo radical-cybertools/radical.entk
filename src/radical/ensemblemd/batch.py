@@ -15,8 +15,18 @@ class Batch(object):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self):
-        pass
+    def __init__(self, size):
+        
+        self._size = size
+
+    #---------------------------------------------------------------------------
+    #
+    def size(self):
+        """ Returns the size. If called for a Task, size() returns always '1'. 
+            If called for a Batch, size() returns the number of tasks in the 
+            Batch.
+        """
+        return self._size
 
     #---------------------------------------------------------------------------
     #

@@ -59,4 +59,4 @@ if __name__ == "__main__":
     except EnsemblemdError, er:
 
         print "EnsembleMD Error: {0}".format(str(er))
-        raise
+        raise # Just raise the execption again to get the backtrace

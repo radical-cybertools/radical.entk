@@ -37,10 +37,9 @@ if __name__ == "__main__":
         batch.set_kernel(Kernel(kernel="misc.mkfile", args=["--size=10000000", "--filename=asciifile.dat"])) 
         output_files = pre.add_output("asciifile-%{task}.dat")
 
-
         sec.execute(pipeline)
 
     except EnsemblemdError, er:
 
         print "EnsembleMD Error: {0}".format(str(er))
-        raise
+        raise # Just raise the execption again to get the backtrace

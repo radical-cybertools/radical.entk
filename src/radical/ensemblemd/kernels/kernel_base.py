@@ -102,3 +102,14 @@ class KernelBase(object):
                 )
 
         self._args = arg_config
+
+    # --------------------------------------------------------------------------
+    #
+    def _get_kernel_description(self):
+        """Returns the kernel description as a dictionary that can be 
+           translated into a CU description.
+        """
+        raise NotImplementedError(
+          method_name="_get_kernel_description",
+          class_name=type(self))
+        
