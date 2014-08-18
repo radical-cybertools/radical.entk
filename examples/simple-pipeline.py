@@ -12,7 +12,7 @@
     Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
     log messages about plug-in invocation and simulation progress:
 
-        RADICAL_ENMD_VERBOSE=info python single-pipeline.py
+        RADICAL_ENMD_VERBOSE=info python simple-pipeline.py
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"

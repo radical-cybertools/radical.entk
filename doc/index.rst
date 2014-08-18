@@ -28,6 +28,8 @@ To install EnsembleMD Toolkit in a virtual environment, open a terminal and run:
     virtualenv $HOME/enmd
     source $HOME/enmd/bin/activate
     git clone git@github.com:radical-cybertools/radical.ensemblemd.git
+    cd radical.ensemblemd
+    python setup.py install
 
 
 Examples
