@@ -61,7 +61,6 @@ class Pipeline(ExecutionPattern):
                 expected_type=list, 
                 actual_type=type(steps))
 
-
     #---------------------------------------------------------------------------
     #
     def set_preprocessing_subtask(self, subtask):

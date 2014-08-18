@@ -7,6 +7,8 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+from radical.ensemblemd.file import File
+
 # ------------------------------------------------------------------------------
 #
 class Task(object):
@@ -25,10 +27,18 @@ class Task(object):
 
     #---------------------------------------------------------------------------
     #
+    def add_output(self, filename):
+        """Asserts the existence of a specific file after the step has completed.
+        """
+        return File()
+        
+    #---------------------------------------------------------------------------
+    #
     def assert_output(self, filename):
         """Asserts the existence of a specific file after the step has completed.
         """
         pass
+
 
     #---------------------------------------------------------------------------
     #
