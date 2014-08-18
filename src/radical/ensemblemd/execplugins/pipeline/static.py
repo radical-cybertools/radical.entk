@@ -7,6 +7,9 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import os 
+import radical.pilot
+
 from radical.ensemblemd.task import Task
 from radical.ensemblemd.batch import Batch
 
@@ -46,6 +49,27 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern):
+
+        DBURL = os.getenv("RADICAL_PILOT_DBURL")
+        if DBURL is None:
+            print "ERROR: RADICAL_PILOT_DBURL (MongoDB server URL) is not defined."
+            sys.exit(1)
+
+        # Start a pilot 
+        # pdesc = radical.pilot.ComputePilotDescription()
+        # pdesc.resource = "localhost"
+        # pdesc.runtime  = 15 # minutes
+        # pdesc.cores    = 1
+
+        # session = radical.pilot.Session(database_url=DBURL)
+
+        # pmgr = radical.pilot.PilotManager(session=session)
+        # pilot = pmgr.submit_pilots(pdesc)
+
+        # umgr = radical.pilot.UnitManager(
+        #     session=session,
+        #     scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+
         steps = pattern._get_pattern_workload()
 
         # each entry in 'workload' is a sequential 'step' that consists either
@@ -59,4 +83,15 @@ class Plugin(PluginBase):
                 step.size()))
             step_count += 1
 
-            self.get_logger().info(" > {0}".format(step._get_task_description()))
+            # Get task for this step, create a CU description and execute it.
+
+            if type(step) == Task:
+                self.get_logger().info(" > {0}".format(step._get_task_description()))
+
+            if type(step) == Batch:
+                for task in step._get_batch_description():
+                    self.get_logger().info(" > {0}".format(task))
+
+
+        # Close automatically cancels the pilot(s).
+        # session.close()

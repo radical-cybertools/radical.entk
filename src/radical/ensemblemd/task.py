@@ -7,6 +7,8 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import uuid
+from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.file import File
 
 # ------------------------------------------------------------------------------
@@ -18,6 +20,7 @@ class Task(object):
     def __init__(self):
         """ Creates a new Task object.
         """
+        self._id = uuid.uuid4()
         self._kernel = None
         self._expected_output = list()
         self._requires_input = dict()
@@ -40,24 +43,30 @@ class Task(object):
 
     #---------------------------------------------------------------------------
     #
-    def add_output(self, filename):
+    def add_output(self, filename, download=None):
         """Asserts the existence of a specific file after the step has completed.
         """
         self._expected_output.append(filename)
-        return File()
+        return File._create_from_task_output(task_id=self._id, filename=filename)
         
     #---------------------------------------------------------------------------
     #
     def assert_output(self, filename):
         """Asserts the existence of a specific file after the step has completed.
         """
+        pass
 
     #---------------------------------------------------------------------------
     #
-    def add_input(self, dataobject, label):
+    def add_input(self, file, label):
         """TODO: document me
         """
-        self._requires_input[label] = "full_path_to_file"
+        # if type(file) != File:
+        #     raise TypeError(
+        #         expected_type=File, 
+        #         actual_type=type(file))
+
+        self._requires_input[label] = file
 
     #---------------------------------------------------------------------------
     #
@@ -67,7 +76,7 @@ class Task(object):
         description = {
             "kernel"          : self._kernel._get_kernel_description(),
             "requires_input"  : self._requires_input,
-            "expected_output" : self._expected_output 
+            "expected_output" : self._expected_output
         }
 
         return description

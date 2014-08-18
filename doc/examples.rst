@@ -1,14 +1,9 @@
-Single Tasks
-============
+Simple Pipeline
+===============
 
 .. literalinclude:: ../examples/simple-pipeline.py
 
-Batch of Tasks
+Batch Pipeline
 ==============
 
-.. literalinclude:: ../examples/simple-batch.py
-
-Static Simulation-Analysis Loops
-================================
-
-.. literalinclude:: ../examples/simulation-analysis-loop-static.py
+.. literalinclude:: ../examples/batch-pipeline.py

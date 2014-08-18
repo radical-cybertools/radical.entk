@@ -7,6 +7,8 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import uuid
+
 from radical.ensemblemd.file import File
 
 # ------------------------------------------------------------------------------
@@ -17,7 +19,16 @@ class Batch(object):
     #
     def __init__(self, size):
         
+        self._batch_id = uuid.uuid4()
+        self._task_ids = list()
+        for i in range(0, size):
+            self._task_ids.append(uuid.uuid4())
+
         self._size = size
+
+        self._kernel = None
+        self._expected_output = list()
+        self._requires_input = dict()
 
     #---------------------------------------------------------------------------
     #
@@ -33,14 +44,15 @@ class Batch(object):
     def set_kernel(self, kernel):
         """Sets the application kernel that gets executed in this Subtask.
         """
-        pass
+        self._kernel = kernel
 
     #---------------------------------------------------------------------------
     #
-    def add_output(self, filename):
+    def add_output(self, filename, download=None):
         """Asserts the existence of a specific file after the step has completed.
         """
-        return File()
+        self._expected_output.append(filename)
+        return File._create_from_task_output(task_id=self._batch_id, filename=filename)
         
     #---------------------------------------------------------------------------
     #
@@ -49,11 +61,26 @@ class Batch(object):
         """
         pass
 
-
     #---------------------------------------------------------------------------
     #
     def add_input(self, dataobject, label):
         """Creates a new OutputFile object referncing a physical output file 
            genereated by this Subtask.
         """
-        pass
+        self._requires_input[label] = file
+
+    #---------------------------------------------------------------------------
+    #
+    def _get_batch_description(self):
+        """Returns the task description.
+        """
+        tasks = list()
+
+        for i in range(0, self.size()):
+            tasks.append({
+                "kernel"          : self._kernel._get_kernel_description(),
+                "requires_input"  : self._requires_input,
+                "expected_output" : self._expected_output
+            })
+
+        return tasks

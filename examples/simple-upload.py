@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 """This example shows how to use EnsembleMD Toolkit to execute a simple 
-   batch of N homogeneous tasks.
+   pipeline of sequential tasks. In the first step 'pre', a 10 MB input file
+   is generated and filled with ASCII charaters. In the second step 'proc',
+   a character frequency analysis if performed on this file. In the last step
+   'post', an SH1 checksum is calculated for the result.
 
 Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
 log messages about plug-in invocation and simulation progress:
@@ -30,12 +33,17 @@ if __name__ == "__main__":
         # number of cores and runtime.
         sec = StaticExecutionContext()
  
-        # Create a new Batch object. A batch object behaves essentially like 
-        # a task (and can be used in any pattern in lieu of a task).
-        batch = Batch(size=16)
-        proc.add_input(["file1.dat, file2.dat"])
-        batch.set_kernel(Kernel(kernel="misc.mkfile", args=["--size=10000000", "--filename=asciifile.dat"])) 
-        output_files = pre.add_output("asciifile-%{task}.dat")
+        # Create a new File object referencing a local file.
+        data = File("/etc/passwd")
+
+        # Create a new preprocessing step: generate a 10MB ASCII file.
+        pre = Task()
+        pre.set_input(input_data, label="input_data")
+        pre.set_kernel(Kernel(kernel="misc.chksum", args=["--inputfile=%{input_data}", "--filename=CHECKSUM"])) 
+
+        # Create a new task instance and add the three subprocesses.
+        pipeline = Pipeline()
+        pipeline.add_steps([pre, proc, post])
 
         sec.execute(pipeline)
 
