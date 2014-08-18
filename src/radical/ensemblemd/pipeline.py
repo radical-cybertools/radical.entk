@@ -7,7 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.ensemblemd.subtask import Subtask
+from radical.ensemblemd.task import Task
 from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
@@ -51,6 +51,17 @@ class Pipeline(ExecutionPattern):
         """
         return PATTERN_NAME
 
+    #-------------------------------------------------------------------------------
+    #
+    def add_steps(self, steps):
+        """Implements base class ExecutionPattern.get_name().
+        """
+        if type(steps) != list:
+            raise TypeError(
+                expected_type=list, 
+                actual_type=type(steps))
+
+
     #---------------------------------------------------------------------------
     #
     def set_preprocessing_subtask(self, subtask):
@@ -90,8 +101,4 @@ class Pipeline(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     def _get_task_description(self):
-        return {
-            'preprocessing' : self._preprocessing,
-            'processing'    : self._processing,
-            'postprocessing': self._postprocessing
-        }
+        pass
