@@ -16,7 +16,7 @@ https://github.com/radical-cybertools/radical.ensemblemd
 **Mailing Lists**
 
 * For users: https://groups.google.com/d/forum/ensemblemd-users
-* For developers: https://groups.google.com/d/forum/ensemblemd-developers
+* For developers: https://groups.google.com/d/forum/ensemblemd-devel
 
 Installation
 ************
