@@ -51,10 +51,10 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern):
 
-        DBURL = os.getenv("RADICAL_PILOT_DBURL")
-        if DBURL is None:
-            print "ERROR: RADICAL_PILOT_DBURL (MongoDB server URL) is not defined."
-            sys.exit(1)
+        # DBURL = os.getenv("RADICAL_PILOT_DBURL")
+        # if DBURL is None:
+        #     print "ERROR: RADICAL_PILOT_DBURL (MongoDB server URL) is not defined."
+        #     sys.exit(1)
 
         # Start a pilot 
         # pdesc = radical.pilot.ComputePilotDescription()
