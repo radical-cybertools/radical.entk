@@ -10,14 +10,22 @@ __license__   = "MIT"
 import uuid
 
 from radical.ensemblemd.file import File
+from radical.ensemblemd.execution_pattern import ExecutionPattern
+
+PATTERN_NAME = "Batch"
+
 
 # ------------------------------------------------------------------------------
 #
-class Batch(object):
+class Batch(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
     def __init__(self, size):
+        """ Creates a new Batch object.
+        """
+        super(Batch, self).__init__()
+
         
         self._batch_id = uuid.uuid4()
         self._task_ids = list()
@@ -29,6 +37,13 @@ class Batch(object):
         self._kernel = None
         self._expected_output = list()
         self._requires_input = dict()
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_name(self):
+        """Implements base class ExecutionPattern.get_name().
+        """
+        return PATTERN_NAME
 
     #---------------------------------------------------------------------------
     #
