@@ -7,4 +7,8 @@ install:
   - "pip install ."
   - "pip install -r requirements.txt"
 # command to run tests
-script: python setup.py test
+script: 
+  - "python setup.py test"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/single-batch.py"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/simple-pipeline.py"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/batch-pipeline.py"
