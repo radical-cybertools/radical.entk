@@ -18,6 +18,17 @@ https://github.com/radical-cybertools/radical.ensemblemd
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-devel
 
+**Current Build Status**
+
+* Release Branch 
+    .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=master
+        :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
+
+* Development Branch
+    .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=devel
+        :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
+
+
 Installation
 ************
 

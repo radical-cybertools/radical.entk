@@ -5,14 +5,14 @@ Exceptions & Errors
    :show-inheritance:
    :members: EnsemblemdError, NotImplementedError, TypeError, NoKernelPluginError, NoExecutionPluginError, ArgumentError
 
-Tasks and Subtasks 
+Tasks and Batches 
 ==================
 
 .. autoclass:: radical.ensemblemd.Task
     :members:
     :inherited-members:
 
-.. autoclass:: radical.ensemblemd.Subtask
+.. autoclass:: radical.ensemblemd.Batch
     :members:
     :inherited-members:
 
@@ -37,6 +37,6 @@ Execution Contexts
 Execution Patterns
 ==================
 
-.. autoclass:: radical.ensemblemd.DummyPattern
+.. autoclass:: radical.ensemblemd.Pipeline
     :members:
     :inherited-members:
