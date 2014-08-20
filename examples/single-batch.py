@@ -54,8 +54,9 @@ if __name__ == "__main__":
         # each file in 'files' a new task is created. The files are referenced 
         # via the provided 'label' (see kernel aruments).
         batch = Batch.from_input_files(files=trajectories, label="trajectory")
-        batch.add_input([nmode, com, rec, lig], label="")
-        batch.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i nmode.5h.py -cp com.top.2 -rp rec.top.2 -lp lig.top -y %{trajectory}"])) 
+        batch.add_input(files=[nmode, com, rec, lig], labels=["nmode", "com", "rec", "lig"])
+
+        batch.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i %{nmode} -cp %{com} -rp %{rec} -lp %{lig} -y %{trajectory}"])) 
 
         # A batch can be passed directly to an execution context.
         sec.execute(batch)

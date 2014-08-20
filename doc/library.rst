@@ -3,7 +3,7 @@ Exceptions & Errors
 
 .. automodule:: radical.ensemblemd.exceptions
    :show-inheritance:
-   :members: EnsemblemdError, NotImplementedError, TypeError, NoKernelPluginError, NoExecutionPluginError, ArgumentError
+   :members: EnsemblemdError, NotImplementedError, TypeError, LabelError, ArgumentError, NoKernelPluginError, NoExecutionPluginError
 
 Tasks and Batches 
 ==================
