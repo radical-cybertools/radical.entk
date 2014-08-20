@@ -69,7 +69,7 @@ class Kernel(KernelBase):
             "environment" : None,
             "pre_exec"    : None,
             "post_exec"   : None,
-            "executable"  : "LSDMAP",
+            "executable"  : "GROMACS",
             "arguments"   : self.get_raw_args(),
             "use_mpi"     : False
         }
