@@ -25,11 +25,12 @@ class KernelBase(object):
     #
     def __init__ (self, kernel_info) :
 
-        self._info    = kernel_info
-        self._name    = kernel_info['name']
+        self._info     = kernel_info
+        self._name     = kernel_info['name']
 
-        self._logger  = rul.getLogger ('radical.enmd.', self._name)
-        self._args    = []
+        self._logger   = rul.getLogger ('radical.enmd', self._name)
+        self._args     = []
+        self._raw_args = []
 
     # --------------------------------------------------------------------------
     #
@@ -64,13 +65,26 @@ class KernelBase(object):
 
     # --------------------------------------------------------------------------
     #
+    def get_raw_args(self):
+        """Returns all arguments as they were passed to the kernel.
+        """
+        return self._raw_args
+
+    # --------------------------------------------------------------------------
+    #
     def validate_args(self, args):
         """Validates if 'args' fulfill the argument requirements defined in the 
            kernel info.
         """
-        self.get_logger().info("Validating arguments...")
+        self._raw_args = args
 
         arg_config = deepcopy(self._info['arguments'])
+
+        if arg_config == "*":
+            self._args = args
+            self.get_logger().debug("Free-form argument validation ok: {0}.".format(args))
+            return
+
         for (arg, arg_info) in arg_config.iteritems():
             arg_config[arg]["_is_set"] = False
             arg_config[arg]["_value"] = None
@@ -101,6 +115,7 @@ class KernelBase(object):
                     valid_arguments_set=self._info['arguments']
                 )
 
+        self.get_logger().debug("Argument validation ok: {0}.".format(args))
         self._args = arg_config
 
     # --------------------------------------------------------------------------

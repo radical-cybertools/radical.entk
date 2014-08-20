@@ -38,6 +38,23 @@ class Batch(ExecutionPattern):
         self._expected_output = list()
         self._requires_input = dict()
 
+    #---------------------------------------------------------------------------
+    #
+    @classmethod
+    def from_input_files(cls, files, label):
+        """ The from_input_files() class method creates a new batch containing 
+            a set of tasks based on the provided list of input files. For 
+            each file in 'files' a new task is created. The files can be 
+            referenced via the provided 'label'.
+        """
+        if type(files) != list:
+            raise TypeError(
+                expected_type=list, 
+                actual_type=type(files))
+
+        cls = Batch(size=len(files))
+        return cls
+
     #-------------------------------------------------------------------------------
     #
     def get_name(self):

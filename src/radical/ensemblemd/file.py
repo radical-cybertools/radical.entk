@@ -21,6 +21,14 @@ class File(object):
     #---------------------------------------------------------------------------
     #
     @classmethod
+    def from_local_path(cls, path):
+        cls()
+        cls._filename = path
+        return cls
+
+    #---------------------------------------------------------------------------
+    #
+    @classmethod
     def _create_from_task_output(cls, task_id, filename):
         cls()
         cls._task_id = task_id

@@ -15,6 +15,7 @@ __license__   = "MIT"
 
 import sys
 
+from radical.ensemblemd import File
 from radical.ensemblemd import Batch
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
@@ -28,13 +29,31 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         sec = StaticExecutionContext()
- 
-        # Create a new preprocessing step: generate a 10MB ASCII file.
-        batch = Batch(size=16)
-        batch.set_kernel(Kernel(kernel="misc.mkfile", args=["--size=10000000", "--filename=asciifile.dat"])) 
-        #pre_out = pre.add_output(filename="asciifile.dat")
 
-        # A batch can be passed directly to an execution context. 
+        # These are the shared files required for all tasks in the batch. The 
+        # 'from_local_path' class method denotes that the file is on the local
+        # machine and tells EnMD that it eventually needs to be uploaded.
+        nmode = File.from_local_path("MMBPSA/nmode.5h.py")
+        com   = File.from_local_path("MMBPSA/com.top.2")
+        rec   = File.from_local_path("MMBPSA/rec.top.2")
+        lig   = File.from_local_path("MMBPSA/lig.top")
+
+        # In 'trajectories' we list the files that we want to be processed  and 
+        # analyzed by the individual batch tasks.
+        trajectories = list()
+        for traj_no in range(0, 16):
+            filename = "MMBPSA/trajectories/rep-{0}.traj".format(traj_no)
+            trajectories.append(File.from_local_path(filename))
+ 
+        # Create the batch via the 'from_input_files()' class method, which
+        # creates a set of tasks based on the provided list of input files. For 
+        # each file in 'files' a new task is created. The files are referenced 
+        # via the provided 'label' (see kernel aruments).
+        batch = Batch.from_input_files(files=trajectories, label="trajectory")
+        batch.add_input([nmode, com, rec, lig], label="")
+        batch.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i nmode.5h.py -cp com.top.2 -rp rec.top.2 -lp lig.top -y %{trajectory}"])) 
+
+        # A batch can be passed directly to an execution context.
         sec.execute(batch)
 
     except EnsemblemdError, er:
