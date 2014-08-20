@@ -110,7 +110,7 @@ class Batch(ExecutionPattern):
 
         for i in range(0, self.size()):
             tasks.append({
-                "kernel"          : self._kernel._get_kernel_description(),
+                "kernel"          : self._kernel,
                 "requires_input"  : self._requires_input,
                 "expected_output" : self._expected_output
             })

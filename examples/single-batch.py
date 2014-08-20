@@ -28,7 +28,11 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        sec = StaticExecutionContext()
+        sec = StaticExecutionContext(
+            resource="localhost", 
+            cores=1, 
+            walltime=15
+        )
 
         # These are the shared files required for all tasks in the batch. The 
         # 'from_local_path' class method denotes that the file is on the local

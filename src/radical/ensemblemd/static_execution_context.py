@@ -24,7 +24,7 @@ class StaticExecutionContext(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self):
+    def __init__(self, resource, cores, walltime):
         """Creates a new ExecutionContext instance.
         """
         super(StaticExecutionContext, self).__init__()

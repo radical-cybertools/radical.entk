@@ -36,8 +36,12 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        sec = StaticExecutionContext()
- 
+        sec = StaticExecutionContext(
+            resource="localhost", 
+            cores=1, 
+            walltime=15
+        )
+
         # Create a new batch preprocessing step: generate 16 10MB ASCII files.
         pre = Batch(size=BATCH_SIZE)
         pre.set_kernel(Kernel(kernel="misc.mkfile", args=["--size=10000000", "--filename=asciifile.dat"])) 
