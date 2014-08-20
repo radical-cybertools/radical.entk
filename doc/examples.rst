@@ -1,3 +1,8 @@
+Batches of Tasks
+================
+
+.. literalinclude:: ../examples/single-batch.py
+
 Simple Pipeline
 ===============
 
