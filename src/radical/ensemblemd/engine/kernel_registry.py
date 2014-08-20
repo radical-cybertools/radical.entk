@@ -12,8 +12,12 @@ __license__   = "MIT"
 
 
 kernel_registry = [
+    "radical.ensemblemd.kernels.md.mmpbsa",
+    "radical.ensemblemd.kernels.md.lsdmap",
+    "radical.ensemblemd.kernels.md.gromacs",
+    "radical.ensemblemd.kernels.md.namd",
+
     "radical.ensemblemd.kernels.misc.mkfile",
     "radical.ensemblemd.kernels.misc.ccount",
-    "radical.ensemblemd.kernels.misc.chksum",
-    "radical.ensemblemd.kernels.md.mmpbsa"
+    "radical.ensemblemd.kernels.misc.chksum"
 ]
