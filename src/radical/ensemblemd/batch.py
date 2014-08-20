@@ -102,9 +102,12 @@ class Batch(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def add_input(self, files, labels):
-        """Creates a new OutputFile object referncing a physical output file 
-           genereated by this Subtask.
+    def add_input(self, files, labels, shared=True):
+        """Adds one or more input files to the batch. Files added via 
+           ``add_input()`` are added to all tasks of the batch. If the ``shared``
+           parameter is set to ``True`` (default), the file(s) are copied once 
+           per batch and shared amongst tasks. If set to ``False``, individual
+           copies of the same file(s) are added to each batch task.
         """
         if type(files) != list:
             files = [files]
