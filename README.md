@@ -11,7 +11,7 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 ### Mailing Lists
 
 * https://groups.google.com/d/forum/ensemblemd-users
-* https://groups.google.com/d/forum/ensemblemd-developers
+* https://groups.google.com/d/forum/ensemblemd-devel
 
 ### Build Status
 * `master` branch: 
