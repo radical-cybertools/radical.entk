@@ -7,12 +7,13 @@ batch of tasks.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see  log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python single-batch.py
+    RADICAL_ENMD_VERBOSE=info python single_batch.py
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
-__copyright__ = "Copyright 2014, http://radical.rutgers.edu"
-__license__   = "MIT"
+__author__       = "Ole Weider <ole.weidner@rutgers.edu>"
+__copyright__    = "Copyright 2014, http://radical.rutgers.edu"
+__license__      = "MIT"
+__example_name__ = "A Single Batch"
 
 import sys
 

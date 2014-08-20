@@ -67,8 +67,8 @@ with open("{0}/examples.rst".format(script_dir), "w") as kernels:
 
       foo = imp.load_source('module.name', "../examples/{0}".format(example))
 
-      kernels.write("{0}\n".format(example))
-      kernels.write("{0}\n\n".format("-"*len(example)))
+      kernels.write("{0}\n".format(foo.__example_name__))
+      kernels.write("{0}\n\n".format("-"*len(foo.__example_name__)))
       kernels.write(foo.__doc__+"\n")
 
       kernels.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))

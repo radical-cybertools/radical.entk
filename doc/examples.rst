@@ -1,5 +1,5 @@
-batch-pipeline.py
------------------
+A Pipeline of Batches
+---------------------
 
 
 This example shows how to use EnsembleMD Toolkit to execute a simple 
@@ -14,14 +14,14 @@ back to the machine on which this script executes.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python batch_pipeline.py
+    RADICAL_ENMD_VERBOSE=info python pipeline_of_batches.py
 
-:download:`Download example: batch-pipeline.py <../examples/batch-pipeline.py>`
+:download:`Download example: pipeline_of_batches.py <../examples/pipeline_of_batches.py>`
 
-.. literalinclude:: ../examples/batch-pipeline.py
+.. literalinclude:: ../examples/pipeline_of_batches.py
 
-simple-pipeline.py
-------------------
+A Pipeline of Tasks
+-------------------
 
  
 This example shows how to use EnsembleMD Toolkit to execute a simple 
@@ -36,14 +36,14 @@ back to the machine on which this script executes.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python simple-pipeline.py
+    RADICAL_ENMD_VERBOSE=info python pipeline_of_tasks.py
 
-:download:`Download example: simple-pipeline.py <../examples/simple-pipeline.py>`
+:download:`Download example: pipeline_of_tasks.py <../examples/pipeline_of_tasks.py>`
 
-.. literalinclude:: ../examples/simple-pipeline.py
+.. literalinclude:: ../examples/pipeline_of_tasks.py
 
-single-batch.py
----------------
+A Single Batch
+--------------
 
 
 This example shows how to use EnsembleMD Toolkit to execute a single 
@@ -52,9 +52,9 @@ batch of tasks.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see  log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python single-batch.py
+    RADICAL_ENMD_VERBOSE=info python single_batch.py
 
-:download:`Download example: single-batch.py <../examples/single-batch.py>`
+:download:`Download example: single_batch.py <../examples/single_batch.py>`
 
-.. literalinclude:: ../examples/single-batch.py
+.. literalinclude:: ../examples/single_batch.py
 
