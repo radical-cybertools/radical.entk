@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ This example shows how to use EnsembleMD Toolkit to execute a single 
-    batch of tasks. 
+    batch of tasks.
 
     Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
     log messages about plug-in invocation and simulation progress:
@@ -52,13 +52,13 @@ if __name__ == "__main__":
         # Create the batch via the 'from_input_files()' class method, which
         # creates a set of tasks based on the provided list of input files. For 
         # each file in 'files' a new task is created. The files are referenced 
-        # via the provided 'label' (see kernel aruments).
+        # via the provided 'labels' (see kernel aruments).
         batch = Batch.from_input_files(files=trajectories, label="trajectory")
         batch.add_input(files=[nmode, com, rec, lig], labels=["nmode", "com", "rec", "lig"])
-
         batch.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i %{nmode} -cp %{com} -rp %{rec} -lp %{lig} -y %{trajectory}"])) 
 
-        # A batch can be passed directly to an execution context.
+        # A batch can be passed directly to an execution context, just like
+        # any other pattern.
         sec.execute(batch)
 
     except EnsemblemdError, er:
