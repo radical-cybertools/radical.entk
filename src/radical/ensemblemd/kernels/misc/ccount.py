@@ -16,7 +16,7 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # 
 _KERNEL_INFO = {
     "name":         "misc.ccount",
-    "description":  "Counts the character frequency in an ASCII file.",
+    "description":  "Counts the character frequency in a ASCII file.",
     "arguments":   {"--inputfile=":     
                         {
                         "mandatory": True,

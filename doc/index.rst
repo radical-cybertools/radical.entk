@@ -51,6 +51,14 @@ Examples
 
    examples.rst
 
+Kernels and Plugins
+*******************
+
+.. toctree::
+   :maxdepth: 2
+
+   kernels.rst
+
 API Documentation
 *****************
 

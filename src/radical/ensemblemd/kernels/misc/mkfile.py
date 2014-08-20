@@ -16,6 +16,7 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # 
 _KERNEL_INFO = {
     "name":         "misc.mkfile",
+    "description":  "Creates a new file of given size and fills it with random ASCII characters.",
     "arguments":   {"--size=":     
                         {
                         "mandatory": True,

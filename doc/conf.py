@@ -15,6 +15,36 @@
 import sys
 import os
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
+## Generate the list of Application kernels
+try:
+    os.remove("{0}/kernels.rst".format(script_dir))
+except OSError:
+    pass
+
+with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
+    kernels.write("Application Kernels\n")
+    kernels.write("===================\n")
+
+    from radical.ensemblemd.engine.engine import Engine
+
+    e = Engine()
+    for kernel in  e._kernel_plugins:
+      ki = kernel().get_info()
+      kernels.write("{0}\n".format(ki["name"]))
+      kernels.write("{0}\n\n".format("-"*len(ki["name"])))
+      kernels.write("{0}\n\n".format(ki["description"]))
+
+      kernels.write("**Arguments:**\n\n")
+      kernels.write(".. code-block:: python\n\n")
+      kernels.write("    {0}\n\n".format(ki["arguments"]))
+
+
+
+    #from radical.ensemblemd.kernels.md.mmpbsa import _KERNEL_INFO
+    #print _KERNEL_INFO
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
