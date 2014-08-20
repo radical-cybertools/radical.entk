@@ -72,8 +72,12 @@ class Plugin(PluginBase):
         #     scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
         steps = pattern._get_batch_description()
-        self.get_logger().info("Executing batch with {0} task(s): {1}".format(
-            pattern.size(),
-            steps
+        self.get_logger().info("Executing batch with {0} task(s)".format(
+            pattern.size()
         ))
+        for step in steps:
+            self.get_logger().info(" > {0}".format(
+                step
+        ))
+
 

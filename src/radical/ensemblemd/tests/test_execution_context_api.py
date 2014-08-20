@@ -34,7 +34,11 @@ class ExecutionContextAPITestCases(unittest.TestCase):
 
         from radical.ensemblemd import StaticExecutionContext
 
-        sec = StaticExecutionContext()
+        sec = StaticExecutionContext(
+            resource="localhost", 
+            cores=1, 
+            walltime=1
+        )
 
         try: 
             sec.execute("wrong_type")
