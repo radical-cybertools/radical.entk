@@ -49,13 +49,13 @@ if __name__ == "__main__":
 
         # Create a new batch processing step: count the character frequencies. 
         proc = Batch(size=BATCH_SIZE)
-        proc.add_input(pre_out, label="pre_out")                                                 
+        proc.add_input(files=pre_out, labels="pre_out")                                                 
         proc.set_kernel(Kernel(kernel="misc.ccount", args=["--inputfile=%{pre_out}", "--outputfile=cfreqs.dat"]))
         proc_out = proc.add_output(filename="cfreqs-%{task-id}.dat", download="./cfreqs.dat")
 
         # Create a new postprocessing step: create a checksum for the result.
         post = Batch(size=BATCH_SIZE)
-        post.add_input(proc_out, label="proc_out")                                              
+        post.add_input(files=proc_out, labels="proc_out")                                              
         post.set_kernel(Kernel(kernel="misc.chksum", args=["--inputfile=%{proc_out}", "--outputfile=cfreqs.sum"]))
         post.add_output(filename="cfreqs-%{task-id}.sha1", download="./cfreqs.sha1")
 

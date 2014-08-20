@@ -58,15 +58,34 @@ class Task(object):
 
     #---------------------------------------------------------------------------
     #
-    def add_input(self, file, label):
-        """TODO: document me
+    def add_input(self, files, labels):
+        """Creates a new OutputFile object referncing a physical output file 
+           genereated by this Subtask.
         """
-        # if type(file) != File:
-        #     raise TypeError(
-        #         expected_type=File, 
-        #         actual_type=type(file))
+        if type(files) != list:
+            files = [files]
 
-        self._requires_input[label] = file
+        if type(labels) != list:
+            labels = [labels]
+
+        if len(files) != len(labels):
+            raise LabelError(
+                "File count ({0}) doesn't match label count ({1}).".format(
+                    len(files),
+                    len(labels)
+                    )
+                )
+
+        for index in range(0, len(files)):
+            if labels[index] in self._requires_input:
+                raise LabelError("Duplicate label name '{0}'".format(
+                    labels[index]
+                    )
+                )
+
+            self._requires_input[labels[index]] = files[index]
+
+
 
     #---------------------------------------------------------------------------
     #
