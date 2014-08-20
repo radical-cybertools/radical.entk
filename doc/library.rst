@@ -5,8 +5,8 @@ Exceptions & Errors
    :show-inheritance:
    :members: EnsemblemdError, NotImplementedError, TypeError, LabelError, ArgumentError, NoKernelPluginError, NoExecutionPluginError
 
-Tasks and Batches 
-==================
+Tasks, Batches and Files
+========================
 
 .. autoclass:: radical.ensemblemd.Task
     :members:
@@ -16,10 +16,14 @@ Tasks and Batches
     :members:
     :inherited-members:
 
-Application Kernels 
-===================
+.. autoclass:: radical.ensemblemd.File
+    :members:
+    :inherited-members:
 
-.. autoclass:: radical.ensemblemd.Kernel
+Execution Patterns
+==================
+
+.. autoclass:: radical.ensemblemd.Pipeline
     :members:
     :inherited-members:
 
@@ -31,12 +35,5 @@ Execution Contexts
     :inherited-members:
 
 .. autoclass:: radical.ensemblemd.DynamicExecutionContext
-    :members:
-    :inherited-members:
-
-Execution Patterns
-==================
-
-.. autoclass:: radical.ensemblemd.Pipeline
     :members:
     :inherited-members:

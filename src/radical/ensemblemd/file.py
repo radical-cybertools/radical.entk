@@ -22,6 +22,13 @@ class File(object):
     #
     @classmethod
     def from_local_path(cls, path):
+        """Creates a new File object from a path pointing to a local file.
+           Example::
+
+               from radical.ensemblemd import File
+               f = File.from_local_path("/experiments/data/input.dat")
+
+        """
         cls()
         cls._filename = path
         return cls

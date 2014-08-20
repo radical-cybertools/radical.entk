@@ -43,16 +43,16 @@ To install EnsembleMD Toolkit in a virtual environment, open a terminal and run:
     python setup.py install
 
 
-Examples
-********
+Usage Examples
+**************
 
 .. toctree::
    :maxdepth: 2
 
    examples.rst
 
-Kernels and Plugins
-*******************
+Application Kernels and Plug-Ins
+********************************
 
 .. toctree::
    :maxdepth: 2
