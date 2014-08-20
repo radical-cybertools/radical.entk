@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-""" This example shows how to use EnsembleMD Toolkit to execute a simple 
-    pipeline of sequential tasks. In the first step 'pre', a 10 MB input file
-    is generated and filled with ASCII charaters. In the second step 'proc',
-    a character frequency analysis if performed on this file. In the last step
-    'post', an SHA1 checksum is calculated for the analysis result.
+""" 
+This example shows how to use EnsembleMD Toolkit to execute a simple 
+pipeline of sequential tasks. In the first step ``pre``, a 10 MB input file
+is generated and filled with ASCII charaters. In the second step ``proc``,
+a character frequency analysis if performed on this file. In the last step
+``post``, an SHA1 checksum is calculated for the analysis result.
 
-    The results of the frequency analysis and the SHA1 checksums are copied
-    back to the machine on which this script executes. 
+The results of the frequency analysis and the SHA1 checksums are copied
+back to the machine on which this script executes. 
 
-    Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
-    log messages about plug-in invocation and simulation progress:
+Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see log messages about plug-in invocation and simulation progress::
 
-        RADICAL_ENMD_VERBOSE=info python simple-pipeline.py
+    RADICAL_ENMD_VERBOSE=info python simple-pipeline.py
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"

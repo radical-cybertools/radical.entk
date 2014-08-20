@@ -12,12 +12,17 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import glob
+import imp
 import sys
 import os
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-## Generate the list of Application kernels
+################################################################################
+##
+print "* Generating Application kernel list: kernels.rst"
+
 try:
     os.remove("{0}/kernels.rst".format(script_dir))
 except OSError:
@@ -32,6 +37,7 @@ with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
     e = Engine()
     for kernel in  e._kernel_plugins:
       ki = kernel().get_info()
+      print " > {0}".format(ki["name"])
       kernels.write("{0}\n".format(ki["name"]))
       kernels.write("{0}\n\n".format("-"*len(ki["name"])))
       kernels.write("{0}\n\n".format(ki["description"]))
@@ -39,11 +45,37 @@ with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
       kernels.write("**Arguments:**\n\n")
       kernels.write(".. code-block:: python\n\n")
       kernels.write("    {0}\n\n".format(ki["arguments"]))
+##
+################################################################################
+
+################################################################################
+##
+print "* Generating code example list: examples.rst"
+
+try:
+    os.remove("{0}/examples.rst".format(script_dir))
+except OSError:
+    pass
+
+with open("{0}/examples.rst".format(script_dir), "w") as kernels:
+
+    examples = os.listdir("{0}/../examples/".format(script_dir))
+    for example in examples:
+
+      if example.endswith(".py") is False:
+          continue # skip all non-python files
+
+      foo = imp.load_source('module.name', "../examples/{0}".format(example))
+
+      kernels.write("{0}\n".format(example))
+      kernels.write("{0}\n\n".format("-"*len(example)))
+      kernels.write(foo.__doc__+"\n")
+
+      kernels.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
+      kernels.write(".. literalinclude:: ../examples/{0}\n\n".format(example))
 
 
-
-    #from radical.ensemblemd.kernels.md.mmpbsa import _KERNEL_INFO
-    #print _KERNEL_INFO
+  
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

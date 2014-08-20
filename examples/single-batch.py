@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-""" This example shows how to use EnsembleMD Toolkit to execute a single 
-    batch of tasks.
+"""
+This example shows how to use EnsembleMD Toolkit to execute a single 
+batch of tasks.
 
-    Run this example with RADICAL_ENMD_VERBOSE set to info if you want to see 
-    log messages about plug-in invocation and simulation progress:
+Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see  log messages about plug-in invocation and simulation progress::
 
-        RADICAL_ENMD_VERBOSE=info python single-batch.py
+    RADICAL_ENMD_VERBOSE=info python single-batch.py
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
