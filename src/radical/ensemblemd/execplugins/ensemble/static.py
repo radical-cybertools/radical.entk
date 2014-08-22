@@ -21,7 +21,7 @@ _PLUGIN_INFO = {
     "name":         "ensemble.static.default",
     "pattern":      "Ensemble",
     "context_type": "Static",
-    "description":  "Executes single ensemblees of tasks in a static execution context."
+    "description":  "Executes single ensembles of tasks in a static execution context."
 }
 
 _PLUGIN_OPTIONS = []
@@ -30,7 +30,10 @@ _PLUGIN_OPTIONS = []
 # ------------------------------------------------------------------------------
 # 
 class Plugin(PluginBase):
-    """The static execution plug-in for single ensembles. 
+    """The static execution plug-in for single ensembles. It works roughly in 
+    the following way:
+
+    TODO: describe plug-in operation
     """
 
     # --------------------------------------------------------------------------

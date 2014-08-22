@@ -11,4 +11,4 @@ script:
   - "python setup.py test"
   - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/single_ensemble.py"
   - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_tasks.py"
-  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_ensemblees.py"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_ensembles.py"

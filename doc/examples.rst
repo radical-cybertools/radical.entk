@@ -1,9 +1,9 @@
-A Pipeline of Ensemblees
----------------------
+A Pipeline of Ensembles
+-----------------------
 
 
 This example shows how to use EnsembleMD Toolkit to execute a simple 
-pipeline of sequential ensemblees. In the first step 'pre', 16 10 MB input 
+pipeline of sequential ensembles. In the first step 'pre', 16 10 MB input 
 files are generated and filled with ASCII charaters. In the second step 
 'proc', a character frequency analysis if performed on these file. In the 
 last step 'post', an SHA1 checksum is calculated for each analysis result.
@@ -14,11 +14,11 @@ back to the machine on which this script executes.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python pipeline_of_ensemblees.py
+    RADICAL_ENMD_VERBOSE=info python pipeline_of_ensembles.py
 
-:download:`Download example: pipeline_of_ensemblees.py <../examples/pipeline_of_ensemblees.py>`
+:download:`Download example: pipeline_of_ensembles.py <../examples/pipeline_of_ensembles.py>`
 
-.. literalinclude:: ../examples/pipeline_of_ensemblees.py
+.. literalinclude:: ../examples/pipeline_of_ensembles.py
 
 A Pipeline of Tasks
 -------------------
