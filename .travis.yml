@@ -9,6 +9,6 @@ install:
 # command to run tests
 script: 
   - "python setup.py test"
-  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/single_batch.py"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/single_ensemble.py"
   - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_tasks.py"
-  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_batches.py"
+  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline_of_ensemblees.py"

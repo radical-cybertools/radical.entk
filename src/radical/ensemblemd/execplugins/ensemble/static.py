@@ -11,17 +11,17 @@ import os
 import radical.pilot
 
 from radical.ensemblemd.task import Task
-from radical.ensemblemd.batch import Batch
+from radical.ensemblemd.ensemble import Ensemble
 
 from radical.ensemblemd.execplugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
 # 
 _PLUGIN_INFO = {
-    "name":         "batch.static.default",
-    "pattern":      "Batch",
+    "name":         "ensemble.static.default",
+    "pattern":      "Ensemble",
     "context_type": "Static",
-    "description":  "Executes single batches of tasks in a static execution context."
+    "description":  "Executes single ensemblees of tasks in a static execution context."
 }
 
 _PLUGIN_OPTIONS = []
@@ -30,6 +30,8 @@ _PLUGIN_OPTIONS = []
 # ------------------------------------------------------------------------------
 # 
 class Plugin(PluginBase):
+    """The static execution plug-in for single ensembles. 
+    """
 
     # --------------------------------------------------------------------------
     #
@@ -39,7 +41,7 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-        workload = pattern._get_batch_description()
+        workload = pattern._get_ensemble_description()
 
         # TODO: implement proper verification
         if True:
@@ -71,8 +73,8 @@ class Plugin(PluginBase):
         #     session=session,
         #     scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
-        steps = pattern._get_batch_description()
-        self.get_logger().info("Executing batch with {0} task(s)".format(
+        steps = pattern._get_ensemble_description()
+        self.get_logger().info("Executing ensemble with {0} task(s)".format(
             pattern.size()
         ))
         for step in steps:

@@ -1,9 +1,9 @@
-A Pipeline of Batches
+A Pipeline of Ensemblees
 ---------------------
 
 
 This example shows how to use EnsembleMD Toolkit to execute a simple 
-pipeline of sequential batches. In the first step 'pre', 16 10 MB input 
+pipeline of sequential ensemblees. In the first step 'pre', 16 10 MB input 
 files are generated and filled with ASCII charaters. In the second step 
 'proc', a character frequency analysis if performed on these file. In the 
 last step 'post', an SHA1 checksum is calculated for each analysis result.
@@ -14,11 +14,11 @@ back to the machine on which this script executes.
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python pipeline_of_batches.py
+    RADICAL_ENMD_VERBOSE=info python pipeline_of_ensemblees.py
 
-:download:`Download example: pipeline_of_batches.py <../examples/pipeline_of_batches.py>`
+:download:`Download example: pipeline_of_ensemblees.py <../examples/pipeline_of_ensemblees.py>`
 
-.. literalinclude:: ../examples/pipeline_of_batches.py
+.. literalinclude:: ../examples/pipeline_of_ensemblees.py
 
 A Pipeline of Tasks
 -------------------
@@ -42,19 +42,19 @@ see log messages about plug-in invocation and simulation progress::
 
 .. literalinclude:: ../examples/pipeline_of_tasks.py
 
-A Single Batch
+A Single Ensemble
 --------------
 
 
 This example shows how to use EnsembleMD Toolkit to execute a single 
-batch of tasks.
+ensemble of tasks.
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see  log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python single_batch.py
+    RADICAL_ENMD_VERBOSE=info python single_ensemble.py
 
-:download:`Download example: single_batch.py <../examples/single_batch.py>`
+:download:`Download example: single_ensemble.py <../examples/single_ensemble.py>`
 
-.. literalinclude:: ../examples/single_batch.py
+.. literalinclude:: ../examples/single_ensemble.py
 

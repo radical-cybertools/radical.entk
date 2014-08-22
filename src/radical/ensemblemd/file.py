@@ -7,6 +7,10 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import os
+
+from radical.ensemblemd.exceptions import FileError
+
 # ------------------------------------------------------------------------------
 #
 class File(object):
@@ -15,8 +19,9 @@ class File(object):
     #
     def __init__(self):
         
-        self._task_id = None
         self._filename = None
+        self._size     = None
+        self._source   = "local"
 
     #---------------------------------------------------------------------------
     #
@@ -29,8 +34,15 @@ class File(object):
                f = File.from_local_path("/experiments/data/input.dat")
 
         """
+        # Check if the file is accessible. 
+        if os.path.isfile(path) is False:
+            raise FileError("File {0} doesn't exist.".format(path))
+
         cls()
+        cls._source   = "local"
         cls._filename = path
+        cls._size     = os.stat(path).st_size
+
         return cls
 
     #---------------------------------------------------------------------------
@@ -38,7 +50,7 @@ class File(object):
     @classmethod
     def _create_from_task_output(cls, task_id, filename):
         cls()
-        cls._task_id = task_id
+        cls._source   = task_id
         cls._filename = filename
         return cls
 

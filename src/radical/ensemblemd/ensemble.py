@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This module defines and implements the Batch class.
+"""This module defines and implements the Ensemble class.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -13,22 +13,22 @@ from radical.ensemblemd.file import File
 from radical.ensemblemd.exceptions import LabelError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
-PATTERN_NAME = "Batch"
+PATTERN_NAME = "Ensemble"
 
 
 # ------------------------------------------------------------------------------
 #
-class Batch(ExecutionPattern):
+class Ensemble(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
     def __init__(self, size):
-        """ Creates a new Batch object.
+        """ Creates a new Ensemble object.
         """
-        super(Batch, self).__init__()
+        super(Ensemble, self).__init__()
 
         
-        self._batch_id = uuid.uuid4()
+        self._ensemble_id = uuid.uuid4()
         self._task_ids = list()
         for i in range(0, size):
             self._task_ids.append(uuid.uuid4())
@@ -43,7 +43,7 @@ class Batch(ExecutionPattern):
     #
     @classmethod
     def from_input_files(cls, files, label):
-        """ The from_input_files() class method creates a new batch containing 
+        """ The from_input_files() class method creates a new ensemble containing 
             a set of tasks based on the provided list of input files. For 
             each file in 'files' a new task is created. The files can be 
             referenced via the provided 'label'.
@@ -59,7 +59,7 @@ class Batch(ExecutionPattern):
                 actual_type=type(label))
 
 
-        cls = Batch(size=len(files))
+        cls = Ensemble(size=len(files))
         return cls
 
     #-------------------------------------------------------------------------------
@@ -73,8 +73,8 @@ class Batch(ExecutionPattern):
     #
     def size(self):
         """ Returns the size. If called for a Task, size() returns always '1'. 
-            If called for a Batch, size() returns the number of tasks in the 
-            Batch.
+            If called for a Ensemble, size() returns the number of tasks in the 
+            Ensemble.
         """
         return self._size
 
@@ -91,7 +91,7 @@ class Batch(ExecutionPattern):
         """Asserts the existence of a specific file after the step has completed.
         """
         self._expected_output.append(filename)
-        return File._create_from_task_output(task_id=self._batch_id, filename=filename)
+        return File._create_from_task_output(task_id=self._ensemble_id, filename=filename)
         
     #---------------------------------------------------------------------------
     #
@@ -103,11 +103,11 @@ class Batch(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     def add_input(self, files, labels, shared=True):
-        """Adds one or more input files to the batch. Files added via 
-           ``add_input()`` are added to all tasks of the batch. If the ``shared``
+        """Adds one or more input files to the ensemble. Files added via 
+           ``add_input()`` are added to all tasks of the ensemble. If the ``shared``
            parameter is set to ``True`` (default), the file(s) are copied once 
-           per batch and shared amongst tasks. If set to ``False``, individual
-           copies of the same file(s) are added to each batch task.
+           per ensemble and shared amongst tasks. If set to ``False``, individual
+           copies of the same file(s) are added to each ensemble task.
         """
         if type(files) != list:
             files = [files]
@@ -134,7 +134,7 @@ class Batch(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def _get_batch_description(self):
+    def _get_ensemble_description(self):
         """Returns the task description.
         """
         tasks = list()

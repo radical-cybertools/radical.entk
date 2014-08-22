@@ -11,7 +11,7 @@ import os
 import radical.pilot
 
 from radical.ensemblemd.task import Task
-from radical.ensemblemd.batch import Batch
+from radical.ensemblemd.ensemble import Ensemble
 
 from radical.ensemblemd.execplugins.plugin_base import PluginBase
 
@@ -73,7 +73,7 @@ class Plugin(PluginBase):
         steps = pattern._get_pattern_workload()
 
         # each entry in 'workload' is a sequential 'step' that consists either
-        # of a single task or a batch. 
+        # of a single task or a ensemble. 
         total_steps = len(steps)
         step_count = 1
         for step in steps:
@@ -88,8 +88,8 @@ class Plugin(PluginBase):
             if type(step) == Task:
                 self.get_logger().info(" > {0}".format(step._get_task_description()))
 
-            if type(step) == Batch:
-                for task in step._get_batch_description():
+            if type(step) == Ensemble:
+                for task in step._get_ensemble_description():
                     self.get_logger().info(" > {0}".format(task))
 
 

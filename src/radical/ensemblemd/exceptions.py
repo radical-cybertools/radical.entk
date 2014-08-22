@@ -53,6 +53,15 @@ class LabelError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
+class FileError(EnsemblemdError):
+    """FileError is thrown if something goes wrong related to file operations, 
+    i.e., if a file doesn't exist, cannot be copied and so on.
+    """
+    def __init__ (self, message):
+        super(FileError, self).__init__ (message)
+
+# ------------------------------------------------------------------------------
+#
 class ArgumentError(EnsemblemdError):
     """A BadArgumentError is thrown if a wrong set of arguments were passed 
        to a kernel.

@@ -3,16 +3,16 @@ Exceptions & Errors
 
 .. automodule:: radical.ensemblemd.exceptions
    :show-inheritance:
-   :members: EnsemblemdError, NotImplementedError, TypeError, LabelError, ArgumentError, NoKernelPluginError, NoExecutionPluginError
+   :members: EnsemblemdError, NotImplementedError, TypeError, LabelError, ArgumentError, FileError, NoKernelPluginError, NoExecutionPluginError
 
-Tasks, Batches and Files
+Tasks, Ensemblees and Files
 ========================
 
 .. autoclass:: radical.ensemblemd.Task
     :members:
     :inherited-members:
 
-.. autoclass:: radical.ensemblemd.Batch
+.. autoclass:: radical.ensemblemd.Ensemble
     :members:
     :inherited-members:
 

@@ -8,7 +8,7 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 from radical.ensemblemd.task import Task
-from radical.ensemblemd.batch import Batch
+from radical.ensemblemd.ensemble import Ensemble
 from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
@@ -48,9 +48,9 @@ class Pipeline(ExecutionPattern):
                 actual_type=type(steps))
 
         for step in steps:
-            if type(step) != Task and type(step) != Batch:
+            if type(step) != Task and type(step) != Ensemble:
                 raise TypeError(
-                    expected_type=[Task, Batch], 
+                    expected_type=[Task, Ensemble], 
                     actual_type=type(step))
             else:
                 self._steps.append(step)
