@@ -37,7 +37,9 @@ class Ensemble(ExecutionPattern):
 
         self._kernel = None
         self._expected_output = list()
-        self._requires_input = dict()
+
+        self._per_task_input = dict()
+        self._shared_input = dict()
 
     #---------------------------------------------------------------------------
     #
@@ -60,6 +62,7 @@ class Ensemble(ExecutionPattern):
 
 
         cls = Ensemble(size=len(files))
+        cls._per_task_input[label] = files
         return cls
 
     #-------------------------------------------------------------------------------
@@ -130,7 +133,7 @@ class Ensemble(ExecutionPattern):
                     )
                 )
 
-            self._requires_input[labels[index]] = files[index]
+            self._shared_input[labels[index]] = files[index]
 
     #---------------------------------------------------------------------------
     #
@@ -142,7 +145,8 @@ class Ensemble(ExecutionPattern):
         for i in range(0, self.size()):
             tasks.append({
                 "kernel"          : self._kernel,
-                "requires_input"  : self._requires_input,
+                "shared_input"    : self._shared_input,
+                "per_task_input"  : self._per_task_input,
                 "expected_output" : self._expected_output
             })
 
