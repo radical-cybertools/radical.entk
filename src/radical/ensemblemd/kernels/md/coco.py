@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).
+"""The CoCo ... .
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -15,27 +15,16 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":            "md.mmpbsa",
-    "description":     "MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).",
+    "name":            "md.coco",
+    "description":     "The COCO (URL).",
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs": 
     {
-        "*": {
-            "pre_exec"      : None,
-            "executable"    : "MMPBSA.py",
-            "uses_mpi"      : "False"
-        },
-
-        "stampede.tacc.utexas.edu": {
-            "pre_exec"      : ["module load python mpi4py amber"],
-            "executable"    : "/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/MMPBSA.py.MPI",
-            "uses_mpi"      : "True"
-        },
-
-        "archer.ac.uk": {
-            "pre_exec"      : ["module load amber"],
-            "executable"    : "//work/y07/y07/amber/12/bin/MMPBSA.py.MPI",
-            "uses_mpi"      : "True"
+        "stampede.tacc.utexas.edu": 
+        {
+            "environment" : {},
+            "pre_exec"    : ["module load TACC && module load amber"],
+            "executable"  : ["/bin/bash"]
         }
     }
 }
@@ -68,7 +57,7 @@ class Kernel(KernelBase):
             "environment" : None,
             "pre_exec"    : None,
             "post_exec"   : None,
-            "executable"  : "MMBSA",
+            "executable"  : "COCO",
             "arguments"   : self.get_raw_args(),
-            "use_mpi"     : False
+            "use_mpi"     : True
         }

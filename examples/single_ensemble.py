@@ -24,7 +24,7 @@ from radical.ensemblemd import File
 from radical.ensemblemd import Ensemble
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import StaticExecutionContext
+from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        sec = StaticExecutionContext(
+        sec = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         # via the provided 'labels' (see kernel aruments).
         ensemble = Ensemble.from_input_files(files=trajectories, label="trajectory")
         ensemble.add_input(files=[nmode, com, rec, lig], labels=["nmode", "com", "rec", "lig"])
-        ensemble.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i %{nmode} -cp %{com} -rp %{rec} -lp %{lig} -y %{trajectory}"])) 
+        ensemble.set_kernel(Kernel(kernel="md.mmpbsa", args=["-i %{nmode}", "-cp %{com}", "-rp %{rec}", "-lp %{lig}", "-y %{trajectory}"])) 
 
         # A ensemble can be passed directly to an execution context, just like
         # any other pattern.

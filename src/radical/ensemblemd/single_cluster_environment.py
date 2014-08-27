@@ -17,7 +17,7 @@ CONTEXT_NAME = "Static"
 
 #-------------------------------------------------------------------------------
 #
-class StaticExecutionContext(ExecutionContext):
+class SingleClusterEnvironment(ExecutionContext):
     """A static execution context provides a fixed set of computational 
        resources. 
     """
@@ -27,7 +27,7 @@ class StaticExecutionContext(ExecutionContext):
     def __init__(self, resource, cores, walltime):
         """Creates a new ExecutionContext instance.
         """
-        super(StaticExecutionContext, self).__init__()
+        super(SingleClusterEnvironment, self).__init__()
 
     #---------------------------------------------------------------------------
     #
@@ -39,7 +39,7 @@ class StaticExecutionContext(ExecutionContext):
     #---------------------------------------------------------------------------
     #
     def execute(self, pattern, force_plugin=None):
-        """Creates a new StaticExecutionContext instance.
+        """Creates a new SingleClusterEnvironment instance.
         """
 
         # Some basic type checks.

@@ -76,13 +76,24 @@ class Plugin(PluginBase):
         #     session=session,
         #     scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
-        steps = pattern._get_ensemble_description()
+        ensemble = pattern._get_ensemble_description()
+
         self.get_logger().info("Executing ensemble with {0} task(s)".format(
             pattern.size()
         ))
-        for step in steps:
-            self.get_logger().info(" > {0}".format(
-                step
-        ))
+
+        # Get the shared and the per-task input
+        per_task_input = ensemble['per_task_input']
+        shared_input = ensemble['shared_input']
+
+        # Get the kernel and expand it for the resource defined in the 
+        # execution context and replace argument placeholders with files.
+        kernel = ensemble['kernel']
+        
+
+        #for step in steps:
+        #    self.get_logger().info(" > {0}".format(
+        #        step
+        #))
 
 

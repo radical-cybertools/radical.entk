@@ -60,8 +60,14 @@ class Ensemble(ExecutionPattern):
                 expected_type=str, 
                 actual_type=type(label))
 
-
         cls = Ensemble(size=len(files))
+
+        if label in cls._shared_input:
+            raise LabelError("Duplicate label name '{0}'".format(
+                labels[index]
+                )
+            )
+
         cls._per_task_input[label] = files
         return cls
 
@@ -127,7 +133,7 @@ class Ensemble(ExecutionPattern):
                 )
 
         for index in range(0, len(files)):
-            if labels[index] in self._requires_input:
+            if labels[index] in self._shared_input:
                 raise LabelError("Duplicate label name '{0}'".format(
                     labels[index]
                     )
@@ -140,14 +146,11 @@ class Ensemble(ExecutionPattern):
     def _get_ensemble_description(self):
         """Returns the task description.
         """
-        tasks = list()
-
-        for i in range(0, self.size()):
-            tasks.append({
+        description = {
                 "kernel"          : self._kernel,
                 "shared_input"    : self._shared_input,
                 "per_task_input"  : self._per_task_input,
                 "expected_output" : self._expected_output
-            })
+            }
 
-        return tasks
+        return description

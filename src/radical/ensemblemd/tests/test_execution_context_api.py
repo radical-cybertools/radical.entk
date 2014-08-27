@@ -25,16 +25,16 @@ class ExecutionContextAPITestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the execution context classes.
         """
-        from radical.ensemblemd import StaticExecutionContext
-        from radical.ensemblemd import DynamicExecutionContext
+        from radical.ensemblemd import SingleClusterEnvironment
+        from radical.ensemblemd import MultiClusterEnvironment
 
     #-------------------------------------------------------------------------
     #
-    def test__static_execution_context_api(self):
+    def test__single_cluster_environment_api(self):
 
-        from radical.ensemblemd import StaticExecutionContext
+        from radical.ensemblemd import SingleClusterEnvironment
 
-        sec = StaticExecutionContext(
+        sec = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=1

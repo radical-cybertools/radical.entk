@@ -19,8 +19,8 @@ class ExecutionContext(object):
        base-class and usually not used directly. To create an execution context,
        use either of the following derived classes:
 
-         * :class:`radical.ensemblemd.StaticExecutionContext`
-         * :class:`radical.ensemblemd.DynamicExecutionContext`
+         * :class:`radical.ensemblemd.SingleClusterEnvironment`
+         * :class:`radical.ensemblemd.MultiClusterEnvironment`
     """
 
     #---------------------------------------------------------------------------

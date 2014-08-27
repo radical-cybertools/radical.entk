@@ -17,8 +17,8 @@ CONTEXT_NAME = "Dynamic"
 
 #-------------------------------------------------------------------------------
 #
-class DynamicExecutionContext(ExecutionContext):
-    """A dynamic execution context provides a dynamically managed set of 
+class MultiClusterEnvironment(ExecutionContext):
+    """A multi-cluster environment provides a dynamically managed set of 
        computational resources. 
     """
 
@@ -27,7 +27,7 @@ class DynamicExecutionContext(ExecutionContext):
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """
-        super(DynamicExecutionContext, self).__init__()
+        super(MultiClusterEnvironment, self).__init__()
 
     #---------------------------------------------------------------------------
     #

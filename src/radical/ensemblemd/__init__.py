@@ -18,8 +18,8 @@ from radical.ensemblemd.kernel import Kernel
 from radical.ensemblemd.pipeline import Pipeline
 
 # Execution Contexts
-from radical.ensemblemd.static_execution_context import StaticExecutionContext
-from radical.ensemblemd.dynamic_execution_context import DynamicExecutionContext
+from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
+from radical.ensemblemd.multi_cluster_environment import MultiClusterEnvironment
 
 # Execution Patterns
 from radical.ensemblemd.dummy_pattern import DummyPattern

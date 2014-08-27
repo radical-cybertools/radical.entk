@@ -17,11 +17,11 @@ passes it to an execution context for execution:
 .. code-block:: python
 
     from radical.ensemblemd import EnsemblemdError
-    from radical.ensemblemd import StaticExecutionContext
+    from radical.ensemblemd import SingleClusterEnvironment
     from radical.ensemblemd import SimulationAnalysisPattern
 
     try:
-        sec = StaticExecutionContext()
+        sec = SingleClusterEnvironment()
         pat = MyPattern()
         sec.execute(pat)
 

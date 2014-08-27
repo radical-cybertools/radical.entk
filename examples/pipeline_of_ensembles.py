@@ -28,7 +28,7 @@ from radical.ensemblemd import Ensemble
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import Pipeline
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import StaticExecutionContext
+from radical.ensemblemd import SingleClusterEnvironment
 
 BATCH_SIZE = 16
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        sec = StaticExecutionContext(
+        sec = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15

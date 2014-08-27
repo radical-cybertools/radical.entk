@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A kernel that creates a new ASCII file with a given size and name.
+"""The NAMD molecular dynamics toolkit. (http://www.ks.uiuc.edu/Research/namd/).
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -16,7 +16,7 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # 
 _KERNEL_INFO = {
     "name":            "md.namd",
-    "description":     "The NAMD molecular dynamics toolkit. (http://www.ks.uiuc.edu/Research/namd/)",
+    "description":     "The NAMD molecular dynamics toolkit (http://www.ks.uiuc.edu/Research/namd/)",
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs": 
     {

@@ -30,10 +30,10 @@ Execution Patterns
 Execution Contexts
 ==================
 
-.. autoclass:: radical.ensemblemd.StaticExecutionContext
+.. autoclass:: radical.ensemblemd.SingleClusterEnvironment
     :members:
     :inherited-members:
 
-.. autoclass:: radical.ensemblemd.DynamicExecutionContext
+.. autoclass:: radical.ensemblemd.MultiClusterEnvironment
     :members:
     :inherited-members:

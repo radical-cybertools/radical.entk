@@ -38,6 +38,13 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    def get_raw_args(self):
+        """Returns the arguments  passed to the kernel.
+        """
+        return self._kernel.get_arg(name)
+
+    #---------------------------------------------------------------------------
+    #
     def get_arg(self, name):
         """Returns the value of the kernel argument given by 'arg_name'.
         """

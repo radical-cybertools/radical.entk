@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A kernel that creates a new ASCII file with a given size and name.
+"""The GROMACS molecular dynamics toolkit (http://www.gromacs.org/).
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -16,7 +16,7 @@ from radical.ensemblemd.kernels.kernel_base import KernelBase
 # 
 _KERNEL_INFO = {
     "name":            "md.gromacs",
-    "description":     "The GROMACS molecular dynamics toolkit.  (http://www.gromacs.org/).",
+    "description":     "The GROMACS molecular dynamics toolkit (http://www.gromacs.org/).",
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs": 
     {
