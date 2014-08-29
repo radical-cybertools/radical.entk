@@ -43,16 +43,6 @@ class TypeError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
-class LabelError(EnsemblemdError):
-    """LabelError is thrown if a label name is not unique or if the number of 
-    labels passed to a method doesn't match the number of files passed to the 
-    same method. 
-    """
-    def __init__ (self, message):
-        super(LabelError, self).__init__ (message)
-
-# ------------------------------------------------------------------------------
-#
 class FileError(EnsemblemdError):
     """FileError is thrown if something goes wrong related to file operations, 
     i.e., if a file doesn't exist, cannot be copied and so on.

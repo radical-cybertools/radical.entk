@@ -42,7 +42,7 @@ class ExecutionContext(object):
 
     #---------------------------------------------------------------------------
     #
-    def execute(self, pattern, force_plugin=None):
+    def run(self, pattern, force_plugin=None):
         """Creates a new ExecutionContext instance.
         """
         raise NotImplementedError(
