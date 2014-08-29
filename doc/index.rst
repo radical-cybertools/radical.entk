@@ -51,6 +51,15 @@ Usage Examples
 
    examples.rst
 
+Use-Cases and Proof-of-Concepts
+*******************************
+
+.. toctree::
+   :maxdepth: 2
+
+   usecases.rst
+
+
 Application Kernels and Plug-Ins
 ********************************
 
