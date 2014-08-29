@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""The NAMD molecular dynamics toolkit. (http://www.ks.uiuc.edu/Research/namd/).
+"""A kernel that creates a new ASCII file with a given size and name.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -10,31 +10,24 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
-from radical.ensemblemd.kernels.kernel_base import KernelBase
+from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":            "md.namd",
-    "description":     "The NAMD molecular dynamics toolkit (http://www.ks.uiuc.edu/Research/namd/)",
-    "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
-    "machine_configs": 
-    {
-        "stampede.tacc.utexas.edu": {
-            "pre_exec"      : ["module load TACC && module load namd/2.9"],
-            "executable"    : "/opt/apps/intel13/mvapich2_1_9/namd/2.9/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "india.futuregrid.org": {
-            "executable"    : "/N/u/marksant/software/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "archer.ac.uk": {
-            "pre_exec"      : ["module load namd"],
-            "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
-            "uses_mpi"      : "True"
-        }
-    }
+    "name":         "misc.mkfile",
+    "description":  "Creates a new file of given size and fills it with random ASCII characters.",
+    "arguments":   {"--size=":     
+                        {
+                        "mandatory": True,
+                        "description": "File size in bytes."
+                        },
+                    "--filename=": 
+                        {
+                        "mandatory": True,
+                        "description": "Output filename."
+                        }
+                    }
 }
 
 
@@ -61,11 +54,17 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. Returns the kernel
            description as a dictionary.
         """
+        executable = "/bin/bash"
+        arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
+            self.get_arg("--size="),
+            self.get_arg("--filename="))
+        ]
+
         return {
             "environment" : None,
             "pre_exec"    : None,
             "post_exec"   : None,
-            "executable"  : "NAMD",
-            "arguments"   : self.get_raw_args(),
+            "executable"  : executable,
+            "arguments"   : arguments,
             "use_mpi"     : False
         }

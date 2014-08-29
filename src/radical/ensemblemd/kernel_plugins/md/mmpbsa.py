@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A kernel that creates a new ASCII file with a given size and name.
+"""MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -10,24 +10,34 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
-from radical.ensemblemd.kernels.kernel_base import KernelBase
+from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "misc.mkfile",
-    "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--size=":     
-                        {
-                        "mandatory": True,
-                        "description": "File size in bytes."
-                        },
-                    "--filename=": 
-                        {
-                        "mandatory": True,
-                        "description": "Output filename."
-                        }
-                    }
+    "name":            "md.mmpbsa",
+    "description":     "MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).",
+    "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
+    "machine_configs": 
+    {
+        "*": {
+            "pre_exec"      : None,
+            "executable"    : "MMPBSA.py",
+            "uses_mpi"      : "False"
+        },
+
+        "stampede.tacc.utexas.edu": {
+            "pre_exec"      : ["module load python mpi4py amber"],
+            "executable"    : "/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/MMPBSA.py.MPI",
+            "uses_mpi"      : "True"
+        },
+
+        "archer.ac.uk": {
+            "pre_exec"      : ["module load amber"],
+            "executable"    : "//work/y07/y07/amber/12/bin/MMPBSA.py.MPI",
+            "uses_mpi"      : "True"
+        }
+    }
 }
 
 
@@ -54,17 +64,11 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. Returns the kernel
            description as a dictionary.
         """
-        executable = "/bin/bash"
-        arguments  = ["-c \"base64 /dev/urandom | head -c {0} > {1}\"".format(
-            self.get_arg("--size="),
-            self.get_arg("--filename="))
-        ]
-
         return {
             "environment" : None,
             "pre_exec"    : None,
             "post_exec"   : None,
-            "executable"  : executable,
-            "arguments"   : arguments,
+            "executable"  : "MMBSA",
+            "arguments"   : self.get_raw_args(),
             "use_mpi"     : False
         }

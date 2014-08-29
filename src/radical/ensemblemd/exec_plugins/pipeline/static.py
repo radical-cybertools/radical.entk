@@ -10,7 +10,7 @@ __license__   = "MIT"
 import os 
 import radical.pilot
 
-from radical.ensemblemd.execplugins.plugin_base import PluginBase
+from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
 # 
@@ -32,17 +32,13 @@ class Plugin(PluginBase):
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
 
+
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-
-        if True:
-            self.get_logger().info("Pattern workload verification passed.")
-        else:
-            self.get_logger().error("Pattern workload verification failed.")
+        self.get_logger().info("Verifying pattern...")
 
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern):
-
-        pass
+        self.get_logger().info("Executing pattern...")

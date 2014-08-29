@@ -11,7 +11,7 @@ import sys
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
-from radical.ensemblemd.kernels.kernel_base import KernelBase
+from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
 # 

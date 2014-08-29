@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A kernel that creates a new ASCII file with a given size and name.
+"""The AMBER molecular dynamics package (http://ambermd.org/).
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -10,24 +10,23 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
-from radical.ensemblemd.kernels.kernel_base import KernelBase
+from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "misc.ccount",
-    "description":  "Counts the character frequency in a ASCII file.",
-    "arguments":   {"--inputfile=":     
-                        {
-                        "mandatory": True,
-                        "description": "The input ASCII file."
-                        },
-                    "--outputfile=":     
-                        {
-                        "mandatory": True,
-                        "description": "The output file containing the character counts."
-                        },
-                    }
+    "name":            "md.amber",
+    "description":     "The AMBER molecular dynamics package (http://ambermd.org/).",
+    "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
+    "machine_configs": 
+    {
+        "stampede.tacc.utexas.edu": 
+        {
+            "environment" : {},
+            "pre_exec"    : ["module load TACC && module load amber"],
+            "executable"  : ["/bin/bash"]
+        }
+    }
 }
 
 
@@ -54,18 +53,11 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. Returns the kernel
            description as a dictionary.
         """
-        executable = "/bin/bash" 
-        arguments  = ["-c \"grep -o . {0} | sort | uniq -c > {1}\"".format(
-            self.get_arg("--inputfile="),
-            self.get_arg("--outputfile="))
-        ]
-
         return {
             "environment" : None,
             "pre_exec"    : None,
             "post_exec"   : None,
-            "executable"  : executable,
-            "arguments"   : arguments,
-            "use_mpi"     : False
+            "executable"  : "AMBER",
+            "arguments"   : self.get_raw_args(),
+            "use_mpi"     : True
         }
-
