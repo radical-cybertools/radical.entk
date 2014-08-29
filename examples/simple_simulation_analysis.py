@@ -19,17 +19,14 @@ __example_name__ = "A Pipeline of Tasks"
 
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import Pipeline
+from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SingleClusterEnvironment
 
 
 # ------------------------------------------------------------------------------
 #
-class RandomSA(Pipeline):
-    # 'CharCount' implements the three-step pipeline described above. It
-    # inherits from radical.ensemblemd.Pipeline, the abstract base class 
-    # for all pipelines. 
+class RandomSA(SimulationAnalysisLoop):
 
     def __init__(self, maxloops, simulation_width=1, analysis_width=1):
         Pipeline.__init__(self, width)
@@ -45,11 +42,6 @@ class RandomSA(Pipeline):
         k.set_download_output(files="cfreqs-%{0}.dat")
         return k
 
-    def step_03(self, column):
-        k = Kernel(name="misc.ccount")
-        k.set_args(["--inputfile=cfreqs-%{0}.dat", "--outputfile=cfreqs-%{0}.sum" % column])
-        k.set_download_output(files="cfreqs-%{0}.sum")
-        return k
 
 # ------------------------------------------------------------------------------
 #
