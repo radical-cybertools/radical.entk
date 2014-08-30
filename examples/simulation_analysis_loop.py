@@ -19,6 +19,7 @@ __example_name__ = "A Simulation-Analysis-Loop Example"
 
 
 from radical.ensemblemd import Kernel
+from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
