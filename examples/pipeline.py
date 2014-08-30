@@ -41,19 +41,19 @@ class CharCount(Pipeline):
 
     def step_01(self, instance):
         k = Kernel(name="misc.mkfile")
-        k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat" % instance])
+        k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat".format(instance)])
         return k
 
     def step_02(self, instance):
         k = Kernel(name="misc.ccount")
-        k.set_args(["--inputfile=asciifile-%{0}.dat", "--outputfile=cfreqs-%{0}.dat" % instance])
-        k.set_download_output(files="cfreqs-%{0}.dat")
+        k.set_args(["--inputfile=asciifile-%{0}.dat", "--outputfile=cfreqs-%{0}.dat".format(instance)])
+        k.set_download_output(files="cfreqs-%{0}.dat".format(instance))
         return k
 
     def step_03(self, instance):
-        k = Kernel(name="misc.ccount")
-        k.set_args(["--inputfile=cfreqs-%{0}.dat", "--outputfile=cfreqs-%{0}.sum" % instance])
-        k.set_download_output(files="cfreqs-%{0}.sum")
+        k = Kernel(name="misc.chksum")
+        k.set_args(["--inputfile=cfreqs-%{0}.dat", "--outputfile=cfreqs-%{0}.sum".format(instance)])
+        k.set_download_output(files="cfreqs-%{0}.sum".format(instance))
         return k
 
 # ------------------------------------------------------------------------------
