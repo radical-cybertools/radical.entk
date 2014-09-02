@@ -46,6 +46,8 @@ class Plugin(PluginBase):
 
         # LAUNCHING A PILOT HERE...
 
+        replicas = pattern.get_replicas()
+
         for i in range(pattern.nr_cycles):
             compute_replicas = []
             for r in replicas:

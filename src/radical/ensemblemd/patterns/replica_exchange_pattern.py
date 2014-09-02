@@ -74,6 +74,13 @@ class ReplicaExchnagePattern(ExecutionPattern):
 
     #-------------------------------------------------------------------------------
     #
+    def get_replicas(self):
+        """
+        """
+        return self.replica_objects
+
+    #-------------------------------------------------------------------------------
+    #
     def compose_swap_matrix(self, replicas):
         """Creates a swap matrix from matrix_column_x.dat files. 
         matrix_column_x.dat - is populated on targer resource and then transferred back. This
