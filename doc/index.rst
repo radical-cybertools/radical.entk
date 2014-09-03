@@ -20,8 +20,8 @@ https://github.com/radical-cybertools/radical.ensemblemd
 
 **Developer Wiki**
 
-We maintain a wiki, mostly for internal planning and technical documents: 
-https://github.com/radical-cybertools/radical.ensemblemd/wiki
+We maintain a wiki, mostly for internal planning and technical documents
+at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 **Current Build Status**
 
