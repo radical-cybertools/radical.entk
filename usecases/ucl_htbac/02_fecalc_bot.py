@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 """ 
-Use-Case 'UCL HT-BAC free energy' proof-of-concept. 
+'HT-BAC free energy calculation' bag-of-task proof-of-concept (UCL).
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__     = "Copyright 2014, http://radical.rutgers.edu"
 __license__       = "MIT"
-__use_case_name__ = "Use-Case 'UCL HT-BAC free energy' proof-of-concept"
+__use_case_name__ = "'HT-BAC free energy calculation' bag-of-task proof-of-concept (UCL)."
 
 
 from radical.ensemblemd import Kernel
