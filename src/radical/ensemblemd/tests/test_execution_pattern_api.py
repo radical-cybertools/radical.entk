@@ -23,15 +23,29 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the various pattern classes.
         """
-        from radical.ensemblemd import DummyPattern
+        from radical.ensemblemd import Pipeline
+        from radical.ensemblemd import SimulationAnalysisLoop
+
 
     #-------------------------------------------------------------------------
     #
-    def test__dummy_execution_pattern_api(self):
-        """ Tests the dummy execution pattern API.
+    def test__pipeline_pattern_api(self):
+        """ Tests the Pipeline pattern API.
         """
 
-        from radical.ensemblemd import DummyPattern
+        from radical.ensemblemd import Pipeline
 
-        dp = DummyPattern()
-        assert dp.get_name() == "dummy"
+        dp = Pipeline()
+        assert dp.get_name() == "Pipeline"
+
+
+    #-------------------------------------------------------------------------
+    #
+    def test__simulation_analysis_loop_pattern_api(self):
+        """ Tests the Pipeline execution pattern API.
+        """
+
+        from radical.ensemblemd import SimulationAnalysisLoop
+
+        dp = SimulationAnalysisLoop(maxiterations=1)
+        assert dp.get_name() == "SimulationAnalysisLoop"
