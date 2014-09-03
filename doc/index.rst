@@ -18,6 +18,11 @@ https://github.com/radical-cybertools/radical.ensemblemd
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-devel
 
+**Developer Wiki**
+
+We maintain a wiki, mostly for internal planning and technical documents: 
+https://github.com/radical-cybertools/radical.ensemblemd/wiki
+
 **Current Build Status**
 
 * Release Branch 
