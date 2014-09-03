@@ -20,20 +20,17 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
-    SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
+    def __init__(self, maxiterations, simulation_width, analysis_width):
+        SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
 
     def pre_loop(self):
         pass
 
     def simulation_step(self, iteration, instance):
-        k = Kernel(name="misc.nop") 
-        k.set_args(["--duration=10")
-        return k
+        pass
 
     def analysis_step(self, iteration, instance):
-        k = Kernel(name="misc.nop")
-        k.set_args(["--duration=10")
-        return k
+        pass
 
     def post_loop(self):
         pass

@@ -9,5 +9,13 @@ install:
 # command to run tests
 script: 
   - "python setup.py test"
-  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/pipeline.py"
-  - "easy_install . && RADICAL_ENMD_VERBOSE=10 python examples/simulation_analysis_loop.py"
+  - "RADICAL_ENMD_VERBOSE=10 python examples/pipeline.py"
+  - "RADICAL_ENMD_VERBOSE=10 python examples/simulation_analysis_loop.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/cdi_replica_exchange/01_replica_exchange_mode_1.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_coco_amber/01_static_amber_coco_loop.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_coco_amber/02_dynamic_amber_coco_loop.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/01_simchain_bot.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/02_fecalc_bot.py"
+
+
