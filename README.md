@@ -11,7 +11,10 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 ### Mailing Lists
 
 * https://groups.google.com/d/forum/ensemblemd-users
-* https://groups.google.com/d/forum/ensemblemd-devel
+* https://groups.google.com/d/forum/ensemblemd-devel 
+
+### Wiki
+* We maintain a wiki, mostly for internal planning documents: https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 ### Build Status
 * `master` branch: 
