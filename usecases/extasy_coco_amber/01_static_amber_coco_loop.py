@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
 """ 
-Use-Case 'UCL HT-BAC simchain' proof-of-concept. 
+Extasy project: 'Coco/Amber' STATIC simulation-analysis loop proof-of-concept (Nottingham).
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__     = "Copyright 2014, http://radical.rutgers.edu"
 __license__       = "MIT"
-__use_case_name__ = "Use-Case 'UCL HT-BAC simchain' proof-of-concept"
+__use_case_name__ = "Extasy project: 'Coco/Amber' STATIC simulation-analysis loop proof-of-concept (Nottingham)."
 
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import Pipeline
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
@@ -19,16 +18,26 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-class UCL_BAC_SimChain(Pipeline):
+class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
-    def __init__(self, width):
-        Pipeline.__init__(self, width)
+    SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
 
-    def step_01(self, instance):
-        # There's only one step in this pipleline.
-        k = Kernel(name="misc.mkfile")
-        k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat".format(instance)])
+    def pre_loop(self):
+        pass
+
+    def simulation_step(self, iteration, instance):
+        k = Kernel(name="misc.nop") 
+        k.set_args(["--duration=10")
         return k
+
+    def analysis_step(self, iteration, instance):
+        k = Kernel(name="misc.nop")
+        k.set_args(["--duration=10")
+        return k
+
+    def post_loop(self):
+        pass
+
 
 # ------------------------------------------------------------------------------
 #
@@ -43,11 +52,8 @@ if __name__ == "__main__":
             walltime=15
         )
 
-        # According to the use-case, about 50 trajectories are simulated in a 
-        # production run. Hence, we set the pipeline width to 50.  
-        simchain = UCL_BAC_SimChain(width=50)
-
-        cluster.run(simchain)
+        coco_amber_static = Extasy_CocoAmber_Static(maxiterations=1, simulation_width=1, analysis_width=1)
+        cluster.run(coco_amber_static)
 
     except EnsemblemdError, er:
 
