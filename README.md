@@ -13,8 +13,8 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 * https://groups.google.com/d/forum/ensemblemd-users
 * https://groups.google.com/d/forum/ensemblemd-devel 
 
-### Wiki
-* We maintain a wiki, mostly for internal planning documents: https://github.com/radical-cybertools/radical.ensemblemd/wiki
+### Wiki Pages
+* We maintain a wiki, mostly for internal planning and technical documents: https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 ### Build Status
 * `master` branch: 
