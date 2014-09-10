@@ -6,6 +6,14 @@ Exceptions & Errors
    :members: EnsemblemdError, NotImplementedError, TypeError, ArgumentError, FileError, NoKernelPluginError, NoExecutionPluginError
 
 
+Kernels
+=======
+
+.. autoclass:: radical.ensemblemd.Kernel
+    :members:
+    :inherited-members:
+
+
 Execution Patterns
 ==================
 
@@ -14,6 +22,10 @@ Execution Patterns
     :inherited-members:
 
 .. autoclass:: radical.ensemblemd.SimulationAnalysisLoop
+    :members:
+    :inherited-members:
+
+.. autoclass:: radical.ensemblemd.ReplicaExchange
     :members:
     :inherited-members:
 
