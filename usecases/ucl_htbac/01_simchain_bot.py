@@ -16,6 +16,7 @@ from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
 
+
 # ------------------------------------------------------------------------------
 #
 class UCL_BAC_SimChain(Pipeline):
@@ -25,11 +26,12 @@ class UCL_BAC_SimChain(Pipeline):
 
     def step_01(self, instance):
         # There's only one step in this pipleline.
-        k = Kernel(kernel="md.simchain")
+        k = Kernel(name="md.simchain")
         k.upload_input_data("./mmpbsa-sample-data/*")
         k.download_input_data("http://location/trajectories/*")
         k.copy_input_data("local path on exec. machine.")
         k.link_input_data("local path on machine.")
+
         k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat".format(instance)])
         return k
 
