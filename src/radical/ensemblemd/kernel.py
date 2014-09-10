@@ -38,6 +38,47 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    def arguments(self, args):
+        pass
+
+    #---------------------------------------------------------------------------
+    #
+    def upload_input_data(self, data_directives):
+        """Instructs the application to upload one or more files or directories 
+           from the **machine the application is executing** into the kernel's 
+           execution directory.
+        """
+        pass
+
+    #---------------------------------------------------------------------------
+    #
+    def download_input_data(self, data_directives):
+        """Instructs the kernel to download one or more files or directories 
+           from a **remote HTTP server** into the kernel's execution directory.
+        """
+        pass
+
+    #---------------------------------------------------------------------------
+    #
+    def copy_input_data(self, data_directives):
+        """Instructs the kernel to copy one or more files or directories from
+           the **execution host's** filesystem into the kernel's execution 
+           directory.
+        """
+        pass
+
+    #---------------------------------------------------------------------------
+    #
+    def link_input_data(self, data_directives):
+        """Instructs the kernel to create a link to one or more files or 
+           directories on the *execution host's** filesystem in the kernel's 
+           execution directory.
+        """
+        pass
+
+
+    #---------------------------------------------------------------------------
+    #
     def get_raw_args(self):
         """Returns the arguments  passed to the kernel.
         """

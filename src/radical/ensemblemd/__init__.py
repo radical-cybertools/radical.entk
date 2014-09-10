@@ -14,6 +14,7 @@ from radical.ensemblemd.kernel import Kernel
 
 # Execution Patterns
 from radical.ensemblemd.patterns.pipeline import Pipeline
+from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 from radical.ensemblemd.patterns.simulation_analysis_loop import SimulationAnalysisLoop
 
 # Execution Contexts

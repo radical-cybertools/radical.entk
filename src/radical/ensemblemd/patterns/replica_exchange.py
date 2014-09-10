@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 
+from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
 PATTERN_NAME = "ReplicaExchange"
@@ -31,14 +32,14 @@ class Replica(object):
        
 # ------------------------------------------------------------------------------
 #
-class ReplicaExchnagePattern(ExecutionPattern):
+class ReplicaExchange(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
     def __init__(self, replicas, nr_cycles, basename):
         """
         """
-        super(ReplicaExchnagePattern, self).__init__()
+        super(ReplicaExchange, self).__init__()
         self.replicas = replicas
         self.nr_cycles = nr_cycles
         self.inp_basename = str(basename)
