@@ -120,7 +120,7 @@ class KernelBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self):
+    def _get_kernel_description(self, resource_key):
         """Returns the kernel description as a dictionary that can be 
            translated into a CU description.
         """

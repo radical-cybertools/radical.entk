@@ -7,6 +7,7 @@ from radical.ensemblemd.exceptions import EnsemblemdError
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exceptions import NoKernelPluginError
 from radical.ensemblemd.exceptions import NoExecutionPluginError
+from radical.ensemblemd.exceptions import NoKernelConfigurationError
 
 # Primitives / Building Blocks
 from radical.ensemblemd.file import File

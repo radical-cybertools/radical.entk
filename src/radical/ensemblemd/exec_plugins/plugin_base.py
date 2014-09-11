@@ -103,7 +103,7 @@ class PluginBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def execute_pattern(self, pattern):
+    def execute_pattern(self, pattern, resource):
         """Execute the pattern.
         """
         raise NotImplementedError(

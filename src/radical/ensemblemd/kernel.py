@@ -17,13 +17,13 @@ class Kernel(object):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, kernel, args):
+    def __init__(self, name, args=[]):
         """Create a new Kernel object.
         """
-        if type(kernel) != str:
+        if type(name) != str:
             raise TypeError(
                 expected_type=str, 
-                actual_type=type(kernel))
+                actual_type=type(name))
 
         if type(args) != list:
             raise TypeError(
@@ -31,7 +31,7 @@ class Kernel(object):
                 actual_type=type(args))
 
         self._engine = Engine()
-        self._kernel = self._engine.get_kernel_plugin(kernel)
+        self._kernel = self._engine.get_kernel_plugin(name)
 
         # Call the validate_args() method of the plug-in.
         self._kernel.validate_args(args)
@@ -40,6 +40,13 @@ class Kernel(object):
     #
     def arguments(self, args):
         pass
+
+    #---------------------------------------------------------------------------
+    #
+    def set_args(self, args):
+        """Sets the arguments for the kernel.
+        """
+        self._kernel.validate_args(args)
 
     #---------------------------------------------------------------------------
     #
@@ -93,8 +100,8 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def _get_kernel_description(self):
+    def _get_kernel_description(self, resource_key):
         """Returns the kernel description as a dictionary that can be 
            translated into a CU description.
         """
-        return self._kernel._get_kernel_description()
+        return self._kernel._get_kernel_description(resource_key)

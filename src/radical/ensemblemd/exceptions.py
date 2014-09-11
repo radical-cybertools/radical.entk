@@ -76,6 +76,16 @@ class NoKernelPluginError(EnsemblemdError):
 
 # ------------------------------------------------------------------------------
 #
+class NoKernelConfigurationError(EnsemblemdError):
+    """NoKernelConfigurationError is thrown if no kernel configuration could
+       be found for the provided resource key.
+    """
+    def __init__ (self, kernel_name, resource_key):
+        msg = "Kernel '{0}' doesn not have a configuration entry for resource key '{1}'.".format(kernel_name, resource_key)
+        super(NoKernelConfigurationError, self).__init__ (msg)
+
+# ------------------------------------------------------------------------------
+#
 class NoExecutionPluginError(EnsemblemdError):
     """NoExecutionPluginError is thrown if a patterns is passed to an execution
     context via execut() but no execution plugin for the pattern exist.

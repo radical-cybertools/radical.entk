@@ -27,6 +27,10 @@ class SingleClusterEnvironment(ExecutionContext):
     def __init__(self, resource, cores, walltime):
         """Creates a new ExecutionContext instance.
         """
+        self._resource_key = resource
+        self._cores = cores
+        self._walltime = walltime
+
         super(SingleClusterEnvironment, self).__init__()
 
     #---------------------------------------------------------------------------
@@ -55,4 +59,4 @@ class SingleClusterEnvironment(ExecutionContext):
             plugin_name=force_plugin)
 
         plugin.verify_pattern(pattern)
-        plugin.execute_pattern(pattern)
+        plugin.execute_pattern(pattern, self)

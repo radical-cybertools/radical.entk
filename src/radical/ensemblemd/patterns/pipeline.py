@@ -22,7 +22,15 @@ class Pipeline(ExecutionPattern):
     def __init__(self, width=1):
         """Creates a new Pipeline instance.
         """
+        self._width = width
         super(Pipeline, self).__init__()
+
+    #---------------------------------------------------------------------------
+    #
+    def get_width(self):
+        """Returns the width of the pipeline.
+        """
+        return self._width
         
     #---------------------------------------------------------------------------
     #

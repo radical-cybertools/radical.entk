@@ -25,14 +25,16 @@ class UCL_BAC_SimChain(Pipeline):
         Pipeline.__init__(self, width)
 
     def step_01(self, instance):
-        # There's only one step in this pipleline.
-        k = Kernel(name="md.simchain")
-        k.upload_input_data("./mmpbsa-sample-data/*")
-        k.download_input_data("http://location/trajectories/*")
-        k.copy_input_data("local path on exec. machine.")
-        k.link_input_data("local path on machine.")
+        """This steps calculates the trajectories. 
+        """
+        k = Kernel(name="md.namd")
+        k.set_args(["eq%{0}.inp".format(instance)])
+        k.download_input_data(
+            ["http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.pdb > complex.pdb",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.top > complex.top",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/cons.pdb > cons.pdb",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq%{0}.inp".format(instance)])
 
-        k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat".format(instance)])
         return k
 
 # ------------------------------------------------------------------------------

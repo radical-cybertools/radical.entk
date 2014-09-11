@@ -40,5 +40,18 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def execute_pattern(self, pattern):
-        self.get_logger().info("Executing pattern...")
+    def execute_pattern(self, pattern, resource):
+
+        pipeline_width = pattern.get_width()
+
+        self.get_logger().info("Preparing execution of a pipeline with width {0} on {1} core(s) on '{2}'".format(
+            pipeline_width, resource._cores, resource._resource_key))
+
+        step_01_cus = list()
+        for instance in range(0, pipeline_width):
+            kernel = pattern.step_01(instance)
+            print kernel._get_kernel_description(resource._resource_key)
+
+            cu = radical.pilot.ComputeUnitDescription()
+
+        
