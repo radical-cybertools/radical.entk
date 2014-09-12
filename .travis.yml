@@ -15,7 +15,7 @@ script:
   - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_coco_amber/01_static_amber_coco_loop.py"
   - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_coco_amber/02_dynamic_amber_coco_loop.py"
   - "RADICAL_ENMD_VERBOSE=10 python usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py"
-  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/01_simchain_bot.py"
-  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/02_fecalc_bot.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/simchain_bot.py"
+  - "RADICAL_ENMD_VERBOSE=10 python usecases/ucl_htbac/fecalc_bot.py"
 
 

@@ -22,20 +22,25 @@ _KERNEL_INFO = {
     "machine_configs": 
     {
         "localhost": {
+            "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : "namd2",
-            "uses_mpi"      : "True"
+            "uses_mpi"      : "False"
         },
         "stampede.tacc.utexas.edu": {
+            "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load TACC && module load namd/2.9"],
             "executable"    : "/opt/apps/intel13/mvapich2_1_9/namd/2.9/bin/namd2",
             "uses_mpi"      : "True"
         },
         "india.futuregrid.org": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : [],
             "executable"    : "/N/u/marksant/software/bin/namd2",
             "uses_mpi"      : "True"
         },
         "archer.ac.uk": {
+            "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load namd"],
             "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
             "uses_mpi"      : "True"
@@ -70,11 +75,13 @@ class Kernel(KernelBase):
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
+
         return {
-            "environment" : None,
-            "pre_exec"    : None,
+            "environment" : cfg["environment"],
+            "pre_exec"    : cfg["pre_exec"],
             "post_exec"   : None,
-            "executable"  : "NAMD",
+            "executable"  : cfg["executable"],
             "arguments"   : self.get_raw_args(),
-            "use_mpi"     : False
+            "use_mpi"     : cfg["uses_mpi"]
         }
