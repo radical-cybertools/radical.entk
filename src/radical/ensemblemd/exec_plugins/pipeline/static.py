@@ -8,7 +8,7 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os 
-import radical.pilot
+import radical.pilot 
 
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
@@ -44,14 +44,44 @@ class Plugin(PluginBase):
 
         pipeline_width = pattern.get_width()
 
-        self.get_logger().info("Preparing execution of a pipeline with width {0} on {1} core(s) on '{2}'".format(
+        self.get_logger().info("Executing pipeline of width {0} on {1} allocated core(s) on '{2}'".format(
             pipeline_width, resource._cores, resource._resource_key))
 
         step_01_cus = list()
         for instance in range(0, pipeline_width):
             kernel = pattern.step_01(instance)
-            print kernel._get_kernel_description(resource._resource_key)
 
+            kd = kernel._get_kernel_description(resource._resource_key)
             cu = radical.pilot.ComputeUnitDescription()
 
-        
+            cu.pre_exec = kd["pre_exec"]
+            cu.executable  = kd["executable"]
+            cu.arguments  = kd["arguments"]
+
+            step_01_cus.append(cu)
+
+        session = radical.pilot.Session()
+        pmgr = radical.pilot.PilotManager(session=session)
+
+        pdesc = radical.pilot.ComputePilotDescription()
+        pdesc.resource = "localhost"
+        pdesc.runtime  = 5 # minutes
+        pdesc.cores    = 1
+        pdesc.cleanup  = True
+
+        pilot = pmgr.submit_pilots(pdesc)
+
+        umgr = radical.pilot.UnitManager(
+            session=session,
+            scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+
+        umgr.add_pilots(pilot)
+
+        units = umgr.submit_units(step_01_cus)
+        umgr.wait_units()
+
+        for unit in units:
+            print "* Task %s (executed @ %s) state %s, exit code: %s, started: %s, finished: %s, stdout: %s" \
+                % (unit.uid, unit.execution_locations, unit.state, unit.exit_code, unit.start_time, unit.stop_time, unit.stdout)
+
+        session.close()

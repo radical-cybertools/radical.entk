@@ -32,6 +32,11 @@ class KernelBase(object):
         self._args     = []
         self._raw_args = []
 
+        self._upload_input_data   = None
+        self._download_input_data = None
+        self._copy_input_data     = None
+        self._link_input_data     = None
+
     # --------------------------------------------------------------------------
     #
     def register(self) :
@@ -115,7 +120,7 @@ class KernelBase(object):
                     valid_arguments_set=self._info['arguments']
                 )
 
-        self.get_logger().debug("Argument validation ok: {0}.".format(args))
+        #self.get_logger().debug("Arguments ok: {0}.".format(args))
         self._args = arg_config
 
     # --------------------------------------------------------------------------

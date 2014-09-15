@@ -17,7 +17,7 @@ class Kernel(object):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, name, args=[]):
+    def __init__(self, name, args=None):
         """Create a new Kernel object.
         """
         if type(name) != str:
@@ -25,16 +25,11 @@ class Kernel(object):
                 expected_type=str, 
                 actual_type=type(name))
 
-        if type(args) != list:
-            raise TypeError(
-                expected_type=list, 
-                actual_type=type(args))
-
         self._engine = Engine()
         self._kernel = self._engine.get_kernel_plugin(name)
 
-        # Call the validate_args() method of the plug-in.
-        self._kernel.validate_args(args)
+        if args is not None:
+            self.set_args(args)
 
     #---------------------------------------------------------------------------
     #
@@ -46,6 +41,12 @@ class Kernel(object):
     def set_args(self, args):
         """Sets the arguments for the kernel.
         """
+        if type(args) != list:
+            raise TypeError(
+                expected_type=list, 
+                actual_type=type(args))
+        
+        # Call the validate_args() method of the plug-in.
         self._kernel.validate_args(args)
 
     #---------------------------------------------------------------------------
@@ -55,7 +56,7 @@ class Kernel(object):
            from the **machine the application is executing** into the kernel's 
            execution directory.
         """
-        pass
+        self._kernel._upload_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
@@ -63,7 +64,7 @@ class Kernel(object):
         """Instructs the kernel to download one or more files or directories 
            from a **remote HTTP server** into the kernel's execution directory.
         """
-        pass
+        self._kernel._download_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
@@ -72,7 +73,7 @@ class Kernel(object):
            the **execution host's** filesystem into the kernel's execution 
            directory.
         """
-        pass
+        self._kernel._copy_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
@@ -81,8 +82,7 @@ class Kernel(object):
            directories on the *execution host's** filesystem in the kernel's 
            execution directory.
         """
-        pass
-
+        self._kernel._link_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #

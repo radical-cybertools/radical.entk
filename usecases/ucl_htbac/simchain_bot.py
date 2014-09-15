@@ -27,13 +27,13 @@ class UCL_BAC_SimChain(Pipeline):
     def step_01(self, instance):
         """This steps calculates the trajectories. 
         """
-        k = Kernel(name="md.namd")
-        k.set_args(["eq%{0}.inp".format(instance)])
+        k = Kernel(name="misc.chksum")
+        k.set_args(["--inputfile=complex.pdb", "--outputfile=complex.md5"])
         k.download_input_data(
             ["http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.pdb > complex.pdb",
              "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.top > complex.top",
              "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/cons.pdb > cons.pdb",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq%{0}.inp".format(instance)])
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq{0}.inp".format(instance)])
 
         return k
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
         # According to the use-case, about 50 trajectories are simulated in a 
         # production run. Hence, we set the pipeline width to 50.  
-        simchain = UCL_BAC_SimChain(width=50)
+        simchain = UCL_BAC_SimChain(width=2)
 
         cluster.run(simchain)
 
