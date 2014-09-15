@@ -33,8 +33,55 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def arguments(self, args):
-        pass
+    @property
+    def pre_exec(self):
+
+        pre_exec = list()
+
+        # Translate upload directives into cURL command(s)
+        for download in self._kernel._download_input_data:
+
+            # see if a rename is requested
+            dl = download.split(">")
+            if len(dl) == 1:
+                # no rename
+                 cmd = "curl -L {0}".format(dl[0].strip())
+            elif len(dl) == 2:
+                 cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
+            else:
+                # error
+                raise Exception("Invalid transfer directive %s" % download)
+           
+            pre_exec.append(cmd)
+
+        if self._kernel._pre_exec is not None:
+            pre_exec.extend(self._kernel._pre_exec)
+
+        return pre_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def post_exec(self):
+        return self._kernel._post_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def executable(self):
+        return self._kernel._executable
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def arguments(self):
+        return self._kernel._arguments
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def environment(self):
+        return self._kernel._environment
 
     #---------------------------------------------------------------------------
     #
@@ -100,8 +147,8 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def _get_kernel_description(self, resource_key):
+    def _bind_to_resource(self, resource_key):
         """Returns the kernel description as a dictionary that can be 
            translated into a CU description.
         """
-        return self._kernel._get_kernel_description(resource_key)
+        return self._kernel._bind_to_resource(resource_key)

@@ -49,14 +49,15 @@ class Plugin(PluginBase):
 
         step_01_cus = list()
         for instance in range(0, pipeline_width):
-            kernel = pattern.step_01(instance)
 
-            kd = kernel._get_kernel_description(resource._resource_key)
+            kernel = pattern.step_01(instance)
+            kernel._bind_to_resource(resource._resource_key)
+
             cu = radical.pilot.ComputeUnitDescription()
 
-            cu.pre_exec = kd["pre_exec"]
-            cu.executable  = kd["executable"]
-            cu.arguments  = kd["arguments"]
+            cu.pre_exec   = kernel.pre_exec
+            cu.executable = kernel.executable
+            cu.arguments  = kernel.arguments
 
             step_01_cus.append(cu)
 

@@ -32,6 +32,13 @@ class KernelBase(object):
         self._args     = []
         self._raw_args = []
 
+        self._pre_exec            = None
+        self._post_exec           = None
+        self._environment         =  None
+
+        self._executable          = None
+        self._arguments           = None
+
         self._upload_input_data   = None
         self._download_input_data = None
         self._copy_input_data     = None
@@ -125,9 +132,8 @@ class KernelBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self, resource_key):
-        """Returns the kernel description as a dictionary that can be 
-           translated into a CU description.
+    def _bind_to_resource(self, resource_key):
+        """Binds the kernel to a specific resource.
         """
         raise NotImplementedError(
           method_name="_get_kernel_description",
