@@ -25,29 +25,46 @@ class UCL_BAC_FreeEnergy(Pipeline):
         Pipeline.__init__(self, width)
 
     def step_01(self, instance):
-        # There's only one step in this pipleline.
-        k = Kernel(name="misc.mkfile")
-        k.set_args(["--size=10000000", "--filename=asciifile-%{0}.dat".format(instance)])
-        return k
+        """This steps does the trajectory analysis, a.k.a free energy 
+           calculation. First, the input files are downloaded from a remote 
+           HTTP server. Next, MMPBSA reads the 'traj' ("trajectory") file and 
+           carries out the analysis. Finally, the output is transferred back to 
+           the machine on which this script is executed. 
+        """
+        mmpbsa = Kernel(name="md.mmpbsa")
+        mmpbsa.set_cores(4)
+        mmpbsa.set_args(
+            ["-i nmode.5h.py", "-cp com.top.2", "-rp rec.top.2", "-lp lig.top", "-y rep{0}.traj".format(instance)])
+        mmpbsa.download_input_data(
+            ["http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/com.top.2 > com.top.2",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/rec.top.2 > rec.top.2",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/lig.top > lig.top",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/nmode.5h.py > nmode.5h.py",
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/trajectories/rep1.traj > rep{0}.traj".format(instance)
+             ])
+        mmpbsa.download_output_data(
+            ["STDOUT > eq{0}.out".format(instance)])
+        return mmpbsa
 
 # ------------------------------------------------------------------------------
 #
 if __name__ == "__main__":
 
     try:
-        # Create a new static execution context with one resource and a fixed
-        # number of cores and runtime.
+        # Create a new single cluster environment with a fixed umber of 
+        # cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
-            walltime=15
+            resource="stampede.tacc.utexas.edu", 
+            cores=256,   # (4 cores * 64 tasks) 
+            walltime=30  # minutes
         )
 
         # According to the use-case, about 50 trajectories are simulated in a 
-        # production run. Hence, we set the pipeline width to 50.  
-        simchain = UCL_BAC_FreeEnergy(width=50)
+        # production run, so 50 analysis runs have to be performed.
+        # We set the pipeline width to 64.  
+        freenrg = UCL_BAC_FreeEnergy(width=64)
 
-        cluster.run(simchain)
+        cluster.run(freenrg)
 
     except EnsemblemdError, er:
 

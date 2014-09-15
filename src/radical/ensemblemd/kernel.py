@@ -68,6 +68,12 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
+    def output_data(self):
+        return self._kernel._download_output_data
+
+    #---------------------------------------------------------------------------
+    #
+    @property
     def executable(self):
         return self._kernel._executable
 
@@ -85,6 +91,18 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def uses_mpi(self):
+        return self._kernel._uses_mpi
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def cores(self):
+        return self._kernel._cores
+
+    #---------------------------------------------------------------------------
+    #
     def set_args(self, args):
         """Sets the arguments for the kernel.
         """
@@ -95,6 +113,19 @@ class Kernel(object):
         
         # Call the validate_args() method of the plug-in.
         self._kernel.validate_args(args)
+
+    #---------------------------------------------------------------------------
+    #
+    def set_cores(self, cores):
+        """Sets the number of MPI cores the kernel is using.
+        """
+        if type(cores) != int:
+            raise TypeError(
+                expected_type=int, 
+                actual_type=type(args))
+        
+        # Call the validate_args() method of the plug-in.
+        self._kernel._cores = cores
 
     #---------------------------------------------------------------------------
     #
@@ -130,6 +161,15 @@ class Kernel(object):
            execution directory.
         """
         self._kernel._link_input_data = data_directives
+
+    #---------------------------------------------------------------------------
+    #
+    def download_output_data(self, data_directives):
+        """Instructs the application to download one or more files or directories 
+           from the kernel's execution directory back to the
+           **machine the application is running on.** 
+        """
+        self._kernel._download_output_data = data_directives
 
     #---------------------------------------------------------------------------
     #

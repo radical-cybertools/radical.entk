@@ -61,18 +61,10 @@ class Kernel(KernelBase):
     # --------------------------------------------------------------------------
     #
     def _bind_to_resource(self, resource_key):
-        """(PRIVATE) Implements parent class method. Returns the kernel
-           description as a dictionary.
+        """(PRIVATE) Implements parent class method. 
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
-
-        if sys.platform == 'darwin':
-            # On OS X (all BSDs?) the tool is called shasum
-            chksum_tool = 'shasum'
-        else:
-            # On Linux the tool is called sha1sum
-            chksum_tool = 'sha1sum'
 
         executable = "/bin/bash"
         arguments  = ['-l', '-c', '{0} {1} > {2}'.format(
@@ -82,8 +74,8 @@ class Kernel(KernelBase):
         ]
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
-        
-        self._executable  = executable
+
+        self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]

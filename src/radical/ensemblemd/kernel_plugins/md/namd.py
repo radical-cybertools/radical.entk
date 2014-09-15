@@ -68,45 +68,18 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self, resource_key):
-        """(PRIVATE) Implements parent class method. Returns the kernel
-           description as a dictionary.
+    def _bind_to_resource(self, resource_key):
+        """(PRIVATE) Implements parent class method. 
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
-        # Translate upload directives into cURL command(s)
-        download_commands = ""
-        for download in self._download_input_data:
-
-            # see if a rename is requested
-            dl = download.split(">")
-            if len(dl) == 1:
-                # no rename
-                 cmd = "curl -L {0}".format(dl[0].strip())
-            elif len(dl) == 2:
-                 cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
-            else:
-                # error
-                raise Exception("Invalid transfer directive %s" % download)
-           
-            download_commands += "{0}".format(cmd)
-            if download != self._download_input_data[-1]:
-                download_commands += " && "
-
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        return {
-            "environment" : cfg["environment"],
-            "pre_exec"    : download_commands,
-            "post_exec"   : None,
-            "executable"  : cfg["executable"],
-            "arguments"   : self.get_raw_args(),
-            "use_mpi"     : cfg["uses_mpi"],
-            "input_data"  : {
-                "upload"      : self._upload_input_data,
-                "download"    : self._download_input_data,
-                "copy"        : self._copy_input_data,
-                "link"        : self._link_input_data,
-            }
-        }
+        self._executable  = cfg["executable"]
+        self._arguments   = self.get_raw_args()
+        self._environment = cfg["environment"]
+        self._uses_mpi    = cfg["uses_mpi"]
+        self._pre_exec    = cfg["pre_exec"] 
+        self._post_exec   = None
+

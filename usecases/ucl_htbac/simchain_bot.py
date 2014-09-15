@@ -25,34 +25,41 @@ class UCL_BAC_SimChain(Pipeline):
         Pipeline.__init__(self, width)
 
     def step_01(self, instance):
-        """This steps calculates the trajectories. 
+        """This steps does the trajectory simulation. First, the input files 
+           are downloaded from a remote HTTP server. Next, NAMD reads the 'inp' 
+           ("input") file and simulates the trajectory. Finally, the output is 
+           transferred back to the machine on which this script is executed. 
         """
-        k = Kernel(name="misc.chksum")
-        k.set_args(["--inputfile=complex.pdb", "--outputfile=complex.md5"])
-        k.download_input_data(
+        namd = Kernel(name="md.namd")
+        namd.set_cores(4)
+        namd.set_args(
+            ["eq{0}.inp".format(instance)])
+        namd.download_input_data(
             ["http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.pdb > complex.pdb",
              "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.top > complex.top",
              "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/cons.pdb > cons.pdb",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq{0}.inp".format(instance)])
-
-        return k
+             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq{0}.inp".format(instance)
+            ])
+        namd.download_output_data(
+            ["STDOUT > eq{0}.out".format(instance)])
+        return namd
 
 # ------------------------------------------------------------------------------
 #
 if __name__ == "__main__":
 
     try:
-        # Create a new static execution context with one resource and a fixed
-        # number of cores and runtime.
+        # Create a new single cluster environment with a fixed umber of 
+        # cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
-            walltime=15
+            resource="stampede.tacc.utexas.edu", 
+            cores=256,   # (4 cores * 64 tasks) 
+            walltime=30  # minutes
         )
 
         # According to the use-case, about 50 trajectories are simulated in a 
-        # production run. Hence, we set the pipeline width to 50.  
-        simchain = UCL_BAC_SimChain(width=2)
+        # production run. We set the pipeline width to 64.  
+        simchain = UCL_BAC_SimChain(width=64)
 
         cluster.run(simchain)
 

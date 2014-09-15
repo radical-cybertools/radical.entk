@@ -32,17 +32,23 @@ class KernelBase(object):
         self._args     = []
         self._raw_args = []
 
-        self._pre_exec            = None
-        self._post_exec           = None
-        self._environment         =  None
+        self._pre_exec               = None
+        self._post_exec              = None
+        self._environment            = None
 
-        self._executable          = None
-        self._arguments           = None
+        self._executable             = None
+        self._arguments              = None
+        self._uses_mpi               = None
+        self._cores                  = 1
 
-        self._upload_input_data   = None
-        self._download_input_data = None
-        self._copy_input_data     = None
-        self._link_input_data     = None
+
+        self._upload_input_data      = None
+        self._download_input_data    = None
+        self._copy_input_data        = None
+        self._link_input_data        = None
+
+        self._download_output_data   = None
+
 
     # --------------------------------------------------------------------------
     #
@@ -127,7 +133,7 @@ class KernelBase(object):
                     valid_arguments_set=self._info['arguments']
                 )
 
-        #self.get_logger().debug("Arguments ok: {0}.".format(args))
+        self.get_logger().debug("Arguments ok: {0}.".format(args))
         self._args = arg_config
 
     # --------------------------------------------------------------------------

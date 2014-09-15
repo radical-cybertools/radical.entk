@@ -55,9 +55,15 @@ class Plugin(PluginBase):
 
             cu = radical.pilot.ComputeUnitDescription()
 
-            cu.pre_exec   = kernel.pre_exec
-            cu.executable = kernel.executable
-            cu.arguments  = kernel.arguments
+            cu.pre_exec       = kernel.pre_exec
+            cu.executable     = kernel.executable
+            cu.arguments      = kernel.arguments
+            cu.mpi            = kernel.uses_mpi
+            cu.output_staging = kernel.output_data
+
+            # print str(cu)
+            # import sys
+            # sys.exit()
 
             step_01_cus.append(cu)
 
@@ -65,9 +71,9 @@ class Plugin(PluginBase):
         pmgr = radical.pilot.PilotManager(session=session)
 
         pdesc = radical.pilot.ComputePilotDescription()
-        pdesc.resource = "localhost"
-        pdesc.runtime  = 5 # minutes
-        pdesc.cores    = 1
+        pdesc.resource = resource._resource_key
+        pdesc.runtime  = resource._walltime
+        pdesc.cores    = resource._cores
         pdesc.cleanup  = True
 
         pilot = pmgr.submit_pilots(pdesc)
