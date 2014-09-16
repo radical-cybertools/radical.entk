@@ -45,7 +45,7 @@ class Kernel(object):
             dl = download.split(">")
             if len(dl) == 1:
                 # no rename
-                 cmd = "curl -L {0}".format(dl[0].strip())
+                 cmd = "curl -O {0}".format(dl[0].strip())
             elif len(dl) == 2:
                  cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
             else:

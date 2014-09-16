@@ -35,7 +35,7 @@ _KERNEL_INFO = {
             "environment"   : None,
             "pre_exec"      : None,
             "executable"    : "shasum",
-            "uses_mpi"      : "False"
+            "uses_mpi"      : False
         }
     }
 }
@@ -66,16 +66,16 @@ class Kernel(KernelBase):
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
+
         executable = "/bin/bash"
         arguments  = ['-l', '-c', '{0} {1} > {2}'.format(
-            chksum_tool,
+            cfg["executable"],
             self.get_arg("--inputfile="),
             self.get_arg("--outputfile="))
         ]
 
-        cfg = _KERNEL_INFO["machine_configs"][resource_key]
-
-        self._executable  = cfg["executable"]
+        self._executable  = executable
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]

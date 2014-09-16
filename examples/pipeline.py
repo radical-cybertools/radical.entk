@@ -32,9 +32,10 @@ from radical.ensemblemd import SingleClusterEnvironment
 # ------------------------------------------------------------------------------
 #
 class CharCount(Pipeline):
-    # 'CharCount' implements the three-step pipeline described above. It
-    # inherits from radical.ensemblemd.Pipeline, the abstract base class 
-    # for all pipelines. 
+    """'CharCount' implements the three-step pipeline described above. It
+       inherits from radical.ensemblemd.Pipeline, the abstract base class 
+       for all pipelines.
+    """
 
     def __init__(self, width):
         Pipeline.__init__(self, width)
