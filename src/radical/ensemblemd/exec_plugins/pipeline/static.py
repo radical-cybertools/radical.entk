@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os 
 import radical.pilot 
 
+from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
@@ -32,7 +33,6 @@ class Plugin(PluginBase):
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
 
-
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
@@ -46,26 +46,6 @@ class Plugin(PluginBase):
 
         self.get_logger().info("Executing pipeline of width {0} on {1} allocated core(s) on '{2}'".format(
             pipeline_width, resource._cores, resource._resource_key))
-
-        step_01_cus = list()
-        for instance in range(0, pipeline_width):
-
-            kernel = pattern.step_01(instance)
-            kernel._bind_to_resource(resource._resource_key)
-
-            cu = radical.pilot.ComputeUnitDescription()
-
-            cu.pre_exec       = kernel.pre_exec
-            cu.executable     = kernel.executable
-            cu.arguments      = kernel.arguments
-            cu.mpi            = kernel.uses_mpi
-            cu.output_staging = kernel.output_data
-
-            # print str(cu)
-            # import sys
-            # sys.exit()
-
-            step_01_cus.append(cu)
 
         session = radical.pilot.Session()
         pmgr = radical.pilot.PilotManager(session=session)
@@ -84,11 +64,38 @@ class Plugin(PluginBase):
 
         umgr.add_pilots(pilot)
 
-        units = umgr.submit_units(step_01_cus)
-        umgr.wait_units()
+        self.get_logger().info("Launched {0}-core pilot on {1}.".format(resource._cores, resource._resource_key))
 
-        for unit in units:
-            print "* Task %s (executed @ %s) state %s, exit code: %s, started: %s, finished: %s, stdout: %s" \
-                % (unit.uid, unit.execution_locations, unit.state, unit.exit_code, unit.start_time, unit.stop_time, unit.stdout)
+        for step in range(1, 64):
+            s_meth = getattr(pattern, 'step_{0}'.format(step))
 
+            try:
+                kernel = s_meth(0)
+            except NotImplementedError, ex:
+                # Not implemented means there are no further steps.
+                break
+
+            step_cus = list()
+            for instance in range(0, pipeline_width):
+
+                kernel = s_meth(instance)
+                kernel._bind_to_resource(resource._resource_key)
+
+                cu = radical.pilot.ComputeUnitDescription()
+                cu.pre_exec       = kernel.pre_exec
+                cu.executable     = kernel.executable
+                cu.arguments      = kernel.arguments
+                cu.mpi            = kernel.uses_mpi
+                cu.output_staging = kernel.output_data
+                step_cus.append(cu)
+                self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_width, cu.as_dict()))
+
+            self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_width, step))
+
+            units = umgr.submit_units(step_cus)
+            self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
+            self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
+            umgr.wait_units()
+
+        self.get_logger().info("Pipeline finished.")
         session.close()

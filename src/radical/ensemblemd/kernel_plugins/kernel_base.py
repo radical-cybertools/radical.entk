@@ -100,7 +100,7 @@ class KernelBase(object):
 
         if arg_config == "*":
             self._args = args
-            self.get_logger().debug("Free-form argument validation ok: {0}.".format(args))
+            #self.get_logger().debug("Free-form argument validation ok: {0}.".format(args))
             return
 
         for (arg, arg_info) in arg_config.iteritems():
@@ -133,7 +133,7 @@ class KernelBase(object):
                     valid_arguments_set=self._info['arguments']
                 )
 
-        self.get_logger().debug("Arguments ok: {0}.".format(args))
+        #self.get_logger().debug("Arguments ok: {0}.".format(args))
         self._args = arg_config
 
     # --------------------------------------------------------------------------

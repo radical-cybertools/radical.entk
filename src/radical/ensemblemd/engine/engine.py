@@ -163,7 +163,7 @@ class Engine(object):
                 break
 
         if kernel != None:
-            self._logger.debug("Selected kernel plug-in '{0}'.".format(kernel.get_name()))
+            #self._logger.debug("Selected kernel plug-in '{0}'.".format(kernel.get_name()))
             # Create a new instance of 'kernel' and return it to the caller.
             return kernel()
         else:

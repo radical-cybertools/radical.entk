@@ -41,36 +41,36 @@ class Pipeline(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def step_01(self, column):
+    def step_1(self, column):
         """The first step of the pipeline.
         """
         raise NotImplementedError(
-          method_name="step_01",
+          method_name="step_1",
           class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
-    def step_02(self, column):
+    def step_2(self, column):
         """The second step of the pipeline.
         """
         raise NotImplementedError(
-          method_name="step_02",
+          method_name="step_2",
           class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
-    def step_03(self, column):
+    def step_3(self, column):
         """The third step of the pipeline.
         """
         raise NotImplementedError(
-          method_name="step_03",
+          method_name="step_3",
           class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
-    def step_04(self, column):
+    def step_4(self, column):
         """The fourth step of the pipeline.
         """
         raise NotImplementedError(
-          method_name="step_04",
+          method_name="step_4",
           class_name=type(self))
