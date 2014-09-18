@@ -10,6 +10,7 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
+from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
@@ -27,7 +28,16 @@ _KERNEL_INFO = {
                         "mandatory": True,
                         "description": "The output file containing the character counts."
                         },
-                    }
+                    },
+    "machine_configs": 
+    {
+        "*": {
+            "environment"   : None,
+            "pre_exec"      : None,
+            "executable"    : "uniq",
+            "uses_mpi"      : False
+        }
+    }
 }
 
 
@@ -50,22 +60,29 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self):
-        """(PRIVATE) Implements parent class method. Returns the kernel
-           description as a dictionary.
+    def _bind_to_resource(self, resource_key):
+        """(PRIVATE) Implements parent class method. 
         """
+        if resource_key not in _KERNEL_INFO["machine_configs"]:
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
+
         executable = "/bin/bash" 
-        arguments  = ["-c \"grep -o . {0} | sort | uniq -c > {1}\"".format(
+        arguments  = ['-l', '-c', 'grep -o . {0} | sort | {1} -c > {2}'.format(
             self.get_arg("--inputfile="),
+            cfg["executable"],
             self.get_arg("--outputfile="))
         ]
 
-        return {
-            "environment" : None,
-            "pre_exec"    : None,
-            "post_exec"   : None,
-            "executable"  : executable,
-            "arguments"   : arguments,
-            "use_mpi"     : False
-        }
+        self._executable  = executable
+        self._arguments   = arguments
+        self._environment = cfg["environment"]
+        self._uses_mpi    = cfg["uses_mpi"]
+        self._pre_exec    = None 
+        self._post_exec   = None
 

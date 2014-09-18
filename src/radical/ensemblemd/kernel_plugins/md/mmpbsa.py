@@ -10,6 +10,7 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
+from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
@@ -67,7 +68,11 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. 
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
-            raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 

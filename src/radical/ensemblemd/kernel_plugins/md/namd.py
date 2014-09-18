@@ -21,7 +21,7 @@ _KERNEL_INFO = {
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs": 
     {
-        "localhost": {
+        "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : "namd2",
@@ -31,12 +31,6 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load TACC && module load namd/2.9"],
             "executable"    : "/opt/apps/intel13/mvapich2_1_9/namd/2.9/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "india.futuregrid.org": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : [],
-            "executable"    : "/N/u/marksant/software/bin/namd2",
             "uses_mpi"      : "True"
         },
         "archer.ac.uk": {
@@ -72,7 +66,11 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. 
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
-            raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 

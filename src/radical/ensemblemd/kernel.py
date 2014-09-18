@@ -39,21 +39,23 @@ class Kernel(object):
         pre_exec = list()
 
         # Translate upload directives into cURL command(s)
-        for download in self._kernel._download_input_data:
+        if self._kernel._download_input_data is not None:
+            for download in self._kernel._download_input_data:
 
-            # see if a rename is requested
-            dl = download.split(">")
-            if len(dl) == 1:
-                # no rename
-                 cmd = "curl -O {0}".format(dl[0].strip())
-            elif len(dl) == 2:
-                 cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
-            else:
-                # error
-                raise Exception("Invalid transfer directive %s" % download)
-           
-            pre_exec.append(cmd)
+                # see if a rename is requested
+                dl = download.split(">")
+                if len(dl) == 1:
+                    # no rename
+                     cmd = "curl -O {0}".format(dl[0].strip())
+                elif len(dl) == 2:
+                     cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
+                else:
+                    # error
+                    raise Exception("Invalid transfer directive %s" % download)
+               
+                pre_exec.append(cmd)
 
+        # Add existing pre-exec.
         if self._kernel._pre_exec is not None:
             pre_exec.extend(self._kernel._pre_exec)
 

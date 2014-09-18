@@ -2,19 +2,14 @@
 
 """ 
 This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
-to execute 16 concurrent pipeline of sequential tasks. In the first step of 
-each pipeline ``step_01``, a 10 MB input file is generated and filled with 
-ASCII charaters. In the second step ``step_02``, a character frequency analysis 
-if performed on this file. In the last step ``step_03``, an SHA1 checksum is 
-calculated for the analysis result.
-
-The results of the frequency analysis and the SHA1 checksums are copied
-back to the machine on which this script executes. 
+to execute a single "bag of tasks". A bag of tasks is modeled as a pipeline 
+with just one step. The "width" of the pipeline corresponds to the number of 
+tasks in the bag.
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python pipeline.py
+    RADICAL_ENMD_VERBOSE=info python bag_of_tasks.py
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -31,33 +26,30 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-class CharCount(Pipeline):
-    """'CharCount' implements the three-step pipeline described above. It
+class CalculateChecksums(Pipeline):
+    """CalculateChecksums' implements the bag of tasks described above. It
        inherits from radical.ensemblemd.Pipeline, the abstract base class 
        for all pipelines.
-    """
+    """ 
 
     def __init__(self, width):
         Pipeline.__init__(self, width)
 
     def step_1(self, instance):
-        k = Kernel(name="misc.mkfile")
-        k.set_args(["--size=10000000", "--filename=asciifile-{0}.dat".format(instance)])
-        return k
-
-    def step_2(self, instance):
-        k = Kernel(name="misc.ccount")
-        k.set_args(["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)])
-        k.link_input_data("$STEP_1/asciifile-{0}.dat".format(instance))
-        k.download_output_data("cfreqs-{0}.dat".format(instance))
-        return k
-
-    def step_3(self, instance):
+        """This step downloads a sample UTF-8 file from a remote websever and 
+           calculates the SHA1 checksum of that file. The checksum is written
+           to an output file and tranferred back.
+        """
         k = Kernel(name="misc.chksum")
-        k.set_args(["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sum".format(instance)])
-        k.link_input_data("$STEP_2/cfreqs-{0}.dat".format(instance))
-        k.download_output_data("cfreqs-{0}.sum".format(instance))
+        k.set_args(["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)])
+        k.download_input_data(
+            ["http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt"]
+        )
+        k.download_output_data(
+            ["checksum{0}.sha1".format(instance)]
+        )
         return k
+
 
 # ------------------------------------------------------------------------------
 #
@@ -68,7 +60,7 @@ if __name__ == "__main__":
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=1, 
+            cores=2, 
             walltime=15
         )
 
@@ -77,7 +69,7 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CharCount(width=16)
+        ccount = CalculateChecksums(width=16)
 
         cluster.run(ccount)
 
