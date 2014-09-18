@@ -3,9 +3,9 @@
 """ 
 This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
 to execute 16 concurrent pipeline of sequential tasks. In the first step of 
-each pipeline ``step_01``, a 10 MB input file is generated and filled with 
-ASCII charaters. In the second step ``step_02``, a character frequency analysis 
-if performed on this file. In the last step ``step_03``, an SHA1 checksum is 
+each pipeline ``step_1``, a 10 MB input file is generated and filled with 
+ASCII charaters. In the second step ``step_2``, a character frequency analysis 
+if performed on this file. In the last step ``step_3``, an SHA1 checksum is 
 calculated for the analysis result.
 
 The results of the frequency analysis and the SHA1 checksums are copied
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=1, 
+            cores=2, 
             walltime=15
         )
 
