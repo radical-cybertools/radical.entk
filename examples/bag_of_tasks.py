@@ -27,9 +27,9 @@ from radical.ensemblemd import SingleClusterEnvironment
 # ------------------------------------------------------------------------------
 #
 class CalculateChecksums(Pipeline):
-    """CalculateChecksums' implements the bag of tasks described above. It
-       inherits from radical.ensemblemd.Pipeline, the abstract base class 
-       for all pipelines.
+    """The CalculateChecksums class implements a bag of task. Since there is 
+        no explicit "bag of tasks" pattern template, we inherit from the
+        radical.ensemblemd.Pipeline pattern and define just one step. 
     """ 
 
     def __init__(self, width):
@@ -38,7 +38,8 @@ class CalculateChecksums(Pipeline):
     def step_1(self, instance):
         """This step downloads a sample UTF-8 file from a remote websever and 
            calculates the SHA1 checksum of that file. The checksum is written
-           to an output file and tranferred back.
+           to an output file and tranferred back to the host running this 
+           script.
         """
         k = Kernel(name="misc.chksum")
         k.set_args(["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)])
@@ -64,12 +65,13 @@ if __name__ == "__main__":
             walltime=15
         )
 
-        # Set the 'width' of the pipeline to 16. This means that 16 instances
-        # of the pipeline are executed. 
-        # Execution of the 16 pipeline instances can happen concurrently or 
+        # Set the 'width' of the pipeline to 32. This means that 32 instances
+        # of each pipeline step are executed. 
+        # 
+        # Execution of the 32 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CalculateChecksums(width=16)
+        ccount = CalculateChecksums(width=32)
 
         cluster.run(ccount)
 

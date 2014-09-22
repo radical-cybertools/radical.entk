@@ -32,20 +32,29 @@ from radical.ensemblemd import SingleClusterEnvironment
 # ------------------------------------------------------------------------------
 #
 class CharCount(Pipeline):
-    """'CharCount' implements the three-step pipeline described above. It
-       inherits from radical.ensemblemd.Pipeline, the abstract base class 
-       for all pipelines.
+    """The CharCount class implements a three-step pipeline. It inherits from 
+        radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
     """
 
     def __init__(self, width):
         Pipeline.__init__(self, width)
 
     def step_1(self, instance):
+        """The first step of the pipeline creates a 10 MB ASCI file.
+        """
         k = Kernel(name="misc.mkfile")
         k.set_args(["--size=10000000", "--filename=asciifile-{0}.dat".format(instance)])
         return k
 
     def step_2(self, instance):
+        """The second step of the pipeline does a character frequency analysis
+           on the file generated the first step. The result is transferred back
+           to the host running this script.
+
+           ..note: The variable ``$STEP_1`` used in ``link_input_data`` is 
+                   a reference to the working directory of step 1. ``$STEP_``
+                   can be used analogous to refernce other steps, i.e., ``$STEP_X``.
+        """
         k = Kernel(name="misc.ccount")
         k.set_args(["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)])
         k.link_input_data("$STEP_1/asciifile-{0}.dat".format(instance))
@@ -53,6 +62,10 @@ class CharCount(Pipeline):
         return k
 
     def step_3(self, instance):
+        """The third step of the pipeline creates a checksum of the output file
+           of the second step. The result is transferred back to the host 
+           running this script.
+        """
         k = Kernel(name="misc.chksum")
         k.set_args(["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sum".format(instance)])
         k.link_input_data("$STEP_2/cfreqs-{0}.dat".format(instance))
@@ -69,11 +82,12 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=2, 
-            walltime=15
+            walltime=30
         )
 
         # Set the 'width' of the pipeline to 16. This means that 16 instances
-        # of the pipeline are executed. 
+        # of each pipeline step are executed. 
+        # 
         # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
