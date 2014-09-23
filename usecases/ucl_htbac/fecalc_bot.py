@@ -32,18 +32,14 @@ class UCL_BAC_FreeEnergy(Pipeline):
            the machine on which this script is executed. 
         """
         mmpbsa = Kernel(name="md.mmpbsa")
-        mmpbsa.set_cores(4)
-        mmpbsa.set_args(
-            ["-i nmode.5h.py", "-cp com.top.2", "-rp rec.top.2", "-lp lig.top", "-y rep{0}.traj".format(instance)])
-        mmpbsa.download_input_data(
-            ["http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/com.top.2 > com.top.2",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/rec.top.2 > rec.top.2",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/lig.top > lig.top",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/nmode.5h.py > nmode.5h.py",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/trajectories/rep1.traj > rep{0}.traj".format(instance)
-             ])
-        mmpbsa.download_output_data(
-            ["STDOUT > eq{0}.out".format(instance)])
+        mmpbsa.core                 = 4
+        mmpbsa.arguments            = ["-i nmode.5h.py", "-cp com.top.2", "-rp rec.top.2", "-lp lig.top", "-y rep{0}.traj".format(instance)]
+        mmpbsa.download_input_data  = ["http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/com.top.2 > com.top.2",
+                                       "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/rec.top.2 > rec.top.2",
+                                       "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/lig.top > lig.top",
+                                       "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/nmode.5h.py > nmode.5h.py",
+                                       "http://testing.saga-project.org/cybertools/sampledata/BAC-MMBPSA/trajectories/rep1.traj > rep{0}.traj".format(instance)]
+        mmpbsa.download_output_data =  "STDOUT > eq{0}.out".format(instance)
         return mmpbsa
 
 # ------------------------------------------------------------------------------

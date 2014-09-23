@@ -43,7 +43,7 @@ class CharCount(Pipeline):
         """The first step of the pipeline creates a 10 MB ASCI file.
         """
         k = Kernel(name="misc.mkfile")
-        k.set_args(["--size=10000000", "--filename=asciifile-{0}.dat".format(instance)])
+        k.arguments = ["--size=10000000", "--filename=asciifile-{0}.dat".format(instance)]
         return k
 
     def step_2(self, instance):
@@ -56,9 +56,9 @@ class CharCount(Pipeline):
                    can be used analogous to refernce other steps, i.e., ``$STEP_X``.
         """
         k = Kernel(name="misc.ccount")
-        k.set_args(["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)])
-        k.link_input_data("$STEP_1/asciifile-{0}.dat".format(instance))
-        k.download_output_data("cfreqs-{0}.dat".format(instance))
+        k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
+        k.link_input_data      = "$STEP_1/asciifile-{0}.dat".format(instance)
+        k.download_output_data = "cfreqs-{0}.dat".format(instance)
         return k
 
     def step_3(self, instance):
@@ -67,9 +67,9 @@ class CharCount(Pipeline):
            running this script.
         """
         k = Kernel(name="misc.chksum")
-        k.set_args(["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sum".format(instance)])
-        k.link_input_data("$STEP_2/cfreqs-{0}.dat".format(instance))
-        k.download_output_data("cfreqs-{0}.sum".format(instance))
+        k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sum".format(instance)]
+        k.link_input_data      = "$STEP_2/cfreqs-{0}.dat".format(instance)
+        k.download_output_data = "cfreqs-{0}.sum".format(instance)
         return k
 
 # ------------------------------------------------------------------------------

@@ -120,11 +120,15 @@ class Plugin(PluginBase):
 
                 cu = radical.pilot.ComputeUnitDescription()
 
-                cu.pre_exec       = link # kernel.pre_exec
-                cu.executable     = kernel.executable
+                print "=============== WARNING - LINKING NOT IMPLEMENTED ================"
+
+                cu.pre_exec       = kernel._cu_def_pre_exec
+                cu.executable     = kernel._cu_def_executable
                 cu.arguments      = kernel.arguments
                 cu.mpi            = kernel.uses_mpi
-                cu.output_staging = kernel.output_data
+                cu.input_staging  = kernel._cu_def_input_data
+                cu.output_staging = kernel._cu_def_output_data
+
                 step_cus.append(cu)
                 self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_width, cu.as_dict()))
 

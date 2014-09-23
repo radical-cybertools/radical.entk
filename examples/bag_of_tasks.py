@@ -42,13 +42,9 @@ class CalculateChecksums(Pipeline):
            script.
         """
         k = Kernel(name="misc.chksum")
-        k.set_args(["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)])
-        k.download_input_data(
-            ["http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt"]
-        )
-        k.download_output_data(
-            ["checksum{0}.sha1".format(instance)]
-        )
+        k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
+        k.download_input_data  = "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt"
+        k.download_output_data = "checksum{0}.sha1".format(instance)
         return k
 
 

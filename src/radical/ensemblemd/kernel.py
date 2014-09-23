@@ -34,7 +34,7 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
-    def pre_exec(self):
+    def _cu_def_pre_exec(self):
 
         pre_exec = list()
 
@@ -55,6 +55,40 @@ class Kernel(object):
                
                 pre_exec.append(cmd)
 
+        # Translate copy directives into cp command(s)
+        if self._kernel._copy_input_data is not None:
+            for copy in self._kernel._copy_input_data:
+
+                # see if a rename is requested
+                dl = copy.split(">")
+                if len(dl) == 1:
+                    # no rename
+                     cmd = "cp -r {0} .".format(dl[0].strip())
+                elif len(dl) == 2:
+                     cmd = "cp -r {0} ./{1}".format(dl[0].strip(), dl[1].strip())
+                else:
+                    # error
+                    raise Exception("Invalid transfer directive %s" % copy)
+               
+                pre_exec.append(cmd)
+
+        # Translate link directives into ln command(s)
+        if self._kernel._link_input_data is not None:
+            for link in self._kernel._link_input_data:
+
+                # see if a rename is requested
+                dl = link.split(">")
+                if len(dl) == 1:
+                    # no rename
+                     cmd = "ln -s {0}".format(dl[0].strip())
+                elif len(dl) == 2:
+                     cmd = "ln -s {0} {1}".format(dl[0].strip(), dl[1].strip())
+                else:
+                    # error
+                    raise Exception("Invalid transfer directive %s" % link)
+               
+                pre_exec.append(cmd)
+
         # Add existing pre-exec.
         if self._kernel._pre_exec is not None:
             pre_exec.extend(self._kernel._pre_exec)
@@ -64,26 +98,26 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
-    def post_exec(self):
+    def _cu_def_post_exec(self):
         return self._kernel._post_exec
 
     #---------------------------------------------------------------------------
     #
     @property
-    def output_data(self):
+    def _cu_def_output_data(self):
         return self._kernel._download_output_data
 
     #---------------------------------------------------------------------------
     #
     @property
-    def executable(self):
-        return self._kernel._executable
+    def _cu_def_input_data(self):
+        return self._kernel._upload_input_data
 
     #---------------------------------------------------------------------------
     #
     @property
-    def arguments(self):
-        return self._kernel._arguments
+    def _cu_def_executable(self):
+        return self._kernel._executable
 
     #---------------------------------------------------------------------------
     #
@@ -105,7 +139,12 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def set_args(self, args):
+    @property
+    def arguments(self):
+        return self._kernel._arguments
+
+    @arguments.setter
+    def arguments(self, args):
         """Sets the arguments for the kernel.
         """
         if type(args) != list:
@@ -118,8 +157,13 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def set_cores(self, cores):
-        """Sets the number of MPI cores the kernel is using.
+    @property
+    def cores(self):
+        return self._kernel._cores
+
+    @cores.setter
+    def cores(self, cores):
+        """Sets the number of cores the kernel is using.
         """
         if type(cores) != int:
             raise TypeError(
@@ -131,46 +175,116 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def upload_input_data(self):
+        return self._kernel._upload_input_data
+
+    @upload_input_data.setter
     def upload_input_data(self, data_directives):
         """Instructs the application to upload one or more files or directories 
-           from the **machine the application is executing** into the kernel's 
+           from the host the script is running on into the kernel's 
            execution directory.
         """
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str, 
+                    actual_type=type(dd))
+
         self._kernel._upload_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def download_input_data(self):
+        return self._kernel._download_input_data
+
+    @download_input_data.setter
     def download_input_data(self, data_directives):
         """Instructs the kernel to download one or more files or directories 
-           from a **remote HTTP server** into the kernel's execution directory.
+           from a remote HTTP server into the kernel's execution directory.
         """
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str, 
+                    actual_type=type(dd))
+
         self._kernel._download_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def copy_input_data(self):
+        return self._kernel._copy_input_data
+
+    @copy_input_data.setter
     def copy_input_data(self, data_directives):
         """Instructs the kernel to copy one or more files or directories from
-           the **execution host's** filesystem into the kernel's execution 
+           the execution host's filesystem into the kernel's execution 
            directory.
         """
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str, 
+                    actual_type=type(dd))
+
         self._kernel._copy_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def link_input_data(self):
+        return self._kernel._link_input_data
+
+    @link_input_data.setter
     def link_input_data(self, data_directives):
         """Instructs the kernel to create a link to one or more files or 
-           directories on the *execution host's** filesystem in the kernel's 
+           directories on the execution host's filesystem in the kernel's 
            execution directory.
         """
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str, 
+                    actual_type=type(dd))
+
         self._kernel._link_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
+    @property 
+    def download_output_data(self):
+        return self._kernel._download_output_data
+
+    @download_output_data.setter
     def download_output_data(self, data_directives):
         """Instructs the application to download one or more files or directories 
            from the kernel's execution directory back to the
-           **machine the application is running on.** 
+           host the script is running on.
         """
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str, 
+                    actual_type=type(dd))
+
         self._kernel._download_output_data = data_directives
 
     #---------------------------------------------------------------------------

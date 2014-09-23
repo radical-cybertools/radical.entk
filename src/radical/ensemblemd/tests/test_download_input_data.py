@@ -2,6 +2,7 @@
 """
 import os
 import sys
+import glob
 import unittest
 
 
@@ -11,11 +12,13 @@ class TestDownloadInputData(unittest.TestCase):
 
     def setUp(self):
         # clean up fragments from previous tests
-        pass
+        for fl in glob.glob("./CHKSUM_*"):
+            os.remove(fl)
 
     def tearDown(self):
         # clean up after ourselves 
-        pass
+        for fl in glob.glob("./CHKSUM_*"):
+            os.remove(fl)
 
     #-------------------------------------------------------------------------
     #

@@ -31,17 +31,13 @@ class UCL_BAC_SimChain(Pipeline):
            transferred back to the machine on which this script is executed. 
         """
         namd = Kernel(name="md.namd")
-        namd.set_cores(4)
-        namd.set_args(
-            ["eq{0}.inp".format(instance)])
-        namd.download_input_data(
-            ["http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.pdb > complex.pdb",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.top > complex.top",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/cons.pdb > cons.pdb",
-             "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq{0}.inp".format(instance)
-            ])
-        namd.download_output_data(
-            ["STDOUT > eq{0}.out".format(instance)])
+        namd.core                 = 4
+        namd.arguments            = ["eq{0}.inp".format(instance)]
+        namd.download_input_data  = ["http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.pdb > complex.pdb",
+                                     "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/complex.top > complex.top",
+                                     "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/cons.pdb > cons.pdb",
+                                     "http://testing.saga-project.org/cybertools/sampledata/BAC-SIMCHAIN/simchain-sample-data/eq0.inp > eq{0}.inp".format(instance)]
+        namd.download_output_data =  "STDOUT > eq{0}.out".format(instance)
         return namd
 
 # ------------------------------------------------------------------------------
