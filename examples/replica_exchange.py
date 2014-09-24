@@ -5,7 +5,7 @@ This example shows how to use EnsembleMD Toolkit to execute sycnhronous RE patte
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
-RADICAL_ENMD_VERBOSE=info python replica_exchange_2.py
+RADICAL_ENMD_VERBOSE=info python replica_exchange.py
 """
  
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
@@ -38,13 +38,14 @@ class ReplicaP(Replica):
     This will have to be extended by users implementing RE pattern for 
     a particular kernel and scheme
     """
-    def __init__(self, my_id, new_temperature=None, cores=1):
+    def __init__(self, my_id, cores=1):
         """Constructor.
 
         Arguments:
         my_id - integer representing replica's id
         """
         self.id = int(my_id)
+        self.parameter = int(my_id) * 2
         self.cycle = 0
         
         super(ReplicaP, self).__init__(my_id)
@@ -55,12 +56,10 @@ class RePattern(ReplicaExchange):
     def __init__(self):
         """Constructor.
         """
-
-        self.inp_basename = "simula.md"
+        self.inp_basename = "simula"
         self.replicas = 4
         self.work_dir_local = os.getcwd()
         self.nr_cycles = 3     
-        self.structure = "protein.abcd"
 
         super(RePattern, self).__init__()
 
@@ -81,25 +80,33 @@ class RePattern(ReplicaExchange):
     #
     def build_input_file(self, replica):
         """
+        ok
         """
+        file_name = self.inp_basename + "_" + replica.id + ".md"
+        fo = open(file_name, "wb")
+        fo.write( "100, 120, 140, 160, 180, 200, 220, 240, 260, 280");
+        fo.close()
 
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
         """
+        ok
         """
+        input_name = self.inp_basename + "_" + replica.id + ".md"
+        output_name = self.inp_basename + "_" + replica.id + ".out"
 
-        k = Kernel(name="misc.toy_md")
-        k.set_args(replica.id, (replica.cycle-1), self.replicas, basename)
-        k.download_output_data(matrix_col)
-
+        k = Kernel(name="misc.ccount")
+        k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
+        k.link_input_data      = input_name
+        k.download_output_data = output_name
         return k
          
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
         """
-        For this example not needed...
+        ok
         """
         pass
 
@@ -107,6 +114,7 @@ class RePattern(ReplicaExchange):
     #
     def exchange(self, r_i, replicas, swap_matrix):
         """
+        ok
         """
         return random.choice(replicas)
 
@@ -114,16 +122,23 @@ class RePattern(ReplicaExchange):
     #
     def get_swap_matrix(self, replicas):
         """
+        ok
         """
-        pass
+        # init matrix
+        swap_matrix = [[ 0. for j in range(len(replicas))] 
+            for i in range(len(replicas))]
 
+        return swap_matrix
 
     #-------------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
         """
+        ok
         """
-        pass
+        param_i = replica_i.parameter
+        replica_i.parameter = replica_j.parameter
+        replica_j.parameter = param_i
 
 # ------------------------------------------------------------------------------
 #
