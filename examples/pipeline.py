@@ -81,7 +81,7 @@ if __name__ == "__main__":
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=2, 
+            cores=1, 
             walltime=30
         )
 

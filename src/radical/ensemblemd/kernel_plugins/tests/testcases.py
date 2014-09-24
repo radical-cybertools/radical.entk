@@ -36,8 +36,10 @@ class KernelTestCases(unittest.TestCase):
     def test_non_singularity(self):
         from radical.ensemblemd import Kernel
 
-        k1 = Kernel(kernel='misc.mkfile', args=["--size=10", "--filename=out"])
-        k2 = Kernel(kernel='misc.mkfile', args=["--size=20", "--filename=out"])
+        k1 = Kernel(name='misc.mkfile')
+        k1.arguments = ["--size=10", "--filename=out"]
+        k2 = Kernel(name='misc.mkfile')
+        k2.arguments = ["--size=20", "--filename=out"]
 
         assert k1 != k2
         assert k1.get_arg("--size=") != k2.get_arg("--size=")
