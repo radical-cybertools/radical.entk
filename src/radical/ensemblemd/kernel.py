@@ -159,12 +159,13 @@ class Kernel(object):
     #
     @property
     def cores(self):
+        """The number of cores the kernel is using.
+        """
         return self._kernel._cores
 
     @cores.setter
     def cores(self, cores):
-        """Sets the number of cores the kernel is using.
-        """
+
         if type(cores) != int:
             raise TypeError(
                 expected_type=int, 
@@ -177,14 +178,20 @@ class Kernel(object):
     #
     @property
     def upload_input_data(self):
+        """Instructs the application to upload one or more files or directories 
+           from the host the script is running on into the kernel's 
+           execution directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.upload_input_data = ["/location/on/HOST/RUNNING/THE/SCRIPT/data.txt > input.txt"]
+        """
         return self._kernel._upload_input_data
 
     @upload_input_data.setter
     def upload_input_data(self, data_directives):
-        """Instructs the application to upload one or more files or directories 
-           from the host the script is running on into the kernel's 
-           execution directory.
-        """
         if type(data_directives) != list:
             data_directives = [data_directives]
 
@@ -200,13 +207,24 @@ class Kernel(object):
     #
     @property
     def download_input_data(self):
+        """Instructs the kernel to download one or more files or directories 
+           from a remote HTTP server into the kernel's execution directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.download_input_data = ["http://REMOTE.WEBSERVER/location/data.txt > input.txt"]
+
+
+           .. note:: Supported URL types are ``http://`` and ``https://``.
+
+        """
         return self._kernel._download_input_data
 
     @download_input_data.setter
     def download_input_data(self, data_directives):
-        """Instructs the kernel to download one or more files or directories 
-           from a remote HTTP server into the kernel's execution directory.
-        """
+
         if type(data_directives) != list:
             data_directives = [data_directives]
 
@@ -222,14 +240,22 @@ class Kernel(object):
     #
     @property
     def copy_input_data(self):
+        """Instructs the kernel to copy one or more files or directories from
+           the execution host's filesystem into the kernel's execution 
+           directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.copy_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
+
+        """
         return self._kernel._copy_input_data
 
     @copy_input_data.setter
     def copy_input_data(self, data_directives):
-        """Instructs the kernel to copy one or more files or directories from
-           the execution host's filesystem into the kernel's execution 
-           directory.
-        """
+
         if type(data_directives) != list:
             data_directives = [data_directives]
 
@@ -245,14 +271,20 @@ class Kernel(object):
     #
     @property
     def link_input_data(self):
+        """Instructs the kernel to create a link to one or more files or 
+           directories on the execution host's filesystem in the kernel's 
+           execution directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.link_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
+        """
         return self._kernel._link_input_data
 
     @link_input_data.setter
     def link_input_data(self, data_directives):
-        """Instructs the kernel to create a link to one or more files or 
-           directories on the execution host's filesystem in the kernel's 
-           execution directory.
-        """
         if type(data_directives) != list:
             data_directives = [data_directives]
 
@@ -268,14 +300,21 @@ class Kernel(object):
     #
     @property 
     def download_output_data(self):
+        """Instructs the application to download one or more files or directories 
+           from the kernel's execution directory back to the
+           host the script is running on.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.download_output_data = ["output.txt > output-run-1.txt"]
+        """
         return self._kernel._download_output_data
 
     @download_output_data.setter
     def download_output_data(self, data_directives):
-        """Instructs the application to download one or more files or directories 
-           from the kernel's execution directory back to the
-           host the script is running on.
-        """
+
         if type(data_directives) != list:
             data_directives = [data_directives]
 

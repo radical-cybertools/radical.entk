@@ -10,7 +10,7 @@ Kernels
 =======
 
 .. autoclass:: radical.ensemblemd.Kernel
-    :members:
+    :members: 
     :inherited-members:
 
 
