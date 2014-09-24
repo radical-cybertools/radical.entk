@@ -230,23 +230,15 @@ class RePattern(ReplicaExchange):
         """
         """
         # name of the file which contains swap matrix column data for each replica
-        #matrix_col = "matrix_column_%s_%s.dat" % (r, (replicas[r].cycle-1))
-        #basename = self.inp_basename[:-5]
-        #cu = radical.pilot.ComputeUnitDescription()
-        #cu.executable = "python"
-        #calculator_path = os.path.dirname(namd_kernels_tex.namd_matrix_calculator_scheme_2.__file__)
-        #calculator = calculator_path + "/namd_matrix_calculator_scheme_2.py"
-        #cu.input_staging = [calculator]
-        #cu.arguments = ["namd_matrix_calculator_scheme_2.py", r, (replicas[r].cycle-1), len(replicas), basename]
-        #cu.cores = 1            
-        #cu.output_staging = [matrix_col]
-
-        matrix_col = "matrix_column_%s_%s.dat" % (replica.id, (replica.cycle-1))
+        matrix_col = "matrix_column_%s_%s.dat" % (r, (replicas[r].cycle-1))
         basename = self.inp_basename[:-5]
-
-        k = Kernel(name="misc.re.namd_matrix_calculator")
-        k.set_args(replica.id, (replica.cycle-1), self.replicas, basename)
-        k.download_output_data(matrix_col)
+        cu = radical.pilot.ComputeUnitDescription()
+        cu.executable = "python"
+        calculator = self.work_dir_local + "/namd_matrix_calculator.py"
+        cu.input_staging = [calculator]
+        cu.arguments = ["namd_matrix_calculator.py", r, (replicas[r].cycle-1), len(replicas), basename]
+        cu.cores = 1            
+        cu.output_staging = [matrix_col]
 
         return cu
 
