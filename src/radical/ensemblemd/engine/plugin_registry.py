@@ -13,5 +13,6 @@ __license__   = "MIT"
 
 plugin_registry = [ "radical.ensemblemd.exec_plugins.pipeline.static",
                     "radical.ensemblemd.exec_plugins.simulation_analysis_loop.static",
+                    "radical.ensemblemd.exec_plugins.replica_exchange.static_pattern_1",
                     "radical.ensemblemd.exec_plugins.replica_exchange.static_pattern_2"
                   ]

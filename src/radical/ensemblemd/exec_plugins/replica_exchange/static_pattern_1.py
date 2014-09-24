@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A static execution plugin RE pattern 2
+"""A static execution plugin RE pattern 1
 """
 
 __author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
@@ -16,7 +16,7 @@ from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 # ------------------------------------------------------------------------------
 # 
 _PLUGIN_INFO = {
-    "name":         "replica_exchange.static_pattern_2",
+    "name":         "replica_exchange.static_pattern_1",
     "pattern":      "ReplicaExchange",
     "context_type": "Static"
 }
@@ -74,29 +74,16 @@ class Plugin(PluginBase):
             submitted_replicas = unit_manager.submit_units(compute_replicas)
             unit_manager.wait_units()
             
-            if (i != (pattern.nr_cycles-1)):
-                #####################################################################
-                # computing swap matrix
-                #####################################################################
-                exchange_replicas = []
-                for r in replicas:
-                    ex_r = pattern.prepare_replica_for_exchange(r)
-                    exchange_replicas.append( ex_r )
-
-                self.get_logger().info("Performing Exchange step for replicas")
-                submitted_replicas = unit_manager.submit_units(exchange_replicas)
-                unit_manager.wait_units()
-
-                #####################################################################
-                # computing swap matrix
-                #####################################################################
-                self.get_logger().info("Computing swap matrix")
-                swap_matrix = pattern.get_swap_matrix(replicas)
+            #####################################################################
+            # computing swap matrix
+            #####################################################################
+            self.get_logger().info("Computing swap matrix")
+            swap_matrix = pattern.get_swap_matrix(replicas)
             
-                # this is actual exchnage
-                for r_i in replicas:
-                    r_j = pattern.exchange(r_i, replicas, swap_matrix)
-                    if (r_j != r_i):
-                        # swap parameters               
-                        pattern.perform_swap(r_i, r_j)
+            # this is actual exchnage
+            for r_i in replicas:
+                r_j = pattern.exchange(r_i, replicas, swap_matrix)
+                if (r_j != r_i):
+                    # swap parameters               
+                    pattern.perform_swap(r_i, r_j)
 
