@@ -244,7 +244,7 @@ class RePattern(ReplicaExchange):
 
     #-------------------------------------------------------------------------------
     #
-    def compose_swap_matrix(self, replicas):
+    def get_swap_matrix(self, replicas):
         """
         """
         base_name = "matrix_column"
@@ -274,6 +274,17 @@ class RePattern(ReplicaExchange):
                 raise
 
         return swap_matrix
+
+    #-------------------------------------------------------------------------------
+    #
+    def perform_swap(self, replica_i, replica_j):
+        # swap temperatures
+        temperature = replica_j.new_temperature
+        replica_j.new_temperature = replica_i.new_temperature
+        replica_i.new_temperature = temperature
+        # record that swap was performed
+        replica_i.swap = 1
+        replica_j.swap = 1
 
     #-------------------------------------------------------------------------------
     #

@@ -73,20 +73,22 @@ class ReplicaExchange(ExecutionPattern):
 
     #-------------------------------------------------------------------------------
     #
-    def compose_swap_matrix(self, replicas):
-        """Creates a swap matrix from matrix_column_x.dat files. 
-        matrix_column_x.dat - is populated on targer resource and then transferred back. This
-        file is created for each replica and has data for one column of swap matrix. In addition 
-        to that, this file holds path to pilot compute unit of the previous run, where reside 
-        output files for a given replica. There are slight variations based on scheme type, but 
-        this function is kernel independent. 
-
+    def get_swap_matrix(self, replicas):
+        """
         Arguments:
         replicas - list of Replica objects
 
         Returns:
         swap_matrix - 2D list of lists of dimension-less energies, where each column is a replica 
         and each row is a state
+        """
+
+        raise NotImplementedError(method_name="compose_swap_matrix", class_name=type(self))
+
+    #-------------------------------------------------------------------------------
+    #
+    def perform_swap(self, replica_i, replica_j):
+        """
         """
 
         raise NotImplementedError(method_name="compose_swap_matrix", class_name=type(self))
