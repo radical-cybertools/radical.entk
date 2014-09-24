@@ -93,8 +93,8 @@ class RePattern(ReplicaExchange):
         """
         ok
         """
-        input_name = self.inp_basename + "_" + replica.id + ".md"
-        output_name = self.inp_basename + "_" + replica.id + ".out"
+        input_name = self.inp_basename + "_" + str(replica.id) + ".md"
+        output_name = self.inp_basename + "_" + str(replica.id) + ".out"
 
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
