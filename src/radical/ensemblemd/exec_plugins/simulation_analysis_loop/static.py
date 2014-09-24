@@ -36,5 +36,5 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def execute_pattern(self, pattern):
+    def execute_pattern(self, pattern, resource):
         self.get_logger().info("Executing pattern...")

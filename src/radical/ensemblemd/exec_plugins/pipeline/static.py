@@ -87,40 +87,28 @@ class Plugin(PluginBase):
                 kernel = s_meth(instance)
                 kernel._bind_to_resource(resource._resource_key)
 
-                # Expand "link_input_data" here
-                input_data = kernel._kernel._link_input_data
-                if type(input_data) != list:
-                    input_data = [input_data]
+                if kernel._kernel._link_input_data is not None:
 
-                link = []
+                    for directive in kernel._kernel._link_input_data:
 
-                for directive in input_data:
-                    if directive is None:
-                        break
+                        if "$STEP_1" in directive:
+                            kernel._kernel._link_input_data.remove(directive)
+                            expanded_directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
+                            kernel._kernel._link_input_data.append(expanded_directive)
+                            print "expanding step 1: %s %s" % (directive, expanded_directive)
 
-                    # replace placeholders
-                    if "$STEP_1" in directive:
-                            directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
-                    if "$STEP_2" in directive:
-                            directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
+                        if "$STEP_2" in directive:
+                            kernel._kernel._link_input_data.remove(directive)
+                            expanded_directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
+                            kernel._kernel._link_input_data.append(expanded_directive)
+                            print "expanding step 2: %s %s" % (directive, expanded_directive)
 
-                    dl = directive.split(">")
-
-                    if len(dl) == 1:
-                        ln_cmd = "ln -s {0} .".format(dl[0].strip())
-                        link.append(ln_cmd)
-
-                    elif len(dl) == 2:
-                        ln_cmd = "ln -s {0} {1}".format(dl[0].strip(), dl[1].strip())
-                        link.append(ln_cmd)
-
-                    else:
-                        # error
-                        raise Exception("Invalid transfer directive %s" % download)
+                        if "$STEP_3" in directive:
+                            kernel._kernel._link_input_data.remove(directive)
+                            expanded_directive = directive.replace("$STEP_3", working_dirs["step_3"]["inst_{0}".format(instance+1)])
+                            kernel._kernel._link_input_data.append(expanded_directive)
 
                 cu = radical.pilot.ComputeUnitDescription()
-
-                print "=============== WARNING - LINKING NOT IMPLEMENTED ================"
 
                 cu.pre_exec       = kernel._cu_def_pre_exec
                 cu.executable     = kernel._cu_def_executable
