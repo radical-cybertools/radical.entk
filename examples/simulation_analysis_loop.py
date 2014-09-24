@@ -48,7 +48,7 @@ class RandomSA(SimulationAnalysisLoop):
     def analysis_step(self, iteration, instance):
         k = Kernel(name="misc.checkvalues")
         k.arguments = ["--inputfiles=simulation-iter%{0}-*.dat", "--value=42", "--outputfile=result-iter%{0}.dat".format(iteration)]
-        k.set_download_output(files="result-iter%{0}.dat")
+        k.download_output_data = "result-iter%{0}.dat"
         return k
 
     def post_loop(self):
