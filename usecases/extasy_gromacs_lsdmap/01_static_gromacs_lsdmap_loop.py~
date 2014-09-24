@@ -30,46 +30,47 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     def __init__(self, maxiterations, simulation_width=1, analysis_width=1):
         SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
     
-
+    def pre_loop(self):
+        # Pre_loop is executed before the main simulation-analysis loop is
+        # started. It is not used in this current example.
+        pass
+      
     def simulation_step(self, iteration, instance):
         '''TODO Vivek: add description of this step.
         '''
         pre_sim = Kernel(name="md.pre_gromacs")
-        pre_sim.upload_input_data = ["input%s.gro" %(iteration),"file_splitter.sh"]
-        pre_sim.arguments = ["--inputfile=input%s.gro"%(iteration)]
-        #pre_sim.download_output_data = ['input-iter%{0}-%{1}.gro'.format(iteration,instance)]
+        # k.set_upload_input(files='input%s.gro"%(iteration))
+        pre_sim.set_args(["--inputfiles=input%s.gro"%(iteration)])
+        pre_sim.set_download_output(files='input-iter%{0}-%{1}.gro'.format(iteration,instance))
 
         gromacs = Kernel(name="md.gromacs")
         # k.set_upload_input(files=['run.sh','input-iter%{0}-%{1}.gro > start.gro'.format(iteration,instance),'grompp.mdp','topol.top'])
-        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top","--inputfile=start.gro","--outputfile=out.gro"]
-        gromacs.link_input_data = ['$STEP_1/input-iter%{0}-%{1}.gro > start.gro'.format(iteration,instance)]
-        gromacs.copy_input_data = ['grompp.mdp','topol.top','run.sh']
-        gromacs.download_output_data = ['out.gro > out-iter%{0}-%{1}.gro'.format(iteration, instance)]
+        gromacs.set_args(["--grompp=grompp.mdp","--topol=topol.top","--inputfile=['run.sh','input-iter%{0}-%{1}.gro > start.gro'.format(iteration,instance),'grompp.mdp','topol.top']", "--outputfile=['out.gro > out-iter%{0}-%{1}.gro']".format(iteration, instance)])
+        gromacs.set_download_output(files='out.gro > out-iter%{0}-%{1}.gro'.format(iteration, instance))
 
-        post_sim = Kernel(name="md.post_gromacs")
-        post_sim.arguments = ["--outputfile=tmp.gro","--numCUs=64"]
-        post_sim.copy_input_data = ['out-iter%{0}-%{1}.gro'.format(iteration,instance)]
-        post_sim.download_output_data = ['tmp.gro > tmp%{0}.gro'.format(iteration)]
-
-        return [pre_sim, gromacs, post_sim]
+        return [pre_sim, gromacs]
     
     def analysis_step(self, iteration, instance):
         '''TODO Vivek: add description of this step.
         '''
         lsdmap = Kernel(name="md.lsdmap")
         # k.set_upload_input(files=['config.ini','tmp%{0}.gro'.format(iteration),'run_analyzer.sh'])
-        lsdmap.arguments = ["--nnfile=out.nn","--wfile=weight.w","--config=config.ini","--inputfile=tmp.gro"]
-        lsdmap.copy_input_data = ['config.ini','tmp%{0}.gro > tmp.gro'.format(iteration),'run_analyzer.sh']
-        lsdmap.download_output_data = ['tmp.eg > out.eg','tmp.ev > out.ev','out.nn','lsdmap.log']
+        lsdmap.set_args(["--nnfile=out.nn","--wfile=weight.w","--grofile=tmp%{0}.gro".format(iteration),"--inputfiles=['config.ini','tmp%{0}.gro'.format(iteration),'run_analyzer.sh']", "--outputfile=['tmp.eg > out.eg','tmp.ev > out.ev','out.nn']"])
+        lsdmap.set_download_output(files=['tmp.eg > out.eg','tmp.ev > out.ev','out.nn'])
     
         reweight = Kernel(name="md.update_reweight")
         # k.set_upload_input(files=['out.ev','out.nc','tmp%{0}.gro'.format(iteration)],'out.nn','weight.w')
-        reweight.arguments = ["--nruns=10000","--evfile=out.ev","--clones=out.nc","--grofile=tmp.gro","--nnfile=out.nn","--wfile=weight.w","--outputfile=out.gro"]
-        reweight.copy_input_data = ["out.ev","tmp%{0}.gro > tmp.gro".format(iteration),'out.nn','select.py','reweighting.py']
-        reweight.download_output_data = ['out.gro > input%s.gro'%(iteration+1)]
+        reweight.set_args(["--nruns=10000","--evfile=out.ev","--clones=out.nc","--grofile=tmp%{0}.gro".format(iteration),"--nnfile=out.nn","--wfile=weight.w","--outputfile=out.gro"])
+        reweight.set_download_output(files='out.gro > input%s.gro'%(iteration+1))
 
         return [lsdmap, reweight]
-
+  
+    def post_loop(self):
+        # post_loop is executed after the main simulation-analysis loop has
+        # finished. In this case of MSSA it is not required, will be required
+        # in the case of Multiple Analysis phases.
+        pass
+    
 
 # ------------------------------------------------------------------------------
 #

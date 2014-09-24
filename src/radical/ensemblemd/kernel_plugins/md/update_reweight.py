@@ -12,28 +12,47 @@ from copy import deepcopy
 from radical.ensemblemd.exceptions import ArgumentError
 from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
+import os
 
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "md.lsdmap",
+    "name":         "md.gromacs",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--nnfile=":
+    "arguments":   {"--nruns=":
+                        {
+                            "mandatory": True,
+                            "description": "Number of runs "
+                        },
+                    "--evfile=":
+                        {
+                            "mandatory": True,
+                            "description": "Eigen vector filename"
+                        },
+                    "--clones=":
+                        {
+                            "mandatory": True,
+                            "description": "Number of clones filename"
+                        },
+                    "--grofile=":
+                        {
+                            "mandatory": True,
+                            "description": "Input gro filename"
+                        },
+
+                    "--nnfile=":
                         {
                             "mandatory": True,
                             "description": "Nearest neighbor filename"
                         },
+
                     "--wfile=":
                         {
                             "mandatory": True,
                             "description": "Weight filename"
                         },
-                    "--config=":
-                        {
-                            "mandatory": True,
-                            "description": "LSDMap config filename"
-                        },
-                    "--inputfile=":
+
+                    "--outputfile=":
                         {
                             "mandatory": True,
                             "description": "Output gro filename"
@@ -48,26 +67,6 @@ _KERNEL_INFO = {
             "uses_mpi"      : False
         },
 
-        "trestles.sdsc.xsede.org":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python","module load scipy","module load mpi4py","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap && python $HOME/lsdmap/setup.py install --user))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
-        },
-
-        "stampede.tacc.utexas.edu":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
-        },
-
-        "archer.ac.uk":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python && source /fs4/e290/e290/vb224/myenv/bin/activate && module load numpy && module load scipy && module load lsdmap"],
-            "executable" : ["/bin/bash"]
-        }
     }
 }
 
@@ -103,10 +102,24 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
+        os.system('python select.py %s -s %s -o %s' %(self.get_args('--nruns='),self.get_args('--evfile='),self.get_args('--clones=')))
+        #Update Boltzman weights
+
+        os.system('python reweighting.py -c %s -n %s -s %s -w %s -o %s'  %(self.get_args('--grofile'),
+                                                                           self.get_args('--nnfile='),
+                                                                           self.get_args('--clones='),
+                                                                           self.get_args('--wfile='),
+                                                                           self.get_args('--outputfile='),
+                                                                           )
+                                                                            )
+
+        '''
         executable = "/bin/bash"
-        arguments = ['-l', '-c', '{0} run_analyzer.sh {1} {2}'.format(cfg["executable"],
-                                                                        self.get_args("--nnfile="),
-                                                                        self.get_args("--wfile="))]
+        arguments = ['-l', '-c', '{0} run.sh {1} {2} {3} {4}'.format(cfg["executable"],
+                                                                     self.get_arg("--grompp="),
+                                                                     self.get_arg("--inputfile="),
+                                                                     self.get_arg("--topol="),
+                                                                     self.get_arg("--outputfile="))]
        
         self._executable  = executable
         self._arguments   = arguments
@@ -114,3 +127,4 @@ class Kernel(KernelBase):
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"] 
         self._post_exec   = None
+        '''

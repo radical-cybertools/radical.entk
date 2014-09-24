@@ -12,68 +12,38 @@ from copy import deepcopy
 from radical.ensemblemd.exceptions import ArgumentError
 from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
+import os
 
 # ------------------------------------------------------------------------------
-# 
+#
 _KERNEL_INFO = {
-    "name":         "md.lsdmap",
+    "name":         "md.pre_gromacs",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--nnfile=":
+    "arguments":   {"--outputfile=":
                         {
                             "mandatory": True,
-                            "description": "Nearest neighbor filename"
+                            "description": "Output filename"
                         },
-                    "--wfile=":
+                    "--numCUs=":
                         {
                             "mandatory": True,
-                            "description": "Weight filename"
-                        },
-                    "--config=":
-                        {
-                            "mandatory": True,
-                            "description": "LSDMap config filename"
-                        },
-                    "--inputfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Output gro filename"
+                            "description": "Number of CUs"
                         }
                     },
-    "machine_configs": 
+    "machine_configs":
     {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : ".",
             "uses_mpi"      : False
-        },
-
-        "trestles.sdsc.xsede.org":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python","module load scipy","module load mpi4py","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap && python $HOME/lsdmap/setup.py install --user))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
-        },
-
-        "stampede.tacc.utexas.edu":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
-        },
-
-        "archer.ac.uk":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python && source /fs4/e290/e290/vb224/myenv/bin/activate && module load numpy && module load scipy && module load lsdmap"],
-            "executable" : ["/bin/bash"]
         }
     }
 }
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
@@ -92,7 +62,7 @@ class Kernel(KernelBase):
     # --------------------------------------------------------------------------
     #
     def _bind_to_resource(self, resource_key):
-        """(PRIVATE) Implements parent class method. 
+        """(PRIVATE) Implements parent class method.
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             if "*" in _KERNEL_INFO["machine_configs"]:
@@ -101,16 +71,23 @@ class Kernel(KernelBase):
             else:
                 raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
+        with open(self.get_args("--outputfile"), 'w') as output_grofile:
+        for i in range(0,self.get_args("--numCUs")):
+            with open('out%s.gro' % i, 'r') as output_file:
+                for line in output_file:
+                    print >> output_grofile, line.replace("\n", "")
+            os.remove('out%s.gro'%i)
+
+        '''
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = "/bin/bash"
-        arguments = ['-l', '-c', '{0} run_analyzer.sh {1} {2}'.format(cfg["executable"],
-                                                                        self.get_args("--nnfile="),
-                                                                        self.get_args("--wfile="))]
-       
+        arguments = ['-l', '-c', '{0} file_splitter.sh {1}'.format(cfg["executable"], self.get_arg("--inputfile="))]
+
         self._executable  = executable
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
+        self._pre_exec    = cfg["pre_exec"]
         self._post_exec   = None
+        '''
