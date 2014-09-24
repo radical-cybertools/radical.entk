@@ -51,9 +51,9 @@ class CharCount(Pipeline):
            on the file generated the first step. The result is transferred back
            to the host running this script.
 
-           ..note: The variable ``$STEP_1`` used in ``link_input_data`` is 
-                   a reference to the working directory of step 1. ``$STEP_``
-                   can be used analogous to refernce other steps, i.e., ``$STEP_X``.
+           ..note:: The variable ``$STEP_1`` used in ``link_input_data`` is 
+                    a reference to the working directory of step 1. ``$STEP_``
+                    can be used analogous to refernce other steps, i.e., ``$STEP_X``.
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
