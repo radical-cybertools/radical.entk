@@ -67,8 +67,16 @@ class Plugin(PluginBase):
         for i in range(pattern.nr_cycles):
             compute_replicas = []
             for r in replicas:
-                comp_r = pattern.prepare_replica_for_md(r)
-                compute_replicas.append( comp_r )
+                r_kernel = pattern.prepare_replica_for_md(r)
+
+                cu = radical.pilot.ComputeUnitDescription()
+                cu.pre_exec       = r_kernel._cu_def_pre_exec
+                cu.executable     = r_kernel._cu_def_executable
+                cu.arguments      = r_kernel.arguments
+                cu.mpi            = r_kernel.uses_mpi
+                cu.input_staging  = r_kernel._cu_def_input_data
+                cu.output_staging = r_kernel._cu_def_output_data
+                compute_replicas.append( cu )
 
             self.get_logger().info("Performing MD step for replicas")
             submitted_replicas = unit_manager.submit_units(compute_replicas)
