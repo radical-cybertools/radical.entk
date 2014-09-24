@@ -27,22 +27,18 @@ class Replica(object):
         my_id - integer representing replica's id
         """
         self.id = int(my_id)
-        self.swap = 0
-        self.new_temperature = 0
-       
+
+
 # ------------------------------------------------------------------------------
 #
 class ReplicaExchange(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, replicas, nr_cycles, basename):
+    def __init__(self):
         """
         """
         super(ReplicaExchange, self).__init__()
-        self.replicas = replicas
-        self.nr_cycles = nr_cycles
-        self.inp_basename = str(basename)
         self.replica_objects = None
 
     #-------------------------------------------------------------------------------
@@ -59,12 +55,7 @@ class ReplicaExchange(ExecutionPattern):
         Currently incomplete! Can be complete if we assume only temperature
         exchange RE, otherwise RE type must be passed as parameter.
         """
-        replicas = []
-        for k in range(self.replicas):
-            r = Replica(k)
-            replicas.append(r)
-            
-        return replicas
+        raise NotImplementedError(method_name="initialize_replicas", class_name=type(self))
 
     #-------------------------------------------------------------------------------
     #

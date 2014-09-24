@@ -42,9 +42,25 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def execute_pattern(self, pattern):
+    def execute_pattern(self, pattern, resource):
 
-        # LAUNCHING A PILOT HERE...
+        #####
+        # launching pilot
+        #####
+        session = radical.pilot.Session()
+        pmgr = radical.pilot.PilotManager(session=session)
+
+        pdesc = radical.pilot.ComputePilotDescription()
+        pdesc.resource = resource._resource_key
+        pdesc.runtime  = resource._walltime
+        pdesc.cores    = resource._cores
+        pdesc.cleanup  = False
+
+        pilot = pmgr.submit_pilots(pdesc)
+
+        unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+        unit_manager.add_pilots(pilot)
+        #####
 
         replicas = pattern.get_replicas()
 
@@ -55,7 +71,8 @@ class Plugin(PluginBase):
                 compute_replicas.append( comp_r )
 
             self.get_logger().info("Performing MD step for replicas")
-            # SUBMITTING TO UNIT MANAGER HERE...
+            submitted_replicas = unit_manager.submit_units(compute_replicas)
+            unit_manager.wait_units()
             
             if (i != (pattern.nr_cycles-1)):
                 #####################################################################
@@ -67,7 +84,8 @@ class Plugin(PluginBase):
                     exchange_replicas.append( ex_r )
 
                 self.get_logger().info("Performing Exchange step for replicas")
-                # SUBMITTING TO UNIT MANAGER HERE...
+                submitted_replicas = unit_manager.submit_units(exchange_replicas)
+                unit_manager.wait_units()
 
                 #####################################################################
                 # compose swap matrix from individual files
@@ -77,7 +95,6 @@ class Plugin(PluginBase):
             
                 # this is actual exchnage
                 for r_i in replicas:
-                    #rj = random.choice( replicas )
                     r_j = pattern.exchange(r_i, replicas, swap_matrix)
                     if (r_j != r_i):
                         # swap temperatures                    
