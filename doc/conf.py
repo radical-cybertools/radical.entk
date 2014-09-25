@@ -36,15 +36,18 @@ with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
 
     e = Engine()
     for kernel in  e._kernel_plugins:
-      ki = kernel().get_info()
-      print " > {0}".format(ki["name"])
-      kernels.write("{0}\n".format(ki["name"]))
-      kernels.write("{0}\n\n".format("-"*len(ki["name"])))
-      kernels.write("{0}\n\n".format(ki["description"]))
+        try:
+            ki = kernel().get_info()
+            print " > {0}".format(ki["name"])
+            kernels.write("{0}\n".format(ki["name"]))
+            kernels.write("{0}\n\n".format("-"*len(ki["name"])))
+            kernels.write("{0}\n\n".format(ki["description"]))
 
-      kernels.write("**Arguments:**\n\n")
-      kernels.write(".. code-block:: python\n\n")
-      kernels.write("    {0}\n\n".format(ki["arguments"]))
+            kernels.write("**Arguments:**\n\n")
+            kernels.write(".. code-block:: python\n\n")
+            kernels.write("    {0}\n\n".format(ki["arguments"]))
+        except Exception, ex:
+            print "=== ERROR DURING KERNEL LIST GENERATION: %s " % str(ex)
 ##
 ################################################################################
 
@@ -66,14 +69,17 @@ with open("{0}/examples.rst".format(script_dir), "w") as kernels:
       if example.endswith(".py") is False:
           continue # skip all non-python files
 
-      foo = imp.load_source('module.name', "../examples/{0}".format(example))
+      try:
+          foo = imp.load_source('module.name', "../examples/{0}".format(example))
 
-      kernels.write("{0}\n".format(foo.__example_name__))
-      kernels.write("{0}\n\n".format("-"*len(foo.__example_name__)))
-      kernels.write(foo.__doc__+"\n")
+          kernels.write("{0}\n".format(foo.__example_name__))
+          kernels.write("{0}\n\n".format("-"*len(foo.__example_name__)))
+          kernels.write(foo.__doc__+"\n")
 
-      kernels.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
-      kernels.write(".. literalinclude:: ../examples/{0}\n\n".format(example))
+          kernels.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
+          kernels.write(".. literalinclude:: ../examples/{0}\n\n".format(example))
+      except Exception, ex:
+          print "=== ERROR DURING EXAMPLE LIST GENERATION: %s " % str(ex)
 ##
 ################################################################################
 
@@ -98,14 +104,17 @@ with open("{0}/usecases.rst".format(script_dir), "w") as poc:
             if example.endswith(".py") is False:
                 continue # skip all non-python files
 
-            foo = imp.load_source('module.name', "../usecases/{0}/{1}".format(sub_dir, example))
+            try:
+                foo = imp.load_source('module.name', "../usecases/{0}/{1}".format(sub_dir, example))
 
-            poc.write("{0}\n".format(foo.__use_case_name__))
-            poc.write("{0}\n\n".format("-"*len(foo.__use_case_name__)))
-            poc.write(foo.__doc__+"\n")
+                poc.write("{0}\n".format(foo.__use_case_name__))
+                poc.write("{0}\n\n".format("-"*len(foo.__use_case_name__)))
+                poc.write(foo.__doc__+"\n")
 
-            poc.write(":download:`Download example: {0} <../usecases/{0}/{1}>`\n\n".format(sub_dir, example))
-            poc.write(".. literalinclude:: ../usecases/{0}/{1}\n\n".format(sub_dir, example))
+                poc.write(":download:`Download example: {0} <../usecases/{0}/{1}>`\n\n".format(sub_dir, example))
+                poc.write(".. literalinclude:: ../usecases/{0}/{1}\n\n".format(sub_dir, example))
+            except Exception, ex:
+                print "=== ERROR DURING USECASE LIST GENERATION: %s " % str(ex)
 ##
 ################################################################################
 
