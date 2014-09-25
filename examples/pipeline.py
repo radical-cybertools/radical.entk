@@ -11,6 +11,13 @@ calculated for the analysis result.
 The results of the frequency analysis and the SHA1 checksums are copied
 back to the machine on which this script executes. 
 
+.. figure:: images/pipeline_pattern.*
+   :width: 300pt
+   :align: center
+   :alt: Pipeline Pattern
+
+   Fig.: `The Pipeline Pattern.`
+
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
@@ -20,7 +27,7 @@ see log messages about plug-in invocation and simulation progress::
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "A Pipeline Example"
+__example_name__ = "Pipeline (generic)"
 
 
 from radical.ensemblemd import Kernel
@@ -91,7 +98,7 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CharCount(instances=1)
+        ccount = CharCount(instances=16)
 
         cluster.run(ccount)
 

@@ -95,13 +95,11 @@ class Plugin(PluginBase):
                             kernel._kernel._link_input_data.remove(directive)
                             expanded_directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
                             kernel._kernel._link_input_data.append(expanded_directive)
-                            print "expanding step 1: %s %s" % (directive, expanded_directive)
 
                         if "$STEP_2" in directive:
                             kernel._kernel._link_input_data.remove(directive)
                             expanded_directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
                             kernel._kernel._link_input_data.append(expanded_directive)
-                            print "expanding step 2: %s %s" % (directive, expanded_directive)
 
                         if "$STEP_3" in directive:
                             kernel._kernel._link_input_data.remove(directive)

@@ -16,7 +16,12 @@ PATTERN_NAME = "SimulationAnalysisLoop"
 # ------------------------------------------------------------------------------
 #
 class SimulationAnalysisLoop(ExecutionPattern):
-    
+    """ The Simulation-Analysis pattern.
+
+            .. image:: images/simulation_analysis_pattern.*
+               :width: 300pt
+    """
+
     #---------------------------------------------------------------------------
     #
     def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):

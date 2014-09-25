@@ -6,6 +6,13 @@ pattern to execute 64 iterations of a simulation analysis loop. Each
 ``simulation_step`` generates 16 files with a random value between [0..100]. 
 The ``analysis_step`` checks whether any of the values equals 42.
 
+.. figure:: images/simulation_analysis_pattern.*
+   :width: 300pt
+   :align: center
+   :alt: Simulation-Analysis Pattern
+
+   Fig.: `The Simulation-Analysis Pattern.`
+
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
@@ -15,7 +22,7 @@ see log messages about plug-in invocation and simulation progress::
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "A Simulation-Analysis-Loop Example"
+__example_name__ = "Simulation-Analysis (generic)"
 
 
 from radical.ensemblemd import Kernel

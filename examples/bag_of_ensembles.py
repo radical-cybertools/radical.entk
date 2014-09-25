@@ -2,20 +2,27 @@
 
 """ 
 This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
-to execute a single "bag of tasks". A bag of tasks is modeled as a pipeline 
-with just one step. The "instances" of the pipeline corresponds to the number of 
-tasks in the bag.
+to execute a single "Bag of Ensembles". A Bag of Ensembles is modeled as a 
+pipeline with just one step. The "instances" of the pipeline corresponds to the 
+number of tasks in the bag.
+
+.. figure:: images/bag_of_ensembles.*
+   :width: 300pt
+   :align: center
+   :alt: Bag of Ensembles
+
+   Fig.: `A Bag of Ensembles modelled as 1-step Pipeline.`
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about plug-in invocation and simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python bag_of_tasks.py
+    RADICAL_ENMD_VERBOSE=info python bag_of_ensembles.py
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "A Pipeline Example"
+__example_name__ = "Bag of Ensembles (generic)"
 
 
 from radical.ensemblemd import Kernel
@@ -27,8 +34,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 # ------------------------------------------------------------------------------
 #
 class CalculateChecksums(Pipeline):
-    """The CalculateChecksums class implements a bag of task. Since there is 
-        no explicit "bag of tasks" pattern template, we inherit from the
+    """The CalculateChecksums class implements a Bag of Ensembles. Since there 
+        is no explicit "Bag of Ensembles" pattern template, we inherit from the
         radical.ensemblemd.Pipeline pattern and define just one step. 
     """ 
 
