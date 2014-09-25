@@ -36,8 +36,8 @@ class CharCount(Pipeline):
         radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
     """
 
-    def __init__(self, width):
-        Pipeline.__init__(self, width)
+    def __init__(self, instances):
+        Pipeline.__init__(self, instances)
 
     def step_1(self, instance):
         """The first step of the pipeline creates a 10 MB ASCI file.
@@ -85,13 +85,13 @@ if __name__ == "__main__":
             walltime=30
         )
 
-        # Set the 'width' of the pipeline to 16. This means that 16 instances
+        # Set the 'instances' of the pipeline to 16. This means that 16 instances
         # of each pipeline step are executed. 
         # 
         # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CharCount(width=1)
+        ccount = CharCount(instances=1)
 
         cluster.run(ccount)
 

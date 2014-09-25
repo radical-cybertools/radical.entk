@@ -16,26 +16,33 @@ PATTERN_NAME = "Pipeline"
 # ------------------------------------------------------------------------------
 #
 class Pipeline(ExecutionPattern):
+    """ The pipeline pattern.
+
+            .. image:: images/pipeline_pattern.*
+               :width: 300pt
+    """
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, width=1):
+    def __init__(self, instances=1):
         """Creates a new Pipeline instance.
         """
-        self._width = width
+        self._instances = instances
         super(Pipeline, self).__init__()
 
     #---------------------------------------------------------------------------
     #
-    def get_width(self):
-        """Returns the width of the pipeline.
+    @property
+    def instances(self):
+        """Returns the instances of the pipeline.
         """
-        return self._width
+        return self._instances
         
     #---------------------------------------------------------------------------
     #
-    def get_name(self):
-        """Implements base class ExecutionPattern.get_name().
+    @property
+    def name(self):
+        """Returns the name of the pattern.
         """
         return PATTERN_NAME
 

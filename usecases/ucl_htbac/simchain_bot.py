@@ -21,8 +21,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 class UCL_BAC_SimChain(Pipeline):
 
-    def __init__(self, width):
-        Pipeline.__init__(self, width)
+    def __init__(self, instances):
+        Pipeline.__init__(self, instances)
 
     def step_01(self, instance):
         """This steps does the trajectory simulation. First, the input files 
@@ -54,8 +54,8 @@ if __name__ == "__main__":
         )
 
         # According to the use-case, about 50 trajectories are simulated in a 
-        # production run. We set the pipeline width to 64.  
-        simchain = UCL_BAC_SimChain(width=64)
+        # production run. We set the pipeline instances to 64.  
+        simchain = UCL_BAC_SimChain(instances=64)
 
         cluster.run(simchain)
 

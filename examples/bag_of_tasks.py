@@ -3,7 +3,7 @@
 """ 
 This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
 to execute a single "bag of tasks". A bag of tasks is modeled as a pipeline 
-with just one step. The "width" of the pipeline corresponds to the number of 
+with just one step. The "instances" of the pipeline corresponds to the number of 
 tasks in the bag.
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
@@ -32,8 +32,8 @@ class CalculateChecksums(Pipeline):
         radical.ensemblemd.Pipeline pattern and define just one step. 
     """ 
 
-    def __init__(self, width):
-        Pipeline.__init__(self, width)
+    def __init__(self, instances):
+        Pipeline.__init__(self, instances)
 
     def step_1(self, instance):
         """This step downloads a sample UTF-8 file from a remote websever and 
@@ -61,13 +61,13 @@ if __name__ == "__main__":
             walltime=15
         )
 
-        # Set the 'width' of the pipeline to 32. This means that 32 instances
+        # Set the 'instances' of the pipeline to 32. This means that 32 instances
         # of each pipeline step are executed. 
         # 
         # Execution of the 32 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CalculateChecksums(width=32)
+        ccount = CalculateChecksums(instances=32)
 
         cluster.run(ccount)
 

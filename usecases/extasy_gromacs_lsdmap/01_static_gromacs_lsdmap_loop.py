@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-TODO Vivek: Add description and instructions how to run, where to get \
+TODO Vivek: Add description and instructions how to run, where to get
 sample data from, etc. Refer to other use-cases for 'inspiration'.
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about plug-in invocation and simulation progress::
 
-RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py
+    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py
 """
 
 __author__        = "Vivek <vivek.balasubramanian@rutgers.edu>"
@@ -27,8 +27,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
-    def __init__(self, maxiterations, simulation_width=1, analysis_width=1):
-        SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
+    def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):
+        SimulationAnalysisLoop.__init__(self, maxiterations, simulation_instances, analysis_instances)
     
 
     def simulation_step(self, iteration, instance):
@@ -84,11 +84,11 @@ if __name__ == "__main__":
         walltime=15
       )
 
-      # We set the 'width' of the simulation step to 16. This means that 16
+      # We set the 'instances' of the simulation step to 16. This means that 16
       # instances of the simulation are executed every iteration.
-      # We set the 'width' of the analysis step to 1. This means that only
+      # We set the 'instances' of the analysis step to 1. This means that only
       # one instance of the analysis is executed for each iteration
-      randomsa = Gromacs_LSDMap(maxiterations=64, simulation_width=16, analysis_width=1)
+      randomsa = Gromacs_LSDMap(maxiterations=64, simulation_instances=16, analysis_instances=1)
 
       cluster.run(randomsa)
   

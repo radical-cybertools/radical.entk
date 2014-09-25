@@ -20,8 +20,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
-    def __init__(self, maxiterations, simulation_width, analysis_width):
-        SimulationAnalysisLoop.__init__(self, maxiterations, simulation_width, analysis_width)
+    def __init__(self, maxiterations, simulation_instances, analysis_instances):
+        SimulationAnalysisLoop.__init__(self, maxiterations, simulation_instances, analysis_instances)
 
     def pre_loop(self):
         pass
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             walltime=15
         )
 
-        coco_amber_static = Extasy_CocoAmber_Static(maxiterations=1, simulation_width=1, analysis_width=1)
+        coco_amber_static = Extasy_CocoAmber_Static(maxiterations=1, simulation_instances=1, analysis_instances=1)
         cluster.run(coco_amber_static)
 
     except EnsemblemdError, er:

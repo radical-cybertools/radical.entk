@@ -35,7 +35,8 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def get_name(self):
+    @property
+    def name(self):
         """Returns the name of the execution context.
         """
         return CONTEXT_NAME
@@ -54,8 +55,8 @@ class SingleClusterEnvironment(ExecutionContext):
 
         self._engine = Engine()
         plugin = self._engine.get_execution_plugin_for_pattern(
-            pattern_name=pattern.get_name(),
-            context_name=self.get_name(),
+            pattern_name=pattern.name,
+            context_name=self.name,
             plugin_name=force_plugin)
 
         plugin.verify_pattern(pattern)

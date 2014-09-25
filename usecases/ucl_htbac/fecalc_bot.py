@@ -21,8 +21,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 class UCL_BAC_FreeEnergy(Pipeline):
 
-    def __init__(self, width):
-        Pipeline.__init__(self, width)
+    def __init__(self, instances):
+        Pipeline.__init__(self, instances)
 
     def step_01(self, instance):
         """This steps does the trajectory analysis, a.k.a free energy 
@@ -57,8 +57,8 @@ if __name__ == "__main__":
 
         # According to the use-case, about 50 trajectories are simulated in a 
         # production run, so 50 analysis runs have to be performed.
-        # We set the pipeline width to 64.  
-        freenrg = UCL_BAC_FreeEnergy(width=64)
+        # We set the pipeline instances to 64.  
+        freenrg = UCL_BAC_FreeEnergy(instances=64)
 
         cluster.run(freenrg)
 

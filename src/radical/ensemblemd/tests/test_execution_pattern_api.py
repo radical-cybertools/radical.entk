@@ -36,7 +36,7 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
         from radical.ensemblemd import Pipeline
 
         dp = Pipeline()
-        assert dp.get_name() == "Pipeline"
+        assert dp.name == "Pipeline"
 
 
     #-------------------------------------------------------------------------
@@ -48,4 +48,4 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
         from radical.ensemblemd import SimulationAnalysisLoop
 
         dp = SimulationAnalysisLoop(maxiterations=1)
-        assert dp.get_name() == "SimulationAnalysisLoop"
+        assert dp.name == "SimulationAnalysisLoop"

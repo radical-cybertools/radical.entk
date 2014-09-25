@@ -19,7 +19,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
     
     #---------------------------------------------------------------------------
     #
-    def __init__(self, maxiterations, simulation_width=1, analysis_width=1):
+    def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):
         """Creates a new SimulationAnalysisLoop.
  
         **Arguments:**
@@ -29,12 +29,12 @@ class SimulationAnalysisLoop(ExecutionPattern):
               iterations the simulation-analysis loop is executed. After 
               maxiterations is reached, the loop terminates and `post_loop` is called.
 
-            * **simulation_width** [`int`]
-              The simulation_width parameter determines the number of independent 
+            * **simulation_instances** [`int`]
+              The simulation_instances parameter determines the number of independent 
               simulation instances launched for each `simulation_step`. 
 
-            * **analysis_width** [`int`]
-              The analysis_width parameter determines the number of independent 
+            * **analysis_instances** [`int`]
+              The analysis_instances parameter determines the number of independent 
               analysis instances launched for each `analysis_step`. 
 
         """
@@ -43,7 +43,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         
     #---------------------------------------------------------------------------
     #
-    def get_name(self):
+    @property
+    def name(self):
         """Returns the name of the pattern.
         """
         return PATTERN_NAME
@@ -86,7 +87,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             * **instance** [`int`]
               The instance parameter is a positive integer and references the 
               instance of the simulation step, which is in the range
-              [1 .. simulation_width].
+              [1 .. simulation_instances].
 
         
         **Returns:**
@@ -116,7 +117,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             * **instance** [`int`]
               The instance parameter is a positive integer and references the 
               instance of the simulation step, which is in the range
-              [1 .. simulation_width].
+              [1 .. simulation_instances].
 
         **Returns:**
 
@@ -148,7 +149,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             * **instance** [`int`]
               The instance parameter is a positive integer and references the 
               instance of the simulation step, which is in the range
-              [1 .. simulation_width].
+              [1 .. simulation_instances].
 
         **Returns:**
 
@@ -177,7 +178,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             * **instance** [`int`]
               The instance parameter is a positive integer and references the 
               instance of the simulation step, which is in the range
-              [1 .. simulation_width].
+              [1 .. simulation_instances].
 
         **Returns:**
 
@@ -208,7 +209,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             * **instance** [`int`]
               The instance parameter is a positive integer and references the 
               instance of the simulation step, which is in the range
-              [1 .. simulation_width].
+              [1 .. simulation_instances].
 
         **Returns:**
 

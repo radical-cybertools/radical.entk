@@ -33,7 +33,8 @@ class ExecutionPattern(object):
 
     #---------------------------------------------------------------------------
     #
-    def get_name(self):
+    @property
+    def name(self):
         """Returns the name of the execution pattern.
         """
         raise NotImplementedError(

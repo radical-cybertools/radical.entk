@@ -43,10 +43,10 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        pipeline_width = pattern.get_width()
+        pipeline_instances = pattern.instances
 
-        self.get_logger().info("Executing pipeline of width {0} on {1} allocated core(s) on '{2}'".format(
-            pipeline_width, resource._cores, resource._resource_key))
+        self.get_logger().info("Executing pipeline of instances {0} on {1} allocated core(s) on '{2}'".format(
+            pipeline_instances, resource._cores, resource._resource_key))
 
         session = radical.pilot.Session()
         pmgr = radical.pilot.PilotManager(session=session)
@@ -82,7 +82,7 @@ class Plugin(PluginBase):
                 break
 
             step_cus = list()
-            for instance in range(0, pipeline_width):
+            for instance in range(0, pipeline_instances):
 
                 kernel = s_meth(instance)
                 kernel._bind_to_resource(resource._resource_key)
@@ -118,9 +118,9 @@ class Plugin(PluginBase):
                 cu.output_staging = kernel._cu_def_output_data
 
                 step_cus.append(cu)
-                self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_width, cu.as_dict()))
+                self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cu.as_dict()))
 
-            self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_width, step))
+            self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_instances, step))
 
             units = umgr.submit_units(step_cus)
 

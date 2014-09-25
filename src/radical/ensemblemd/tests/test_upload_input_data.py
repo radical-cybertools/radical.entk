@@ -14,8 +14,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 class _TestUploadInputData_Pattern(Pipeline):
 
-    def __init__(self, width, upload_directives, checksum_inputfile, download_output):
-        Pipeline.__init__(self, width)
+    def __init__(self, instances, upload_directives, checksum_inputfile, download_output):
+        Pipeline.__init__(self, instances)
         self._upload_directives = upload_directives
         self._checksum_inputfile = checksum_inputfile
         self._download_output = download_output
@@ -53,7 +53,7 @@ class TestUploadInputData(unittest.TestCase):
         )
 
         test = _TestUploadInputData_Pattern(
-            width=1,
+            instances=1,
             upload_directives="/etc/passwd",
             checksum_inputfile="passwd",
             download_output="CHKSUM_1"
@@ -78,7 +78,7 @@ class TestUploadInputData(unittest.TestCase):
         )
 
         test = _TestUploadInputData_Pattern(
-            width=1,
+            instances=1,
             upload_directives="/etc/passwd > input",
             checksum_inputfile="input",
             download_output="CHKSUM_2"
@@ -103,7 +103,7 @@ class TestUploadInputData(unittest.TestCase):
         )
 
         test = _TestUploadInputData_Pattern(
-            width=1,
+            instances=1,
             upload_directives=["/etc/passwd", "/etc/group"],
             checksum_inputfile="passwd",
             download_output="CHKSUM_3"
@@ -128,7 +128,7 @@ class TestUploadInputData(unittest.TestCase):
         )
 
         test = _TestUploadInputData_Pattern(
-            width=1,
+            instances=1,
             upload_directives=["/etc/group > input_g", "/etc/passwd > input_p"],
             checksum_inputfile="input_p",
             download_output="CHKSUM_4"
