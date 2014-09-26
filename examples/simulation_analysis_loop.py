@@ -76,7 +76,7 @@ class RandomSA(SimulationAnalysisLoop):
         f.close()
 
         k = Kernel(name="misc.nop") 
-        k.upload_input_data("randval.cfg")
+        k.upload_input_data = "randval.cfg"
         return k
 
     def simulation_step(self, iteration, instance):

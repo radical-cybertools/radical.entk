@@ -67,6 +67,8 @@ class Plugin(PluginBase):
         if resource._allocation is not None:
             pdesc.project = resource._allocation
 
+        self.get_logger().info("Requesting resources on {0}".format(resource._resource_key))
+
         pilot = pmgr.submit_pilots(pdesc)
 
         umgr = radical.pilot.UnitManager(
@@ -142,5 +144,5 @@ class Plugin(PluginBase):
             self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
             umgr.wait_units()
 
-        self.get_logger().info("Pipeline finished.")
+        self.get_logger().info("Pattern execution finished finished.")
         session.close()
