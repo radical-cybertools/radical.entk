@@ -37,4 +37,6 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern, resource):
-        self.get_logger().info("Executing pattern...")
+
+        self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(
+            pattern.maxiterations, resource._cores, resource._resource_key))

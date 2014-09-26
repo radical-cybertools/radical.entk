@@ -43,6 +43,9 @@ class SimulationAnalysisLoop(ExecutionPattern):
               analysis instances launched for each `analysis_step`. 
 
         """
+        self._maxiterations = maxiterations
+        self._simulation_instances = simulation_instances
+        self._analysis_instances = analysis_instances
 
         super(SimulationAnalysisLoop, self).__init__()
         
@@ -53,6 +56,30 @@ class SimulationAnalysisLoop(ExecutionPattern):
         """Returns the name of the pattern.
         """
         return PATTERN_NAME
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def maxiterations(self):
+        """Returns the maximum number of loop iterations.
+        """
+        return self._maxiterations
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def simlation_instances(self):
+        """Returns the number of simulation instances per loop iteration.
+        """
+        return self._simulation_instances
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def analysis_instances(self):
+        """Returns the number of analysis instances per loop iteration.
+        """
+        return self._analysis_instances
 
     #---------------------------------------------------------------------------
     #

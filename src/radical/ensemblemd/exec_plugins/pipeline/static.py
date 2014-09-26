@@ -45,7 +45,7 @@ class Plugin(PluginBase):
 
         pipeline_instances = pattern.instances
 
-        self.get_logger().info("Executing pipeline of instances {0} on {1} allocated core(s) on '{2}'".format(
+        self.get_logger().info("Executing {0} pipeline instances on {1} allocated core(s) on '{2}'".format(
             pipeline_instances, resource._cores, resource._resource_key))
 
         session = radical.pilot.Session()

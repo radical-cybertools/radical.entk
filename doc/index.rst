@@ -1,5 +1,5 @@
-radical.ensemblemd
-##################
+RADICAL Ensemble MD Toolkit
+###########################
 
 .. figure:: images/oxytocin.*
    :width: 160pt
@@ -47,14 +47,7 @@ To install EnsembleMD Toolkit in a virtual environment, open a terminal and run:
     cd radical.ensemblemd
     python setup.py install
 
-
-Usage Examples
-**************
-
-.. toctree::
-   :maxdepth: 2
-
-   examples.rst
+.. include:: examples_toc.rst
 
 Use-Cases and Proof-of-Concepts
 *******************************

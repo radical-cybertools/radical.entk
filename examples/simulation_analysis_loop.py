@@ -101,11 +101,14 @@ class RandomSA(SimulationAnalysisLoop):
                     is a reference to the working directory of the prvious 
                     simulation step. It is also possible to reference a specific 
                     simulation step using ``$SIMULATION_N`` or all simulations
-                    via ``$SIMULATIONS``.
+                    via ``$SIMULATIONS``. Analogous placeholders exist for 
+                    ``ANALYSIS``.
         """
+        input = "iter-{0}-simulation-{1}.dat".format(iteration, instance)
+
         k = Kernel(name="misc.ccount")
-        k.link_input_data = ["$PREV_SIMULATION/iter-{0}-simulation-{1}.dat".format(iteration, instance)]
-        k.arguments       = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=analysis-iter{0}-{1}.dat".format(instance)]
+        k.link_input_data = ["$PREV_SIMULATION/{0}".format(input)]
+        k.arguments       = ["--inputfile={}".format(input), "--outputfile=analysis-iter{0}-{1}.dat".format(instance)]
         return k
 
     def post_loop(self):

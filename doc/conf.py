@@ -57,11 +57,18 @@ with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
 print "* Generating code example list: examples.rst"
 
 try:
-    os.remove("{0}/examples.rst".format(script_dir))
+    for fl in glob.glob("{0}/example*".format(script_dir)):
+        os.remove(fl)
 except OSError:
     pass
 
-with open("{0}/examples.rst".format(script_dir), "w") as kernels:
+with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
+    toc.write("Usage Examples\n")
+    toc.write("**************\n")
+    toc.write("\n")
+    toc.write(".. toctree::\n")
+    toc.write("   :maxdepth: 2\n")
+    toc.write("\n")
 
     examples = os.listdir("{0}/../examples/".format(script_dir))
     for example in examples:
@@ -70,14 +77,19 @@ with open("{0}/examples.rst".format(script_dir), "w") as kernels:
           continue # skip all non-python files
 
       try:
-          foo = imp.load_source('module.name', "../examples/{0}".format(example))
+          example_rst_filename = "example_"+example.replace(".py", ".rst")
+          with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
 
-          kernels.write("{0}\n".format(foo.__example_name__))
-          kernels.write("{0}\n\n".format("-"*len(foo.__example_name__)))
-          kernels.write(foo.__doc__+"\n")
+              foo = imp.load_source('module.name', "../examples/{0}".format(example))
 
-          kernels.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
-          kernels.write(".. literalinclude:: ../examples/{0}\n\n".format(example))
+              example_rst.write("{0}\n".format(foo.__example_name__))
+              example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
+              example_rst.write(foo.__doc__+"\n")
+              example_rst.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
+              example_rst.write(".. literalinclude:: ../examples/{0}\n\n".format(example))
+
+              toc.write("   {0}\n".format(example_rst_filename))
+
       except Exception, ex:
           print "=== ERROR DURING EXAMPLE LIST GENERATION: %s " % str(ex)
 ##
