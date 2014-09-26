@@ -49,6 +49,13 @@ class Plugin(PluginBase):
             pipeline_instances, resource._cores, resource._resource_key))
 
         session = radical.pilot.Session()
+
+        if resource._username is not None:
+            # Add an ssh identity to the session.
+            c = rp.Context('ssh')
+            c.user_id = resource._username
+            session.add_context(c)
+
         pmgr = radical.pilot.PilotManager(session=session)
 
         pdesc = radical.pilot.ComputePilotDescription()
@@ -56,6 +63,9 @@ class Plugin(PluginBase):
         pdesc.runtime  = resource._walltime
         pdesc.cores    = resource._cores
         pdesc.cleanup  = True
+
+        if resource._allocation is not None:
+            pdesc.project = resource._allocation
 
         pilot = pmgr.submit_pilots(pdesc)
 

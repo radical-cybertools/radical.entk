@@ -24,12 +24,14 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime):
+    def __init__(self, resource, cores, walltime, username=None, allocation=None):
         """Creates a new ExecutionContext instance.
         """
         self._resource_key = resource
         self._cores = cores
         self._walltime = walltime
+        self._username = username
+        self._allocation = allocation
 
         super(SingleClusterEnvironment, self).__init__()
 

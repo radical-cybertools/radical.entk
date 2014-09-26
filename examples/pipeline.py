@@ -23,12 +23,15 @@ messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python pipeline.py
 
-By default, this pipeline runs on one core your local machine local machine:: 
+By default, the pipeline steps run on one core your local machine:: 
 
     SingleClusterEnvironment(
         resource="localhost", 
         cores=1, 
-        walltime=30)
+        walltime=30,
+        username=None,
+        allocation=None
+    )
 
 You can change the script to use a remote HPC cluster and increase the number 
 of cores to see how this affects the runtime of the script as the individual
@@ -37,7 +40,10 @@ pipeline instances can run in parallel::
     SingleClusterEnvironment(
         resource="stampede.tacc.utexas.edu", 
         cores=16, 
-        walltime=30)
+        walltime=30,
+        username=None,  # add your username here 
+        allocation=None # add your allocation or project id here if required
+    )
 
 """
 
@@ -91,9 +97,9 @@ class CharCount(Pipeline):
            running this script.
         """
         k = Kernel(name="misc.chksum")
-        k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sum".format(instance)]
+        k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sha1".format(instance)]
         k.link_input_data      = "$STEP_2/cfreqs-{0}.dat".format(instance)
-        k.download_output_data = "cfreqs-{0}.sum".format(instance)
+        k.download_output_data = "cfreqs-{0}.sha1".format(instance)
         return k
 
 # ------------------------------------------------------------------------------
@@ -104,9 +110,11 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="stampede.tacc.utexas.edu", 
-            cores=16, 
-            walltime=30
+            resource="localhost", 
+            cores=1, 
+            walltime=30,
+            username=None,
+            allocation=None
         )
 
         # Set the 'instances' of the pipeline to 16. This means that 16 instances

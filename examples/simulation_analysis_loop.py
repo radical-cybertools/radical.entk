@@ -19,12 +19,15 @@ see log messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python simulation_analysis_loop.py
 
-By default, this pipeline runs on one core your local machine local machine:: 
+By default, simulation and analysis steps run on one core your local machine:: 
 
     SingleClusterEnvironment(
         resource="localhost", 
         cores=1, 
-        walltime=30)
+        walltime=30,
+        username=None,
+        allocation=None
+    )
 
 You can change the script to use a remote HPC cluster and increase the number 
 of cores to see how this affects the runtime of the script as the individual
@@ -33,7 +36,11 @@ pipeline instances can run in parallel::
     SingleClusterEnvironment(
         resource="stampede.tacc.utexas.edu", 
         cores=16, 
-        walltime=30)
+        walltime=30,
+        username=None,  # add your username here 
+        allocation=None # add your allocation or project id here if required
+    )
+
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -117,7 +124,9 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
-            walltime=15
+            walltime=15,
+            username=None,
+            allocation=None
         )
 
         # We set both the the simulation and the analysis step 'instances' to 16. 
