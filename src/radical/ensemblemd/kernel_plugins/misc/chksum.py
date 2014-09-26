@@ -33,8 +33,8 @@ _KERNEL_INFO = {
     {
         "*": {
             "environment"   : None,
-            "pre_exec"      : None,
-            "executable"    : "shasum",
+            "pre_exec"      : ["command -v sha1sum >/dev/null 2>&1 && export SHASUM=sha1sum  || export SHASUM=shasum"],
+            "executable"    : "$SHASUM",
             "uses_mpi"      : False
         }
     }
@@ -83,5 +83,5 @@ class Kernel(KernelBase):
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = None 
+        self._pre_exec    = cfg["pre_exec"] 
         self._post_exec   = None

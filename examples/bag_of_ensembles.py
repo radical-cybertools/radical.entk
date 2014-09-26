@@ -17,6 +17,23 @@ Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python bag_of_ensembles.py
+
+By default, this Bag of Ensembles runs on one core your local machine local 
+machine:: 
+
+    SingleClusterEnvironment(
+        resource="localhost", 
+        cores=1, 
+        walltime=30)
+
+You can change the script to use a remote HPC cluster and increase the number 
+of cores to see how this affects the runtime of the script as the individual
+ensembles in the bag can run in parallel::
+
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu", 
+        cores=32, 
+        walltime=30)
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"

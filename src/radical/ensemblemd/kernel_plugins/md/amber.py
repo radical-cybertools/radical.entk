@@ -25,6 +25,12 @@ _KERNEL_INFO = {
             "environment" : {},
             "pre_exec"    : ["module load TACC && module load amber"],
             "executable"  : ["/bin/bash"]
+        },
+        "archer.ac.uk":
+        {
+          "environment" : {},
+          "pre_exec" : ["module load packages-archer","module load amber"],
+          "executable" : ["/bin/bash"]
         }
     }
 }

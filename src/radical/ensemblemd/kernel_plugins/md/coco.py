@@ -20,11 +20,17 @@ _KERNEL_INFO = {
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs": 
     {
-        "stampede.tacc.utexas.edu": 
+        "stampede.tacc.utexas.edu":
         {
-            "environment" : {},
-            "pre_exec"    : ["module load TACC && module load amber"],
-            "executable"  : ["/bin/bash"]
+          "environment" : {},
+          "pre_exec" : ["module load TACC && module load python && module load mpi4py && module load amber"],
+          "executable" : ["/bin/bash"]
+        },
+        "archer.ac.uk":
+        {
+          "environment" : {},
+          "pre_exec" : ["module load python && module load numpy && module load scipy && module load coco && module load amber"],
+          "executable" : ["/bin/bash"]
         }
     }
 }

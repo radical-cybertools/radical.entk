@@ -43,7 +43,7 @@ _KERNEL_INFO = {
     {
         "*": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : [],
+            "pre_exec"      : ["sleep 1"],
             "executable"    : ".",
             "uses_mpi"      : False
         },

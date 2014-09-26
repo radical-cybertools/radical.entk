@@ -18,10 +18,27 @@ back to the machine on which this script executes.
 
    Fig.: `The Pipeline Pattern.`
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
-see log messages about plug-in invocation and simulation progress::
+Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` to see log 
+messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python pipeline.py
+
+By default, this pipeline runs on one core your local machine local machine:: 
+
+    SingleClusterEnvironment(
+        resource="localhost", 
+        cores=1, 
+        walltime=30)
+
+You can change the script to use a remote HPC cluster and increase the number 
+of cores to see how this affects the runtime of the script as the individual
+pipeline instances can run in parallel::
+
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu", 
+        cores=16, 
+        walltime=30)
+
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -58,9 +75,9 @@ class CharCount(Pipeline):
            on the file generated the first step. The result is transferred back
            to the host running this script.
 
-           ..note:: The variable ``$STEP_1`` used in ``link_input_data`` is 
+           ..note:: The placeholder ``$STEP_1`` used in ``link_input_data`` is 
                     a reference to the working directory of step 1. ``$STEP_``
-                    can be used analogous to refernce other steps, i.e., ``$STEP_X``.
+                    can be used analogous to refernce other steps.
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
@@ -87,8 +104,8 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="stampede.tacc.utexas.edu", 
+            cores=16, 
             walltime=30
         )
 

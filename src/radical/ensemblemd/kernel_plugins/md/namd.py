@@ -23,7 +23,7 @@ _KERNEL_INFO = {
     {
         "*": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : [],
+            "pre_exec"      : ["sleep 1"],
             "executable"    : "namd2",
             "uses_mpi"      : "False"
         },
@@ -37,6 +37,12 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load namd"],
             "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
+            "uses_mpi"      : "True"
+        },
+        "supermuc.lrz.de": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["source /etc/profile.d/modules.sh", "module load namd"],
+            "executable"    : "/lrz/sys/applications/namd/2.9.1/mpi.ibm/NAMD_CVS-2013-11-11_Source/Linux-x86_64-icc/namd2",
             "uses_mpi"      : "True"
         }
     }

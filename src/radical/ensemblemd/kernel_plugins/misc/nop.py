@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).
+"""A kernel that creates a new ASCII file with a given size and name.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -16,30 +16,16 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":            "md.mmpbsa",
-    "description":     "MMPBSA.py - End-State Free Energy Calculations (http://pubs.acs.org/doi/abs/10.1021/ct300418h).",
-    "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
+    "name":         "misc.nop",
+    "description":  "'NOP' (no op, a do-nothing operation) does absolutely nothing.",
+    "arguments":    "*",
     "machine_configs": 
     {
         "*": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["sleep 1"],
-            "executable"    : "MMPBSA.py",
-            "uses_mpi"      : "False"
-        },
-
-        "stampede.tacc.utexas.edu": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load python mpi4py amber"],
-            "executable"    : "/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/MMPBSA.py.MPI",
-            "uses_mpi"      : "True"
-        },
-
-        "archer.ac.uk": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load amber"],
-            "executable"    : "//work/y07/y07/amber/12/bin/MMPBSA.py.MPI",
-            "uses_mpi"      : "True"
+            "pre_exec"      : [],
+            "executable"    : ":",
+            "uses_mpi"      : False
         }
     }
 }
@@ -76,8 +62,11 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        self._executable  = cfg["executable"]
-        self._arguments   = self.get_raw_args()
+        executable = "/bin/bash"
+        arguments  = ['-l', '-c', '{0}'.format(cfg["executable"])]
+       
+        self._executable  = executable
+        self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"] 
