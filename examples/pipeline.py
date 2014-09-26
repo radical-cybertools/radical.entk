@@ -99,7 +99,7 @@ class CharCount(Pipeline):
         k = Kernel(name="misc.chksum")
         k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sha1".format(instance)]
         k.link_input_data      = "$STEP_2/cfreqs-{0}.dat".format(instance)
-        k.download_output_data = "cfreqs-{0}.sha1".format(instance)
+        k.download_output_data = "cfreqs-{0}.sha1gf".format(instance)
         return k
 
 # ------------------------------------------------------------------------------

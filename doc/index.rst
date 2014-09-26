@@ -1,13 +1,13 @@
-.. radical.ensemblemd documentation master file, created by
-   sphinx-quickstart on Thu Jul 24 13:51:41 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 radical.ensemblemd
 ##################
 
-radical.ensemblemd is a Python API and library for developing and executing 
-large-scale ensemble-based Molecular Dynamics simulations and workflows
+.. figure:: images/oxytocin.*
+   :width: 160pt
+   :align: right
+
+The radical.ensemblemd package is a Python API and library for developing and 
+executing large-scale ensemble-based Molecular Dynamics simulations and workflows
+
 
 **Project Github Page**
 
