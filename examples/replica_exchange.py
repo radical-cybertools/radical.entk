@@ -45,7 +45,7 @@ class ReplicaP(Replica):
         my_id - integer representing replica's id
         """
         self.id = int(my_id)
-        self.parameter = int(my_id) * 2
+        self.parameter = random.randint(300, 600)
         self.cycle = 0
         
         super(ReplicaP, self).__init__(my_id)
@@ -58,7 +58,6 @@ class RePattern(ReplicaExchange):
         """
         self.inp_basename = "simula"
         self.replicas = 4
-        self.work_dir_local = os.getcwd()
         self.nr_cycles = 3     
 
         super(RePattern, self).__init__()
@@ -80,11 +79,16 @@ class RePattern(ReplicaExchange):
     #
     def build_input_file(self, replica):
         """
-        ok
+        Generates dummy input file
         """
-        file_name = self.inp_basename + "_" + replica.id + ".md"
+
+        file_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
+
         fo = open(file_name, "wb")
-        fo.write( "100, 120, 140, 160, 180, 200, 220, 240, 260, 280");
+        for i in range(1,500):
+            fo.write(str(random.randint(i, 500) + i*2.5) + " ");
+            if i % 10 == 0:
+                fo.write(str("\n"));
         fo.close()
 
     # ------------------------------------------------------------------------------
@@ -93,20 +97,22 @@ class RePattern(ReplicaExchange):
         """
         ok
         """
-        input_name = self.inp_basename + "_" + str(replica.id) + ".md"
-        output_name = self.inp_basename + "_" + str(replica.id) + ".out"
+        input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
+        output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
 
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
-        k.link_input_data      = input_name
+        k.upload_input_data      = input_name
         k.download_output_data = output_name
+
+        replica.cycle = replica.cycle + 1
         return k
          
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
         """
-        ok
+        This is not used in this example, but implementation is still required
         """
         pass
 
@@ -114,7 +120,7 @@ class RePattern(ReplicaExchange):
     #
     def exchange(self, r_i, replicas, swap_matrix):
         """
-        ok
+        Given replica r_i returns replica r_i needs to perform an exchange with
         """
         return random.choice(replicas)
 
@@ -122,7 +128,7 @@ class RePattern(ReplicaExchange):
     #
     def get_swap_matrix(self, replicas):
         """
-        ok
+        Creates and populates swap matrix used to determine exchange probabilities
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
@@ -134,7 +140,7 @@ class RePattern(ReplicaExchange):
     #
     def perform_swap(self, replica_i, replica_j):
         """
-        ok
+        Performs an exchange of desired parameters
         """
         param_i = replica_i.parameter
         replica_i.parameter = replica_j.parameter

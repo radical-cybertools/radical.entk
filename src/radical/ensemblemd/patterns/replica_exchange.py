@@ -39,12 +39,13 @@ class ReplicaExchange(ExecutionPattern):
         """
         """
         super(ReplicaExchange, self).__init__()
-        self.replica_objects = None
+        self._replica_objects = None
 
     #-------------------------------------------------------------------------------
     #
-    def get_name(self):
-        """Implements base class ExecutionPattern.get_name().
+    @property
+    def name(self):
+        """Returns the name of the execution pattern.
         """
         return PATTERN_NAME
 
