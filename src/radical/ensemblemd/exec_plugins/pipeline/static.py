@@ -43,106 +43,128 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
+        #-----------------------------------------------------------------------
+        #
+        def pilot_state_cb (pilot, state) :
+            """ this callback is invoked on all pilot state changes """
+            self.get_logger().info("Resource {0} state has changed to {1}".format(
+                resource._resource_key, state))
+
+            if state == radical.pilot.FAILED:
+                self.get_logger().error("Resource error: {0}".format(pilot.log))
+                self.get_logger().error("Pattern execution FAILED.")
+                return 
+
+
         pipeline_instances = pattern.instances
 
         self.get_logger().info("Executing {0} pipeline instances on {1} allocated core(s) on '{2}'".format(
             pipeline_instances, resource._cores, resource._resource_key))
 
-        session = radical.pilot.Session()
+        try:
 
-        if resource._username is not None:
-            # Add an ssh identity to the session.
-            c = rp.Context('ssh')
-            c.user_id = resource._username
-            session.add_context(c)
+            session = radical.pilot.Session()
 
-        pmgr = radical.pilot.PilotManager(session=session)
+            if resource._username is not None:
+                # Add an ssh identity to the session.
+                c = rp.Context('ssh')
+                c.user_id = resource._username
+                session.add_context(c)
 
-        pdesc = radical.pilot.ComputePilotDescription()
-        pdesc.resource = resource._resource_key
-        pdesc.runtime  = resource._walltime
-        pdesc.cores    = resource._cores
-        pdesc.cleanup  = True
+            pmgr = radical.pilot.PilotManager(session=session)
+            pmgr.register_callback(pilot_state_cb)
 
-        if resource._allocation is not None:
-            pdesc.project = resource._allocation
+            pdesc = radical.pilot.ComputePilotDescription()
+            pdesc.resource = resource._resource_key
+            pdesc.runtime  = resource._walltime
+            pdesc.cores    = resource._cores
+            pdesc.cleanup  = True
 
-        self.get_logger().info("Requesting resources on {0}".format(resource._resource_key))
+            if resource._allocation is not None:
+                pdesc.project = resource._allocation
 
-        pilot = pmgr.submit_pilots(pdesc)
+            self.get_logger().info("Requesting resources on {0}".format(resource._resource_key))
 
-        umgr = radical.pilot.UnitManager(
-            session=session,
-            scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+            pilot = pmgr.submit_pilots(pdesc)
 
-        umgr.add_pilots(pilot)
+            umgr = radical.pilot.UnitManager(
+                session=session,
+                scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
-        self.get_logger().info("Launched {0}-core pilot on {1}.".format(resource._cores, resource._resource_key))
+            umgr.add_pilots(pilot)
 
-        working_dirs = {}
+            self.get_logger().info("Launched {0}-core pilot on {1}.".format(resource._cores, resource._resource_key))
 
-        for step in range(1, 64):
-            s_meth = getattr(pattern, 'step_{0}'.format(step))
+            working_dirs = {}
 
-            # Build up the working dir bookkeeping structure.
-            working_dirs["step_{0}".format(step)] = {}
+            for step in range(1, 64):
+                s_meth = getattr(pattern, 'step_{0}'.format(step))
 
-            try:
-                kernel = s_meth(0)
-            except NotImplementedError, ex:
-                # Not implemented means there are no further steps.
-                break
+                # Build up the working dir bookkeeping structure.
+                working_dirs["step_{0}".format(step)] = {}
 
-            step_cus = list()
-            for instance in range(0, pipeline_instances):
+                try:
+                    kernel = s_meth(0)
+                except NotImplementedError, ex:
+                    # Not implemented means there are no further steps.
+                    break
 
-                kernel = s_meth(instance)
-                kernel._bind_to_resource(resource._resource_key)
+                step_cus = list()
+                for instance in range(0, pipeline_instances):
 
-                if kernel._kernel._link_input_data is not None:
+                    kernel = s_meth(instance)
+                    kernel._bind_to_resource(resource._resource_key)
 
-                    for directive in kernel._kernel._link_input_data:
+                    if kernel._kernel._link_input_data is not None:
 
-                        if "$STEP_1" in directive:
-                            kernel._kernel._link_input_data.remove(directive)
-                            expanded_directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
-                            kernel._kernel._link_input_data.append(expanded_directive)
+                        for directive in kernel._kernel._link_input_data:
 
-                        if "$STEP_2" in directive:
-                            kernel._kernel._link_input_data.remove(directive)
-                            expanded_directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
-                            kernel._kernel._link_input_data.append(expanded_directive)
+                            if "$STEP_1" in directive:
+                                kernel._kernel._link_input_data.remove(directive)
+                                expanded_directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
+                                kernel._kernel._link_input_data.append(expanded_directive)
 
-                        if "$STEP_3" in directive:
-                            kernel._kernel._link_input_data.remove(directive)
-                            expanded_directive = directive.replace("$STEP_3", working_dirs["step_3"]["inst_{0}".format(instance+1)])
-                            kernel._kernel._link_input_data.append(expanded_directive)
+                            if "$STEP_2" in directive:
+                                kernel._kernel._link_input_data.remove(directive)
+                                expanded_directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
+                                kernel._kernel._link_input_data.append(expanded_directive)
 
-                cu = radical.pilot.ComputeUnitDescription()
+                            if "$STEP_3" in directive:
+                                kernel._kernel._link_input_data.remove(directive)
+                                expanded_directive = directive.replace("$STEP_3", working_dirs["step_3"]["inst_{0}".format(instance+1)])
+                                kernel._kernel._link_input_data.append(expanded_directive)
 
-                cu.pre_exec       = kernel._cu_def_pre_exec
-                cu.executable     = kernel._cu_def_executable
-                cu.arguments      = kernel.arguments
-                cu.mpi            = kernel.uses_mpi
-                cu.input_staging  = kernel._cu_def_input_data
-                cu.output_staging = kernel._cu_def_output_data
+                    cu = radical.pilot.ComputeUnitDescription()
 
-                step_cus.append(cu)
-                self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cu.as_dict()))
+                    cu.pre_exec       = kernel._cu_def_pre_exec
+                    cu.executable     = kernel._cu_def_executable
+                    cu.arguments      = kernel.arguments
+                    cu.mpi            = kernel.uses_mpi
+                    cu.input_staging  = kernel._cu_def_input_data
+                    cu.output_staging = kernel._cu_def_output_data
 
-            self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_instances, step))
+                    step_cus.append(cu)
+                    self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cu.as_dict()))
 
-            units = umgr.submit_units(step_cus)
+                self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_instances, step))
 
-            # TODO: ensure working_dir <-> instance mapping
-            instance = 0
-            for unit in units:
-                instance += 1
-                working_dirs["step_{0}".format(step)]["inst_{0}".format(instance)] = saga.Url(unit.working_directory).path
+                units = umgr.submit_units(step_cus)
 
-            self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
-            self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
-            umgr.wait_units()
+                # TODO: ensure working_dir <-> instance mapping
+                instance = 0
+                for unit in units:
+                    instance += 1
+                    working_dirs["step_{0}".format(step)]["inst_{0}".format(instance)] = saga.Url(unit.working_directory).path
 
-        self.get_logger().info("Pattern execution finished finished.")
-        session.close()
+                self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
+                self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
+                finished_units = umgr.wait_units()
+
+
+            self.get_logger().info("Pattern execution successful.")
+        except Exception, ex:
+            self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
+
+        finally:
+            self.get_logger().info("Deallocating resource.")
+            session.close()
