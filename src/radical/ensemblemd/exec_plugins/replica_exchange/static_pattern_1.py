@@ -97,7 +97,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Computing swap matrix")
                 swap_matrix = pattern.get_swap_matrix(replicas)
             
-                # this is actual exchnage
+                # this is actual exchange
                 for r_i in replicas:
                     r_j = pattern.exchange(r_i, replicas, swap_matrix)
                     if (r_j != r_i):
