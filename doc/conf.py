@@ -80,8 +80,7 @@ with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
           example_rst_filename = "example_"+example.replace(".py", ".rst")
           with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
 
-              foo = imp.load_source('module.name', "../examples/{0}".format(example))
-
+              foo = imp.load_source('module.name', "../examples/{0}".format(example))              
               example_rst.write("{0}\n".format(foo.__example_name__))
               example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
               example_rst.write(foo.__doc__+"\n")

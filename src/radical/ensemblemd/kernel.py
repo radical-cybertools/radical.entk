@@ -46,9 +46,9 @@ class Kernel(object):
                 dl = download.split(">")
                 if len(dl) == 1:
                     # no rename
-                     cmd = "curl -O {0}".format(dl[0].strip())
+                     cmd = "curl --insecure -O {0}".format(dl[0].strip())
                 elif len(dl) == 2:
-                     cmd = "curl -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
+                     cmd = "curl --insecure -L {0} -o {1}".format(dl[0].strip(), dl[1].strip())
                 else:
                     # error
                     raise Exception("Invalid transfer directive %s" % download)

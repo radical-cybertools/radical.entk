@@ -6,10 +6,8 @@ to execute 16 concurrent pipeline of sequential tasks. In the first step of
 each pipeline ``step_1``, a 10 MB input file is generated and filled with 
 ASCII charaters. In the second step ``step_2``, a character frequency analysis 
 if performed on this file. In the last step ``step_3``, an SHA1 checksum is 
-calculated for the analysis result.
-
-The results of the frequency analysis and the SHA1 checksums are copied
-back to the machine on which this script executes. 
+calculated for the analysis result. The results of the frequency analysis and 
+the SHA1 checksums are copied back to the machine on which this script runs. 
 
 .. figure:: images/pipeline_pattern.*
    :width: 300pt

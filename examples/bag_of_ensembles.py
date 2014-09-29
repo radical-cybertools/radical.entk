@@ -4,7 +4,7 @@
 This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
 to execute a single "Bag of Ensembles". A Bag of Ensembles is modeled as a 
 pipeline with just one step. The "instances" of the pipeline corresponds to the 
-number of tasks in the bag.
+number of ensembles in the bag.
 
 .. figure:: images/bag_of_ensembles.*
    :width: 300pt

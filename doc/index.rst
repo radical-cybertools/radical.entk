@@ -58,8 +58,8 @@ Use-Cases and Proof-of-Concepts
    usecases.rst
 
 
-Application Kernels and Plug-Ins
-********************************
+Application Kernels
+*******************
 
 .. toctree::
    :maxdepth: 2
