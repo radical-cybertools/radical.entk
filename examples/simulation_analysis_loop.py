@@ -71,26 +71,30 @@ class RandomSA(SimulationAnalysisLoop):
            started. In this example we use the pre_loop to upload a global 
            'configuration' file for the random value generator.
         """
-        f = open('randval.cfg','w')
+        f = open('input2.dat','w')
         f.write('upperlimit=100\n')
         f.close()
 
-        k = Kernel(name="misc.nop") 
-        k.upload_input_data = "randval.cfg"
+        f = open('input1.dat','w')
+        f.write('upperlimit=123123123\n')
+        f.close()
+
+        k = Kernel(name="misc.levenshtein")
+        k.upload_input_data = ["input1.dat", "input2.dat"]
+        k.arguments  = ["--inputfile1=input1.dat", "--inputfile2=input2.dat", "--outputfile=output.dat"]
         return k
 
     def simulation_step(self, iteration, instance):
-        """The simulation generates a files with a random value between 0 and 
-           whatever upper limit was defined in `randval.cfg` and writes it to
-           a file.
+        """The simulation generates a 1 MB file containing random ASCII
+           characters.
 
            ..note:: The placeholder ``$PRE_LOOP`` used in ``link_input_data`` is 
                     a reference to the working directory of pre_loop. It is 
                     defined as part of the pattern.
         """
         k = Kernel(name="misc.mkfile") 
-        k.link_input_data = ["$PRE_LOOP/sim.cfg"]
-        k.arguments       = ["--size=1000000", "--filename=iter-{0}-simulation-{1}.dat".format(iteration, instance)]
+        k.link_input_data = ["$PRE_LOOP/sim.cfg"] # not really used here.
+        k.arguments       = ["--size=100000", "--filename=iter-{0}-simulation-{1}.dat".format(iteration, instance)]
         return k
 
     def analysis_step(self, iteration, instance):

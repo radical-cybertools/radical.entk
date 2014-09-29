@@ -52,7 +52,6 @@ class Plugin(PluginBase):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: {0}".format(pilot.log))
                 self.get_logger().error("Pattern execution FAILED.")
-                return 
 
         #-----------------------------------------------------------------------
         #

@@ -20,5 +20,6 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.misc.nop",
     "radical.ensemblemd.kernel_plugins.misc.mkfile",
     "radical.ensemblemd.kernel_plugins.misc.ccount",
-    "radical.ensemblemd.kernel_plugins.misc.chksum"
+    "radical.ensemblemd.kernel_plugins.misc.chksum",
+    "radical.ensemblemd.kernel_plugins.misc.levenshtein"
 ]
