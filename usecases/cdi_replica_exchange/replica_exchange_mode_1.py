@@ -3,7 +3,7 @@
 """ 
 CDI Replica Exchange: 'mode 1'.
 
-RADICAL_ENMD_VERBOSE=info python 01_replica_exchange_mode_1
+RADICAL_ENMD_VERBOSE=info python replica_exchange_mode_1.py
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -216,7 +216,7 @@ class RePattern(ReplicaExchange):
             k = Kernel(name="md.namd")
             k.arguments            = [input_file]
             k.upload_input_data    = [str(input_file), str(structure), str(coords), str(params)]
-            k.download_output_data = output_name
+            #k.download_output_data = output_name
 
         else:
             #cu = radical.pilot.ComputeUnitDescription()
@@ -231,8 +231,8 @@ class RePattern(ReplicaExchange):
 
             k = Kernel(name="md.namd")
             k.arguments            = [input_file]
-            k.upload_input_data    = [str(input_name)]
-            k.download_output_data = output_name
+            k.upload_input_data    = [str(input_file)]
+            #k.download_output_data = output_name
 
         return k
          
@@ -242,7 +242,7 @@ class RePattern(ReplicaExchange):
         """
         """
         # name of the file which contains swap matrix column data for each replica
-        matrix_col = "matrix_column_%s_%s.dat" % (r, (replicas[r].cycle-1))
+        matrix_col = "matrix_column_%s_%s.dat" % (replica.id, (replica.cycle-1))
         basename = self.inp_basename[:-5]
 
         #cu = radical.pilot.ComputeUnitDescription()
