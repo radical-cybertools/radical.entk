@@ -97,7 +97,7 @@ class CharCount(Pipeline):
         k = Kernel(name="misc.chksum")
         k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sha1".format(instance)]
         k.link_input_data      = "$STEP_2/cfreqs-{0}.dat".format(instance)
-        k.download_output_data = "cfreqs-{0}.sha1gf".format(instance)
+        k.download_output_data = "cfreqs-{0}.sha1".format(instance)
         return k
 
 # ------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CharCount(instances=1)
+        ccount = CharCount(instances=16)
 
         cluster.run(ccount)
 

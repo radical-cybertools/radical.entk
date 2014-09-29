@@ -46,7 +46,6 @@ class Plugin(PluginBase):
         #-----------------------------------------------------------------------
         #
         def pilot_state_cb (pilot, state) :
-            """ this callback is invoked on all pilot state changes """
             self.get_logger().info("Resource {0} state has changed to {1}".format(
                 resource._resource_key, state))
 
@@ -55,6 +54,13 @@ class Plugin(PluginBase):
                 self.get_logger().error("Pattern execution FAILED.")
                 return 
 
+        #-----------------------------------------------------------------------
+        #
+        def unit_state_cb (unit, state) :
+
+            if state == radical.pilot.FAILED:
+                self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
+                self.get_logger().error("Pattern execution FAILED.") 
 
         pipeline_instances = pattern.instances
 
@@ -90,6 +96,7 @@ class Plugin(PluginBase):
             umgr = radical.pilot.UnitManager(
                 session=session,
                 scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+            umgr.register_callback(unit_state_cb)
 
             umgr.add_pilots(pilot)
 
