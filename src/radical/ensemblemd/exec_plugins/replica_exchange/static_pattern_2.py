@@ -79,10 +79,16 @@ class Plugin(PluginBase):
                 cu                = radical.pilot.ComputeUnitDescription()
                 cu.pre_exec       = r_kernel._cu_def_pre_exec
                 cu.executable     = r_kernel._cu_def_executable
+                print "namd exec: "
+                print cu.executable
                 cu.arguments      = r_kernel.arguments
+                print "namd args: "
+                print cu.arguments
                 cu.mpi            = r_kernel.uses_mpi
                 cu.cores          = r_kernel.cores
                 cu.input_staging  = r_kernel._cu_def_input_data
+                print "namd stage in "
+                print cu.input_staging
                 cu.output_staging = r_kernel._cu_def_output_data
                 compute_replicas.append( cu )
 
