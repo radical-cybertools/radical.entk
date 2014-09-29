@@ -73,7 +73,7 @@ class TestLinkInputData(unittest.TestCase):
         """
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=2, 
+            cores=1, 
             walltime=15
         )
 
@@ -98,7 +98,7 @@ class TestLinkInputData(unittest.TestCase):
         """
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=2, 
+            cores=1, 
             walltime=15
         )
 
@@ -123,7 +123,7 @@ class TestLinkInputData(unittest.TestCase):
         """
         cluster = SingleClusterEnvironment(
             resource="localhost", 
-            cores=2, 
+            cores=1, 
             walltime=15
         )
 
