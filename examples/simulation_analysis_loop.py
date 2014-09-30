@@ -48,6 +48,7 @@ __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
 __example_name__ = "Simulation-Analysis (generic)"
 
+import os
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -68,56 +69,52 @@ class RandomSA(SimulationAnalysisLoop):
 
     def pre_loop(self):
         """pre_loop is executed before the main simulation-analysis loop is 
-           started. In this example we use the pre_loop to upload a global 
-           'configuration' file for the random value generator.
+           started. In this example we create an initial 1MB random ASCII file 
+           that we use as the reference for all analysis steps.
         """
-        f = open('input2.dat','w')
-        f.write('upperlimit=100\n')
-        f.close()
-
-        f = open('input1.dat','w')
-        f.write('upperlimit=123123123\n')
-        f.close()
-
-        k = Kernel(name="misc.levenshtein")
-        k.upload_input_data = ["input1.dat", "input2.dat"]
-        k.arguments  = ["--inputfile1=input1.dat", "--inputfile2=input2.dat", "--outputfile=output.dat"]
+        k = Kernel(name="misc.mkfile") 
+        k.arguments = ["--size=100000", "--filename=reference.dat"]
         return k
 
     def simulation_step(self, iteration, instance):
-        """The simulation generates a 1 MB file containing random ASCII
-           characters.
-
-           ..note:: The placeholder ``$PRE_LOOP`` used in ``link_input_data`` is 
-                    a reference to the working directory of pre_loop. It is 
-                    defined as part of the pattern.
+        """The simulation step generates a 1 MB file containing random ASCII
+           characters that is compared against the 'reference' file in the 
+           subsequent analysis step.
         """
         k = Kernel(name="misc.mkfile") 
-        k.link_input_data = ["$PRE_LOOP/sim.cfg"] # not really used here.
-        k.arguments       = ["--size=100000", "--filename=iter-{0}-simulation-{1}.dat".format(iteration, instance)]
+        k.arguments = ["--size=100000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
         return k
 
     def analysis_step(self, iteration, instance):
-        """In the analysis step, we look at the previously generated simulation
-           output and perform a character frequency analysis.
+        """In the analysis step, we take the previously generated simulation
+           output and perform a Levenshtein distance calculation between it
+           and the 'reference' file.
 
-           ..note:: The placeholder ``$PREV_SIMULATION`` used in ``link_input_data`` 
-                    is a reference to the working directory of the prvious 
-                    simulation step. It is also possible to reference a specific 
+           ..note:: The placeholder ``$PRE_LOOP`` used in ``link_input_data`` is 
+                    a reference to the working directory of pre_loop.
+                    The placeholder ``$PREV_SIMULATION`` used in ``link_input_data`` 
+                    is a reference to the working directory of the previous 
+                    simulation step. 
+
+                    It is also possible to reference a specific 
                     simulation step using ``$SIMULATION_N`` or all simulations
                     via ``$SIMULATIONS``. Analogous placeholders exist for 
                     ``ANALYSIS``.
         """
-        input = "iter-{0}-simulation-{1}.dat".format(iteration, instance)
+        input_filename  = "simulation-{0}-{1}.dat".format(iteration, instance)
+        output_filename = "analysis-{0}-{1}.dat".format(iteration, instance)
 
-        k = Kernel(name="misc.ccount")
-        k.link_input_data = ["$PREV_SIMULATION/{0}".format(input)]
-        k.arguments       = ["--inputfile={}".format(input), "--outputfile=analysis-iter{0}-{1}.dat".format(instance)]
+        k = Kernel(name="misc.levenshtein")
+        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$PREV_SIMULATION/{0}".format(input)]
+        k.arguments            = ["--inputfile1=reference.dat", 
+                                  "--inputfile2={0}".format(input_filename), 
+                                  "--outputfile={0}".format(output_filename)]
+        k.download_output_data = output_filename
         return k
 
     def post_loop(self):
         # post_loop is executed after the main simulation-analysis loop has
-        # finished. In this example we don't need this.
+        # finished. In this example we don't do anything here.
         pass
 
 
@@ -139,7 +136,7 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16. 
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=64, simulation_instances=16, analysis_instances=16)
+        randomsa = RandomSA(maxiterations=1, simulation_instances=2, analysis_instances=2)
 
         cluster.run(randomsa)
 

@@ -96,10 +96,11 @@ class Plugin(PluginBase):
             umgr.add_pilots(pilot)
 
 
-            ########################################################################
             working_dirs = {}
 
+            ########################################################################
             # execute pre_loop
+            #
             pre_loop = pattern.pre_loop()
             pre_loop._bind_to_resource(resource._resource_key)
 
@@ -112,12 +113,51 @@ class Plugin(PluginBase):
             cu.input_staging  = pre_loop._cu_def_input_data
             cu.output_staging = pre_loop._cu_def_output_data
 
+            self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
+
             unit = umgr.submit_units(cu)
             working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
             self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
             self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
             umgr.wait_units()
+
+            ########################################################################
+            # execute simulation analysis loop
+            #
+            for iteration in range(1, pattern.maxiterations+1):
+
+                for s_instance in range(1, pattern._simulation_instances+1):
+                    # EXECUTE SIMULATION STEPS
+                    simulation_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
+                    simulation_step._bind_to_resource(resource._resource_key)
+
+                    cu = radical.pilot.ComputeUnitDescription()
+                    cu.pre_exec       = simulation_step._cu_def_pre_exec
+                    cu.executable     = simulation_step._cu_def_executable
+                    cu.arguments      = simulation_step.arguments
+                    cu.mpi            = simulation_step.uses_mpi
+                    cu.input_staging  = simulation_step._cu_def_input_data
+                    cu.output_staging = simulation_step._cu_def_output_data
+
+                    self.get_logger().debug("Created simulation CU: {0}.".format(cu.as_dict()))
+
+
+                for a_instance in range(1, pattern._analysis_instances+1):
+                    # EXECUTE ANALYSIS STEPS
+                    analysis_step = pattern.analysis_step(iteration=iteration, instance=s_instance)
+                    analysis_step._bind_to_resource(resource._resource_key)
+
+                    cu = radical.pilot.ComputeUnitDescription()
+                    cu.pre_exec       = analysis_step._cu_def_pre_exec
+                    cu.executable     = analysis_step._cu_def_executable
+                    cu.arguments      = analysis_step.arguments
+                    cu.mpi            = analysis_step.uses_mpi
+                    cu.input_staging  = analysis_step._cu_def_input_data
+                    cu.output_staging = analysis_step._cu_def_output_data
+
+                    self.get_logger().debug("Created analysis CU: {0}.".format(cu.as_dict()))
+
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
