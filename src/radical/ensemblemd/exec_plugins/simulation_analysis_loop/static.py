@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import time
 import saga
 import radical.pilot 
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
@@ -57,7 +58,6 @@ class Plugin(PluginBase):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
                 self.get_logger().error("Pattern execution FAILED.") 
-
 
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(
             pattern.maxiterations, resource._cores, resource._resource_key))
@@ -116,11 +116,12 @@ class Plugin(PluginBase):
             self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
 
             unit = umgr.submit_units(cu)
-            working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
             self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
             self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
             umgr.wait_units()
+
+            working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
             ########################################################################
             # execute simulation analysis loop
@@ -129,78 +130,69 @@ class Plugin(PluginBase):
 
                 working_dirs['iteration_{0}'.format(iteration)] = {}
 
-                s_units = []
-                a_units = []
-
                 # EXECUTE SIMULATION STEPS
+                s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
 
                     simulation_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
                     simulation_step._bind_to_resource(resource._resource_key)
 
-                    cu = radical.pilot.ComputeUnitDescription()
-                    cu.pre_exec       = simulation_step._cu_def_pre_exec
-                    cu.executable     = simulation_step._cu_def_executable
-                    cu.arguments      = simulation_step.arguments
-                    cu.mpi            = simulation_step.uses_mpi
-                    cu.input_staging  = simulation_step._cu_def_input_data
-                    cu.output_staging = simulation_step._cu_def_output_data
-                    s_units.append(cu)
-                    self.get_logger().debug("Created simulation CU: {0}.".format(cu.as_dict()))
+                    cud = radical.pilot.ComputeUnitDescription()
+                    cud.pre_exec       = simulation_step._cu_def_pre_exec
+                    cud.executable     = simulation_step._cu_def_executable
+                    cud.arguments      = simulation_step.arguments
+                    cud.mpi            = simulation_step.uses_mpi
+                    cud.input_staging  = simulation_step._cu_def_input_data
+                    cud.output_staging = simulation_step._cu_def_output_data
+                    s_units.append(cud)
+                    self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
-                units = umgr.submit_units(s_units)
-
-                # TODO: ensure working_dir <-> instance mapping
-                i = 0
-                for unit in units:
-                    i += 1
-                    working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(unit.working_directory).path
+                s_cus = umgr.submit_units(s_units)
 
                 self.get_logger().info("Submitted ComputeUnits for simulation iteration {0}.".format(iteration))
                 self.get_logger().info("Waiting for ComputeUnits in simulation iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
+                # TODO: ensure working_dir <-> instance mapping
+                i = 0
+                for cu in s_cus:
+                    i += 1
+                    working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
+
                 # EXECUTE ANALYSIS STEPS
+                a_units = []
                 for a_instance in range(1, pattern._analysis_instances+1):
 
                     analysis_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
                     analysis_step._bind_to_resource(resource._resource_key)
 
-                    # if analysis_step._kernel._link_input_data is not None:
-                    #     for directive in analysis_step._kernel._link_input_data:
-                    #         if "$PRE_LOOP" in directive:
-                    #             analysis_step._kernel._link_input_data.remove(directive)
-                    #             expanded_directive = directive.replace("$PRE_LOOP", working_dirs["pre_loop"])
-                    #             analysis_step._kernel._link_input_data.append(expanded_directive)
+                    a_cud = radical.pilot.ComputeUnitDescription()
 
-                    cu = radical.pilot.ComputeUnitDescription()
+                    a_cud.pre_exec       = ["export PRE_LOOP={0}".format(working_dirs["pre_loop"]),
+                                            "export PREV_SIMULATION={0}".format(working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)])]
 
-                    print working_dirs
+                    a_cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
 
-                    cu.pre_exec       = ["export PRE_LOOP={0}".format(working_dirs["pre_loop"]),
-                                         "export PREV_SIMULATION={0}".format(working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)])]
+                    a_cud.executable     = analysis_step._cu_def_executable
+                    a_cud.arguments      = analysis_step.arguments
+                    a_cud.mpi            = analysis_step.uses_mpi
+                    a_cud.input_staging  = analysis_step._cu_def_input_data
+                    a_cud.output_staging = analysis_step._cu_def_output_data
+                    a_units.append(a_cud)
+                    self.get_logger().debug("Created simulation CU: {0}.".format(a_cud.as_dict()))
 
-                    cu.pre_exec.extend(analysis_step._cu_def_pre_exec)
-
-                    cu.executable     = analysis_step._cu_def_executable
-                    cu.arguments      = analysis_step.arguments
-                    cu.mpi            = analysis_step.uses_mpi
-                    cu.input_staging  = analysis_step._cu_def_input_data
-                    cu.output_staging = analysis_step._cu_def_output_data
-                    a_units.append(cu)
-                    self.get_logger().debug("Created simulation CU: {0}.".format(cu.as_dict()))
-
-                units = umgr.submit_units(a_units)
-
-                # TODO: ensure working_dir <-> instance mapping
-                i = 0
-                for unit in units:
-                    i += 1
-                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(unit.working_directory).path
+                a_cus = umgr.submit_units(a_units)
 
                 self.get_logger().info("Submitted ComputeUnits for analysis iteration {0}.".format(iteration))
                 self.get_logger().info("Waiting for ComputeUnits in analysis iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
+
+                # TODO: ensure working_dir <-> instance mapping
+                i = 0
+                for cu in a_cus:
+                    i += 1
+                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

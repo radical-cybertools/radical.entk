@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-""" 
-This example shows how to use the EnsembleMD Toolkit ``SimulationAnalysis`` 
-pattern to execute 64 iterations of a simulation analysis loop. In the 
-``pre_loop`` step, a global configuration for the simulation step is uploaded.
-Each ``simulation_step`` generates 16 files with a random value between [0..100]. 
-The ``analysis_step`` checks whether any of the values equals 42.
+"""  
+This example shows how to use the EnsembleMD Toolkit ``SimulationAnalysis``
+pattern to execute 32 iterations of a simulation analysis loop. In the
+``pre_loop`` step, a reference random ASCII file is uploaded. Each
+``simulation_step`` generates 16 new random ASCII files.  Each ``analysis_step``
+checks calculates the Levenshtein distance between  the newly generated files
+and the reference file.
 
 .. figure:: images/simulation_analysis_pattern.*
    :width: 300pt
@@ -48,7 +49,7 @@ __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
 __example_name__ = "Simulation-Analysis (generic)"
 
-import os
+import math
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -69,20 +70,20 @@ class RandomSA(SimulationAnalysisLoop):
 
     def pre_loop(self):
         """pre_loop is executed before the main simulation-analysis loop is 
-           started. In this example we create an initial 100 kB random ASCII file 
+           started. In this example we create an initial 1 kB random ASCII file 
            that we use as the reference for all analysis steps.
         """
         k = Kernel(name="misc.mkfile") 
-        k.arguments = ["--size=10000", "--filename=reference.dat"]
+        k.arguments = ["--size=1000", "--filename=reference.dat"]
         return k
 
     def simulation_step(self, iteration, instance):
-        """The simulation step generates a 1 MB file containing random ASCII
+        """The simulation step generates a 1 kB file containing random ASCII
            characters that is compared against the 'reference' file in the 
            subsequent analysis step.
         """
         k = Kernel(name="misc.mkfile") 
-        k.arguments = ["--size=10000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
+        k.arguments = ["--size=1000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
         return k
 
     def analysis_step(self, iteration, instance):
@@ -136,9 +137,19 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16. 
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=8, simulation_instances=4, analysis_instances=4)
+        randomsa = RandomSA(maxiterations=32, simulation_instances=16, analysis_instances=16)
 
         cluster.run(randomsa)
+
+        # After execution has finished, we print some statistical information 
+        # extracted from the analysis results that were transferred back.
+        for it in range(1, randomsa.maxiterations+1):
+            print "\nIteration {0}".format(it)
+            ldists = []
+            for an in range(1, randomsa.analysis_instances+1):
+                ldists.append(int(open("analysis-{0}-{1}.dat".format(it, an), "r").readline()))
+            print "   * Levenshtein Distances: {0}".format(ldists)
+            print "   * Mean Levenshtein Distance: {0}".format(sum(ldists) / len(ldists))
 
     except EnsemblemdError, er:
 
