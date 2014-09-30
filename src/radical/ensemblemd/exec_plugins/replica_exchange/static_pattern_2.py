@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """A static execution plugin RE pattern 2
+For this pattern exchange is synchronous - all replicas must finish MD run before
+an exchange can take place and all replicas must participate. Exchange is performed 
+on compute
 """
 
 __author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
@@ -67,21 +70,52 @@ class Plugin(PluginBase):
         for i in range(pattern.nr_cycles):
             compute_replicas = []
             for r in replicas:
-                comp_r = pattern.prepare_replica_for_md(r)
-                compute_replicas.append( comp_r )
+                self.get_logger().info("Building input files for replica %d" % r.id)
+                pattern.build_input_file(r)
+                self.get_logger().info("Preparing replica %d for MD run" % r.id)
+                r_kernel = pattern.prepare_replica_for_md(r)
+                r_kernel._bind_to_resource(resource._resource_key)
+
+                cu                = radical.pilot.ComputeUnitDescription()
+                cu.pre_exec       = r_kernel._cu_def_pre_exec
+                cu.executable     = r_kernel._cu_def_executable
+                print "namd exec: "
+                print cu.executable
+                cu.arguments      = r_kernel.arguments
+                print "namd args: "
+                print cu.arguments
+                cu.mpi            = r_kernel.uses_mpi
+                cu.cores          = r_kernel.cores
+                cu.input_staging  = r_kernel._cu_def_input_data
+                print "namd stage in "
+                print cu.input_staging
+                cu.output_staging = r_kernel._cu_def_output_data
+                compute_replicas.append( cu )
 
             self.get_logger().info("Performing MD step for replicas")
             submitted_replicas = unit_manager.submit_units(compute_replicas)
             unit_manager.wait_units()
             
-            if (i != (pattern.nr_cycles-1)):
+            if (i < (pattern.nr_cycles-1)):
                 #####################################################################
                 # computing swap matrix
                 #####################################################################
                 exchange_replicas = []
                 for r in replicas:
-                    ex_r = pattern.prepare_replica_for_exchange(r)
-                    exchange_replicas.append( ex_r )
+                    self.get_logger().info("Preparing replica %d for Exchange run" % r.id)
+                    ex_kernel = pattern.prepare_replica_for_exchange(r)
+                    ex_kernel._bind_to_resource(resource._resource_key)
+
+                    cu                = radical.pilot.ComputeUnitDescription()
+                    cu.pre_exec       = ex_kernel._cu_def_pre_exec
+                    cu.executable     = ex_kernel._cu_def_executable
+                    cu.arguments      = ex_kernel.arguments
+                    cu.mpi            = ex_kernel.uses_mpi
+                    cu.cores          = ex_kernel.cores
+                    cu.input_staging  = ex_kernel._cu_def_input_data
+                    cu.output_staging = ex_kernel._cu_def_output_data
+
+                    exchange_replicas.append( cu )
 
                 self.get_logger().info("Performing Exchange step for replicas")
                 submitted_replicas = unit_manager.submit_units(exchange_replicas)
@@ -93,10 +127,13 @@ class Plugin(PluginBase):
                 self.get_logger().info("Computing swap matrix")
                 swap_matrix = pattern.get_swap_matrix(replicas)
             
-                # this is actual exchnage
+                # this is actual exchange
                 for r_i in replicas:
                     r_j = pattern.exchange(r_i, replicas, swap_matrix)
                     if (r_j != r_i):
+                        self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
                         # swap parameters               
                         pattern.perform_swap(r_i, r_j)
+
+        self.get_logger().info("Replica Exchange simulation finished successfully!")
 

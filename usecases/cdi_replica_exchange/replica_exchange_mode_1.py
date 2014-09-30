@@ -2,6 +2,8 @@
 
 """ 
 CDI Replica Exchange: 'mode 1'.
+
+RADICAL_ENMD_VERBOSE=debug python replica_exchange_mode_1.py
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -90,8 +92,7 @@ class RePattern(ReplicaExchange):
         self.cycle_steps = 1000
         self.replicas = 4
         self.work_dir_local = os.getcwd()
-        self.nr_cycles = 3
-        self.namd_path = "../../../../NAMD_2.9_Linux-x86/namd2"       
+        self.nr_cycles = 3    
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
@@ -174,7 +175,6 @@ class RePattern(ReplicaExchange):
         tbuffer = tbuffer.replace("@coordinates@", str(coordinates))
         tbuffer = tbuffer.replace("@parameters@", str(parameters))
         
-        replica.cycle += 1
         # write out
         try:
             w_file = open( new_input_file, "w")
@@ -188,8 +188,9 @@ class RePattern(ReplicaExchange):
     def prepare_replica_for_md(self, replica):
         """
         """
+
         self.build_input_file(replica)
-        input_file = "%s_%d_%d.namd" % (self.inp_basename[:-5], replica.id, (replica.cycle-1))
+        input_file = "%s_%d_%d.namd" % (self.inp_basename[:-5], replica.id, (replica.cycle))
 
         new_coor = replica.new_coor
         new_vel = replica.new_vel
@@ -201,28 +202,25 @@ class RePattern(ReplicaExchange):
         old_ext_system = replica.old_ext_system 
 
         # only for first cycle we transfer structure, coordinates and parameters files
-        if replica.cycle == 1:
-            cu = radical.pilot.ComputeUnitDescription()
-            cu.executable = self.namd_path
-            cu.arguments = [input_file]
-            cu.cores = replica.cores
-            cu.mpi = False
+        if replica.cycle == 0:
             structure = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
             coords = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
             params = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
-            cu.input_staging = [str(input_file), str(structure), str(coords), str(params)]
+
+            k = Kernel(name="md.namd")
+            k.arguments            = [input_file]
+            k.upload_input_data    = [str(input_file), str(structure), str(coords), str(params)]
         else:
-            cu = radical.pilot.ComputeUnitDescription()
-            cu.executable = self.namd_path
-            cu.arguments = [input_file]
-            cu.cores = replica.cores
-            cu.mpi = False
             structure = self.inp_folder + "/" + self.namd_structure
             coords = self.inp_folder + "/" + self.namd_coordinates
             params = self.inp_folder + "/" + self.namd_parameters
-            cu.input_staging = [str(input_file)]
 
-        return cu
+            k = Kernel(name="md.namd")
+            k.arguments            = [input_file]
+            k.upload_input_data    = [str(input_file)]
+
+        replica.cycle += 1
+        return k
          
     # ------------------------------------------------------------------------------
     #
@@ -230,17 +228,19 @@ class RePattern(ReplicaExchange):
         """
         """
         # name of the file which contains swap matrix column data for each replica
-        matrix_col = "matrix_column_%s_%s.dat" % (r, (replicas[r].cycle-1))
+        matrix_col = "matrix_column_%s_%s.dat" % (replica.id, (replica.cycle-1))
         basename = self.inp_basename[:-5]
-        cu = radical.pilot.ComputeUnitDescription()
-        cu.executable = "python"
-        calculator = self.work_dir_local + "/namd_matrix_calculator.py"
-        cu.input_staging = [calculator]
-        cu.arguments = ["namd_matrix_calculator.py", r, (replicas[r].cycle-1), len(replicas), basename]
-        cu.cores = 1            
-        cu.output_staging = [matrix_col]
 
-        return cu
+        k = Kernel(name="md.re_exchange")
+        k.arguments = ["--calculator=namd_matrix_calculator.py", 
+                       "--replica_id=" + str(replica.id), 
+                       "--replica_cycle=" + str(replica.cycle-1), 
+                       "--replicas=" + str(self.replicas), 
+                       "--replica_basename=" + str(basename)]
+        k.upload_input_data      = "namd_matrix_calculator.py"
+        k.download_output_data = matrix_col
+
+        return k
 
     #-------------------------------------------------------------------------------
     #

@@ -112,9 +112,20 @@ class RePattern(ReplicaExchange):
     #
     def prepare_replica_for_exchange(self, replica):
         """
-        This is not used in this example, but implementation is still required
+        ok
         """
-        pass
+        output_name = "matrix_column_%s_%s.dat" % ( replica.id, (replica.cycle-1) ) 
+
+        k = Kernel(name="md.re_exchange")
+        k.arguments = ["--calculator=matrix_calculator.py", 
+                       "--replica_id=" + str(replica.id), 
+                       "--replica_cycle=" + str(replica.cycle-1), 
+                       "--replicas=" + str(self.replicas), 
+                       "--replica_basename=" + self.inp_basename]
+        k.upload_input_data      = "matrix_calculator.py"
+        k.download_output_data = output_name
+
+        return k
 
     #-------------------------------------------------------------------------------
     #
@@ -132,7 +143,20 @@ class RePattern(ReplicaExchange):
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
-            for i in range(len(replicas))]
+             for i in range(len(replicas))]
+
+        for r in replicas:
+            column_file = "matrix_column" + "_" + str(r.id) + "_" + str(r.cycle-1) + ".dat"       
+            try:
+                f = open(column_file)
+                lines = f.readlines()
+                f.close()
+                data = lines[0].split()
+                # populating one column at a time
+                for i in range(len(replicas)):
+                    swap_matrix[i][r.id] = float(data[i])
+            except:
+                raise
 
         return swap_matrix
 
@@ -168,7 +192,7 @@ if __name__ == "__main__":
         re_pattern.add_replicas( replicas )
 
         # run RE simulation  
-        cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_1")
+        cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
     except EnsemblemdError, er:
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""The NAMD molecular dynamics toolkit. (http://www.ks.uiuc.edu/Research/namd/).
+"""Exchange kernel for RE patterns.
 """
 
 __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -16,34 +16,41 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":            "md.namd",
-    "description":     "The NAMD molecular dynamics toolkit (http://www.ks.uiuc.edu/Research/namd/)",
-    "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
+    "name":         "md.re_exchange",
+    "description":  "Calculates column of swap matrix for a given replica",
+    "arguments":   {"--calculator=":     
+                        {
+                        "mandatory": True,
+                        "description": "name of python calculator file"
+                        },
+                    "--replica_id=":     
+                        {
+                        "mandatory": True,
+                        "description": "replica id"
+                        },
+                    "--replica_cycle=":     
+                        {
+                        "mandatory": True,
+                        "description": "replica cycle"
+                        },
+                    "--replicas=":     
+                        {
+                        "mandatory": True,
+                        "description": "number of replicas"
+                        },
+                    "--replica_basename=":     
+                        {
+                        "mandatory": True,
+                        "description": "name of base file"
+                        },
+                    },
     "machine_configs": 
     {
         "*": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["sleep 1"],
-            "executable"    : "namd2",
-            "uses_mpi"      : "False"
-        },
-        "stampede.tacc.utexas.edu": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load TACC && module load namd/2.9"],
-            "executable"    : "/opt/apps/intel13/mvapich2_1_9/namd/2.9/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "archer.ac.uk": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load namd"],
-            "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "supermuc.lrz.de": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["source /etc/profile.d/modules.sh", "module load namd"],
-            "executable"    : "/lrz/sys/applications/namd/2.9.1/mpi.ibm/NAMD_CVS-2013-11-11_Source/Linux-x86_64-icc/namd2",
-            "uses_mpi"      : "True"
+            "environment"   : None,
+            "pre_exec"      : None,
+            "executable"    : "python",
+            "uses_mpi"      : False
         }
     }
 }
@@ -80,9 +87,14 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        executable = "namd" 
-        self._executable  = executable
-        self._arguments   = self.get_raw_args()
+        arguments  = [self.get_arg("--calculator="), 
+                      self.get_arg("--replica_id="),
+                      self.get_arg("--replica_cycle="),
+                      self.get_arg("--replicas="),
+                      self.get_arg("--replica_basename=")]
+
+        self._executable  = cfg["executable"]
+        self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"] 
