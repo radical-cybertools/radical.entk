@@ -89,7 +89,7 @@ srcroot = os.path.dirname(os.path.realpath(__file__))
 
 setup_args = {
     'name'             : 'radical.ensemblemd',
-    'version'          : open ('{0}/VERSION'.format(srcroot), 'r').read(),
+    'version'          : open ('{0}/src/radical/ensemblemd/VERSION'.format(srcroot), 'r').readline(),
     'description'      : "Radical Ensemble Molecular Dynamics (MD) Toolkit.",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
