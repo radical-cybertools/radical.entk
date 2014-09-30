@@ -18,10 +18,10 @@ import sys
 
 def levenshteinDistance(f1_name, f2_name):
 
-    f1 = open(f1_name)
+    f1 = open(f1_name, 'r')
     s1 = f1.read()
 
-    f2 = open(f2_name)
+    f2 = open(f2_name, 'r')
     s2 = f2.read()
 
     if len(s1) > len(s2):

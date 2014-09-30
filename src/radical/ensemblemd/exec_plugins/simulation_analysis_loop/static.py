@@ -127,8 +127,14 @@ class Plugin(PluginBase):
             #
             for iteration in range(1, pattern.maxiterations+1):
 
+                working_dirs['iteration_{0}'.format(iteration)] = {}
+
+                s_units = []
+                a_units = []
+
+                # EXECUTE SIMULATION STEPS
                 for s_instance in range(1, pattern._simulation_instances+1):
-                    # EXECUTE SIMULATION STEPS
+
                     simulation_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
                     simulation_step._bind_to_resource(resource._resource_key)
 
@@ -139,25 +145,62 @@ class Plugin(PluginBase):
                     cu.mpi            = simulation_step.uses_mpi
                     cu.input_staging  = simulation_step._cu_def_input_data
                     cu.output_staging = simulation_step._cu_def_output_data
-
+                    s_units.append(cu)
                     self.get_logger().debug("Created simulation CU: {0}.".format(cu.as_dict()))
 
+                units = umgr.submit_units(s_units)
 
+                # TODO: ensure working_dir <-> instance mapping
+                i = 0
+                for unit in units:
+                    i += 1
+                    working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(unit.working_directory).path
+
+                self.get_logger().info("Submitted ComputeUnits for simulation iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for ComputeUnits in simulation iteration {0} to complete.".format(iteration))
+                umgr.wait_units()
+
+                # EXECUTE ANALYSIS STEPS
                 for a_instance in range(1, pattern._analysis_instances+1):
-                    # EXECUTE ANALYSIS STEPS
-                    analysis_step = pattern.analysis_step(iteration=iteration, instance=s_instance)
+
+                    analysis_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
                     analysis_step._bind_to_resource(resource._resource_key)
 
+                    # if analysis_step._kernel._link_input_data is not None:
+                    #     for directive in analysis_step._kernel._link_input_data:
+                    #         if "$PRE_LOOP" in directive:
+                    #             analysis_step._kernel._link_input_data.remove(directive)
+                    #             expanded_directive = directive.replace("$PRE_LOOP", working_dirs["pre_loop"])
+                    #             analysis_step._kernel._link_input_data.append(expanded_directive)
+
                     cu = radical.pilot.ComputeUnitDescription()
-                    cu.pre_exec       = analysis_step._cu_def_pre_exec
+
+                    print working_dirs
+
+                    cu.pre_exec       = ["export PRE_LOOP={0}".format(working_dirs["pre_loop"]),
+                                         "export PREV_SIMULATION={0}".format(working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)])]
+
+                    cu.pre_exec.extend(analysis_step._cu_def_pre_exec)
+
                     cu.executable     = analysis_step._cu_def_executable
                     cu.arguments      = analysis_step.arguments
                     cu.mpi            = analysis_step.uses_mpi
                     cu.input_staging  = analysis_step._cu_def_input_data
                     cu.output_staging = analysis_step._cu_def_output_data
+                    a_units.append(cu)
+                    self.get_logger().debug("Created simulation CU: {0}.".format(cu.as_dict()))
 
-                    self.get_logger().debug("Created analysis CU: {0}.".format(cu.as_dict()))
+                units = umgr.submit_units(a_units)
 
+                # TODO: ensure working_dir <-> instance mapping
+                i = 0
+                for unit in units:
+                    i += 1
+                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(unit.working_directory).path
+
+                self.get_logger().info("Submitted ComputeUnits for analysis iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for ComputeUnits in analysis iteration {0} to complete.".format(iteration))
+                umgr.wait_units()
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

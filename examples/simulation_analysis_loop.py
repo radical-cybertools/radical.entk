@@ -69,11 +69,11 @@ class RandomSA(SimulationAnalysisLoop):
 
     def pre_loop(self):
         """pre_loop is executed before the main simulation-analysis loop is 
-           started. In this example we create an initial 1MB random ASCII file 
+           started. In this example we create an initial 100 kB random ASCII file 
            that we use as the reference for all analysis steps.
         """
         k = Kernel(name="misc.mkfile") 
-        k.arguments = ["--size=100000", "--filename=reference.dat"]
+        k.arguments = ["--size=10000", "--filename=reference.dat"]
         return k
 
     def simulation_step(self, iteration, instance):
@@ -82,7 +82,7 @@ class RandomSA(SimulationAnalysisLoop):
            subsequent analysis step.
         """
         k = Kernel(name="misc.mkfile") 
-        k.arguments = ["--size=100000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
+        k.arguments = ["--size=10000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
         return k
 
     def analysis_step(self, iteration, instance):
@@ -105,7 +105,7 @@ class RandomSA(SimulationAnalysisLoop):
         output_filename = "analysis-{0}-{1}.dat".format(iteration, instance)
 
         k = Kernel(name="misc.levenshtein")
-        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$PREV_SIMULATION/{0}".format(input)]
+        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$PREV_SIMULATION/{0}".format(input_filename)]
         k.arguments            = ["--inputfile1=reference.dat", 
                                   "--inputfile2={0}".format(input_filename), 
                                   "--outputfile={0}".format(output_filename)]
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
-            walltime=15,
+            walltime=30,
             username=None,
             allocation=None
         )
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16. 
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=1, simulation_instances=2, analysis_instances=2)
+        randomsa = RandomSA(maxiterations=8, simulation_instances=4, analysis_instances=4)
 
         cluster.run(randomsa)
 
