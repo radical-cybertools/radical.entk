@@ -5,9 +5,11 @@ RADICAL Ensemble MD Toolkit
    :width: 160pt
    :align: right
 
-The radical.ensemblemd package is a Python API and library for developing and 
-executing large-scale ensemble-based Molecular Dynamics simulations and workflows
-
+The Ensemble MD Toolkit is a Python library for developing and executing large-
+scale ensemble-based Molecular Dynamics (MD) simulations and workflows. It is
+being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_
+at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
+<http://opensource.org/licenses/MIT>`_.
 
 **Project Github Page**
 
@@ -33,24 +35,9 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
     .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=devel
         :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
 
+.. include:: introduction.rst
 
-Installation
-************
-
-To install the EnsembleMD Toolkit Python modules in a virtual environment, 
-open a terminal and run:
-
-.. code-block:: bash
-
-    virtualenv $HOME/EnMDToolkit
-    source $HOME/EnMDToolkit/bin/activate
-    pip install --upgrade git+https://github.com/radical-cybertools/radical.ensemblemd.git@master#egg=radical.ensemblemd
-
-You can check the version of the installed EnsembleMD Toolkit like this:
-
-.. code-block:: bash
-
-    python -c "import radical.ensemblemd; print radical.ensemblemd.version"
+.. include:: installation.rst
 
 .. include:: examples_toc.rst
 
