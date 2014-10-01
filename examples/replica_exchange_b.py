@@ -11,7 +11,7 @@ RADICAL_ENMD_VERBOSE=info python replica_exchange.py
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Replica Exchange using synchronous pattern and NAMD kernel"
+__example_name__ = "Synchronous Replica Exchange with NAMD (B)"
 
 
 import os
