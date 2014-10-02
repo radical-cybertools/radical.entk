@@ -1,7 +1,7 @@
 .. _installation:
 
 Installing Ensemble MD Toolkit
-******************************
+==============================
 
 To install the EnsembleMD Toolkit Python modules in a virtual environment, 
 open a terminal and run:
@@ -22,14 +22,14 @@ You can check the version of the installed EnsembleMD Toolkit like this:
 .. _envpreparation:
 
 Preparing the Environment
-*************************
+=========================
 
 MongoDB Server
-==============
+--------------
 
 todo
 
 HPC Cluster Access
-==================
+------------------
 
 todo
