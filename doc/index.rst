@@ -37,8 +37,8 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 .. include:: introduction.rst
 
-Use-Cases and Proof-of-Concepts
-*******************************
+Installation
+************
 
 .. toctree::
    :maxdepth: 2
@@ -47,14 +47,6 @@ Use-Cases and Proof-of-Concepts
 
 
 .. include:: examples_toc.rst
-
-Use-Cases and Proof-of-Concepts
-*******************************
-
-.. toctree::
-   :maxdepth: 2
-
-   usecases.rst
 
 
 Application Kernels
@@ -80,3 +72,11 @@ Developer Documentation
    :maxdepth: 1
 
    developers.rst
+
+Use-Cases and Proof-of-Concepts
+*******************************
+
+.. toctree::
+   :maxdepth: 2
+
+   usecases.rst
