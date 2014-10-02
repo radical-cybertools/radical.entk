@@ -16,16 +16,27 @@ the SHA1 checksums are copied back to the machine on which this script runs.
 
    Fig.: `The Pipeline Pattern.`
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` to see log 
-messages about plug-in invocation and simulation progress::
+Run Locally 
+^^^^^^^^^^^
+
+.. warning:: In order to run this example, you need access to a MongoDB server and 
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly. 
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+
+**Step 1:** View and download the example sources :ref:`below <example_source_pipeline>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python pipeline.py
 
 Once the script has finished running, you should see the raw data of the 
-character analysis step ("cfreqs-XX.dat") and the corresponding SHA1 checksums 
-("cfreqs-XX.dat.sha1") in the same directory you launched the script in.
+character analysis step (``cfreqs-XX.dat``) and the corresponding SHA1 checksums 
+(``cfreqs-XX.dat.sha1``) in the same directory you launched the script in.
 
-**Run Remotely**
+Run Remotely
+^^^^^^^^^^^^
 
 By default, the pipeline steps run on one core your local machine:: 
 
@@ -49,6 +60,10 @@ pipeline instances can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
+.. _example_source_pipeline:
+
+Example Source 
+^^^^^^^^^^^^^^
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"

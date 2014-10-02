@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """ 
-This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
+This example shows how to use the EnsembleMD Toolkit :class:`.Pipeline` pattern
 to execute a single "Bag of Ensembles". A Bag of Ensembles is modeled as a 
-pipeline with just one step. The "instances" of the pipeline corresponds to the 
-number of ensembles in the bag.
+:class:`.Pipeline` with just one step. The "instances" of the  :class:`.Pipeline`
+corresponds to the number of ensembles in the bag.
 
 .. figure:: images/bag_of_ensembles.*
    :width: 300pt
@@ -13,16 +13,27 @@ number of ensembles in the bag.
 
    Fig.: `A Bag of Ensembles modelled as 1-step Pipeline.`
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
-see log messages about plug-in invocation and simulation progress::
+Run Locally 
+^^^^^^^^^^^
+
+.. warning:: In order to run this example, you need access to a MongoDB server and 
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly. 
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+
+**Step 1:** View and download the example sources :ref:`below <example_source_bag_of_ensembles>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python bag_of_ensembles.py
 
 Once the script has finished running, you should see the SHA1 checksums 
-genereated by the individual ensembles  ("checksumXX.sha1") in the in the same 
+genereated by the individual ensembles  (``checksumXX.sha1``) in the in the same 
 directory you launched the script in.
 
-**Run Remotely**
+Run on a Remote Cluster
+^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, this Bag of Ensembles runs on one core your local machine:: 
 
@@ -46,6 +57,10 @@ ensembles in the bag can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
+.. _example_source_bag_of_ensembles:
+
+Example Source 
+^^^^^^^^^^^^^^
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"

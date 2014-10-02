@@ -15,16 +15,27 @@ and the reference file.
 
    Fig.: `The Simulation-Analysis Pattern.`
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
-see log messages about plug-in invocation and simulation progress::
+Run Locally 
+^^^^^^^^^^^
+
+.. warning:: In order to run this example, you need access to a MongoDB server and 
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly. 
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+
+**Step 1:** View and download the example sources :ref:`below <example_source_simulation_analysis_loop>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python simulation_analysis_loop.py
 
 Once the script has finished running, you should see the SHA1 checksums 
-genereated by the individual ensembles  ("checksumXX.sha1") in the in the same 
+genereated by the individual ensembles  (``checksumXX.sha1``) in the in the same 
 directory you launched the script in.
 
-**Run Remotely**
+Run Remotely
+^^^^^^^^^^^^
 
 By default, simulation and analysis steps run on one core your local machine:: 
 
@@ -48,6 +59,10 @@ pipeline instances can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
+.. _example_source_simulation_analysis_loop:
+
+Example Source 
+^^^^^^^^^^^^^^
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
