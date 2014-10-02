@@ -79,10 +79,7 @@ with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
           continue # skip all non-python files
 
       try:
-          foo = imp.load_source('module.name', "../examples/{0}".format(example)) 
-
-          print foo
-          print  foo.__example_name__
+          foo = imp.load_source('{0}'.format(example.split(".")[0]), "../examples/{0}".format(example)) 
 
           example_rst_filename = "example_"+example.replace(".py", ".rst")
 
@@ -97,7 +94,7 @@ with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
               toc.write("   {0}\n".format(example_rst_filename))
 
       except Exception, ex:
-          print "=== ERROR DURING EXAMPLE LIST GENERATION: %s " % str(ex)
+          print "=== WARNING: %s " % str(ex)
 ##
 ################################################################################
 
@@ -123,7 +120,7 @@ with open("{0}/usecases.rst".format(script_dir), "w") as poc:
                 continue # skip all non-python files
 
             try:
-                foo = imp.load_source('module.name', "../usecases/{0}/{1}".format(sub_dir, example))
+                foo = imp.load_source('{0}'.format(example.split(".")[0]), "../usecases/{0}/{1}".format(sub_dir, example))
 
                 poc.write("{0}\n".format(foo.__use_case_name__))
                 poc.write("{0}\n\n".format("-"*len(foo.__use_case_name__)))
@@ -132,7 +129,7 @@ with open("{0}/usecases.rst".format(script_dir), "w") as poc:
                 poc.write(":download:`Download example: {0} <../usecases/{0}/{1}>`\n\n".format(sub_dir, example))
                 poc.write(".. literalinclude:: ../usecases/{0}/{1}\n\n".format(sub_dir, example))
             except Exception, ex:
-                print "=== ERROR DURING USECASE LIST GENERATION: %s " % str(ex)
+                print "=== WARNING: %s " % str(ex)
 ##
 ################################################################################
 
