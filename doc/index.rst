@@ -5,9 +5,9 @@ RADICAL Ensemble MD Toolkit
    :width: 160pt
    :align: right
 
-The Ensemble MD Toolkit is a Python library for developing and executing large-
-scale ensemble-based Molecular Dynamics (MD) simulations and workflows. It is
-being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_
+The Ensemble MD Toolkit is a Python library for developing and executing 
+large-scale ensemble-based Molecular Dynamics (MD) simulations and workflows. 
+It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_
 at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
 <http://opensource.org/licenses/MIT>`_.
 
