@@ -1,7 +1,7 @@
-.. _envpreparation:
+.. _installation:
 
-Installation
-************
+Installing Ensemble MD Toolkit
+******************************
 
 To install the EnsembleMD Toolkit Python modules in a virtual environment, 
 open a terminal and run:
@@ -17,3 +17,13 @@ You can check the version of the installed EnsembleMD Toolkit like this:
 .. code-block:: bash
 
     python -c "import radical.ensemblemd; print radical.ensemblemd.version"
+
+
+.. _envpreparation:
+
+Preparing the Environment
+*************************
+
+MongoDB Server
+==============
+

@@ -37,7 +37,14 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 .. include:: introduction.rst
 
-.. include:: installation.rst
+Use-Cases and Proof-of-Concepts
+*******************************
+
+.. toctree::
+   :maxdepth: 2
+
+   installation.rst
+
 
 .. include:: examples_toc.rst
 
