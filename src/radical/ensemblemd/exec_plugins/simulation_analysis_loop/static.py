@@ -68,7 +68,7 @@ class Plugin(PluginBase):
 
             if resource._username is not None:
                 # Add an ssh identity to the session.
-                c = rp.Context('ssh')
+                c = radical.pilot.Context('ssh')
                 c.user_id = resource._username
                 session.add_context(c)
 
