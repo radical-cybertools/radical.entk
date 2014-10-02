@@ -21,6 +21,12 @@ messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python pipeline.py
 
+Once the script has finished running, you should see the raw data of the 
+character analysis step ("cfreqs-XX.dat") and the corresponding SHA1 checksums 
+("cfreqs-XX.dat.sha1") in the same directory you launched the script in.
+
+**Run Remotely**
+
 By default, the pipeline steps run on one core your local machine:: 
 
     SingleClusterEnvironment(

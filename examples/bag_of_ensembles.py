@@ -18,6 +18,12 @@ see log messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python bag_of_ensembles.py
 
+Once the script has finished running, you should see the SHA1 checksums 
+genereated by the individual ensembles  ("checksumXX.sha1") in the in the same 
+directory you launched the script in.
+
+**Run Remotely**
+
 By default, this Bag of Ensembles runs on one core your local machine:: 
 
     SingleClusterEnvironment(
