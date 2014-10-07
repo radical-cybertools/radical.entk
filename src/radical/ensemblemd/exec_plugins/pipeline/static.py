@@ -53,6 +53,21 @@ class Plugin(PluginBase):
                 self.get_logger().error("Resource error: {0}".format(pilot.log))
                 self.get_logger().error("Pattern execution FAILED.")
 
+                # Try to get some information here... 
+                if os.getenv("RADICAL_ENMD_TRAVIS_DEBUG") is not None:
+
+                    sb = saga.Url(pilot.sandbox).path
+                    agent_stderr = "{0}/AGENT.STDERR".format(sb)
+                    agent_stdout = "{0}/AGENT.STDOUT".format(sb)
+                    agent_log = "{0}/AGENT.LOG".format(sb)
+
+                    self.get_logger().error(agent_stderr)
+                    os.system("cat {0}".format(agent_stderr))
+                    self.get_logger().error(agent_stdout)
+                    os.system("cat {0}".format(agent_stdout))
+                    self.get_logger().error(agent_log)
+                    os.system("cat {0}".format(agent_log))
+
         #-----------------------------------------------------------------------
         #
         def unit_state_cb (unit, state) :
@@ -168,6 +183,7 @@ class Plugin(PluginBase):
 
 
             self.get_logger().info("Pattern execution successful.")
+
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
 
