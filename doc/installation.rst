@@ -43,11 +43,11 @@ MongoDB Server
 The MongoDB server is used to store and retrieve operational data during the 
 execution of an Ensemble MD Toolkit application. The MongoDB server must 
 be reachable on **port 27017** from **both** hosts, the host that runs the 
-Ensemble MD Toolkit application and the host that executes the workload, i.e., 
+Ensemble MD Toolkit application and the host that executes the MD tasks, i.e., 
 the HPC cluster (see blue arrows in the figure above).
 
 .. warning:: If you run your application on your laptop or private workstation,
-             but run your workload on a remote HPC cluster, installing MongoDB 
+             but run your MD tasks on a remote HPC cluster, installing MongoDB 
              on the same machine won't work: while the locally running Ensemble 
              MD Toolkit application will be able to connect to it, the 
              components on the remote HPC cluster won't. 
@@ -56,8 +56,8 @@ Install your own MongoDB
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you have identified a host that can serve as the new home for MongoDB,
-installation is straight forward. You can either just install the MongoDB 
-server package that is provided by most Linux / Unix operating systems, or 
+installation is straight forward. You can either install the MongoDB 
+server package that is provided by most Linux distributions, or 
 follow the installation instructions on the MongoDB website:
 
 http://docs.mongodb.org/manual/installation/
@@ -66,16 +66,16 @@ MongoDB-as-a-Service
 ^^^^^^^^^^^^^^^^^^^^
 
 There are multiple commercial providers of hosted MongoDB services, some of them
-even offering free usage tiers. We have some good experience with the following:
+offering free usage tiers. We have had some good experience with the following:
 
 * https://mongolab.com/
 
 HPC Cluster Access
 ------------------
 
-In order to execute MD tasks on a remote HPC cluster, you need to be able set-up
+In order to execute MD tasks on a remote HPC cluster, you need to set-up
 password-less SSH login for that host. This can either be achieved via 
-an ssh-agent that stores your SSH key password (e.g., default on
+an ssh-agent that stores your SSH key's password (e.g., default on
 OS X) or by setting up password-less SSH keys.
 
 Password-less SSH with ssh-agent
@@ -84,7 +84,7 @@ Password-less SSH with ssh-agent
 An ssh-agent asks you for your key's password the first time you use  it and
 then stores it for you so that you don't have to enter it again. On OS X (>=
 10.5), an ssh-agent is running by default. On other Linux operating systems
-you might have to install it yourself.
+you might have to install or launch it manually.
 
 You can test whether an ssh-agent is running by default on your system if you
 log-in via SSH into the remote host twice. The first time, the ssh-agent 
@@ -102,16 +102,15 @@ For more information on this topic, please refer to this article:
 Password-less SSH keys
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. warning:: Using password-less SSH keys is not encouraged. Some sites might 
+.. warning:: Using password-less SSH keys is really not encouraged. Some sites might 
              even have a policy in place prohibiting the use of password-less
              SSH keys. Use ssh-agent if possible.
 
-The second  option is to create a public-private key pair that doesn't 
-have a password.
-
-
 **These instructions were taken from http://www.linuxproblem.org/art_9.html**
 
+
+Follow these instructions to create and set-up a public-private key pair that 
+doesn't have a password.
 
 As ``user_a`` on host ``workstation``, generate a pair of keys. 
 Do not enter a passphrase::
