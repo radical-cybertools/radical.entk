@@ -60,7 +60,10 @@ class Plugin(PluginBase):
                     agent_stderr = "{0}/AGENT.STDERR".format(sb)
                     agent_stdout = "{0}/AGENT.STDOUT".format(sb)
                     agent_log = "{0}/AGENT.LOG".format(sb)
+                    pip_cmd = "{0}/virtualenv/bin/pip".format(sb)
 
+                    self.get_logger().error(pip_cmd)
+                    os.system("head {0}".format(pip_cmd))
                     self.get_logger().error(agent_stderr)
                     os.system("cat {0}".format(agent_stderr))
                     self.get_logger().error(agent_stdout)

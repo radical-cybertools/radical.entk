@@ -45,9 +45,9 @@ Installation
 
    installation.rst
 
-
 .. include:: examples_toc.rst
 
+.. _kernels:
 
 Application Kernels
 *******************
@@ -56,6 +56,7 @@ Application Kernels
    :maxdepth: 2
 
    kernels.rst
+   kernelstoc.rst
 
 API Documentation
 *****************

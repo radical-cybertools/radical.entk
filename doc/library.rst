@@ -6,13 +6,8 @@ Exceptions & Errors
    :members: EnsemblemdError, NotImplementedError, TypeError, ArgumentError, FileError, NoKernelPluginError, NoKernelConfigurationError, NoExecutionPluginError
 
 
-Kernels
-=======
 
-.. autoclass:: radical.ensemblemd.Kernel
-    :members: 
-    :inherited-members:
-
+.. _patterns:
 
 Execution Patterns
 ==================

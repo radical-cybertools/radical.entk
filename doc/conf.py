@@ -24,30 +24,56 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 print "* Generating Application kernel list: kernels.rst"
 
 try:
-    os.remove("{0}/kernels.rst".format(script_dir))
+    os.remove("{0}/kernelstoc.rst".format(script_dir))
+    for fl in glob.glob("{0}/_generated_kernel_*".format(script_dir)):
+        os.remove(fl)
 except OSError:
     pass
 
-with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
-    kernels.write("Application Kernels\n")
-    kernels.write("===================\n")
+with open ("{0}/kernelstoc.rst".format(script_dir), "w") as toc:
+    toc.write("Available Application Kernels\n")
+    toc.write("*****************************\n")
+    toc.write("\n")
+    toc.write(".. toctree::\n")
+    toc.write("   :maxdepth: 1\n\n")
+    toc.write("\n\n")
+
+# with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
+#     kernels.write("Application Kernels\n")
+#     kernels.write("===================\n")
 
     from radical.ensemblemd.engine.engine import Engine
-
     e = Engine()
     for kernel in  e._kernel_plugins:
-        try:
-            ki = kernel().get_info()
-            print " > {0}".format(ki["name"])
-            kernels.write("{0}\n".format(ki["name"]))
-            kernels.write("{0}\n\n".format("-"*len(ki["name"])))
-            kernels.write("{0}\n\n".format(ki["description"]))
+        ki = kernel().get_info()
+        kernel_rst_filename = "_generated_kernel_{0}.rst".format(ki["name"])
+        with open("{0}/{1}".format(script_dir, kernel_rst_filename), "w") as kernel_rst:
 
-            kernels.write("**Arguments:**\n\n")
-            kernels.write(".. code-block:: python\n\n")
-            kernels.write("    {0}\n\n".format(ki["arguments"]))
-        except Exception, ex:
-            print "=== ERROR DURING KERNEL LIST GENERATION: %s " % str(ex)
+            try:
+                # ki = kernel().get_info()
+                # print " > {0}".format(ki["name"])
+                # kernels.write("{0}\n".format(ki["name"]))
+                # kernels.write("{0}\n\n".format("-"*len(ki["name"])))
+                # kernels.write("{0}\n\n".format(ki["description"]))
+
+                # kernels.write("**Arguments:**\n\n")
+                # kernels.write(".. code-block:: python\n\n")
+                # kernels.write("    {0}\n\n".format(ki["arguments"]))
+
+
+
+                kernel_rst.write("{0}\n".format(ki["name"]))
+                kernel_rst.write("{0}\n\n".format("-"*len(ki["name"])))
+                kernel_rst.write("{0}\n\n".format(ki["description"]))
+                kernel_rst.write("**Arguments:**\n\n")
+                kernel_rst.write(".. code-block:: python\n\n")
+                kernel_rst.write("    {0}\n\n".format(ki["arguments"]))
+
+                toc.write("   {0}\n".format(kernel_rst_filename))
+
+
+            except Exception, ex:
+                print "=== WARNING: %s " % str(ex)
 ##
 ################################################################################
 
@@ -57,7 +83,8 @@ with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
 print "* Generating code example list: examples.rst"
 
 try:
-    for fl in glob.glob("{0}/example*".format(script_dir)):
+    os.remove("{0}/examples_toc.rst".format(script_dir))
+    for fl in glob.glob("{0}/_generated_example_*".format(script_dir)):
         os.remove(fl)
 except OSError:
     pass
@@ -80,12 +107,12 @@ with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
 
       try:
           foo = imp.load_source('{0}'.format(example.split(".")[0]), "../examples/{0}".format(example)) 
+          example_name = foo.__example_name__
 
-          example_rst_filename = "example_"+example.replace(".py", ".rst")
-
+          example_rst_filename = "_generated_example_"+example.replace(".py", ".rst")
           with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
 
-              example_rst.write("{0}\n".format(foo.__example_name__))
+              example_rst.write("{0}\n".format(example_name))
               example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
               example_rst.write(foo.__doc__+"\n")
               example_rst.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
@@ -106,11 +133,11 @@ with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
 print "* Generating use-case proof-of-concept list: examples.rst"
 
 try:
-    os.remove("{0}/usecases.rst".format(script_dir))
+    os.remove("{0}/_generated_usecases.rst".format(script_dir))
 except OSError:
     pass
 
-with open("{0}/usecases.rst".format(script_dir), "w") as poc:
+with open("{0}/_generated_usecases.rst".format(script_dir), "w") as poc:
 
     sub_dirs = os.listdir("{0}/../usecases/".format(script_dir))
     for sub_dir in sub_dirs:
@@ -195,7 +222,7 @@ release = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'introduction.rst', 'examples_toc.rst', 'kernels_toc.rst', '_generated_usecases.rst']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
