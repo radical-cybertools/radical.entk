@@ -42,15 +42,22 @@ MongoDB Server
 
 The MongoDB server is used to store and retrieve operational data during the 
 execution of an Ensemble MD Toolkit application. The MongoDB server must 
-be reachable on **port 27017** from **both** hosts, the host that runs the 
+be reachable on **port 27017** from **both**, the host that runs the 
 Ensemble MD Toolkit application and the host that executes the MD tasks, i.e., 
-the HPC cluster (see blue arrows in the figure above).
+the HPC cluster (see blue arrows in the figure above). In our experience,
+a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 
-.. warning:: If you run your application on your laptop or private workstation,
-             but run your MD tasks on a remote HPC cluster, installing MongoDB 
-             on the same machine won't work: while the locally running Ensemble 
-             MD Toolkit application will be able to connect to it, the 
-             components on the remote HPC cluster won't. 
+.. warning:: If you want to run your application on your laptop or private 
+             workstation, but run your MD tasks on a remote HPC cluster, 
+             installing MongoDB on your laptop or workstation won't work.
+             Your laptop or workstations usually does not have a public IP
+             address and is hidden behind a masked and firewalled home or office 
+             network. This means that the components running on the HPC cluster 
+             will not be able to access the MongoDB server.
+
+A MongoDB server can support more than one user. In an environment where 
+multiple users use EnsembleMD toolkit applications, a single MongoDB server
+for all users / hosts is usually sufficient. 
 
 Install your own MongoDB
 ^^^^^^^^^^^^^^^^^^^^^^^^
