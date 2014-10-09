@@ -1,17 +1,58 @@
 #!/usr/bin/env python
 
 """ 
-This example shows how to use EnsembleMD Toolkit to execute sycnhronous RE pattern with NAMD kernel
+Run Locally 
+^^^^^^^^^^^
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
-see log messages about plug-in invocation and simulation progress::
-RADICAL_ENMD_VERBOSE=info python replica_exchange.py
+.. warning:: In order to run this example, you need access to a MongoDB server and 
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly. 
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+
+**Step 1:** View and download the example sources :ref:`below <example_replica_exchange_b>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
+see log messages about simulation progress::
+
+    RADICAL_ENMD_VERBOSE=info python replica_exchange_b.py
+
+TODO Antons: describe how to check the output.
+
+Run Remotely
+^^^^^^^^^^^^
+
+By default, the exchange steps and the analysis run on one core your local machine:: 
+
+    SingleClusterEnvironment(
+        resource="localhost", 
+        cores=1, 
+        walltime=30,
+        username=None,
+        allocation=None
+    )
+
+You can change the script to use a remote HPC cluster and increase the number 
+of cores to see how this affects the runtime of the script as the individual
+pipeline instances can run in parallel::
+
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu", 
+        cores=16, 
+        walltime=30,
+        username=None,  # add your username here 
+        allocation=None # add your allocation or project id here if required
+    )
+
+.. _example_replica_exchange_b:
+
+Example Source 
+^^^^^^^^^^^^^^
 """
  
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Synchronous Replica Exchange with NAMD (B)"
+__example_name__ = "Synchronous Replica Exchange with 'remote' exchange (generic)."
 
 
 import os
