@@ -75,8 +75,11 @@ class Plugin(PluginBase):
         #
         def unit_state_cb (unit, state) :
 
+            if state == radical.pilot.DONE:
+                self.get_logger().info("Task with ID {0} has completed.".format(unit.uid))
+
             if state == radical.pilot.FAILED:
-                self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
+                self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2}".format(unit.uid, unit.stderr, unit.stdout))
                 self.get_logger().error("Pattern execution FAILED.") 
 
         pipeline_instances = pattern.instances

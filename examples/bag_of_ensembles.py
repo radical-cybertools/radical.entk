@@ -94,7 +94,7 @@ class CalculateChecksums(Pipeline):
         """
         k = Kernel(name="misc.chksum")
         k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
-        k.download_input_data  = "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt"
+        k.download_input_data  = "http://testing.saga-project.org/cybertools/UTF-8-demo.txt"
         k.download_output_data = "checksum{0}.sha1".format(instance)
         return k
 
@@ -114,15 +114,21 @@ if __name__ == "__main__":
             allocation=None
         )
 
-        # Set the 'instances' of the pipeline to 32. This means that 32 instances
+        # Set the 'instances' of the pipeline to 16. This means that 16 instances
         # of each pipeline step are executed. 
         # 
-        # Execution of the 32 pipeline instances can happen concurrently or 
+        # Execution of the 16 pipeline instances can happen concurrently or 
         # sequentially, depending on the resources (cores) available in the 
         # SingleClusterEnvironment. 
-        ccount = CalculateChecksums(instances=32)
+        ccount = CalculateChecksums(instances=16)
 
         cluster.run(ccount)
+
+        # Print the checksums
+        print "\nResulting checksums:"
+        import glob
+        for result in glob.glob("checksum*.sha1"):
+            print "  * {0}".format(open(result, "r").readline().strip())
 
     except EnsemblemdError, er:
 

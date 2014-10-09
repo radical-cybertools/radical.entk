@@ -89,10 +89,10 @@ class CharCount(Pipeline):
         Pipeline.__init__(self, instances)
 
     def step_1(self, instance):
-        """The first step of the pipeline creates a 10 MB ASCI file.
+        """The first step of the pipeline creates a 1 MB ASCI file.
         """
         k = Kernel(name="misc.mkfile")
-        k.arguments = ["--size=10000000", "--filename=asciifile-{0}.dat".format(instance)]
+        k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
         return k
 
     def step_2(self, instance):
@@ -145,6 +145,12 @@ if __name__ == "__main__":
         ccount = CharCount(instances=16)
 
         cluster.run(ccount)
+
+        # Print the checksums
+        print "\nResulting checksums:"
+        import glob
+        for result in glob.glob("cfreqs-*.sha1"):
+            print "  * {0}".format(open(result, "r").readline().strip())
 
     except EnsemblemdError, er:
 
