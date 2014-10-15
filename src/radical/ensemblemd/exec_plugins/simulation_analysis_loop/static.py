@@ -10,6 +10,7 @@ __license__   = "MIT"
 import time
 import saga
 import radical.pilot 
+from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ class Plugin(PluginBase):
                 self.get_logger().error("Pattern execution FAILED.") 
 
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(
-            pattern.maxiterations, resource._cores, resource._resource_key))
+            pattern.iterations, resource._cores, resource._resource_key))
 
         try: 
 
@@ -101,32 +102,38 @@ class Plugin(PluginBase):
             ########################################################################
             # execute pre_loop
             #
-            pre_loop = pattern.pre_loop()
-            pre_loop._bind_to_resource(resource._resource_key)
+            try: 
+                pre_loop = pattern.pre_loop()
+                pre_loop._bind_to_resource(resource._resource_key)
 
-            cu = radical.pilot.ComputeUnitDescription()
+                cu = radical.pilot.ComputeUnitDescription()
 
-            cu.pre_exec       = pre_loop._cu_def_pre_exec
-            cu.executable     = pre_loop._cu_def_executable
-            cu.arguments      = pre_loop.arguments
-            cu.mpi            = pre_loop.uses_mpi
-            cu.input_staging  = pre_loop._cu_def_input_data
-            cu.output_staging = pre_loop._cu_def_output_data
+                cu.pre_exec       = pre_loop._cu_def_pre_exec
+                cu.executable     = pre_loop._cu_def_executable
+                cu.arguments      = pre_loop.arguments
+                cu.mpi            = pre_loop.uses_mpi
+                cu.input_staging  = pre_loop._cu_def_input_data
+                cu.output_staging = pre_loop._cu_def_output_data
 
-            self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
+                self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
 
-            unit = umgr.submit_units(cu)
+                unit = umgr.submit_units(cu)
 
-            self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
-            self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
-            umgr.wait_units()
+                self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
+                self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
+                umgr.wait_units()
 
-            working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+                working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+
+            except NotImplementedError:
+                # Doesn't exist. That's fine as it is not mandatory. 
+                self.get_logger().info("pre_loop() not defined. Skipping.")
+                pass
 
             ########################################################################
             # execute simulation analysis loop
             #
-            for iteration in range(1, pattern.maxiterations+1):
+            for iteration in range(1, pattern.iterations+1):
 
                 working_dirs['iteration_{0}'.format(iteration)] = {}
 
@@ -149,8 +156,8 @@ class Plugin(PluginBase):
 
                 s_cus = umgr.submit_units(s_units)
 
-                self.get_logger().info("Submitted ComputeUnits for simulation iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for ComputeUnits in simulation iteration {0} to complete.".format(iteration))
+                self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
                 # TODO: ensure working_dir <-> instance mapping
@@ -167,9 +174,12 @@ class Plugin(PluginBase):
                     analysis_step._bind_to_resource(resource._resource_key)
 
                     a_cud = radical.pilot.ComputeUnitDescription()
+                    a_cud.pre_exec = []
 
-                    a_cud.pre_exec       = ["export PRE_LOOP={0}".format(working_dirs["pre_loop"]),
-                                            "export PREV_SIMULATION={0}".format(working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)])]
+                    if "pre_loop" in working_dirs:
+                        a_cud.pre_exec.append("export PRE_LOOP={0}".format(working_dirs["pre_loop"]))
+
+                    a_cud.pre_exec.append("export PREV_SIMULATION={dir}".format(dir=working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)]))
 
                     a_cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
 
@@ -183,8 +193,8 @@ class Plugin(PluginBase):
 
                 a_cus = umgr.submit_units(a_units)
 
-                self.get_logger().info("Submitted ComputeUnits for analysis iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for ComputeUnits in analysis iteration {0} to complete.".format(iteration))
+                self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
                 # TODO: ensure working_dir <-> instance mapping

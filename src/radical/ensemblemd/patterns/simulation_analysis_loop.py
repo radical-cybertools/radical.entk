@@ -45,7 +45,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
                 k.link_input_data = ["$PREV_ANALYSIS/output.dat]
                 # Alternatively: k.copy_input_data to copy the data instead of just linking it
                 k.arguments = ["--inputfile1=output.dat"]
-                return k
+                return kg
     """
 
     #---------------------------------------------------------------------------
