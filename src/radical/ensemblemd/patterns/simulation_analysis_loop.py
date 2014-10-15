@@ -20,19 +20,45 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
             .. image:: images/simulation_analysis_pattern.*
                :width: 300pt
+
+        **Data references**:
+
+        The following placeholders can be used to reference the output data 
+        generated in previous steps accross different instances:
+
+        * ``$PRE_LOOP`` - References the pre_loop step.
+        * ``$PREV_SIMULATION`` - References the previous simulation step with the same instance number.
+        * ``$PREV_SIMULATION_INSTANCE_Y`` - References instance Y of the previous simulation step.
+        * ``$SIMULATION_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the simulation step of iteration number X.
+        * ``$PREV_ANALYSIS`` - References the previous analysis step with the same instance number.
+        * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
+        * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
+
+        For example, to reference the file ``output.dat`` in the output 
+        directory of the previous analysis step with the same instance can be 
+        referenced from an analysis step as:
+
+        .. code-block:: python
+
+            def simulation_step(self, iteration, instance):
+                k = Kernel(name="kernelname")
+                k.link_input_data = ["$PREV_ANALYSIS/output.dat]
+                # Alternatively: k.copy_input_data to copy the data instead of just linking it
+                k.arguments = ["--inputfile1=output.dat"]
+                return k
     """
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1):
         """Creates a new SimulationAnalysisLoop.
  
         **Arguments:**
 
-            * **maxiterations** [`int`]
-              The maxiterations parameter determines the maximum number of 
+            * **iterations** [`int`]
+              The iterations parameter determines the maximum number of 
               iterations the simulation-analysis loop is executed. After 
-              maxiterations is reached, the loop terminates and `post_loop` is called.
+              iterations is reached, the loop terminates and `post_loop` is called.
 
             * **simulation_instances** [`int`]
               The simulation_instances parameter determines the number of independent 
@@ -43,7 +69,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
               analysis instances launched for each `analysis_step`. 
 
         """
-        self._maxiterations = maxiterations
+        self._iterations = iterations
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
 
@@ -60,10 +86,10 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     @property
-    def maxiterations(self):
+    def iterations(self):
         """Returns the maximum number of loop iterations.
         """
-        return self._maxiterations
+        return self._iterations
 
     #---------------------------------------------------------------------------
     #
@@ -92,47 +118,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         **Returns:**
 
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
+            Implementations of this method **must** return either a single or a list of  
+            :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
         raise NotImplementedError(
             method_name="pre_loop",
             class_name=type(self)) 
-
-
-    #---------------------------------------------------------------------------
-    #
-    def pre_simulation(self,iteration,instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `pre_simulation` 
-        is executed once per loop iteration before `simulation_step`.
-        
-        This step is to divide the input files into smaller files which are
-        fed to each of the simulation Compute Units.
-        
-        **Arguments:**
-
-            * **iteration** [`int`]
-              The iteration parameter is a positive integer and references the
-              current iteration of the simulation-analysis loop.
-
-            * **instance** [`int`]
-              The instance parameter is a positive integer and references the 
-              instance of the simulation step, which is in the range
-              [1 .. simulation_instances].
-
-        
-        **Returns:**
-
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
-
-        
-        """
-        
-        raise NotImplementedError(
-            method_name="pre_simulation",
-            class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
@@ -153,47 +145,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         **Returns:**
 
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
+            Implementations of this method **must** return either a single or a list of 
+            :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
         raise NotImplementedError(
             method_name="simulation_step",
             class_name=type(self))
-
-
-    #---------------------------------------------------------------------------
-    #
-    def intermediate_step(self, iteration,instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `intermediate_step` 
-        is executed once per loop iteration after `simulation_step`.
-
-
-        This step is required to merge the output of the Simulation step to 
-        one concatenated file which is fed to the analysis step as input.
-        
-        **Arguments:**
-
-            * **iteration** [`int`]
-              The iteration parameter is a positive integer and references the
-              current iteration of the simulation-analysis loop.
-
-            * **instance** [`int`]
-              The instance parameter is a positive integer and references the 
-              instance of the simulation step, which is in the range
-              [1 .. simulation_instances].
-
-        **Returns:**
-
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
-
-        """
-        raise NotImplementedError(
-          method_name="intermediate_step",
-          class_name=type(self))
-
-
 
     #---------------------------------------------------------------------------
     #
@@ -214,45 +172,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         **Returns:**
 
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
+            Implementations of this method **must** return either a single or a list of 
+            :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
         raise NotImplementedError(
           method_name="analysis_step",
           class_name=type(self))
-
-
-    #---------------------------------------------------------------------------
-    #
-    def post_analysis(self,iteration,instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `post_analysis` 
-        is executed once per loop iteration after `analysis_step`.
-
-        This step is to perform the updation of the clone files and rewieghting of
-        the strucuture file. The output is used as the input for the next iteration.
-
-        **Arguments:**
-
-            * **iteration** [`int`]
-              The iteration parameter is a positive integer and references the
-              current iteration of the simulation-analysis loop.
-
-            * **instance** [`int`]
-              The instance parameter is a positive integer and references the 
-              instance of the simulation step, which is in the range
-              [1 .. simulation_instances].
-
-        **Returns:**
-
-            Implementations of this method **must** return a single 
-            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
-
-        """
-        raise NotImplementedError(
-          method_name="post_analysis",
-          class_name=type(self))
-
 
     #---------------------------------------------------------------------------
     #
