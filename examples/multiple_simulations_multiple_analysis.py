@@ -42,15 +42,15 @@ class MSMA(SimulationAnalysisLoop):
 
 
     def simulation_step(self, iteration, instance):
-        """TODO
+        """In the simulation step we
         """
         k = Kernel(name="misc.mkfile") 
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
         return k
 
     def analysis_step(self, iteration, instance):
-        """In the analysis step, we simply use the ``$PREV_SIMULATION``
-           placeholder to references the previous simulation. The same 
+        """In the analysis step we use the ``$PREV_SIMULATION`` data reference
+           to refer to the previous simulation. The same 
            instance is picked implicitly, i.e., if this is instance 5, the
            previous simulation with instance 5 is referenced. 
         """
@@ -59,11 +59,6 @@ class MSMA(SimulationAnalysisLoop):
         k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance)
         k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}".format(instance=instance, iteration=iteration)
         return k
-
-    def post_loop(self):
-        # post_loop is executed after the main simulation-analysis loop has
-        # finished. In this example we don't do anything here.
-        pass
 
 
 # ------------------------------------------------------------------------------
