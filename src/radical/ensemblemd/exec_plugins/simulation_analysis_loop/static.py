@@ -23,6 +23,40 @@ _PLUGIN_INFO = {
 
 _PLUGIN_OPTIONS = []
 
+# ------------------------------------------------------------------------------
+# 
+def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, type):
+    env_vars = dict()
+
+    #  * ``$PRE_LOOP`` - References the pre_loop step.
+    if "pre_loop" in working_dirs:
+        env_vars["PRE_LOOP"] = working_dirs["pre_loop"]
+
+    #  * ``$PREV_SIMULATION`` - References the previous simulation step with the same instance number.
+    if sim_width == ana_width:
+        if type == "analysis" and iteration > 1:
+            env_vars["PREV_SIMULATION"] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(instance)]
+
+    #  * ``$PREV_SIMULATION_INSTANCE_Y`` - References instance Y of the previous simulation step.
+    if type == "analysis" and iteration >= 1:
+        for inst in range(1, sim_width+1):
+            env_vars["PREV_SIMULATION_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(inst)]
+
+    #  * ``$SIMULATION_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the simulation step of iteration number X.
+
+    #  * ``$PREV_ANALYSIS`` - References the previous analysis step with the same instance number.
+    if sim_width == ana_width:
+        if type == "simulation" and iteration > 1:
+            env_vars["PREV_ANALYSIS"] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(instance)]
+
+    #  * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
+    if type == "simulation" and iteration > 1:
+        for inst in range(1, ana_width+1):
+            env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['simulation_{0}'.format(inst)]
+
+    #  * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
+    return env_vars
+
 
 # ------------------------------------------------------------------------------
 # 
@@ -137,6 +171,7 @@ class Plugin(PluginBase):
 
                 working_dirs['iteration_{0}'.format(iteration)] = {}
 
+                ################################################################
                 # EXECUTE SIMULATION STEPS
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
@@ -145,7 +180,14 @@ class Plugin(PluginBase):
                     simulation_step._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
-                    cud.pre_exec       = simulation_step._cu_def_pre_exec
+                    cud.pre_exec = []
+
+                    env_vars = create_env_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="simulation")
+                    for var, value in env_vars.iteritems():
+                        cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
+
+                    cud.pre_exec.extend(simulation_step._cu_def_pre_exec)
+
                     cud.executable     = simulation_step._cu_def_executable
                     cud.arguments      = simulation_step.arguments
                     cud.mpi            = simulation_step.uses_mpi
@@ -166,6 +208,7 @@ class Plugin(PluginBase):
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
+                ################################################################
                 # EXECUTE ANALYSIS STEPS
                 a_units = []
                 for a_instance in range(1, pattern._analysis_instances+1):
@@ -173,29 +216,22 @@ class Plugin(PluginBase):
                     analysis_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
                     analysis_step._bind_to_resource(resource._resource_key)
 
-                    a_cud = radical.pilot.ComputeUnitDescription()
-                    a_cud.pre_exec = []
+                    cud = radical.pilot.ComputeUnitDescription()
+                    cud.pre_exec = []
 
-                    if "pre_loop" in working_dirs:
-                        a_cud.pre_exec.append("export PRE_LOOP={0}".format(working_dirs["pre_loop"]))
+                    env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
+                    for var, value in env_vars.iteritems():
+                        cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
-                    a_cud.pre_exec.append("export PREV_SIMULATION={dir}".format(dir=working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)]))
+                    cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
 
-                    for sim in range(1, pattern._simulation_instances+1):
-                        a_cud.pre_exec.append("export PREV_SIMULATION_{inst}={dir}".format(
-                            inst=sim,
-                            dir=working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(sim)]
-                        ))
-
-                    a_cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
-
-                    a_cud.executable     = analysis_step._cu_def_executable
-                    a_cud.arguments      = analysis_step.arguments
-                    a_cud.mpi            = analysis_step.uses_mpi
-                    a_cud.input_staging  = analysis_step._cu_def_input_data
-                    a_cud.output_staging = analysis_step._cu_def_output_data
-                    a_units.append(a_cud)
-                    self.get_logger().debug("Created simulation CU: {0}.".format(a_cud.as_dict()))
+                    cud.executable     = analysis_step._cu_def_executable
+                    cud.arguments      = analysis_step.arguments
+                    cud.mpi            = analysis_step.uses_mpi
+                    cud.input_staging  = analysis_step._cu_def_input_data
+                    cud.output_staging = analysis_step._cu_def_output_data
+                    a_units.append(cud)
+                    self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
                 a_cus = umgr.submit_units(a_units)
 

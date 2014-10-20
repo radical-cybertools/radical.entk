@@ -62,7 +62,7 @@ class MSSA(SimulationAnalysisLoop):
         """
         link_input_data = []
         for i in range(0, self.simlation_instances):
-            link_input_data.append("$PREV_SIMULATION_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
+            link_input_data.append("$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
 
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile-*.dat", "--outputfile=cfreqs.dat"]
