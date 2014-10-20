@@ -222,7 +222,7 @@ release = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'introduction.rst', 'examples_toc.rst', 'kernels_toc.rst', '_generated_usecases.rst']
+exclude_patterns = ['_build', 'examples_toc.rst', 'kernels_toc.rst', '_generated_usecases.rst']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

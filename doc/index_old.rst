@@ -35,15 +35,49 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
     .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=devel
         :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
 
-#########
-Contents:
-#########
+.. include:: introduction.rst
+
+Installation
+************
 
 .. toctree::
-   :numbered:
-   :maxdepth: 3
+   :maxdepth: 2
 
-   introduction
-   installation
-   getstarted
-   examples
+   installation.rst
+
+.. include:: examples_toc.rst
+
+.. _kernels:
+
+Application Kernels
+*******************
+
+.. toctree::
+   :maxdepth: 2
+
+   kernels.rst
+   kernelstoc.rst
+
+API Documentation
+*****************
+
+.. toctree::
+   :maxdepth: 2
+
+   library.rst
+
+Developer Documentation
+***********************
+
+.. toctree::
+   :maxdepth: 1
+
+   developers.rst
+
+Use-Cases and Proof-of-Concepts
+*******************************
+
+.. toctree::
+   :maxdepth: 2
+
+   usecases.rst

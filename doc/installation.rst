@@ -1,5 +1,9 @@
 .. _installation:
 
+************
+Installation
+************
+
 Installing Ensemble MD Toolkit
 ==============================
 
