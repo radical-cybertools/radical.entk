@@ -6,16 +6,22 @@ Explain...
 
 .. code-block:: none
 
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |      |
-    [A]    [A]    [A]    [A]    [A]    [A]    [A]    [A]
-     |      |      |      |      |      |      |      |
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |      |
-    [A]    [A]    [A]    [A]    [A]    [A]    [A]    [A]
-     :      :      :      :      :      :      :      :
+    [S]    [S]    [S]    [S]    [S]    [S]    [S] 
+     |      |      |      |      |      |      |  
+     \-----------------------------------------/
+                          |
+                         [A]
+                          |
+     /-----------------------------------------\
+     |      |      |      |      |      |      |    
+    [S]    [S]    [S]    [S]    [S]    [S]    [S] 
+     |      |      |      |      |      |      |  
+     \-----------------------------------------/
+                          |
+                         [A]
+                          :  
 
-.. _multiple_simulations_multiple_analysis:
+.. _multiple_simulations_single_analysis:
 
 Example Source 
 ^^^^^^^^^^^^^^
@@ -24,7 +30,7 @@ Example Source
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Multiple Simulations Instances, Multiple Analysis Instances (MSMA)"
+__example_name__ = "Multiple Simulations Instances, Single Analysis Instance (MSSA)"
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -33,7 +39,7 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-class MSMA(SimulationAnalysisLoop):
+class MSSA(SimulationAnalysisLoop):
     """MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)
        scheme can be implemented with the SimulationAnalysisLoop pattern.
     """
@@ -54,10 +60,14 @@ class MSMA(SimulationAnalysisLoop):
            instance is picked implicitly, i.e., if this is instance 5, the
            previous simulation with instance 5 is referenced. 
         """
+        link_input_data = []
+        for i in range(0, self.simlation_instances):
+            link_input_data.append("$PREV_SIMULATION_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
+
         k = Kernel(name="misc.ccount")
-        k.arguments            = ["--inputfile=asciifile.dat", "--outputfile=cfreqs.dat"]
-        k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance)
-        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}".format(instance=instance, iteration=iteration)
+        k.arguments            = ["--inputfile=asciifile-*.dat", "--outputfile=cfreqs.dat"]
+        k.link_input_data      = link_input_data
+        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}.dat".format(iteration=iteration)
         return k
 
 
@@ -78,9 +88,9 @@ if __name__ == "__main__":
 
         # We set both the the simulation and the analysis step 'instances' to 16. 
         # If they
-        msma = MSMA(iterations=4, simulation_instances=16, analysis_instances=16)
+        mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
 
-        cluster.run(msma)
+        cluster.run(mssa)
 
     except EnsemblemdError, er:
 

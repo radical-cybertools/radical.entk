@@ -181,6 +181,12 @@ class Plugin(PluginBase):
 
                     a_cud.pre_exec.append("export PREV_SIMULATION={dir}".format(dir=working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(a_instance)]))
 
+                    for sim in range(1, pattern._simulation_instances+1):
+                        a_cud.pre_exec.append("export PREV_SIMULATION_{inst}={dir}".format(
+                            inst=sim,
+                            dir=working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(sim)]
+                        ))
+
                     a_cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
 
                     a_cud.executable     = analysis_step._cu_def_executable
