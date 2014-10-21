@@ -71,3 +71,19 @@ A SingleClusterEnvironment represent a single resource on which the application
 workload (the Kernels) are executed. We use ``localhost``, which means that the
 application will simply get executed on the local machine. Further below, we 
 explain how you can use a remote HPC cluster instead.
+
+In line 26 and **27**, we instantiate our application and pass it to the 
+SingleClusterEnvironment for execution. 
+
+You can try to run the example with the ``RADICAL_ENMD_VERBOSE`` environment
+variable set to ``info`` to see some progress and status updates::
+
+    RADICAL_ENMD_VERBOSE=info python myapp.py
+
+**And that's pretty much all there is to EnselbleMD Toolkit.** The rest is
+really all about defining your application logic with the different patterns
+and Kernels. We will go through some examples throughout the rest of this 
+"Getting Started" guide.
+
+Adding More Steps
+=================
