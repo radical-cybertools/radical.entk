@@ -47,3 +47,4 @@ Contents:
    installation
    getstarted
    examples
+   glossary
