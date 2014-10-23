@@ -48,6 +48,8 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf _generated* 
+	rm -rf examples.rst kernels.rst
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
