@@ -24,13 +24,13 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 print "* Generating Application kernel list: kernels.rst"
 
 try:
-    os.remove("{0}/kernelstoc.rst".format(script_dir))
+    os.remove("{0}/kernels.rst".format(script_dir))
     for fl in glob.glob("{0}/_generated_kernel_*".format(script_dir)):
         os.remove(fl)
 except OSError:
     pass
 
-with open ("{0}/kernelstoc.rst".format(script_dir), "w") as toc:
+with open ("{0}/kernels.rst".format(script_dir), "w") as toc:
     toc.write("Available Application Kernels\n")
     toc.write("*****************************\n")
     toc.write("\n")
@@ -83,18 +83,18 @@ with open ("{0}/kernelstoc.rst".format(script_dir), "w") as toc:
 print "* Generating code example list: examples.rst"
 
 try:
-    os.remove("{0}/examples_toc.rst".format(script_dir))
+    os.remove("{0}/examples.rst".format(script_dir))
     for fl in glob.glob("{0}/_generated_example_*".format(script_dir)):
         os.remove(fl)
 except OSError:
     pass
 
-with open ("{0}/examples_toc.rst".format(script_dir), "w") as toc:
-    toc.write("Usage Examples\n")
-    toc.write("**************\n")
+with open ("{0}/examples.rst".format(script_dir), "w") as toc:
+    toc.write("Examples Library\n")
+    toc.write("****************\n")
     toc.write("\n")
     toc.write(".. toctree::\n")
-    toc.write("   :maxdepth: 1\n")
+    toc.write("   :maxdepth: 0\n")
     toc.write("\n")
 
     examples = os.listdir("{0}/../examples/".format(script_dir))

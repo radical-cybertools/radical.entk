@@ -41,10 +41,12 @@ Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 3
+   :maxdepth: 2
 
    introduction
    installation
    getstarted
    examples
+   library
+   kernels
    glossary
