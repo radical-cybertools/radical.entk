@@ -23,4 +23,8 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.misc.ccount",
     "radical.ensemblemd.kernel_plugins.misc.chksum",
     "radical.ensemblemd.kernel_plugins.misc.levenshtein"
+
+    "radical.ensemblemd.kernel_plugins.mdv2.amber",
+    "radical.ensemblemd.kernel_plugins.mdv2.gromacs",
+
 ]
