@@ -83,11 +83,11 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 _KERNEL_INFO = {
     "name":         "my.user.defined.kernel",
     "description":  "Brief description of your Kernel.",
-    "arguments":   {"--sleep-interval=":     
-                        {
-                        "mandatory": True,
-                        "description": "Number of seconds to do nothing."
-                        },
+    "arguments":   {
+        "--sleep-interval=": {
+            "mandatory": True,
+            "description": "Number of seconds to do nothing."
+        },
     }
 }
 
