@@ -49,4 +49,5 @@ Contents:
    examples
    library
    kernels
+   writing_kernels
    glossary

@@ -18,6 +18,11 @@ from radical.ensemblemd.engine.kernel_registry import kernel_registry
 
 #-------------------------------------------------------------------------------
 #
+def get_engine():
+    return Engine()
+
+#-------------------------------------------------------------------------------
+#
 class Engine(object):
     """The engine coordinates plug-in loading and other internal things.
     """
@@ -78,6 +83,22 @@ class Engine(object):
             except Exception as e:
                 self._logger.warning (" > Skipping kernel plug-in {0}: loading failed: '{1}'".format(kernel_module_name, e))
 
+    #---------------------------------------------------------------------------
+    #
+    def add_kernel_plugin(self, kernel_class):
+        """Adds a user-defined kernel-plugin.
+        """
+        try: 
+            # kernel_class = kernel_module.Kernel
+            #kernel_info     = kernel_instance.register()
+
+            self._logger.info("Loaded user-provided kernel plug-in '{0}'.".format(
+                kernel_class.get_name()))
+            self._kernel_plugins.append(kernel_class)
+
+        except Exception as e:
+            self._logger.error ("Error loading kernel plug-in {0}: loading failed: '{1}'".format(kernel_class, e))
+            raise
 
     #---------------------------------------------------------------------------
     #

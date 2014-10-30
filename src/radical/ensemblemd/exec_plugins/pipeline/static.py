@@ -191,7 +191,7 @@ class Plugin(PluginBase):
             self.get_logger().info("Pattern execution successful.")
 
         except Exception, ex:
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
+            self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
 
         finally:
             self.get_logger().info("Deallocating resource.")
