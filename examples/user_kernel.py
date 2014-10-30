@@ -1,17 +1,7 @@
 #!/usr/bin/env python
 
 """ 
-This example shows how to use the EnsembleMD Toolkit :class:`.Pipeline` pattern
-to execute a single "Bag of Ensembles". A Bag of Ensembles is modeled as a 
-:class:`.Pipeline` with just one step. The "instances" of the  :class:`.Pipeline`
-corresponds to the number of ensembles in the bag.
-
-.. figure:: images/bag_of_ensembles.*
-   :width: 300pt
-   :align: center
-   :alt: Bag of Ensembles
-
-   Fig.: `A Bag of Ensembles modelled as 1-step Pipeline.`
+TODO
 
 Run Locally 
 ^^^^^^^^^^^
@@ -26,11 +16,7 @@ Run Locally
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python bag_of_ensembles.py
-
-Once the script has finished running, you should see the SHA1 checksums 
-genereated by the individual ensembles  (``checksumXX.sha1``) in the in the same 
-directory you launched the script in.
+    RADICAL_ENMD_VERBOSE=info python user_kernels.py
 
 Run on a Remote Cluster
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -57,7 +43,7 @@ ensembles in the bag can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
-.. _example_source_bag_of_ensembles:
+.. _example_source_user_kernels:
 
 Example Source 
 ^^^^^^^^^^^^^^
@@ -66,7 +52,7 @@ Example Source
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Bag of Ensembles (generic)"
+__example_name__ = "User-Defined Application Kernels"
 
 
 from radical.ensemblemd import Kernel
