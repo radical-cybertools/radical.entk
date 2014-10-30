@@ -66,8 +66,25 @@ with open ("{0}/kernels.rst".format(script_dir), "w") as toc:
                 kernel_rst.write("{0}\n\n".format("-"*len(ki["name"])))
                 kernel_rst.write("{0}\n\n".format(ki["description"]))
                 kernel_rst.write("**Arguments:**\n\n")
-                kernel_rst.write(".. code-block:: python\n\n")
-                kernel_rst.write("    {0}\n\n".format(ki["arguments"]))
+
+                if ki["arguments"] == "*":
+                    kernel_rst.write("This Kernel takes the same arguments and command-line parameters as the as the encapsulated tool.\n\n")
+
+                else:
+                    kernel_rst.write("+----------------------+----------------------------------------------------------------------------------+-----------+\n")
+                    kernel_rst.write("| Argument Name        | Description                                                                      | Mandatory |\n")
+                    kernel_rst.write("+======================+==================================================================================+===========+\n")
+                    for arg, cfg in ki["arguments"].iteritems():
+                        kernel_rst.write("| {:20s} | {:80s} | {:9b} |\n".format(arg, cfg["description"], cfg["mandatory"] ))
+                        kernel_rst.write("+----------------------+----------------------------------------------------------------------------------+-----------+\n")
+
+                kernel_rst.write("\n**Machine Configurations:**\n\n")
+                kernel_rst.write("Machine configurations describe specific configurations of the tool on a specific platform. ``*`` is a catch-all for all hosts for which no specific configuration exists.\n\n")
+
+                for key, cfg in ki["machine_configs"].iteritems():
+                    kernel_rst.write("\n* Key: **{0}**\n\n".format(key))
+                    for k, v in cfg.iteritems():
+                        kernel_rst.write("  * {0}: ``{1}``\n".format(k,v))
 
                 toc.write("   {0}\n".format(kernel_rst_filename))
 
