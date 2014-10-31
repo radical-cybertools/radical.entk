@@ -3,7 +3,7 @@
 """  
 This example shows how to use the EnsembleMD Toolkit ``AllPairsPattern``
 pattern to execute n!/2(n-2)! simulation permutations of a set of n elements. In
-the ``permuter`` step, the necessary files for the al pair are created. Each
+the ``permuter`` step, the necessary files for the all pair are created. Each
 ``compare`` runs a comparison between a unique coupling of elements.
 
 
@@ -81,47 +81,46 @@ class HausdorffAP(AllPairsPattern):
         AllPairsPattern.__init__(self, setelements)
 
     def init_step(self,element):
-	"""The initialization step creates the necessary files that will be 
-	    needed for the comparison over the elements of the set.
-	"""
+    """The initialization step creates the necessary files that will be 
+        needed for the comparison over the elements of the set.
+    """
 
-	# From what I understand the misc.<> is the script that will be run from
-	# the kernel. If this is correct, I should create one for Beickstein's
-	# use case based on the information from Sean's mail.
-	# It would make a nice example and it can be called misc.select.
-	k = Kernel(name="misc.select")
-	k.arguments("--inputfile==atom_traj{0}.dcd".format(element))
-	return k
-
+    # From what I understand the misc.<> is the script that will be run from
+    # the kernel. If this is correct, I should create one for Beickstein's
+    # use case based on the information from Sean's mail.
+    # It would make a nice example and it can be called misc.select.
+    k = Kernel(name="misc.select")
+    k.arguments("--inputfile==atom_traj{0}.dcd".format(element))
+    return k
 
     def comparison(self, element1, element2):
         """In the comparison, we take the previously generated modified trajectory
-	   and perform a Hausdorff distance calculation between the elements of
-	   the 
+           and perform a Hausdorff distance calculation between the elements of
+           the 
 
            ..note:: The placeholder ``$INIT_STEP`` used in ``link_input_data`` is 
                     a reference to the working directory of init_step.
 
         """
-        input_filename1  = "traj_flat-{0}.npz.npy".format(element1)
-	input_filename2  = "traj_flat-{0}.npz.npy".format(element2)
+        input_filename1 = "traj_flat-{0}.npz.npy".format(element1)
+        input_filename2 = "traj_flat-{0}.npz.npy".format(element2)
         output_filename = "comparison-{0}-{1}.dat".format(element1, element2)
-	
-	# From what I understand the misc.<> is the script that will be run from
-	# the kernel. If this is correct, I should create one based on Beickstein's
-	# script for his use case. It would make a nice example and it can be
-	# called misc.hausdorff
+    
+        # From what I understand the misc.<> is the script that will be run from
+        # the kernel. If this is correct, I should create one based on Beickstein's
+        # script for his use case. It would make a nice example and it can be
+        # called misc.hausdorff
+
         k = Kernel(name="misc.hausdorff")
         k.link_input_data      = ["$INIT_STEP/{0}, $INIT_STEP/{1}".format(input_filename1,input_filename2)]
         k.arguments            = ["--inputfile1={0}".format(input_filename1), 
                                   "--inputfile2={0}".format(input_filename2), 
                                   "--outputfile={0}".format(output_filename)]
-	
-	# I think it download the output files from the cluster to the machine 
-	# that run this script. Need to learn more here.
-      	k.download_output_data = output_filename
+    
+        # I think it download the output files from the cluster to the machine 
+        # that run this script. Need to learn more here.
+        k.download_output_data = output_filename
         return k
-
 
 # ------------------------------------------------------------------------------
 #
@@ -137,17 +136,18 @@ if __name__ == "__main__":
             username=None,
             allocation=None
         )
-
         
-	# For example the set has 5 elements. May try it with Beickstein's use case.
-	ElementsSet = range(1,6)
-        haudorff = HausdorffAP(ElementsSet)
+        # For example the set has 5 elements.
+        # May try it with Beickstein's use case.
+        ElementsSet = range(1,6)
+        hausdorff = HausdorffAP(ElementsSet)
 
-        cluster.run(haudorff)
+        cluster.run(hausdorff)
 
-        # Do not know yet what should be printed... Need to see what the use case
-	# may need.
+        # Do not know yet what should be printed... 
+        # Need to see what the use case may need.
         for it in range(1, haudorff._size+1):
+            print "..."
 
     except EnsemblemdError, er:
 
