@@ -51,7 +51,7 @@ all pair instances can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
-.. _example_source_simulation_analysis_loop:
+.. _example_source_hausdorff_example:
 
 Example Source 
 ^^^^^^^^^^^^^^
@@ -81,17 +81,17 @@ class HausdorffAP(AllPairsPattern):
         AllPairsPattern.__init__(self, setelements)
 
     def init_step(self,element):
-    """The initialization step creates the necessary files that will be 
-        needed for the comparison over the elements of the set.
-    """
+        """The initialization step creates the necessary files that will be 
+            needed for the comparison over the elements of the set.
+        """
 
-    # From what I understand the misc.<> is the script that will be run from
-    # the kernel. If this is correct, I should create one for Beickstein's
-    # use case based on the information from Sean's mail.
-    # It would make a nice example and it can be called misc.select.
-    k = Kernel(name="misc.select")
-    k.arguments("--inputfile==atom_traj{0}.dcd".format(element))
-    return k
+        # From what I understand the misc.<> is the script that will be run from
+        # the kernel. If this is correct, I should create one for Beickstein's
+        # use case based on the information from Sean's mail.
+        # It would make a nice example and it can be called misc.select.
+        k = Kernel(name="misc.select")
+        k.arguments("--inputfile==atom_traj{0}.dcd".format(element))
+        return k
 
     def comparison(self, element1, element2):
         """In the comparison, we take the previously generated modified trajectory
