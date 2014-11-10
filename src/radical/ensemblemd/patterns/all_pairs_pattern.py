@@ -83,7 +83,7 @@ class AllPairsPattern(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def init_step(self, element):
+    def element_initialization(self, element):
         """This method returns a :class:`radical.ensemblemd.Kernel` object
 	and is executed once before comparison for all the elements in the set
 
@@ -99,13 +99,13 @@ class AllPairsPattern(ExecutionPattern):
 
         """
         raise NotImplementedError(
-            method_name="init_step",
+            method_name="element_initialization",
             class_name=type(self))
 
 
     #---------------------------------------------------------------------------
     #
-    def comparison(self, element1, element2):
+    def element_comparison(self, element1, element2):
         """This method returns a :class:`radical.ensemblemd.Kernel` object
 
         **Arguments:**
@@ -124,5 +124,5 @@ class AllPairsPattern(ExecutionPattern):
 
         """
         raise NotImplementedError(
-          method_name="comparison",
+          method_name="element_comparison",
           class_name=type(self))
