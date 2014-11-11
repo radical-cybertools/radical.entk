@@ -1,5 +1,7 @@
-RADICAL Ensemble MD Toolkit
-###########################
+.. include:: _generated_version.rst
+
+RADICAL Ensemble MD Toolkit |VERSION|
+#####################################
 
 .. figure:: images/oxytocin.*
    :width: 160pt
@@ -10,6 +12,7 @@ large-scale ensemble-based Molecular Dynamics (MD) simulations and workflows.
 It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_
 at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
 <http://opensource.org/licenses/MIT>`_.
+
 
 **Project Github Page**
 
