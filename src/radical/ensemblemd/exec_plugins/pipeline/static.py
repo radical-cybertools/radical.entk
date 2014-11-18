@@ -192,7 +192,11 @@ class Plugin(PluginBase):
 
         except Exception, ex:
             self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
+            raise
 
         finally:
             self.get_logger().info("Deallocating resource.")
-            session.close()
+            try:
+                session.close()
+            except Exception:
+                pass

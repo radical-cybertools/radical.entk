@@ -37,9 +37,12 @@ class TestUploadInputData(unittest.TestCase):
             os.remove(fl)
 
     def tearDown(self):
-        # clean up after ourselves 
-        for fl in glob.glob("./CHKSUM_*"):
-            os.remove(fl)
+        # clean up after ourselves
+        try: 
+            for fl in glob.glob("./CHKSUM_*"):
+                os.remove(fl)
+        except Exception:
+            pass
 
     #-------------------------------------------------------------------------
     #
