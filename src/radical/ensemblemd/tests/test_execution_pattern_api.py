@@ -47,5 +47,5 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
 
         from radical.ensemblemd import SimulationAnalysisLoop
 
-        dp = SimulationAnalysisLoop(maxiterations=1)
+        dp = SimulationAnalysisLoop(iterations=1)
         assert dp.name == "SimulationAnalysisLoop"
