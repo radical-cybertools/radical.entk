@@ -17,6 +17,9 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 * We maintain a wiki, mostly for internal planning and technical documents at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 ### Build Status
+
+TODO: Change to Jenkins
+
 * `master` branch: 
 
     [![Build Status](https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=master)](https://travis-ci.org/radical-cybertools/radical.ensemblemd)
