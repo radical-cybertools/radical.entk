@@ -74,7 +74,7 @@ class ReplicaExchange(ExecutionPattern):
 
     #-------------------------------------------------------------------------------
     #
-    def get_swap_matrix(self, replicas):
+    def get_swap_matrix(self, replicas, matrix_columns):
         """
         Arguments:
         replicas - list of Replica objects

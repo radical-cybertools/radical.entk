@@ -28,7 +28,6 @@ def get_historical_data(history_name):
              f = open(history_name)
              lines = f.readlines()
              f.close()
-             print "Output file %s found!" % ( history_name ) 
          except:
              pass 
          os.chdir("../")
@@ -40,8 +39,7 @@ def get_historical_data(history_name):
 #-----------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    """This module calculates one swap matrix column for replica and writes this column to 
-    matrix_column_x_x.dat file. 
+    """This module calculates one swap matrix column for replica 
     """
 
     argument_list = str(sys.argv)
@@ -49,9 +47,6 @@ if __name__ == '__main__':
     replica_cycle = str(sys.argv[2])
     replicas = int(str(sys.argv[3]))
     base_name = str(sys.argv[4])
-
-    pwd = os.getcwd()
-    matrix_col = "matrix_column_%s_%s.dat" % ( replica_id, replica_cycle ) 
 
     # getting output data for all replicas
     parameters = [0.0]*replicas
@@ -63,12 +58,6 @@ if __name__ == '__main__':
         except:
              pass 
 
-    try:
-        r_file = open( (os.path.join(pwd, matrix_col) ), "w")
-        for item in parameters:
-            r_file.write( str(item) + " " )
-        r_file.close()
-    except IOError:
-        print 'Warning: unable to create column file %s for replica %s' % (matrix_col, replica_id) 
-    
- 
+    for item in parameters:
+        print item,
+  

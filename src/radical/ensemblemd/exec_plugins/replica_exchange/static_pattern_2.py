@@ -124,13 +124,19 @@ class Plugin(PluginBase):
                 self.get_logger().info("Performing Exchange step for replicas")
                 submitted_replicas = unit_manager.submit_units(exchange_replicas)
                 unit_manager.wait_units()
+ 
+                matrix_columns = []
+                for r in submitted_replicas:
+                    d = str(r.stdout)
+                    data = d.split()
+                    matrix_columns.append(data)
 
                 #####################################################################
                 # computing swap matrix
                 #####################################################################
-                self.get_logger().info("Computing swap matrix")
-                swap_matrix = pattern.get_swap_matrix(replicas)
-            
+                self.get_logger().info("Comosing swap matrix")
+                swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
+                            
                 # this is actual exchange
                 for r_i in replicas:
                     r_j = pattern.exchange(r_i, replicas, swap_matrix)

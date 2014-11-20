@@ -127,7 +127,6 @@ class RePattern(ReplicaExchange):
         """
 
         file_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
-
         fo = open(file_name, "wb")
         for i in range(1,500):
             fo.write(str(random.randint(i, 500) + i*2.5) + " ");
@@ -158,8 +157,9 @@ class RePattern(ReplicaExchange):
         """
         launches matrix_calculator.py script on target resource in order to populate columns of swap matrix
         """
-        output_name = "matrix_column_%s_%s.dat" % ( replica.id, (replica.cycle-1) ) 
 
+        # Note: no files are transferred back from resource
+        # Matrix columns are obtained through CU.stdout 
         k = Kernel(name="md.re_exchange")
         k.arguments = ["--calculator=matrix_calculator.py", 
                        "--replica_id=" + str(replica.id), 
@@ -167,7 +167,6 @@ class RePattern(ReplicaExchange):
                        "--replicas=" + str(self.replicas), 
                        "--replica_basename=" + self.inp_basename]
         k.upload_input_data      = "matrix_calculator.py"
-        k.download_output_data = output_name
 
         return k
 
@@ -181,7 +180,7 @@ class RePattern(ReplicaExchange):
 
     #-------------------------------------------------------------------------------
     #
-    def get_swap_matrix(self, replicas):
+    def get_swap_matrix(self, replicas, matrix_columns):
         """
         Creates and populates swap matrix which is used to determine exchange probabilities
         """
@@ -189,18 +188,12 @@ class RePattern(ReplicaExchange):
         swap_matrix = [[ 0. for j in range(len(replicas))] 
              for i in range(len(replicas))]
 
+        matrix_columns = sorted(matrix_columns)
+
         for r in replicas:
-            column_file = "matrix_column" + "_" + str(r.id) + "_" + str(r.cycle-1) + ".dat"       
-            try:
-                f = open(column_file)
-                lines = f.readlines()
-                f.close()
-                data = lines[0].split()
-                # populating one column at a time
-                for i in range(len(replicas)):
-                    swap_matrix[i][r.id] = float(data[i])
-            except:
-                raise
+            # populating one column at a time
+            for i in range(len(replicas)):
+                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
 
         return swap_matrix
 
@@ -221,12 +214,13 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+        
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
         )
-
+        
         # creating RE pattern object
         re_pattern = RePattern()
 
