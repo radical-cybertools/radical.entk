@@ -16,8 +16,6 @@ see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python replica_exchange.py
 
-TODO Antons: describe how to check the output.
-
 Run Remotely
 ^^^^^^^^^^^^
 
@@ -84,6 +82,7 @@ class ReplicaP(Replica):
 
         Arguments:
         my_id - integer representing replica's id
+        cores - number of cores each replica should use
         """
         self.id = int(my_id)
         self.parameter = random.randint(300, 600)
@@ -95,10 +94,13 @@ class RePattern(ReplicaExchange):
     """
     """
     def __init__(self):
-        """Constructor.
+        """Constructor
         """
+        # hardcoded name of the input file base
         self.inp_basename = "simula"
+        # number of replicas to be launched during the simulation
         self.replicas = 4
+        # number of cycles the simulaiton will perform
         self.nr_cycles = 3     
 
         super(RePattern, self).__init__()
@@ -136,7 +138,7 @@ class RePattern(ReplicaExchange):
     #
     def prepare_replica_for_md(self, replica):
         """
-        ok
+        Specifies input and output files and passes them to kernel 
         """
         input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
         output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
@@ -194,12 +196,14 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+
+        
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
         )
-
+        
         # creating RE pattern object
         re_pattern = RePattern()
 
@@ -210,6 +214,12 @@ if __name__ == "__main__":
 
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_1")
+        
+        print "RE simulation finished!"
+        print "Simulation performed 3 cycles for 4 replicas, so in your working directory you should"
+        print "have 12 simula_x_y.md files and 12 simula_x_y.out files ( x in {0,1,2,3}; y in {0,1,2} ) "
+        print "where .md file is replica input file and .out is output providing number of occurrences"
+        print "of each character. \n"
 
     except EnsemblemdError, er:
 
