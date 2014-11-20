@@ -95,10 +95,13 @@ class RePattern(ReplicaExchange):
     """
     """
     def __init__(self):
-        """Constructor.
+        """Constructor
         """
+        # hardcoded name of the input file base
         self.inp_basename = "simula"
+        # number of replicas to be launched during the simulation
         self.replicas = 4
+        # number of cycles the simulaiton will perform
         self.nr_cycles = 3     
 
         super(RePattern, self).__init__()
@@ -136,7 +139,7 @@ class RePattern(ReplicaExchange):
     #
     def prepare_replica_for_md(self, replica):
         """
-        ok
+        Specifies input and output files and passes them to kernel
         """
         input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
         output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
@@ -153,7 +156,7 @@ class RePattern(ReplicaExchange):
     #
     def prepare_replica_for_exchange(self, replica):
         """
-        ok
+        launches matrix_calculator.py script on target resource in order to populate columns of swap matrix
         """
         output_name = "matrix_column_%s_%s.dat" % ( replica.id, (replica.cycle-1) ) 
 
@@ -180,7 +183,7 @@ class RePattern(ReplicaExchange):
     #
     def get_swap_matrix(self, replicas):
         """
-        Creates and populates swap matrix used to determine exchange probabilities
+        Creates and populates swap matrix which is used to determine exchange probabilities
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
@@ -234,6 +237,11 @@ if __name__ == "__main__":
 
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
+        print "RE simulation finished!"
+        print "Simulation performed 3 cycles for 4 replicas. In your working directory you should"
+        print "have 12 simula_x_y.md files and 12 simula_x_y.out files ( x in {0,1,2,3}; y in {0,1,2} ) "
+        print "where .md file is replica input file and .out is output providing number of occurrences"
+        print "of each character. \n"
 
     except EnsemblemdError, er:
 

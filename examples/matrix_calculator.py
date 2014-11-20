@@ -34,8 +34,8 @@ def get_historical_data(history_name):
          os.chdir("../")
  
     os.chdir(home_dir)
-    # returns dummy value
-    return random.randint(250, 750) * 0.02
+    value = (lines[0]).strip()
+    return float(value) * random.uniform(1.1, 3.3)
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 
@@ -53,10 +53,6 @@ if __name__ == '__main__':
     pwd = os.getcwd()
     matrix_col = "matrix_column_%s_%s.dat" % ( replica_id, replica_cycle ) 
 
-    # getting output data for self
-    #history_name = base_name + "_" + replica_id + "_" + replica_cycle + ".out"
-    #replica_param = get_historical_data( history_name )
-
     # getting output data for all replicas
     parameters = [0.0]*replicas
     for j in range(replicas):
@@ -67,17 +63,12 @@ if __name__ == '__main__':
         except:
              pass 
 
-    # init swap column
-    swap_column = [0.0]*replicas
-
-    # populating swap matrix column with dummy values
-    for j in range(replicas):        
-        swap_column[j] = parameters[j] * 0.04
-
     try:
         r_file = open( (os.path.join(pwd, matrix_col) ), "w")
-        for item in swap_column:
+        for item in parameters:
             r_file.write( str(item) + " " )
         r_file.close()
     except IOError:
         print 'Warning: unable to create column file %s for replica %s' % (matrix_col, replica_id) 
+    
+ 

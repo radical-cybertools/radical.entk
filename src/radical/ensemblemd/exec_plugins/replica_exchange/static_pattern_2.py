@@ -51,6 +51,13 @@ class Plugin(PluginBase):
         # launching pilot
         #####
         session = radical.pilot.Session()
+
+        if resource._username is not None:
+            # Add an ssh identity to the session.
+            c = radical.pilot.Context('ssh')
+            c.user_id = resource._username
+            session.add_context(c)
+
         pmgr = radical.pilot.PilotManager(session=session)
 
         pdesc = radical.pilot.ComputePilotDescription()
@@ -58,6 +65,9 @@ class Plugin(PluginBase):
         pdesc.runtime  = resource._walltime
         pdesc.cores    = resource._cores
         pdesc.cleanup  = False
+
+        if resource._allocation is not None:
+            pdesc.project = resource._allocation
 
         pilot = pmgr.submit_pilots(pdesc)
 
@@ -79,16 +89,10 @@ class Plugin(PluginBase):
                 cu                = radical.pilot.ComputeUnitDescription()
                 cu.pre_exec       = r_kernel._cu_def_pre_exec
                 cu.executable     = r_kernel._cu_def_executable
-                print "namd exec: "
-                print cu.executable
                 cu.arguments      = r_kernel.arguments
-                print "namd args: "
-                print cu.arguments
                 cu.mpi            = r_kernel.uses_mpi
                 cu.cores          = r_kernel.cores
                 cu.input_staging  = r_kernel._cu_def_input_data
-                print "namd stage in "
-                print cu.input_staging
                 cu.output_staging = r_kernel._cu_def_output_data
                 compute_replicas.append( cu )
 
