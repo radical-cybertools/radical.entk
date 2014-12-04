@@ -80,9 +80,9 @@ class Plugin(PluginBase):
         for i in range(pattern.nr_cycles):
             compute_replicas = []
             for r in replicas:
-                self.get_logger().info("Building input files for replica %d" % r.id)
+                self.get_logger().info("Cycle %d: Building input files for replica %d" % ((i+1), r.id) )
                 pattern.build_input_file(r)
-                self.get_logger().info("Preparing replica %d for MD run" % r.id)
+                self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((i+1), r.id) )
                 r_kernel = pattern.prepare_replica_for_md(r)
                 r_kernel._bind_to_resource(resource._resource_key)
 
@@ -96,7 +96,7 @@ class Plugin(PluginBase):
                 cu.output_staging = r_kernel._cu_def_output_data
                 compute_replicas.append( cu )
 
-            self.get_logger().info("Performing MD step for replicas")
+            self.get_logger().info("Cycle %d: Performing MD step for replicas" % (i+1) )
             submitted_replicas = unit_manager.submit_units(compute_replicas)
             unit_manager.wait_units()
             
@@ -106,7 +106,7 @@ class Plugin(PluginBase):
                 #####################################################################
                 exchange_replicas = []
                 for r in replicas:
-                    self.get_logger().info("Preparing replica %d for Exchange run" % r.id)
+                    self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((i+1), r.id) )
                     ex_kernel = pattern.prepare_replica_for_exchange(r)
                     ex_kernel._bind_to_resource(resource._resource_key)
 
@@ -121,7 +121,7 @@ class Plugin(PluginBase):
 
                     exchange_replicas.append( cu )
 
-                self.get_logger().info("Performing Exchange step for replicas")
+                self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
                 submitted_replicas = unit_manager.submit_units(exchange_replicas)
                 unit_manager.wait_units()
  
@@ -134,7 +134,7 @@ class Plugin(PluginBase):
                 #####################################################################
                 # computing swap matrix
                 #####################################################################
-                self.get_logger().info("Composing swap matrix")
+                self.get_logger().info("Cycle %d: Composing swap matrix" % (i+1) )
                 swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
                             
                 # this is actual exchange
