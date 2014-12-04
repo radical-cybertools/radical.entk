@@ -117,5 +117,7 @@ if __name__ == '__main__':
         
     # printing path
     print str(path_to_replica_folder).rstrip()
+
+    print str(replica_id)
     
      

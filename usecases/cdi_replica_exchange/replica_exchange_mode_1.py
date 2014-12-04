@@ -252,7 +252,7 @@ class RePattern(ReplicaExchange):
         swap_matrix = [[ 0. for j in range(len(replicas))] 
             for i in range(len(replicas))]
 
-        matrix_columns = sorted(matrix_columns)
+        #matrix_columns = sorted(matrix_columns)
 
         for r in replicas:
             # populating one column at a time
@@ -350,6 +350,13 @@ if __name__ == "__main__":
 
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
+
+        print "RE simulation of three cycles involving four replicas has completed successfully!"
+
+        # delete namd input files
+        for i in range(4):
+            for j in range(3):
+                os.remove ("alanin_base_%d_%d.namd" % (i, j))
 
     except EnsemblemdError, er:
 
