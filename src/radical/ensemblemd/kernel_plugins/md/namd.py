@@ -39,6 +39,12 @@ _KERNEL_INFO = {
             "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
             "uses_mpi"      : "True"
         },
+        "trestles.sdsc.xsede.org": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["module load namd/2.9"],
+            "executable"    : "/opt/namd/bin/namd2",
+            "uses_mpi"      : "True"
+        },
         "supermuc.lrz.de": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["source /etc/profile.d/modules.sh", "module load namd"],
