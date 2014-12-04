@@ -117,7 +117,6 @@ class Plugin(PluginBase):
                     cu.mpi            = ex_kernel.uses_mpi
                     cu.cores          = ex_kernel.cores
                     cu.input_staging  = ex_kernel._cu_def_input_data
-                    cu.output_staging = ex_kernel._cu_def_output_data
 
                     exchange_replicas.append( cu )
 

@@ -238,7 +238,6 @@ class RePattern(ReplicaExchange):
                        "--replicas=" + str(self.replicas), 
                        "--replica_basename=" + str(basename)]
         k.upload_input_data      = "namd_matrix_calculator.py"
-        k.download_output_data = matrix_col
 
         return k
 
