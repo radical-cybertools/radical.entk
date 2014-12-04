@@ -134,7 +134,7 @@ class Plugin(PluginBase):
                 #####################################################################
                 # computing swap matrix
                 #####################################################################
-                self.get_logger().info("Comosing swap matrix")
+                self.get_logger().info("Composing swap matrix")
                 swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
                             
                 # this is actual exchange

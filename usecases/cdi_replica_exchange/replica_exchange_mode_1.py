@@ -244,7 +244,7 @@ class RePattern(ReplicaExchange):
 
     #-------------------------------------------------------------------------------
     #
-    def get_swap_matrix(self, replicas):
+    def get_swap_matrix(self, replicas, matrix_columns):
         """
         """
         base_name = "matrix_column"
@@ -253,25 +253,19 @@ class RePattern(ReplicaExchange):
         swap_matrix = [[ 0. for j in range(len(replicas))] 
             for i in range(len(replicas))]
 
-        for r in replicas:
-            column_file = base_name + "_" + str(r.id) + "_" + str(r.cycle-1) + ".dat"       
-            try:
-                f = open(column_file)
-                lines = f.readlines()
-                f.close()
-                data = lines[0].split()
-                # populating one column at a time
-                for i in range(len(replicas)):
-                    swap_matrix[i][r.id] = float(data[i])
+        matrix_columns = sorted(matrix_columns)
 
-                # setting old_path and first_path for each replica
-                if ( r.cycle == 1 ):
-                    r.first_path = lines[1]
-                    r.old_path = lines[1]
-                else:
-                    r.old_path = lines[1]
-            except:
-                raise
+        for r in replicas:
+            # populating one column at a time
+            for i in range(len(replicas)):
+                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+
+            # setting old_path and first_path for each replica
+            if ( r.cycle == 1 ):
+                r.first_path = matrix_columns[r.id][len(replicas)]
+                r.old_path = matrix_columns[r.id][len(replicas)]
+            else:
+                r.old_path = matrix_columns[r.id][len(replicas)]
 
         return swap_matrix
 
