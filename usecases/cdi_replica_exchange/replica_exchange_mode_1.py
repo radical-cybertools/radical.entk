@@ -353,11 +353,6 @@ if __name__ == "__main__":
 
         print "RE simulation of three cycles involving four replicas has completed successfully!"
 
-        # delete namd input files
-        for i in range(4):
-            for j in range(3):
-                os.remove ("alanin_base_%d_%d.namd" % (i, j))
-
     except EnsemblemdError, er:
 
         print "EnsembleMD Error: {0}".format(str(er))
