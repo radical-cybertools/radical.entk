@@ -86,7 +86,6 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        executable = "namd" 
         self._executable  = cfg["executable"]
         self._arguments   = self.get_raw_args()
         self._environment = cfg["environment"]
