@@ -17,6 +17,10 @@ import subprocess
 
 from setuptools import setup, find_packages, Command
 
+#-----------------------------------------------------------------------------
+#
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 #-----------------------------------------------------------------------------
 #
@@ -61,7 +65,7 @@ def get_version():
 
         # make sure the version files exist for the runtime version inspection
         open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
-        open ('%s/src/radical/ensemblemd/mdkernels/VERSION' % srcroot, 'w').write (long_version+"\n")
+        open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
 
 
     except Exception as e :
@@ -76,15 +80,11 @@ def get_version():
 
 #-----------------------------------------------------------------------------
 # check python version. we need > 2.5, <3.x
-if  sys.hexversion < 0x02050000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError("Sinon requires Python 2.x (2.5 or higher)")
+if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError("radical.ensemblemd requires Python 2.6 or higher")
 
-#-----------------------------------------------------------------------------
-#
-def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+get_version()
 
-#-----------------------------------------------------------------------------
 srcroot = os.path.dirname(os.path.realpath(__file__))
 
 setup_args = {
@@ -94,7 +94,7 @@ setup_args = {
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
     'author_email'     : 'ole.weidner@rutgers.edu',
-    'maintainer'       : "Ole Weidner", 
+    'maintainer'       : "Ole Weidner",
     'maintainer_email' : 'ole.weidner@rutgers.edu',
     'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
     'license'          : 'MIT',
@@ -117,7 +117,7 @@ setup_args = {
     ],
 
     #'entry_points': {
-    #    'console_scripts': 
+    #    'console_scripts':
     #        ['htbac-fecalc = radical.ensemblemd.htbac.bin.fecalc:main',
     #         'htbac-sim    = radical.ensemblemd.htbac.bin.sim:main']
     #},
@@ -127,7 +127,7 @@ setup_args = {
     'namespace_packages': ['radical', 'radical'],
     'packages'          : find_packages('src'),
 
-    'package_dir' :       {'': 'src'},  
+    'package_dir' :       {'': 'src'},
 
     'package_data'     :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
     'install_requires' :  ['radical.utils', 'radical.pilot', 'setuptools>=1'],

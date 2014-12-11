@@ -1,5 +1,5 @@
 # Version
-from radical.ensemblemd.version import version
+from radical.ensemblemd.version import version, __version__
 
 # Exceptions and Errors
 from radical.ensemblemd.exceptions import TypeError
