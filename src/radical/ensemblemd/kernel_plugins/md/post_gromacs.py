@@ -72,11 +72,11 @@ class Kernel(KernelBase):
                 raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
         with open(self.get_args("--outputfile"), 'w') as output_grofile:
-        for i in range(0,self.get_args("--numCUs")):
-            with open('out%s.gro' % i, 'r') as output_file:
-                for line in output_file:
-                    print >> output_grofile, line.replace("\n", "")
-            os.remove('out%s.gro'%i)
+            for i in range(0,self.get_args("--numCUs")):
+                with open('out%s.gro' % i, 'r') as output_file:
+                    for line in output_file:
+                        print >> output_grofile, line.replace("\n", "")
+                os.remove('out%s.gro'%i)
 
         '''
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
