@@ -24,8 +24,13 @@ def read(*rnames):
 
 #-----------------------------------------------------------------------------
 #
-def get_version():
+def check_version():
+    if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
+        raise RuntimeError("SETUP ERROR: radical.ensemblemd requires Python 2.6 or higher")
 
+#-----------------------------------------------------------------------------
+#
+def get_version():
     short_version = None  # 0.4.0
     long_version  = None  # 0.4.0-9-g0684b06
 
@@ -33,35 +38,29 @@ def get_version():
         import subprocess as sp
         import re
 
-        srcroot       = os.path.dirname (os.path.abspath (__file__))
-        VERSION_MATCH = re.compile (r'(([\d\.]+)\D.*)')
+        srcroot       = os.path.dirname (os.path.abspath(__file__))
+        VERSION_MATCH = re.compile(r'(([\d\.]+)\D.*)')
 
         # attempt to get version information from git
         p   = sp.Popen ('cd %s && git describe --tags --always' % srcroot,
                         stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         out = p.communicate()[0]
 
-
-        if  p.returncode != 0 or not out :
+        if  p.returncode != 0 or not out:
 
             # the git check failed -- its likely that we are called from
             # a tarball, so use ./VERSION instead
-            out=open ("%s/VERSION" % ".", 'r').read().strip()
-
+            out=open("%s/VERSION" % ".", 'r').read().strip()
 
         # from the full string, extract short and long versions
         v = VERSION_MATCH.search (out)
         if v:
-            long_version  = v.groups ()[0]
-            short_version = v.groups ()[1]
-
+            long_version  = v.groups()[0]
+            short_version = v.groups()[1]
 
         # sanity check if we got *something*
-        if  not short_version or not long_version :
-            sys.stderr.write ("Cannot determine version from git or ./VERSION\n")
-            import sys
-            sys.exit (-1)
-
+        if not short_version or not long_version:
+            raise RuntimeError("SETUP ERROR: Cannot determine version from git or ./VERSION\n")
 
         # make sure the version files exist for the runtime version inspection
         open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
@@ -69,23 +68,15 @@ def get_version():
 
 
     except Exception as e :
-        print 'Could not extract/set version: %s' % e
-        import sys
-        sys.exit (-1)
+        raise RuntimeError("SETUP ERROR: Could not extract/set version: %s" % e)
 
     return short_version, long_version
 
-
-#short_version, long_version = get_version ()
-
 #-----------------------------------------------------------------------------
-# check python version. we need > 2.5, <3.x
-if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError("radical.ensemblemd requires Python 2.6 or higher")
-
-get_version()
-
+#
 srcroot = os.path.dirname(os.path.realpath(__file__))
+check_version()
+short_version, long_version = get_version()
 
 setup_args = {
     'name'             : 'radical.ensemblemd',
@@ -137,8 +128,4 @@ setup_args = {
     'zip_safe'         : False,
 }
 
-#-----------------------------------------------------------------------------
-
 setup (**setup_args)
-
-#-----------------------------------------------------------------------------
