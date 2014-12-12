@@ -30,13 +30,8 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 **Current Build Status**
 
-* Release Branch 
-    .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=master
-        :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
-
-* Development Branch
-    .. image:: https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=devel
-        :target: https://travis-ci.org/radical-cybertools/radical.ensemblemd
+  .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD
+      :target: http://ci.radical-project.org/job/EnsembleMD/
 
 #########
 Contents:
