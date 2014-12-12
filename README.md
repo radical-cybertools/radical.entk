@@ -1,8 +1,9 @@
 # radical.ensemblemd
 
-radical.ensemblemd is a Python API and library for developing and executing 
-large-scale ensemble-based Molecular Dynamics simulations and workflows
-
+The Ensemble MD Toolkit is a Python library for developing and executing large-
+scale ensemble-based Molecular Dynamics (MD) simulations and workflows. It is
+being developed by the RADICAL Research Group at Rutgers University. Ensemble MD
+Toolkit is released under the MIT License.
 
 ### Documentation
 
@@ -18,12 +19,13 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 
 ### Build Status
 
-TODO: Change to Jenkins
+[![Build Status](http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD)](http://ci.radical-project.org/job/EnsembleMD/)
 
-* `master` branch: 
+### Contributors
 
-    [![Build Status](https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=master)](https://travis-ci.org/radical-cybertools/radical.ensemblemd)
-* `devel` branch: 
-
-    [![Build Status](https://travis-ci.org/radical-cybertools/radical.ensemblemd.svg?branch=devel)](https://travis-ci.org/radical-cybertools/radical.ensemblemd)  
-  
+* Vivek Balasubramanian
+* Ioannis Paraskevakos
+* Mark Santcross
+* Antons Treikalis
+* Ole Weidner
+* Nikhil Shenoy
