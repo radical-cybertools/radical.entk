@@ -13,31 +13,55 @@ from radical.ensemblemd.exceptions import ArgumentError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _KERNEL_INFO = {
     "name":            "md.amber",
     "description":     "The AMBER molecular dynamics package (http://ambermd.org/).",
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
-    "machine_configs": 
+    "machine_configs":
     {
-        "stampede.tacc.utexas.edu": 
+        "*":
+        {
+            "environment" : {},
+            "pre_exec"    : [],
+            "executable"  : "pmemd.MPI",
+            "uses_mpi"    : True,
+            "test_cmd"    : "pmemd --version"
+        },
+
+        "stampede":
         {
             "environment" : {},
             "pre_exec"    : ["module load TACC && module load amber"],
-            "executable"  : ["/bin/bash"]
+            "executable"  : "pmemd.MPI",
+            "uses_mpi"    : True,
+            "test_cmd"    : "pmemd --version"
         },
-        "archer.ac.uk":
+
+        "archer":
         {
-          "environment" : {},
-          "pre_exec" : ["module load packages-archer","module load amber"],
-          "executable" : ["/bin/bash"]
+            "environment" : {},
+            "pre_exec"    : ["module load packages-archer","module load amber"],
+            "executable"  : "pmemd.MPI",
+            "uses_mpi"    : True,
+            "test_cmd"    : "pmemd --version"
+        },
+
+        "biou":
+        {
+            "environment" : {},
+            "pre_exec"    : ["module load amber"],
+            "executable"  : ["pmemd.MPI"],
+            "uses_mpi"    : True,
+            "test_cmd"    : "pmemd --version"
+
         }
     }
 }
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------

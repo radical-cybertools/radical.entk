@@ -13,31 +13,42 @@ from radical.ensemblemd.exceptions import ArgumentError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _KERNEL_INFO = {
     "name":            "md.coco",
-    "description":     "The COCO (URL).",
+    "description":     "CoCo ('Complementary Coordinates') Tools (https://bitbucket.org/extasy-project/coco).",
     "arguments":       "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
-    "machine_configs": 
+    "machine_configs":
     {
-        "stampede.tacc.utexas.edu":
+        "*":
         {
-          "environment" : {},
-          "pre_exec" : ["module load TACC && module load python && module load mpi4py && module load amber"],
-          "executable" : ["/bin/bash"]
+            "environment" : {},
+            "pre_exec"    : [],
+            "executable"  : "pyCoCo",
+            "uses_mpi"    : True,
         },
-        "archer.ac.uk":
+
+        "stampede":
         {
-          "environment" : {},
-          "pre_exec" : ["module load python && module load numpy && module load scipy && module load coco && module load amber"],
-          "executable" : ["/bin/bash"]
+            "environment" : {},
+            "pre_exec"    : ["module load intel/13.0.2.146","module load python","module load mpi4py","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco_installation/bin:$PATH"],
+            "executable"  : "pyCoCo",
+            "uses_mpi"    : True,
+        },
+
+        "archer":
+        {
+            "environment" : {},
+            "pre_exec"    : ["module load python","module load numpy","module load scipy","module load coco/0.3","module load netcdf4-python","module load amber"],
+            "executable"  : "pyCoCo",
+            "uses_mpi"    : True,
         }
     }
 }
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------

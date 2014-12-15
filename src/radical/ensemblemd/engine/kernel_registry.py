@@ -12,9 +12,11 @@ __license__   = "MIT"
 
 
 kernel_registry = [
+    "radical.ensemblemd.kernel_plugins.md.amber",
+    "radical.ensemblemd.kernel_plugins.md.coco",
+    "radical.ensemblemd.kernel_plugins.md.gromacs",
     "radical.ensemblemd.kernel_plugins.md.mmpbsa",
     "radical.ensemblemd.kernel_plugins.md.lsdmap",
-    "radical.ensemblemd.kernel_plugins.md.gromacs",
     "radical.ensemblemd.kernel_plugins.md.namd",
     "radical.ensemblemd.kernel_plugins.md.re_exchange",
 
@@ -24,7 +26,5 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.misc.chksum",
     "radical.ensemblemd.kernel_plugins.misc.levenshtein"
 
-    "radical.ensemblemd.kernel_plugins.mdv2.amber",
-    "radical.ensemblemd.kernel_plugins.mdv2.gromacs",
 
 ]

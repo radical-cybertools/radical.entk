@@ -14,7 +14,7 @@ from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _KERNEL_INFO = {
     "name":         "md.lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
@@ -39,41 +39,39 @@ _KERNEL_INFO = {
                             "description": "Output gro filename"
                         }
                     },
-    "machine_configs": 
+    "machine_configs":
     {
         "*": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["sleep 1"],
-            "executable"    : ".",
-            "uses_mpi"      : False
+            "environment" : {},
+            "pre_exec"    : [],
+            "executable"  : "mdrun",
+            "uses_mpi"    : False,
+            "test_cmd"    : ""
         },
 
-        "trestles.sdsc.xsede.org":
+        "stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","module load scipy","module load mpi4py","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap && python $HOME/lsdmap/setup.py install --user))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
+            "pre_exec"    : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
+            "executable"  : "lsdmap",
+            "uses_mpi"    : True,
+            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
         },
 
-        "stampede.tacc.utexas.edu":
+        "archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","(test -d $HOME/lsdmap || (git clone https://github.com/jp43/lsdmap.git $HOME/lsdmap))","export PATH=$PATH:$HOME/lsdmap/bin","chmod +x $HOME/lsdmap/bin/lsdmap"],
-            "executable" : ["/bin/bash"]
-        },
-
-        "archer.ac.uk":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python && source /fs4/e290/e290/vb224/myenv/bin/activate && module load numpy && module load scipy && module load lsdmap"],
-            "executable" : ["/bin/bash"]
+            "pre_exec"    : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
+            "executable"  : "lsdmap",
+            "uses_mpi"    : True,
+            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
         }
     }
 }
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
@@ -92,7 +90,7 @@ class Kernel(KernelBase):
     # --------------------------------------------------------------------------
     #
     def _bind_to_resource(self, resource_key):
-        """(PRIVATE) Implements parent class method. 
+        """(PRIVATE) Implements parent class method.
         """
         if resource_key not in _KERNEL_INFO["machine_configs"]:
             if "*" in _KERNEL_INFO["machine_configs"]:
@@ -107,10 +105,10 @@ class Kernel(KernelBase):
         arguments = ['-l', '-c', '{0} run_analyzer.sh {1} {2}'.format(cfg["executable"],
                                                                         self.get_args("--nnfile="),
                                                                         self.get_args("--wfile="))]
-       
+
         self._executable  = executable
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
+        self._pre_exec    = cfg["pre_exec"]
         self._post_exec   = None
