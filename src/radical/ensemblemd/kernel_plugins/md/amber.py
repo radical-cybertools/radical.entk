@@ -10,6 +10,7 @@ __license__   = "MIT"
 from copy import deepcopy
 
 from radical.ensemblemd.exceptions import ArgumentError
+from radical.ensemblemd.exceptions import NoKernelConfigurationError
 from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 
 # ------------------------------------------------------------------------------
@@ -79,15 +80,21 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self):
-        """(PRIVATE) Implements parent class method. Returns the kernel
-           description as a dictionary.
+    def _bind_to_resource(self, resource_key):
+        """(PRIVATE) Implements parent class method.
         """
-        return {
-            "environment" : None,
-            "pre_exec"    : None,
-            "post_exec"   : None,
-            "executable"  : "AMBER",
-            "arguments"   : self.get_raw_args(),
-            "use_mpi"     : True
-        }
+        if resource_key not in _KERNEL_INFO["machine_configs"]:
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
+
+        self._executable  = None
+        self._arguments   = None
+        self._environment = None
+        self._uses_mpi    = None
+        self._pre_exec    = None
+        self._post_exec   = None

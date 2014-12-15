@@ -25,7 +25,7 @@ class SimpleKernelTests(unittest.TestCase):
         """Basic test of the AMBER kernel.
         """
         k = Kernel(name="md.amber")
-
+        k._bind_to_resource("*")
 
     #-------------------------------------------------------------------------
     #
@@ -33,6 +33,7 @@ class SimpleKernelTests(unittest.TestCase):
         """Basic test of the CoCo kernel.
         """
         k = Kernel(name="md.coco")
+        k._bind_to_resource("*")
 
     #-------------------------------------------------------------------------
     #
@@ -40,6 +41,7 @@ class SimpleKernelTests(unittest.TestCase):
         """Basic test of the GROMACS kernel.
         """
         k = Kernel(name="md.gromacs")
+        k._bind_to_resource("*")
 
     #-------------------------------------------------------------------------
     #
@@ -47,3 +49,4 @@ class SimpleKernelTests(unittest.TestCase):
         """Basic test of the LSDMAP kernel.
         """
         k = Kernel(name="md.lsdmap")
+        k._bind_to_resource("*")
