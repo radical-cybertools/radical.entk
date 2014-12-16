@@ -14,7 +14,7 @@ from radical.ensemblemd.exceptions import TypeError
 # ------------------------------------------------------------------------------
 #
 class Kernel(object):
-    
+
     #---------------------------------------------------------------------------
     #
     def __init__(self, name, args=None):
@@ -22,7 +22,7 @@ class Kernel(object):
         """
         if type(name) != str:
             raise TypeError(
-                expected_type=str, 
+                expected_type=str,
                 actual_type=type(name))
 
         self._engine = Engine()
@@ -52,7 +52,7 @@ class Kernel(object):
                 else:
                     # error
                     raise Exception("Invalid transfer directive %s" % download)
-               
+
                 pre_exec.append(cmd)
 
         # Translate copy directives into cp command(s)
@@ -69,7 +69,7 @@ class Kernel(object):
                 else:
                     # error
                     raise Exception("Invalid transfer directive %s" % copy)
-               
+
                 pre_exec.append(cmd)
 
         # Translate link directives into ln command(s)
@@ -86,7 +86,7 @@ class Kernel(object):
                 else:
                     # error
                     raise Exception("Invalid transfer directive %s" % link)
-               
+
                 pre_exec.append(cmd)
 
         # Add existing pre-exec.
@@ -149,9 +149,9 @@ class Kernel(object):
         """
         if type(args) != list:
             raise TypeError(
-                expected_type=list, 
+                expected_type=list,
                 actual_type=type(args))
-        
+
         # Call the validate_args() method of the plug-in.
         self._kernel.validate_args(args)
 
@@ -168,9 +168,9 @@ class Kernel(object):
 
         if type(cores) != int:
             raise TypeError(
-                expected_type=int, 
+                expected_type=int,
                 actual_type=type(args))
-        
+
         # Call the validate_args() method of the plug-in.
         self._kernel._cores = cores
 
@@ -178,8 +178,8 @@ class Kernel(object):
     #
     @property
     def upload_input_data(self):
-        """Instructs the application to upload one or more files or directories 
-           from the host the script is running on into the kernel's 
+        """Instructs the application to upload one or more files or directories
+           from the host the script is running on into the kernel's
            execution directory.
 
            Example::
@@ -198,7 +198,7 @@ class Kernel(object):
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
-                    expected_type=str, 
+                    expected_type=str,
                     actual_type=type(dd))
 
         self._kernel._upload_input_data = data_directives
@@ -207,7 +207,7 @@ class Kernel(object):
     #
     @property
     def download_input_data(self):
-        """Instructs the kernel to download one or more files or directories 
+        """Instructs the kernel to download one or more files or directories
            from a remote HTTP server into the kernel's execution directory.
 
            Example::
@@ -231,7 +231,7 @@ class Kernel(object):
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
-                    expected_type=str, 
+                    expected_type=str,
                     actual_type=type(dd))
 
         self._kernel._download_input_data = data_directives
@@ -241,7 +241,7 @@ class Kernel(object):
     @property
     def copy_input_data(self):
         """Instructs the kernel to copy one or more files or directories from
-           the execution host's filesystem into the kernel's execution 
+           the execution host's filesystem into the kernel's execution
            directory.
 
            Example::
@@ -262,7 +262,7 @@ class Kernel(object):
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
-                    expected_type=str, 
+                    expected_type=str,
                     actual_type=type(dd))
 
         self._kernel._copy_input_data = data_directives
@@ -271,8 +271,8 @@ class Kernel(object):
     #
     @property
     def link_input_data(self):
-        """Instructs the kernel to create a link to one or more files or 
-           directories on the execution host's filesystem in the kernel's 
+        """Instructs the kernel to create a link to one or more files or
+           directories on the execution host's filesystem in the kernel's
            execution directory.
 
            Example::
@@ -291,16 +291,16 @@ class Kernel(object):
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
-                    expected_type=str, 
+                    expected_type=str,
                     actual_type=type(dd))
 
         self._kernel._link_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #
-    @property 
+    @property
     def download_output_data(self):
-        """Instructs the application to download one or more files or directories 
+        """Instructs the application to download one or more files or directories
            from the kernel's execution directory back to the
            host the script is running on.
 
@@ -321,7 +321,7 @@ class Kernel(object):
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
-                    expected_type=str, 
+                    expected_type=str,
                     actual_type=type(dd))
 
         self._kernel._download_output_data = data_directives
@@ -343,7 +343,8 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     def _bind_to_resource(self, resource_key):
-        """Returns the kernel description as a dictionary that can be 
+        """Returns the kernel description as a dictionary that can be
            translated into a CU description.
         """
-        return self._kernel._bind_to_resource(resource_key)
+        self._kernel._bind_to_resource(resource_key)
+        return self._kernel

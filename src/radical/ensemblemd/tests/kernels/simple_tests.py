@@ -5,7 +5,7 @@ import sys
 import glob
 import unittest
 
-from radical.ensemblemd import Kernel
+import radical.ensemblemd
 
 #-----------------------------------------------------------------------------
 #
@@ -24,29 +24,33 @@ class SimpleKernelTests(unittest.TestCase):
     def test__amber_kernel(self):
         """Basic test of the AMBER kernel.
         """
-        k = Kernel(name="md.amber")
-        k._bind_to_resource("*")
+        k = radical.ensemblemd.Kernel(name="md.amber")
+        _kernel = k._bind_to_resource("*")
+        assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.amber.Kernel, _kernel
 
     #-------------------------------------------------------------------------
     #
     def test__coco_kernel(self):
         """Basic test of the CoCo kernel.
         """
-        k = Kernel(name="md.coco")
-        k._bind_to_resource("*")
+        k = radical.ensemblemd.Kernel(name="md.coco")
+        _kernel = k._bind_to_resource("*")
+        assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.coco.Kernel, _kernel
 
     #-------------------------------------------------------------------------
     #
     def test__gromacs_kernel(self):
         """Basic test of the GROMACS kernel.
         """
-        k = Kernel(name="md.gromacs")
-        k._bind_to_resource("*")
+        k = radical.ensemblemd.Kernel(name="md.gromacs")
+        _kernel = k._bind_to_resource("*")
+        assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.gromacs.Kernel, _kernel
 
     #-------------------------------------------------------------------------
     #
     def test__lsdmap_kernel(self):
         """Basic test of the LSDMAP kernel.
         """
-        k = Kernel(name="md.lsdmap")
-        k._bind_to_resource("*")
+        k = radical.ensemblemd.Kernel(name="md.lsdmap")
+        _kernel = k._bind_to_resource("*")
+        assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.lsdmap.Kernel, _kernel
