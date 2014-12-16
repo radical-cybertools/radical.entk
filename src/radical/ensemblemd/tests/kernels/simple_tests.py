@@ -37,6 +37,8 @@ class SimpleKernelTests(unittest.TestCase):
         _kernel = k._bind_to_resource("*")
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.coco.Kernel, _kernel
 
+        assert str(_kernel) == False, str(_kernel)
+
     #-------------------------------------------------------------------------
     #
     def test__gromacs_kernel(self):

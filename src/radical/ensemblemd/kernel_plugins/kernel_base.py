@@ -20,7 +20,7 @@ from radical.ensemblemd.exceptions import NotImplementedError
 class KernelBase(object):
 
     #__metaclass__ = ru.Singleton
-    
+
     # --------------------------------------------------------------------------
     #
     def __init__ (self, kernel_info) :
@@ -49,6 +49,25 @@ class KernelBase(object):
 
         self._download_output_data   = None
 
+
+    # --------------------------------------------------------------------------
+    #
+    def as_dict(self):
+        """Returns a dictionary representation of the kernel.
+        """
+        d = {"pre_exec": self._pre_exec,
+             "post_exec": self._post_exec,
+             "environment": self._environment,
+             "executable": self._executable,
+             "arguments": self._arguments,
+             "uses_mpi": self._uses_mpi,
+             "cores": self._cores}
+        return d
+
+    # --------------------------------------------------------------------------
+    #
+    def __str__(self):
+        return str(self.as_dict())
 
     # --------------------------------------------------------------------------
     #
@@ -91,7 +110,7 @@ class KernelBase(object):
     # --------------------------------------------------------------------------
     #
     def validate_args(self, args):
-        """Validates if 'args' fulfill the argument requirements defined in the 
+        """Validates if 'args' fulfill the argument requirements defined in the
            kernel info.
         """
         self._raw_args = args
@@ -144,4 +163,3 @@ class KernelBase(object):
         raise NotImplementedError(
           method_name="_get_kernel_description",
           class_name=type(self))
-        

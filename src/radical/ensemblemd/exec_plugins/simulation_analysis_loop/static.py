@@ -9,12 +9,12 @@ __license__   = "MIT"
 
 import time
 import saga
-import radical.pilot 
+import radical.pilot
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _PLUGIN_INFO = {
     "name":         "simulation_analysis_loop.static.default",
     "pattern":      "SimulationAnalysisLoop",
@@ -24,7 +24,7 @@ _PLUGIN_INFO = {
 _PLUGIN_OPTIONS = []
 
 # ------------------------------------------------------------------------------
-# 
+#
 def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, type):
     env_vars = dict()
 
@@ -59,7 +59,7 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
@@ -92,12 +92,12 @@ class Plugin(PluginBase):
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
-                self.get_logger().error("Pattern execution FAILED.") 
+                self.get_logger().error("Pattern execution FAILED.")
 
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(
             pattern.iterations, resource._cores, resource._resource_key))
 
-        try: 
+        try:
 
             session = radical.pilot.Session()
 
@@ -114,6 +114,10 @@ class Plugin(PluginBase):
             pdesc.resource = resource._resource_key
             pdesc.runtime  = resource._walltime
             pdesc.cores    = resource._cores
+
+            if resource._queue is not None:
+                pdesc.queue = resource._queue
+
             pdesc.cleanup  = True
 
             if resource._allocation is not None:
@@ -136,7 +140,7 @@ class Plugin(PluginBase):
             ########################################################################
             # execute pre_loop
             #
-            try: 
+            try:
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
 
@@ -160,7 +164,7 @@ class Plugin(PluginBase):
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
             except NotImplementedError:
-                # Doesn't exist. That's fine as it is not mandatory. 
+                # Doesn't exist. That's fine as it is not mandatory.
                 self.get_logger().info("pre_loop() not defined. Skipping.")
                 pass
 

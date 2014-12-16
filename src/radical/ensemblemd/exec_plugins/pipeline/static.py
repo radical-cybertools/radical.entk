@@ -7,15 +7,15 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-import os 
+import os
 import saga
-import radical.pilot 
+import radical.pilot
 
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _PLUGIN_INFO = {
     "name":         "pipeline.static.default",
     "pattern":      "Pipeline",
@@ -26,7 +26,7 @@ _PLUGIN_OPTIONS = []
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class Plugin(PluginBase):
                 self.get_logger().error("Resource error: {0}".format(pilot.log))
                 self.get_logger().error("Pattern execution FAILED.")
 
-                # Try to get some information here... 
+                # Try to get some information here...
                 if os.getenv("RADICAL_ENMD_TRAVIS_DEBUG") is not None:
 
                     sb = saga.Url(pilot.sandbox).path
@@ -80,7 +80,7 @@ class Plugin(PluginBase):
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2}".format(unit.uid, unit.stderr, unit.stdout))
-                self.get_logger().error("Pattern execution FAILED.") 
+                self.get_logger().error("Pattern execution FAILED.")
 
         pipeline_instances = pattern.instances
 
@@ -104,6 +104,10 @@ class Plugin(PluginBase):
             pdesc.resource = resource._resource_key
             pdesc.runtime  = resource._walltime
             pdesc.cores    = resource._cores
+
+            if resource._queue is not None:
+                pdesc.queue = resource._queue
+
             pdesc.cleanup  = True
 
             if resource._allocation is not None:

@@ -2,7 +2,7 @@
 
 """A static execution plugin RE pattern 1
 For this pattern exchange is synchronous - all replicas must finish MD run before
-an exchange can take place and all replicas must participate. Exchange is performed 
+an exchange can take place and all replicas must participate. Exchange is performed
 in centralized way (not on compute)
 """
 
@@ -10,14 +10,14 @@ __author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-import os 
+import os
 import random
 import radical.pilot
 
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _PLUGIN_INFO = {
     "name":         "replica_exchange.static_pattern_1",
     "pattern":      "ReplicaExchange",
@@ -28,7 +28,7 @@ _PLUGIN_OPTIONS = []
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
@@ -64,6 +64,11 @@ class Plugin(PluginBase):
         pdesc.resource = resource._resource_key
         pdesc.runtime  = resource._walltime
         pdesc.cores    = resource._cores
+
+        if resource._queue is not None:
+            pdesc.queue = resource._queue
+
+
         pdesc.cleanup  = False
 
         if resource._allocation is not None:
@@ -99,21 +104,20 @@ class Plugin(PluginBase):
             self.get_logger().info("Performing MD step for replicas")
             submitted_replicas = unit_manager.submit_units(compute_replicas)
             unit_manager.wait_units()
-            
+
             if (i < (pattern.nr_cycles-1)):
                 #####################################################################
                 # computing swap matrix
                 #####################################################################
                 self.get_logger().info("Computing swap matrix")
                 swap_matrix = pattern.get_swap_matrix(replicas)
-            
+
                 # this is actual exchange
                 for r_i in replicas:
                     r_j = pattern.exchange(r_i, replicas, swap_matrix)
                     if (r_j != r_i):
-                        # swap parameters   
-                        self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))            
+                        # swap parameters
+                        self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
                         pattern.perform_swap(r_i, r_j)
 
         self.get_logger().info("Replica Exchange simulation finished successfully!")
-

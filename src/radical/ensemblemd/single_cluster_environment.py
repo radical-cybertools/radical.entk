@@ -18,16 +18,17 @@ CONTEXT_NAME = "Static"
 #-------------------------------------------------------------------------------
 #
 class SingleClusterEnvironment(ExecutionContext):
-    """A static execution context provides a fixed set of computational 
-       resources. 
+    """A static execution context provides a fixed set of computational
+       resources.
     """
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, username=None, allocation=None):
+    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None):
         """Creates a new ExecutionContext instance.
         """
         self._resource_key = resource
+        self._queue = queue
         self._cores = cores
         self._walltime = walltime
         self._username = username
@@ -52,7 +53,7 @@ class SingleClusterEnvironment(ExecutionContext):
         # Some basic type checks.
         if not isinstance(pattern, ExecutionPattern):
             raise TypeError(
-              expected_type=ExecutionPattern, 
+              expected_type=ExecutionPattern,
               actual_type=type(pattern))
 
         self._engine = Engine()
