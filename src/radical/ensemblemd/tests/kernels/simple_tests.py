@@ -28,6 +28,9 @@ class SimpleKernelTests(unittest.TestCase):
         _kernel = k._bind_to_resource("*")
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.amber.Kernel, _kernel
 
+        # Test kernel specifics here:
+        pass
+
     #-------------------------------------------------------------------------
     #
     def test__coco_kernel(self):
@@ -37,7 +40,8 @@ class SimpleKernelTests(unittest.TestCase):
         _kernel = k._bind_to_resource("*")
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.coco.Kernel, _kernel
 
-        assert str(_kernel) == False, str(_kernel)
+        # Test kernel specifics here:
+        pass
 
     #-------------------------------------------------------------------------
     #
@@ -48,6 +52,9 @@ class SimpleKernelTests(unittest.TestCase):
         _kernel = k._bind_to_resource("*")
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.gromacs.Kernel, _kernel
 
+        # Test kernel specifics here:
+        pass
+
     #-------------------------------------------------------------------------
     #
     def test__lsdmap_kernel(self):
@@ -56,3 +63,6 @@ class SimpleKernelTests(unittest.TestCase):
         k = radical.ensemblemd.Kernel(name="md.lsdmap")
         _kernel = k._bind_to_resource("*")
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.lsdmap.Kernel, _kernel
+
+        # Test kernel specifics here:
+        pass
