@@ -24,7 +24,8 @@ _KERNEL_INFO = {
         "*":
         {
             "environment" : {},
-            "pre_exec"    : [],
+            "pre_exec"    : ["date"],
+            "post_exec"   : ["date"],
             "executable"  : "pmemd.MPI",
             "uses_mpi"    : True,
             "test_cmd"    : "pmemd --version"
@@ -33,7 +34,8 @@ _KERNEL_INFO = {
         "stampede":
         {
             "environment" : {},
-            "pre_exec"    : ["module load TACC && module load amber"],
+            "pre_exec"    : ["module load TACC", "module load amber"],
+            "post_exec"   : [],
             "executable"  : "pmemd.MPI",
             "uses_mpi"    : True,
             "test_cmd"    : "pmemd --version"
@@ -43,6 +45,7 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec"    : ["module load packages-archer","module load amber"],
+            "post_exec"   : [],
             "executable"  : "pmemd.MPI",
             "uses_mpi"    : True,
             "test_cmd"    : "pmemd --version"
@@ -52,7 +55,8 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec"    : ["module load amber"],
-            "executable"  : ["pmemd.MPI"],
+            "post_exec"   : [],
+            "executable"  : "pmemd.MPI",
             "uses_mpi"    : True,
             "test_cmd"    : "pmemd --version"
 
@@ -92,9 +96,9 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        self._executable  = None
-        self._arguments   = None
+        self._executable  = cfg["executable"]
+        self._arguments   = self.get_raw_args()
         self._environment = None
         self._uses_mpi    = None
-        self._pre_exec    = None
-        self._post_exec   = None
+        self._pre_exec    = cfg["pre_exec"]
+        self._post_exec   = cfg["post_exec"]

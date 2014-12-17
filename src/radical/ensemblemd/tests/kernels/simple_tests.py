@@ -29,7 +29,27 @@ class SimpleKernelTests(unittest.TestCase):
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.amber.Kernel, _kernel
 
         # Test kernel specifics here:
-        pass
+        k = radical.ensemblemd.Kernel(name="md.amber")
+        k.arguments = ["-1", "-2", "-3"]
+
+        k._bind_to_resource("*")
+        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
+        assert k.arguments == ["-1", "-2", "-3"], k.arguments
+        assert k._cu_def_pre_exec == ["date"], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == ["date"], k._cu_def_post_exec
+
+        k._bind_to_resource("stampede")
+        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
+        assert k.arguments == ["-1", "-2", "-3"], k.arguments
+        assert k._cu_def_pre_exec == ["module load TACC", "module load amber"], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == [], k._cu_def_post_exec
+
+        k._bind_to_resource("archer")
+        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
+        assert k.arguments == ["-1", "-2", "-3"], k.arguments
+        assert k._cu_def_pre_exec == ["module load packages-archer","module load amber"], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == [], k._cu_def_post_exec
+
 
     #-------------------------------------------------------------------------
     #
