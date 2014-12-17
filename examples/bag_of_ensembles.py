@@ -94,7 +94,7 @@ class CalculateChecksums(Pipeline):
         """
         k = Kernel(name="misc.chksum")
         k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
-        k.download_input_data  = "https://gist.githubusercontent.com/oleweidner/6084b9d56b04389717b9/raw/611dd0c184be5f35d75f876b13604c86c470872f/gistfile1.txt > UTF-8-demo.txt"
+        k.download_input_data  = "httpX://gist.githubusercontent.com/oleweidner/6084b9d56b04389717b9/raw/611dd0c184be5f35d75f876b13604c86c470872f/gistfile1.txt > UTF-8-demo.txt"
         k.download_output_data = "checksum{0}.sha1".format(instance)
         return k
 
