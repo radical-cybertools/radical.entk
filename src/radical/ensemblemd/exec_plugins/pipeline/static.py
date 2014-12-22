@@ -8,10 +8,11 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
+import sys
 import saga
 import radical.pilot
 
-from radical.ensemblemd.exceptions import NotImplementedError
+from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
@@ -80,7 +81,6 @@ class Plugin(PluginBase):
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2}".format(unit.uid, unit.stderr, unit.stdout))
-                self.get_logger().error("Pattern execution FAILED.")
 
         pipeline_instances = pattern.instances
 
@@ -190,6 +190,14 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
                 self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
                 finished_units = umgr.wait_units()
+
+                failed_units = ""
+                for unit in units:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * Compute Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                        
+                if len(failed_units) > 0:
+                    raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
 
 
             self.get_logger().info("Pattern execution successful.")

@@ -10,7 +10,7 @@ __license__   = "MIT"
 import time
 import saga
 import radical.pilot
-from radical.ensemblemd.exceptions import NotImplementedError
+from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
@@ -161,6 +161,9 @@ class Plugin(PluginBase):
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
                 umgr.wait_units()
 
+                if unit.state != radical.pilot.DONE:
+                    raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
+
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
             except NotImplementedError:
@@ -206,6 +209,12 @@ class Plugin(PluginBase):
                 self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
+                failed_units = ""
+                for unit in s_cus:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in s_cus:
@@ -243,6 +252,15 @@ class Plugin(PluginBase):
                 self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
+                failed_units = ""
+                for unit in a_cus:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                        
+                if len(failed_units) > 0:
+                    raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
+
+
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in a_cus:
@@ -252,6 +270,7 @@ class Plugin(PluginBase):
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
+            raise
 
         finally:
             self.get_logger().info("Deallocating resource.")
