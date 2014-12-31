@@ -22,12 +22,12 @@ class AllPairsPattern(ExecutionPattern):
     """
     #---------------------------------------------------------------------------
     #
-    def __init__(self, setelemets):
+    def __init__(self, setelements):
         """Creates a new AllPairsPattern object.
  
         **Arguments:**
 			  
-			* **setelemets** ['list']
+			* **setelements** ['list']
 			  The elements of the set in which All Pairs pattern will be applied. Can
 			  be used as identifiers? Need to think about it.
  
