@@ -21,7 +21,7 @@ Run Locally
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to 
 see log messages about simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python simulation_analysis_loop.py
+    RADICAL_ENMD_VERBOSE=info python allpairs_example.py
 
 Once the script has finished running, you should see <Need to implement it 
 completely to know the output files. Probably one file for everything?>the in 
@@ -89,8 +89,9 @@ class RandomAP(AllPairsPattern):
 
         # Creating an ASCII file by using the misc.mkfile kernel. Each file represents
         # a element of the set.
-        k = Kernel(name="misc.mkfile")
-        k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(self.element))
+        print "Creating Element {0}".format(element)
+        k = Kernel(name = "misc.mkfile")
+        k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(element)]
         return k
 
     def element_comparison(self, element1, element2):
@@ -98,25 +99,24 @@ class RandomAP(AllPairsPattern):
            and perform a difference between those files. Each file coresponds to
            an elements of the set.
 
-           ..note:: The placeholder ``$INIT_STEP`` used in ``link_input_data`` is 
-                    a reference to the working directory of init_step.
-
         """
+        
         input_filename1 = "asciifile-{0}.dat".format(element1)
         input_filename2 = "asciifile-{0}.dat".format(element2)
         output_filename = "comparison-{0}-{1}.log".format(element1, element2)
-    
+        print "Comparing {0} with {1}. Saving result in {2}".format(input_filename1,input_filename2,output_filename)
+
         # Compare the previously generated files with the misc.diff kernel and 
         # write the result of each comparison to a specific output file.
 
         k = Kernel(name="misc.diff")
-        k.link_input_data      = ["$INIT_STEP/{0}, $INIT_STEP/{1}".format(input_filename1,input_filename2)]
         k.arguments            = ["--inputfile1={0}".format(input_filename1), 
                                   "--inputfile2={0}".format(input_filename2), 
                                   "--outputfile={0}".format(output_filename)]
     
         # I think it download the output files from the cluster to the machine 
         # that run this script. Need to learn more here.
+
         k.download_output_data = output_filename
         return k
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
+            resource="local.localhost", 
             cores=1, 
             walltime=30,
             username=None,
@@ -136,14 +136,13 @@ if __name__ == "__main__":
         )
         
         # For example the set has 5 elements.
-        ElementsSet = range(1,6)
-        randAP = RandomAP(ElementsSet)
+        ElementsSet = range(1,11)
+        randAP = RandomAP(setelements=ElementsSet)
 
         cluster.run(randAP)
 
         # Do not know yet what should be printed... 
-        for it in range(1, randAP._size+1):
-            print "..."
+        print "Completed Succefully! Everything is downloaded!"
 
     except EnsemblemdError, er:
 
