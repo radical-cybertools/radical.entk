@@ -79,7 +79,7 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = "/bin/bash" 
-        arguments  = ['-l', '-c', 'diff -U 0 {input1} {input2} > {output}'.format(
+        arguments  = ['-l', '-c', 'diff -U 0 {input1} {input2} | grep ^@ | wc -l  > {output}'.format(
             input1 = self.get_arg("--inputfile1="),
             input2 = self.get_arg("--inputfile2="),
             output = self.get_arg("--outputfile="))
