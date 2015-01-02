@@ -13,4 +13,9 @@ If you want to run a sub-set of the unit tests, simply pass the unit test
 namespace to the ``nosetests`` command. For example, if you want to run only the
 tests for the ``Pipeline`` pattern, run::
 
-    NOSE_VERBOSE=2 nosetests radical.ensemblemd
+    NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.pipeline
+
+Adding New Tests
+----------------
+
+Add new pattern-specific tests in ``src/radical/ensemblemd/tests/patterns/patternname``.
