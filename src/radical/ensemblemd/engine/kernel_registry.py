@@ -24,7 +24,12 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.misc.mkfile",
     "radical.ensemblemd.kernel_plugins.misc.ccount",
     "radical.ensemblemd.kernel_plugins.misc.chksum",
+<<<<<<< HEAD
     "radical.ensemblemd.kernel_plugins.misc.levenshtein"
 
 
+=======
+    "radical.ensemblemd.kernel_plugins.misc.levenshtein",
+    "radical.ensemblemd.kernel_plugins.misc.diff"
+>>>>>>> feature/all-pairs
 ]

@@ -26,6 +26,13 @@ ReplicaExchange Pattern API
     :members:
     :inherited-members:
 
+All-Pairs Pattern API
+=====================
+
+.. autoclass:: radical.ensemblemd.AllPairs
+    :members:
+    :inherited-members:
+
 Execution Context API
 =====================
 
