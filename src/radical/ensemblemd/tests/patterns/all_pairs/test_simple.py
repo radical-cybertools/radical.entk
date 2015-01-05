@@ -23,7 +23,7 @@ class AllPairsPatternTestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the pattern class.
         """
-        #from radical.ensemblemd import Pipeline
+        from radical.ensemblemd import AllPairs
 
 
     #-------------------------------------------------------------------------
@@ -31,10 +31,12 @@ class AllPairsPatternTestCases(unittest.TestCase):
     def test__pattern_name(self):
         """ Tests the pattern name.
         """
-        #from radical.ensemblemd import Pipeline
+        from radical.ensemblemd import AllPairs
 
-        #dp = Pipeline()
-        #assert dp.name == "Pipeline"
+        ElementsSet = range(1,11)
+
+        ap = AllPairs(ElementsSet)
+        assert ap.name == "AllPairs"
 
 
     #-------------------------------------------------------------------------
@@ -42,8 +44,4 @@ class AllPairsPatternTestCases(unittest.TestCase):
     def test__more(self):
         """ Tests the execution pattern API.
         """
-
-        # from radical.ensemblemd import SimulationAnalysisLoop
-        #
-        # dp = SimulationAnalysisLoop(iterations=1)
-        # assert dp.name == "SimulationAnalysisLoop"
+        pass
