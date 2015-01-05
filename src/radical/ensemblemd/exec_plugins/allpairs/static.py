@@ -7,17 +7,17 @@ __author__    = "Ioannis Paraskevakos <i.paraskev@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-import os 
+import os
 import saga
 import radical.pilot
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
-# 
+#
 _PLUGIN_INFO = {
     "name":         "allpairs.static.default",
-    "pattern":      "AllPairsPattern",
+    "pattern":      "AllPairs",
     "context_type": "Static"
 }
 
@@ -35,28 +35,28 @@ class Plugin(PluginBase):
     #---------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-        self.get_logger().info("Verifying pattern...") 
+        self.get_logger().info("Verifying pattern...")
 
     #---------------------------------------------------------------------------
     #Pattern Execution Method
     def execute_pattern(self, pattern, resource):
 
         def pilot_state_cb(pilot,state):
-            # Callback function for the messages printed when 
+            # Callback function for the messages printed when
             # RADICAL_ENMD_VERBOSE = info
             self.get_logger().info("Pilot {0} in {1} state has changed to {2}.".format(pilot.uid,resource._resource_key,state))
-            
+
             if state==radical.pilot.FAILED:
                 # In Case the pilot fails report Error messsage
                 self.get_logger().error("Pilot {0} FAILED at {1}.".format(pilot.uid,resource._resource_key))
                 self.get_logger().error("Error: {0}".format(pilot.log))
 
         def unit_state_cb(unit, state):
-            # Callback function for the messages printed when 
+            # Callback function for the messages printed when
             # RADICAL_ENMD_VERBOSE = info
             if state == radical.pilot.DONE:
                 self.get_logger().info("Task {0} state has finished succefully.".format(unit.uid))
-            
+
             if state==radical.pilot.FAILED:
                 # In Case the pilot fails report Error messsage
                 self.get_logger().error("Task {0} FAILED.".format(unit.uid))
@@ -104,7 +104,7 @@ class Plugin(PluginBase):
             self.get_logger().info("Allocating {0} cores on {1}".format(PilotDescr.cores,
                 PilotDescr.resource))
             Pilot = pmgr.submit_pilots(PilotDescr)
-            
+
             umgr = radical.pilot.UnitManager(session=session,
                 scheduler=radical.pilot.SCHED_BACKFILLING)
             umgr.register_callback(unit_state_cb)
@@ -120,7 +120,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
             #     #Output File Staging. The file after it is created in the folder of each CU, is moved to the folder defined in
             #     #the start of the script
-                
+
                 OUTPUT_FILE           = {'source':link_out_data,
                                          'target':os.path.join(STAGING_AREA,link_out_data),
                                          'action':radical.pilot.LINK}
@@ -141,7 +141,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Output: {4}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.output_staging))
 
-    
+
                 CUDesc_list.append(cudesc)
 
             Units = umgr.submit_units(CUDesc_list)
@@ -180,7 +180,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
 
-    
+
                 CUDesc_list.append(cudesc)
 
             Units = umgr.submit_units(CUDesc_list)

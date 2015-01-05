@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This module defines and implements the AllPairsPattern class.
+"""This module defines and implements the AllPairs class.
 """
 
 __author__    = "Ioannis Paraskevakos <i.paraskev@rutgers.edu>"
@@ -11,26 +11,26 @@ __license__   = "MIT"
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
-PATTERN_NAME = "AllPairsPattern"
+PATTERN_NAME = "AllPairs"
 
 
 # ------------------------------------------------------------------------------
 #
-class AllPairsPattern(ExecutionPattern):
+class AllPairs(ExecutionPattern):
     """ The All Pairs Pattern.
 
     """
     #---------------------------------------------------------------------------
     #
     def __init__(self, setelements):
-        """Creates a new AllPairsPattern object.
- 
+        """Creates a new AllPairs object.
+
         **Arguments:**
-			  
+
 			* **setelements** ['list']
 			  The elements of the set in which All Pairs pattern will be applied. Can
 			  be used as identifiers? Need to think about it.
- 
+
         **Attributes:**
 
             * **setsize** [`int`]
@@ -47,8 +47,8 @@ class AllPairsPattern(ExecutionPattern):
 	self._setelements = setelements
         self._permutations = self._size*(self.size-1)/2
 
-        super(AllPairsPattern, self).__init__()
-        
+        super(AllPairs, self).__init__()
+
     #---------------------------------------------------------------------------
     #
     @property
@@ -94,7 +94,7 @@ class AllPairsPattern(ExecutionPattern):
 	      element of the set
 
         **Returns:**
-            Implementations of this method **must** return a 
+            Implementations of this method **must** return a
             :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
 
         """
@@ -112,14 +112,14 @@ class AllPairsPattern(ExecutionPattern):
 
 		* **element1** [`int`]
 		The first element from the set used for the comparison
-		
+
 		* **element2**[`int`]
 		The second element from the set used for the comparison
-			
+
 
         **Returns:**
 
-            Implementations of this method **must** return a list 
+            Implementations of this method **must** return a list
             :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
 
         """

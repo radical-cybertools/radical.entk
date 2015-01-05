@@ -16,7 +16,7 @@ from radical.ensemblemd.file import File
 from radical.ensemblemd.kernel import Kernel
 
 # Execution Patterns
-from radical.ensemblemd.patterns.all_pairs_pattern import AllPairsPattern
+from radical.ensemblemd.patterns.all_pairs_pattern import AllPairs
 from radical.ensemblemd.patterns.pipeline import Pipeline
 from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 from radical.ensemblemd.patterns.simulation_analysis_loop import SimulationAnalysisLoop
