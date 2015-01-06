@@ -21,7 +21,7 @@ class Pipeline(ExecutionPattern):
             .. image:: images/pipeline_pattern.*
                :width: 300pt
     """
-    
+
     #---------------------------------------------------------------------------
     #
     def __init__(self, instances=1):
@@ -37,7 +37,7 @@ class Pipeline(ExecutionPattern):
         """Returns the instances of the pipeline.
         """
         return self._instances
-        
+
     #---------------------------------------------------------------------------
     #
     @property
@@ -80,4 +80,58 @@ class Pipeline(ExecutionPattern):
         """
         raise NotImplementedError(
           method_name="step_4",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_5(self, column):
+        """The fifth step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_5",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_6(self, column):
+        """The sixth step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_6",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_7(self, column):
+        """The seventh step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_7",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_8(self, column):
+        """The eighth step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_8",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_9(self, column):
+        """The ninth step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_9",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def step_10(self, column):
+        """The tenth step of the pipeline.
+        """
+        raise NotImplementedError(
+          method_name="step_10",
           class_name=type(self))

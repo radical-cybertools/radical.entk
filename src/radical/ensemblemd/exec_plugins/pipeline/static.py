@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os
 import sys
 import saga
+import datetime
 import radical.pilot
 
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
@@ -88,6 +89,13 @@ class Plugin(PluginBase):
             pipeline_instances, resource._cores, resource._resource_key))
 
         try:
+            # We use the journal to keep track of the stage / instance to
+            # job mapping as well as to record associated timing informations.
+            journal= {}
+            journal["metainfo"] = {
+                "pattern_name": "pipeline"
+            }
+            steps = 0
 
             session = radical.pilot.Session()
 
@@ -128,7 +136,12 @@ class Plugin(PluginBase):
 
             working_dirs = {}
 
+            # Iterate over the different steps.
             for step in range(1, 64):
+                # Create a new empty journal entry for the step.
+                journal["step_{0}".format(step)] = {}
+
+                # Get the method names
                 s_meth = getattr(pattern, 'step_{0}'.format(step))
 
                 # Build up the working dir bookkeeping structure.
@@ -136,71 +149,84 @@ class Plugin(PluginBase):
 
                 try:
                     kernel = s_meth(0)
+                    steps += 1
                 except NotImplementedError, ex:
                     # Not implemented means there are no further steps.
                     break
 
-                step_cus = list()
-                for instance in range(0, pipeline_instances):
+                for instance in range(1, pipeline_instances+1):
+
+                    # Create a new journal entry for the instance.
+                    journal["step_{0}".format(step)]["instance_{0}".format(instance)] = {}
+                    inst_entry = journal["step_{0}".format(step)]["instance_{0}".format(instance)]
 
                     kernel = s_meth(instance)
                     kernel._bind_to_resource(resource._resource_key)
 
-                    if kernel._kernel._link_input_data is not None:
+                    cud = radical.pilot.ComputeUnitDescription()
 
-                        for directive in kernel._kernel._link_input_data:
+                    cud.pre_exec       = kernel._cu_def_pre_exec
+                    cud.executable     = kernel._cu_def_executable
+                    cud.arguments      = kernel.arguments
+                    cud.mpi            = kernel.uses_mpi
+                    cud.input_staging  = kernel._cu_def_input_data
+                    cud.output_staging = kernel._cu_def_output_data
 
-                            if "$STEP_1" in directive:
-                                kernel._kernel._link_input_data.remove(directive)
-                                expanded_directive = directive.replace("$STEP_1", working_dirs["step_1"]["inst_{0}".format(instance+1)])
-                                kernel._kernel._link_input_data.append(expanded_directive)
+                    inst_entry["unit_description"] = cud
+                    inst_entry["compute_unit"] = None
+                    inst_entry["working_dir"] = "WORKDIR-s%s-i%s" % (step, instance)
 
-                            if "$STEP_2" in directive:
-                                kernel._kernel._link_input_data.remove(directive)
-                                expanded_directive = directive.replace("$STEP_2", working_dirs["step_2"]["inst_{0}".format(instance+1)])
-                                kernel._kernel._link_input_data.append(expanded_directive)
-
-                            if "$STEP_3" in directive:
-                                kernel._kernel._link_input_data.remove(directive)
-                                expanded_directive = directive.replace("$STEP_3", working_dirs["step_3"]["inst_{0}".format(instance+1)])
-                                kernel._kernel._link_input_data.append(expanded_directive)
-
-                    cu = radical.pilot.ComputeUnitDescription()
-
-                    cu.pre_exec       = kernel._cu_def_pre_exec
-                    cu.executable     = kernel._cu_def_executable
-                    cu.arguments      = kernel.arguments
-                    cu.mpi            = kernel.uses_mpi
-                    cu.input_staging  = kernel._cu_def_input_data
-                    cu.output_staging = kernel._cu_def_output_data
-
-                    step_cus.append(cu)
-                    self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cu.as_dict()))
+                    self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cud.as_dict()))
 
                 self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_instances, step))
 
-                units = umgr.submit_units(step_cus)
+            # -----------------------------------------------------------------
+            # At this point, we have created a complete journal for the
+            # pattern instance. We can now start 'enacting' it through
+            # radical pilot.
+            for step in range(1, steps+1):
+                step_key = "step_%s" % step
 
-                # TODO: ensure working_dir <-> instance mapping
-                instance = 0
-                for unit in units:
-                    instance += 1
-                    working_dirs["step_{0}".format(step)]["inst_{0}".format(instance)] = saga.Url(unit.working_directory).path
+                for instance in range(1, pipeline_instances+1):
+                    instance_key = "instance_%s" % instance
+
+                    step_units = []
+
+                    # Now we can replace the data-linkage placeholders.
+                    jd = journal[step_key][instance_key]["unit_description"]
+                    for pe in jd.pre_exec:
+                        if "$STEP_1" in pe:
+                            jd.pre_exec.remove(pe)
+                            expanded_pe = pe.replace("$STEP_1", journal["step_1"][instance_key]["working_dir"])
+                            jd.pre_exec.append(expanded_pe)
+
+                        if "$STEP_2" in pe:
+                            jd.pre_exec.remove(pe)
+                            expanded_pe = pe.replace("$STEP_2", journal["step_2"][instance_key]["working_dir"])
+                            jd.pre_exec.append(expanded_pe)
+
+                        if "$STEP_3" in pe:
+                            jd.pre_exec.remove(pe)
+                            expanded_pe = pe.replace("$STEP_3", journal["step_3"][instance_key]["working_dir"])
+                            jd.pre_exec.append(expanded_pe)
+
+                    unit = umgr.submit_units(jd)
+                    step_units.append(unit)
+                    journal[step_key][instance_key]["compute_unit"] = unit
+                    import time
+                    time.sleep(1)
+                    journal[step_key][instance_key]["working_dir"] = saga.Url(journal[step_key][instance_key]["compute_unit"].working_directory).path
 
                 self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
-                self.get_logger().info("Waiting for ComputeUnits in pipeline step {0} to complete.".format(step))
-                finished_units = umgr.wait_units()
+                umgr.wait_units()
 
                 failed_units = ""
-                for unit in units:
+                for unit in step_units:
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * Compute Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                        
+
                 if len(failed_units) > 0:
                     raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
-
-
-            self.get_logger().info("Pattern execution successful.")
 
         except Exception, ex:
             self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
@@ -212,3 +238,14 @@ class Plugin(PluginBase):
                 session.close()
             except Exception:
                 pass
+
+        # -----------------------------------------------------------------
+        # At this point, we have executed the pattern succesfully. Now,
+        # if profiling is enabled, we can write the profiling data to
+        # a file.
+        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+
+        if do_profile != 0:
+
+            outfile = "execution_profile_{time}.log".format(time=datetime.datetime.now().isoformat())
+            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))

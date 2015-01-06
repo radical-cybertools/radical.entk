@@ -18,5 +18,11 @@ and run your application::
 
     RADICAL_ENDM_PROFILING=1 python examples/pipeline.py
 
-Once your application has finished running, you will find a file in your
-working directory containing some key execution timing. 
+Once your application has finished running, you will find a file
+`execution_profile_{time}.log` (where time is the time of creation)
+in your working directory containing some key execution timing.
+
+Profile Visualization
+---------------------
+
+With simple Python tools you can vizualize the pattern execution profile.
