@@ -27,12 +27,7 @@ _KERNEL_INFO = {
                         {
                             "mandatory": True,
                             "description": "Topology filename"
-                        },
-                    "--cycle=":
-                        {
-                            "mandatory": True,
-                            "description": "Cycle number"
-                        },
+                        }
                     },
     "machine_configs":
     {
@@ -94,7 +89,7 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         #change to pmemd.MPI when cores can be set
-        arguments = ['run.py','--mdp','%s'%self.get_arg("--grompp="),'--gro','start.gro','--top','%s'%self.get_arg('"--topol='),'--out','out.gro']
+        arguments = ['run.py','--mdp','%s'%self.get_arg("--grompp="),'--gro','start.gro','--top','%s'%self.get_arg('--topol='),'--out','out.gro']
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

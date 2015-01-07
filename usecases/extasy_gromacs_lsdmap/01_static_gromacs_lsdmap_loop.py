@@ -44,7 +44,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
 
         gromacs = Kernel(name="md.gromacs")
-        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top","--outputfile=out.gro"]
+        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top"]
         gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
 
         return [pre_sim, gromacs]

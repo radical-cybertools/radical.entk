@@ -20,9 +20,14 @@ _KERNEL_INFO = {
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
     "arguments":   {"--inputfile=":
                         {
-                        "mandatory": True,
-                        "description": "Input filename"
+                            "mandatory": True,
+                            "description": "Input filename"
                         },
+                    "--numCUs=":
+                        {
+                            "mandatory": True,
+                            "description": "No. of files to be generated"
+                        }
                     },
     "machine_configs":
     {
@@ -73,7 +78,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['{0} spliter.py {2} {1}'.format(cfg["executable"], self.get_arg("--inputfile="),self.get_arg("--numCUs="))]
+        arguments = ['spliter.py','{0}'.format(self.get_arg("--numCUs=")), '{0}'.format(self.get_arg("--inputfile="))]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
