@@ -33,7 +33,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     
     def pre_loop(self):
         k = Kernel(name="md.pre_grlsd_loop")
-        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py']
+        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py']
         return k
 
     def simulation_step(self, iteration, instance):
@@ -41,6 +41,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''
         pre_sim = Kernel(name="md.pre_gromacs")
         pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
+        pre_sim.copy_input_data = ["$PRE_LOOP/spliter.py"]
         pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
 
         gromacs = Kernel(name="md.gromacs")
@@ -52,22 +53,15 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     def analysis_step(self, iteration, instance):
         '''TODO Vivek: add description of this step.
         '''
-        '''
-        lsdmap = Kernel(name="md.lsdmap")
-        # k.set_upload_input(files=['config.ini','tmp%{0}.gro'.format(iteration),'run_analyzer.sh'])
-        lsdmap.arguments = ["--nnfile=out.nn","--wfile=weight.w","--config=config.ini","--inputfile=tmp.gro"]
-        lsdmap.copy_input_data = ['config.ini','tmp%{0}.gro > tmp.gro'.format(iteration),'run_analyzer.sh']
-        lsdmap.download_output_data = ['tmp.eg > out.eg','tmp.ev > out.ev','out.nn','lsdmap.log']
-    
-        reweight = Kernel(name="md.update_reweight")
-        # k.set_upload_input(files=['out.ev','out.nc','tmp%{0}.gro'.format(iteration)],'out.nn','weight.w')
-        reweight.arguments = ["--nruns=10000","--evfile=out.ev","--clones=out.nc","--grofile=tmp.gro","--nnfile=out.nn","--wfile=weight.w","--outputfile=out.gro"]
-        reweight.copy_input_data = ["out.ev","tmp%{0}.gro > tmp.gro".format(iteration),'out.nn','select.py','reweighting.py']
-        reweight.download_output_data = ['out.gro > input%s.gro'%(iteration+1)]
 
-        return [lsdmap, reweight]
-        '''
-        return None
+        pre_ana = Kernel(name="md.pre_lsdmap")
+        pre_ana.arguments = ["--numCUs={0}".format(num_CUs),"--out=out.gro"]
+        pre_ana.copy_input_data = ["$PRE_LOOP/pre_analyze.py"]
+        pre_ana.link_input_data = []
+        for i in range(1,num_CUs+1):
+            pre_ana.link_input_data = pre_ana.link_input_data + ["$PREV_SIMULATION_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1)]
+
+        return [pre_ana]
 
 
 # ------------------------------------------------------------------------------
@@ -80,7 +74,9 @@ if __name__ == "__main__":
       cluster = SingleClusterEnvironment(
         resource="stampede.tacc.utexas.edu",
         cores=16,
-        walltime=15
+        walltime=15,
+        username='vivek91',
+        allocation='TG-MCB090174'
       )
 
       # We set the 'instances' of the simulation step to 16. This means that 16
