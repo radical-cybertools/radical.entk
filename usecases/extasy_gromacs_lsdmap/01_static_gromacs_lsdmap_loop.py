@@ -24,7 +24,7 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-num_CUs = 8
+num_CUs = 4
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
@@ -47,15 +47,11 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top","--outputfile=out.gro"]
         gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
 
-        post_sim = Kernel(name="md.post_gromacs")
-        post_sim.arguments = ["--outputfile=tmp.gro","--numCUs=64"]
-        post_sim.copy_input_data = ['out-iter%{0}-%{1}.gro'.format(iteration,instance)]
-        post_sim.download_output_data = ['tmp.gro > tmp%{0}.gro'.format(iteration)]
-
-        return [pre_sim, gromacs, post_sim]
+        return [pre_sim, gromacs]
     
     def analysis_step(self, iteration, instance):
         '''TODO Vivek: add description of this step.
+        '''
         '''
         lsdmap = Kernel(name="md.lsdmap")
         # k.set_upload_input(files=['config.ini','tmp%{0}.gro'.format(iteration),'run_analyzer.sh'])
@@ -70,6 +66,8 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         reweight.download_output_data = ['out.gro > input%s.gro'%(iteration+1)]
 
         return [lsdmap, reweight]
+        '''
+        return None
 
 
 # ------------------------------------------------------------------------------
@@ -80,8 +78,8 @@ if __name__ == "__main__":
       # Create a new static execution context with one resource and a fixed
       # number of cores and runtime.
       cluster = SingleClusterEnvironment(
-        resource="localhost",
-        cores=1,
+        resource="stampede.tacc.utexas.edu",
+        cores=16,
         walltime=15
       )
 
@@ -89,7 +87,7 @@ if __name__ == "__main__":
       # instances of the simulation are executed every iteration.
       # We set the 'instances' of the analysis step to 1. This means that only
       # one instance of the analysis is executed for each iteration
-      randomsa = Gromacs_LSDMap(maxiterations=64, simulation_instances=16, analysis_instances=1)
+      randomsa = Gromacs_LSDMap(maxiterations=1, simulation_instances=num_CUs, analysis_instances=0)
 
       cluster.run(randomsa)
   
