@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
 """ 
+
+.. figure:: images/replica_exchange_pattern.*
+   :width: 300pt
+   :align: center
+   :alt: Replica Exchange Pattern
+
+   Fig.: `Replica Exchange Pattern.`
+
 Run Locally 
 ^^^^^^^^^^^
 
@@ -74,8 +82,8 @@ from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 class ReplicaP(Replica):
     """Class representing replica and it's associated data.
 
-    This will have to be extended by users implementing RE pattern for 
-    a particular kernel and scheme
+    This class must be extended by users implementing RE pattern for 
+    specific MD kernel
     """
     def __init__(self, my_id, cores=1):
         """Constructor.
@@ -91,7 +99,11 @@ class ReplicaP(Replica):
         super(ReplicaP, self).__init__(my_id)
 
 class RePattern(ReplicaExchange):
-    """
+    """In this class are specified details of RE simulation:
+        - initialization of replicas
+        - generation of input files
+        - preparation for MD and exchange steps
+        - implementation of exchange routines
     """
     def __init__(self):
         """Constructor
@@ -121,8 +133,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
-        """
-        Generates dummy input file
+        """Generates dummy input file
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
 
         file_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
@@ -137,8 +151,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
-        """
-        Specifies input and output files and passes them to kernel 
+        """Specifies input and output files and passes them to kernel 
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
         input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
         output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
@@ -154,24 +170,32 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """
-        This is not used in this example, but implementation is still required
+        """This is not used in this example, but implementation is still required
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
         pass
 
     #-------------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
-        """
-        Given replica r_i returns replica r_i needs to perform an exchange with
+        """Given replica r_i returns replica r_j for r_i to perform an exchange with
+
+        Arguments:
+        replicas - a list of replica objects
+        swap_matrix - matrix of dimension-less energies, where each column is a replica 
+        and each row is a state
         """
         return random.choice(replicas)
 
     #-------------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas):
-        """
-        Creates and populates swap matrix used to determine exchange probabilities
+        """Creates and populates swap matrix used to determine exchange probabilities
+
+        Arguments:
+        replicas - a list of replica objects
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
@@ -182,8 +206,11 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
-        """
-        Performs an exchange of desired parameters
+        """Performs an exchange of parameters
+
+        Arguments:
+        replica_i - a replica object
+        replica_j - a replica object
         """
         param_i = replica_i.parameter
         replica_i.parameter = replica_j.parameter
@@ -196,6 +223,7 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+        
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
