@@ -160,6 +160,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
                 umgr.wait_units()
+                self.get_logger().info("Pre_loop completed.")
 
                 if unit.state != radical.pilot.DONE:
                     raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
@@ -209,6 +210,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted tasks for pre_simulation iteration {0}.".format(iteration))
                 self.get_logger().info("Waiting for pre_simulations in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
+                self.get_logger().info("Pre_simulations in iteration {0} completed.".format(iteration))
 
                 failed_units = ""
                 for unit in s_cus:
@@ -243,13 +245,14 @@ class Plugin(PluginBase):
                     cud.input_staging  = pre_sim_step._cu_def_input_data
                     cud.output_staging = pre_sim_step._cu_def_output_data
                     s_units.append(cud)
-                    self.get_logger().debug("Created pre_simulation CU: {0}.".format(cud.as_dict()))
+                    self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
                 s_cus = umgr.submit_units(s_units)
 
-                self.get_logger().info("Submitted tasks for pre_simulation iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for pre_simulations in iteration {0} to complete.".format(iteration))
+                self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
+                self.get_logger().info("Simulations in iteration {0} completed.".format(iteration))
 
                 failed_units = ""
                 for unit in s_cus:

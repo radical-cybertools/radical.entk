@@ -20,6 +20,9 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.md.namd",
     "radical.ensemblemd.kernel_plugins.md.re_exchange",
 
+    "radical.ensemblemd.kernel_plugins.md.pre_grlsd_loop",
+    "radical.ensemblemd.kernel_plugins.md.pre_gromacs",
+
     "radical.ensemblemd.kernel_plugins.misc.nop",
     "radical.ensemblemd.kernel_plugins.misc.mkfile",
     "radical.ensemblemd.kernel_plugins.misc.ccount",
