@@ -21,22 +21,32 @@ _KERNEL_INFO = {
     "arguments":   {"--out=":
                         {
                             "mandatory": True,
-                            "description": "Output filename"
+                            "description": "Input parameter filename"
                         },
                     },
     "machine_configs":
     {
-        "stampede.tacc.utexas.edu": {
+        "*": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load gromacs python mpi4py"],
-            "executable"    : "/bin/bash",
-            "uses_mpi"      : False
+            "pre_exec"      : [],
+            "executable"    : ".",
+            "uses_mpi"      : True
         },
-        "archer.ac.uk": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
-            "executable"    : "/bin/bash",
-            "uses_mpi"      : False
+
+        "stampede.tacc.utexas.edu":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load gromacs python mpi4py"],
+            "executable" : ["/bin/bash"],
+            "uses_mpi"   : True
+        },
+
+        "archer.ac.uk":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
         }
     }
 }
@@ -73,6 +83,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
+        #change to pmemd.MPI when cores can be set
         arguments = ['-l','-c','echo 2 | trjconv -f {0} -s {0} -o tmpha.gro'.format(self.get_arg("--out="))]
 
         self._executable  = cfg["executable"]
@@ -80,7 +91,4 @@ class Kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-
-    #Can I just split the file locally without doing any of the above RP stuff ??
-
-
+        self._post_exec   = None
