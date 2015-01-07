@@ -24,27 +24,28 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
+num_CUs = 8
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
     def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):
         SimulationAnalysisLoop.__init__(self, maxiterations, simulation_instances, analysis_instances)
     
+    def pre_loop(self):
+        k = Kernel(name="md.pre_grlsd_loop")
+        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py']
+        return k
 
     def simulation_step(self, iteration, instance):
         '''TODO Vivek: add description of this step.
         '''
         pre_sim = Kernel(name="md.pre_gromacs")
-        pre_sim.upload_input_data = ["input%s.gro" %(iteration),"file_splitter.sh"]
-        pre_sim.arguments = ["--inputfile=input%s.gro"%(iteration)]
-        #pre_sim.download_output_data = ['input-iter%{0}-%{1}.gro'.format(iteration,instance)]
+        pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
+        pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
 
         gromacs = Kernel(name="md.gromacs")
-        # k.set_upload_input(files=['run.sh','input-iter%{0}-%{1}.gro > start.gro'.format(iteration,instance),'grompp.mdp','topol.top'])
-        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top","--inputfile=start.gro","--outputfile=out.gro"]
-        gromacs.link_input_data = ['$STEP_1/input-iter%{0}-%{1}.gro > start.gro'.format(iteration,instance)]
-        gromacs.copy_input_data = ['grompp.mdp','topol.top','run.sh']
-        gromacs.download_output_data = ['out.gro > out-iter%{0}-%{1}.gro'.format(iteration, instance)]
+        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top","--outputfile=out.gro"]
+        gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
 
         post_sim = Kernel(name="md.post_gromacs")
         post_sim.arguments = ["--outputfile=tmp.gro","--numCUs=64"]

@@ -179,12 +179,54 @@ class Plugin(PluginBase):
                 working_dirs['iteration_{0}'.format(iteration)] = {}
 
                 ################################################################
-                # EXECUTE SIMULATION STEPS
+                # EXECUTE PRE-SIMULATION STEP
                 s_units = []
-                for s_instance in range(1, pattern._simulation_instances+1):
 
-                    simulation_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
-                    simulation_step._bind_to_resource(resource._resource_key)
+                simulation_list = pattern.simulation_step(iteration=iteration, instance=1)
+
+                pre_sim_step = simulation_list[0]
+                pre_sim_step._bind_to_resource(resource._resource_key)
+
+                cud = radical.pilot.ComputeUnitDescription()
+                cud.pre_exec = []
+
+                env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="simulation")
+                for var, value in env_vars.iteritems():
+                    cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
+
+                cud.pre_exec.extend(pre_sim_step._cu_def_pre_exec)
+
+                cud.executable     = pre_sim_step._cu_def_executable
+                cud.arguments      = pre_sim_step.arguments
+                cud.mpi            = pre_sim_step.uses_mpi
+                cud.input_staging  = pre_sim_step._cu_def_input_data
+                cud.output_staging = pre_sim_step._cu_def_output_data
+                s_units.append(cud)
+                self.get_logger().debug("Created pre_simulation CU: {0}.".format(cud.as_dict()))
+
+                s_cus = umgr.submit_units(s_units)
+
+                self.get_logger().info("Submitted tasks for pre_simulation iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for pre_simulations in iteration {0} to complete.".format(iteration))
+                umgr.wait_units()
+
+                failed_units = ""
+                for unit in s_cus:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * Pre Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                    else:
+                        pre_sim_wd = saga.Url(cu.working_directory).path
+
+                ################################################################
+                # EXECUTE SIMULATION STEPS
+
+                for s_instance in range(1, pattern._simulation_instances+1):
+                    s_units = []
+
+                    simulation_list = pattern.simulation_step(iteration=iteration, instance=s_instance)
+
+                    sim_step = simulation_list[1]
+                    sim_step._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
                     cud.pre_exec = []
@@ -193,27 +235,26 @@ class Plugin(PluginBase):
                     for var, value in env_vars.iteritems():
                         cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
-                    cud.pre_exec.extend(simulation_step._cu_def_pre_exec)
-
-                    cud.executable     = simulation_step._cu_def_executable
-                    cud.arguments      = simulation_step.arguments
-                    cud.mpi            = simulation_step.uses_mpi
-                    cud.input_staging  = simulation_step._cu_def_input_data
-                    cud.output_staging = simulation_step._cu_def_output_data
+                    cud.pre_exec.extend(pre_sim_step._cu_def_pre_exec)
+                    cud.pre_exec = cud.pre_exec + 'ln -s {0}/start{1}.gro start.gro'.format(pre_sim_wd,s_instance-1)
+                    cud.executable     = pre_sim_step._cu_def_executable
+                    cud.arguments      = pre_sim_step.arguments
+                    cud.mpi            = pre_sim_step.uses_mpi
+                    cud.input_staging  = pre_sim_step._cu_def_input_data
+                    cud.output_staging = pre_sim_step._cu_def_output_data
                     s_units.append(cud)
-                    self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
+                    self.get_logger().debug("Created pre_simulation CU: {0}.".format(cud.as_dict()))
 
                 s_cus = umgr.submit_units(s_units)
 
-                self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
+                self.get_logger().info("Submitted tasks for pre_simulation iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for pre_simulations in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
 
                 failed_units = ""
                 for unit in s_cus:
                     if unit.state != radical.pilot.DONE:
-                        failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-
+                        failed_units += " * Pre Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0

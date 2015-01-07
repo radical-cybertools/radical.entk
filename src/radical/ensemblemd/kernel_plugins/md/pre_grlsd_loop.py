@@ -16,7 +16,7 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.pre_gromacs",
+    "name":         "md.pre_grlsd_loop",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
     "arguments":   {"--inputfile=":
                         {
@@ -26,16 +26,10 @@ _KERNEL_INFO = {
                     },
     "machine_configs":
     {
-        "stampede.tacc.utexas.edu": {
+        "*": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load python"],
-            "executable"    : "python",
-            "uses_mpi"      : False
-        },
-        "archer.ac.uk": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load python"],
-            "executable"    : "python",
+            "pre_exec"      : [],
+            "executable"    : ".",
             "uses_mpi"      : False
         }
     }
@@ -73,9 +67,10 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['{0} spliter.py {2} {1}'.format(cfg["executable"], self.get_arg("--inputfile="),self.get_arg("--numCUs="))]
+        executable = "/bin/echo"
+        arguments = ["pre_loop"]
 
-        self._executable  = cfg["executable"]
+        self._executable  = executable
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
