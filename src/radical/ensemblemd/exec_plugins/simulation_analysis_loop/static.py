@@ -307,7 +307,7 @@ class Plugin(PluginBase):
                     else:
                         pre_ana_wd = saga.Url(unit.working_directory).path
 
-                '''
+
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
                 a_units = []
@@ -324,6 +324,7 @@ class Plugin(PluginBase):
                         cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
                     cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
+                    cud.pre_exec.append('cp %s/tmpha.gro .'%pre_ana_wd)
 
                     cud.executable     = analysis_step._cu_def_executable
                     cud.arguments      = analysis_step.arguments
@@ -331,7 +332,7 @@ class Plugin(PluginBase):
                     cud.input_staging  = analysis_step._cu_def_input_data
                     cud.output_staging = analysis_step._cu_def_output_data
                     a_units.append(cud)
-                    self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
+                    self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
 
                 a_cus = umgr.submit_units(a_units)
 
@@ -353,7 +354,7 @@ class Plugin(PluginBase):
                 for cu in a_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
-                '''
+
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

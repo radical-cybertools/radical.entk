@@ -18,7 +18,16 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 _KERNEL_INFO = {
     "name":         "md.lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {
+    "arguments":   {"--config=":
+                        {
+                            "mandatory": True,
+                            "description": "Config filename"
+                        },
+                    "--nnfile=":
+                        {
+                            "mandatory": True,
+                            "description": "Nearest neighbor filename"
+                        },
                     },
     "machine_configs":
     {
@@ -79,11 +88,10 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = []
+        arguments = ['lsdm.py','-f','{0}'.format(self.get_arg("--config=")),'-c','tmpha.gro','-n','{0}'.format(self.get_arg("--nnfile=")),'-w','weight.w']
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None

@@ -61,8 +61,11 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         for i in range(1,num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$PREV_SIMULATION_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1)]
 
+        lsdmap = Kernel(name="md.lsdmap")
+        lsdmap.arguments = ["--config=config.ini","--nnfile=out.nn"]
+        lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
 
-        return [pre_ana]
+        return [pre_ana,lsdmap]
 
 
 # ------------------------------------------------------------------------------
