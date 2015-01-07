@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 
 """ 
+This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern
+involving 4 replicas and performing a total of 3 synchronous simulation cycles. 
+Firstly, for each replica is generated dummy ``simula_x_y.md`` input file. Each of these
+files contains 500 randomly generated numbers. As MD kernel in this example is used
+``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
+As input file for this kernel is supplied previously generated ``simula_x_y.md`` file. ``misc.ccount``
+kernel produces ``simula_x_y.out`` file, which is transferred to current working directory.
+Dummy replica parameter named ``parameter`` is exchanged during the exchange step. Exchanges
+of ``parameter`` do not affect next simulation cycle. Replica to perform an exchange with is 
+chosen randomly.  
 
 .. figure:: images/replica_exchange_pattern.*
    :width: 300pt
