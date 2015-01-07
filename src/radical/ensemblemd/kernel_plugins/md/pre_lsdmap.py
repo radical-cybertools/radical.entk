@@ -21,8 +21,13 @@ _KERNEL_INFO = {
     "arguments":   {"--out=":
                         {
                             "mandatory": True,
-                            "description": "Input parameter filename"
+                            "description": "Output filename"
                         },
+                    "--numCUs=":
+                        {
+                            "mandatory": True,
+                            "description": "No. of CUs"
+                        }
                     },
     "machine_configs":
     {
@@ -45,7 +50,7 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
-            "executable" : ["python"],
+            "executable" : ["/bin/bash"],
             "uses_mpi"   : True
         }
     }
@@ -83,12 +88,10 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        #change to pmemd.MPI when cores can be set
-        arguments = ['-l','-c','echo 2 | trjconv -f {0} -s {0} -o tmpha.gro'.format(self.get_arg("--out="))]
+        arguments = ['-l','-c','python pre_analyze.py {1} {0} . && echo 2 | trjconv -f {0} -s {0} -o tmpha.gro'.format(self.get_arg("--out="),self.get_arg("--numCUs="))]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None

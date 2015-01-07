@@ -307,47 +307,6 @@ class Plugin(PluginBase):
                     else:
                         pre_ana_wd = saga.Url(unit.working_directory).path
 
-                ###PRE-ANALYSIS 2
-
-                a_units = []
-                analysis_list = pattern.analysis_step(iteration=iteration, instance=1)
-                pre_ana_step = analysis_list[1]
-                pre_ana_step._bind_to_resource(resource._resource_key)
-
-                cud = radical.pilot.ComputeUnitDescription()
-                cud.pre_exec = []
-
-                env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                for var, value in env_vars.iteritems():
-                    cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-                cud.pre_exec.extend(pre_ana_step._cu_def_pre_exec)
-                cud.pre_exec.append('cp %s/out.gro .'%pre_ana_wd)
-                cud.executable     = pre_ana_step._cu_def_executable
-                cud.arguments      = pre_ana_step.arguments
-                cud.mpi            = pre_ana_step.uses_mpi
-                cud.input_staging  = pre_ana_step._cu_def_input_data
-                cud.output_staging = pre_ana_step._cu_def_output_data
-
-                a_units.append(cud)
-                self.get_logger().debug("Created pre-analysis CU: {0}.".format(cud.as_dict()))
-
-                a_cus = umgr.submit_units(a_units)
-
-                self.get_logger().info("Submitted tasks for pre-analysis2 iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for pre-analysis2 tasks in iteration {0} to complete.".format(iteration))
-                umgr.wait_units()
-                self.get_logger().info("Pre-Analysis2 in iteration {0} completed.".format(iteration))
-
-                failed_units = ""
-                pre_ana_wd = ""
-                for unit in a_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Pre-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                    else:
-                        pre_ana_wd = saga.Url(unit.working_directory).path
-
-
                 '''
                 ################################################################
                 # EXECUTE ANALYSIS STEPS

@@ -54,15 +54,13 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''TODO Vivek: add description of this step.
         '''
 
-        pre_ana_1 = Kernel(name="md.pre_lsdmap_1")
+        pre_ana_1 = Kernel(name="md.pre_lsdmap")
         pre_ana_1.arguments = ["--numCUs={0}".format(num_CUs),"--out=out.gro"]
         pre_ana_1.copy_input_data = ["$PRE_LOOP/pre_analyze.py"]
         pre_ana_1.link_input_data = []
         for i in range(1,num_CUs+1):
             pre_ana_1.link_input_data = pre_ana_1.link_input_data + ["$PREV_SIMULATION_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1)]
 
-        pre_ana_2 = Kernel(name="md.pre_lsdmap_2")
-        pre_ana_2.arguments = ["--out=out.gro"]
 
         return [pre_ana_1,pre_ana_2]
 
