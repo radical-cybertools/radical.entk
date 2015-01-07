@@ -79,13 +79,15 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         arguments = ['pre_analyze.py','{0}'.format(self.get_arg("--numCUs=")), '{0}'.format(self.get_arg("--out=")),'.']
+        post_exec = ['module load gromacs','echo 2 | trjconv -f {0} -s {0} -o tmpha.gro'.format(self.get_arg("--out="))]
+
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None
+        self._post_exec   = post_exec
 
     #Can I just split the file locally without doing any of the above RP stuff ??
 

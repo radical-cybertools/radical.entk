@@ -18,53 +18,31 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 _KERNEL_INFO = {
     "name":         "md.lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--nnfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Nearest neighbor filename"
-                        },
-                    "--wfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Weight filename"
-                        },
-                    "--config=":
-                        {
-                            "mandatory": True,
-                            "description": "LSDMap config filename"
-                        },
-                    "--inputfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Output gro filename"
-                        }
+    "arguments":   {
                     },
     "machine_configs":
     {
         "*": {
-            "environment" : {},
-            "pre_exec"    : [],
-            "executable"  : "mdrun",
-            "uses_mpi"    : False,
-            "test_cmd"    : ""
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : [],
+            "executable"    : ".",
+            "uses_mpi"      : True
         },
 
-        "stampede":
+        "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec"    : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
-            "executable"  : "lsdmap",
-            "uses_mpi"    : True,
-            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
+            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
+            "executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
+            "uses_mpi"   : True
         },
 
-        "archer":
+        "archer.ac.uk":
         {
             "environment" : {},
-            "pre_exec"    : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable"  : "lsdmap",
-            "uses_mpi"    : True,
-            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
+            "pre_exec" : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
         }
     }
 }
@@ -101,35 +79,11 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        self._executable  = None
-        self._arguments   = None
-        self._environment = None
-        self._uses_mpi    = None
-        self._pre_exec    = None
-        self._post_exec   = None
+        arguments = []
 
-    # --------------------------------------------------------------------------
-    #
-    # def _bind_to_resource(self, resource_key):
-    #     """(PRIVATE) Implements parent class method.
-    #     """
-    #     if resource_key not in _KERNEL_INFO["machine_configs"]:
-    #         if "*" in _KERNEL_INFO["machine_configs"]:
-    #             # Fall-back to generic resource key
-    #             resource_key = "*"
-    #         else:
-    #             raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
-    #
-    #     cfg = _KERNEL_INFO["machine_configs"][resource_key]
-    #
-    #     executable = "/bin/bash"
-    #     arguments = ['-l', '-c', '{0} run_analyzer.sh {1} {2}'.format(cfg["executable"],
-    #                                                                     self.get_args("--nnfile="),
-    #                                                                     self.get_args("--wfile="))]
-    #
-    #     self._executable  = executable
-    #     self._arguments   = arguments
-    #     self._environment = cfg["environment"]
-    #     self._uses_mpi    = cfg["uses_mpi"]
-    #     self._pre_exec    = cfg["pre_exec"]
-    #     self._post_exec   = None
+        self._executable  = cfg["executable"]
+        self._arguments   = arguments
+        self._environment = cfg["environment"]
+        self._uses_mpi    = cfg["uses_mpi"]
+        self._pre_exec    = cfg["pre_exec"]
+        self._post_exec   = None
