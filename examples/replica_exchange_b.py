@@ -1,6 +1,29 @@
 #!/usr/bin/env python
 
 """ 
+This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
+Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation 
+cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution 
+plugin. Firstly, for each replica is generated dummy ``simula_x_y.md`` input file. Each of these
+files contains 500 randomly generated numbers. As MD kernel in this example is used
+``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
+As input file for this kernel is supplied previously generated ``simula_x_y.md`` file. ``misc.ccount``
+kernel produces ``simula_x_y.out`` file, which is transferred to current working directory.
+For exchange step is used ``md.re_exchange`` kernel which is supplied with ``matrix_calculator.py``
+python script. This script is executed on target resource and simulates collection of output 
+parameters produced by MD step, which are required for exchange step. In this example ``matrix_calculator.py``
+returns dummy parameter, which is a randomly generated number. This number does not affect the exchange
+probability nor does it affect the choice of replica to perform an exchange with. Replica to perform an 
+exchange with is chosen randomly. Dummy replica parameter named ``parameter`` is exchanged during the 
+exchange step. Exchanges of ``parameter`` do not affect next simulation cycle. 
+
+.. figure:: images/replica_exchange_pattern.*
+   :width: 300pt
+   :align: center
+   :alt: Replica Exchange Pattern
+
+   Fig.: `Replica Exchange Pattern.`
+
 Run Locally 
 ^^^^^^^^^^^
 
@@ -80,19 +103,25 @@ class ReplicaP(Replica):
     a particular kernel and scheme
     """
     def __init__(self, my_id, cores=1):
-        """Constructor.
+        """Constructor
 
         Arguments:
         my_id - integer representing replica's id
+        cores - number of cores each replica should use
         """
         self.id = int(my_id)
+        self.cores = int(cores)
         self.parameter = random.randint(300, 600)
         self.cycle = 0
         
         super(ReplicaP, self).__init__(my_id)
 
 class RePattern(ReplicaExchange):
-    """
+    """In this class are specified details of RE simulation:
+        - initialization of replicas
+        - generation of input files
+        - preparation for MD and exchange steps
+        - implementation of exchange routines
     """
     def __init__(self):
         """Constructor
@@ -100,7 +129,7 @@ class RePattern(ReplicaExchange):
         # hardcoded name of the input file base
         self.inp_basename = "simula"
         # number of replicas to be launched during the simulation
-        self.replicas = 4
+        self.replicas = 16
         # number of cycles the simulaiton will perform
         self.nr_cycles = 3     
 
@@ -122,8 +151,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
-        """
-        Generates dummy input file
+        """Generates dummy input file
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
 
         file_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
@@ -137,8 +168,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
-        """
-        Specifies input and output files and passes them to kernel
+        """Specifies input and output files and passes them to kernel
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
         input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
         output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
@@ -154,8 +187,11 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """
-        launches matrix_calculator.py script on target resource in order to populate columns of swap matrix
+        """Launches matrix_calculator.py script on target resource in order to populate 
+        columns of swap matrix
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
 
         # Note: no files are transferred back from resource
@@ -173,16 +209,22 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
-        """
-        Given replica r_i returns replica r_i needs to perform an exchange with
+        """Given replica r_i returns replica r_i needs to perform an exchange with
+
+        Arguments:
+        replicas - a list of replica objects
+        swap_matrix - matrix of dimension-less energies, where each column is a replica 
+        and each row is a state
         """
         return random.choice(replicas)
 
     #-------------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas, matrix_columns):
-        """
-        Creates and populates swap matrix which is used to determine exchange probabilities
+        """Creates and populates swap matrix which is used to determine exchange probabilities
+
+        Arguments:
+        replicas - a list of replica objects
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
@@ -200,8 +242,11 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
-        """
-        Performs an exchange of desired parameters
+        """Performs an exchange of parameters
+
+        Arguments:
+        replica_i - a replica object
+        replica_j - a replica object
         """
         param_i = replica_i.parameter
         replica_i.parameter = replica_j.parameter
@@ -232,8 +277,8 @@ if __name__ == "__main__":
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
         print "RE simulation finished!"
-        print "Simulation performed 3 cycles for 4 replicas. In your working directory you should"
-        print "have 12 simula_x_y.md files and 12 simula_x_y.out files ( x in {0,1,2,3}; y in {0,1,2} ) "
+        print "Simulation performed 3 cycles for 16 replicas. In your working directory you should"
+        print "have 48 simula_x_y.md files and 48 simula_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
         print "where .md file is replica input file and .out is output providing number of occurrences"
         print "of each character. \n"
 

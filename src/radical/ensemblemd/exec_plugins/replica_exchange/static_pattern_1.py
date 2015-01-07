@@ -47,9 +47,7 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        #####
         # launching pilot
-        #####
         session = radical.pilot.Session()
 
         if resource._username is not None:
@@ -68,7 +66,6 @@ class Plugin(PluginBase):
         if resource._queue is not None:
             pdesc.queue = resource._queue
 
-
         pdesc.cleanup  = False
 
         if resource._allocation is not None:
@@ -78,7 +75,6 @@ class Plugin(PluginBase):
 
         unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
         unit_manager.add_pilots(pilot)
-        #####
 
         replicas = pattern.get_replicas()
 
@@ -106,9 +102,8 @@ class Plugin(PluginBase):
             unit_manager.wait_units()
 
             if (i < (pattern.nr_cycles-1)):
-                #####################################################################
+
                 # computing swap matrix
-                #####################################################################
                 self.get_logger().info("Computing swap matrix")
                 swap_matrix = pattern.get_swap_matrix(replicas)
 
