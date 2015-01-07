@@ -16,7 +16,7 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.pre_lsdmap_2",
+    "name":         "md.pre_lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
     "arguments":   {"--out=":
                         {
