@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os
 import sys
 import saga
+import pickle
 import datetime
 import radical.pilot
 
@@ -92,9 +93,9 @@ class Plugin(PluginBase):
             # We use the journal to keep track of the stage / instance to
             # job mapping as well as to record associated timing informations.
             journal= {}
-            journal["metainfo"] = {
-                "pattern_name": "pipeline"
-            }
+            # journal["metainfo"] = {
+            #     "pattern_name": "pipeline"
+            # }
             steps = 0
 
             session = radical.pilot.Session()
@@ -249,3 +250,22 @@ class Plugin(PluginBase):
 
             outfile = "execution_profile_{time}.log".format(time=datetime.datetime.now().isoformat())
             self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
+
+            with open(outfile, 'w+') as f:
+                # General format of a profiling file is row based and follows the
+                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
+                head = "task; start_time; stop_time; step; iterations"
+                f.write("{row}\n".format(row=head))
+
+                for step in journal.keys():
+                    for iteration in journal[step].keys():
+                        data = journal[step][iteration]
+                        cu = data["compute_unit"]
+
+                        row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                            uid=cu.uid,
+                            start_time=cu.start_time,
+                            stop_time=cu.stop_time,
+                            tags="{step}; {iteration}".format(step=step, iteration=iteration)
+                        )
+                        f.write("{row}\n".format(row=row))
