@@ -18,13 +18,13 @@ class Replica(object):
     """Class representing replica and it's associated data.
 
     This will have to be extended by users implementing RE pattern for 
-    a particular kernel and scheme
+    a particular kernel and execution pattern
     """
     def __init__(self, my_id):
         """Constructor.
 
         Arguments:
-        my_id - integer representing replica's id
+        my_id - integer representing id of this replica
         """
         self.id = int(my_id)
 
@@ -32,11 +32,13 @@ class Replica(object):
 # ------------------------------------------------------------------------------
 #
 class ReplicaExchange(ExecutionPattern):
-    
-    #---------------------------------------------------------------------------
-    #
+    """ Replica Exchange pattern.
+
+            .. image:: images/replica_exchange_pattern.*
+               :width: 300pt
+    """
     def __init__(self):
-        """
+        """Constructor.
         """
         super(ReplicaExchange, self).__init__()
         self._replica_objects = None
@@ -53,31 +55,34 @@ class ReplicaExchange(ExecutionPattern):
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values.
-        Currently incomplete! Can be complete if we assume only temperature
-        exchange RE, otherwise RE type must be passed as parameter.
         """
         raise NotImplementedError(method_name="initialize_replicas", class_name=type(self))
 
     #-------------------------------------------------------------------------------
     #
     def add_replicas(self, replicas):
-        """
+        """Adds initialised replicas to this pattern.
+
+        Arguments:
+        replicas - list of replica objects
         """
         self.replica_objects = replicas
 
     #-------------------------------------------------------------------------------
     #
     def get_replicas(self):
-        """
+        """Returns a list of replica objects associated with this pattern.
         """
         return self.replica_objects
 
     #-------------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas, matrix_columns):
-        """
+        """Creates and populates swap matrix, which is used to determine exchange probabilities.
+
         Arguments:
         replicas - list of Replica objects
+        matrix_columns - matrix of energy parameters obtained during the exchange step 
 
         Returns:
         swap_matrix - 2D list of lists of dimension-less energies, where each column is a replica 
@@ -89,7 +94,11 @@ class ReplicaExchange(ExecutionPattern):
     #-------------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
-        """
+        """Performs an exchange of replica parameters
+
+        Arguments:
+        replica_i - a replica object
+        replica_j - a replica object
         """
 
         raise NotImplementedError(method_name="compose_swap_matrix", class_name=type(self))
@@ -109,9 +118,8 @@ class ReplicaExchange(ExecutionPattern):
     #
     def prepare_replica_for_md(self, replica):
         """Creates a list of radical.ensemblemd.Kernel objects for MD simulation step. Here are
-        specified input/output files to be transferred to/from target resource, paths to
-        files on resource an MD kernel has to read data from and other details associated
-        with execution of MD step
+        specified input/output files to be transferred to/from target resource and other details 
+        associated with execution of MD step.
 
         Arguments:
         replica - Replica object
@@ -129,7 +137,7 @@ class ReplicaExchange(ExecutionPattern):
         performed on a target resource. 
 
         Arguments:
-        replica - Replica objects
+        replica - Replica object
 
         Returns:
         exchange_replica - radical.ensemblemd.Kernel object
@@ -140,8 +148,7 @@ class ReplicaExchange(ExecutionPattern):
     #--------------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
-        """Produces a replica "j" to exchange with the given replica "i"
-        based off independence sampling of the discrete distribution
+        """Produces a replica "j" for exchange with given replica "i"
 
         Arguments:
         r_i - given replica for which is found partner replica

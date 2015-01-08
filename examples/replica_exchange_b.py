@@ -225,6 +225,7 @@ class RePattern(ReplicaExchange):
 
         Arguments:
         replicas - a list of replica objects
+        matrix_columns - matrix of energy parameters obtained during the exchange step
         """
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
