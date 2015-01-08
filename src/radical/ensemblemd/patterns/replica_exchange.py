@@ -34,7 +34,7 @@ class Replica(object):
 class ReplicaExchange(ExecutionPattern):
     """ Replica Exchange pattern.
 
-            .. image:: images/replica_exchange.*
+            .. image:: images/replica_exchange_pattern.*
                :width: 300pt
     """
     def __init__(self):
