@@ -340,6 +340,7 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                 self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
+                self.get_logger().info("Analysis in iteration {0} completed.".format(iteration))
 
                 failed_units = ""
                 ana_wd = ""
@@ -377,22 +378,22 @@ class Plugin(PluginBase):
                 cud.output_staging = post_ana_step._cu_def_output_data
 
                 a_units.append(cud)
-                self.get_logger().debug("Created pre-analysis CU: {0}.".format(cud.as_dict()))
+                self.get_logger().debug("Created post-analysis CU: {0}.".format(cud.as_dict()))
 
                 a_cus = umgr.submit_units(a_units)
 
-                self.get_logger().info("Submitted tasks for pre-analysis iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for pre-analysis tasks in iteration {0} to complete.".format(iteration))
+                self.get_logger().info("Submitted tasks for post-analysis iteration {0}.".format(iteration))
+                self.get_logger().info("Waiting for post-analysis tasks in iteration {0} to complete.".format(iteration))
                 umgr.wait_units()
-                self.get_logger().info("Pre-Analysis in iteration {0} completed.".format(iteration))
+                self.get_logger().info("Post-Analysis in iteration {0} completed.".format(iteration))
 
                 failed_units = ""
-                pre_ana_wd = ""
+                post_ana_wd = ""
                 for unit in a_cus:
                     if unit.state != radical.pilot.DONE:
-                        failed_units += " * Pre-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                        failed_units += " * Post-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
                     else:
-                        pre_ana_wd = saga.Url(unit.working_directory).path
+                        post_ana_wd = saga.Url(unit.working_directory).path
 
 
                 # TODO: ensure working_dir <-> instance mapping

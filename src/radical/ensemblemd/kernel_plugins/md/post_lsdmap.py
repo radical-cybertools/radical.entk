@@ -43,11 +43,6 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Max alive neighbors to be considered"
                         },
-                    "--nnfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Nearest neighbor file"
-                        }
                     },
     "machine_configs":
     {
