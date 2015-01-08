@@ -16,12 +16,37 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.pre_lsdmap",
+    "name":         "md.post_lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--numCUs=":
+    "arguments":   {"--num_runs=":
                         {
                             "mandatory": True,
-                            "description": "No. of CUs"
+                            "description": "Number of runs to be generated in output file"
+                        },
+                    "--out=":
+                        {
+                            "mandatory": True,
+                            "description": "Output filename"
+                        },
+                    "--cycle=":
+                        {
+                            "mandatory": True,
+                            "description": "Current iteration"
+                        },
+                    "--max_dead_neighbors=":
+                        {
+                            "mandatory": True,
+                            "description": "Max dead neighbors to be considered"
+                        },
+                    "--max_alive_neighbors=":
+                        {
+                            "mandatory": True,
+                            "description": "Max alive neighbors to be considered"
+                        },
+                    "--nnfile=":
+                        {
+                            "mandatory": True,
+                            "description": "Nearest neighbor file"
                         }
                     },
     "machine_configs":
@@ -36,16 +61,16 @@ _KERNEL_INFO = {
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec" : ["module load gromacs python mpi4py"],
-            "executable" : ["/bin/bash"],
+            "pre_exec" : ["module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
+            "executable" : ["python"],
             "uses_mpi"   : True
         },
 
         "archer.ac.uk":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
-            "executable" : ["/bin/bash"],
+            "pre_exec" : ["module load packages-archer","module load python"],
+            "executable" : ["python"],
             "uses_mpi"   : True
         }
     }
@@ -83,7 +108,11 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['-l','-c','python pre_analyze.py {0} tmp.gro . && echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro'.format(self.get_arg("--numCUs="))]
+        arguments = ['post_analyze.py','{0}'.format(self.get_arg("--num_runs=")),'tmpha.ev','ncopies.nc','tmp.gro'
+                     ,'out.nn','weight.w','{0}'.format(self.get_arg("--out="))
+                     ,{0}.format(self.get_arg("--max_alive_neighbors=")),{0}.format(self.get_arg("--max_dead_neighbors="))
+                     ,'input',{0}.format(self.get_args("--cycle="))
+                     ]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

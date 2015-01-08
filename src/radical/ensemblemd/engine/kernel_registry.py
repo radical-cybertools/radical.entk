@@ -23,6 +23,7 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.md.pre_grlsd_loop",
     "radical.ensemblemd.kernel_plugins.md.pre_gromacs",
     "radical.ensemblemd.kernel_plugins.md.pre_lsdmap",
+    "radical.ensemblemd.kernel_plugins.md.post_lsdmap",
 
     "radical.ensemblemd.kernel_plugins.misc.nop",
     "radical.ensemblemd.kernel_plugins.misc.mkfile",

@@ -33,7 +33,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     
     def pre_loop(self):
         k = Kernel(name="md.pre_grlsd_loop")
-        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py']
+        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py','post_analyze.py','select.py','reweighting.py']
         return k
 
     def simulation_step(self, iteration, instance):
@@ -55,17 +55,23 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''
 
         pre_ana = Kernel(name="md.pre_lsdmap")
-        pre_ana.arguments = ["--numCUs={0}".format(num_CUs),"--out=out.gro"]
+        pre_ana.arguments = ["--numCUs={0}".format(num_CUs)]
         pre_ana.copy_input_data = ["$PRE_LOOP/pre_analyze.py"]
         pre_ana.link_input_data = []
         for i in range(1,num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$PREV_SIMULATION_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1)]
 
         lsdmap = Kernel(name="md.lsdmap")
-        lsdmap.arguments = ["--config=config.ini","--nnfile=out.nn"]
+        lsdmap.arguments = ["--config=config.ini"]
         lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
 
-        return [pre_ana,lsdmap]
+        post_ana = Kernel(name="md.post_lsdmap")
+        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py"]
+        post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
+                              "--max_dead_neighbors=0","--max_alive_neighbors=10"]
+
+
+        return [pre_ana,lsdmap,post_ana]
 
 
 # ------------------------------------------------------------------------------
@@ -87,7 +93,7 @@ if __name__ == "__main__":
       # instances of the simulation are executed every iteration.
       # We set the 'instances' of the analysis step to 1. This means that only
       # one instance of the analysis is executed for each iteration
-      randomsa = Gromacs_LSDMap(maxiterations=1, simulation_instances=num_CUs, analysis_instances=0)
+      randomsa = Gromacs_LSDMap(maxiterations=1, simulation_instances=num_CUs, analysis_instances=1)
 
       cluster.run(randomsa)
   
