@@ -1,6 +1,20 @@
 #!/usr/bin/env python
 
 """ 
+<<<<<<< HEAD
+=======
+This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
+Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
+Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
+Firstly, for each replica is generated dummy ``simula_x_y.md`` 
+input file. Each of these files contains 500 randomly generated numbers. As MD kernel in this example 
+is used ``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
+As input file for this kernel is supplied previously generated ``simula_x_y.md`` file. ``misc.ccount``
+kernel produces ``simula_x_y.out`` file, which is transferred to current working directory.
+Dummy replica parameter named ``parameter`` is exchanged during the exchange step. Exchanges
+of ``parameter`` do not affect next simulation cycle. Replica to perform an exchange with is 
+chosen randomly.  
+>>>>>>> master
 
 .. figure:: images/replica_exchange_pattern.*
    :width: 300pt
@@ -86,13 +100,14 @@ class ReplicaP(Replica):
     specific MD kernel
     """
     def __init__(self, my_id, cores=1):
-        """Constructor.
+        """Constructor
 
         Arguments:
         my_id - integer representing replica's id
         cores - number of cores each replica should use
         """
         self.id = int(my_id)
+        self.cores = int(cores)
         self.parameter = random.randint(300, 600)
         self.cycle = 0
         
@@ -242,8 +257,8 @@ if __name__ == "__main__":
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_1")
         
         print "RE simulation finished!"
-        print "Simulation performed 3 cycles for 4 replicas, so in your working directory you should"
-        print "have 12 simula_x_y.md files and 12 simula_x_y.out files ( x in {0,1,2,3}; y in {0,1,2} ) "
+        print "Simulation performed 3 cycles for 16 replicas, so in your working directory you should"
+        print "have 48 simula_x_y.md files and 48 simula_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
         print "where .md file is replica input file and .out is output providing number of occurrences"
         print "of each character. \n"
 
