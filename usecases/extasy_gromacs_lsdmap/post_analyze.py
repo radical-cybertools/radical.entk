@@ -21,5 +21,3 @@ if __name__ =='__main__':
 
     os.system('python reweighting.py -c %s -n %s -s %s -w %s -o %s --max_alive_neighbors=%s --max_dead_neighbors=%s' % (md_output_file,nearest_neighbor_file,num_clone_files,w_file,outgrofile_name,max_alive_neighbors,max_dead_neighbors))
 
-    #Rename outputfile as inputfile for next iteration
-    os.system('mv %s %s_%s'%(outgrofile_name,cycle+1,md_input_file))

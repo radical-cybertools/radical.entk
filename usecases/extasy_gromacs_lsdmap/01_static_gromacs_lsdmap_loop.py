@@ -24,7 +24,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-num_CUs = 4
+num_CUs = 8
+nsave=2
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
@@ -43,7 +44,12 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         if(iteration-1==0):
             pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
         else:
-            pre_sim.link_input_data = ["$PREV_ANALYSIS_INSTANCE_1/{0}_input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
+            if((iteration-1)%nsave==0):
+                pre_sim.upload_input_data = ['backup/iter{0}/out.gro > input{1}.gro'.format(iteration-1,iteration)]
+                pre_sim.link_input_data = ['$PRE_LOOP/gro.py']
+            else:
+                pre_sim.link_input_data = ["$PREV_ANALYSIS_INSTANCE_1/out.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
+
         pre_sim.copy_input_data = ["$PRE_LOOP/spliter.py"]
         pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
 
@@ -72,7 +78,10 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py"]
         post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
                               "--max_dead_neighbors=0","--max_alive_neighbors=10"]
-
+        if(iteration%nsave==0):
+            post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
+                                             'weight.w > backup/iter{0}/weight.w'.format(iteration),
+                                             'lsdmap.log > backup/iter{0}/lsdmap.log'.format(iteration)]
 
         return [pre_ana,lsdmap,post_ana]
 

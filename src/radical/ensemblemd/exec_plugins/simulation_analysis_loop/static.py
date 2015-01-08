@@ -52,7 +52,7 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
     #  * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
     if type == "simulation" and iteration > 1:
         for inst in range(1, ana_width+1):
-            env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['simulation_{0}'.format(inst)]
+            env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(inst)]
 
     #  * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
     return env_vars
@@ -371,7 +371,7 @@ class Plugin(PluginBase):
                     cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
                 cud.pre_exec.extend(post_ana_step._cu_def_pre_exec)
-                cud.pre_exec.extend(['cp %s/tmp.gro .'%pre_ana_wd,'cp %s/out.nn .'%ana_wd,'cp %s/tmpha.ev .'%ana_wd,'cp %s/weight.w .'%ana_wd])
+                cud.pre_exec.extend(['cp %s/tmp.gro .'%pre_ana_wd,'cp %s/out.nn .'%ana_wd,'cp %s/tmpha.ev .'%ana_wd,'cp %s/weight.w .'%ana_wd,'cp %s/lsdmap.log .'%ana_wd])
 
                 cud.executable     = post_ana_step._cu_def_executable
                 cud.arguments      = post_ana_step.arguments
