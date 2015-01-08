@@ -63,7 +63,7 @@ def get_version():
             raise RuntimeError("SETUP ERROR: Cannot determine version from git or ./VERSION\n")
 
         # make sure the version files exist for the runtime version inspection
-        open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
+        #open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
         open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
 
 
