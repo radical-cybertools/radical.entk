@@ -247,7 +247,7 @@ class Plugin(PluginBase):
 
         if do_profile != 0:
 
-            outfile = "execution_profile_{time}.log".format(time=datetime.datetime.now().isoformat())
+            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
             self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
 
             with open(outfile, 'w+') as f:
@@ -265,6 +265,6 @@ class Plugin(PluginBase):
                             uid=cu.uid,
                             start_time=cu.start_time,
                             stop_time=cu.stop_time,
-                            tags="{step}; {iteration}".format(step=step, iteration=iteration)
+                            tags="{step}; {iteration}".format(step=step.split('_')[1], iteration=iteration.split('_')[1])
                         )
                         f.write("{row}\n".format(row=row))
