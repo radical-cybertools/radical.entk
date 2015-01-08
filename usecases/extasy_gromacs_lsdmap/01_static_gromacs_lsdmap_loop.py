@@ -33,12 +33,23 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         SimulationAnalysisLoop.__init__(self, maxiterations, simulation_instances, analysis_instances)
     
     def pre_loop(self):
+        '''
+        function : transfers input files and intermediate executables
+        '''
         k = Kernel(name="md.pre_grlsd_loop")
         k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py','post_analyze.py','select.py','reweighting.py']
         return k
 
     def simulation_step(self, iteration, instance):
-        '''TODO Vivek: add description of this step.
+        '''
+        function : In iter=1, use the input file from pre_loop, else use the output of the analysis stage in the
+        previous iteration.
+
+        pre_gromacs : Split the input file into smaller files to be used by each of the gromacs instances. There is
+        one instance of pre_gromacs per iteration.
+
+        gromacs : Run the gromacs simulation on each of the smaller files. Parameter files and executables are input
+        from pre_loop. There are 'numCUs' number of instances of gromacs per iteration.
         '''
         pre_sim = Kernel(name="md.pre_gromacs")
         if(iteration-1==0):
@@ -60,7 +71,20 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         return [pre_sim, gromacs]
     
     def analysis_step(self, iteration, instance):
-        '''TODO Vivek: add description of this step.
+        '''
+        function : Merge the results of each of the simulation instances and run LSDMap analysis to generate the
+        new coordinate file to be used by the simulation stage in the next iteration.
+
+        pre_lsdmap : The output of each gromacs instance in the simulation_step is a small coordinate file. Concatenate
+        such files from each of the gromacs instances to form a larger file. There is one instance of pre_lsdmap per
+        iteration.
+
+        lsdmap : Perform LSDMap on the large coordinate file to generate weights and eigen values. There is one instance
+        of lsdmap per iteration (MSSA : Multiple Simulation Single Analysis model).
+
+        post_lsdmap : Use the weights, eigen values generated in lsdmap along with other parameter files from pre_loop
+        to generate the new coordinate file to be used by the simulation_step in the next iteration. There is one
+        instance of post_lsdmap per iteration.
         '''
 
         pre_ana = Kernel(name="md.pre_lsdmap")
