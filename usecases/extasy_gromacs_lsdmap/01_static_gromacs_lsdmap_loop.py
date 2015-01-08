@@ -45,7 +45,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
             pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
         else:
             if((iteration-1)%nsave==0):
-                pre_sim.upload_input_data = ['backup/iter{0}/out.gro > input{1}.gro'.format(iteration-1,iteration)]
+                pre_sim.upload_input_data = ['backup/iter{0}/out.gro > input{0}.gro'.format(iteration-1)]
                 pre_sim.link_input_data = ['$PRE_LOOP/gro.py']
             else:
                 pre_sim.link_input_data = ["$PREV_ANALYSIS_INSTANCE_1/out.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
