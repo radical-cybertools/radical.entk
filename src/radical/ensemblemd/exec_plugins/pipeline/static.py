@@ -196,30 +196,29 @@ class Plugin(PluginBase):
                     # Now we can replace the data-linkage placeholders.
                     jd = journal[step_key][instance_key]["unit_description"]
                     for pe in jd.pre_exec:
-                        if "$STEP_1" in pe:
-                            jd.pre_exec.remove(pe)
-                            expanded_pe = pe.replace("$STEP_1", journal["step_1"][instance_key]["working_dir"])
-                            jd.pre_exec.append(expanded_pe)
 
-                        if "$STEP_2" in pe:
-                            jd.pre_exec.remove(pe)
-                            expanded_pe = pe.replace("$STEP_2", journal["step_2"][instance_key]["working_dir"])
-                            jd.pre_exec.append(expanded_pe)
+                        for i in range(1,33):
+                            placeholder = "$STEP_{step}".format(step=i)
+                            journal_key = "step_{step}".format(step=i)
 
-                        if "$STEP_3" in pe:
-                            jd.pre_exec.remove(pe)
-                            expanded_pe = pe.replace("$STEP_3", journal["step_3"][instance_key]["working_dir"])
-                            jd.pre_exec.append(expanded_pe)
+                            if placeholder in pe:
+                                jd.pre_exec.remove(pe)
+                                expanded_pe = pe.replace(placeholder, journal[journal_key][instance_key]["working_dir"])
+                                jd.pre_exec.append(expanded_pe)
 
                     unit = umgr.submit_units(jd)
                     step_units.append(unit)
                     journal[step_key][instance_key]["compute_unit"] = unit
-                    import time
-                    time.sleep(1)
-                    journal[step_key][instance_key]["working_dir"] = saga.Url(journal[step_key][instance_key]["compute_unit"].working_directory).path
 
                 self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
                 umgr.wait_units()
+
+                # Update all working directories so they can be accessed from
+                # the next step(s).
+                for instance in range(1, pipeline_instances+1):
+                    instance_key = "instance_%s" % instance
+                    work_dir = saga.Url(journal[step_key][instance_key]["compute_unit"].working_directory).path
+                    journal[step_key][instance_key]["working_dir"] = work_dir
 
                 failed_units = ""
                 for unit in step_units:
@@ -254,7 +253,7 @@ class Plugin(PluginBase):
             with open(outfile, 'w+') as f:
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; step; iterations"
+                head = "task; start_time; stop_time; step; iteration"
                 f.write("{row}\n".format(row=head))
 
                 for step in journal.keys():

@@ -9,6 +9,7 @@ __license__   = "MIT"
 
 import os
 import saga
+import datetime
 import radical.pilot
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
@@ -148,6 +149,8 @@ class Plugin(PluginBase):
             umgr.wait_units()
 
             CUDesc_list = list()
+            journal = {}
+
             for i,j in comparisons(NumElements):
                 kernel = pattern.element_comparison(element1=i, element2=j)
                 link_input1=kernel.get_arg("--inputfile1=")
@@ -180,12 +183,14 @@ class Plugin(PluginBase):
                 self.get_logger().info("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
 
+                journal["{p1}-{p2}".format(p1=i, p2=j)] = {
+                    "p1": i,
+                    "p2": j,
+                    "unit_description": cudesc,
+                    "compute_unit": umgr.submit_units(cudesc)
+                }
 
-                CUDesc_list.append(cudesc)
-
-            Units = umgr.submit_units(CUDesc_list)
             umgr.wait_units()
-
             self.get_logger().info("Pattern execution successful.")
 
         except Exception, ex:
@@ -194,3 +199,32 @@ class Plugin(PluginBase):
         finally:
             self.get_logger().info("Deallocating resource.")
             session.close()
+
+        # -----------------------------------------------------------------
+        # At this point, we have executed the pattern succesfully. Now,
+        # if profiling is enabled, we can write the profiling data to
+        # a file.
+        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+
+        if do_profile != 0:
+
+            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
+            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
+
+            with open(outfile, 'w+') as f:
+                # General format of a profiling file is row based and follows the
+                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
+                head = "task; start_time; stop_time; p1; p2"
+                f.write("{row}\n".format(row=head))
+
+                for pair in journal.keys():
+                    data = journal[pair]
+                    cu = data["compute_unit"]
+
+                    row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                        uid=cu.uid,
+                        start_time=cu.start_time,
+                        stop_time=cu.stop_time,
+                        tags="{p1}; {p2}".format(p1=data["p1"], p2=data["p2"])
+                    )
+                    f.write("{row}\n".format(row=row))
