@@ -40,7 +40,10 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''TODO Vivek: add description of this step.
         '''
         pre_sim = Kernel(name="md.pre_gromacs")
-        pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
+        if(iteration-1==0):
+            pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
+        else:
+            pre_sim.link_input_data = ["$PREV_ANALYSIS_INSTANCE_1/{0}_input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
         pre_sim.copy_input_data = ["$PRE_LOOP/spliter.py"]
         pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
 
@@ -93,7 +96,7 @@ if __name__ == "__main__":
       # instances of the simulation are executed every iteration.
       # We set the 'instances' of the analysis step to 1. This means that only
       # one instance of the analysis is executed for each iteration
-      randomsa = Gromacs_LSDMap(maxiterations=1, simulation_instances=num_CUs, analysis_instances=1)
+      randomsa = Gromacs_LSDMap(maxiterations=2, simulation_instances=num_CUs, analysis_instances=1)
 
       cluster.run(randomsa)
   

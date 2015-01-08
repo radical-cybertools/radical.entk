@@ -326,6 +326,8 @@ class Plugin(PluginBase):
 
                     cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
                     cud.pre_exec.append('cp %s/tmpha.gro .'%pre_ana_wd)
+                    if iteration>1:
+                        cud.pre_exec.append('cp {0}/weight.w .'.format(working_dirs['iteration_{0}'.format(iteration-1)]['analysis_1']))
 
                     cud.executable     = analysis_step._cu_def_executable
                     cud.arguments      = analysis_step.arguments
@@ -369,7 +371,7 @@ class Plugin(PluginBase):
                     cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
                 cud.pre_exec.extend(post_ana_step._cu_def_pre_exec)
-                cud.pre_exec.append(['cp %s/tmp.gro .'%pre_ana_wd,'cp %s/out.nn .'%ana_wd,'cp %s/tmpha.ev .'%ana_wd,'cp %s/weight.w .'%ana_wd])
+                cud.pre_exec.extend(['cp %s/tmp.gro .'%pre_ana_wd,'cp %s/out.nn .'%ana_wd,'cp %s/tmpha.ev .'%ana_wd,'cp %s/weight.w .'%ana_wd])
 
                 cud.executable     = post_ana_step._cu_def_executable
                 cud.arguments      = post_ana_step.arguments
@@ -388,12 +390,9 @@ class Plugin(PluginBase):
                 self.get_logger().info("Post-Analysis in iteration {0} completed.".format(iteration))
 
                 failed_units = ""
-                post_ana_wd = ""
                 for unit in a_cus:
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * Post-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                    else:
-                        post_ana_wd = saga.Url(unit.working_directory).path
 
 
                 # TODO: ensure working_dir <-> instance mapping
