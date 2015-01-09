@@ -9,7 +9,7 @@ Run Remotely
 
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
-pipeline instances can run in parallel::
+simulation instances can run in parallel::
 SingleClusterEnvironment(
 resource="stampede.tacc.utexas.edu",
 cores=16,
