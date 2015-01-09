@@ -1,12 +1,32 @@
 #!/usr/bin/env python
 """
-TODO Vivek: Add description and instructions how to run, where to get
-sample data from, etc. Refer to other use-cases for 'inspiration'.
+This script is an example to use the EnsembleMD Toolkit ``SimulationAnalysis``
+pattern for the gromacs-lsdmap usecase.
+
+
+Run Remotely
+^^^^^^^^^^^^
+
+You can change the script to use a remote HPC cluster and increase the number
+of cores to see how this affects the runtime of the script as the individual
+pipeline instances can run in parallel::
+SingleClusterEnvironment(
+resource="stampede.tacc.utexas.edu",
+cores=16,
+walltime=30,
+username=None, # add your username here
+allocation=None # add your allocation or project id here if required
+)
+
+'numCUs' is the number of simulation instances per iteration.
+'nsave' is the iteration at which backup needs to be created on the local machine.
 
 Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about plug-in invocation and simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py
+
+
 """
 
 __author__        = "Vivek <vivek.balasubramanian@rutgers.edu>"
@@ -26,6 +46,7 @@ from radical.ensemblemd import SingleClusterEnvironment
 #
 num_CUs = 8
 nsave=2
+
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
@@ -35,22 +56,42 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     def pre_loop(self):
         '''
         function : transfers input files and intermediate executables
+
+        pre_grlsd_loop :-
+                Purpose : Transfers files.
+                Arguments : None
         '''
         k = Kernel(name="md.pre_grlsd_loop")
         k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py','post_analyze.py','select.py','reweighting.py']
         return k
 
     def simulation_step(self, iteration, instance):
+
         '''
         function : In iter=1, use the input file from pre_loop, else use the output of the analysis stage in the
-        previous iteration.
+        previous iteration. Split the file into smaller files to be used by each of the gromacs simulation instances.
 
-        pre_gromacs : Split the input file into smaller files to be used by each of the gromacs instances. There is
-        one instance of pre_gromacs per iteration.
+        If a step as multiple kernels (say k1, k2), data generated in k1 is implicitly moved to k2 (if k2 requires).
+        Data which needs to be moved between the various steps (pre_loop, simulation_step, analysis_step) needs to
+        be mentioned by the user.
 
-        gromacs : Run the gromacs simulation on each of the smaller files. Parameter files and executables are input
-        from pre_loop. There are 'numCUs' number of instances of gromacs per iteration.
+        pre_gromacs :-
+
+                Purpose : Split the input file into smaller files to be used by each of the gromacs instances. There is
+                            one instance of pre_gromacs per iteration.
+
+                Arguments : --inputfile = file to be split
+                            --numCUs    = number of simulation instances/ number of smaller files
+
+        gromacs :-
+
+                Purpose : Run the gromacs simulation on each of the smaller files. Parameter files and executables are input
+                            from pre_loop. There are 'numCUs' number of instances of gromacs per iteration.
+
+                Arguments : --grompp    = gromacs parameters filename
+                            --topol     = topology filename
         '''
+
         pre_sim = Kernel(name="md.pre_gromacs")
         if(iteration-1==0):
             pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
@@ -75,16 +116,37 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         function : Merge the results of each of the simulation instances and run LSDMap analysis to generate the
         new coordinate file to be used by the simulation stage in the next iteration.
 
-        pre_lsdmap : The output of each gromacs instance in the simulation_step is a small coordinate file. Concatenate
-        such files from each of the gromacs instances to form a larger file. There is one instance of pre_lsdmap per
-        iteration.
+        If a step as multiple kernels (say k1, k2), data generated in k1 is implicitly moved to k2 (if k2 requires).
+        Data which needs to be moved between the various steps (pre_loop, simulation_step, analysis_step) needs to
+        be mentioned by the user.
 
-        lsdmap : Perform LSDMap on the large coordinate file to generate weights and eigen values. There is one instance
-        of lsdmap per iteration (MSSA : Multiple Simulation Single Analysis model).
+        pre_lsdmap :-
 
-        post_lsdmap : Use the weights, eigen values generated in lsdmap along with other parameter files from pre_loop
-        to generate the new coordinate file to be used by the simulation_step in the next iteration. There is one
-        instance of post_lsdmap per iteration.
+                Purpose : The output of each gromacs instance in the simulation_step is a small coordinate file. Concatenate
+                            such files from each of the gromacs instances to form a larger file. There is one instance of pre_lsdmap per
+                            iteration.
+
+                Arguments : --numCUs = number of simulation instances / number of small files to be concatenated
+
+        lsdmap :-
+
+                Purpose : Perform LSDMap on the large coordinate file to generate weights and eigen values. There is one instance
+                            of lsdmap per iteration (MSSA : Multiple Simulation Single Analysis model).
+
+                Arguments : --config = name of the config file to be used during LSDMap
+
+        post_lsdmap :-
+
+
+                Purpose : Use the weights, eigen values generated in lsdmap along with other parameter files from pre_loop
+                            to generate the new coordinate file to be used by the simulation_step in the next iteration. There is one
+                            instance of post_lsdmap per iteration.
+
+                Arguments : --num_runs              = number of configurations to be generated in the new coordinate file
+                            --out                   = output filename
+                            --cycle                 = iteration number
+                            --max_dead_neighbors    = max dead neighbors to be considered
+                            --max_alive_neighbors   = max alive neighbors to be considered
         '''
 
         pre_ana = Kernel(name="md.pre_lsdmap")
