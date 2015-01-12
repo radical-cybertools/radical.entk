@@ -66,7 +66,7 @@ class Plugin(PluginBase):
         if resource._queue is not None:
             pdesc.queue = resource._queue
 
-        pdesc.cleanup  = False
+        pdesc.cleanup  = resource._cleanup
 
         if resource._allocation is not None:
             pdesc.project = resource._allocation

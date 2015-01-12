@@ -178,6 +178,7 @@ class RePattern(ReplicaExchange):
         k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
         k.upload_input_data      = input_name
         k.download_output_data = output_name
+        k.cores = 1
 
         replica.cycle = replica.cycle + 1
         return k
@@ -242,7 +243,7 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
-            walltime=15
+            walltime=15,
         )
         
         # creating RE pattern object
