@@ -14,7 +14,7 @@ open a terminal and run:
 
 .. parsed-literal::
 
-    export ENMD_INSTALL_VERSION="|VERSION|"
+    export ENMD_INSTALL_VERSION="master"
     virtualenv $HOME/EnMDToolkit
     source $HOME/EnMDToolkit/bin/activate
     pip install --upgrade git+https://github.com/radical-cybertools/radical.ensemblemd.git@$ENMD_INSTALL_VERSION#egg=radical.ensemblemd
