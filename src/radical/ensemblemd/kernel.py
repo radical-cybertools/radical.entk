@@ -169,7 +169,7 @@ class Kernel(object):
         if type(cores) != int:
             raise TypeError(
                 expected_type=int,
-                actual_type=type(args))
+                actual_type=type(cores))
 
         # Call the validate_args() method of the plug-in.
         self._kernel._cores = cores

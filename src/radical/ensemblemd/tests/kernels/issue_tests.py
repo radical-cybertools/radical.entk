@@ -35,4 +35,12 @@ class KernelIssueTests(unittest.TestCase):
         """ Issue https://github.com/radical-cybertools/radical.ensemblemd/issues/18
         """
         k = radical.ensemblemd.Kernel(name="md.coco")
-        k.cores = "2"
+
+        try:
+            k.cores = "2"
+        except radical.ensemblemd.exceptions.TypeError:
+            pass
+        except Exception, e:
+            self.fail('Unexpected exception thrown: %s' % type(e))
+        else:
+            self.fail('ExpectedException not thrown')
