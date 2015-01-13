@@ -61,7 +61,7 @@ Example Source
 __author__       = "Ioannis Paraskevakos <i.parask@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "All Pairs (generic)"
+__example_name__ = "All Pairs Example (generic)"
 
 import math
 

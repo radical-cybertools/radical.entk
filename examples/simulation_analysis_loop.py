@@ -68,7 +68,7 @@ Example Source
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Simulation-Analysis (generic)"
+__example_name__ = "Simulation-Analysis Example (generic)"
 
 import math
 

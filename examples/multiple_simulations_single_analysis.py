@@ -1,36 +1,36 @@
 #!/usr/bin/env python
 
-"""  
+"""
 
 Explain...
 
 .. code-block:: none
 
-    [S]    [S]    [S]    [S]    [S]    [S]    [S] 
-     |      |      |      |      |      |      |  
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
      \-----------------------------------------/
                           |
                          [A]
                           |
      /-----------------------------------------\
-     |      |      |      |      |      |      |    
-    [S]    [S]    [S]    [S]    [S]    [S]    [S] 
-     |      |      |      |      |      |      |  
+     |      |      |      |      |      |      |
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
      \-----------------------------------------/
                           |
                          [A]
-                          :  
+                          :
 
 .. _multiple_simulations_single_analysis:
 
-Example Source 
+Example Source
 ^^^^^^^^^^^^^^
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Multiple Simulations Instances, Single Analysis Instance (MSSA)"
+__example_name__ = "Multiple Simulations Instances, Single Analysis Instance Example (MSSA)"
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -50,15 +50,15 @@ class MSSA(SimulationAnalysisLoop):
     def simulation_step(self, iteration, instance):
         """In the simulation step we
         """
-        k = Kernel(name="misc.mkfile") 
+        k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
         return k
 
     def analysis_step(self, iteration, instance):
         """In the analysis step we use the ``$PREV_SIMULATION`` data reference
-           to refer to the previous simulation. The same 
+           to refer to the previous simulation. The same
            instance is picked implicitly, i.e., if this is instance 5, the
-           previous simulation with instance 5 is referenced. 
+           previous simulation with instance 5 is referenced.
         """
         link_input_data = []
         for i in range(0, self.simlation_instances):
@@ -79,14 +79,14 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=30,
             username=None,
             allocation=None
         )
 
-        # We set both the the simulation and the analysis step 'instances' to 16. 
+        # We set both the the simulation and the analysis step 'instances' to 16.
         # If they
         mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
 

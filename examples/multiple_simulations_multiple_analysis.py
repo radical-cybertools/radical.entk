@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""  
+"""
 
 Explain...
 
@@ -17,14 +17,14 @@ Explain...
 
 .. _multiple_simulations_multiple_analysis:
 
-Example Source 
+Example Source
 ^^^^^^^^^^^^^^
 """
 
 __author__       = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Multiple Simulations Instances, Multiple Analysis Instances (MSMA)"
+__example_name__ = "Multiple Simulations Instances, Multiple Analysis Instances Example (MSMA)"
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -44,15 +44,15 @@ class MSMA(SimulationAnalysisLoop):
     def simulation_step(self, iteration, instance):
         """In the simulation step we
         """
-        k = Kernel(name="misc.mkfile") 
+        k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
         return k
 
     def analysis_step(self, iteration, instance):
         """In the analysis step we use the ``$PREV_SIMULATION`` data reference
-           to refer to the previous simulation. The same 
+           to refer to the previous simulation. The same
            instance is picked implicitly, i.e., if this is instance 5, the
-           previous simulation with instance 5 is referenced. 
+           previous simulation with instance 5 is referenced.
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile.dat", "--outputfile=cfreqs.dat"]
@@ -69,14 +69,14 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=30,
             username=None,
             allocation=None
         )
 
-        # We set both the the simulation and the analysis step 'instances' to 16. 
+        # We set both the the simulation and the analysis step 'instances' to 16.
         # If they
         msma = MSMA(iterations=4, simulation_instances=16, analysis_instances=16)
 

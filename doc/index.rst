@@ -39,6 +39,7 @@ Contents:
 
 .. toctree::
    :numbered:
+   :maxdepth: 3
 
    introduction
    installation
@@ -46,8 +47,6 @@ Contents:
    the_patterns
    the_kernels
 
-   examples
    library
-   kernels
    developers
    glossary

@@ -27,24 +27,24 @@ class AllPairs(ExecutionPattern):
 
         **Arguments:**
 
-			* **setelements** ['list']
-			  The elements of the set in which All Pairs pattern will be applied. Can
-			  be used as identifiers? Need to think about it.
+            * **setelements** ['list']
+              The elements of the set in which All Pairs pattern will be applied. Can
+              be used as identifiers? Need to think about it.
 
         **Attributes:**
 
             * **setsize** [`int`]
               The setsize parameter determines the size of the set where all possible
-			  permutations result to the same simulation with different parameters. The
-			  number of elements in the set is defined as the size
+              permutations result to the same simulation with different parameters. The
+              number of elements in the set is defined as the size
 
             * **_permutations** [`int`]
               The maximum number of permutations for a set of size defined by setsize. May
-			  be used as some kind of identifier? Need to think about it.
+              be used as some kind of identifier? Need to think about it.
 
         """
         self._size = setelements.__len__()
-	self._setelements = setelements
+        self._setelements = setelements
         self._permutations = self._size*(self.size-1)/2
 
         super(AllPairs, self).__init__()
@@ -85,15 +85,16 @@ class AllPairs(ExecutionPattern):
     #
     def element_initialization(self, element):
         """This method returns a :class:`radical.ensemblemd.Kernel` object
-	and is executed once before comparison for all the elements in the set
+           and is executed once before comparison for all the elements in the set
 
         **Arguments:**
 
             * **element** [`int`]
               The element parameter is a positive integer and references to an
-	      element of the set
+              element of the set
 
         **Returns:**
+
             Implementations of this method **must** return a
             :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
 
@@ -110,11 +111,11 @@ class AllPairs(ExecutionPattern):
 
         **Arguments:**
 
-		* **element1** [`int`]
-		The first element from the set used for the comparison
+            * **element1** [`int`]
+              The first element from the set used for the comparison
 
-		* **element2**[`int`]
-		The second element from the set used for the comparison
+            * **element2** [`int`]
+              The second element from the set used for the comparison
 
 
         **Returns:**

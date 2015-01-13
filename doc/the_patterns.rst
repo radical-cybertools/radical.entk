@@ -1,11 +1,11 @@
-.. _getstarted:
+.. _the_patterns:
 
 ************
 The Patterns
 ************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    patterns/allpairs/index
    patterns/pipeline/index

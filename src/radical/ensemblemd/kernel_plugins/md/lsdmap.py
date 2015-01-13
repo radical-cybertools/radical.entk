@@ -46,7 +46,7 @@ _KERNEL_INFO = {
             "pre_exec"    : [],
             "executable"  : "mdrun",
             "uses_mpi"    : False,
-            "test_cmd"    : ""
+            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
         },
 
         "stampede":

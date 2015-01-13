@@ -21,32 +21,29 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 ################################################################################
 ##
-print "* Generating Application kernel list: kernels.rst"
+print "* Generating Application kernel list: the_kernels.rst"
 
 try:
-    os.remove("{0}/kernels.rst".format(script_dir))
-    for fl in glob.glob("{0}/_generated_kernel_*".format(script_dir)):
+    os.remove("{0}/the_kernels.rst".format(script_dir))
+    for fl in glob.glob("{0}/kernels/_generated_kernel_*".format(script_dir)):
         os.remove(fl)
 except OSError:
     pass
 
-with open ("{0}/kernels.rst".format(script_dir), "w") as toc:
-    toc.write("Available Application Kernels\n")
-    toc.write("*****************************\n")
+with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
+    toc.write("***********\n")
+    toc.write("The Kernels\n")
+    toc.write("***********\n")
     toc.write("\n")
     toc.write(".. toctree::\n")
     toc.write("   :maxdepth: 1\n\n")
     toc.write("\n\n")
 
-# with open("{0}/kernels.rst".format(script_dir), "w") as kernels:
-#     kernels.write("Application Kernels\n")
-#     kernels.write("===================\n")
-
     from radical.ensemblemd.engine.engine import Engine
     e = Engine()
     for kernel in  e._kernel_plugins:
         ki = kernel().get_info()
-        kernel_rst_filename = "_generated_kernel_{0}.rst".format(ki["name"])
+        kernel_rst_filename = "kernels/_generated_kernel_{0}.rst".format(ki["name"])
         with open("{0}/{1}".format(script_dir, kernel_rst_filename), "w") as kernel_rst:
 
             try:
@@ -97,50 +94,40 @@ with open ("{0}/kernels.rst".format(script_dir), "w") as toc:
 
 ################################################################################
 ##
-print "* Generating code example list: examples.rst"
+print "* Generating code examples"
 
 try:
-    os.remove("{0}/examples.rst".format(script_dir))
-    for fl in glob.glob("{0}/_generated_example_*".format(script_dir)):
+    for fl in glob.glob("{0}/examples/_generated_example_*".format(script_dir)):
         os.remove(fl)
 except OSError:
     pass
 
-with open ("{0}/examples.rst".format(script_dir), "w") as toc:
-    toc.write("Examples Library\n")
-    toc.write("****************\n")
-    toc.write("\n")
-    toc.write(".. toctree::\n")
-    toc.write("   :maxdepth: 0\n")
-    toc.write("\n")
 
-    examples = os.listdir("{0}/../examples/".format(script_dir))
-    for example in examples:
+examples = os.listdir("{0}/../examples/".format(script_dir))
+for example in examples:
 
-      foo = None
+  foo = None
 
-      if example.endswith(".py") is False:
-          continue # skip all non-python files
+  if example.endswith(".py") is False:
+      continue # skip all non-python files
 
-      try:
-          foo = imp.load_source('{0}'.format(example.split(".")[0]), "../examples/{0}".format(example)) 
-          example_name = foo.__example_name__
+  try:
+      foo = imp.load_source('{0}'.format(example.split(".")[0]), "../examples/{0}".format(example))
+      example_name = foo.__example_name__
 
-          example_rst_filename = "_generated_example_"+example.replace(".py", ".rst")
-          with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
+      example_rst_filename = "examples/_generated_example_"+example.replace(".py", ".rst")
+      with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
 
-              example_rst.write("{0}\n".format(example_name))
-              example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
-              example_rst.write(foo.__doc__+"\n")
-              example_rst.write(":download:`Download example: {0} <../examples/{0}>`\n\n".format(example))
-              example_rst.write(".. literalinclude:: ../examples/{0}\n".format(example))
-              example_rst.write("   :linenos:\n")
-              example_rst.write("   :start-after: __example_name__\n\n")
+          example_rst.write("{0}\n".format(example_name))
+          example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
+          example_rst.write(foo.__doc__+"\n")
+          example_rst.write(":download:`Download example: {0} <../../examples/{0}>`\n\n".format(example))
+          example_rst.write(".. literalinclude:: ../../examples/{0}\n".format(example))
+          example_rst.write("   :linenos:\n")
+          example_rst.write("   :start-after: __example_name__\n\n")
 
-              toc.write("   {0}\n".format(example_rst_filename))
-
-      except Exception, ex:
-          print "=== WARNING: %s " % str(ex)
+  except Exception, ex:
+      print "=== WARNING: %s " % str(ex)
 ##
 ################################################################################
 
@@ -438,4 +425,3 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 autodoc_member_order = 'bysource'
-

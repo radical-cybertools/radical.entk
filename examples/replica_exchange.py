@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" 
+"""
 This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
 Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
@@ -69,7 +69,7 @@ Example Source
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Synchronous Replica Exchange with 'local' exchange (generic)."
+__example_name__ = "Synchronous Replica Exchange Example with 'local' exchange (generic)."
 
 
 import os

@@ -1,5 +1,3 @@
-.. _getstarted:
-
 ***********
 The Kernels
 ***********
@@ -7,4 +5,18 @@ The Kernels
 .. toctree::
    :maxdepth: 1
 
-   ###REPLACE_ME_WITH_KERNEL_TOC###
+
+
+   kernels/_generated_kernel_md.amber.rst
+   kernels/_generated_kernel_md.coco.rst
+   kernels/_generated_kernel_md.gromacs.rst
+   kernels/_generated_kernel_md.mmpbsa.rst
+   kernels/_generated_kernel_md.lsdmap.rst
+   kernels/_generated_kernel_md.namd.rst
+   kernels/_generated_kernel_md.re_exchange.rst
+   kernels/_generated_kernel_misc.nop.rst
+   kernels/_generated_kernel_misc.mkfile.rst
+   kernels/_generated_kernel_misc.ccount.rst
+   kernels/_generated_kernel_misc.chksum.rst
+   kernels/_generated_kernel_misc.levenshtein.rst
+   kernels/_generated_kernel_misc.diff.rst
