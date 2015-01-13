@@ -4,11 +4,12 @@
 This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation 
 cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution 
-plugin. Firstly, for each replica is generated dummy ``simula_x_y.md`` input file. Each of these
-files contains 500 randomly generated numbers. As MD kernel in this example is used
+plugin. Firstly, for each replica is generated dummy ``md_input_x_y.md`` input file and ``shared_md_input.dat``
+shared file. Each of ``md_input_x_y.md`` files contains 500 randomly generated numbers, but ``shared_md_input.dat``
+contains 500 characters which are both numbers and letters. As MD kernel in this example is used
 ``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
-As input file for this kernel is supplied previously generated ``simula_x_y.md`` file. ``misc.ccount``
-kernel produces ``simula_x_y.out`` file, which is transferred to current working directory.
+As input file for this kernel is supplied previously generated ``md_input_x_y.md`` file. ``misc.ccount``
+kernel produces ``md_input_x_y.out`` file, which is transferred to current working directory.
 For exchange step is used ``md.re_exchange`` kernel which is supplied with ``matrix_calculator.py``
 python script. This script is executed on target resource and simulates collection of output 
 parameters produced by MD step, which are required for exchange step. In this example ``matrix_calculator.py``
@@ -314,7 +315,7 @@ if __name__ == "__main__":
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
         print "RE simulation finished!"
         print "Simulation performed 3 cycles for 16 replicas. In your working directory you should"
-        print "have 48 simula_x_y.md files and 48 simula_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
+        print "have 48 md_input_x_y.md files and 48 md_input_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
         print "where .md file is replica input file and .out is output providing number of occurrences"
         print "of each character. \n"
 
