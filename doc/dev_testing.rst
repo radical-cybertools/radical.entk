@@ -15,10 +15,7 @@ tests for the ``Pipeline`` pattern, run::
 
     easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.pipeline
 
-Adding New Tests for a Pattern
-------------------------------
-
-You can run the following sub-tests for the individual patterns:
+You can run a subset of tests for the individual patterns:
 
 * ``easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.pipline``
 * ``easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.simulation_analysis_loop``
@@ -26,4 +23,21 @@ You can run the following sub-tests for the individual patterns:
 * ``easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.replica_exchange``
 
 
-Add new pattern-specific tests in ``src/radical/ensemblemd/tests/patterns/patternname/``.
+Adding a New Test for an Issue
+------------------------------
+
+If you are addressing an issue that was reported via the GitHub issue tracker,
+add the tests to the ``issue_tests.py`` file in the respective test directory
+following this simple template::
+
+    #-------------------------------------------------------------------------
+    #
+    def test__issue_NUMBER(self):
+        """ Issue https://github.com/radical-cybertools/radical.ensemblemd/issues/NUMBER
+        """
+        # ADD THE TEST CASE HERE
+        #
+
+You can run the issue tests isolated::
+
+    easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.PATTERN.issue_tests
