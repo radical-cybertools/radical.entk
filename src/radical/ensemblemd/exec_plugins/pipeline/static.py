@@ -245,7 +245,7 @@ class Plugin(PluginBase):
         # a file.
         do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
 
-        if do_profile != 0:
+        if do_profile != '0':
 
             outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
             self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
