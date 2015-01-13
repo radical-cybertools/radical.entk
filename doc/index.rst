@@ -39,11 +39,13 @@ Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 2
 
    introduction
    installation
    getstarted
+   the_patterns
+   the_kernels
+
    examples
    library
    kernels

@@ -5,34 +5,6 @@ API Reference
 *************
 
 
-Pipleline Pattern API
-=====================
-
-.. autoclass:: radical.ensemblemd.Pipeline
-    :members:
-    :inherited-members:
-
-SimulationAnalysisLoop Pattern API
-==================================
-
-.. autoclass:: radical.ensemblemd.SimulationAnalysisLoop
-    :members:
-    :inherited-members:
-
-ReplicaExchange Pattern API
-===========================
-
-.. autoclass:: radical.ensemblemd.ReplicaExchange
-    :members:
-    :inherited-members:
-
-All-Pairs Pattern API
-=====================
-
-.. autoclass:: radical.ensemblemd.AllPairs
-    :members:
-    :inherited-members:
-
 Execution Context API
 =====================
 
