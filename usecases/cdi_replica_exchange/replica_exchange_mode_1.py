@@ -53,8 +53,6 @@ class ReplicaP(Replica):
         cores - number of cores each replica should use
         """
         self.id = int(my_id)
-        self.sid = int(my_id)
-        self.state = 'I'
         self.cycle = 0
         if new_temperature is None:
             self.new_temperature = 0
@@ -74,7 +72,6 @@ class ReplicaP(Replica):
         self.first_path = ""
         self.swap = 0
         self.cores = cores
-        self.stopped_run = -1
 
         super(ReplicaP, self).__init__(my_id)
 
@@ -103,7 +100,41 @@ class RePattern(ReplicaExchange):
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
 
+        self.shared_urls = []
+        self.shared_files = []
+
         super(RePattern, self).__init__()
+
+    # ------------------------------------------------------------------------------
+    #
+    def prepare_shared_data(self):
+ 
+        structure_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
+        coords_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
+        params_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
+
+        self.shared_files.append(self.namd_structure)
+        self.shared_files.append(self.namd_coordinates)
+        self.shared_files.append(self.namd_parameters)
+
+        struct_url = 'file://%s' % (structure_path)
+        self.shared_urls.append(struct_url)
+ 
+        coords_url = 'file://%s' % (coords_path)
+        self.shared_urls.append(coords_url)     
+
+        params_url = 'file://%s' % (params_path)
+        self.shared_urls.append(params_url)
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_shared_urls(self):
+        return self.shared_urls
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_shared_files(self):
+        return self.shared_files
 
     # ------------------------------------------------------------------------------
     #
@@ -155,9 +186,12 @@ class RePattern(ReplicaExchange):
             parameters = self.namd_parameters
         else:
             old_name = replica.old_path + "/%s_%d_%d" % (basename, replica.id, (replica.cycle-1))
-            structure = replica.first_path + "/" + self.namd_structure
-            coordinates = replica.first_path + "/" + self.namd_coordinates
-            parameters = replica.first_path + "/" + self.namd_parameters
+            #structure = replica.first_path + "/" + self.namd_structure
+            #coordinates = replica.first_path + "/" + self.namd_coordinates
+            #parameters = replica.first_path + "/" + self.namd_parameters
+            structure = self.namd_structure
+            coordinates = self.namd_coordinates
+            parameters = self.namd_parameters
 
         # substituting tokens in main replica input file 
         try:
@@ -213,17 +247,18 @@ class RePattern(ReplicaExchange):
 
         # only for first cycle we transfer structure, coordinates and parameters files
         if replica.cycle == 0:
-            structure = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
-            coords = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
-            params = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
+            #structure = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
+            #coords = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
+            #params = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
 
             k = Kernel(name="md.namd")
             k.arguments            = [input_file]
-            k.upload_input_data    = [str(input_file), str(structure), str(coords), str(params)]
+            #k.upload_input_data    = [str(input_file), str(structure), str(coords), str(params)]
+            k.upload_input_data    = [str(input_file)]
         else:
-            structure = self.inp_folder + "/" + self.namd_structure
-            coords = self.inp_folder + "/" + self.namd_coordinates
-            params = self.inp_folder + "/" + self.namd_parameters
+            #structure = self.inp_folder + "/" + self.namd_structure
+            #coords = self.inp_folder + "/" + self.namd_coordinates
+            #params = self.inp_folder + "/" + self.namd_parameters
 
             k = Kernel(name="md.namd")
             k.arguments            = [input_file]
@@ -360,10 +395,20 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+        """
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
+        )
+        """
+
+        cluster = SingleClusterEnvironment(
+            resource="stampede.tacc.utexas.edu",
+            cores=16,
+            walltime=30,
+            username="antontre",
+            allocation="TG-MCB090174"
         )
 
         # creating RE pattern object
