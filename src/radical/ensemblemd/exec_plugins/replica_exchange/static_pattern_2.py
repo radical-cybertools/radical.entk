@@ -79,8 +79,8 @@ class Plugin(PluginBase):
 
         shared_input_file_urls = pattern.get_shared_urls()
         shared_input_files = pattern.get_shared_files()
-
-        for i in range len(shared_input_files):
+        
+        for i in range(len(shared_input_files)):
 
             sd_pilot = {'source': shared_input_file_urls[i],
                         'target': 'staging:///%s' % shared_input_files[i],
