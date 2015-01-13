@@ -2,8 +2,11 @@
 
 """ 
 CDI Replica Exchange: 'mode 1'.
+This example demonstrates how application for synchronous termerature-exchange RE 
+simulation with NAMD kernel can be implemented. 
 
-RADICAL_ENMD_VERBOSE=debug python replica_exchange_mode_1.py
+To run this example from terminal use:
+RADICAL_ENMD_VERBOSE=info python replica_exchange_mode_1.py
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -46,6 +49,8 @@ class ReplicaP(Replica):
 
         Arguments:
         my_id - integer representing replica's id
+        new_temperature - initial temperature assigned to this replica 
+        cores - number of cores each replica should use
         """
         self.id = int(my_id)
         self.sid = int(my_id)
@@ -74,23 +79,24 @@ class ReplicaP(Replica):
         super(ReplicaP, self).__init__(my_id)
 
 class RePattern(ReplicaExchange):
+    """In this class are specified details of RE simulation:
+        - initialization of replicas
+        - generation of input files
+        - preparation for MD and exchange steps
+        - implementation of exchange routines
     """
-    """
+
     def __init__(self):
         """Constructor.
-
-        Arguments:
-        inp_file - package input file with Pilot and NAMD related parameters as specified by user 
         """
-        #####
-        # currently all params are hardcoded!!!
-        #####
+
+        # currently all params are hardcoded
         self.inp_basename = "alanin_base.namd"
         self.inp_folder = "namd_inp"
         self.min_temp = 300.0
         self.max_temp = 600.0
         self.cycle_steps = 1000
-        self.replicas = 4
+        self.replicas = 32
         self.work_dir_local = os.getcwd()
         self.nr_cycles = 3    
         self.namd_structure = "alanin.psf"
@@ -103,8 +109,6 @@ class RePattern(ReplicaExchange):
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values
-
-           Changed to use geometrical progression for temperature assignment.
         """
         replicas = []
         N = self.replicas
@@ -119,7 +123,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
-        """
+        """Generates input file for NAMD
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
 
         basename = self.inp_basename[:-5]
@@ -186,7 +193,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
-        """
+        """Specifies input and output files and passes them to NAMD kernel
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
 
         self.build_input_file(replica)
@@ -225,7 +235,11 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """
+        """Prepares md.re_exchange kernel to launch namd_matrix_calculator.py script on target resource 
+        in order to populate columns of swap matrix.
+
+        Arguments:
+        replica - object representing a given replica and it's associated parameters
         """
         # name of the file which contains swap matrix column data for each replica
         matrix_col = "matrix_column_%s_%s.dat" % (replica.id, (replica.cycle-1))
@@ -244,8 +258,13 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas, matrix_columns):
+        """Creates and populates swap matrix which is used to determine exchange probabilities
+
+        Arguments:
+        replicas - a list of replica objects
+        matrix_columns - matrix of energy parameters obtained during the exchange step
         """
-        """
+
         base_name = "matrix_column"
  
         # init matrix
@@ -271,6 +290,13 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
+        """Performs an exchange of temperatures
+
+        Arguments:
+        replica_i - a replica object
+        replica_j - a replica object
+        """
+
         # swap temperatures
         temperature = replica_j.new_temperature
         replica_j.new_temperature = replica_i.new_temperature
@@ -351,7 +377,7 @@ if __name__ == "__main__":
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-        print "RE simulation of three cycles involving four replicas has completed successfully!"
+        print "RE simulation of 3 cycles involving 32 replicas has completed successfully!"
 
     except EnsemblemdError, er:
 
