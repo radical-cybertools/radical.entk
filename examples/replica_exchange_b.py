@@ -18,7 +18,7 @@ probability nor does it affect the choice of replica to perform an exchange with
 exchange with is chosen randomly. Dummy replica parameter named ``parameter`` is exchanged during the
 exchange step. Exchanges of ``parameter`` do not affect next simulation cycle.
 
-.. figure:: images/replica_exchange_pattern.*
+.. figure:: ../images/replica_exchange_pattern.*
    :width: 300pt
    :align: center
    :alt: Replica Exchange Pattern

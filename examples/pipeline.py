@@ -9,7 +9,7 @@ if performed on this file. In the last step ``step_3``, an SHA1 checksum is
 calculated for the analysis result. The results of the frequency analysis and
 the SHA1 checksums are copied back to the machine on which this script runs.
 
-.. figure:: images/pipeline_pattern.*
+.. figure:: ../images/pipeline_pattern.*
    :width: 300pt
    :align: center
    :alt: Pipeline Pattern

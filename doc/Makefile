@@ -48,7 +48,8 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -rf _generated* 
+	rm -rf examples/_generated* 
+	rm -rf kernels/_generated*
 	rm -rf examples.rst kernels.rst
 
 html:

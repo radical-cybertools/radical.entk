@@ -6,7 +6,7 @@ to execute a single "Bag of Ensembles". A Bag of Ensembles is modeled as a
 :class:`.Pipeline` with just one step. The "instances" of the  :class:`.Pipeline`
 corresponds to the number of ensembles in the bag.
 
-.. figure:: images/bag_of_ensembles.*
+.. figure:: ../images/bag_of_ensembles.*
    :width: 300pt
    :align: center
    :alt: Bag of Ensembles

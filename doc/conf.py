@@ -16,6 +16,7 @@ import glob
 import imp
 import sys
 import os
+import shutil
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -25,10 +26,15 @@ print "* Generating Application kernel list: the_kernels.rst"
 
 try:
     os.remove("{0}/the_kernels.rst".format(script_dir))
-    for fl in glob.glob("{0}/kernels/_generated_kernel_*".format(script_dir)):
-        os.remove(fl)
 except OSError:
     pass
+
+try:
+    shutil.rmtree("{0}/kernels/".format(script_dir))
+except OSError, e:
+    pass
+
+os.makedirs("{0}/kernels/".format(script_dir))
 
 with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
     toc.write("***********\n")
@@ -97,11 +103,11 @@ with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
 print "* Generating code examples"
 
 try:
-    for fl in glob.glob("{0}/examples/_generated_example_*".format(script_dir)):
-        os.remove(fl)
+    shutil.rmtree("{0}/examples".format(script_dir))
 except OSError:
     pass
 
+os.makedirs("{0}/examples".format(script_dir))
 
 examples = os.listdir("{0}/../examples/".format(script_dir))
 for example in examples:

@@ -13,7 +13,7 @@ Dummy replica parameter named ``parameter`` is exchanged during the exchange ste
 of ``parameter`` do not affect next simulation cycle. Replica to perform an exchange with is
 chosen randomly.
 
-.. figure:: images/replica_exchange_pattern.*
+.. figure:: ../images/replica_exchange_pattern.*
    :width: 300pt
    :align: center
    :alt: Replica Exchange Pattern

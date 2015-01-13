@@ -8,7 +8,7 @@ pattern to execute 32 iterations of a simulation analysis loop. In the
 checks calculates the Levenshtein distance between  the newly generated files
 and the reference file.
 
-.. figure:: images/simulation_analysis_pattern.*
+.. figure:: ../images/simulation_analysis_pattern.*
    :width: 300pt
    :align: center
    :alt: Simulation-Analysis Pattern
