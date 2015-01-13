@@ -24,7 +24,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None):
+    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None, cleanup=False):
         """Creates a new ExecutionContext instance.
         """
         self._resource_key = resource
@@ -33,6 +33,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._walltime = walltime
         self._username = username
         self._allocation = allocation
+        self._cleanup = cleanup
 
         super(SingleClusterEnvironment, self).__init__()
 
