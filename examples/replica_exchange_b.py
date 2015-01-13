@@ -131,9 +131,35 @@ class RePattern(ReplicaExchange):
         # number of replicas to be launched during the simulation
         self.replicas = 16
         # number of cycles the simulaiton will perform
-        self.nr_cycles = 3     
+        self.nr_cycles = 3    
+
+        self.work_dir_local = os.getcwd() 
+
+        self.shared_urls = []
+        self.shared_files = []
 
         super(RePattern, self).__init__()
+
+    # ------------------------------------------------------------------------------
+    #
+    def prepare_shared_data(self):
+
+        shared_file = 'shared_input.dat'
+        os.system('/bin/echo -n "I am some data... " > %s' % shared_file)
+        self.shared_files.append(shared_file)
+
+        url = 'file://%s/%s' % (self.work_dir_local, shared_file)
+        self.shared_urls.append(url)
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_shared_urls(self):
+        return self.shared_urls
+
+    #-------------------------------------------------------------------------------
+    #
+    def get_shared_files(self):
+        return self.shared_files
 
     # ------------------------------------------------------------------------------
     #
@@ -178,7 +204,7 @@ class RePattern(ReplicaExchange):
 
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
-        k.upload_input_data      = input_name
+        k.upload_input_data      = [input_name]
         k.download_output_data = output_name
 
         replica.cycle = replica.cycle + 1

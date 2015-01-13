@@ -26,6 +26,7 @@ _PLUGIN_INFO = {
 
 _PLUGIN_OPTIONS = []
 
+STAGING_AREA = 'staging_area'
 
 # ------------------------------------------------------------------------------
 #
@@ -73,7 +74,28 @@ class Plugin(PluginBase):
 
         pilot = pmgr.submit_pilots(pdesc)
 
-        unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+        ###
+        pattern.prepare_shared_data()
+
+        shared_input_file_urls = pattern.get_shared_urls()
+        shared_input_files = pattern.get_shared_files()
+
+        for i in range len(shared_input_files):
+
+            sd_pilot = {'source': shared_input_file_urls[i],
+                        'target': 'staging:///%s' % shared_input_files[i],
+                        'action': radical.pilot.TRANSFER
+            }
+
+            pilot.stage_in(sd_pilot)
+
+            sd_shared = {'source': 'staging:///%s' % shared_input_files[i],
+                     'target': shared_input_files[i],
+                     'action': radical.pilot.LINK
+            }
+        ###
+
+        unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_BACKFILLING)
         unit_manager.add_pilots(pilot)
 
         replicas = pattern.get_replicas()
@@ -93,7 +115,7 @@ class Plugin(PluginBase):
                 cu.arguments      = r_kernel.arguments
                 cu.mpi            = r_kernel.uses_mpi
                 cu.cores          = r_kernel.cores
-                cu.input_staging  = r_kernel._cu_def_input_data
+                cu.input_staging  = [sd_shared] + r_kernel._cu_def_input_data
                 cu.output_staging = r_kernel._cu_def_output_data
                 compute_replicas.append( cu )
 
