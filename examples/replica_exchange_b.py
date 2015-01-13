@@ -83,6 +83,7 @@ import sys
 import json
 import math
 import random
+import string
 import optparse
 from os import path
 import radical.pilot
@@ -127,14 +128,14 @@ class RePattern(ReplicaExchange):
         """Constructor
         """
         # hardcoded name of the input file base
-        self.inp_basename = "simula"
+        self.inp_basename = "md_input"
         # number of replicas to be launched during the simulation
         self.replicas = 16
         # number of cycles the simulaiton will perform
         self.nr_cycles = 3    
 
         self.work_dir_local = os.getcwd() 
-
+        self.sh_file = 'shared_md_input.dat'
         self.shared_urls = []
         self.shared_files = []
 
@@ -143,12 +144,18 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_shared_data(self):
+ 
+        fo = open(self.sh_file, "wb")
+        for i in range(1,250):
+            fo.write(str(random.randint(i, 500) + i*2.5) + " ");
+            fo.write(str(random.choice(string.letters)) + " ");
+            if i % 10 == 0:
+                fo.write(str("\n"));
+        fo.close()
 
-        shared_file = 'shared_input.dat'
-        os.system('/bin/echo -n "I am some data... " > %s' % shared_file)
-        self.shared_files.append(shared_file)
+        self.shared_files.append(self.sh_file)
 
-        url = 'file://%s/%s' % (self.work_dir_local, shared_file)
+        url = 'file://%s/%s' % (self.work_dir_local, self.sh_file)
         self.shared_urls.append(url)
 
     #-------------------------------------------------------------------------------
@@ -203,7 +210,9 @@ class RePattern(ReplicaExchange):
         output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
 
         k = Kernel(name="misc.ccount")
-        k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
+        k.arguments            = ["--inputfile=" + input_name + " " + self.sh_file, "--outputfile=" + output_name]
+        # no need to specify shared data here
+        # everything in shared_files list will be staged in
         k.upload_input_data      = [input_name]
         k.download_output_data = output_name
 
