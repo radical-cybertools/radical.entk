@@ -44,7 +44,7 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
 
     #  * ``$SIMULATION_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the simulation step of iteration number X.
     if type == "analysis" and iteration >= 1:
-        for iter in range(1,iteration):
+        for iter in range(1,iteration+1):
             for inst in range(1,sim_width+1):
                 env_vars["SIMULATION_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['simulation_{0}'.format(inst)]
 
@@ -54,14 +54,14 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
             env_vars["PREV_ANALYSIS"] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(instance)]
 
     #  * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
-    if type == "simulation" and iteration > 1:
+    if (type == "simulation" or type == 'analysis') and iteration > 1:
         for inst in range(1, ana_width+1):
             env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(inst)]
 
     #  * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
-    if type == "simulation" and iteration > 1:
+    if (type == "simulation" or type == 'analysis') and iteration > 1:
         for iter in range(1,iteration):
-            for inst in range(1,sim_width+1):
+            for inst in range(1,ana_width+1):
                 env_vars["ANALYSIS_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['analysis_{0}'.format(inst)]
 
     return env_vars
