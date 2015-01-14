@@ -29,7 +29,7 @@ _KERNEL_INFO = {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
-            "executable"    : ".",
+            "executable"    : "lsdmap",
             "uses_mpi"      : True
         },
 

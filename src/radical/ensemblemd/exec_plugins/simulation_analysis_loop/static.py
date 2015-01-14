@@ -34,7 +34,7 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
 
     #  * ``$PREV_SIMULATION`` - References the previous simulation step with the same instance number.
     if sim_width == ana_width:
-        if type == "analysis" and iteration > 1:
+        if type == "analysis":
             env_vars["PREV_SIMULATION"] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(instance)]
 
     #  * ``$PREV_SIMULATION_INSTANCE_Y`` - References instance Y of the previous simulation step.
