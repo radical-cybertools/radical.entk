@@ -3,7 +3,7 @@
 """A kernel that creates a new ASCII file with a given size and name.
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__    = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 

@@ -3,7 +3,7 @@
 """A kernel that creates a new ASCII file with a given size and name.
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__    = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -45,14 +45,14 @@ _KERNEL_INFO = {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
-            "executable"    : ".",
+            "executable"    : "/bin/bash",
             "uses_mpi"      : True
         },
 
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec" : ["module load TACC && module load amber"],
+            "pre_exec" : ["module load TACC","module load amber"],
             "executable" : ["/bin/bash"],
             "uses_mpi"   : True
         },

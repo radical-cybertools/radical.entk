@@ -30,25 +30,25 @@ class SimpleKernelTests(unittest.TestCase):
 
         # Test kernel specifics here:
         k = radical.ensemblemd.Kernel(name="md.amber")
-        k.arguments = ["-1", "-2", "-3"]
+        k.arguments = ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"]
 
         k._bind_to_resource("*")
-        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
-        assert k.arguments == ["-1", "-2", "-3"], k.arguments
-        assert k._cu_def_pre_exec == ["date"], k._cu_def_pre_exec
-        assert k._cu_def_post_exec == ["date"], k._cu_def_post_exec
+        assert k._cu_def_executable == "/bin/bash", k._cu_def_executable
+        assert k.arguments == ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"], k.arguments
+        assert k._cu_def_pre_exec == [], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == [], k._cu_def_post_exec
 
-        k._bind_to_resource("stampede")
-        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
-        assert k.arguments == ["-1", "-2", "-3"], k.arguments
+        k._bind_to_resource("stampede.tacc.utexas.edu")
+        assert k._cu_def_executable == "/bin/bash", k._cu_def_executable
+        assert k.arguments == ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"], k.arguments
         assert k._cu_def_pre_exec == ["module load TACC", "module load amber"], k._cu_def_pre_exec
         assert k._cu_def_post_exec == [], k._cu_def_post_exec
 
-        k._bind_to_resource("archer")
-        assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
-        assert k.arguments == ["-1", "-2", "-3"], k.arguments
-        assert k._cu_def_pre_exec == ["module load packages-archer","module load amber"], k._cu_def_pre_exec
-        assert k._cu_def_post_exec == [], k._cu_def_post_exec
+        #k._bind_to_resource("archer")
+        #assert k._cu_def_executable == "pmemd.MPI", k._cu_def_executable
+        #assert k.arguments == ["-1", "-2", "-3"], k.arguments
+        #assert k._cu_def_pre_exec == ["module load packages-archer","module load amber"], k._cu_def_pre_exec
+        #assert k._cu_def_post_exec == [], k._cu_def_post_exec
 
 
     #-------------------------------------------------------------------------
@@ -61,6 +61,20 @@ class SimpleKernelTests(unittest.TestCase):
         assert type(_kernel) == radical.ensemblemd.kernel_plugins.md.coco.Kernel, _kernel
 
         # Test kernel specifics here:
+        k = radical.ensemblemd.Kernel(name="md.coco")
+        k.arguments = ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"]
+
+        k._bind_to_resource("*")
+        assert k._cu_def_executable == "/bin/bash", k._cu_def_executable
+        assert k.arguments == ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"], k.arguments
+        assert k._cu_def_pre_exec == [], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == [], k._cu_def_post_exec
+
+        k._bind_to_resource("stampede.tacc.utexas.edu")
+        assert k._cu_def_executable == "/bin/bash", k._cu_def_executable
+        assert k.arguments == ["--mininfile=abc", "--mdinfile=def", "--topfile=ghi","--cycle=1"], k.arguments
+        assert k._cu_def_pre_exec == ["module load TACC", "module load amber"], k._cu_def_pre_exec
+        assert k._cu_def_post_exec == [], k._cu_def_post_exec
         pass
 
     #-------------------------------------------------------------------------

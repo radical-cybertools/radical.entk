@@ -4,6 +4,12 @@ This script is an example to use the EnsembleMD Toolkit ``SimulationAnalysis``
 pattern for the gromacs-lsdmap usecase.
 
 
+Run Locally
+^^^^^^^^^^^^
+
+This script cannot be run locally as it requires Gromacs and LSDMap to be present in the target machine.
+
+
 Run Remotely
 ^^^^^^^^^^^^
 
@@ -11,11 +17,11 @@ You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
 simulation instances can run in parallel::
 SingleClusterEnvironment(
-resource="stampede.tacc.utexas.edu",
-cores=16,
-walltime=30,
-username=None, # add your username here
-allocation=None # add your allocation or project id here if required
+resource="stampede.tacc.utexas.edu",        # label of the remote machine
+cores=16,                                   # number of cores requested
+walltime=30,                                # walltime for the request
+username=None,                              # add your username here
+allocation=None                             # add your allocation or project id here if required
 )
 
 'numCUs' is the number of simulation instances per iteration.
@@ -58,7 +64,9 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         function : transfers input files and intermediate executables
 
         pre_grlsd_loop :-
-                Purpose : Transfers files, Split the input file into smaller files to be used by each of the gromacs instances.
+                Purpose : Transfers files, Split the input file into smaller files to be used by each of the
+                            gromacs instances in the first iteration.
+
                 Arguments : --inputfile = file to be split
                             --numCUs    = number of simulation instances/ number of smaller files
         '''
@@ -71,7 +79,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         '''
         function : In iter=1, use the input files from pre_loop, else use the outputs of the analysis stage in the
-        previous iteration.
+        previous iteration. Run gromacs in each instance using these files.
 
         gromacs :-
 
@@ -97,7 +105,8 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
     def analysis_step(self, iteration, instance):
         '''
         function : Merge the results of each of the simulation instances and run LSDMap analysis to generate the
-        new coordinate file to be used by the simulation stage in the next iteration.
+        new coordinate file. Split this new coordinate file into smaller files to be used by the simulation stage
+        in the next iteration.
 
         If a step as multiple kernels (say k1, k2), data generated in k1 is implicitly moved to k2 (if k2 requires).
         Data which needs to be moved between the various steps (pre_loop, simulation_step, analysis_step) needs to
