@@ -27,18 +27,10 @@ _KERNEL_INFO = {
     "machine_configs":
     {
         "*": {
-<<<<<<< HEAD
-            "environment" : {},
-            "pre_exec"    : [],
-            "executable"  : "mdrun",
-            "uses_mpi"    : False,
-            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
-=======
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : ".",
             "uses_mpi"      : True
->>>>>>> usecase/union
         },
 
         "stampede.tacc.utexas.edu":
