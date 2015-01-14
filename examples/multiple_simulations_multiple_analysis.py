@@ -56,8 +56,8 @@ class MSMA(SimulationAnalysisLoop):
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile.dat", "--outputfile=cfreqs.dat"]
-        k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance)
-        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}".format(instance=instance, iteration=iteration)
+        k.link_input_data      = "$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat".format(instance)
+        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}.dat".format(instance=instance, iteration=iteration)
         return k
 
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
         # We set both the the simulation and the analysis step 'instances' to 16. 
         # If they
-        msma = MSMA(iterations=4, simulation_instances=16, analysis_instances=16)
+        msma = MSMA(iterations=2, simulation_instances=8, analysis_instances=8)
 
         cluster.run(msma)
 

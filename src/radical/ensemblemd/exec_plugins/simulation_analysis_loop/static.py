@@ -43,6 +43,10 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
             env_vars["PREV_SIMULATION_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(inst)]
 
     #  * ``$SIMULATION_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the simulation step of iteration number X.
+    if type == "analysis" and iteration >= 1:
+        for iter in range(1,iteration):
+            for inst in range(1,sim_width+1):
+                env_vars["SIMULATION_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['simulation_{0}'.format(inst)]
 
     #  * ``$PREV_ANALYSIS`` - References the previous analysis step with the same instance number.
     if sim_width == ana_width:
@@ -55,6 +59,11 @@ def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, typ
             env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(inst)]
 
     #  * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
+    if type == "simulation" and iteration > 1:
+        for iter in range(1,iteration):
+            for inst in range(1,sim_width+1):
+                env_vars["ANALYSIS_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['analysis_{0}'.format(inst)]
+
     return env_vars
 
 
@@ -185,9 +194,8 @@ class Plugin(PluginBase):
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
 
-                    simulation_list = pattern.simulation_step(iteration=iteration, instance=s_instance)
+                    sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
 
-                    sim_step = simulation_list[1]
                     sim_step._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
@@ -251,7 +259,7 @@ class Plugin(PluginBase):
 
                             env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
                             for var, value in env_vars.iteritems():
-                                cud.ana_step.append("export {var}={value}".format(var=var, value=value))
+                                cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
                             cud.pre_exec.extend(ana_step._cu_def_pre_exec)
                             if cur_kernel > 1:

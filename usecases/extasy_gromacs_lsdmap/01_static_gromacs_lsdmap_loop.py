@@ -85,13 +85,14 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         gromacs = Kernel(name="md.gromacs")
         gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top"]
         gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
+
         if (iteration-1==0):
-            gromacs.link_input_data = gromacs.link_input_data + '$PRE_LOOP/temp/start{0}.gro > start.gro'.format(instance-1)
+            gromacs.link_input_data.append('$PRE_LOOP/temp/start{0}.gro > start.gro'.format(instance-1))
 
         else:
-            gromacs.link_input_data = gromacs.link_input_data + '$ANALYSIS_ITERATION_{0}_INSTANCE_1/temp/start{1}.gro > start.gro'.format(iteration-1,instance-1)
+            gromacs.link_input_data.append('$ANALYSIS_ITERATION_{0}_INSTANCE_1/temp/start{1}.gro > start.gro'.format(iteration-1,instance-1))
 
-        return [gromacs]
+        return gromacs
     
     def analysis_step(self, iteration, instance):
         '''
@@ -129,6 +130,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                             --cycle                 = iteration number
                             --max_dead_neighbors    = max dead neighbors to be considered
                             --max_alive_neighbors   = max alive neighbors to be considered
+                            --numCUs                = number of simulation instances/ number of smaller files
         '''
 
         pre_ana = Kernel(name="md.pre_lsdmap")
@@ -136,7 +138,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         pre_ana.copy_input_data = ["$PRE_LOOP/pre_analyze.py"]
         pre_ana.link_input_data = []
         for i in range(1,num_CUs+1):
-            pre_ana.link_input_data = pre_ana.link_input_data + ["$PREV_SIMULATION_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1)]
+            pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
 
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config=config.ini"]
@@ -145,7 +147,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
-        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py"]
+        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
         post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
                               "--max_dead_neighbors=0","--max_alive_neighbors=10","--numCUs={0}".format(num_CUs)]
         if(iteration%nsave==0):
