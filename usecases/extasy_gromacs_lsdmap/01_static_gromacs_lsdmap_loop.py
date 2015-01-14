@@ -58,30 +58,20 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         function : transfers input files and intermediate executables
 
         pre_grlsd_loop :-
-                Purpose : Transfers files.
-                Arguments : None
+                Purpose : Transfers files, Split the input file into smaller files to be used by each of the gromacs instances.
+                Arguments : --inputfile = file to be split
+                            --numCUs    = number of simulation instances/ number of smaller files
         '''
         k = Kernel(name="md.pre_grlsd_loop")
         k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py','post_analyze.py','select.py','reweighting.py']
+        k.arguments = ["--inputfile=input.gro","--numCUs={0}".format(num_CUs)]
         return k
 
     def simulation_step(self, iteration, instance):
 
         '''
-        function : In iter=1, use the input file from pre_loop, else use the output of the analysis stage in the
-        previous iteration. Split the file into smaller files to be used by each of the gromacs simulation instances.
-
-        If a step as multiple kernels (say k1, k2), data generated in k1 is implicitly moved to k2 (if k2 requires).
-        Data which needs to be moved between the various steps (pre_loop, simulation_step, analysis_step) needs to
-        be mentioned by the user.
-
-        pre_gromacs :-
-
-                Purpose : Split the input file into smaller files to be used by each of the gromacs instances. There is
-                            one instance of pre_gromacs per iteration.
-
-                Arguments : --inputfile = file to be split
-                            --numCUs    = number of simulation instances/ number of smaller files
+        function : In iter=1, use the input files from pre_loop, else use the outputs of the analysis stage in the
+        previous iteration.
 
         gromacs :-
 
@@ -92,24 +82,16 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                             --topol     = topology filename
         '''
 
-        pre_sim = Kernel(name="md.pre_gromacs")
-        if(iteration-1==0):
-            pre_sim.link_input_data = ["$PRE_LOOP/input.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
-        else:
-            if((iteration-1)%nsave==0):
-                pre_sim.upload_input_data = ['backup/iter{0}/out.gro > input{0}.gro'.format(iteration-1)]
-                pre_sim.link_input_data = ['$PRE_LOOP/gro.py']
-            else:
-                pre_sim.link_input_data = ["$PREV_ANALYSIS_INSTANCE_1/out.gro > input{0}.gro".format(iteration-1),"$PRE_LOOP/gro.py"]
-
-        pre_sim.copy_input_data = ["$PRE_LOOP/spliter.py"]
-        pre_sim.arguments = ["--inputfile=input{0}.gro".format(iteration-1),"--numCUs={0}".format(num_CUs)]
-
         gromacs = Kernel(name="md.gromacs")
         gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top"]
         gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
+        if (iteration-1==0):
+            gromacs.link_input_data = gromacs.link_input_data + '$PRE_LOOP/temp/start{0}.gro > start.gro'.format(instance-1)
 
-        return [pre_sim, gromacs]
+        else:
+            gromacs.link_input_data = gromacs.link_input_data + '$ANALYSIS_ITERATION_{0}_INSTANCE_1/temp/start{1}.gro > start.gro'.format(iteration-1,instance-1)
+
+        return [gromacs]
     
     def analysis_step(self, iteration, instance):
         '''
@@ -159,11 +141,13 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config=config.ini"]
         lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
+        if iteration > 1:
+            lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
-        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py"]
+        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py"]
         post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
-                              "--max_dead_neighbors=0","--max_alive_neighbors=10"]
+                              "--max_dead_neighbors=0","--max_alive_neighbors=10","--numCUs={0}".format(num_CUs)]
         if(iteration%nsave==0):
             post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
                                              'weight.w > backup/iter{0}/weight.w'.format(iteration),

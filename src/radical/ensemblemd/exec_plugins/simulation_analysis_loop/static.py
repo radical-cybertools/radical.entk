@@ -180,47 +180,6 @@ class Plugin(PluginBase):
                 working_dirs['iteration_{0}'.format(iteration)] = {}
 
                 ################################################################
-                # EXECUTE PRE-SIMULATION STEP
-                s_units = []
-
-                simulation_list = pattern.simulation_step(iteration=iteration, instance=1)
-
-                pre_sim_step = simulation_list[0]
-                pre_sim_step._bind_to_resource(resource._resource_key)
-
-                cud = radical.pilot.ComputeUnitDescription()
-                cud.pre_exec = []
-
-                env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="simulation")
-                for var, value in env_vars.iteritems():
-                    cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-                cud.pre_exec.extend(pre_sim_step._cu_def_pre_exec)
-
-                cud.executable     = pre_sim_step._cu_def_executable
-                cud.arguments      = pre_sim_step.arguments
-                cud.mpi            = pre_sim_step.uses_mpi
-                cud.input_staging  = pre_sim_step._cu_def_input_data
-                cud.output_staging = pre_sim_step._cu_def_output_data
-                s_units.append(cud)
-                self.get_logger().debug("Created pre_simulation CU: {0}.".format(cud.as_dict()))
-
-                s_cus = umgr.submit_units(s_units)
-
-                self.get_logger().info("Submitted tasks for pre_simulation iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for pre_simulations in iteration {0} to complete.".format(iteration))
-                umgr.wait_units()
-                self.get_logger().info("Pre_simulations in iteration {0} completed.".format(iteration))
-
-                failed_units = ""
-                pre_sim_wd = ""
-                for unit in s_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Pre Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                    else:
-                        pre_sim_wd = saga.Url(unit.working_directory).path
-
-                ################################################################
                 # EXECUTE SIMULATION STEPS
 
                 s_units = []
@@ -239,7 +198,6 @@ class Plugin(PluginBase):
                         cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
                     cud.pre_exec.extend(sim_step._cu_def_pre_exec)
-                    cud.pre_exec.append('ln -s {0}/temp/start{1}.gro start.gro'.format(pre_sim_wd,s_instance-1))
                     cud.executable     = sim_step._cu_def_executable
                     cud.arguments      = sim_step.arguments
                     cud.mpi            = sim_step.uses_mpi
@@ -267,139 +225,102 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 ################################################################
-                # EXECUTE PRE-ANALYSIS STEPS
-
-                a_units = []
-                analysis_list = pattern.analysis_step(iteration=iteration, instance=1)
-                pre_ana_step = analysis_list[0]
-                pre_ana_step._bind_to_resource(resource._resource_key)
-
-                cud = radical.pilot.ComputeUnitDescription()
-                cud.pre_exec = []
-
-                env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                for var, value in env_vars.iteritems():
-                    cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-                cud.pre_exec.extend(pre_ana_step._cu_def_pre_exec)
-
-                cud.executable     = pre_ana_step._cu_def_executable
-                cud.arguments      = pre_ana_step.arguments
-                cud.mpi            = pre_ana_step.uses_mpi
-                cud.input_staging  = pre_ana_step._cu_def_input_data
-                cud.output_staging = pre_ana_step._cu_def_output_data
-
-                a_units.append(cud)
-                self.get_logger().debug("Created pre-analysis CU: {0}.".format(cud.as_dict()))
-
-                a_cus = umgr.submit_units(a_units)
-
-                self.get_logger().info("Submitted tasks for pre-analysis iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for pre-analysis tasks in iteration {0} to complete.".format(iteration))
-                umgr.wait_units()
-                self.get_logger().info("Pre-Analysis in iteration {0} completed.".format(iteration))
-
-                failed_units = ""
-                pre_ana_wd = ""
-                for unit in a_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Pre-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                    else:
-                        pre_ana_wd = saga.Url(unit.working_directory).path
-
-
-                ################################################################
                 # EXECUTE ANALYSIS STEPS
+
                 a_units = []
+                analysis_list = None
                 for a_instance in range(1, pattern._analysis_instances+1):
 
                     analysis_list = pattern.analysis_step(iteration=iteration, instance=a_instance)
-                    analysis_step = analysis_list[1]
-                    analysis_step._bind_to_resource(resource._resource_key)
 
-                    cud = radical.pilot.ComputeUnitDescription()
-                    cud.pre_exec = []
+                    if not isinstance(analysis_list,list):
+                        analysis_list = [analysis_list]
 
-                    env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                    for var, value in env_vars.iteritems():
-                        cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
+                    if len(analysis_list) > 1:
 
-                    cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
-                    cud.pre_exec.append('cp %s/tmpha.gro .'%pre_ana_wd)
-                    if iteration>1:
-                        cud.pre_exec.append('cp {0}/weight.w .'.format(working_dirs['iteration_{0}'.format(iteration-1)]['analysis_1']))
+                        kernel_wd = ""
+                        cur_kernel = 1
 
-                    cud.executable     = analysis_step._cu_def_executable
-                    cud.arguments      = analysis_step.arguments
-                    cud.mpi            = analysis_step.uses_mpi
-                    cud.input_staging  = analysis_step._cu_def_input_data
-                    cud.output_staging = analysis_step._cu_def_output_data
-                    a_units.append(cud)
-                    self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
+                        for ana_step in analysis_list:
 
-                a_cus = umgr.submit_units(a_units)
+                            a_units = []
+                            ana_step._bind_to_resource(resource._resource_key)
 
-                self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
-                umgr.wait_units()
-                self.get_logger().info("Analysis in iteration {0} completed.".format(iteration))
+                            cud = radical.pilot.ComputeUnitDescription()
+                            cud.pre_exec = []
 
-                failed_units = ""
-                ana_wd = ""
-                for unit in a_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                            env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
+                            for var, value in env_vars.iteritems():
+                                cud.ana_step.append("export {var}={value}".format(var=var, value=value))
+
+                            cud.pre_exec.extend(ana_step._cu_def_pre_exec)
+                            if cur_kernel > 1:
+                                cud.pre_exec.append('cp %s/*.* .'%kernel_wd)
+
+                            cud.executable     = ana_step._cu_def_executable
+                            cud.arguments      = ana_step.arguments
+                            cud.mpi            = ana_step.uses_mpi
+                            cud.input_staging  = ana_step._cu_def_input_data
+                            cud.output_staging = ana_step._cu_def_output_data
+
+                            a_units.append(cud)
+                            self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
+
+                            a_cus = umgr.submit_units(a_units)
+
+                            self.get_logger().info("Submitted tasks for analysis iteration {0}/ kernel {1}.".format(iteration,cur_kernel))
+                            self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1} to complete.".format(iteration,cur_kernel))
+                            umgr.wait_units()
+                            self.get_logger().info("Analysis in iteration {0}/kernel {1} completed.".format(iteration,cur_kernel))
+
+                            failed_units = ""
+                            for unit in a_cus:
+                                if unit.state != radical.pilot.DONE:
+                                    failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                                else:
+                                    kernel_wd = saga.Url(unit.working_directory).path
+                                    cur_kernel += 1
+                                    working_dirs['iteration_{0}'.format(iteration)]['analysis_1'] = saga.Url(unit.working_directory).path
+
                     else:
-                        ana_wd = saga.Url(unit.working_directory).path
-                        
-                if len(failed_units) > 0:
-                    raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
+                        analysis_step = analysis_list[0]
+                        analysis_step._bind_to_resource(resource._resource_key)
 
-                ################################################################
-                # EXECUTE POST-ANALYSIS STEPS
+                        cud = radical.pilot.ComputeUnitDescription()
+                        cud.pre_exec = []
+                        env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
+                        for var, value in env_vars.iteritems():
+                            cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
 
-                a_units = []
-                analysis_list = pattern.analysis_step(iteration=iteration, instance=1)
-                post_ana_step = analysis_list[2]
-                post_ana_step._bind_to_resource(resource._resource_key)
+                        cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
 
-                cud = radical.pilot.ComputeUnitDescription()
-                cud.pre_exec = []
+                        cud.executable = analysis_step._cu_def_executable
+                        cud.arguments = analysis_step.arguments
+                        cud.mpi = analysis_step.uses_mpi
+                        cud.input_staging = analysis_step._cu_def_input_data
+                        cud.output_staging = analysis_step._cu_def_output_data
+                        a_units.append(cud)
 
-                env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                for var, value in env_vars.iteritems():
-                    cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
+                        self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
-                cud.pre_exec.extend(post_ana_step._cu_def_pre_exec)
-                cud.pre_exec.extend(['cp %s/tmp.gro .'%pre_ana_wd,'cp %s/out.nn .'%ana_wd,'cp %s/tmpha.ev .'%ana_wd,'cp %s/weight.w .'%ana_wd,'cp %s/lsdmap.log .'%ana_wd])
+                if len(analysis_list)==1:
+                    a_cus = umgr.submit_units(a_units)
 
-                cud.executable     = post_ana_step._cu_def_executable
-                cud.arguments      = post_ana_step.arguments
-                cud.mpi            = post_ana_step.uses_mpi
-                cud.input_staging  = post_ana_step._cu_def_input_data
-                cud.output_staging = post_ana_step._cu_def_output_data
+                    self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
+                    self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
+                    umgr.wait_units()
 
-                a_units.append(cud)
-                self.get_logger().debug("Created post-analysis CU: {0}.".format(cud.as_dict()))
-
-                a_cus = umgr.submit_units(a_units)
-
-                self.get_logger().info("Submitted tasks for post-analysis iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for post-analysis tasks in iteration {0} to complete.".format(iteration))
-                umgr.wait_units()
-                self.get_logger().info("Post-Analysis in iteration {0} completed.".format(iteration))
-
-                failed_units = ""
-                for unit in a_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Post-Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-
-
-                # TODO: ensure working_dir <-> instance mapping
-                i = 0
-                for cu in a_cus:
-                    i += 1
-                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                    failed_units = ""
+                    for unit in a_cus:
+                        if unit.state != radical.pilot.DONE:
+                            failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                        if len(failed_units) > 0:
+                            raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
+                        # TODO: ensure working_dir <-> instance mapping
+                        i = 0
+                        for cu in a_cus:
+                            i += 1
+                            working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
 
         except Exception, ex:

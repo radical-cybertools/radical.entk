@@ -43,6 +43,11 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Max alive neighbors to be considered"
                         },
+                    "--numCUs=":
+                        {
+                            "mandatory": True,
+                            "description": "No. of CUs"
+                        }
                     },
     "machine_configs":
     {
@@ -106,7 +111,7 @@ class Kernel(KernelBase):
         arguments = ['post_analyze.py','{0}'.format(self.get_arg("--num_runs=")),'tmpha.ev','ncopies.nc','tmp.gro'
                      ,'out.nn','weight.w','{0}'.format(self.get_arg("--out="))
                      ,'{0}'.format(self.get_arg("--max_alive_neighbors=")),'{0}'.format(self.get_arg("--max_dead_neighbors="))
-                     ,'input.gro','{0}'.format(self.get_arg("--cycle="))
+                     ,'input.gro','{0}'.format(self.get_arg("--cycle="),'{0}'.format(self.get_arg('--numCUs=')))
                      ]
 
         self._executable  = cfg["executable"]

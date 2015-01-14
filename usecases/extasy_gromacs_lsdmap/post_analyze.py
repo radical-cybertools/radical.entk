@@ -15,9 +15,12 @@ if __name__ =='__main__':
     max_dead_neighbors = int(sys.argv[9])
     md_input_file = sys.argv[10]
     cycle = int(sys.argv[11])
+    numCUs = int(sys.argv[12])
 
     os.system('python select.py %s -s %s -o %s' %(num_runs,evfile,num_clone_files))
     #Update Boltzman weights
 
     os.system('python reweighting.py -c %s -n %s -s %s -w %s -o %s --max_alive_neighbors=%s --max_dead_neighbors=%s' % (md_output_file,nearest_neighbor_file,num_clone_files,w_file,outgrofile_name,max_alive_neighbors,max_dead_neighbors))
+
+    os.system('python spliter.py {0} {1}'.format(numCUs,outgrofile_name))
 
