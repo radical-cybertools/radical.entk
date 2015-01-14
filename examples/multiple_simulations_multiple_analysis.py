@@ -56,7 +56,7 @@ class MSMA(SimulationAnalysisLoop):
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile.dat", "--outputfile=cfreqs.dat"]
-        k.link_input_data      = "$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat".format(instance=instance)
+        k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance=instance)
         k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}.dat".format(instance=instance, iteration=iteration)
         return k
 
