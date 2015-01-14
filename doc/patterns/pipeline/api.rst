@@ -1,6 +1,7 @@
+.. pipeline_api:
 
-API Reference
--------------
+Pipeline API Reference
+----------------------
 
 .. autoclass:: radical.ensemblemd.Pipeline
     :members:

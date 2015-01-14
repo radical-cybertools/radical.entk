@@ -16,7 +16,7 @@ Run Locally
              The format is ``mongodb://hostname:port``. Read more about it
              MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs_pattern>`.
+**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
@@ -52,7 +52,7 @@ all pair instances can run in parallel::
         allocation=None # add your allocation or project id here if required
     )
 
-.. _example_source_allpairs_example:
+.. _example_source_all_pairs:
 
 Example Source
 ^^^^^^^^^^^^^^

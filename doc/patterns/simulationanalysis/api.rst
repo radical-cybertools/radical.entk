@@ -1,6 +1,7 @@
+.. _simulation_analysis_api:
 
-API Reference
--------------
+Simulation Analysis API Reference
+---------------------------------
 
 .. autoclass:: radical.ensemblemd.SimulationAnalysisLoop
     :members:

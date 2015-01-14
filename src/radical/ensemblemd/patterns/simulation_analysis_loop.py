@@ -18,12 +18,12 @@ PATTERN_NAME = "SimulationAnalysisLoop"
 class SimulationAnalysisLoop(ExecutionPattern):
     """ The Simulation-Analysis pattern.
 
-            .. image:: images/simulation_analysis_pattern.*
+            .. image:: ../../images/simulation_analysis_pattern.*
                :width: 300pt
 
         **Data references**:
 
-        The following placeholders can be used to reference the output data 
+        The following placeholders can be used to reference the output data
         generated in previous steps accross different instances:
 
         * ``$PRE_LOOP`` - References the pre_loop step.
@@ -34,8 +34,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
         * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
 
-        For example, to reference the file ``output.dat`` in the output 
-        directory of the previous analysis step with the same instance can be 
+        For example, to reference the file ``output.dat`` in the output
+        directory of the previous analysis step with the same instance can be
         referenced from an analysis step as:
 
         .. code-block:: python
@@ -52,21 +52,21 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #
     def __init__(self, iterations, simulation_instances=1, analysis_instances=1):
         """Creates a new SimulationAnalysisLoop.
- 
+
         **Arguments:**
 
             * **iterations** [`int`]
-              The iterations parameter determines the maximum number of 
-              iterations the simulation-analysis loop is executed. After 
+              The iterations parameter determines the maximum number of
+              iterations the simulation-analysis loop is executed. After
               iterations is reached, the loop terminates and `post_loop` is called.
 
             * **simulation_instances** [`int`]
-              The simulation_instances parameter determines the number of independent 
-              simulation instances launched for each `simulation_step`. 
+              The simulation_instances parameter determines the number of independent
+              simulation instances launched for each `simulation_step`.
 
             * **analysis_instances** [`int`]
-              The analysis_instances parameter determines the number of independent 
-              analysis instances launched for each `analysis_step`. 
+              The analysis_instances parameter determines the number of independent
+              analysis instances launched for each `analysis_step`.
 
         """
         self._iterations = iterations
@@ -74,7 +74,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._analysis_instances = analysis_instances
 
         super(SimulationAnalysisLoop, self).__init__()
-        
+
     #---------------------------------------------------------------------------
     #
     @property
@@ -110,26 +110,26 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     def pre_loop(self):
-        """The :class:`radical.ensemblemd.Kernel` returned by `pre_loop` is 
+        """The :class:`radical.ensemblemd.Kernel` returned by `pre_loop` is
         executed before the main simulation-analysis loop is started.
 
-        It can be used for example to set up structures, initialize 
+        It can be used for example to set up structures, initialize
         experimental environments and so on.
 
         **Returns:**
 
-            Implementations of this method **must** return either a single or a list of  
+            Implementations of this method **must** return either a single or a list of
             :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
         raise NotImplementedError(
             method_name="pre_loop",
-            class_name=type(self)) 
+            class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
     def simulation_step(self, iteration, instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `simulation_step` 
+        """The :class:`radical.ensemblemd.Kernel` returned by `simulation_step`
         is executed once per loop iteration before `analysis_step`.
 
         **Arguments:**
@@ -139,13 +139,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
               current iteration of the simulation-analysis loop.
 
             * **instance** [`int`]
-              The instance parameter is a positive integer and references the 
+              The instance parameter is a positive integer and references the
               instance of the simulation step, which is in the range
               [1 .. simulation_instances].
 
         **Returns:**
 
-            Implementations of this method **must** return either a single or a list of 
+            Implementations of this method **must** return either a single or a list of
             :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
@@ -156,7 +156,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     def analysis_step(self, iteration,instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `analysis_step` 
+        """The :class:`radical.ensemblemd.Kernel` returned by `analysis_step`
         is executed once per loop iteration after `simulation_step`.
 
         **Arguments:**
@@ -166,13 +166,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
               current iteration of the simulation-analysis loop.
 
             * **instance** [`int`]
-              The instance parameter is a positive integer and references the 
+              The instance parameter is a positive integer and references the
               instance of the simulation step, which is in the range
               [1 .. simulation_instances].
 
         **Returns:**
 
-            Implementations of this method **must** return either a single or a list of 
+            Implementations of this method **must** return either a single or a list of
             :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
@@ -183,15 +183,15 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     def post_loop(self):
-        """The :class:`radical.ensemblemd.Kernel` returned by `post_loop` is 
+        """The :class:`radical.ensemblemd.Kernel` returned by `post_loop` is
         executed after the main simulation-analysis loop has finished.
 
-        It can be used for example to set up structures, initialize 
+        It can be used for example to set up structures, initialize
         experimental environments and so on.
 
         **Returns:**
 
-            Implementations of this method **must** return a single 
+            Implementations of this method **must** return a single
             :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
 
         """

@@ -18,7 +18,7 @@ PATTERN_NAME = "Pipeline"
 class Pipeline(ExecutionPattern):
     """ The pipeline pattern.
 
-            .. image:: images/pipeline_pattern.*
+            .. image:: ../../images/pipeline_pattern.*
                :width: 300pt
     """
 

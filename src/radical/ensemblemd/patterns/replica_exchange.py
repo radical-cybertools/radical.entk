@@ -17,7 +17,7 @@ PATTERN_NAME = "ReplicaExchange"
 class Replica(object):
     """Class representing replica and it's associated data.
 
-    This will have to be extended by users implementing RE pattern for 
+    This will have to be extended by users implementing RE pattern for
     a particular kernel and execution pattern
     """
     def __init__(self, my_id):
@@ -34,7 +34,7 @@ class Replica(object):
 class ReplicaExchange(ExecutionPattern):
     """ Replica Exchange pattern.
 
-            .. image:: images/replica_exchange_pattern.*
+            .. image:: ../../images/replica_exchange_pattern.*
                :width: 300pt
     """
     def __init__(self):
@@ -82,10 +82,10 @@ class ReplicaExchange(ExecutionPattern):
 
         Arguments:
         replicas - list of Replica objects
-        matrix_columns - matrix of energy parameters obtained during the exchange step 
+        matrix_columns - matrix of energy parameters obtained during the exchange step
 
         Returns:
-        swap_matrix - 2D list of lists of dimension-less energies, where each column is a replica 
+        swap_matrix - 2D list of lists of dimension-less energies, where each column is a replica
         and each row is a state
         """
 
@@ -118,7 +118,7 @@ class ReplicaExchange(ExecutionPattern):
     #
     def prepare_replica_for_md(self, replica):
         """Creates a list of radical.ensemblemd.Kernel objects for MD simulation step. Here are
-        specified input/output files to be transferred to/from target resource and other details 
+        specified input/output files to be transferred to/from target resource and other details
         associated with execution of MD step.
 
         Arguments:
@@ -134,7 +134,7 @@ class ReplicaExchange(ExecutionPattern):
     #
     def prepare_replica_for_exchange(self, replica):
         """Creates a list of radical.ensemblemd.Kernel objects for exchange step to be
-        performed on a target resource. 
+        performed on a target resource.
 
         Arguments:
         replica - Replica object
@@ -144,7 +144,7 @@ class ReplicaExchange(ExecutionPattern):
         """
 
         raise NotImplementedError(method_name="prepare_replica_for_exchange", class_name=type(self))
-    
+
     #--------------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
@@ -153,12 +153,10 @@ class ReplicaExchange(ExecutionPattern):
         Arguments:
         r_i - given replica for which is found partner replica
         replicas - list of Replica objects
-        swap_matrix - matrix of dimension-less energies, where each column is a replica 
+        swap_matrix - matrix of dimension-less energies, where each column is a replica
         and each row is a state
 
         Returns:
         r_j - replica to exchnage parameters with
         """
         raise NotImplementedError(method_name="exchange", class_name=type(self))
-    
-        

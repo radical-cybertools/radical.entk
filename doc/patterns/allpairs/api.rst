@@ -1,6 +1,7 @@
+.. _all_pairs_api:
 
-API Reference
--------------
+AllPairs API Reference
+----------------------
 
 .. autoclass:: radical.ensemblemd.AllPairs
     :members:

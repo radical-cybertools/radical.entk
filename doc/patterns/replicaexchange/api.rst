@@ -1,6 +1,7 @@
+.. _replica_exchange_api:
 
-API Reference
--------------
+Replica Exchange API Reference
+------------------------------
 
 .. autoclass:: radical.ensemblemd.ReplicaExchange
     :members:
