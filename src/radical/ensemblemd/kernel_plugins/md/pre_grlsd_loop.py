@@ -16,45 +16,38 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.lsdmap",
-    "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--config=":
+    "name":         "md.pre_grlsd_loop",
+    "description":  "Splits the inputfile into 'numCUs' number of smaller files ",
+    "arguments":   {"--inputfile=":
                         {
                             "mandatory": True,
-                            "description": "Config filename"
+                            "description": "Input filename"
                         },
+                    "--numCUs=":
+                        {
+                            "mandatory": True,
+                            "description": "No. of files to be generated"
+                        }
                     },
     "machine_configs":
     {
         "*": {
-<<<<<<< HEAD
-            "environment" : {},
-            "pre_exec"    : [],
-            "executable"  : "mdrun",
-            "uses_mpi"    : False,
-            "test_cmd"    : "python -c \"import lsdmap; print lsdmap\""
-=======
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : ".",
-            "uses_mpi"      : True
->>>>>>> usecase/union
+            "uses_mpi"      : False
         },
-
-        "stampede.tacc.utexas.edu":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
-            "executable" : ["lsdmap"],
-            "uses_mpi"   : True
+        "stampede.tacc.utexas.edu": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["module load python"],
+            "executable"    : "python",
+            "uses_mpi"      : False
         },
-
-        "archer.ac.uk":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable" : ["python"],
-            "uses_mpi"   : True
+        "archer.ac.uk": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["module load python"],
+            "executable"    : "python",
+            "uses_mpi"      : False
         }
     }
 }
@@ -91,10 +84,13 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['-f','{0}'.format(self.get_arg("--config=")),'-c','tmpha.gro','-n','out.nn','-w','weight.w']
+        arguments = ['spliter.py','{0}'.format(self.get_arg("--numCUs=")), '{0}'.format(self.get_arg("--inputfile="))]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
+        self._post_exec   = None
+
+    #Can I just split the file locally without doing any of the above RP stuff ??

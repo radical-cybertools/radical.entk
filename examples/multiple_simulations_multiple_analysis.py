@@ -21,7 +21,7 @@ Example Source
 ^^^^^^^^^^^^^^
 """
 
-__author__       = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
 __example_name__ = "Multiple Simulations Instances, Multiple Analysis Instances Example (MSMA)"
@@ -56,8 +56,8 @@ class MSMA(SimulationAnalysisLoop):
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile.dat", "--outputfile=cfreqs.dat"]
-        k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance)
-        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}".format(instance=instance, iteration=iteration)
+        k.link_input_data      = "$PREV_SIMULATION/asciifile.dat".format(instance=instance)
+        k.download_output_data = "cfreqs.dat > cfreqs-{iteration}-{instance}.dat".format(instance=instance, iteration=iteration)
         return k
 
 
@@ -76,9 +76,8 @@ if __name__ == "__main__":
             allocation=None
         )
 
-        # We set both the the simulation and the analysis step 'instances' to 16.
-        # If they
-        msma = MSMA(iterations=4, simulation_instances=16, analysis_instances=16)
+        # We set both the the simulation and the analysis step 'instances' to 8.
+        msma = MSMA(iterations=2, simulation_instances=8, analysis_instances=8)
 
         cluster.run(msma)
 

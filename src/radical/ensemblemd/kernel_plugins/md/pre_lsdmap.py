@@ -16,13 +16,13 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.pre_gromacs",
+    "name":         "md.pre_lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--inputfile=":
+    "arguments":   {"--numCUs=":
                         {
-                        "mandatory": True,
-                        "description": "Input filename"
-                        },
+                            "mandatory": True,
+                            "description": "No. of CUs"
+                        }
                     },
     "machine_configs":
     {
@@ -30,7 +30,23 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : ".",
-            "uses_mpi"      : False
+            "uses_mpi"      : True
+        },
+
+        "stampede.tacc.utexas.edu":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load gromacs python mpi4py"],
+            "executable" : ["/bin/bash"],
+            "uses_mpi"   : True
+        },
+
+        "archer.ac.uk":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
+            "executable" : ["/bin/bash"],
+            "uses_mpi"   : True
         }
     }
 }
@@ -67,14 +83,10 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        executable = "/bin/bash"
-        arguments = ['-l', '-c', '{0} file_splitter.sh {1}'.format(cfg["executable"], self.get_arg("--inputfile="))]
+        arguments = ['-l','-c','python pre_analyze.py {0} tmp.gro . && echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro'.format(self.get_arg("--numCUs="))]
 
-        self._executable  = executable
+        self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None
-
-    #Can I just split the file locally without doing any of the above RP stuff ??
