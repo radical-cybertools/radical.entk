@@ -45,7 +45,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         if((iteration-1)==0):
             k.link_input_data = k.link_input_data + ['$PRE_LOOP/penta.crd > min1.crd']
         else:
-            k.link_input_data = k.link_input_data + ['$PREV_ANALYSIS_INSTANCE_1/min%s%s.crd > min%s.crd'%(iteration,instance-1,iteration)]
+            k.link_input_data = k.link_input_data + ['$PREV_ANALYSIS_INSTANCE_1/min{0}{1}.crd > min{2}.crd'.format(iteration-1,instance-1,iteration)]
         if(iteration%nsave==0):
             k.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
         return k
@@ -59,14 +59,10 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         k = Kernel(name="md.coco")
         k.arguments = ["--grid=5","--dims=3","--frontpoints=%s"%num_sims,"--topfile=penta.top","--mdfile=*.ncdf","--output=pentaopt%s"%(iteration),"--cycle=%s"%(iteration)]
         k.link_input_data = ['$PRE_LOOP/penta.top','$PRE_LOOP/postexec.py']
-        for iter in range(1,iteration):
+        for iter in range(1,iteration+1):
             for i in range(1,num_sims+1):
                 k.link_input_data = k.link_input_data + ['$SIMULATION_ITERATION_{0}_INSTANCE_{1}/md{0}.ncdf > md_{0}_{1}.ncdf'.format(iter,i)]
         return k
-
-
-
-
 
     def post_loop(self):
         pass

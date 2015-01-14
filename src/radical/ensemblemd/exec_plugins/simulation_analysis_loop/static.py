@@ -309,7 +309,7 @@ class Plugin(PluginBase):
                         cud.output_staging = analysis_step._cu_def_output_data
                         a_units.append(cud)
 
-                        self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
+                        self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
 
                 if len(analysis_list)==1:
                     a_cus = umgr.submit_units(a_units)
@@ -317,13 +317,14 @@ class Plugin(PluginBase):
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
                     umgr.wait_units()
+                    self.get_logger().info("Analysis in iteration {0} completed.".format(iteration))
+
 
                     failed_units = ""
                     for unit in a_cus:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                        if len(failed_units) > 0:
-                            raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
+
                         # TODO: ensure working_dir <-> instance mapping
                         i = 0
                         for cu in a_cus:
