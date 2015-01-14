@@ -143,6 +143,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config=config.ini"]
         lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
+        k.cores = 16
         if iteration > 1:
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
@@ -168,7 +169,7 @@ if __name__ == "__main__":
       cluster = SingleClusterEnvironment(
         resource="stampede.tacc.utexas.edu",
         cores=16,
-        walltime=15,
+        walltime=30,
         username='vivek91',
         allocation='TG-MCB090174'
       )

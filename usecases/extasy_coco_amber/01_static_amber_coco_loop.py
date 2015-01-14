@@ -59,6 +59,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         k = Kernel(name="md.coco")
         k.arguments = ["--grid=5","--dims=3","--frontpoints=%s"%num_sims,"--topfile=penta.top","--mdfile=*.ncdf","--output=pentaopt%s"%(iteration),"--cycle=%s"%(iteration)]
         k.link_input_data = ['$PRE_LOOP/penta.top','$PRE_LOOP/postexec.py']
+        k.cores = 16
         for iter in range(1,iteration+1):
             for i in range(1,num_sims+1):
                 k.link_input_data = k.link_input_data + ['$SIMULATION_ITERATION_{0}_INSTANCE_{1}/md{0}.ncdf > md_{0}_{1}.ncdf'.format(iter,i)]
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="stampede.tacc.utexas.edu",
             cores=16,
-            walltime=15,
+            walltime=30,
             username = 'vivek91',
             allocation = 'TG-MCB090174'
         )

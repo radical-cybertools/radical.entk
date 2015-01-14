@@ -21,7 +21,7 @@ Example Source
 ^^^^^^^^^^^^^^
 """
 
-__author__       = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
 __example_name__ = "Multiple Simulations Instances, Multiple Analysis Instances (MSMA)"
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             allocation=None
         )
 
-        # We set both the the simulation and the analysis step 'instances' to 16. 
+        # We set both the the simulation and the analysis step 'instances' to 8.
         # If they
         msma = MSMA(iterations=2, simulation_instances=8, analysis_instances=8)
 

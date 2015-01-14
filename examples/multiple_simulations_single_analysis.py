@@ -27,7 +27,7 @@ Example Source
 ^^^^^^^^^^^^^^
 """
 
-__author__       = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
 __example_name__ = "Multiple Simulations Instances, Single Analysis Instance (MSSA)"
