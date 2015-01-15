@@ -152,7 +152,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config=config.ini"]
         lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
-        k.cores = 16
+        lsdmap.cores = 16
         if iteration > 1:
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
