@@ -91,7 +91,7 @@ class RandomAP(AllPairs):
         # a element of the set.
         print "Creating Element {0}".format(element)
         k = Kernel(name = "misc.mkfile")
-        k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(element)]
+        k.arguments = ["--size=10000", "--filename=asciifile-{0}.dat".format(element)]
         return k
 
     def element_comparison(self, element1, element2):
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         )
 
         # For example the set has 5 elements.
-        ElementsSet = range(1,11)
+        ElementsSet = range(1,6)
         randAP = RandomAP(setelements=ElementsSet)
 
         cluster.run(randAP)
