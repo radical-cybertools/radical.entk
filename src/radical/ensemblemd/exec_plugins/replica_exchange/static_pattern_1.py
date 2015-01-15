@@ -14,6 +14,7 @@ import os
 import random
 import radical.pilot
 
+from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
 # ------------------------------------------------------------------------------
@@ -41,7 +42,13 @@ class Plugin(PluginBase):
     def verify_pattern(self, pattern):
         """
         """
-        self.get_logger().info("Pattern workload verification passed.")
+        # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
+        # FRUSTARTION AT THE NED
+        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+
+        if do_profile != '0':
+            # add profiling code here
+            raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
 
     # --------------------------------------------------------------------------
     #

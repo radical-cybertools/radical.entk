@@ -7,6 +7,7 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import os 
 import time
 import saga
 import radical.pilot
@@ -79,7 +80,14 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern):
-        self.get_logger().info("Verifying pattern...")
+
+        # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
+        # FRUSTARTION AT THE NED
+        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+
+        if do_profile != '0':
+            # add profiling code here
+            raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
 
     # --------------------------------------------------------------------------
     #
@@ -339,3 +347,13 @@ class Plugin(PluginBase):
         finally:
             self.get_logger().info("Deallocating resource.")
             session.close()
+
+        # -----------------------------------------------------------------
+        # At this point, we have executed the pattern succesfully. Now,
+        # if profiling is enabled, we can write the profiling data to
+        # a file.
+        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+
+        if do_profile != '0':
+            # add profiling code here
+            pass
