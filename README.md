@@ -25,7 +25,7 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 
 * Vivek Balasubramanian
 * Ioannis Paraskevakos
-* Mark Santcross
+* Mark Santcroos
 * Antons Treikalis
 * Ole Weidner
 * Nikhil Shenoy
