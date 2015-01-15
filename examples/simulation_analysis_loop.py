@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.
-        for it in range(1, randomsa.maxiterations+1):
+        for it in range(1, randomsa.iterations+1):
             print "\nIteration {0}".format(it)
             ldists = []
             for an in range(1, randomsa.analysis_instances+1):
