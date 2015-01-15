@@ -36,3 +36,13 @@ class SimulationAnalysisLoopPatternTestCases(unittest.TestCase):
 
         dp = SimulationAnalysisLoop(iterations=1)
         assert dp.name == "SimulationAnalysisLoop"
+
+    #-------------------------------------------------------------------------
+    #
+    def test__simulation_analysis_loop_pattern_api(self):
+        """ Tests the Pipeline execution pattern API.
+        """
+        from radical.ensemblemd import SimulationAnalysisLoop
+
+        dp = SimulationAnalysisLoop(iterations=1)
+        assert dp.name == "SimulationAnalysisLoop"

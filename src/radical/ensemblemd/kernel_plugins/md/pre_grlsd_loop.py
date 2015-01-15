@@ -3,7 +3,7 @@
 """A kernel that creates a new ASCII file with a given size and name.
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__    = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -16,13 +16,18 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.pre_gromacs",
-    "description":  "Creates a new file of given size and fills it with random ASCII characters.",
+    "name":         "md.pre_grlsd_loop",
+    "description":  "Splits the inputfile into 'numCUs' number of smaller files ",
     "arguments":   {"--inputfile=":
                         {
-                        "mandatory": True,
-                        "description": "Input filename"
+                            "mandatory": True,
+                            "description": "Input filename"
                         },
+                    "--numCUs=":
+                        {
+                            "mandatory": True,
+                            "description": "No. of files to be generated"
+                        }
                     },
     "machine_configs":
     {
@@ -30,6 +35,18 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : ".",
+            "uses_mpi"      : False
+        },
+        "stampede.tacc.utexas.edu": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["module load python"],
+            "executable"    : "python",
+            "uses_mpi"      : False
+        },
+        "archer.ac.uk": {
+            "environment"   : {"FOO": "bar"},
+            "pre_exec"      : ["module load python"],
+            "executable"    : "python",
             "uses_mpi"      : False
         }
     }
@@ -67,10 +84,9 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        executable = "/bin/bash"
-        arguments = ['-l', '-c', '{0} file_splitter.sh {1}'.format(cfg["executable"], self.get_arg("--inputfile="))]
+        arguments = ['spliter.py','{0}'.format(self.get_arg("--numCUs=")), '{0}'.format(self.get_arg("--inputfile="))]
 
-        self._executable  = executable
+        self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]

@@ -1,0 +1,18 @@
+Basic minimisation, weakly restraining backbone
+ &cntrl
+   imin=1, maxcyc=500,
+   ntpr=50,
+   ntr=1,
+   ntb=0, cut=25.0, igb=2, 
+ &end
+Atoms to be restrained
+0.1
+FIND
+CA * * *
+N * * *
+C * * *
+O * * *
+SEARCH
+RES 1 999
+END
+END

@@ -16,36 +16,36 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "md.lsdmap",
+    "name":         "md.pre_lsdmap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--config=":
+    "arguments":   {"--numCUs=":
                         {
                             "mandatory": True,
-                            "description": "Config filename"
-                        },
+                            "description": "No. of CUs"
+                        }
                     },
     "machine_configs":
     {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
-            "executable"    : "lsdmap",
+            "executable"    : ".",
             "uses_mpi"      : True
         },
 
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
-            "executable" : ["lsdmap"],
+            "pre_exec" : ["module load gromacs python mpi4py"],
+            "executable" : ["/bin/bash"],
             "uses_mpi"   : True
         },
 
         "archer.ac.uk":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable" : ["python"],
+            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
+            "executable" : ["/bin/bash"],
             "uses_mpi"   : True
         }
     }
@@ -83,7 +83,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['-f','{0}'.format(self.get_arg("--config=")),'-c','tmpha.gro','-n','out.nn','-w','weight.w']
+        arguments = ['-l','-c','python pre_analyze.py {0} tmp.gro . && echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro'.format(self.get_arg("--numCUs="))]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
