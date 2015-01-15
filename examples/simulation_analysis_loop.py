@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16.
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(iterations=8, simulation_instances=16, analysis_instances=16)
+        randomsa = RandomSA(maxiterations=4, simulation_instances=16, analysis_instances=16)
 
         cluster.run(randomsa)
 
