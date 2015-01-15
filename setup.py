@@ -80,7 +80,7 @@ short_version, long_version = get_version()
 
 setup_args = {
     'name'             : 'radical.ensemblemd',
-    'version'          : open ('{0}/src/radical/ensemblemd/VERSION'.format(srcroot), 'r').readline(),
+    'version'          : open ('{0}/src/radical/ensemblemd/VERSION'.format(srcroot), 'r').readline().rstrip(),
     'description'      : "Radical Ensemble Molecular Dynamics (MD) Toolkit.",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
