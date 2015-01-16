@@ -88,14 +88,14 @@ class Plugin(PluginBase):
         # performance data structure
         dictionary = {}
 
-        for i in range(pattern.nr_cycles):
+        for c in range(pattern.nr_cycles):
             # submitted_replicas = []
-            dictionary["cycle_{0}".format(i+1)] = {}
+            dictionary["cycle_{0}".format(c+1)] = {}
 
             for r in replicas:
 
-                dictionary["cycle_{0}".format(i+1)]["replica_{0}".format(r.id)] = {}
-                current_entry = dictionary["cycle_{0}".format(i+1)]["replica_{0}".format(r.id)]
+                dictionary["cycle_{0}".format(c+1)]["replica_{0}".format(r.id)] = {}
+                current_entry = dictionary["cycle_{0}".format(c+1)]["replica_{0}".format(r.id)]
 
                 self.get_logger().info("Building input files for replica %d" % r.id)
                 pattern.build_input_file(r)
@@ -119,7 +119,7 @@ class Plugin(PluginBase):
                 # submitted_replicas.append(sub_replica)
 
                 replica_key = "replica_%s" % r.id
-                cycle_key = "cycle_%s" % (i+1)
+                cycle_key = "cycle_%s" % (c+1)
                 dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
                 
             self.get_logger().info("Performing MD step for replicas")
@@ -127,7 +127,7 @@ class Plugin(PluginBase):
 
             unit_manager.wait_units()
 
-            if (i < (pattern.nr_cycles-1)):
+            if (c < (pattern.nr_cycles-1)):
 
                 # computing swap matrix
                 self.get_logger().info("Computing swap matrix")
@@ -154,7 +154,7 @@ class Plugin(PluginBase):
             with open(outfile, 'w+') as f:
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "cu_id; start_time; stop_time; replica; cycle"
+                head = "cu_id; start_time; stop_time; cycle; replica_id"
                 f.write("{row}\n".format(row=head))
 
                 for cycle in dictionary.keys():
