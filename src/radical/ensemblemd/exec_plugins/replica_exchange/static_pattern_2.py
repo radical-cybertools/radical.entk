@@ -172,6 +172,36 @@ class Plugin(PluginBase):
                         # swap parameters
                         pattern.perform_swap(r_i, r_j)
 
+        # --------------------------------------------------------------------------
+        # If profiling is enabled, we write the profiling data to a file
+
+        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
+
+        if do_profile != '0':
+
+            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
+            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
+
+            with open(outfile, 'w+') as f:
+                # General format of a profiling file is row based and follows the
+                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
+                head = "task; start_time; stop_time; step; iteration"
+                f.write("{row}\n".format(row=head))
+
+                for step in journal.keys():
+                    for iteration in journal[step].keys():
+                        data = journal[step][iteration]
+                        cu = data["compute_unit"]
+
+                        row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                            uid=cu.uid,
+                            start_time=cu.start_time,
+                            stop_time=cu.stop_time,
+                            tags="{step}; {iteration}".format(step=step.split('_')[1], iteration=iteration.split('_')[1])
+                        )
+                        f.write("{row}\n".format(row=row))
+        #---------------------------------------------------------------------------
+        
         self.get_logger().info("Replica Exchange simulation finished successfully!")
 
         self.get_logger().info("closing session")
