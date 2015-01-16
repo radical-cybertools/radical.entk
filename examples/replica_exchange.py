@@ -4,11 +4,11 @@
 This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
 Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
-Firstly, for each replica is generated dummy ``simula_x_y.md``
+Firstly, for each replica is generated dummy ``md_input_x_y.md``
 input file. Each of these files contains 500 randomly generated numbers. As MD kernel in this example
 is used ``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
-As input file for this kernel is supplied previously generated ``simula_x_y.md`` file. ``misc.ccount``
-kernel produces ``simula_x_y.out`` file, which is transferred to current working directory.
+As input file for this kernel is supplied previously generated ``md_input_x_y.md`` file. ``misc.ccount``
+kernel produces ``md_input_x_y.out`` file, which is transferred to current working directory.
 Dummy replica parameter named ``parameter`` is exchanged during the exchange step. Exchanges
 of ``parameter`` do not affect next simulation cycle. Replica to perform an exchange with is
 chosen randomly.
@@ -121,7 +121,7 @@ class RePattern(ReplicaExchange):
         """Constructor
         """
         # hardcoded name of the input file base
-        self.inp_basename = "simula"
+        self.inp_basename = "md_input"
         # number of replicas to be launched during the simulation
         self.replicas = 16
         # number of cycles the simulaiton will perform
@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
         print "RE simulation finished!"
         print "Simulation performed 3 cycles for 16 replicas, so in your working directory you should"
-        print "have 48 simula_x_y.md files and 48 simula_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
+        print "have 48 md_input_x_y.md files and 48 md_input_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
         print "where .md file is replica input file and .out is output providing number of occurrences"
         print "of each character. \n"
 
