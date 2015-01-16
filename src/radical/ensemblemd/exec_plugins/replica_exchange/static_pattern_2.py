@@ -12,6 +12,7 @@ __license__   = "MIT"
 
 import os
 import random
+import datetime
 import radical.pilot
 
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
@@ -107,12 +108,20 @@ class Plugin(PluginBase):
 
         replicas = pattern.get_replicas()
 
-        for i in range(pattern.nr_cycles):
-            compute_replicas = []
+        # performance data structure
+        dictionary = {}
+    
+        for c in range(pattern.nr_cycles):
+            # 
+            dictionary["cycle_{0}".format(c+1)] = {}
             for r in replicas:
-                self.get_logger().info("Cycle %d: Building input files for replica %d" % ((i+1), r.id) )
+
+                dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)] = {}
+                current_entry = dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)]
+
+                self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c+1), r.id) )
                 pattern.build_input_file(r)
-                self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((i+1), r.id) )
+                self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c+1), r.id) )
                 r_kernel = pattern.prepare_replica_for_md(r)
                 r_kernel._bind_to_resource(resource._resource_key)
 
@@ -124,18 +133,29 @@ class Plugin(PluginBase):
                 cu.cores          = r_kernel.cores
                 cu.input_staging  = [sd_shared] + r_kernel._cu_def_input_data
                 cu.output_staging = r_kernel._cu_def_output_data
-                compute_replicas.append( cu )
 
-            self.get_logger().info("Cycle %d: Performing MD step for replicas" % (i+1) )
-            submitted_replicas = unit_manager.submit_units(compute_replicas)
+                current_entry["unit_description"] = cu
+                current_entry["compute_unit"] = None
+
+                sub_replica = unit_manager.submit_units(cu)
+                
+                replica_key = "replica.md_%s" % r.id
+                cycle_key = "cycle_%s" % (c+1)
+                dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
+
+            self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c+1) )
             unit_manager.wait_units()
 
-            if (i < (pattern.nr_cycles-1)):
+            if (c < (pattern.nr_cycles-1)):
 
+                submitted_replicas = []
                 # computing swap matrix
-                exchange_replicas = []
                 for r in replicas:
-                    self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((i+1), r.id) )
+
+                    dictionary["cycle_{0}".format(c+1)]["replica.ex_{0}".format(r.id)] = {}
+                    current_entry = dictionary["cycle_{0}".format(c+1)]["replica.ex_{0}".format(r.id)]
+
+                    self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c+1), r.id) )
                     ex_kernel = pattern.prepare_replica_for_exchange(r)
                     ex_kernel._bind_to_resource(resource._resource_key)
 
@@ -148,10 +168,17 @@ class Plugin(PluginBase):
                     cu.input_staging  = ex_kernel._cu_def_input_data
                     cu.output_staging = ex_kernel._cu_def_output_data
 
-                    exchange_replicas.append( cu )
+                    current_entry["unit_description"] = cu
+                    current_entry["compute_unit"] = None
+
+                    sub_replica = unit_manager.submit_units(cu)
+                    submitted_replicas.append(sub_replica)
+
+                    replica_key = "replica.ex_%s" % r.id
+                    cycle_key = "cycle_%s" % (c+1)
+                    dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
                 self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
-                submitted_replicas = unit_manager.submit_units(exchange_replicas)
                 unit_manager.wait_units()
 
                 matrix_columns = []
@@ -161,7 +188,7 @@ class Plugin(PluginBase):
                     matrix_columns.append(data)
 
                 # computing swap matrix
-                self.get_logger().info("Cycle %d: Composing swap matrix" % (i+1) )
+                self.get_logger().info("Cycle %d: Composing swap matrix" % (c+1) )
                 swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
 
                 # this is actual exchange
@@ -185,21 +212,42 @@ class Plugin(PluginBase):
             with open(outfile, 'w+') as f:
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; step; iteration"
+                head = "cu_id; start_time; stop_time; cycle; replica_md"
                 f.write("{row}\n".format(row=head))
 
-                for step in journal.keys():
-                    for iteration in journal[step].keys():
-                        data = journal[step][iteration]
-                        cu = data["compute_unit"]
+                # writing MD times
+                for cycle in dictionary.keys():
+                    for replica in dictionary[cycle].keys():
+                        if replica.startswith('replica.md'):
+                            data = dictionary[cycle][replica]
+                            cu = data["compute_unit"]
 
-                        row = "{uid}; {start_time}; {stop_time}; {tags}".format(
-                            uid=cu.uid,
-                            start_time=cu.start_time,
-                            stop_time=cu.stop_time,
-                            tags="{step}; {iteration}".format(step=step.split('_')[1], iteration=iteration.split('_')[1])
-                        )
-                        f.write("{row}\n".format(row=row))
+                            row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                                uid=cu.uid,
+                                start_time=cu.start_time,
+                                stop_time=cu.stop_time,
+                                tags="{cycle}; {replica}".format(cycle=cycle.split('_')[1], replica=replica.split('_')[1])
+                            )
+                            f.write("{row}\n".format(row=row))
+
+                head = "cu_id; start_time; stop_time; cycle; replica_ex"
+                f.write("{row}\n".format(row=head))
+
+                # writing exchange times
+                for cycle in dictionary.keys():
+                    for replica in dictionary[cycle].keys():
+                        if replica.startswith('replica.ex'):
+                            data = dictionary[cycle][replica]
+                            cu = data["compute_unit"]
+
+                            row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                                uid=cu.uid,
+                                start_time=cu.start_time,
+                                stop_time=cu.stop_time,
+                                tags="{cycle}; {replica}".format(cycle=cycle.split('_')[1], replica=replica.split('_')[1])
+                            )
+                            f.write("{row}\n".format(row=row))
+
         #---------------------------------------------------------------------------
         
         self.get_logger().info("Replica Exchange simulation finished successfully!")
