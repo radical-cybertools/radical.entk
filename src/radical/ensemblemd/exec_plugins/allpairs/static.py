@@ -126,12 +126,6 @@ class Plugin(PluginBase):
                                          'target':os.path.join(STAGING_AREA,link_out_data),
                                          'action':radical.pilot.LINK}
                 cudesc                = radical.pilot.ComputeUnitDescription()
-            #     #cudesc.executable     = '/bin/bash' # The executable that will be executed by the CU
-            #     #cudesc.output_staging = [OUTPUT_FILE]
-            #     # The arguments of the executable
-            #     #cudesc.arguments      = ['-l', '-c', 'base64 /dev/urandom | head -c 1048576 > %s'%OUTPUT_FILE['source']]
-            #     # The number of Cores the CU will use.
-            #     #cudesc.cores          = 1
 
                 cudesc.pre_exec       = kernel._cu_def_pre_exec
                 cudesc.executable     = kernel._cu_def_executable
@@ -139,7 +133,7 @@ class Plugin(PluginBase):
                 cudesc.mpi            = kernel.uses_mpi
                 cudesc.output_staging = [OUTPUT_FILE]
                 #self.get_logger().info("Target {0} to : {0}".format(kernel._cu_def_output_data))
-                self.get_logger().info("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Output: {4}".format(cudesc.pre_exec,
+                self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Output: {4}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.output_staging))
 
 
@@ -167,12 +161,6 @@ class Plugin(PluginBase):
                                         'target' : link_input2,
                                         'action' : radical.pilot.LINK}
                 cudesc                = radical.pilot.ComputeUnitDescription()
-            #     #cudesc.executable     = '/bin/bash' # The executable that will be executed by the CU
-            #     #cudesc.output_staging = [OUTPUT_FILE]
-            #     # The arguments of the executable
-            #     #cudesc.arguments      = ['-l', '-c', 'base64 /dev/urandom | head -c 1048576 > %s'%OUTPUT_FILE['source']]
-            #     # The number of Cores the CU will use.
-            #     #cudesc.cores          = 1
 
                 cudesc.pre_exec       = kernel._cu_def_pre_exec
                 cudesc.executable     = kernel._cu_def_executable
@@ -180,7 +168,7 @@ class Plugin(PluginBase):
                 cudesc.mpi            = kernel.uses_mpi
                 cudesc.input_staging  = [INPUT_FILE1, INPUT_FILE2]
                 cudesc.output_staging = [link_output]
-                self.get_logger().info("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
+                self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
 
                 journal["{p1}-{p2}".format(p1=i, p2=j)] = {
