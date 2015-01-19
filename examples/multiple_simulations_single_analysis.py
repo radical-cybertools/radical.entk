@@ -140,6 +140,9 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        # Allocate the resources.
+        cluster.allocate()
+
         # We set both the the simulation and the analysis step 'instances' to 16.
         # If they
         mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)

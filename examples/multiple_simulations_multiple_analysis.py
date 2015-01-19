@@ -134,6 +134,9 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        # Allocate the resources.
+        cluster.allocate()
+
         # We set both the the simulation and the analysis step 'instances' to 8.
         msma = MSMA(iterations=2, simulation_instances=8, analysis_instances=8)
 

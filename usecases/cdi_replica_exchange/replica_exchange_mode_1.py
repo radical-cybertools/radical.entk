@@ -19,7 +19,6 @@ from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SingleClusterEnvironment
 
-
 import os
 import sys
 import json
@@ -53,6 +52,7 @@ class ReplicaP(Replica):
         cores - number of cores each replica should use
         """
         self.id = int(my_id)
+        self.sid = int(my_id)
         self.cycle = 0
         if new_temperature is None:
             self.new_temperature = 0
@@ -186,9 +186,6 @@ class RePattern(ReplicaExchange):
             parameters = self.namd_parameters
         else:
             old_name = replica.old_path + "/%s_%d_%d" % (basename, replica.id, (replica.cycle-1))
-            #structure = replica.first_path + "/" + self.namd_structure
-            #coordinates = replica.first_path + "/" + self.namd_coordinates
-            #parameters = replica.first_path + "/" + self.namd_parameters
             structure = self.namd_structure
             coordinates = self.namd_coordinates
             parameters = self.namd_parameters
@@ -245,24 +242,9 @@ class RePattern(ReplicaExchange):
         old_vel = replica.old_vel
         old_ext_system = replica.old_ext_system 
 
-        # only for first cycle we transfer structure, coordinates and parameters files
-        if replica.cycle == 0:
-            #structure = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
-            #coords = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
-            #params = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
-
-            k = Kernel(name="md.namd")
-            k.arguments            = [input_file]
-            #k.upload_input_data    = [str(input_file), str(structure), str(coords), str(params)]
-            k.upload_input_data    = [str(input_file)]
-        else:
-            #structure = self.inp_folder + "/" + self.namd_structure
-            #coords = self.inp_folder + "/" + self.namd_coordinates
-            #params = self.inp_folder + "/" + self.namd_parameters
-
-            k = Kernel(name="md.namd")
-            k.arguments            = [input_file]
-            k.upload_input_data    = [str(input_file)]
+        k = Kernel(name="md.namd")
+        k.arguments            = [input_file]
+        k.upload_input_data    = [str(input_file)]
 
         replica.cycle += 1
         return k
@@ -305,8 +287,6 @@ class RePattern(ReplicaExchange):
         # init matrix
         swap_matrix = [[ 0. for j in range(len(replicas))] 
             for i in range(len(replicas))]
-
-        #matrix_columns = sorted(matrix_columns)
 
         for r in replicas:
             # populating one column at a time

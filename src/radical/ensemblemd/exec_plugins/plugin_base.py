@@ -23,7 +23,7 @@ from radical.ensemblemd.exceptions import NotImplementedError
 class PluginBase(object):
 
     __metaclass__ = ru.Singleton
-    
+
     # --------------------------------------------------------------------------
     #
     def __init__ (self, adaptor_info, adaptor_options=[]) :
@@ -42,11 +42,11 @@ class PluginBase(object):
 
         # if not has_enabled :
         #     # *every* adaptor needs an 'enabled' option!
-        #     self._opts.append ({ 
+        #     self._opts.append ({
         #         'category'         : self._name,
-        #         'name'             : 'enabled', 
-        #         'type'             : bool, 
-        #         'default'          : True, 
+        #         'name'             : 'enabled',
+        #         'type'             : bool,
+        #         'default'          : True,
         #         'valid_options'    : [True, False],
         #         'documentation'    : "Enable / disable loading of the adaptor",
         #         'env_variable'     : None
@@ -94,7 +94,7 @@ class PluginBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def verify_pattern(self, pattern):
+    def verify_pattern(self, pattern, resource):
         """Verify the pattern.
         """
         raise NotImplementedError(

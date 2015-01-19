@@ -14,7 +14,7 @@ from radical.ensemblemd.execution_pattern import ExecutionPattern
 #-------------------------------------------------------------------------------
 #
 class ExecutionContext(object):
-    """An execution context represents the computing infrastructure on which 
+    """An execution context represents the computing infrastructure on which
        an ensemblemd application will run. ExecutionContext is the abstract
        base-class and usually not used directly. To create an execution context,
        use either of the following derived classes:
@@ -28,7 +28,6 @@ class ExecutionContext(object):
     def __init__(self):
         """Creates a new ExecutionContext instance.
         """
-
         self._engine = Engine()
 
     #---------------------------------------------------------------------------
@@ -38,6 +37,15 @@ class ExecutionContext(object):
         """
         raise NotImplementedError(
           method_name="get_name",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def allocate(self):
+        """Allocates the requested resources.
+        """
+        raise NotImplementedError(
+          method_name="allocate",
           class_name=type(self))
 
     #---------------------------------------------------------------------------
