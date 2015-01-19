@@ -342,9 +342,12 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def _bind_to_resource(self, resource_key):
+    def _bind_to_resource(self, resource_key, pattern_name=None):
         """Returns the kernel description as a dictionary that can be
            translated into a CU description.
         """
-        self._kernel._bind_to_resource(resource_key)
+        if (pattern_name == None):
+            self._kernel._bind_to_resource(resource_key)
+        else:
+            self._kernel._bind_to_resource(resource_key, pattern_name)
         return self._kernel

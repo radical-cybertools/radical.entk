@@ -124,8 +124,12 @@ class Plugin(PluginBase):
                     pattern.build_input_file(r)
                     self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c+1), r.id) )
                     r_kernel = pattern.prepare_replica_for_md(r)
-                    r_kernel._bind_to_resource(resource._resource_key)
-
+                    
+                    if ((r_kernel._kernel.get_name()) == "md.amber"):
+                        r_kernel._bind_to_resource(resource._resource_key, pattern.name)
+                    else:
+                        r_kernel._bind_to_resource(resource._resource_key)
+  
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable

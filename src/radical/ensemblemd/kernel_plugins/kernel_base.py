@@ -157,7 +157,7 @@ class KernelBase(object):
 
     # --------------------------------------------------------------------------
     #
-    def _bind_to_resource(self, resource_key):
+    def _bind_to_resource(self, resource_key, pattern_name=None):
         """Binds the kernel to a specific resource.
         """
         raise NotImplementedError(
