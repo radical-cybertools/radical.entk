@@ -173,7 +173,7 @@ class Kernel(KernelBase):
                                  "-i ", self.get_arg("--mdinfile="),
                                  "-o ", self.get_arg("--outfile="),
                                  "-p ", self.get_arg("--params="),
-                                 "-c ", (self.get_arg("--coords=")).strip("/"),
+                                 "-c ", self.get_arg("--coords="),
                                  "-r ", self.get_arg("--nwcoords="),
                                  "-x ", self.get_arg("--nwtraj="),
                                  "-inf ", self.get_arg("--nwinfo=")]
