@@ -40,16 +40,16 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def verify_pattern(self, pattern):
+    def verify_pattern(self, pattern, resource):
         """
         """
         # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
         # FRUSTARTION AT THE NED
-        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+        #do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
 
-        if do_profile != '0':
-            # add profiling code here
-            raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
+        #if do_profile != '0':
+        #    # add profiling code here
+        #    raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
 
     # --------------------------------------------------------------------------
     #
@@ -84,7 +84,7 @@ class Plugin(PluginBase):
         unit_manager.add_pilots(pilot)
 
         replicas = pattern.get_replicas()
- 
+
         # performance data structure
         dictionary = {}
 
@@ -114,14 +114,14 @@ class Plugin(PluginBase):
 
                 current_entry["unit_description"] = cu
                 current_entry["compute_unit"] = None
-            
+
                 sub_replica = unit_manager.submit_units(cu)
                 # submitted_replicas.append(sub_replica)
 
                 replica_key = "replica_%s" % r.id
                 cycle_key = "cycle_%s" % (c+1)
                 dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
-                
+
             self.get_logger().info("Performing MD step for replicas")
             # submitted_replicas = unit_manager.submit_units(compute_replicas)
 
@@ -143,7 +143,7 @@ class Plugin(PluginBase):
 
         # --------------------------------------------------------------------------
         # If profiling is enabled, we write the profiling data to a file
-        
+
         do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
 
         if do_profile != '0':

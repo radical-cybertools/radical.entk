@@ -41,7 +41,7 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def verify_pattern(self, pattern):
+    def verify_pattern(self, pattern, resource):
         """
         """
         # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
