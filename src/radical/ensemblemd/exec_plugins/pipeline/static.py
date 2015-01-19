@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os
 import sys
 import saga
+import time
 import pickle
 import datetime
 import radical.pilot
@@ -46,6 +47,7 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
+        failed_units = []
 
         #-----------------------------------------------------------------------
         #
@@ -55,24 +57,21 @@ class Plugin(PluginBase):
                 self.get_logger().info("Task with ID {0} has completed.".format(unit.uid))
 
             if state == radical.pilot.FAILED:
-                self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2}".format(unit.uid, unit.stderr, unit.stdout))
+                self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                failed_units.append(unit)
 
         pipeline_instances = pattern.instances
 
         self.get_logger().info("Executing {0} pipeline instances on {1} allocated core(s) on '{2}'".format(
             pipeline_instances, resource._cores, resource._resource_key))
 
+        # We use the journal to keep track of the stage / instance to
+        # job mapping as well as to record associated timing informations.
+        journal= {}
+        steps = 0
+
         try:
             resource._umgr.register_callback(unit_state_cb)
-
-            # We use the journal to keep track of the stage / instance to
-            # job mapping as well as to record associated timing informations.
-            journal= {}
-            steps = 0
-
-            self.get_logger().info("Launched {0}-core pilot on {1}.".format(resource._cores, resource._resource_key))
-
-            working_dirs = {}
 
             # Iterate over the different steps.
             for step in range(1, 64):
@@ -81,9 +80,6 @@ class Plugin(PluginBase):
 
                 # Get the method names
                 s_meth = getattr(pattern, 'step_{0}'.format(step))
-
-                # Build up the working dir bookkeeping structure.
-                working_dirs["step_{0}".format(step)] = {}
 
                 try:
                     kernel = s_meth(0)
@@ -157,16 +153,16 @@ class Plugin(PluginBase):
                     work_dir = saga.Url(journal[step_key][instance_key]["compute_unit"].working_directory).path
                     journal[step_key][instance_key]["working_dir"] = work_dir
 
-                failed_units = ""
-                for unit in step_units:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Compute Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-
-                if len(failed_units) > 0:
-                    raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, failed_units))
+                time.sleep(2)
+                if failed_units != []:
+                    errors = []
+                    for unit in failed_units:
+                        error = ("NAME: {0} LAST LOG: {1} STDOUT: {2} STDERR: {3}").format(unit.name, unit.log[-1], unit.stderr, unit.stdout)
+                        errors.append(error)
+                        raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, errors))
 
         except Exception, ex:
-            self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
+            self.get_logger().exception("Fatal error during pattern execution: {0}.".format(str(ex)))
             raise
 
         finally:

@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os
 import time
 import saga
+import datetime
 import radical.pilot
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
@@ -80,15 +81,7 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern, resource):
-
-        # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
-        # FRUSTARTION AT THE NED
-        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
-
-        if do_profile != '0':
-            # add profiling code here
-            resource.deallocate()
-            raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
+        pass
 
     # --------------------------------------------------------------------------
     #
@@ -105,10 +98,11 @@ class Plugin(PluginBase):
 
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(pattern.iterations, resource._cores, resource._resource_key))
 
+        working_dirs = {}
+        all_cus = []
+
         try:
             resource._umgr.register_callback(unit_state_cb)
-
-            working_dirs = {}
 
             ########################################################################
             # execute pre_loop
@@ -118,6 +112,7 @@ class Plugin(PluginBase):
                 pre_loop._bind_to_resource(resource._resource_key)
 
                 cu = radical.pilot.ComputeUnitDescription()
+                cu.name = "pre_loop"
 
                 cu.pre_exec       = pre_loop._cu_def_pre_exec
                 cu.executable     = pre_loop._cu_def_executable
@@ -129,6 +124,7 @@ class Plugin(PluginBase):
                 self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
 
                 unit = resource._umgr.submit_units(cu)
+                all_cus.append(unit)
 
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
@@ -163,11 +159,14 @@ class Plugin(PluginBase):
                     sim_step._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
+                    cud.name = "sim_{iteration};{instance}".format(iteration=iteration, instance=s_instance)
+
                     cud.pre_exec = []
 
                     env_vars = create_env_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="simulation")
                     for var, value in env_vars.iteritems():
                         cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
+
 
                     cud.pre_exec.extend(sim_step._cu_def_pre_exec)
                     cud.executable     = sim_step._cu_def_executable
@@ -179,6 +178,7 @@ class Plugin(PluginBase):
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
                 s_cus = resource._umgr.submit_units(s_units)
+                all_cus.extend(s_cus)
 
                 self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                 self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
@@ -219,6 +219,8 @@ class Plugin(PluginBase):
                             ana_step._bind_to_resource(resource._resource_key)
 
                             cud = radical.pilot.ComputeUnitDescription()
+                            cud.name = "ana_{iteration};{instance}".format(iteration=iteration, instance=a_instance)
+
                             cud.pre_exec = []
 
                             env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
@@ -239,6 +241,7 @@ class Plugin(PluginBase):
                             self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
 
                             a_cus = resource._umgr.submit_units(a_units)
+                            all_cus.extend(a_cus)
 
                             self.get_logger().info("Submitted tasks for analysis iteration {0}/ kernel {1}.".format(iteration,cur_kernel))
                             self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1} to complete.".format(iteration,cur_kernel))
@@ -259,6 +262,8 @@ class Plugin(PluginBase):
                         analysis_step._bind_to_resource(resource._resource_key)
 
                         cud = radical.pilot.ComputeUnitDescription()
+                        cud.name = "ana_{iteration};{instance}".format(iteration=iteration, instance=a_instance)
+
                         cud.pre_exec = []
                         env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
                         for var, value in env_vars.iteritems():
@@ -271,18 +276,20 @@ class Plugin(PluginBase):
                         cud.mpi = analysis_step.uses_mpi
                         cud.input_staging = analysis_step._cu_def_input_data
                         cud.output_staging = analysis_step._cu_def_output_data
+
                         a_units.append(cud)
 
                         self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
 
                 if len(analysis_list)==1:
                     a_cus = resource._umgr.submit_units(a_units)
+                    all_cus.extend(a_cus)
+
 
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
                     resource._umgr.wait_units()
                     self.get_logger().info("Analysis in iteration {0} completed.".format(iteration))
-
 
                     failed_units = ""
                     for unit in a_cus:
@@ -311,5 +318,21 @@ class Plugin(PluginBase):
         do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
 
         if do_profile != '0':
-            # add profiling code here
-            pass
+
+            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
+            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
+
+            with open(outfile, 'w+') as f:
+                # General format of a profiling file is row based and follows the
+                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
+                head = "task; start_time; stop_time; step; iteration"
+                f.write("{row}\n".format(row=head))
+
+                for cu in all_cus:
+                    row = "{uid}; {start_time}; {stop_time}; {tags}".format(
+                        uid=cu.uid,
+                        start_time=cu.start_time,
+                        stop_time=cu.stop_time,
+                        tags=cu.name
+                    )
+                    f.write("{row}\n".format(row=row))
