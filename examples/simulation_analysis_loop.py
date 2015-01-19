@@ -155,6 +155,9 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        # Allocate the resources.
+        cluster.allocate()
+
         # We set both the the simulation and the analysis step 'instances' to 16.
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.

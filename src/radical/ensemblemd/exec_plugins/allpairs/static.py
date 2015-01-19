@@ -35,22 +35,12 @@ class Plugin(PluginBase):
 
     #---------------------------------------------------------------------------
     #
-    def verify_pattern(self, pattern):
+    def verify_pattern(self, pattern, resource):
         self.get_logger().info("Verifying pattern...")
 
     #---------------------------------------------------------------------------
     #Pattern Execution Method
     def execute_pattern(self, pattern, resource):
-
-        def pilot_state_cb(pilot,state):
-            # Callback function for the messages printed when
-            # RADICAL_ENMD_VERBOSE = info
-            self.get_logger().info("Pilot {0} in {1} state has changed to {2}.".format(pilot.uid,resource._resource_key,state))
-
-            if state==radical.pilot.FAILED:
-                # In Case the pilot fails report Error messsage
-                self.get_logger().error("Pilot {0} FAILED at {1}.".format(pilot.uid,resource._resource_key))
-                self.get_logger().error("Error: {0}".format(pilot.log))
 
         def unit_state_cb(unit, state):
             # Callback function for the messages printed when
@@ -82,36 +72,7 @@ class Plugin(PluginBase):
         STAGING_AREA = 'staging:///'
 
         try:
-
-            session = radical.pilot.Session()
-
-            if resource._username is not None:
-                c         = radical.pilot.Context('ssh') # Connection type to the remote target machine
-                c.user_id = resource._username #The user name for the remote target machine
-                session.add_context(c)
-
-            pmgr = radical.pilot.PilotManager(session=session)
-            pmgr.register_callback(pilot_state_cb)
-
-            PilotDescr = radical.pilot.ComputePilotDescription()
-            PilotDescr.resource = resource._resource_key
-            PilotDescr.runtime  = resource._walltime #Always in minutes
-            PilotDescr.cores    = resource._cores
-            PilotDescr.cleanup  = False
-
-            if resource._allocation is not None:
-                PilotDescr.project  = resource._allocation
-
-            self.get_logger().info("Allocating {0} cores on {1}".format(PilotDescr.cores,
-                PilotDescr.resource))
-            Pilot = pmgr.submit_pilots(PilotDescr)
-
-            umgr = radical.pilot.UnitManager(session=session,
-                scheduler=radical.pilot.SCHED_BACKFILLING)
-            umgr.register_callback(unit_state_cb)
-
-            umgr.add_pilots(Pilot)
-            self.get_logger().info("Pilot launched on {0}".format(PilotDescr.resource))
+            resource._umgr.register_callback(unit_state_cb)
 
             CUDesc_list = list()
             for i in range(1,NumElements+1):
@@ -139,8 +100,8 @@ class Plugin(PluginBase):
 
                 CUDesc_list.append(cudesc)
 
-            Units = umgr.submit_units(CUDesc_list)
-            umgr.wait_units()
+            Units = resource._umgr.submit_units(CUDesc_list)
+            resource._umgr.wait_units()
 
             CUDesc_list = list()
             journal = {}
@@ -175,10 +136,10 @@ class Plugin(PluginBase):
                     "p1": i,
                     "p2": j,
                     "unit_description": cudesc,
-                    "compute_unit": umgr.submit_units(cudesc)
+                    "compute_unit": resource._umgr.submit_units(cudesc)
                 }
 
-            umgr.wait_units()
+            resource._umgr.wait_units()
             self.get_logger().info("Pattern execution successful.")
 
         except Exception, ex:
@@ -186,7 +147,7 @@ class Plugin(PluginBase):
 
         finally:
             self.get_logger().info("Deallocating resource.")
-            session.close()
+            resource.deallocate()
 
         # -----------------------------------------------------------------
         # At this point, we have executed the pattern succesfully. Now,

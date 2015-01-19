@@ -39,40 +39,13 @@ class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
-    def verify_pattern(self, pattern):
+    def verify_pattern(self, pattern, resource):
         self.get_logger().info("Verifying pattern...")
 
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern, resource):
 
-        #-----------------------------------------------------------------------
-        #
-        def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Resource {0} state has changed to {1}".format(
-                resource._resource_key, state))
-
-            if state == radical.pilot.FAILED:
-                self.get_logger().error("Resource error: {0}".format(pilot.log))
-                self.get_logger().error("Pattern execution FAILED.")
-
-                # Try to get some information here...
-                if os.getenv("RADICAL_ENMD_TRAVIS_DEBUG") is not None:
-
-                    sb = saga.Url(pilot.sandbox).path
-                    agent_stderr = "{0}/AGENT.STDERR".format(sb)
-                    agent_stdout = "{0}/AGENT.STDOUT".format(sb)
-                    agent_log = "{0}/AGENT.LOG".format(sb)
-                    pip_cmd = "{0}/virtualenv/bin/pip".format(sb)
-
-                    self.get_logger().error(pip_cmd)
-                    os.system("head {0}".format(pip_cmd))
-                    self.get_logger().error(agent_stderr)
-                    os.system("cat {0}".format(agent_stderr))
-                    self.get_logger().error(agent_stdout)
-                    os.system("cat {0}".format(agent_stdout))
-                    self.get_logger().error(agent_log)
-                    os.system("cat {0}".format(agent_log))
 
         #-----------------------------------------------------------------------
         #
@@ -90,48 +63,12 @@ class Plugin(PluginBase):
             pipeline_instances, resource._cores, resource._resource_key))
 
         try:
+            resource._umgr.register_callback(unit_state_cb)
+
             # We use the journal to keep track of the stage / instance to
             # job mapping as well as to record associated timing informations.
             journal= {}
-            # journal["metainfo"] = {
-            #     "pattern_name": "pipeline"
-            # }
             steps = 0
-
-            session = radical.pilot.Session()
-
-            if resource._username is not None:
-                # Add an ssh identity to the session.
-                c = radical.pilot.Context('ssh')
-                c.user_id = resource._username
-                session.add_context(c)
-
-            pmgr = radical.pilot.PilotManager(session=session)
-            pmgr.register_callback(pilot_state_cb)
-
-            pdesc = radical.pilot.ComputePilotDescription()
-            pdesc.resource = resource._resource_key
-            pdesc.runtime  = resource._walltime
-            pdesc.cores    = resource._cores
-
-            if resource._queue is not None:
-                pdesc.queue = resource._queue
-
-            pdesc.cleanup  = True
-
-            if resource._allocation is not None:
-                pdesc.project = resource._allocation
-
-            self.get_logger().info("Requesting resources on {0}".format(resource._resource_key))
-
-            pilot = pmgr.submit_pilots(pdesc)
-
-            umgr = radical.pilot.UnitManager(
-                session=session,
-                scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
-            umgr.register_callback(unit_state_cb)
-
-            umgr.add_pilots(pilot)
 
             self.get_logger().info("Launched {0}-core pilot on {1}.".format(resource._cores, resource._resource_key))
 
@@ -206,12 +143,12 @@ class Plugin(PluginBase):
                                 expanded_pe = pe.replace(placeholder, journal[journal_key][instance_key]["working_dir"])
                                 jd.pre_exec.append(expanded_pe)
 
-                    unit = umgr.submit_units(jd)
+                    unit = resource._umgr.submit_units(jd)
                     step_units.append(unit)
                     journal[step_key][instance_key]["compute_unit"] = unit
 
                 self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
-                umgr.wait_units()
+                resource._umgr.wait_units()
 
                 # Update all working directories so they can be accessed from
                 # the next step(s).
@@ -234,10 +171,7 @@ class Plugin(PluginBase):
 
         finally:
             self.get_logger().info("Deallocating resource.")
-            try:
-                session.close()
-            except Exception:
-                pass
+            resource.deallocate()
 
         # -----------------------------------------------------------------
         # At this point, we have executed the pattern succesfully. Now,

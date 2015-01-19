@@ -136,6 +136,9 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        # Allocate the resources. 
+        cluster.allocate()
+
         # Set the 'instances' of the pipeline to 16. This means that 16 instances
         # of each pipeline step are executed.
         #

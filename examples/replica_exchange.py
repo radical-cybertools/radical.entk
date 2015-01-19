@@ -243,6 +243,9 @@ if __name__ == "__main__":
             walltime=15,
         )
 
+        # Allocate the resources.
+        cluster.allocate()
+
         # creating RE pattern object
         re_pattern = RePattern()
 

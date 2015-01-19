@@ -135,6 +135,9 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        # Allocate the resources.
+        cluster.allocate()
+
         # For example the set has 5 elements.
         ElementsSet = range(1,6)
         randAP = RandomAP(setelements=ElementsSet)
