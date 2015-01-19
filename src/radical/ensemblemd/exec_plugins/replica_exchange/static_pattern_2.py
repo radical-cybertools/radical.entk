@@ -111,86 +111,12 @@ class Plugin(PluginBase):
 
             # performance data structure
             dictionary = {}
-    
+
             for c in range(pattern.nr_cycles):
-                 
+
                 dictionary["cycle_{0}".format(c+1)] = {}
                 for r in replicas:
 
-<<<<<<< HEAD
-        # performance data structure
-        dictionary = {}
-    
-        for c in range(pattern.nr_cycles):
-            # 
-            dictionary["cycle_{0}".format(c+1)] = {}
-            for r in replicas:
-
-                dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)] = {}
-                current_entry = dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)]
-
-                self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c+1), r.id) )
-                pattern.build_input_file(r)
-                self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c+1), r.id) )
-                r_kernel = pattern.prepare_replica_for_md(r)
-                r_kernel._bind_to_resource(resource._resource_key)
-
-                cu                = radical.pilot.ComputeUnitDescription()
-                cu.pre_exec       = r_kernel._cu_def_pre_exec
-                cu.executable     = r_kernel._cu_def_executable
-                cu.arguments      = r_kernel.arguments
-                cu.mpi            = r_kernel.uses_mpi
-                cu.cores          = r_kernel.cores
-                cu.input_staging  = [sd_shared] + r_kernel._cu_def_input_data
-                cu.output_staging = r_kernel._cu_def_output_data
-
-                current_entry["unit_description"] = cu
-                current_entry["compute_unit"] = None
-
-                sub_replica = unit_manager.submit_units(cu)
-                
-                replica_key = "replica.md_%s" % r.id
-                cycle_key = "cycle_%s" % (c+1)
-                dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
-
-            self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c+1) )
-            unit_manager.wait_units()
-
-            if (c < (pattern.nr_cycles-1)):
-
-                submitted_replicas = []
-                # computing swap matrix
-                for r in replicas:
-
-                    dictionary["cycle_{0}".format(c+1)]["replica.ex_{0}".format(r.id)] = {}
-                    current_entry = dictionary["cycle_{0}".format(c+1)]["replica.ex_{0}".format(r.id)]
-
-                    self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c+1), r.id) )
-                    ex_kernel = pattern.prepare_replica_for_exchange(r)
-                    ex_kernel._bind_to_resource(resource._resource_key)
-
-                    cu                = radical.pilot.ComputeUnitDescription()
-                    cu.pre_exec       = ex_kernel._cu_def_pre_exec
-                    cu.executable     = ex_kernel._cu_def_executable
-                    cu.arguments      = ex_kernel.arguments
-                    cu.mpi            = ex_kernel.uses_mpi
-                    cu.cores          = ex_kernel.cores
-                    cu.input_staging  = ex_kernel._cu_def_input_data
-                    cu.output_staging = ex_kernel._cu_def_output_data
-
-                    current_entry["unit_description"] = cu
-                    current_entry["compute_unit"] = None
-
-                    sub_replica = unit_manager.submit_units(cu)
-                    submitted_replicas.append(sub_replica)
-
-                    replica_key = "replica.ex_%s" % r.id
-                    cycle_key = "cycle_%s" % (c+1)
-                    dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
-
-                self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
-                unit_manager.wait_units()
-=======
                     dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)] = {}
                     current_entry = dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)]
 
@@ -198,12 +124,12 @@ class Plugin(PluginBase):
                     pattern.build_input_file(r)
                     self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c+1), r.id) )
                     r_kernel = pattern.prepare_replica_for_md(r)
-                    
+
                     if ((r_kernel._kernel.get_name()) == "md.amber"):
                         r_kernel._bind_to_resource(resource._resource_key, pattern.name)
                     else:
                         r_kernel._bind_to_resource(resource._resource_key)
-  
+
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
@@ -217,7 +143,7 @@ class Plugin(PluginBase):
                     current_entry["compute_unit"] = None
 
                     sub_replica = unit_manager.submit_units(cu)
-                
+
                     replica_key = "replica.md_%s" % r.id
                     cycle_key = "cycle_%s" % (c+1)
                     dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
@@ -252,20 +178,13 @@ class Plugin(PluginBase):
 
                         sub_replica = unit_manager.submit_units(cu)
                         submitted_replicas.append(sub_replica)
->>>>>>> devel
 
                         replica_key = "replica.ex_%s" % r.id
                         cycle_key = "cycle_%s" % (c+1)
                         dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
-<<<<<<< HEAD
-                # computing swap matrix
-                self.get_logger().info("Cycle %d: Composing swap matrix" % (c+1) )
-                swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
-=======
                     self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
                     unit_manager.wait_units()
->>>>>>> devel
 
                     matrix_columns = []
                     for r in submitted_replicas:
@@ -296,16 +215,6 @@ class Plugin(PluginBase):
 
         if do_profile != '0':
 
-<<<<<<< HEAD
-        # --------------------------------------------------------------------------
-        # If profiling is enabled, we write the profiling data to a file
-
-        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
-
-        if do_profile != '0':
-
-=======
->>>>>>> devel
             outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
             self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
 
@@ -349,7 +258,7 @@ class Plugin(PluginBase):
                             f.write("{row}\n".format(row=row))
 
         #---------------------------------------------------------------------------
-        
+
         self.get_logger().info("Replica Exchange simulation finished successfully!")
 
         self.get_logger().info("closing session")
