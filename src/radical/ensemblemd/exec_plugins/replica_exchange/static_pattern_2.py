@@ -113,7 +113,7 @@ class Plugin(PluginBase):
             dictionary = {}
     
             for c in range(pattern.nr_cycles):
-                # 
+                 
                 dictionary["cycle_{0}".format(c+1)] = {}
                 for r in replicas:
 
