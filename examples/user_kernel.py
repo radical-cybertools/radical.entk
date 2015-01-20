@@ -111,7 +111,7 @@ get_engine().add_kernel_plugin(MyUserDefinedKernel)
 # ------------------------------------------------------------------------------
 #
 class Sleep(Pipeline):
-    """The Sleep class implements a Bag of Ensembles. All ensemble members
+    """The Sleep class implements a Bag of Task. All ensemble members
        simply sleep for 60 seconds.
     """
 

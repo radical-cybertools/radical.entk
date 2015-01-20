@@ -232,5 +232,3 @@ class Plugin(PluginBase):
                                 tags="{cycle}; {replica}".format(cycle=cycle.split('_')[1], replica=replica.split('_')[1])
                             )
                             f.write("{row}\n".format(row=row))
-
-        

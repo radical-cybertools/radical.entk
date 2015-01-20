@@ -43,7 +43,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._allocation = allocation
         self._cleanup = cleanup
 
-        self._logger  = rul.getLogger ('radical.enmd', 'sce')
+        self._logger  = rul.getLogger ('radical.enmd', 'SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 
@@ -79,7 +79,7 @@ class SingleClusterEnvironment(ExecutionContext):
                 self._resource_key, state))
 
             if state == radical.pilot.FAILED:
-                self.get_logger().error("Resource error: {0}".format(pilot.log))
+                self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))
                 self.get_logger().error("Pattern execution FAILED.")
 
                 # Try to get some information here...

@@ -18,21 +18,21 @@ Ensemble MD Toolkit takes a different approach. It provides a set of
 explicit, predefined :ref:`patterns` that are commonly found in MD workflows.
 Currently, these patterns are:
 
-* (Bag-of-Ensembles)
+* (Bag-of-Tasks)
 * Concurrent Pipeline
 * Simulation-Analysis Loop
 * Replica Exchange
 
-Instead of defining tasks and their dependencies, users of Ensemble MD 
+Instead of defining tasks and their dependencies, users of Ensemble MD
 Toolkit pick the pattern that represents their simulation's workflow and
 populate it with :ref:`kernels`, an abstraction around MD tools, like
 Amber, Gromacs, NAMD, etc.
 
-The execution of the MD Kernels according to the pattern happens in the 
+The execution of the MD Kernels according to the pattern happens in the
 background, transparently to the user. The mechanisms for resource allocations,
 task submission and data transfer to one or more distributed execution hosts
-are completely hidden from the users, so they can solely focus on optimizing 
-and improving the simulation workflow. 
+are completely hidden from the users, so they can solely focus on optimizing
+and improving the simulation workflow.
 
 
 Concepts

@@ -113,6 +113,7 @@ class Plugin(PluginBase):
         self.get_logger().info("Replica Exchange simulation finished successfully!")
         self.get_logger().info("Deallocating resource.")
         resource.deallocate()
+        
         # --------------------------------------------------------------------------
         # If profiling is enabled, we write the profiling data to a file
 
@@ -141,5 +142,3 @@ class Plugin(PluginBase):
                             tags="{cycle}; {replica}".format(cycle=cycle.split('_')[1], replica=replica.split('_')[1])
                         )
                         f.write("{row}\n".format(row=row))
-
-
