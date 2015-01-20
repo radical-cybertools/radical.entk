@@ -159,7 +159,7 @@ class Plugin(PluginBase):
                     sim_step._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
-                    cud.name = "sim_{iteration};{instance}".format(iteration=iteration, instance=s_instance)
+                    cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
                     cud.pre_exec = []
 
@@ -219,7 +219,7 @@ class Plugin(PluginBase):
                             ana_step._bind_to_resource(resource._resource_key)
 
                             cud = radical.pilot.ComputeUnitDescription()
-                            cud.name = "ana_{iteration};{instance}".format(iteration=iteration, instance=a_instance)
+                            cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
                             cud.pre_exec = []
 
@@ -262,7 +262,7 @@ class Plugin(PluginBase):
                         analysis_step._bind_to_resource(resource._resource_key)
 
                         cud = radical.pilot.ComputeUnitDescription()
-                        cud.name = "ana_{iteration};{instance}".format(iteration=iteration, instance=a_instance)
+                        cud.name = "ana; {iteration};{instance}".format(iteration=iteration, instance=a_instance)
 
                         cud.pre_exec = []
                         env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
@@ -325,7 +325,7 @@ class Plugin(PluginBase):
             with open(outfile, 'w+') as f:
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; step; iteration"
+                head = "task; start_time; stop_time; stage; iteration; instance"
                 f.write("{row}\n".format(row=head))
 
                 for cu in all_cus:
