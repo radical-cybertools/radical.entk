@@ -64,7 +64,7 @@ a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
              will not be able to access the MongoDB server.
 
 A MongoDB server can support more than one user. In an environment where
-multiple users use Ensemble MD toolkit applications, a single MongoDB server
+multiple users use Ensemble MD Toolkit applications, a single MongoDB server
 for all users / hosts is usually sufficient.
 
 Install your own MongoDB

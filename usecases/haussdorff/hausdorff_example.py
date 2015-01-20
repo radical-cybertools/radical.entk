@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""  
+"""
 Hausdorff Distance calculation script for Ensemble MD Toolkit
 """
 
@@ -24,19 +24,19 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 _KERNEL_INFO_QPC = {
     "name":         "my.qpc",
     "description":  "This Kernel calculates the MQPC alignment.",
-    "arguments":   {"--inputfile=":     
+    "arguments":   {"--inputfile=":
                         {
                         "mandatory": True,
                         "description": "The first input Trajectory file."
                         },
-                    "--filename=":     
+                    "--filename=":
                         {
                         "mandatory": True,
                         "description": "The output file containing the difference count."
                         }
-       
+
                     },
-    "machine_configs": 
+    "machine_configs":
     {
         "*": {
             "environment"   : {"FOO": "bar"},
@@ -61,7 +61,7 @@ class MyQPC(KernelBase):
         return _KERNEL_INFO_QPC["name"]
 
     def _bind_to_resource(self, resource_key):
-        """This function binds the Kernel to a specific resource defined in 
+        """This function binds the Kernel to a specific resource defined in
            "resource_key".
         """
         if resource_key not in _KERNEL_INFO_QPC["machine_configs"]:
@@ -80,7 +80,7 @@ class MyQPC(KernelBase):
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
+        self._pre_exec    = cfg["pre_exec"]
         self._post_exec   = None
 
 #-------------------------------------------------------------------------------
@@ -93,24 +93,24 @@ _KERNEL_INFO_HS = {
                         "mandatory": True,
                         "description": "The file that contains the Hausdorff Calculator"
                         },
-                    "--inputfile1=":     
+                    "--inputfile1=":
                         {
                         "mandatory": True,
                         "description": "The first input Trajectory file."
                         },
-                    "--inputfile2=":     
+                    "--inputfile2=":
                         {
                         "mandatory": True,
                         "description": "The second input Trajectory file."
                         },
-                    "--outputfile=":     
+                    "--outputfile=":
                         {
                         "mandatory": True,
                         "description": "The output file containing the difference count."
                         },
-       
+
                     },
-    "machine_configs": 
+    "machine_configs":
     {
         "*": {
             "environment"   : None,
@@ -141,7 +141,7 @@ class MyHausdorff(KernelBase):
         return _KERNEL_INFO_HS["name"]
 
     def _bind_to_resource(self, resource_key):
-        """This function binds the Kernel to a specific resource defined in 
+        """This function binds the Kernel to a specific resource defined in
            "resource_key".
         """
         if resource_key not in _KERNEL_INFO_HS["machine_configs"]:
@@ -152,7 +152,7 @@ class MyHausdorff(KernelBase):
                 raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO_HS["name"], resource_key=resource_key)
 
         cfg = _KERNEL_INFO_HS["machine_configs"][resource_key]
-        executable = "python" 
+        executable = "python"
         arguments  = [self.get_arg("--dist_file="),
                       self.get_arg("--inputfile1="),
                       self.get_arg("--inputfile2="),
@@ -163,11 +163,11 @@ class MyHausdorff(KernelBase):
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
+        self._pre_exec    = cfg["pre_exec"]
         self._post_exec   = None
 
 # ------------------------------------------------------------------------------
-# Register the user-defined kernel with Ensemble MD.
+# Register the user-defined kernel with Ensemble MD Toolkit.
 get_engine().add_kernel_plugin(MyQPC)
 get_engine().add_kernel_plugin(MyHausdorff)
 
@@ -175,14 +175,14 @@ get_engine().add_kernel_plugin(MyHausdorff)
 #
 class HausdorffAP(AllPairs):
     """HausdorffAP implements the all pairs pattern described above. It
-       inherits from radical.ensemblemd.AllPair, the abstract 
+       inherits from radical.ensemblemd.AllPair, the abstract
        base class for all All Pairs applications.
     """
     def __init__(self,setelements):
         AllPairs.__init__(self, setelements)
 
     def element_initialization(self,element):
-        """The initialization step creates the necessary files that will be 
+        """The initialization step creates the necessary files that will be
             needed for the comparison over the elements of the set.
         """
 
@@ -203,14 +203,14 @@ class HausdorffAP(AllPairs):
         input_filename1 = "traj_flat{0}.npz.npy".format(element1)
         input_filename2 = "traj_flat{0}.npz.npy".format(element2)
         output_filename = "comparison-{0}-{1}.dat".format(element1, element2)
-    
+
         k = Kernel(name="my.hausdorff")
         k.arguments            = ["--dist_file=hausdorff_kernel.py",
-                                  "--inputfile1={0}".format(input_filename1), 
-                                  "--inputfile2={0}".format(input_filename2), 
+                                  "--inputfile1={0}".format(input_filename1),
+                                  "--inputfile2={0}".format(input_filename2),
                                   "--outputfile={0}".format(output_filename)]
         k.download_input_data = ["http://eceweb1.rutgers.edu/~ip176/hausdorff_kernel.py > hausdorff_kernel.py"]
-        
+
         # The result files comparison-x-y.dat are downloaded.
         k.download_output_data = output_filename
         return k
@@ -223,13 +223,13 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="local.localhost", 
-            cores=1, 
+            resource="local.localhost",
+            cores=1,
             walltime=30,
-            username=None,    
+            username=None,
             allocation=None
         )
-        
+
         # For example the set has 10 elements.
         ElementsSet = range(1,11)
         hausdorff = HausdorffAP(setelements=ElementsSet)
@@ -238,9 +238,9 @@ if __name__ == "__main__":
 
         #Message printed when everything is done
         print "Everything is downloaded!"
-        
+
 
     except EnsemblemdError, er:
 
-        print "Ensemble MD Error: {0}".format(str(er))
+        print "Ensemble MD Toolkit Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

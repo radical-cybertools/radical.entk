@@ -105,7 +105,7 @@ class MyUserDefinedKernel(KernelBase):
         self._post_exec   = None
 
 # ------------------------------------------------------------------------------
-# Register the user-defined kernel with Ensemble MD.
+# Register the user-defined kernel with Ensemble MD Toolkit.
 get_engine().add_kernel_plugin(MyUserDefinedKernel)
 
 # ------------------------------------------------------------------------------
@@ -155,5 +155,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "Ensemble MD Error: {0}".format(str(er))
+        print "Ensemble MD Toolkit Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace
