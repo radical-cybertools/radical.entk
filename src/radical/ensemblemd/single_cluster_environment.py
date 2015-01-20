@@ -33,6 +33,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._allocate_called = False
         self._umgr = None
         self._session = None
+        self._pilot = None
 
         self._resource_key = resource
         self._queue = queue
@@ -130,13 +131,13 @@ class SingleClusterEnvironment(ExecutionContext):
 
             self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
-            pilot = pmgr.submit_pilots(pdesc)
+            self._pilot = pmgr.submit_pilots(pdesc)
 
             self._umgr = radical.pilot.UnitManager(
                 session=self._session,
                 scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
-            self._umgr.add_pilots(pilot)
+            self._umgr.add_pilots(self._pilot)
 
             self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
 

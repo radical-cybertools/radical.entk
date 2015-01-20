@@ -56,31 +56,6 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
         try:
-            # launching pilot
-            session = radical.pilot.Session()
-
-            if resource._username is not None:
-                # Add an ssh identity to the session.
-                c = radical.pilot.Context('ssh')
-                c.user_id = resource._username
-                session.add_context(c)
-
-            pmgr = radical.pilot.PilotManager(session=session)
-
-            pdesc = radical.pilot.ComputePilotDescription()
-            pdesc.resource = resource._resource_key
-            pdesc.runtime  = resource._walltime
-            pdesc.cores    = resource._cores
-
-            if resource._queue is not None:
-                pdesc.queue = resource._queue
-
-            pdesc.cleanup  = resource._cleanup
-
-            if resource._allocation is not None:
-                pdesc.project = resource._allocation
-
-            pilot = pmgr.submit_pilots(pdesc)
 
             # shared data
             pattern.prepare_shared_data()
@@ -96,16 +71,13 @@ class Plugin(PluginBase):
                             'action': radical.pilot.TRANSFER
                 }
 
-                pilot.stage_in(sd_pilot)
+                resource._pilot.stage_in(sd_pilot)
 
                 sd_shared = {'source': 'staging:///%s' % shared_input_files[i],
                              'target': shared_input_files[i],
                              'action': radical.pilot.LINK
                 }
                 sd_shared_list.append(sd_shared)
-
-            unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_BACKFILLING)
-            unit_manager.add_pilots(pilot)
 
             replicas = pattern.get_replicas()
 
@@ -142,14 +114,14 @@ class Plugin(PluginBase):
                     current_entry["unit_description"] = cu
                     current_entry["compute_unit"] = None
 
-                    sub_replica = unit_manager.submit_units(cu)
+                    sub_replica = resource._umgr.submit_units(cu)
 
                     replica_key = "replica.md_%s" % r.id
                     cycle_key = "cycle_%s" % (c+1)
                     dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
                 self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c+1) )
-                unit_manager.wait_units()
+                resource._umgr.wait_units()
 
                 if (c < (pattern.nr_cycles-1)):
 
@@ -176,7 +148,7 @@ class Plugin(PluginBase):
                         current_entry["unit_description"] = cu
                         current_entry["compute_unit"] = None
 
-                        sub_replica = unit_manager.submit_units(cu)
+                        sub_replica = resource._umgr.submit_units(cu)
                         submitted_replicas.append(sub_replica)
 
                         replica_key = "replica.ex_%s" % r.id
@@ -184,7 +156,7 @@ class Plugin(PluginBase):
                         dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
                     self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
-                    unit_manager.wait_units()
+                    resource._umgr.wait_units()
 
                     matrix_columns = []
                     for r in submitted_replicas:
@@ -207,6 +179,10 @@ class Plugin(PluginBase):
         except Exception, ex:
             self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
             raise
+
+        self.get_logger().info("Replica Exchange simulation finished successfully!")
+        self.get_logger().info("Deallocating resource.")
+        resource.deallocate()
 
         # --------------------------------------------------------------------------
         # If profiling is enabled, we write the profiling data to a file
@@ -257,9 +233,4 @@ class Plugin(PluginBase):
                             )
                             f.write("{row}\n".format(row=row))
 
-        #---------------------------------------------------------------------------
-
-        self.get_logger().info("Replica Exchange simulation finished successfully!")
-
-        self.get_logger().info("closing session")
-        session.close (cleanup=False)
+        

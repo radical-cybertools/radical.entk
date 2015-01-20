@@ -236,7 +236,7 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-
+        
         cluster = SingleClusterEnvironment(
             resource="localhost",
             cores=1,
@@ -261,7 +261,7 @@ if __name__ == "__main__":
         print "Simulation performed 3 cycles for 16 replicas, so in your working directory you should"
         print "have 48 md_input_x_y.md files and 48 md_input_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
         print "where .md file is replica input file and .out is output providing number of occurrences"
-        print "of each character. \n"
+        print "of each character."
 
     except EnsemblemdError, er:
 

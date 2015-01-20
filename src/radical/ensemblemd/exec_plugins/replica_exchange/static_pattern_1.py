@@ -54,34 +54,6 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern, resource):
-        # launching pilot
-        session = radical.pilot.Session()
-
-        if resource._username is not None:
-            # Add an ssh identity to the session.
-            c = radical.pilot.Context('ssh')
-            c.user_id = resource._username
-            session.add_context(c)
-
-        pmgr = radical.pilot.PilotManager(session=session)
-
-        pdesc = radical.pilot.ComputePilotDescription()
-        pdesc.resource = resource._resource_key
-        pdesc.runtime  = resource._walltime
-        pdesc.cores    = resource._cores
-
-        if resource._queue is not None:
-            pdesc.queue = resource._queue
-
-        pdesc.cleanup  = resource._cleanup
-
-        if resource._allocation is not None:
-            pdesc.project = resource._allocation
-
-        pilot = pmgr.submit_pilots(pdesc)
-
-        unit_manager = radical.pilot.UnitManager(session=session,scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
-        unit_manager.add_pilots(pilot)
 
         replicas = pattern.get_replicas()
 
@@ -89,7 +61,7 @@ class Plugin(PluginBase):
         dictionary = {}
 
         for c in range(pattern.nr_cycles):
-            # submitted_replicas = []
+
             dictionary["cycle_{0}".format(c+1)] = {}
 
             for r in replicas:
@@ -115,17 +87,14 @@ class Plugin(PluginBase):
                 current_entry["unit_description"] = cu
                 current_entry["compute_unit"] = None
 
-                sub_replica = unit_manager.submit_units(cu)
-                # submitted_replicas.append(sub_replica)
+                sub_replica = resource._umgr.submit_units(cu)
 
                 replica_key = "replica_%s" % r.id
                 cycle_key = "cycle_%s" % (c+1)
                 dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
             self.get_logger().info("Performing MD step for replicas")
-            # submitted_replicas = unit_manager.submit_units(compute_replicas)
-
-            unit_manager.wait_units()
+            resource._umgr.wait_units()
 
             if (c < (pattern.nr_cycles-1)):
 
@@ -141,6 +110,9 @@ class Plugin(PluginBase):
                         self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
                         pattern.perform_swap(r_i, r_j)
 
+        self.get_logger().info("Replica Exchange simulation finished successfully!")
+        self.get_logger().info("Deallocating resource.")
+        resource.deallocate()
         # --------------------------------------------------------------------------
         # If profiling is enabled, we write the profiling data to a file
 
@@ -169,8 +141,5 @@ class Plugin(PluginBase):
                             tags="{cycle}; {replica}".format(cycle=cycle.split('_')[1], replica=replica.split('_')[1])
                         )
                         f.write("{row}\n".format(row=row))
-        #---------------------------------------------------------------------------
-        self.get_logger().info("Replica Exchange simulation finished successfully!")
 
-        self.get_logger().info("closing session")
-        session.close (cleanup=False)
+
