@@ -4,7 +4,7 @@
 Introduction
 ************
 
-What is EnsembleMD Toolkit?
+What is Ensemble MD Toolkit?
 ===========================
 
 The goal of Ensemble MD Toolkit is to provide an MD-specific alternative

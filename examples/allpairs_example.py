@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit ``AllPairsPattern``
+This example shows how to use the Ensemble MD Toolkit ``AllPairsPattern``
 pattern to execute n!/2(n-2)! simulation permutations of a set of n elements. In
 the ``element_initialization`` step, the necessary files for the all pair are
 created. Each ``element_comparison`` runs a comparison between a unique coupling
@@ -149,5 +149,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

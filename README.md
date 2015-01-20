@@ -19,7 +19,7 @@ The latest documentation can be found at http://radicalensemblemd.readthedocs.or
 
 ### Build Status
 
-[![Build Status](http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD)](http://ci.radical-project.org/job/EnsembleMD/)
+[![Build Status](http://ci.radical-project.org/buildStatus/icon?job=Ensemble MD)](http://ci.radical-project.org/job/Ensemble MD/)
 
 ### Contributors
 

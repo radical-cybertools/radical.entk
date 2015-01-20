@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """  
-Hausdorff Distance calculation script for EnsembleMD Toolkit
+Hausdorff Distance calculation script for Ensemble MD Toolkit
 """
 
 __author__       = "Ioannis Paraskevakos <i.parask@rutgers.edu>"
@@ -167,7 +167,7 @@ class MyHausdorff(KernelBase):
         self._post_exec   = None
 
 # ------------------------------------------------------------------------------
-# Register the user-defined kernel with EnsembleMD.
+# Register the user-defined kernel with Ensemble MD.
 get_engine().add_kernel_plugin(MyQPC)
 get_engine().add_kernel_plugin(MyHausdorff)
 
@@ -242,5 +242,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit :class:`.Pipeline` pattern
+This example shows how to use the Ensemble MD Toolkit :class:`.Pipeline` pattern
 to execute a single "Bag of Tasks". A Bag of Tasks is modeled as a
 :class:`.Pipeline` with just one step. The "instances" of the  :class:`.Pipeline`
 corresponds to the number of tasks in the bag.
@@ -135,5 +135,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

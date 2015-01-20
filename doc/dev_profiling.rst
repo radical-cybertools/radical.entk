@@ -1,12 +1,12 @@
 Performance Profiling
 =====================
 
-During development of a new EnsembleMD application, you will probably
+During development of a new Ensemble MD application, you will probably
 come to the point where you want to develop a deeper understanding of how your
 application behaves performance wise.
 
 Understanding an application's performance is the key to future design decisions
-and performance optimizations. EnsembleMD provides a  simple set of tools
+and performance optimizations. Ensemble MD provides a  simple set of tools
 to profile an application.
 
 Performance profiling doesn't require any modification of your application

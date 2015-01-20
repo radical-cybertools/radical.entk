@@ -30,8 +30,8 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
 
 **Current Build Status**
 
-  .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD
-      :target: http://ci.radical-project.org/job/EnsembleMD/
+  .. image:: http://ci.radical-project.org/buildStatus/icon?job=Ensemble MD
+      :target: http://ci.radical-project.org/job/Ensemble MD/
 
 #########
 Contents:

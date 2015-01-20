@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit ``SimulationAnalysis``
+This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
 pattern to execute 32 iterations of a simulation analysis loop. In the
 ``pre_loop`` step, a reference random ASCII file is uploaded. Each
 ``simulation_step`` generates 16 new random ASCII files.  Each ``analysis_step``
@@ -177,5 +177,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

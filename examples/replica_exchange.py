@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit ``replica_exchange`` pattern.
+This example shows how to use the Ensemble MD Toolkit ``replica_exchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
 Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
 Firstly, for each replica is generated dummy ``md_input_x_y.md``
@@ -265,5 +265,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

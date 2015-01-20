@@ -9,7 +9,7 @@ Installation
 Installing Ensemble MD Toolkit
 ==============================
 
-To install the EnsembleMD Toolkit Python modules in a virtual environment,
+To install the Ensemble MD Toolkit Python modules in a virtual environment,
 open a terminal and run:
 
 .. parsed-literal::
@@ -19,7 +19,7 @@ open a terminal and run:
     source $HOME/EnMDToolkit/bin/activate
     pip install --upgrade git+https://github.com/radical-cybertools/radical.ensemblemd.git@$ENMD_INSTALL_VERSION#egg=radical.ensemblemd
 
-You can check the version of the installed EnsembleMD Toolkit. It should return |VERSION|.
+You can check the version of the installed Ensemble MD Toolkit. It should return |VERSION|.
 
 .. parsed-literal::
 
@@ -64,7 +64,7 @@ a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
              will not be able to access the MongoDB server.
 
 A MongoDB server can support more than one user. In an environment where
-multiple users use EnsembleMD toolkit applications, a single MongoDB server
+multiple users use Ensemble MD toolkit applications, a single MongoDB server
 for all users / hosts is usually sufficient.
 
 Install your own MongoDB

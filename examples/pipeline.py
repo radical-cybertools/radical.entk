@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit ``Pipeline`` pattern
+This example shows how to use the Ensemble MD Toolkit ``Pipeline`` pattern
 to execute 16 concurrent pipeline of sequential tasks. In the first step of
 each pipeline ``step_1``, a 10 MB input file is generated and filled with
 ASCII charaters. In the second step ``step_2``, a character frequency analysis
@@ -157,5 +157,5 @@ if __name__ == "__main__":
 
     except EnsemblemdError, er:
 
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

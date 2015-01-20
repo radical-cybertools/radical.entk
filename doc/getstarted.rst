@@ -16,13 +16,13 @@ this section, like `application logic`, `application workload`, `pattern`,
 The Basics
 ==========
 
-The basic skeleton of an EnsembleMD application consists of three components: a
+The basic skeleton of an Ensemble MD application consists of three components: a
 `pattern class` in which the application logic is defined `application kernels`
 which define the application workload and an `execution environment` which
 represents the  cluster / resource on which the application workload is
 executed.
 
-Let's start with the simplest-possible EnsembleMD application to see how these
+Let's start with the simplest-possible Ensemble MD application to see how these
 parts link together:
 
 .. code-block:: python
@@ -59,7 +59,7 @@ parts link together:
         cluster.run(app)
 
 In line **6**, we define the pattern class. Here we use the :class:`.Pipeline`
-pattern. Pipeline is the "simplest" pattern in EnsembleMD Tolkit and desribes 
+pattern. Pipeline is the "simplest" pattern in Ensemble MD Tolkit and desribes 
 a liniear concatenation of steps. Here we only define one step (``step_1``), so
 the application logic is fairly simple. 
 

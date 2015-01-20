@@ -26,7 +26,7 @@ passes it to an execution context for execution:
         sec.execute(pat)
 
     except EnsemblemdError, er:
-        print "EnsembleMD Error: {0}".format(str(er))
+        print "Ensemble MD Error: {0}".format(str(er))
 
 If we run this example and no execution plug-in exists for ``MyPattern`` yet,
 we will end up with the following error::
@@ -34,7 +34,7 @@ we will end up with the following error::
     2014:08:12 14:28:42 36216  MainThread   radical.ensemblemd.Engine: [INFO    ] Loaded execution context plugin 'dummy.static.default' from radical.ensemblemd.execplugins.dummy.static
     2014:08:12 14:28:42 36216  MainThread   radical.ensemblemd.Engine: [INFO    ] Loaded execution context plugin 'dummy.dynamic.default' from radical.ensemblemd.execplugins.dummy.dynamic
     2014:08:12 14:28:42 36216  MainThread   radical.ensemblemd.Engine: [ERROR   ] Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
-    EnsembleMD Error: Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
+    Ensemble MD Error: Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
 
 If a plug-in for the pattern / context combination already exists, we can pass
 the optional ``force_plugin`` flag to the :func:`radical.ensemblemd.ExecutionContext.execute`
@@ -63,7 +63,7 @@ For this example, we create the following structure::
     |
 
 The module ``static_improved.py`` will contain our new plug-in implementation.
-In order for the plug-in to get loaded when EnMD starts up, we need to add it
+In order for the plug-in to get loaded when Ensemble MD Toolkit starts up, we need to add it
 to the plug-in registry in ``src/radical/ensemblemd/engine/plugin_registry.py``:
 
 .. code-block:: python
@@ -81,7 +81,7 @@ environment), we should see the following error::
     2014:08:12 19:29:58 41576  MainThread   radical.ensemblemd.Engine: [ERROR   ] Skipping execution context plugin radical.ensemblemd.execplugins.mypattern.static_improved: loading failed: ''module' object has no attribute 'Adaptor''
 
     2014:08:12 19:29:58 41576  MainThread   radical.ensemblemd.Engine: [ERROR   ] Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
-    EnsembleMD Error: Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
+    Ensemble MD Error: Couldn't find an execution plug-in for pattern 'MyPattern' and execution context 'Static'.
 
 The error message **''module' object has no attribute 'Adaptor''** is expected
 since our plug-in is at this point just an empty file without an implementation.
