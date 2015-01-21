@@ -118,14 +118,16 @@ setup_args = {
     'namespace_packages': ['radical', 'radical'],
     'packages'          : find_packages('src'),
 
-    'package_dir' :       {'': 'src'},
+    'package_dir'       : {'': 'src'},
 
-    'package_data'     :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
-    'install_requires' :  ['radical.utils', 'radical.pilot', 'setuptools>=1'],
+    'scripts'           : ['bin/ensemblemd-version'],
 
-    'test_suite'       : 'radical.ensemblemd.tests',
+    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
+    'install_requires'  :  ['radical.utils', 'radical.pilot', 'setuptools>=1'],
 
-    'zip_safe'         : False,
+    'test_suite'        : 'radical.ensemblemd.tests',
+
+    'zip_safe'          : False,
 }
 
 setup (**setup_args)
