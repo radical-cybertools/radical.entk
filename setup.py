@@ -120,7 +120,8 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    'scripts'           : ['bin/ensemblemd-version'],
+    'scripts'           : ['bin/ensemblemd-version',
+                           'bin/ensemblemd-profile'],
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
     'install_requires'  :  ['radical.utils', 'radical.pilot', 'setuptools>=1'],

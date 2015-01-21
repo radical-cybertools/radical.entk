@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+import csv
+import time
+import urllib2
+import datetime
+import optparse
+
+## TRY:
+## ensemblemd-profile -p file://localhost/`pwd`/gistfile1.txt
+## ensemblemd-profile -p https://gist.githubusercontent.com/oleweidner/73c21bf667e1e8c1e4f6/raw/111e1b6118698bc885087256022601123f163c55/gistfile1.txt
+
+# ------------------------------------------------------------------------------
+# Create a pipeline profile overview
+def pipeline_profile(data):
+
+    # Structure is:
+    #
+    # summary['1']['step_start_time']
+    #
+
+    summary = {}
+
+    for row in cr[1:]:
+
+        if row[3] not in summary:
+            summary[row[3]] = {
+                'step_start_time' : datetime.datetime.now(),
+                'step_stop_time'  : datetime.datetime(2005, 7, 14, 12, 30),
+                'avg_duration'    : None,
+                'instance_cnt'    : 0
+            }
+        summary_entry = summary[row[3]]
+
+        row[1] = datetime.datetime.strptime(row[1].split('.')[0], "%Y-%m-%d %H:%M:%S") # Start time
+        row[2] = datetime.datetime.strptime(row[2].split('.')[0], "%Y-%m-%d %H:%M:%S") # Stop time
+
+        if summary_entry['step_start_time'] > row[1]:
+            summary_entry['step_start_time'] = row[1]
+
+        if summary_entry['step_stop_time'] < row[2]:
+            summary_entry['step_stop_time'] = row[2]
+
+        duration = row[2] - row[1]
+
+        if summary_entry['avg_duration'] == None:
+            summary_entry['avg_duration'] = duration
+        else:
+            summary_entry['avg_duration'] += duration
+
+        summary_entry['instance_cnt'] += 1
+
+    # Print the data
+    #
+    for instance, data in summary.iteritems():
+        data['avg_duration'] = data['avg_duration'] / data['instance_cnt']
+
+        print "\nPipeline Step 1"
+        print "---------------"
+        print " * Instances                : %s" % data['instance_cnt']
+        print " * Step start time          : %s" % data['step_start_time']
+        print " * Step stop time           : %s" % data['step_stop_time']
+        print " * Step duration            : %s" % (data['step_stop_time'] - data['step_start_time'])
+        print " * Avg. duration / instance : %s" % data['avg_duration']
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__' :
+
+    import optparse
+    parser = optparse.OptionParser (add_help_option=True)
+
+    parser.add_option('-p', '--profile', dest='url')
+
+    options, args = parser.parse_args ()
+
+    if  args :
+        usage ("Too many arguments (%s)" % args)
+
+    if  not options.url :
+        parser.error("No URL specified")
+
+    response = urllib2.urlopen(options.url)
+
+    cr = csv.reader(response, delimiter=';', quoting=csv.QUOTE_NONE)
+    cr =  [[x.strip() for x in row] for row in cr]
+
+    pipeline_profile(cr)
