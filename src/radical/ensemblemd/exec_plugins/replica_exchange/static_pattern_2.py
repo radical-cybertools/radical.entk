@@ -46,11 +46,11 @@ class Plugin(PluginBase):
         """
         # THROW ERRROR IF PROFILING IS NOT IMPLEMENTED TO AVOID
         # FRUSTARTION AT THE NED
-        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
 
         if do_profile != '0':
             # add profiling code here
-            raise EnsemblemdError("RADICAL_ENDM_PROFILING set but profiling is not implemented for this pattern yet.")
+            raise EnsemblemdError("RADICAL_ENMD_PROFILING set but profiling is not implemented for this pattern yet.")
 
     # --------------------------------------------------------------------------
     #
