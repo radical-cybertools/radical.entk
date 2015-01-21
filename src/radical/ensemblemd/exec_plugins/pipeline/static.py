@@ -173,7 +173,7 @@ class Plugin(PluginBase):
         # At this point, we have executed the pattern succesfully. Now,
         # if profiling is enabled, we can write the profiling data to
         # a file.
-        do_profile = os.getenv('RADICAL_ENDM_PROFILING', '0')
+        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
 
         if do_profile != '0':
 

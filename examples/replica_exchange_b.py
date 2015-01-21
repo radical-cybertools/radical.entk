@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the Ensemble MD Toolkit ``replica_exchange`` pattern.
+This example shows how to use the Ensemble MD Toolkit ``ReplicaExchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation
 cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution
 plugin. Firstly, for each replica is generated dummy ``md_input_x_y.md`` input file and ``shared_md_input.dat``
@@ -317,10 +317,9 @@ if __name__ == "__main__":
         # run RE simulation
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
         print "RE simulation finished!"
-        print "Simulation performed 3 cycles for 16 replicas. In your working directory you should"
-        print "have 48 md_input_x_y.md files and 48 md_input_x_y.out files ( x in {0,1,2,3,...15}; y in {0,1,2} ) "
-        print "where .md file is replica input file and .out is output providing number of occurrences"
-        print "of each character."
+        print "Simulation performed {0} cycles for {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
+        print "have {0} md_input_x_y.md files and {0} md_input_x_y.out files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
+        print ".md file is replica input file and .out is output file providing number of occurrences of each character."
 
     except EnsemblemdError, er:
 
