@@ -54,12 +54,13 @@ parts link together:
             username=None,
             allocation=None
         )
+        cluster.allocate()
 
         app = MyApp(instances=1)
         cluster.run(app)
 
 In line **6**, we define the pattern class. Here we use the :class:`.Pipeline`
-pattern. Pipeline is the "simplest" pattern in Ensemble MD Toolkit and desribes 
+pattern. Pipeline is the "simplest" pattern in Ensemble MD Toolkit and desribes
 a liniear concatenation of steps. Here we only define one step (``step_1``), so
 the application logic is fairly simple.
 
