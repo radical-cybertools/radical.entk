@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the Ensemble MD Toolkit ``AllPairsPattern``
-pattern to execute n!/2(n-2)! simulation permutations of a set of n elements. In
-the ``element_initialization`` step, the necessary files for the all pair are
-created. Each ``element_comparison`` runs a comparison between a unique coupling
-of elements.
-
+This example shows how to use the EnsembleMD Toolkit ``AllPairs`` pattern to
+execute n(n-1)/2 simulation permutations of a set of n elements. In
+the ``element_initialization`` step, the necessary files for the "all pair" comparison are
+created. This step uses the ``misc.mkfile`` kernel to create random ASCII files.
+Those files represent the elements of the set upon which the ``AllPairs`` pattern
+will be executed. After the creation an ``element_comparison`` will be executed
+for each unique pair of files (elements of the set). The ``element_comparison``
+here executes the ``misc.diff`` kernel which returns the number of different lines
+between the files. In the end the result files are downloaded to the folder from
+which the script was run.
 
 Run Locally
 ^^^^^^^^^^^
@@ -16,16 +20,16 @@ Run Locally
              The format is ``mongodb://hostname:port``. Read more about it
              MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs>`.
+**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs_pattern>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python allpairs_example.py
 
-Once the script has finished running, you should see <Need to implement it
-completely to know the output files. Probably one file for everything?>the in
-the same directory you launched the script in.
+Once the script has finished running, you should see ``comparison-x-y.log`` files
+in the same directory you launched the script in. This log files contain the number
+of different lines between the compared files.
 
 Run Remotely
 ^^^^^^^^^^^^
@@ -114,9 +118,7 @@ class RandomAP(AllPairs):
                                   "--inputfile2={0}".format(input_filename2),
                                   "--outputfile={0}".format(output_filename)]
 
-        # I think it download the output files from the cluster to the machine
-        # that run this script. Need to learn more here.
-
+        # Download the result files.
         k.download_output_data = output_filename
         return k
 
@@ -144,8 +146,7 @@ if __name__ == "__main__":
 
         cluster.run(randAP)
 
-        # Do not know yet what should be printed...
-        print "Completed Succefully! Everything is downloaded!"
+        print "Succefully Completed! Everything is downloaded!"
 
     except EnsemblemdError, er:
 

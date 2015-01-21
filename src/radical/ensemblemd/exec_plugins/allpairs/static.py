@@ -163,7 +163,7 @@ class Plugin(PluginBase):
             with open(outfile, 'w+') as f:
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; p1; p2"
+                head = "task; start_time; stop_time; Element 1; Element 2"
                 f.write("{row}\n".format(row=head))
 
                 for pair in journal.keys():
