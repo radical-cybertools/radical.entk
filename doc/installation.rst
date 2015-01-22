@@ -19,11 +19,11 @@ open a terminal and run:
     source $HOME/EnMDToolkit/bin/activate
     pip install --upgrade git+https://github.com/radical-cybertools/radical.ensemblemd.git@$ENMD_INSTALL_VERSION#egg=radical.ensemblemd
 
-You can check the version of the installed Ensemble MD Toolkit. It should return |VERSION|.
+You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` command-line tool. It should return |VERSION|.
 
 .. parsed-literal::
 
-    python -c "import radical.ensemblemd; print radical.ensemblemd.__version__"
+    ensemblemd-version
 
     |VERSION|
 

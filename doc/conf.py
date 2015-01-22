@@ -74,12 +74,12 @@ with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
                     kernel_rst.write("This Kernel takes the same arguments and command-line parameters as the as the encapsulated tool.\n\n")
 
                 else:
-                    kernel_rst.write("+----------------------+----------------------------------------------------------------------------------+-----------+\n")
-                    kernel_rst.write("| Argument Name        | Description                                                                      | Mandatory |\n")
-                    kernel_rst.write("+======================+==================================================================================+===========+\n")
+                    kernel_rst.write("+----------------------------+----------------------------------------------------------------------------------+-----------+\n")
+                    kernel_rst.write("| Argument Name              | Description                                                                      | Mandatory |\n")
+                    kernel_rst.write("+============================+==================================================================================+===========+\n")
                     for arg, cfg in ki["arguments"].iteritems():
-                        kernel_rst.write("| {:20s} | {:80s} | {:9b} |\n".format(arg, cfg["description"], cfg["mandatory"] ))
-                        kernel_rst.write("+----------------------+----------------------------------------------------------------------------------+-----------+\n")
+                        kernel_rst.write("| {:26s} | {:80s} | {:9b} |\n".format(arg, cfg["description"], cfg["mandatory"] ))
+                        kernel_rst.write("+----------------------------+----------------------------------------------------------------------------------+-----------+\n")
 
                 kernel_rst.write("\n**Machine Configurations:**\n\n")
                 kernel_rst.write("Machine configurations describe specific configurations of the tool on a specific platform. ``*`` is a catch-all for all hosts for which no specific configuration exists.\n\n")
