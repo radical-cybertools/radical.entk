@@ -126,6 +126,47 @@ def sa_profile(data):
         print " * Avg. duration / instance : %s" % data['avg_duration']
 
 # ------------------------------------------------------------------------------
+# Create a pipeline profile overview
+#
+def allpairs_profile(data):
+
+    summary = {
+        'step_start_time' : datetime.datetime.now(),
+        'step_stop_time'  : datetime.datetime(2005, 7, 14, 12, 30),
+        'avg_duration'    : None,
+        'instance_cnt'    : 0
+    }
+
+    for row in cr[1:]:
+
+        if summary['step_start_time'] > row[1]:
+            summary['step_start_time'] = row[1]
+
+        if summary['step_stop_time'] < row[2]:
+            summary['step_stop_time'] = row[2]
+
+        duration = row[2] - row[1]
+
+        if summary['avg_duration'] == None:
+            summary['avg_duration'] = duration
+        else:
+            summary['avg_duration'] += duration
+
+        summary['instance_cnt'] += 1
+
+    # Print the data
+    #
+    summary['avg_duration'] = summary['avg_duration'] / summary['instance_cnt']
+
+    print "\nAll-Pairs"
+    print "------------------------------------------------------------------"
+    print " * Comparisons                : %s" % summary['instance_cnt']
+    print " * Step start time            : %s" % summary['step_start_time']
+    print " * Step stop time             : %s" % summary['step_stop_time']
+    print " * Step duration              : %s" % (summary['step_stop_time'] - summary['step_start_time'])
+    print " * Avg. duration / comparison : %s" % summary['avg_duration']
+
+# ------------------------------------------------------------------------------
 #
 if __name__ == '__main__' :
 
@@ -163,3 +204,6 @@ if __name__ == '__main__' :
 
     if cr[0][3] == 'stage' and cr[0][4] == 'iteration':
         sa_profile(cr)
+
+    if cr[0][3] == 'Element 1' and cr[0][4] == 'Element 2':
+        allpairs_profile(cr)
