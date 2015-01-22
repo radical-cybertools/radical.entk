@@ -11,7 +11,6 @@ import optparse
 ## ensemblemd-profile -p https://gist.githubusercontent.com/oleweidner/73c21bf667e1e8c1e4f6/raw/111e1b6118698bc885087256022601123f163c55/gistfile1.txt
 
 # ------------------------------------------------------------------------------
-# Create a pipeline profile overview
 #
 def pipeline_profile(data):
 
@@ -59,7 +58,6 @@ def pipeline_profile(data):
         print " * Avg. duration / instance : %s" % data['avg_duration']
 
 # ------------------------------------------------------------------------------
-# Create a simulation-analysis profile overview
 #
 def sa_profile(data):
 
@@ -126,7 +124,6 @@ def sa_profile(data):
         print " * Avg. duration / instance : %s" % data['avg_duration']
 
 # ------------------------------------------------------------------------------
-# Create a pipeline profile overview
 #
 def allpairs_profile(data):
 
@@ -165,6 +162,54 @@ def allpairs_profile(data):
     print " * Step stop time             : %s" % summary['step_stop_time']
     print " * Step duration              : %s" % (summary['step_stop_time'] - summary['step_start_time'])
     print " * Avg. duration / comparison : %s" % summary['avg_duration']
+
+# ------------------------------------------------------------------------------
+#
+def repex_profile(data):
+
+    summary = {}
+
+    for row in cr[1:]:
+
+        if row[3] not in summary:
+            summary[row[3]] = {
+                'step_start_time' : datetime.datetime.now(),
+                'step_stop_time'  : datetime.datetime(2005, 7, 14, 12, 30),
+                'avg_duration'    : None,
+                'instance_cnt'    : 0
+            }
+
+        summary_entry = summary[row[3]]
+
+        if summary_entry['step_start_time'] > row[1]:
+            summary_entry['step_start_time'] = row[1]
+
+        if summary_entry['step_stop_time'] < row[2]:
+            summary_entry['step_stop_time'] = row[2]
+
+        duration = row[2] - row[1]
+
+        if summary_entry['avg_duration'] == None:
+            summary_entry['avg_duration'] = duration
+        else:
+            summary_entry['avg_duration'] += duration
+
+        summary_entry['instance_cnt'] += 1
+
+    # Print the data
+    #
+    for cycle in sorted(summary):
+        data = summary[cycle]
+        data['avg_duration'] = data['avg_duration'] / data['instance_cnt']
+
+        print "\nReplica-Exchange Cycle %s" % cycle
+        print "------------------------------------------------------------------"
+        print " * Replicas                : %s" % data['instance_cnt']
+        print " * Cycle start time        : %s" % data['step_start_time']
+        print " * Cycle stop time         : %s" % data['step_stop_time']
+        print " * Cycle duration          : %s" % (data['step_stop_time'] - data['step_start_time'])
+        print " * Avg. duration / replica : %s" % data['avg_duration']
+
 
 # ------------------------------------------------------------------------------
 #
@@ -207,3 +252,6 @@ if __name__ == '__main__' :
 
     if cr[0][3] == 'Element 1' and cr[0][4] == 'Element 2':
         allpairs_profile(cr)
+
+    if cr[0][3] == 'cycle' and cr[0][4] == 'replica_id':
+        repex_profile(cr)
