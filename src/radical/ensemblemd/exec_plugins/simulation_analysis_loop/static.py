@@ -27,47 +27,77 @@ _PLUGIN_OPTIONS = []
 
 # ------------------------------------------------------------------------------
 #
-def create_env_vars(working_dirs, instance, iteration, sim_width, ana_width, type):
-    env_vars = dict()
+def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_width, type, path):
 
-    #  * ``$PRE_LOOP`` - References the pre_loop step.
-    if "pre_loop" in working_dirs:
-        env_vars["PRE_LOOP"] = working_dirs["pre_loop"]
+    # Extract placeholder from path
+    if path.startswith('$'):
+        placeholder = path.split('/')[0]
 
-    #  * ``$PREV_SIMULATION`` - References the previous simulation step with the same instance number.
-    if sim_width == ana_width:
-        if type == "analysis":
-            env_vars["PREV_SIMULATION"] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(instance)]
+    # $PRE_LOOP
+    if placeholder == "$PRE_LOOP":
+        return path.replace(placeholder, working_dirs["pre_loop"])
 
-    #  * ``$PREV_SIMULATION_INSTANCE_Y`` - References instance Y of the previous simulation step.
-    if type == "analysis" and iteration >= 1:
-        for inst in range(1, sim_width+1):
-            env_vars["PREV_SIMULATION_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(inst)]
+    # $POST_LOOP
+    elif placeholder == "$POST_LOOP":
+        return path.replace(placeholder, working_dirs["post_loop"])
 
-    #  * ``$SIMULATION_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the simulation step of iteration number X.
-    if type == "analysis" and iteration >= 1:
-        for iter in range(1,iteration+1):
-            for inst in range(1,sim_width+1):
-                env_vars["SIMULATION_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['simulation_{0}'.format(inst)]
+    # $PREV_SIMULATION
+    elif placeholder == "$PREV_SIMULATION":
+        if sim_width == ana_width:
+            if type == "analysis":
+                return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(instance)])
+            else:
+                raise Exception("$PREV_SIMULATION can only be referenced within analysis step. ")
+        else:
+            raise Exception("Simulation and analysis 'width' need to be identical for $PREV_SIMULATION to work.")
 
-    #  * ``$PREV_ANALYSIS`` - References the previous analysis step with the same instance number.
-    if sim_width == ana_width:
+    # $PREV_ANALYSIS
+    elif placeholder == "$PREV_ANALYSIS":
+        if sim_width == ana_width:
+            if type == "simulation":
+                return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(instance)])
+            else:
+                raise Exception("$PREV_ANALYSIS can only be referenced within simulation step. ")
+        else:
+            raise Exception("Simulation and analysis 'width' need to be identical for $PREV_SIMULATION to work.")
+
+    # $PREV_SIMULATION_INSTANCE_Y
+    elif placeholder.startswith("$PREV_SIMULATION_INSTANCE_"):
+        y = string.split("$PREV_SIMULATION_INSTANCE_")[1]
+        if type == "analysis" and iteration >= 1:
+            return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(y)])
+        else:
+            raise Exception("$PREV_SIMULATION_INSTANCE_Y used in invalid context.")
+
+    # $PREV_ANALYSIS_INSTANCE_Y
+    elif placeholder_l.startswith("$PREV_ANALYSIS_INSTANCE_"):
+        y = string.split("$PREV_ANALYSIS_INSTANCE_")[1]
         if type == "simulation" and iteration > 1:
-            env_vars["PREV_ANALYSIS"] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(instance)]
+            return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(y)])
+        else:
+            raise Exception("$PREV_ANALYSIS_INSTANCE_Y used in invalid context.")
 
-    #  * ``$PREV_ANALYSIS_INSTANCE_Y`` - References instance Y of the previous analysis step.
-    if (type == "simulation" or type == 'analysis') and iteration > 1:
-        for inst in range(1, ana_width+1):
-            env_vars["PREV_ANALYSIS_INSTANCE_{0}".format(inst)] = working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(inst)]
+    # $SIMULATION_ITERATION_X_INSTANCE_Y
+    elif placeholder_l.startswith("$SIMULATION_ITERATION_"):
+        x = placeholder_l.split("_")[2]
+        y = placeholder_l.split("_")[4]
+        if type == "analysis" and iteration >= 1:
+            return path.replace(plcaholder, working_dirs['iteration_{0}'.format(x)]['simulation_{0}'.format(y)])
+        else:
+            raise Exception("$SIMULATION_ITERATION_X_INSTANCE_Y used in invalid context.")
 
-    #  * ``$ANALYSIS_ITERATION_X_INSTANCE_Y`` - Refernces instance Y of the analysis step of iteration number X.
-    if (type == "simulation" or type == 'analysis') and iteration > 1:
-        for iter in range(1,iteration):
-            for inst in range(1,ana_width+1):
-                env_vars["ANALYSIS_ITERATION_{1}_INSTANCE_{0}".format(inst,iter)] = working_dirs['iteration_{0}'.format(iter)]['analysis_{0}'.format(inst)]
+    # $ANALYSIS_ITERATION_X_INSTANCE_Y
+    elif placeholder_l.startswith("$ANALYSIS_ITERATION_"):
+        x = placeholder_l.split("_")[2]
+        y = placeholder_l.split("_")[4]
+        if type == "analysis" and iteration >= 1:
+            return path.replace(placeholder, working_dirs['iteration_{0}'.format(x)]['analysis_{0}'.format(y)])
+        else:
+            raise Exception("$ANAYSIS_ITERATION_X_INSTANCE_Y used in invalid context.")
 
-    return env_vars
-
+    # Nothing to replace here...
+    else:
+        return path
 
 # ------------------------------------------------------------------------------
 #
@@ -158,22 +188,25 @@ class Plugin(PluginBase):
 
                     sim_step._bind_to_resource(resource._resource_key)
 
+                    # Resolve all placeholders
+                    if sim_step.link_input_data is not None:
+                        for i in range(len(sim_step.link_input_data)):
+                            sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", sim_step.link_input_datal)
+
                     cud = radical.pilot.ComputeUnitDescription()
                     cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
-                    cud.pre_exec = []
-
-                    env_vars = create_env_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="simulation")
-                    for var, value in env_vars.iteritems():
-                        cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-
-                    cud.pre_exec.extend(sim_step._cu_def_pre_exec)
+                    cud.pre_exec       = sim_step._cu_def_pre_exec
                     cud.executable     = sim_step._cu_def_executable
                     cud.arguments      = sim_step.arguments
                     cud.mpi            = sim_step.uses_mpi
                     cud.input_staging  = sim_step._cu_def_input_data
                     cud.output_staging = sim_step._cu_def_output_data
+
+                    # This is a good time to replace all placeholders in the
+                    # pre_exec list.
+
+
                     s_units.append(cud)
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
 
@@ -198,7 +231,6 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
-
                 a_units = []
                 analysis_list = None
                 for a_instance in range(1, pattern._analysis_instances+1):
@@ -218,16 +250,15 @@ class Plugin(PluginBase):
                             a_units = []
                             ana_step._bind_to_resource(resource._resource_key)
 
+                            # Resolve all placeholders
+                            if ana_step.link_input_data is not None:
+                                for i in range(len(ana_step.link_input_data)):
+                                    ana_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step.link_input_data[i])
+
                             cud = radical.pilot.ComputeUnitDescription()
                             cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
-                            cud.pre_exec = []
-
-                            env_vars = create_env_vars(working_dirs, 1, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                            for var, value in env_vars.iteritems():
-                                cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-                            cud.pre_exec.extend(ana_step._cu_def_pre_exec)
+                            cud.pre_exec       = ana_step._cu_def_pre_exec
                             if cur_kernel > 1:
                                 cud.pre_exec.append('cp %s/*.* .'%kernel_wd)
 
@@ -261,20 +292,19 @@ class Plugin(PluginBase):
                         analysis_step = analysis_list[0]
                         analysis_step._bind_to_resource(resource._resource_key)
 
+                        # Resolve all placeholders
+                        if analysis_step.link_input_data is not None:
+                            for i in range(len(analysis_step.link_input_data)):
+                                analysis_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", analysis_step.link_input_data[i])
+
                         cud = radical.pilot.ComputeUnitDescription()
                         cud.name = "ana; {iteration};{instance}".format(iteration=iteration, instance=a_instance)
 
-                        cud.pre_exec = []
-                        env_vars = create_env_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, type="analysis")
-                        for var, value in env_vars.iteritems():
-                            cud.pre_exec.append("export {var}={value}".format(var=var, value=value))
-
-                        cud.pre_exec.extend(analysis_step._cu_def_pre_exec)
-
-                        cud.executable = analysis_step._cu_def_executable
-                        cud.arguments = analysis_step.arguments
-                        cud.mpi = analysis_step.uses_mpi
-                        cud.input_staging = analysis_step._cu_def_input_data
+                        cud.pre_exec       = analysis_step._cu_def_pre_exec
+                        cud.executable     = analysis_step._cu_def_executable
+                        cud.arguments      = analysis_step.arguments
+                        cud.mpi            = analysis_step.uses_mpi
+                        cud.input_staging  = analysis_step._cu_def_input_data
                         cud.output_staging = analysis_step._cu_def_output_data
 
                         a_units.append(cud)
