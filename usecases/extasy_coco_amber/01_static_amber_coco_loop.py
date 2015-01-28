@@ -140,8 +140,8 @@ if __name__ == "__main__":
             resource="stampede.tacc.utexas.edu",
             cores=16,
             walltime=30,
-            username = 'vivek91',
-            allocation = 'TG-MCB090174'
+            username = '', #username
+            allocation = '' #allocation
         )
 
         cluster.allocate()
