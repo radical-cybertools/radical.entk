@@ -56,3 +56,6 @@ coverage.xml
 docs/_build/
 
 .idea/
+
+# Specifics
+src/radical/ensemblemd/VERSION
