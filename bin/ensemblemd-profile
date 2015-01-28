@@ -2,13 +2,21 @@
 
 import csv
 import time
+try:
+    import numpy as np
+except:
+    print "Module 'numpy' not available. Only a subset of profile information will be available. "
 import urllib2
 import datetime
 import optparse
 
+
 ## TRY:
 ## ensemblemd-profile -p execution_profile_2015-01-22T12:04:50.669529.csv
 ## ensemblemd-profile -p https://gist.githubusercontent.com/oleweidner/73c21bf667e1e8c1e4f6/raw/111e1b6118698bc885087256022601123f163c55/gistfile1.txt
+
+def timedelta_to_microtime(td):
+    return abs(td.microseconds + (td.seconds + td.days * 86400) * 1000000)
 
 # ------------------------------------------------------------------------------
 #
@@ -54,8 +62,8 @@ def pipeline_profile(data):
         print " * Instances                : %s" % data['instance_cnt']
         print " * Step start time          : %s" % data['step_start_time']
         print " * Step stop time           : %s" % data['step_stop_time']
-        print " * Step duration            : %s" % (data['step_stop_time'] - data['step_start_time'])
-        print " * Avg. duration / instance : %s" % data['avg_duration']
+        print " * Step runtime             : %s" % (data['step_stop_time'] - data['step_start_time'])
+        print " * Mean runtime / instance  : %s" % data['avg_duration']
 
 # ------------------------------------------------------------------------------
 #
@@ -120,8 +128,8 @@ def sa_profile(data):
         print " * Instances                : %s" % data['instance_cnt']
         print " * Step start time          : %s" % data['step_start_time']
         print " * Step stop time           : %s" % data['step_stop_time']
-        print " * Step duration            : %s" % (data['step_stop_time'] - data['step_start_time'])
-        print " * Avg. duration / instance : %s" % data['avg_duration']
+        print " * Step runtime             : %s" % (data['step_stop_time'] - data['step_start_time'])
+        print " * Mean runtime / instance  : %s" % data['avg_duration']
 
 # ------------------------------------------------------------------------------
 #
@@ -160,8 +168,8 @@ def allpairs_profile(data):
     print " * Comparisons                : %s" % summary['instance_cnt']
     print " * Step start time            : %s" % summary['step_start_time']
     print " * Step stop time             : %s" % summary['step_stop_time']
-    print " * Step duration              : %s" % (summary['step_stop_time'] - summary['step_start_time'])
-    print " * Avg. duration / comparison : %s" % summary['avg_duration']
+    print " * Step runtime               : %s" % (summary['step_stop_time'] - summary['step_start_time'])
+    print " * Mean runtime / comparison  : %s" % summary['avg_duration']
 
 # ------------------------------------------------------------------------------
 #
@@ -176,7 +184,8 @@ def repex_profile(data):
                 'step_start_time' : datetime.datetime.now(),
                 'step_stop_time'  : datetime.datetime(2005, 7, 14, 12, 30),
                 'avg_duration'    : None,
-                'instance_cnt'    : 0
+                'instance_cnt'    : 0,
+                'instance_dur'    : []
             }
 
         summary_entry = summary[row[3]]
@@ -188,6 +197,7 @@ def repex_profile(data):
             summary_entry['step_stop_time'] = row[2]
 
         duration = row[2] - row[1]
+        summary_entry['instance_dur'].append(timedelta_to_microtime(duration))
 
         if summary_entry['avg_duration'] == None:
             summary_entry['avg_duration'] = duration
@@ -202,13 +212,16 @@ def repex_profile(data):
         data = summary[cycle]
         data['avg_duration'] = data['avg_duration'] / data['instance_cnt']
 
+        stddev = datetime.timedelta(microseconds=np.std(data['instance_dur']))
+
         print "\nReplica-Exchange Cycle %s" % cycle
         print "------------------------------------------------------------------"
         print " * Replicas                : %s" % data['instance_cnt']
         print " * Cycle start time        : %s" % data['step_start_time']
         print " * Cycle stop time         : %s" % data['step_stop_time']
-        print " * Cycle duration          : %s" % (data['step_stop_time'] - data['step_start_time'])
-        print " * Avg. duration / replica : %s" % data['avg_duration']
+        print " * Cycle runtime           : %s" % (data['step_stop_time'] - data['step_start_time'])
+        print " * Avg. runtime / replica  : %s" % data['avg_duration']
+        print "   - Std. deviation        : %s" % stddev
 
 
 # ------------------------------------------------------------------------------
