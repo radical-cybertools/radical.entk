@@ -8,11 +8,11 @@ if __name__ == '__main__':
     num_tasks = int(sys.argv[1])
     grofile_name = sys.argv[2]
 
-    curdir = os.path.dirname(os.path.realpath(__file__))
+    curdir = os.path.dirname(os.path.abspath(__file__))
 
     print 'Prepare grofiles..'
 
-    grofile_obj = gro.GroFile(os.path.dirname(os.path.realpath(__file__)) + '/' + grofile_name)
+    grofile_obj = gro.GroFile(os.path.dirname(os.path.abspath(__file__)) + '/' + grofile_name)
 
     if grofile_obj.nruns<num_tasks:
         print "###ERROR: number of runs should be greater or equal to the number of tasks."
