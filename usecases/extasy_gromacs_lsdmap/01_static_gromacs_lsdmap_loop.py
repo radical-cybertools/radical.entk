@@ -144,8 +144,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         pre_ana = Kernel(name="md.pre_lsdmap")
         pre_ana.arguments = ["--numCUs={0}".format(num_CUs)]
-        pre_ana.copy_input_data = ["$PRE_LOOP/pre_analyze.py"]
-        pre_ana.link_input_data = []
+        pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py"]
         for i in range(1,num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
 
@@ -157,7 +156,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
-        post_ana.copy_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
+        post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
         post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
                               "--max_dead_neighbors=0","--max_alive_neighbors=10","--numCUs={0}".format(num_CUs)]
         if(iteration%nsave==0):
@@ -182,6 +181,8 @@ if __name__ == "__main__":
         username='vivek91',
         allocation='TG-MCB090174'
       )
+
+      cluster.allocate()
 
       # We set the 'instances' of the simulation step to 16. This means that 16
       # instances of the simulation are executed every iteration.

@@ -115,7 +115,7 @@ class MSSA(SimulationAnalysisLoop):
            previous simulation with instance 5 is referenced.
         """
         link_input_data = []
-        for i in range(0, self.simlation_instances):
+        for i in range(1, self.simlation_instances+1):
             link_input_data.append("$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
 
         k = Kernel(name="misc.ccount")

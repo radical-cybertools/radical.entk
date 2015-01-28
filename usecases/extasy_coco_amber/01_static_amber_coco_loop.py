@@ -144,6 +144,8 @@ if __name__ == "__main__":
             allocation = 'TG-MCB090174'
         )
 
+        cluster.allocate()
+
         coco_amber_static = Extasy_CocoAmber_Static(maxiterations=4, simulation_instances=num_sims, analysis_instances=1)
         cluster.run(coco_amber_static)
 
