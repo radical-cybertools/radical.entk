@@ -63,37 +63,37 @@ def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_w
 
     # $PREV_SIMULATION_INSTANCE_Y
     elif placeholder.startswith("$PREV_SIMULATION_INSTANCE_"):
-        y = string.split("$PREV_SIMULATION_INSTANCE_")[1]
+        y = placeholder.split("$PREV_SIMULATION_INSTANCE_")[1]
         if type == "analysis" and iteration >= 1:
             return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(y)])
         else:
             raise Exception("$PREV_SIMULATION_INSTANCE_Y used in invalid context.")
 
     # $PREV_ANALYSIS_INSTANCE_Y
-    elif placeholder_l.startswith("$PREV_ANALYSIS_INSTANCE_"):
-        y = string.split("$PREV_ANALYSIS_INSTANCE_")[1]
+    elif placeholder.startswith("$PREV_ANALYSIS_INSTANCE_"):
+        y = placeholder.split("$PREV_ANALYSIS_INSTANCE_")[1]
         if type == "simulation" and iteration > 1:
-            return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(y)])
+            return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(y)])
         else:
             raise Exception("$PREV_ANALYSIS_INSTANCE_Y used in invalid context.")
 
     # $SIMULATION_ITERATION_X_INSTANCE_Y
-    elif placeholder_l.startswith("$SIMULATION_ITERATION_"):
-        x = placeholder_l.split("_")[2]
-        y = placeholder_l.split("_")[4]
+    elif placeholder.startswith("$SIMULATION_ITERATION_"):
+        x = placeholder.split("_")[2]
+        y = placeholder.split("_")[4]
         if type == "analysis" and iteration >= 1:
-            return path.replace(plcaholder, working_dirs['iteration_{0}'.format(x)]['simulation_{0}'.format(y)])
+            return path.replace(placeholder, working_dirs['iteration_{0}'.format(x)]['simulation_{0}'.format(y)])
         else:
             raise Exception("$SIMULATION_ITERATION_X_INSTANCE_Y used in invalid context.")
 
     # $ANALYSIS_ITERATION_X_INSTANCE_Y
-    elif placeholder_l.startswith("$ANALYSIS_ITERATION_"):
-        x = placeholder_l.split("_")[2]
-        y = placeholder_l.split("_")[4]
-        if type == "analysis" and iteration >= 1:
+    elif placeholder.startswith("$ANALYSIS_ITERATION_"):
+        x = placeholder.split("_")[2]
+        y = placeholder.split("_")[4]
+        if (type == 'simulation' or type == "analysis") and iteration >= 1:
             return path.replace(placeholder, working_dirs['iteration_{0}'.format(x)]['analysis_{0}'.format(y)])
         else:
-            raise Exception("$ANAYSIS_ITERATION_X_INSTANCE_Y used in invalid context.")
+            raise Exception("$ANALYSIS_ITERATION_X_INSTANCE_Y used in invalid context.")
 
     # Nothing to replace here...
     else:
@@ -191,7 +191,7 @@ class Plugin(PluginBase):
                     # Resolve all placeholders
                     if sim_step.link_input_data is not None:
                         for i in range(len(sim_step.link_input_data)):
-                            sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", sim_step.link_input_datal)
+                            sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
 
                     cud = radical.pilot.ComputeUnitDescription()
                     cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
