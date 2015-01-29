@@ -127,7 +127,7 @@ class Plugin(PluginBase):
                 cudesc.executable     = kernel._cu_def_executable
                 cudesc.arguments      = kernel.arguments
                 cudesc.mpi            = kernel.uses_mpi
-                cudesc.input_staging  = [INPUT_FILE1, INPUT_FILE2]
+                cudesc.input_staging  = kernel._cu_def_input_data + [INPUT_FILE1, INPUT_FILE2]
                 cudesc.output_staging = [link_output]
                 self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                     kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
