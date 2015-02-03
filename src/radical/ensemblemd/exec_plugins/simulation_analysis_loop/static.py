@@ -326,7 +326,7 @@ class Plugin(PluginBase):
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                        # TODO: ensure working_dir <-> instance mapping
+                     # TODO: ensure working_dir <-> instance mapping
                         i = 0
                         for cu in a_cus:
                             i += 1
