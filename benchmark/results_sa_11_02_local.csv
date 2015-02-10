@@ -1,0 +1,109 @@
+cores: 1 instances: 1 iterations: 1
+{'ana_1': 1.7114441394805908, 'sim_1': 1.3257899284362793}
+
+
+cores: 1 instances: 2 iterations: 1
+{'ana_1': 2.0666449069976807, 'sim_1': 2.1380178928375244}
+
+
+cores: 1 instances: 4 iterations: 1
+{'ana_1': 2.612823963165283, 'sim_1': 2.999242067337036}
+
+
+cores: 1 instances: 8 iterations: 1
+{'ana_1': 5.431006908416748, 'sim_1': 4.90424108505249}
+
+
+cores: 1 instances: 16 iterations: 1
+{'ana_1': 9.568115949630737, 'sim_1': 8.362040042877197}
+
+
+cores: 1 instances: 32 iterations: 1
+{'ana_1': 18.10982608795166, 'sim_1': 17.122473001480103}
+
+
+cores: 1 instances: 64 iterations: 1
+{'ana_1': 34.708016872406006, 'sim_1': 32.599159955978394}
+
+
+cores: 2 instances: 1 iterations: 1
+{'ana_1': 1.8329699039459229, 'sim_1': 1.5183351039886475}
+
+
+cores: 2 instances: 2 iterations: 1
+{'ana_1': 1.9769818782806396, 'sim_1': 1.956861972808838}
+
+
+cores: 2 instances: 4 iterations: 1
+{'ana_1': 2.827709913253784, 'sim_1': 2.869817018508911}
+
+
+cores: 2 instances: 8 iterations: 1
+{'ana_1': 5.337264060974121, 'sim_1': 5.751028776168823}
+
+
+cores: 2 instances: 16 iterations: 1
+{'ana_1': 9.427178144454956, 'sim_1': 9.4619619846344}
+
+
+cores: 2 instances: 32 iterations: 1
+{'ana_1': 18.15656089782715, 'sim_1': 17.250834941864014}
+
+
+cores: 2 instances: 64 iterations: 1
+{'ana_1': 33.63977122306824, 'sim_1': 31.307164907455444}
+
+
+cores: 4 instances: 1 iterations: 1
+{'ana_1': 1.7293591499328613, 'sim_1': 1.5131549835205078}
+
+
+cores: 4 instances: 2 iterations: 1
+{'ana_1': 2.0763490200042725, 'sim_1': 1.9765119552612305}
+
+
+cores: 4 instances: 4 iterations: 1
+{'ana_1': 2.6333749294281006, 'sim_1': 2.9475901126861572}
+
+
+cores: 4 instances: 8 iterations: 1
+{'ana_1': 5.557884931564331, 'sim_1': 4.61241888999939}
+
+
+cores: 4 instances: 16 iterations: 1
+{'ana_1': 9.848553895950317, 'sim_1': 9.762331008911133}
+
+
+cores: 4 instances: 32 iterations: 1
+{'ana_1': 18.29598593711853, 'sim_1': 17.115370988845825}
+
+
+cores: 4 instances: 64 iterations: 1
+{'ana_1': 34.8797070980072, 'sim_1': 32.32910895347595}
+
+
+cores: 8 instances: 1 iterations: 1
+{'ana_1': 1.565697193145752, 'sim_1': 1.5046021938323975}
+
+
+cores: 8 instances: 2 iterations: 1
+{'ana_1': 2.183617115020752, 'sim_1': 1.9606239795684814}
+
+cores: 8 instances: 4 iterations: 1
+{'ana_1': 2.751771926879883, 'sim_1': 2.8969459533691406}
+
+
+cores: 8 instances: 8 iterations: 1
+{'ana_1': 5.351022958755493, 'sim_1': 4.859458923339844}
+
+
+cores: 8 instances: 16 iterations: 1
+{'ana_1': 9.784399032592773, 'sim_1': 9.674731016159058}
+
+
+cores: 8 instances: 32 iterations: 1
+{'ana_1': 18.058960914611816, 'sim_1': 17.20202898979187}
+
+
+cores: 8 instances: 64 iterations: 1
+{'ana_1': 34.20837116241455, 'sim_1': 33.66633892059326}

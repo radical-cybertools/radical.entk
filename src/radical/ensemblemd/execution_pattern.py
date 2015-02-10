@@ -14,8 +14,8 @@ from radical.ensemblemd.engine import Engine
 #
 class ExecutionPattern(object):
     """An execution pattern represents a specific molecular dynamics workflow
-       pattern. Pattern is the abstract base-class and not used directly. 
-       To create an execution pattern, use either of the following derived 
+       pattern. Pattern is the abstract base-class and not used directly.
+       To create an execution pattern, use either of the following derived
        classes:
 
          * :class:`radical.ensemblemd.DummyPattern`
@@ -39,6 +39,17 @@ class ExecutionPattern(object):
         """
         raise NotImplementedError(
           method_name="get_name",
+          class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def execution_profile(self):
+        """Returns the execution profile after the pattern has finished
+           running, 'None' otheriwse.
+        """
+        raise NotImplementedError(
+          method_name="execution_profile",
           class_name=type(self))
 
     #---------------------------------------------------------------------------
