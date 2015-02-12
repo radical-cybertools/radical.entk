@@ -10,27 +10,31 @@ from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
 
 config = {
-    "cores": [1,2,4,8],
-    "instances": [1,2,4,8,16,32,64],
-    "iterations": [2,4,8]
+    "idletime":   60,
+    "cores":      [1,2,4,8],
+    "instances":  [1,2,4,8,16,32,64],
+    "iterations": [1]
  }
 
 # ------------------------------------------------------------------------------
 #
 class NopSA(SimulationAnalysisLoop):
 
-    def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1):
+    def __init__(self, maxiterations, simulation_instances=1, analysis_instances=1, idle_time=0):
+        self.idle_time = idle_time
         SimulationAnalysisLoop.__init__(self, maxiterations, simulation_instances, analysis_instances)
 
     def pre_loop(self):
         pass
 
     def simulation_step(self, iteration, instance):
-        k = Kernel(name="misc.nop")
+        k = Kernel(name="misc.idle")
+        k.arguments = ["--duration={0}".format(self.idle_time)]
         return k
 
     def analysis_step(self, iteration, instance):
-        k = Kernel(name="misc.nop")
+        k = Kernel(name="misc.idle")
+        k.arguments = ["--duration={0}".format(self.idle_time)]
         return k
 
     def post_loop(self):
@@ -69,7 +73,8 @@ if __name__ == "__main__":
                     nopsa = NopSA(
                         maxiterations=cfg_iter,
                         simulation_instances=cfg_inst,
-                        analysis_instances=cfg_inst
+                        analysis_instances=cfg_inst,
+                        idle_time = config["idletime"]
                     )
                     cluster.run(nopsa)
 
