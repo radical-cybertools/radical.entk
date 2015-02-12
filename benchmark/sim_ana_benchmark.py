@@ -10,7 +10,7 @@ from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
 
 config = {
-    "idletime":   60,
+    "idletime":   10,
     "cores":      [1,2,4,8],
     "instances":  [1,2,4,8,16,32,64],
     "iterations": [1]
