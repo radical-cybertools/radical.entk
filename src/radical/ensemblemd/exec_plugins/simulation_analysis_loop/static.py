@@ -117,6 +117,8 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
+        pattern_start_time = time.time()
+
         #-----------------------------------------------------------------------
         #
         def unit_state_cb (unit, state) :
@@ -232,7 +234,7 @@ class Plugin(PluginBase):
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
-                pattern._execution_profile["sim_{0}".format(iteration)] = time.time() - simulation_step_start_time
+                pattern._execution_profile["sim_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
 
 
                 ################################################################
@@ -340,7 +342,7 @@ class Plugin(PluginBase):
                             i += 1
                             working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
-                pattern._execution_profile["ana_{0}".format(iteration)] = time.time() - analysis_step_start_time
+                pattern._execution_profile["ana_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

@@ -1,9 +1,3 @@
-1. Install MPL Tools
-  
-   https://tonysyu.github.io/mpltools/install.html
-
-1. Open iPython Notebook:
-
+virtualenv --system-site-packages /tmp/enmd
+source /tmp/enmd/bin/activate
 ipython notebook --matplotlib
-
-2. 
