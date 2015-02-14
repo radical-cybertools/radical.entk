@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 This script is an example to use the Ensemble MD Toolkit ``SimulationAnalysis``
 pattern for the amber-coco usecase.
@@ -46,11 +45,11 @@ from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
-
+import imp
+import argparse
+import sys
 
 # ------------------------------------------------------------------------------
-num_sims=8
-nsave = 2
 #
 class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
@@ -68,7 +67,11 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                 Arguments : None
         '''
         k = Kernel(name="md.pre_coam_loop")
-        k.upload_input_data = ['penta.crd','mdshort.in','min.in','penta.top','postexec.py']
+        k.upload_input_data = [Kconfig.initial_crd_file,
+                               Kconfig.md_input_file,
+                               Kconfig.minimization_input_file,
+                               Kconfig.top_file,
+                               'postexec.py']
         return k
 
 
@@ -88,13 +91,18 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             --cycle     = current iteration number
         '''
         k = Kernel(name="md.amber")
-        k.arguments = ["--mininfile=min.in","--mdinfile=mdshort.in","--topfile=penta.top","--cycle=%s"%(iteration)]
-        k.link_input_data = ['$PRE_LOOP/min.in','$PRE_LOOP/penta.top','$PRE_LOOP/mdshort.in']
+        k.arguments = ["--mininfile={0}".format(Kconfig.minimization_input_file),
+                       "--mdinfile={0}".format(Kconfig.md_input_file),
+                       "--topfile={0}".format(Kconfig.top_file),
+                       "--cycle=%s"%(iteration)]
+        k.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.minimization_input_file),
+                             '$PRE_LOOP/{0}'.format(Kconfig.top_file),
+                             '$PRE_LOOP/{0}'.format(Kconfig.md_input_file)]
         if((iteration-1)==0):
-            k.link_input_data = k.link_input_data + ['$PRE_LOOP/penta.crd > min1.crd']
+            k.link_input_data = k.link_input_data + ['$PRE_LOOP/{0} > min1.crd'.format(Kconfig.initial_crd_file)]
         else:
             k.link_input_data = k.link_input_data + ['$PREV_ANALYSIS_INSTANCE_1/min{0}{1}.crd > min{2}.crd'.format(iteration-1,instance-1,iteration)]
-        if(iteration%nsave==0):
+        if(iteration%Kconfig.nsave==0):
             k.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
         return k
 
@@ -117,8 +125,15 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             --cycle         = Current iteration number
         '''
         k = Kernel(name="md.coco")
-        k.arguments = ["--grid=5","--dims=3","--frontpoints=%s"%num_sims,"--topfile=penta.top","--mdfile=*.ncdf","--output=pentaopt%s"%(iteration),"--cycle=%s"%(iteration)]
-        k.link_input_data = ['$PRE_LOOP/penta.top','$PRE_LOOP/postexec.py']
+        k.arguments = ["--grid={0}".format(Kconfig.grid),
+                       "--dims={0}".format(Kconfig.dims),
+                       "--frontpoints={0}".format(Kconfig.num_CUs),
+                       "--topfile={0}".format(Kconfig.top_file),
+                       "--mdfile=*.ncdf",
+                       "--output=pentaopt%s"%(iteration),
+                       "--cycle=%s"%(iteration)]
+        k.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.top_file),
+                             '$PRE_LOOP/postexec.py']
         k.cores = 16
         for iter in range(1,iteration+1):
             for i in range(1,num_sims+1):
@@ -136,17 +151,36 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--RPconfig', help='link to Radical Pilot related configurations file')
+        parser.add_argument('--Kconfig', help='link to Kernel configurations file')
+
+        args = parser.parse_args()
+
+        if args.RPconfig is None:
+            parser.error('Please enter a RP configuration file')
+            sys.exit(1)
+        if args.Kconfig is None:
+            parser.error('Please enter a Kernel configuration file')
+            sys.exit(0)
+
+        RPconfig = imp.load_source('RPconfig', args.RPconfig)
+        Kconfig = imp.load_source('Kconfig', args.Kconfig)
+
+
         cluster = SingleClusterEnvironment(
-            resource="stampede.tacc.utexas.edu",
-            cores=16,
-            walltime=30,
-            username = '', #username
-            allocation = '' #allocation
+            resource=RPconfig.REMOTE_HOST,
+            cores=RPconfig.PILOTSIZE,
+            walltime=RPconfig.WALLTIME,
+            username = RPconfig.UNAME, #username
+            allocation = RPconfig.ALLOCATION, #allocation
+	    queue = RPconfig.QUEUE
         )
 
         cluster.allocate()
 
-        coco_amber_static = Extasy_CocoAmber_Static(maxiterations=4, simulation_instances=num_sims, analysis_instances=1)
+        coco_amber_static = Extasy_CocoAmber_Static(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
         cluster.run(coco_amber_static)
 
     except EnsemblemdError, er:
