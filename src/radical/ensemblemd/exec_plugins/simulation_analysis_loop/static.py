@@ -117,6 +117,8 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
+        pattern_start_time = time.time()
+
         #-----------------------------------------------------------------------
         #
         def unit_state_cb (unit, state) :
@@ -130,6 +132,8 @@ class Plugin(PluginBase):
 
         working_dirs = {}
         all_cus = []
+
+        pattern._execution_profile = {}
 
         try:
             resource._umgr.register_callback(unit_state_cb)
@@ -166,7 +170,7 @@ class Plugin(PluginBase):
 
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
-            except NotImplementedError:
+            except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
                 self.get_logger().info("pre_loop() not defined. Skipping.")
                 pass
@@ -180,6 +184,7 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE SIMULATION STEPS
+                simulation_step_start_time = time.time()
 
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
@@ -229,8 +234,13 @@ class Plugin(PluginBase):
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
+                pattern._execution_profile["sim_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
+
+
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
+                analysis_step_start_time = time.time()
+
                 a_units = []
                 analysis_list = None
                 for a_instance in range(1, pattern._analysis_instances+1):
@@ -326,12 +336,13 @@ class Plugin(PluginBase):
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                        # TODO: ensure working_dir <-> instance mapping
+                     # TODO: ensure working_dir <-> instance mapping
                         i = 0
                         for cu in a_cus:
                             i += 1
                             working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
+                pattern._execution_profile["ana_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

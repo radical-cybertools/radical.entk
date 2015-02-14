@@ -91,20 +91,20 @@ setup_args = {
     'license'          : 'MIT',
     'keywords'         : "molecular dynamics toolkit pyhthon",
     'classifiers'      :  [
-        'Development Status   :: 5 - Production/Stable',
-        'Intended Audience    :: Developers',
-        'Environment          :: Console',
-        'License              :: OSI Approved :: MIT',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Environment :: Console',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Topic                :: Utilities',
-        'Topic                :: System :: Distributed Computing',
-        'Operating System     :: MacOS :: MacOS X',
-        'Operating System     :: POSIX',
-        'Operating System     :: Unix'
+        'Topic :: Utilities',
+        'Topic :: System :: Distributed Computing',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: POSIX',
+        'Operating System :: Unix'
     ],
 
     #'entry_points': {

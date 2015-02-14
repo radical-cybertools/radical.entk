@@ -73,6 +73,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
 
+        self._execution_profile = None
+
         super(SimulationAnalysisLoop, self).__init__()
 
     #---------------------------------------------------------------------------
@@ -82,6 +84,15 @@ class SimulationAnalysisLoop(ExecutionPattern):
         """Returns the name of the pattern.
         """
         return PATTERN_NAME
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def execution_profile(self):
+        """Returns the execution profile after the pattern has finished
+           running, 'None' otheriwse.
+        """
+        return self._execution_profile
 
     #---------------------------------------------------------------------------
     #

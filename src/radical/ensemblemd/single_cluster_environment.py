@@ -69,7 +69,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def allocate(self):
+    def allocate(self, wait=False):
         """Allocates the requested resources.
         """
         #-----------------------------------------------------------------------
@@ -132,6 +132,9 @@ class SingleClusterEnvironment(ExecutionContext):
             self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
             self._pilot = pmgr.submit_pilots(pdesc)
+
+            if wait is True:
+                self._pilot.wait(radical.pilot.ACTIVE)
 
             self._umgr = radical.pilot.UnitManager(
                 session=self._session,

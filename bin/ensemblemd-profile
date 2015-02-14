@@ -31,7 +31,8 @@ def pipeline_profile(data):
                 'step_start_time' : datetime.datetime.now(),
                 'step_stop_time'  : datetime.datetime(2005, 7, 14, 12, 30),
                 'avg_duration'    : None,
-                'instance_cnt'    : 0
+                'instance_cnt'    : 0,
+                'instance_rts'    : []
             }
 
         summary_entry = summary[row[3]]
@@ -43,6 +44,7 @@ def pipeline_profile(data):
             summary_entry['step_stop_time'] = row[2]
 
         duration = row[2] - row[1]
+        summary_entry['instance_rts'].append(duration)
 
         if summary_entry['avg_duration'] == None:
             summary_entry['avg_duration'] = duration
@@ -64,6 +66,8 @@ def pipeline_profile(data):
         print " * Step stop time           : %s" % data['step_stop_time']
         print " * Step runtime             : %s" % (data['step_stop_time'] - data['step_start_time'])
         print " * Mean runtime / instance  : %s" % data['avg_duration']
+        # print " * Single runtimes          : %s" % data['instance_rts']
+
 
 # ------------------------------------------------------------------------------
 #
