@@ -34,6 +34,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._umgr = None
         self._session = None
         self._pilot = None
+        self._pmgr = None
 
         self._resource_key = resource
         self._queue = queue
@@ -115,6 +116,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
             pmgr = radical.pilot.PilotManager(session=self._session)
             pmgr.register_callback(pilot_state_cb)
+            self._pmgr = pmgr
 
             pdesc = radical.pilot.ComputePilotDescription()
             pdesc.resource = self._resource_key

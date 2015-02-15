@@ -56,7 +56,6 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
         try:
-
             # shared data
             pattern.prepare_shared_data()
 
@@ -79,14 +78,24 @@ class Plugin(PluginBase):
                 }
                 sd_shared_list.append(sd_shared)
 
+            # Pilot must be active
+            resource._pmgr.wait_pilots(resource._pilot.uid,'Active')       
+     
+            # RAW SIMULATION TIME
+            START = datetime.datetime.utcnow()
+
             replicas = pattern.get_replicas()
 
-            # performance data structure
+            # performance data structures
             dictionary = {}
+            hl_dictionary = {}
 
             for c in range(pattern.nr_cycles):
 
                 dictionary["cycle_{0}".format(c+1)] = {}
+                hl_dictionary["cycle_{0}".format(c+1)] = {}
+
+                start_time = datetime.datetime.utcnow()
                 for r in replicas:
 
                     dictionary["cycle_{0}".format(c+1)]["replica.md_{0}".format(r.id)] = {}
@@ -120,10 +129,19 @@ class Plugin(PluginBase):
                     cycle_key = "cycle_%s" % (c+1)
                     dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
+                stop_time = datetime.datetime.utcnow()
+                hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("MD_prep")] = {}
+                hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("MD_prep")] = (stop_time-start_time).total_seconds()
+                start_time = datetime.datetime.utcnow()
+
                 self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c+1) )
                 resource._umgr.wait_units()
+                stop_time = datetime.datetime.utcnow()
+                hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("MD")] = {}
+                hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("MD")] = (stop_time-start_time).total_seconds()
 
                 if (c < (pattern.nr_cycles-1)):
+                    start_time = datetime.datetime.utcnow()
 
                     submitted_replicas = []
                     # computing swap matrix
@@ -155,8 +173,19 @@ class Plugin(PluginBase):
                         cycle_key = "cycle_%s" % (c+1)
                         dictionary[cycle_key][replica_key]["compute_unit"] = sub_replica
 
+                    stop_time = datetime.datetime.utcnow()
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Exchange_prep")] = {}
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Exchange_prep")] = (stop_time-start_time).total_seconds()
+                    start_time = datetime.datetime.utcnow()
+
                     self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
                     resource._umgr.wait_units()
+
+                    stop_time = datetime.datetime.utcnow()
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Exchange")] = {}
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Exchange")] = (stop_time-start_time).total_seconds()
+                  
+                    start_time = datetime.datetime.utcnow()
 
                     matrix_columns = []
                     for r in submitted_replicas:
@@ -175,6 +204,16 @@ class Plugin(PluginBase):
                             self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
                             # swap parameters
                             pattern.perform_swap(r_i, r_j)
+
+                    stop_time = datetime.datetime.utcnow() 
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Local_post_processing")] = {}
+                    hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Local_post_processing")] = (stop_time-start_time).total_seconds()
+
+            # End of simulation loop
+            #------------------------
+            
+            END = datetime.datetime.utcnow()
+            RAW_SIMULATION_TIME = (END-START).total_seconds()
 
         except Exception, ex:
             self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
@@ -195,12 +234,31 @@ class Plugin(PluginBase):
             self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
 
             with open(outfile, 'w+') as f:
+                f.write("Total simulaiton time: {row}\n".format(row=RAW_SIMULATION_TIME))
+
+                #-----------------------------------------------
+                head = "Cycle; Run; Duration"
+                #print head
+                f.write("{row}\n".format(row=head))
+
+                for cycle in hl_dictionary:
+                    for run in hl_dictionary[cycle].keys():
+                        duration = hl_dictionary[cycle][run]
+
+                        row = "{Cycle}; {Run}; {Duration}".format(
+                            Duration=duration,
+                            Cycle=cycle,
+                            Run=run)
+
+                        #print row
+                        f.write("{r}\n".format(r=row))
+                #------------------------------------------------
+                # writing CU timings
                 # General format of a profiling file is row based and follows the
                 # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
                 head = "cu_id; start_time; stop_time; cycle; replica_md"
                 f.write("{row}\n".format(row=head))
 
-                # writing MD times
                 for cycle in dictionary.keys():
                     for replica in dictionary[cycle].keys():
                         if replica.startswith('replica.md'):
