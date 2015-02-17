@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the EnsembleMD Toolkit ``AllPairs`` pattern to
+This example shows how to use the Ensemble MD Toolkit ``AllPairs`` pattern to
 execute n(n-1)/2 simulation permutations of a set of n elements. In
 the ``element_initialization`` step, the necessary files for the "all pair" comparison are
 created. This step uses the ``misc.mkfile`` kernel to create random ASCII files.
