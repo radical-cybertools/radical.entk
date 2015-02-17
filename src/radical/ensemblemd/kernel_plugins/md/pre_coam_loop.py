@@ -18,7 +18,7 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 _KERNEL_INFO = {
     "name":         "md.pre_coam_loop",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {},
+    "arguments":    "*",  # "*" means arguments are not evaluated and just passed through to the kernel.
     "machine_configs":
     {
         "*": {
@@ -71,4 +71,3 @@ class Kernel(KernelBase):
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
         self._post_exec   = None
-

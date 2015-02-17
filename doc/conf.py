@@ -37,9 +37,9 @@ except OSError, e:
 os.makedirs("{0}/kernels/".format(script_dir))
 
 with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
-    toc.write("***********\n")
-    toc.write("The Kernels\n")
-    toc.write("***********\n")
+    toc.write("*****************\n")
+    toc.write("Available Kernels\n")
+    toc.write("*****************\n")
     toc.write("\n")
     toc.write(".. toctree::\n")
     toc.write("   :maxdepth: 1\n\n")

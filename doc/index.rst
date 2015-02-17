@@ -45,7 +45,7 @@ Contents:
    installation
    getstarted
    the_patterns
-   the_kernels
+   kernels
 
    library
    developers

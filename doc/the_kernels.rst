@@ -1,6 +1,6 @@
-***********
-The Kernels
-***********
+*****************
+Available Kernels
+*****************
 
 .. toctree::
    :maxdepth: 1
@@ -19,6 +19,7 @@ The Kernels
    kernels/_generated_kernel_md.lsdmap.rst
    kernels/_generated_kernel_md.post_lsdmap.rst
    kernels/_generated_kernel_misc.nop.rst
+   kernels/_generated_kernel_misc.idle.rst
    kernels/_generated_kernel_misc.mkfile.rst
    kernels/_generated_kernel_misc.ccount.rst
    kernels/_generated_kernel_misc.chksum.rst

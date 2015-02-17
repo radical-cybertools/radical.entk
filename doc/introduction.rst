@@ -14,6 +14,13 @@ systems. The majority of existing distributed computing solutions are generic
 *any* concurrent, distributed  workflow. Consequently, MD workflows are often
 modeled an executed via generic concurrent and distributed computing primitives.
 
+.. figure:: images/enmd_components.*
+   :width: 360pt
+   :align: center
+   :alt: EnMD Components.
+
+   `Figure 1: The EnsembleMD Toolkit`
+
 Ensemble MD Toolkit takes a different approach. It provides a set of
 explicit, predefined :ref:`patterns` that are commonly found in MD workflows.
 Currently, these patterns are:
