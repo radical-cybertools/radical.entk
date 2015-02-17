@@ -5,7 +5,7 @@ Introduction
 ************
 
 What is Ensemble MD Toolkit?
-===========================
+============================
 
 The goal of Ensemble MD Toolkit is to provide an MD-specific alternative
 to existing  High-Performance-Computing frameworks, libraries and workflow

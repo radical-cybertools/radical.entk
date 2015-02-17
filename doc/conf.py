@@ -138,40 +138,6 @@ for example in examples:
 ################################################################################
 
 
-################################################################################
-##
-print "* Generating use-case proof-of-concept list: examples.rst"
-
-try:
-    os.remove("{0}/_generated_usecases.rst".format(script_dir))
-except OSError:
-    pass
-
-with open("{0}/_generated_usecases.rst".format(script_dir), "w") as poc:
-
-    sub_dirs = os.listdir("{0}/../usecases/".format(script_dir))
-    for sub_dir in sub_dirs:
-        examples = os.listdir("{0}/../usecases/{1}".format(script_dir, sub_dir))
-
-        for example in examples:
-
-            if example.endswith(".py") is False:
-                continue # skip all non-python files
-
-            try:
-                foo = imp.load_source('{0}'.format(example.split(".")[0]), "../usecases/{0}/{1}".format(sub_dir, example))
-
-                poc.write("{0}\n".format(foo.__use_case_name__))
-                poc.write("{0}\n\n".format("-"*len(foo.__use_case_name__)))
-                poc.write(foo.__doc__+"\n")
-
-                poc.write(":download:`Download example: {0} <../usecases/{0}/{1}>`\n\n".format(sub_dir, example))
-                poc.write(".. literalinclude:: ../usecases/{0}/{1}\n\n".format(sub_dir, example))
-            except Exception, ex:
-                print "=== WARNING: %s " % str(ex)
-##
-################################################################################
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

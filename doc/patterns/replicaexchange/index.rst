@@ -9,3 +9,4 @@ Replica Exchange
    ./api
    ../../examples/_generated_example_replica_exchange
    ../../examples/_generated_example_replica_exchange_b
+   ../../usecases/cdi_replica_exchange

@@ -9,3 +9,4 @@ AllPairs
 
    ./api
    ../../examples/_generated_example_allpairs_example
+   ../../usecases/haussdorff
