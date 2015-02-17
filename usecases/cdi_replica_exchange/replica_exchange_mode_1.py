@@ -1,12 +1,71 @@
 #!/usr/bin/env python
+"""
+This script is an example of simple application using the Ensemble MD Toolkit ``ReplicaExchange``
+pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 replicas and performs a total of 5 synchronous simulation
+cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution
+plugin. As MD application kernel in this use-case is used NAMD. Input files can be found 
+in ``/cdi_replica_exchange/namd_inp`` directory. Shared input files used by each replica are specified 
+in prepare_shared_data() method. This method is called when specified files are to be transferred to the
+ target resource. For this use-case these files are ``alanin.psf`` structure file, 
+``unfolded.pdb`` coordinates file and ``alanin.params`` parameters file.
+After shared input files are transferred, for each replica is created input file using a template
+ ``/cdi_replica_exchange/namd_inp/alanin_base.namd``. In this file are specified replica simulation 
+parameters according to their initial values. After input files are created ``prepare_replica_for_md()``
+is called and MD step is performed on a target resource. Then follows Exchange step. For each replica
+preparation required to perform this step on a target resource is specified in ``prepare_replica_for_exchange()``.
+After Exchange step is finished, final exchange procedure is performed locally according to Gibbs sampling
+method. This procedure is defined in ``get_swap_matrix()``, ``exchange()``, ``weighted_choice_sub()`` and ``perform_swap()`` methods. 
+After exchange procedure is finished the next MD run is performed and the process is then repeated.
+For remote exchange step is used ``/cdi_replica_exchange/namd_matrix_calculator.py`` python script.
+This script calculates one swap matrix column for replica by retrieving temperature and potential energy 
+from simulation output file .history file.
 
-""" 
-CDI Replica Exchange: 'mode 1'.
-This example demonstrates how application for synchronous termerature-exchange RE 
-simulation with NAMD kernel can be implemented. 
 
-To run this example from terminal use:
-RADICAL_ENMD_VERBOSE=info python replica_exchange_mode_1.py
+Run Locally
+^^^^^^^^^^^
+
+.. warning:: In order to run this example, you need access to a MongoDB server and
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+             In addition you need to have a local NAMD installation and NAMD should be
+             invocable by calling ``namd2`` from terminal.
+
+
+**Step 1:** View and download the example sources :ref:`below <cdi_replica_exchange>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
+see log messages about simulation progress::
+
+    RADICAL_ENMD_VERBOSE=info python replica_exchange_mode_1.py
+
+**Step 3:** Verify presence of generated input files alanin_base_x_y.namd where x is replica
+            id and y is ccycle number.
+
+Run Remotely
+^^^^^^^^^^^^
+
+By default, this use-case runs on your local machine::
+
+    SingleClusterEnvironment(
+        resource="localhost",
+        cores=1,
+        walltime=30,
+        username=None,
+        allocation=None
+    )
+
+You can change the script to use a remote HPC cluster::
+
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu",
+        cores=16,
+        walltime=30,
+        username=None,  # add your username here
+        allocation=None # add your allocation or project id here if required
+    )
+
+
 """
 
 __author__        = "Ole Weider <ole.weidner@rutgers.edu>"
@@ -139,7 +198,7 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def initialize_replicas(self):
-        """Initializes replicas and their attributes to default values
+        """Initializes replicas and their attributes
         """
         replicas = []
         N = self.replicas
@@ -396,7 +455,7 @@ if __name__ == "__main__":
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-        print "RE simulation of 3 cycles involving 32 replicas has completed successfully!"
+        print "RE simulation of %d cycles involving %d replicas has completed successfully!" % (re_pattern.nr_cycles, re_pattern.replicas)
 
     except EnsemblemdError, er:
 
