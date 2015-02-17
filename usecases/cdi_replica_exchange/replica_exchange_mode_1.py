@@ -460,21 +460,11 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        """
+        
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
-        )
-        """
-        
-        cluster = SingleClusterEnvironment(
-            resource="stampede.tacc.utexas.edu",
-            cores=16,
-            walltime=20,
-            username="antontre",
-            queue="development",
-            allocation="TG-MCB090174"
         )
         
         # Allocate the resources.
