@@ -98,6 +98,12 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
+    def name(self):
+        return self._kernel.get_name()
+
+    #---------------------------------------------------------------------------
+    #
+    @property
     def _cu_def_post_exec(self):
         return self._kernel._post_exec
 
