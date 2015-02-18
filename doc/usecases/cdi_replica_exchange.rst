@@ -34,15 +34,19 @@ Run Locally
              In addition you need to have a local NAMD installation and NAMD should be
              invocable by calling ``namd2`` from terminal.
 
-
 **Step 1:** View and download the example sources :ref:`below <example_cdi_usecase>`.
 
-**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
+
+**Step 2:** Change number of replicas to 4 at line 94 of ``replica_exchange_mode_1.py``.
+In principle it is suggested to set a ratio of compute cores to replicas as 1:2.
+
+
+**Step 3:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
 
     RADICAL_ENMD_VERBOSE=info python replica_exchange_mode_1.py
 
-**Step 3:** Verify presence of generated input files alanin_base_x_y.namd and alanin_base_x_y.history
+**Step 4:** Verify presence of generated input files alanin_base_x_y.namd and alanin_base_x_y.history
 output files where x is replica id and y is cycle number.
 
 Run Remotely
@@ -67,6 +71,9 @@ You can change the script to use a remote HPC cluster::
         username=None,  # add your username here
         allocation=None # add your allocation or project id here if required
     )
+
+Number of replicas and number of simulation cycles are defined in constructor of RePattern class.
+Please change the number of cores and the number of replicas according to suggested ratio of 1:2.
 
 .. _example_cdi_usecase:
 
