@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 """
-Hausdorff Distance calculation script for Ensemble MD Toolkit
+Hausdorff Distance calculation script for Ensemble MD Toolkit.
+
+Hausdorff Source
+^^^^^^^^^^^^^^
 """
 
 __author__       = "Ioannis Paraskevakos <i.parask@rutgers.edu>"
@@ -174,7 +177,7 @@ get_engine().add_kernel_plugin(MyHausdorff)
 # ------------------------------------------------------------------------------
 #
 class HausdorffAP(AllPairs):
-    """HausdorffAP implements the all pairs pattern described above. It
+    """HausdorffAP implements the all pairs pattern. It
        inherits from radical.ensemblemd.AllPair, the abstract
        base class for all All Pairs applications.
     """
@@ -192,6 +195,11 @@ class HausdorffAP(AllPairs):
                         "--filename=traj_flat{0}.npz.npy".format(element)]
         # When the input data are in a web server use download input data as the example below.
         k.download_input_data = ["http://eceweb1.rutgers.edu/~ip176/traj_flat{0}.npz.npy > traj_flat{0}.npz.npy".format(element)]
+
+        # If the input data are in a local folder use the following
+        # k.upload_input_data = ["/<PATH>/<TO>/<FOLDER>/<WITH>/traj_flat{x}.npz.npy > traj_flat{x}.npz.npy"]
+        # If the input data are in a folder to the target machine use the following
+        # k.link_input_data = ["/<PATH>/<TO>/<FOLDER>/<WITH>/traj_flat{x}.npz.npy > traj_flat{x}.npz.npy"]
         print "Created {0}".format(element)
         return k
 
@@ -202,14 +210,21 @@ class HausdorffAP(AllPairs):
         """
         input_filename1 = "traj_flat{0}.npz.npy".format(element1)
         input_filename2 = "traj_flat{0}.npz.npy".format(element2)
-        output_filename = "comparison-{0}-{1}.dat".format(element1, element2)
+        output_filename = "distance-{0}-{1}.dat".format(element1, element2)
 
         k = Kernel(name="my.hausdorff")
         k.arguments            = ["--dist_file=hausdorff_kernel.py",
                                   "--inputfile1={0}".format(input_filename1),
                                   "--inputfile2={0}".format(input_filename2),
                                   "--outputfile={0}".format(output_filename)]
+
+        # When the input data are in a web server use download input data as the example below.
         k.download_input_data = ["http://eceweb1.rutgers.edu/~ip176/hausdorff_kernel.py > hausdorff_kernel.py"]
+
+        # If the input data are in a local folder use the following
+        # k.upload_input_data = ["/<PATH>/<TO>/<FOLDER>/<WITH>/hausdorff_kernel.py > hausdorff_kernel.py"]
+        # If the input data are in a folder to the target machine use the following
+        # k.link_input_data = ["/<PATH>/<TO>/<FOLDER>/<WITH>/hausdorff_kernel.py > hausdorff_kernel.py"]
 
         # The result files comparison-x-y.dat are downloaded.
         k.download_output_data = output_filename
@@ -232,14 +247,17 @@ if __name__ == "__main__":
 
         cluster.allocate()
 
-        # For example the set has 10 elements.
+        # For example the set has 10 elements. To change the number of trajectories
+        # that are to used for the Hausdorff Distance calculations change the following
+        # line accordingly
         ElementsSet = range(1,11)
         hausdorff = HausdorffAP(setelements=ElementsSet)
 
         cluster.run(hausdorff)
 
-        #Message printed when everything is done
-        print "Everything is downloaded!"
+        #Message printed when everything is completed succefully
+        print "Hausdorff Distance Files Donwnloaded."
+        print "Please check file distance-x-y.log to find the Hausdorff Distance for Atom Trajectories x and y."
 
 
     except EnsemblemdError, er:
