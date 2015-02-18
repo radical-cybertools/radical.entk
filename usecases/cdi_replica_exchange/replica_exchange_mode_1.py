@@ -467,6 +467,7 @@ if __name__ == "__main__":
             walltime=15
         )
         
+        
         # Allocate the resources.
         cluster.allocate()
 
@@ -481,7 +482,9 @@ if __name__ == "__main__":
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-        print "RE simulation of %d cycles involving %d replicas has completed successfully!" % (re_pattern.nr_cycles, re_pattern.replicas)
+        print "Simulation finished!"
+        print "Simulation performed {0} cycles with {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
+        print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
 
     except EnsemblemdError, er:
 
