@@ -100,7 +100,7 @@ and the weight file (weight.w).
 Example Source
 ^^^^^^^^^^^^^^
 
-:download:`Download example: 01_static_amber_coco_loop.py <../../usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py>`
+:download:`Download example: 01_static_gromacs_lsdmap_loop.py <../../usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py>`
 
 .. literalinclude:: ../../usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py
    :linenos:
