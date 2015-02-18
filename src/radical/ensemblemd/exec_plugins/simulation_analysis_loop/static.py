@@ -223,6 +223,7 @@ class Plugin(PluginBase):
                 resource._umgr.wait_units()
                 self.get_logger().info("Simulations in iteration {0} completed.".format(iteration))
 
+
                 failed_units = ""
                 for unit in s_cus:
                     if unit.state != radical.pilot.DONE:
