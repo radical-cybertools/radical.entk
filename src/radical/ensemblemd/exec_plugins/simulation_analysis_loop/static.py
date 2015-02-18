@@ -184,7 +184,7 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE SIMULATION STEPS
-                simulation_step_start_time = time.time()
+                pattern._execution_profile["sim_{0}_start_time".format(iteration)] = time.time() - pattern_start_time
 
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
@@ -239,7 +239,7 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
-                analysis_step_start_time = time.time()
+                pattern._execution_profile["ana_{0}_start_time".format(iteration)] = time.time() - pattern_start_time
 
                 a_units = []
                 analysis_list = None

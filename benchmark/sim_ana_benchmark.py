@@ -9,11 +9,14 @@ from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
 
+# ------------------------------------------------------------------------------
+# BENCHMARK PARAMETERS
+#
 config = {
     "idletime":   10,
-    "cores":      [1,2,4,8],
-    "instances":  [1,2,4,8,16,32,64],
-    "iterations": [1]
+    "cores":      [1],
+    "instances":  [1],
+    "iterations": [2]
  }
 
 # ------------------------------------------------------------------------------
