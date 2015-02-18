@@ -1,38 +1,101 @@
 #!/usr/bin/env python
-"""
-This script is an example to use the Ensemble MD Toolkit ``SimulationAnalysis``
-pattern for the amber-coco usecase.
 
+"""
+
+This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+pattern for the Amber-CoCo usecase which has multiple Amber based Simulation
+instances and a single CoCo Analysis stage. Although the user is free to use
+any method to mention the inputs, this usecase example uses two configuration
+files - a RPconfig file which consists of values required to set up a pilot
+on the target machine, a Kconfig file which consists of filenames/ parameter
+values required by Amber/CoCo. The description of each of these parameters
+is provided in their respective config files.
+
+In this particular usecase example, there are 16 simulation instances followed
+by 1 analysis instance forming one iteration. The experiment is run for two
+such iterations. The output of the second iteration is stored on the local
+machine under a folder called "backup".
+
+
+.. code-block:: none
+
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
+     \-----------------------------------------/
+                          |
+                         [A]
+                          |
+     /-----------------------------------------\
+     |      |      |      |      |      |      |
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
+     \-----------------------------------------/
+                          |
+                         [A]
+                          :
 
 Run Locally
-^^^^^^^^^^^^
+^^^^^^^^^^^
 
-This script cannot be run locally as it requires Amber and CoCo to be present in the target machine.
+.. warning:: In order to run this example, you need access to a MongoDB server and
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
 
+.. warning:: Running locally would require you that have Amber and CoCo installed on
+             your machine. Please go through Amber, CoCo documentation to see how this
+             can be done.
+
+
+By default, this example is setup to run on Stampede. You can also run it on your local
+machine by setting the following parameters in your RPconfig file::
+
+    REMOTE_HOST = 'localhost'
+    UNAME       = ''
+    ALLOCATION  = ''
+    QUEUE       = ''
+    WALLTIME    = 60
+    PILOTSIZE   = 16
+    WORKDIR     = None
+
+    DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
+
+
+**Step 1:** View and download the example sources :ref:`below <01_static_amber_coco_loop.py>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
+see log messages about simulation progress::
+
+    RADICAL_ENMD_VERBOSE=info python 01_static_amber_coco_loop.py --RPconfig stampede.rcfg --Kconfig cocoamber.wcfg
+
+Once the script has finished running, you should see a folder called "iter2" inside backup/
+which would contain 16 .ncdf files which are the output of the second simulation stage. You
+see 16 .ncdf files since there were 16 simulation instances.
 
 Run Remotely
 ^^^^^^^^^^^^
 
-You can change the script to use a remote HPC cluster and increase the number
+The script is configured to run on Stampede. You can increase the number
 of cores to see how this affects the runtime of the script as the individual
-simulation instances can run in parallel::
-SingleClusterEnvironment(
-resource="stampede.tacc.utexas.edu",            # label of the remote machine
-cores=16,                                       # number of cores requested
-walltime=30,                                    # walltime for the request
-username=None,                                  # add your username here
-allocation=None                                 # add your allocation or project id here if required
-)
+simulations instances can run in parallel. You can try more variations
+by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
-'numCUs' is the number of simulation instances per iteration.
-'nsave' is the iteration at which backup needs to be created on the local machine.
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu",
+        cores=16,
+        walltime=30,
+        username=None,  # add your username here
+        allocation=None # add your allocation or project id here if required
+    )
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about plug-in invocation and simulation progress::
+Once the default script has finished running, you should see a folder called "iter2" inside backup/
+which would contain 16 .ncdf files which are the output of the second simulation stage. You
+see 16 .ncdf files since there were 16 simulation instances.
 
-    RADICAL_ENMD_VERBOSE=info python 01_static_amber_coco_loop.py
+.. _01_static_amber_coco_loop.py:
 
-
+Example Source
+^^^^^^^^^^^^^^
 """
 
 __author__        = "Vivek <vivek.balasubramanian@rutgers.edu>"
@@ -51,6 +114,7 @@ import sys
 
 # ------------------------------------------------------------------------------
 #
+num_sims = 16
 class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
     def __init__(self, maxiterations, simulation_instances, analysis_instances):
@@ -71,7 +135,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                                Kconfig.md_input_file,
                                Kconfig.minimization_input_file,
                                Kconfig.top_file,
-                               'postexec.py']
+                               '{0}/postexec.py'.format(Kconfig.misc_files)]
         return k
 
 
@@ -134,9 +198,9 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--cycle=%s"%(iteration)]
         k.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.top_file),
                              '$PRE_LOOP/postexec.py']
-        k.cores = 16
+        k.cores = RPconfig.PILOTSIZE
         for iter in range(1,iteration+1):
-            for i in range(1,num_sims+1):
+            for i in range(1,Kconfig.num_CUs+1):
                 k.link_input_data = k.link_input_data + ['$SIMULATION_ITERATION_{0}_INSTANCE_{1}/md{0}.ncdf > md_{0}_{1}.ncdf'.format(iter,i)]
         return k
 
@@ -149,8 +213,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 if __name__ == "__main__":
 
     try:
-        # Create a new static execution context with one resource and a fixed
-        # number of cores and runtime.
+
 
         parser = argparse.ArgumentParser()
         parser.add_argument('--RPconfig', help='link to Radical Pilot related configurations file')
@@ -168,6 +231,8 @@ if __name__ == "__main__":
         RPconfig = imp.load_source('RPconfig', args.RPconfig)
         Kconfig = imp.load_source('Kconfig', args.Kconfig)
 
+        # Create a new static execution context with one resource and a fixed
+        # number of cores and runtime.
 
         cluster = SingleClusterEnvironment(
             resource=RPconfig.REMOTE_HOST,
@@ -175,7 +240,7 @@ if __name__ == "__main__":
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
             allocation = RPconfig.ALLOCATION, #allocation
-	    queue = RPconfig.QUEUE
+	        queue = RPconfig.QUEUE
         )
 
         cluster.allocate()

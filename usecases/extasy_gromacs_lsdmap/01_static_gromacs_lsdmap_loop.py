@@ -1,38 +1,99 @@
 #!/usr/bin/env python
-"""
-This script is an example to use the Ensemble MD Toolkit ``SimulationAnalysis``
-pattern for the gromacs-lsdmap usecase.
 
+"""
+
+This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+pattern for the Gromacs-LSDMap usecase which has multiple Gromacs based Simulation
+instances and a single LSDMap Analysis stage. Although the user is free to use
+any method to mention the inputs, this usecase example uses two configuration
+files - a RPconfig file which consists of values required to set up a pilot
+on the target machine, a Kconfig file which consists of filenames/ parameter
+values required by Gromacs/LSDMap. The description of each of these parameters
+is provided in their respective config files.
+
+In this particular usecase example, there are 16 simulation instances followed
+by 1 analysis instance forming one iteration. The experiment is run for two
+such iterations. The output of the second iteration is stored on the local
+machine under a folder called "backup".
+
+
+.. code-block:: none
+
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
+     \-----------------------------------------/
+                          |
+                         [A]
+                          |
+     /-----------------------------------------\
+     |      |      |      |      |      |      |
+    [S]    [S]    [S]    [S]    [S]    [S]    [S]
+     |      |      |      |      |      |      |
+     \-----------------------------------------/
+                          |
+                         [A]
+                          :
 
 Run Locally
-^^^^^^^^^^^^
+^^^^^^^^^^^
 
-This script cannot be run locally as it requires Gromacs and LSDMap to be present in the target machine.
+.. warning:: In order to run this example, you need access to a MongoDB server and
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
 
+.. warning:: Running locally would require you that have Gromacs and LSDMap installed on
+             your machine. Please go through Gromacs, LSDMap documentation to see how this
+             can be done.
+
+
+By default, this example is setup to run on Stampede. You can also run it on your local
+machine by setting the following parameters in your RPconfig file::
+
+    REMOTE_HOST = 'localhost'
+    UNAME       = ''
+    ALLOCATION  = ''
+    QUEUE       = ''
+    WALLTIME    = 60
+    PILOTSIZE   = 16
+    WORKDIR     = None
+
+    DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
+
+
+**Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop.py>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
+see log messages about simulation progress::
+
+    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py --RPconfig stampede.rcfg --Kconfig gromacslsdmap.wcfg
+
+Once the script has finished running, you should see a folder called "iter2" inside backup/
+which would contain
 
 Run Remotely
 ^^^^^^^^^^^^
 
-You can change the script to use a remote HPC cluster and increase the number
+The script is configured to run on Stampede. You can increase the number
 of cores to see how this affects the runtime of the script as the individual
-simulation instances can run in parallel::
-SingleClusterEnvironment(
-resource="stampede.tacc.utexas.edu",        # label of the remote machine
-cores=16,                                   # number of cores requested
-walltime=30,                                # walltime for the request
-username=None,                              # add your username here
-allocation=None                             # add your allocation or project id here if required
-)
+simulations instances can run in parallel. You can try more variations
+by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
-'numCUs' is the number of simulation instances per iteration.
-'nsave' is the iteration at which backup needs to be created on the local machine.
+    SingleClusterEnvironment(
+        resource="stampede.tacc.utexas.edu",
+        cores=16,
+        walltime=30,
+        username=None,  # add your username here
+        allocation=None # add your allocation or project id here if required
+    )
 
-Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about plug-in invocation and simulation progress::
+Once the default script has finished running, you should see a folder called "iter2" inside backup/
+which would contain
 
-    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py
+.. _01_static_gromacs_lsdmap_loop.py:
 
-
+Example Source
+^^^^^^^^^^^^^^
 """
 
 __author__        = "Vivek <vivek.balasubramanian@rutgers.edu>"
@@ -46,6 +107,9 @@ from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
+import sys
+import imp
+import argparse
 
 
 # ------------------------------------------------------------------------------
@@ -71,8 +135,14 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                             --numCUs    = number of simulation instances/ number of smaller files
         '''
         k = Kernel(name="md.pre_grlsd_loop")
-        k.upload_input_data = ['input.gro','config.ini','topol.top','grompp.mdp','spliter.py','gro.py','run.py','pre_analyze.py','post_analyze.py','select.py','reweighting.py']
-        k.arguments = ["--inputfile=input.gro","--numCUs={0}".format(num_CUs)]
+        k.upload_input_data = [Kconfig.md_input_file,
+                               Kconfig.lsdm_config_file,
+                               Kconfig.top_file,
+                               Kconfig.mdp_file,
+                               'spliter.py',
+                               'gro.py','run.py','pre_analyze.py',
+                               'post_analyze.py','select.py','reweighting.py']
+        k.arguments = ["--inputfile={0}".format(Kconfig.md_input_file),"--numCUs={0}".format(Kconfig.num_CUs)]
         return k
 
     def simulation_step(self, iteration, instance):
@@ -91,8 +161,11 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''
 
         gromacs = Kernel(name="md.gromacs")
-        gromacs.arguments = ["--grompp=grompp.mdp","--topol=topol.top"]
-        gromacs.link_input_data = ['$PRE_LOOP/grompp.mdp','$PRE_LOOP/topol.top','$PRE_LOOP/run.py']
+        gromacs.arguments = ["--grompp={0}".format(Kconfig.mdp_file),
+                             "--topol={0}".format(Kconfig.top_file)]
+        gromacs.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.mdp_file),
+                                   '$PRE_LOOP/{0}'.format(Kconfig.top_file),
+                                   '$PRE_LOOP/run.py']
 
         if (iteration-1==0):
             gromacs.link_input_data.append('$PRE_LOOP/temp/start{0}.gro > start.gro'.format(instance-1))
@@ -143,22 +216,26 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''
 
         pre_ana = Kernel(name="md.pre_lsdmap")
-        pre_ana.arguments = ["--numCUs={0}".format(num_CUs)]
+        pre_ana.arguments = ["--numCUs={0}".format(Kconfig.num_CUs)]
         pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py"]
-        for i in range(1,num_CUs+1):
+        for i in range(1,Kconfig.num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
 
         lsdmap = Kernel(name="md.lsdmap")
-        lsdmap.arguments = ["--config=config.ini"]
-        lsdmap.link_input_data = ['$PRE_LOOP/config.ini']
+        lsdmap.arguments = ["--config={0}".format(Kconfig.lsdm_config_file)]
+        lsdmap.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.lsdm_config_file)]
         lsdmap.cores = 16
         if iteration > 1:
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
         post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
-        post_ana.arguments = ["--num_runs=1000","--out=out.gro","--cycle={0}".format(iteration-1),
-                              "--max_dead_neighbors=0","--max_alive_neighbors=10","--numCUs={0}".format(num_CUs)]
+        post_ana.arguments = ["--num_runs={0}".format(Kconfig.num_runs),
+                              "--out=out.gro",
+                              "--cycle={0}".format(iteration-1),
+                              "--max_dead_neighbors={0}".format(Kconfig.max_dead_neighbors),
+                              "--max_alive_neighbors={0}".format(Kconfig.max_alive_neighbors),
+                              "--numCUs={0}".format(Kconfig.num_CUs)]
         if(iteration%nsave==0):
             post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
                                              'weight.w > backup/iter{0}/weight.w'.format(iteration),
@@ -172,14 +249,35 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 if __name__ == "__main__":
 
   try:
+
+
+      parser = argparse.ArgumentParser()
+      parser.add_argument('--RPconfig', help='link to Radical Pilot related configurations file')
+      parser.add_argument('--Kconfig', help='link to Kernel configurations file')
+
+      args = parser.parse_args()
+
+      if args.RPconfig is None:
+          parser.error('Please enter a RP configuration file')
+          sys.exit(1)
+      if args.Kconfig is None:
+          parser.error('Please enter a Kernel configuration file')
+          sys.exit(0)
+
+      RPconfig = imp.load_source('RPconfig', args.RPconfig)
+      Kconfig = imp.load_source('Kconfig', args.Kconfig)
+
+
+
       # Create a new static execution context with one resource and a fixed
       # number of cores and runtime.
       cluster = SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
-        cores=16,
-        walltime=30,
-        username='', #username
-        allocation='' #allocation
+            resource=RPconfig.REMOTE_HOST,
+            cores=RPconfig.PILOTSIZE,
+            walltime=RPconfig.WALLTIME,
+            username = RPconfig.UNAME, #username
+            allocation = RPconfig.ALLOCATION, #allocation
+	        queue = RPconfig.QUEUE
       )
 
       cluster.allocate()
@@ -188,7 +286,7 @@ if __name__ == "__main__":
       # instances of the simulation are executed every iteration.
       # We set the 'instances' of the analysis step to 1. This means that only
       # one instance of the analysis is executed for each iteration
-      randomsa = Gromacs_LSDMap(maxiterations=2, simulation_instances=num_CUs, analysis_instances=1)
+      randomsa = Gromacs_LSDMap(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
 
       cluster.run(randomsa)
   
