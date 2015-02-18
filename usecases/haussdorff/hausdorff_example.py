@@ -230,6 +230,8 @@ if __name__ == "__main__":
             allocation=None
         )
 
+        cluster.allocate()
+
         # For example the set has 10 elements.
         ElementsSet = range(1,11)
         hausdorff = HausdorffAP(setelements=ElementsSet)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This example shows how to use the Ensemble MD Toolkit ``AllPairs`` pattern to
+This example shows how to use the EnsembleMD Toolkit ``AllPairs`` pattern to
 execute n(n-1)/2 simulation permutations of a set of n elements. In
 the ``element_initialization`` step, the necessary files for the "all pair" comparison are
 created. This step uses the ``misc.mkfile`` kernel to create random ASCII files.
@@ -20,7 +20,7 @@ Run Locally
              The format is ``mongodb://hostname:port``. Read more about it
              MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs>`.
+**Step 1:** View and download the example sources :ref:`below <example_source_all_pairs_pattern>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
@@ -82,12 +82,11 @@ class RandomAP(AllPairs):
        inherits from radical.ensemblemd.AllPairPattern, the abstract
        base class for all All Pairs applications.
     """
-    def __init__(self,set1elements, windowsize1, set2elements=None, windowsize2=None):
-        AllPairs.__init__(self, set1elements=set1elements,windowsize1=windowsize1,
-            set2elements=set2elements,windowsize2=windowsize2)
+    def __init__(self,setelements):
+        AllPairs.__init__(self, setelements)
 
 
-    def set1element_initialization(self,element):
+    def element_initialization(self,element):
         """The initialization step creates the necessary files that will be
             needed for the comparison over the elements of the set.
         """
@@ -99,28 +98,16 @@ class RandomAP(AllPairs):
         k.arguments = ["--size=10000", "--filename=asciifile-{0}.dat".format(element)]
         return k
 
-    def set2element_initialization(self,element):
-        """The initialization step creates the necessary files that will be
-            needed for the comparison over the elements of the set.
-        """
-
-        # Creating an ASCII file by using the misc.mkfile kernel. Each file represents
-        # a element of the set.
-        print "Creating Element {0}".format(element)
-        k = Kernel(name = "misc.mkfile")
-        k.arguments = ["--size=10000", "--filename=newfile-{0}.dat".format(element)]
-        return k
-
-    def element_comparison(self, elements1, elements2):
+    def element_comparison(self, element1, element2):
         """In the comparison, we take the previously generated files
            and perform a difference between those files. Each file coresponds to
            an elements of the set.
 
         """
 
-        input_filename1 = "asciifile-{0}.dat".format(elements1[0])
-        input_filename2 = "newfile-{0}.dat".format(elements2[0])
-        output_filename = "comparison-{0}-{1}.log".format(elements1, elements2)
+        input_filename1 = "asciifile-{0}.dat".format(element1)
+        input_filename2 = "asciifile-{0}.dat".format(element2)
+        output_filename = "comparison-{0}-{1}.log".format(element1, element2)
         print "Comparing {0} with {1}. Saving result in {2}".format(input_filename1,input_filename2,output_filename)
 
         # Compare the previously generated files with the misc.diff kernel and
@@ -145,7 +132,7 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="local.localhost",
             cores=1,
-            walltime=5,
+            walltime=30,
             username=None,
             allocation=None
         )
@@ -154,9 +141,8 @@ if __name__ == "__main__":
         cluster.allocate()
 
         # For example the set has 5 elements.
-        ElementsSet1 = range(1,6)
-        ElementsSet2 = range(1,6)
-        randAP = RandomAP(set1elements=ElementsSet1,windowsize1=1,set2elements=ElementsSet2,windowsize2=1)
+        ElementsSet = range(1,6)
+        randAP = RandomAP(setelements=ElementsSet)
 
         cluster.run(randAP)
 
