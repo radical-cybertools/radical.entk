@@ -101,7 +101,7 @@ see 16 .ncdf files since there were 16 simulation instances.
 Example Source
 ^^^^^^^^^^^^^^
 
-:download:`Download example: 01_static_amber_coco_loop.py <../../usecases/extasy_amber_coco/01_static_amber_coco_loop.py>`
+:download:`Download example: 01_static_amber_coco_loop.py <../../usecases/extasy_coco_amber/01_static_amber_coco_loop.py>`
 
-.. literalinclude:: ../../usecases/extasy_amber_coco/01_static_amber_coco_loop.py
+.. literalinclude:: ../../usecases/extasy_coco_amber/01_static_amber_coco_loop.py
    :linenos:

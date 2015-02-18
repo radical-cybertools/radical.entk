@@ -115,7 +115,7 @@ import os
 
 # ------------------------------------------------------------------------------
 #
-num_sims = 16
+
 class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
     def __init__(self, maxiterations, simulation_instances, analysis_instances):
