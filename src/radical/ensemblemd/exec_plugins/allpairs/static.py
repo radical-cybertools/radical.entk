@@ -79,7 +79,7 @@ class Plugin(PluginBase):
                 kernel = pattern.element_initialization(element=i)
                 link_out_data=kernel.get_arg("--filename=")
                 kernel._bind_to_resource(resource._resource_key)
-                self.get_logger().info("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
+                self.get_logger().debug("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
             #     #Output File Staging. The file after it is created in the folder of each CU, is moved to the folder defined in
             #     #the start of the script
 
@@ -112,7 +112,7 @@ class Plugin(PluginBase):
                 link_input2=kernel.get_arg("--inputfile2=")
                 link_output=kernel.get_arg("--outputfile=")
                 kernel._bind_to_resource(resource._resource_key)
-                self.get_logger().info("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
+                self.get_logger().debug("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
             #     #Output File Staging. The file after it is created in the folder of each CU, is moved to the folder defined in
             #     #the start of the script
                 INPUT_FILE1           = {'source': os.path.join(STAGING_AREA,link_input1),
