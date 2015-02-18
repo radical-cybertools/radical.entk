@@ -21,7 +21,7 @@ def reduced_energy(temperature, potential):
     potential - replica potential energy
 
     Returns:
-    reduced enery of replica
+    reduced energy of replica
     """
     kb = 0.0019872041
     # check for division by zero
@@ -36,7 +36,7 @@ def reduced_energy(temperature, potential):
 def get_historical_data(history_name):
     """Retrieves temperature and potential energy from simulation output file .history file.
     This file is generated after each simulation run. The function searches for directory 
-    where .history file recides by checking all computeUnit directories on target resource.
+    where .history file resides by checking all ComputeUnit directories on target resource.
 
     Arguments:
     history_name - name of .history file for a given replica. 
@@ -44,7 +44,7 @@ def get_historical_data(history_name):
     Returns:
     data[0] - temperature obtained from .history file
     data[1] - potential energy obtained from .history file
-    path_to_replica_folder - path to computeUnit directory on a target resource where all
+    path_to_replica_folder - path to ComputeUnit directory on a target resource where all
     input/output files for a given replica recide.
     """
     home_dir = os.getcwd()
@@ -74,8 +74,9 @@ def get_historical_data(history_name):
 #-----------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    """This module calculates one swap matrix column for replica and writes this column to 
-    matrix_column_x_x.dat file. 
+    """This module calculates one swap matrix column for a single replica, 
+    which is then transferred back to RE application using STDOUT redirestion 
+    capabilities of Radical Pilot.
     """
 
     argument_list = str(sys.argv)

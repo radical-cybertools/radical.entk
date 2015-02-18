@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 """
 This script is an example of simple application using the Ensemble MD Toolkit ``ReplicaExchange``
-pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 replicas and performs a total of 5 synchronous simulation
-cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution
-plugin. As MD application kernel in this use-case is used NAMD. Input files can be found 
-in ``/cdi_replica_exchange/namd_inp`` directory. Shared input files used by each replica are specified 
-in prepare_shared_data() method. This method is called when specified files are to be transferred to the
- target resource. For this use-case these files are ``alanin.psf`` structure file, 
-``unfolded.pdb`` coordinates file and ``alanin.params`` parameters file.
-After shared input files are transferred, for each replica is created input file using a template
- ``/cdi_replica_exchange/namd_inp/alanin_base.namd``. In this file are specified replica simulation 
-parameters according to their initial values. After input files are created ``prepare_replica_for_md()``
-is called and MD step is performed on a target resource. Then follows Exchange step. For each replica
-preparation required to perform this step on a target resource is specified in ``prepare_replica_for_exchange()``.
-After Exchange step is finished, final exchange procedure is performed locally according to Gibbs sampling
-method. This procedure is defined in ``get_swap_matrix()``, ``exchange()``, ``weighted_choice_sub()`` and ``perform_swap()`` methods. 
-After exchange procedure is finished the next MD run is performed and the process is then repeated.
-For remote exchange step is used ``/cdi_replica_exchange/namd_matrix_calculator.py`` python script.
-This script calculates one swap matrix column for replica by retrieving temperature and potential energy 
-from simulation output file .history file.
-
+pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 
+replicas and performs a total of 5 synchronous simulation cycles. Here exchange step is performed 
+on target resource, which corresponds to ``static_pattern_2`` execution plugin. As MD application 
+kernel in this use-case is used NAMD. Input files can be found  in ``/cdi_replica_exchange/namd_inp`` 
+directory. Shared input files used by each replica are specified in prepare_shared_data() method. 
+This method is called when specified files are to be transferred to the target resource. For this 
+use-case these files are ``alanin.psf`` structure file, ``unfolded.pdb`` coordinates file and 
+``alanin.params`` parameters file. After shared input files are transferred, for each replica is 
+created input file using a template ``/cdi_replica_exchange/namd_inp/alanin_base.namd``. In this 
+file are specified replica simulation parameters according to their initial values. After input 
+files are created ``prepare_replica_for_md()`` is called and MD step is performed on a target 
+resource. Then follows Exchange step. For each replica preparation required to perform this step 
+on a target resource is specified in ``prepare_replica_for_exchange()``. After Exchange step is 
+finished, final exchange procedure is performed locally according to Gibbs sampling method. This 
+procedure is defined in ``get_swap_matrix()``, ``exchange()``, ``weighted_choice_sub()`` and 
+``perform_swap()`` methods. After exchange procedure is finished the next MD run is performed and 
+the process is then repeated. For remote exchange step is used ``/cdi_replica_exchange/namd_matrix_calculator.py`` 
+python script. This script calculates one swap matrix column for replica by retrieving temperature 
+and potential energy from simulation output file .history file.
 
 Run Locally
 ^^^^^^^^^^^
@@ -97,10 +97,8 @@ from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 #
 
 class ReplicaP(Replica):
-    """Class representing replica and it's associated data.
-
-    This will have to be extended by users implementing RE pattern for 
-    a particular kernel and scheme
+    """Class representing replica and it's parameters.
+    Class Replica must be extended by developer writing RE application.
     """
     def __init__(self, my_id, new_temperature=None, cores=1):
         """Constructor.
@@ -132,21 +130,24 @@ class ReplicaP(Replica):
         self.swap = 0
         self.cores = cores
 
+        # calling constructor of parent class
         super(ReplicaP, self).__init__(my_id)
 
 class RePattern(ReplicaExchange):
-    """In this class are specified details of RE simulation:
+    """Class ReplicaExchange must be extended by developer implementing RE application.
+    In this class are specified details of RE simulation:
         - initialization of replicas
         - generation of input files
-        - preparation for MD and exchange steps
+        - preparation for MD and Exchange steps
         - implementation of exchange routines
     """
 
     def __init__(self):
         """Constructor.
+        In principle simulation parameters should be passed using input file.
         """
 
-        # currently all params are hardcoded
+        # currently all parameters are hardcoded
         self.inp_basename = "alanin_base.namd"
         self.inp_folder = "namd_inp"
         self.min_temp = 300.0
@@ -154,12 +155,14 @@ class RePattern(ReplicaExchange):
         self.cycle_steps = 1000
         self.replicas = 32
         self.work_dir_local = os.getcwd()
-        self.nr_cycles = 3    
+        self.nr_cycles = 5    
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
 
+        # list holding paths to shared files 
         self.shared_urls = []
+        # list holding names of shared files
         self.shared_files = []
 
         super(RePattern, self).__init__()
@@ -167,7 +170,10 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_shared_data(self):
- 
+        """Populates shared_urls and shared_files lists.
+        Files present in both of these lists will be transferred before simulation
+        to the target resource.
+        """
         structure_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_structure
         coords_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_coordinates
         params_path = self.work_dir_local + "/" + self.inp_folder + "/" + self.namd_parameters
@@ -188,17 +194,24 @@ class RePattern(ReplicaExchange):
     #-------------------------------------------------------------------------------
     #
     def get_shared_urls(self):
+        """getter method for shared_urls list
+        """
         return self.shared_urls
 
     #-------------------------------------------------------------------------------
     #
     def get_shared_files(self):
+        """getter method for shared_files list
+        """
         return self.shared_files
 
     # ------------------------------------------------------------------------------
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes
+
+        Returns:
+        replicas - a list of initialised ReplicaP objects
         """
         replicas = []
         N = self.replicas
@@ -213,10 +226,11 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
-        """Generates input file for NAMD
+        """Generates NAMD input file based on template.
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's attributes
+        (an instance of ReplicaP class)
         """
 
         basename = self.inp_basename[:-5]
@@ -286,11 +300,16 @@ class RePattern(ReplicaExchange):
         """Specifies input and output files and passes them to NAMD kernel
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's attributes
+
+        Returns:
+        k - an instance of Kernel class
         """
 
         self.build_input_file(replica)
         input_file = "%s_%d_%d.namd" % (self.inp_basename[:-5], replica.id, (replica.cycle))
+        # this can be commented out
+        output_file = replica.new_history
 
         new_coor = replica.new_coor
         new_vel = replica.new_vel
@@ -304,6 +323,8 @@ class RePattern(ReplicaExchange):
         k = Kernel(name="md.namd")
         k.arguments            = [input_file]
         k.upload_input_data    = [str(input_file)]
+        # this can be commented out
+        k.download_output_data = [str(output_file)]
 
         replica.cycle += 1
         return k
@@ -311,14 +332,16 @@ class RePattern(ReplicaExchange):
     # ------------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """Prepares md.re_exchange kernel to launch namd_matrix_calculator.py script on target resource 
-        in order to populate columns of swap matrix.
+        """Prepares md.re_exchange kernel to launch namd_matrix_calculator.py script 
+        on target resource in order to populate columns of swap matrix.
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's attributes
+ 
+        Returns:
+        k - an instance of Kernel class
         """
-        # name of the file which contains swap matrix column data for each replica
-        matrix_col = "matrix_column_%s_%s.dat" % (replica.id, (replica.cycle-1))
+
         basename = self.inp_basename[:-5]
 
         k = Kernel(name="md.re_exchange")
@@ -339,6 +362,9 @@ class RePattern(ReplicaExchange):
         Arguments:
         replicas - a list of replica objects
         matrix_columns - matrix of energy parameters obtained during the exchange step
+
+        Returns:
+        swap_matrix - a matix of dimension-less energies
         """
 
         base_name = "matrix_column"
@@ -441,6 +467,7 @@ if __name__ == "__main__":
             walltime=15
         )
         
+        
         # Allocate the resources.
         cluster.allocate()
 
@@ -455,7 +482,9 @@ if __name__ == "__main__":
         # run RE simulation  
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-        print "RE simulation of %d cycles involving %d replicas has completed successfully!" % (re_pattern.nr_cycles, re_pattern.replicas)
+        print "Simulation finished!"
+        print "Simulation performed {0} cycles with {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
+        print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
 
     except EnsemblemdError, er:
 
