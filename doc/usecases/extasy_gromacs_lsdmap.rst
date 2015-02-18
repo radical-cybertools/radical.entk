@@ -92,7 +92,8 @@ see log messages about simulation progress::
 
 
 Once the default script has finished running, you should see a folder called "iter2" inside backup/
-which would contain
+which would contain the coordinate file for the next iteration(out.gro), output log of lsdmap (lsdmap.log)
+and the weight file (weight.w).
 
 .. _01_static_gromacs_lsdmap_loop.py:
 
