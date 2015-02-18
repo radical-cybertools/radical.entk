@@ -85,12 +85,15 @@ class RePattern(ReplicaExchange):
         self.min_temp = 300.0
         self.max_temp = 600.0
         self.cycle_steps = 1000
-        self.replicas = 32
-        self.work_dir_local = os.getcwd()
-        self.nr_cycles = 5    
+        self.work_dir_local = os.getcwd() 
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
+
+        # set number of replicas
+        self.replicas = 32
+        # set number of simulation cycles
+        self.nr_cycles = 5
 
         # list holding paths to shared files 
         self.shared_urls = []
