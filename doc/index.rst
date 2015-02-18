@@ -13,6 +13,12 @@ It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu
 at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
 <http://opensource.org/licenses/MIT>`_.
 
+**Authors**
+
+* Vivekanandan Balasubramanian
+* Ioannis Paraskevakos
+* Antons Treikalis
+* Ole Weidner
 
 **Project Github Page**
 
