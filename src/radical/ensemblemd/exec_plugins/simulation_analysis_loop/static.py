@@ -287,7 +287,7 @@ class Plugin(PluginBase):
                             self.get_logger().info("Submitted tasks for analysis iteration {0}/ kernel {1}.".format(iteration,cur_kernel))
                             self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1} to complete.".format(iteration,cur_kernel))
                             resource._umgr.wait_units()
-                            self.get_logger().info("Analysis in iteration {0}/kernel {1} completed.".format(iteration,cur_kernel))
+                            self.get_logger().info("Analysis in iteration {0}/kernel {1}:{2} completed.".format(iteration,cur_kernel,ana_step.name))
 
                             failed_units = ""
                             for unit in a_cus:
