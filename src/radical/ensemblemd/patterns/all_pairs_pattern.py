@@ -56,7 +56,7 @@ class AllPairs(ExecutionPattern):
             self._permutations = len(self._set1elements)*(len(self._set1elements)-1)/2
         else:
             self._permutations = len(self._set1elements)*len(self._set1elements)
-        
+
 
         super(AllPairs, self).__init__()
 

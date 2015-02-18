@@ -70,6 +70,10 @@ class Plugin(PluginBase):
         journal= {}
         steps = 0
 
+
+        pattern._execution_profile = {}
+        pattern_start_time  = time.time()
+
         try:
             resource._umgr.register_callback(unit_state_cb)
 
@@ -121,6 +125,8 @@ class Plugin(PluginBase):
             for step in range(1, steps+1):
                 step_key = "step_%s" % step
 
+                pattern._execution_profile["step_{0}_start_time".format(step)] = time.time() - pattern_start_time
+
                 for instance in range(1, pipeline_instances+1):
                     instance_key = "instance_%s" % instance
 
@@ -160,6 +166,9 @@ class Plugin(PluginBase):
                         error = ("NAME: {0} LAST LOG: {1} STDOUT: {2} STDERR: {3}").format(unit.name, unit.log[-1], unit.stderr, unit.stdout)
                         errors.append(error)
                         raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, errors))
+
+                pattern._execution_profile["step_{0}_stop_time".format(step)] = time.time() - pattern_start_time
+
 
         except Exception, ex:
             self.get_logger().exception("Fatal error during pattern execution: {0}.".format(str(ex)))
