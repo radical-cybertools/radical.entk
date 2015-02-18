@@ -1,4 +1,16 @@
 __author__ = 'vivek'
+
+'''
+Purpose :   This file is used to split the large input coordinate file into
+            smaller coordinate files that can are executed on by each compute unit.
+            It uses the gro.py file to get the specifics of the system in question.
+
+Arguments : num_tasks = number of compute units
+            grofile_name = name of the coordinate file
+
+'''
+
+
 import gro
 import os
 import sys

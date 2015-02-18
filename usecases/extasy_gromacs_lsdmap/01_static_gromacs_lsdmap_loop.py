@@ -6,10 +6,11 @@ This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
 pattern for the Gromacs-LSDMap usecase which has multiple Gromacs based Simulation
 instances and a single LSDMap Analysis stage. Although the user is free to use
 any method to mention the inputs, this usecase example uses two configuration
-files - a RPconfig file which consists of values required to set up a pilot
-on the target machine, a Kconfig file which consists of filenames/ parameter
-values required by Gromacs/LSDMap. The description of each of these parameters
-is provided in their respective config files.
+files - a RPconfig file (stampede.rcfg in this example) which consists of values
+required to set up a pilot on the target machine, a Kconfig file (gromacslsdmap.wcfg
+in this example) which consists of filenames/ parameter values required by
+Gromacs/LSDMap. The description of each of these parameters is provided in their
+respective config files.
 
 In this particular usecase example, there are 16 simulation instances followed
 by 1 analysis instance forming one iteration. The experiment is run for two
@@ -61,13 +62,6 @@ machine by setting the following parameters in your RPconfig file::
     DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
 
 
-**Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop.py>`.
-
-**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about simulation progress::
-
-    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py --RPconfig stampede.rcfg --Kconfig gromacslsdmap.wcfg
-
 Once the script has finished running, you should see a folder called "iter2" inside backup/
 which would contain
 
@@ -86,6 +80,14 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         username=None,  # add your username here
         allocation=None # add your allocation or project id here if required
     )
+
+**Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop.py>`.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
+see log messages about simulation progress::
+
+    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py --RPconfig stampede.rcfg --Kconfig gromacslsdmap.wcfg
+
 
 Once the default script has finished running, you should see a folder called "iter2" inside backup/
 which would contain
@@ -110,13 +112,11 @@ from radical.ensemblemd import SingleClusterEnvironment
 import sys
 import imp
 import argparse
+import os
 
 
 # ------------------------------------------------------------------------------
 #
-num_CUs = 8
-nsave=2
-
 class Gromacs_LSDMap(SimulationAnalysisLoop):
   # TODO Vivek: add description.
 
@@ -139,10 +139,14 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                                Kconfig.lsdm_config_file,
                                Kconfig.top_file,
                                Kconfig.mdp_file,
-                               'spliter.py',
-                               'gro.py','run.py','pre_analyze.py',
-                               'post_analyze.py','select.py','reweighting.py']
-        k.arguments = ["--inputfile={0}".format(Kconfig.md_input_file),"--numCUs={0}".format(Kconfig.num_CUs)]
+                               '{0}/spliter.py'.format(Kconfig.misc_loc),
+                               '{0}/gro.py'.format(Kconfig.misc_loc),
+                               '{0}/run.py'.format(Kconfig.misc_loc),
+                               '{0}/pre_analyze.py'.format(Kconfig.misc_loc),
+                               '{0}/post_analyze.py'.format(Kconfig.misc_loc),
+                               '{0}/select.py'.format(Kconfig.misc_loc),
+                               '{0}/reweighting.py'.format(Kconfig.misc_loc)]
+        k.arguments = ["--inputfile={0}".format(os.path.basename(Kconfig.md_input_file)),"--numCUs={0}".format(Kconfig.num_CUs)]
         return k
 
     def simulation_step(self, iteration, instance):
@@ -161,10 +165,10 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         '''
 
         gromacs = Kernel(name="md.gromacs")
-        gromacs.arguments = ["--grompp={0}".format(Kconfig.mdp_file),
-                             "--topol={0}".format(Kconfig.top_file)]
-        gromacs.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.mdp_file),
-                                   '$PRE_LOOP/{0}'.format(Kconfig.top_file),
+        gromacs.arguments = ["--grompp={0}".format(os.path.basename(Kconfig.mdp_file)),
+                             "--topol={0}".format(os.path.basename(Kconfig.top_file))]
+        gromacs.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.mdp_file)),
+                                   '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file)),
                                    '$PRE_LOOP/run.py']
 
         if (iteration-1==0):
@@ -222,9 +226,9 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
 
         lsdmap = Kernel(name="md.lsdmap")
-        lsdmap.arguments = ["--config={0}".format(Kconfig.lsdm_config_file)]
-        lsdmap.link_input_data = ['$PRE_LOOP/{0}'.format(Kconfig.lsdm_config_file)]
-        lsdmap.cores = 16
+        lsdmap.arguments = ["--config={0}".format(os.path.basename(Kconfig.lsdm_config_file))]
+        lsdmap.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.lsdm_config_file))]
+        lsdmap.cores = RPconfig.PILOTSIZE
         if iteration > 1:
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
@@ -236,7 +240,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                               "--max_dead_neighbors={0}".format(Kconfig.max_dead_neighbors),
                               "--max_alive_neighbors={0}".format(Kconfig.max_alive_neighbors),
                               "--numCUs={0}".format(Kconfig.num_CUs)]
-        if(iteration%nsave==0):
+        if(iteration%Kconfig.nsave==0):
             post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
                                              'weight.w > backup/iter{0}/weight.w'.format(iteration),
                                              'lsdmap.log > backup/iter{0}/lsdmap.log'.format(iteration)]

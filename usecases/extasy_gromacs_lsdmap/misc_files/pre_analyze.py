@@ -1,5 +1,18 @@
 __author__ = 'vivek'
 
+'''
+
+Purpose :   This file merges the results of the simulation stage into one
+            coordinate file as is required by the LSDMap analysis stage.
+            This file reads from the simulation CU outputs and writes them
+            into one common file in linear order.
+
+Arguments : num_CUs = number of compute units
+            md_output_file = name of the resulting output file
+            path = path of the corresponding compute unit to read from
+
+'''
+
 import os
 import sys
 

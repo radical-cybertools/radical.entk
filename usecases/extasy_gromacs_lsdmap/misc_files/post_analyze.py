@@ -1,5 +1,23 @@
 __author__ = 'vivek'
 
+'''
+Purpose :   This file is used to perform the selection + reweighting step required
+            after the LSDMap stage to generate the new coordinate file. This file
+            also splits this new coordinate file to be used by each of the compute
+            units in the next iteration.
+
+Arguments : num_runs        = number of initial configurations in the coordinate file
+            evfile          = name of the eigen vector file
+            num_clone_files = name of the clone file
+            md_output_file  = output file of the pre_analyze step
+            w_file          = name of the weight file
+            outgrofile_name = filename of the output of select+reweight
+            cycle           = current iteration number
+            numCUs          = number of simulation instances
+
+'''
+
+
 import os
 import sys
 

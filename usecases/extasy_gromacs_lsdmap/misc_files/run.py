@@ -1,5 +1,19 @@
 __author__ = 'vivek'
 
+'''
+Purpose :   This file is executed by each of the compute units in the
+            simulation stage. Uses the arguments to create a bash script
+            which is executed on the remote machine to perform the
+            gromacs simulation.
+
+Arguments : --mdp = name of the gromacs parameter file
+            --top = name of the topology file
+            --gro = name of the coordinate file
+            --out = name of the output file
+
+'''
+
+
 import os
 import argparse
 from mpi4py import MPI

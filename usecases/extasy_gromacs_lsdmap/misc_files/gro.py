@@ -3,7 +3,6 @@ import sys
 import linecache
 import time
 
-
 class GroFile(object):
 
     def __init__(self, filename):
