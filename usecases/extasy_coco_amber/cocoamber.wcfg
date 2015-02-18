@@ -3,7 +3,7 @@ simulator                = 'Amber'          # Simulator to be loaded
 analyzer                 = 'CoCo'           # Analyzer to be loaded
 
 #-------------------------General---------------------------
-num_iterations          = 4                 # Number of iterations of Simulation-Analysis
+num_iterations          = 2                 # Number of iterations of Simulation-Analysis
 start_iter              = 0                 # Iteration number with which to start
 num_CUs 		= 16                # Number of tasks or Compute Units
 nsave			= 2		    # Iterations after which output is transferred to local machine
