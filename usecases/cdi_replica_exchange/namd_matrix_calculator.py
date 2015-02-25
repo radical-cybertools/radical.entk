@@ -49,24 +49,17 @@ def get_historical_data(history_name):
     """
     home_dir = os.getcwd()
     os.chdir("../")
-
-    # getting all cu directories
-    replica_dirs = []
-    for name in os.listdir("."):
-        if os.path.isdir(name):
-            replica_dirs.append(name)    
-
-    for directory in replica_dirs:
-         os.chdir(directory)
-         try:
-             f = open(history_name)
-             lines = f.readlines()
-             f.close()
-             path_to_replica_folder = os.getcwd()
-             data = lines[0].split()
-         except:
-             pass 
-         os.chdir("../")
+    
+    os.chdir("staging_area")
+    try:
+        f = open(history_name)
+        lines = f.readlines()
+        f.close()
+        path_to_replica_folder = os.getcwd()
+        data = lines[0].split()
+    except:
+        pass 
+    os.chdir("../")
  
     os.chdir(home_dir)
     return float(data[0]), float(data[1]), path_to_replica_folder
@@ -86,7 +79,6 @@ if __name__ == '__main__':
     base_name = str(sys.argv[4])
 
     pwd = os.getcwd()
-    matrix_col = "matrix_column_%s_%s.dat" % ( replica_id, replica_cycle ) 
 
     # getting history data for self
     history_name = base_name + "_" + replica_id + "_" + replica_cycle + ".history"

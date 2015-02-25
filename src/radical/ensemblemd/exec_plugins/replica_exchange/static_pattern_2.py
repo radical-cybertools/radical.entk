@@ -74,7 +74,7 @@ class Plugin(PluginBase):
 
                 sd_shared = {'source': 'staging:///%s' % shared_input_files[i],
                              'target': shared_input_files[i],
-                             'action': radical.pilot.LINK
+                             'action': radical.pilot.COPY
                 }
                 sd_shared_list.append(sd_shared)
 
@@ -153,7 +153,7 @@ class Plugin(PluginBase):
                         self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c+1), r.id) )
                         ex_kernel = pattern.prepare_replica_for_exchange(r)
                         ex_kernel._bind_to_resource(resource._resource_key)
-
+                        
                         cu                = radical.pilot.ComputeUnitDescription()
                         cu.pre_exec       = ex_kernel._cu_def_pre_exec
                         cu.executable     = ex_kernel._cu_def_executable
@@ -178,7 +178,7 @@ class Plugin(PluginBase):
                     hl_dictionary["cycle_{0}".format(c+1)]["run_{0}".format("Exchange_prep")] = (stop_time-start_time).total_seconds()
                     start_time = datetime.datetime.utcnow()
 
-                    self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (i+1) )
+                    self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (c+1) )
                     resource._umgr.wait_units()
 
                     stop_time = datetime.datetime.utcnow()

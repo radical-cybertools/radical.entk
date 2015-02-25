@@ -89,11 +89,8 @@ class RePattern(ReplicaExchange):
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
-
-        # set number of replicas
-        self.replicas = 32
-        # set number of simulation cycles
-        self.nr_cycles = 5
+        self.replicas = 0
+        self.nr_cycles = 0
 
         # list holding paths to shared files 
         self.shared_urls = []
@@ -101,6 +98,16 @@ class RePattern(ReplicaExchange):
         self.shared_files = []
 
         super(RePattern, self).__init__()
+
+    # ------------------------------------------------------------------------------
+    #
+    def set_nr_replicas(self, replicas):
+        self.replicas = replicas
+
+    # ------------------------------------------------------------------------------
+    #
+    def set_nr_cycles(self, cycles):
+        self.nr_cycles = cycles
 
     # ------------------------------------------------------------------------------
     #
@@ -255,11 +262,40 @@ class RePattern(ReplicaExchange):
         old_vel = replica.old_vel
         old_ext_system = replica.old_ext_system 
 
+        st_out = []
+ 
+        history_out = {
+            'source': new_history,
+            'target': 'staging:///%s' % new_history,
+            'action': radical.pilot.COPY
+        }
+        st_out.append(history_out)
+        
+        coor_out = {
+            'source': new_coor,
+            'target': 'staging:///%s' % new_coor,
+            'action': radical.pilot.LINK
+        }                   
+        st_out.append(coor_out)        
+
+        vel_out = {
+            'source': new_vel,
+            'target': 'staging:///%s' % new_vel,
+            'action': radical.pilot.LINK
+        }
+        st_out.append(vel_out)
+        
+        ext_out = {
+            'source': new_ext_system,
+            'target': 'staging:///%s' % new_ext_system,
+            'action': radical.pilot.LINK
+        }
+        st_out.append(ext_out)
+
         k = Kernel(name="md.namd")
         k.arguments            = [input_file]
-        k.upload_input_data    = [str(input_file)]
-        # this can be commented out
-        k.download_output_data = [str(output_file)]
+        k.upload_input_data    = [str(input_file)] 
+        k.download_output_data = st_out
 
         replica.cycle += 1
         return k
@@ -400,14 +436,19 @@ if __name__ == "__main__":
             resource="localhost", 
             cores=1, 
             walltime=15
-        )
-        
+        ) 
         
         # Allocate the resources.
         cluster.allocate()
 
         # creating RE pattern object
         re_pattern = RePattern()
+   
+        # set number of replicas
+        re_pattern.set_nr_replicas(8)
+ 
+        # set number of cycles
+        re_pattern.set_nr_cycles(3)
 
         # initializing replica objects
         replicas = re_pattern.initialize_replicas()
