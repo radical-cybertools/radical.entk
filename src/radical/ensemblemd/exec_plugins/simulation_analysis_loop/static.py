@@ -211,6 +211,10 @@ class Plugin(PluginBase):
                     # This is a good time to replace all placeholders in the
                     # pre_exec list.
 
+                    try:
+                        cud.cores = sim_step.cores
+                    except:
+                        pass
 
                     s_units.append(cud)
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
@@ -278,6 +282,11 @@ class Plugin(PluginBase):
                             cud.mpi            = ana_step.uses_mpi
                             cud.input_staging  = ana_step._cu_def_input_data
                             cud.output_staging = ana_step._cu_def_output_data
+
+                            try:
+                                cud.cores = ana_step.cores
+                            except:
+                                pass
 
                             a_units.append(cud)
                             self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
