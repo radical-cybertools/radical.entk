@@ -106,6 +106,14 @@ relative time value (relative to pattern execution start time ``t=0``) respectiv
 If a kernel doesn't define input or output data transfer, the respective data
 points will be ``None``.
 
+.. figure:: images/profile.*
+   :width: 360pt
+   :align: center
+   :alt: Profile.
+
+   `Figure 1: Profile data.`
+
+
 Runtime Profile via File
 ------------------------
 
