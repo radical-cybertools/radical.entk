@@ -10,11 +10,8 @@ and performance optimizations.  Looking at the execution times of the
 different stages and instances of your application is one of the key techniques
 to achieve this.
 
-Ensemble MD Toolkit provides two ways to access these performance numbers:
-programmatically via the API or through the generation of a profile file.
-
-Runtime Profile via API
------------------------
+Runtime Profile Access
+----------------------
 
 Accessing the runtime profile of a pattern is very simple. After the a pattern
 has been executed, i.e., the `run()` method returns, you can access the
@@ -29,15 +26,85 @@ has been executed, i.e., the `run()` method returns, you can access the
 
     print p.execution_profile
 
-The `execution_profile` property returns a Python dictionary with performance
+The `execution_profile` property returns a Python list with performance
 numbers. For the Simulation-Analysis pattern for example, this would look
 something like this:
 
 .. code-block:: python
 
-    {'sim_2_end_time': 35.156960010528564, 'ana_2_end_time': 47.49368095397949, 'ana_1_end_time': 23.921995878219604, 'sim_1_end_time': 11.549329042434692}
+  [
+  {'name': 'simulation_step_1',
+   'timings': {
+     'start_time': {
+       'abs': datetime.datetime(2015, 3, 4, 17, 28, 29, 952194),
+       'rel': datetime.timedelta(0, 11, 302058)
+     },
+     'end_time': {
+       'abs': datetime.datetime(2015, 3, 4, 17, 28, 41, 159491),
+       'rel': datetime.timedelta(0, 22, 509355)
+     },
+     'kernel_stagein_first_started': {
+       'abs': None,
+       'rel': None
+     },
+     'kernel_stagein_last_finished': {
+       'abs': None,
+       'rel': None
+     },
+     'kernel_exec_first_started': {
+       'abs': datetime.datetime(2015, 3, 4, 18, 21, 39, 653000),
+       'rel': datetime.timedelta(0)
+     },
+     'kernel_exec_last_finished': {
+       'abs': datetime.datetime(2015, 3, 4, 18, 21, 49, 771000),
+       'rel': datetime.timedelta(0, 10, 118000)
+     },
+     'kernel_stageout_last_finished': {
+       'abs': None,
+       'rel': None
+     },
+     'kernel_stageout_first_started': {
+       'abs': None,
+       'rel': None
+     }
+    }
+  },
+  {'name': 'analysis_step_1',
+   'timings': {
+     'start_time': {
+       'abs': datetime.datetime(2015, 3, 4, 17, 28, 52, 332764),
+       'rel': datetime.timedelta(0, 33, 682628)},
+     'end_time': {
+       'abs': datetime.datetime(2015, 3, 4, 17, 29, 3, 749004),
+       'rel': datetime.timedelta(0, 45, 98868)
+      }
+      .
+      .
+      .
+      .
+    }
+  }
+  ]
 
+Each entry in the array corresponds to one specific pattern entity, like for
+example a simulation or an analysis step. The 'name' key references the entity.
 
+The keys in the `timings` dictionary have the following meaning:
+
+* ``start_time`` The time at which the entity started execution
+* ``end_time`` The time at which the entity finished execution
+* ``kernel_stagein_first_started`` The time the first kernel started transfering input data
+* ``kernel_stagein_last_finished`` The time the last kernel finished transfering input data
+* ``kernel_exec_first_started`` The time the first kernel started execution
+* ``kernel_exec_last_finished`` The time the last kernel finished execution
+* ``kernel_stageout_first_started`` The time the first kernel started transfering output data
+* ``kernel_stageout_last_finished`` The time the last kernel finished transfering output data
+
+The two sub-keys ``abs`` and ``rel`` point to the absolute time value and the
+relative time value (relative to pattern execution start time ``t=0``) respectively.
+
+If a kernel doesn't define input or output data transfer, the respective data
+points will be ``None``.
 
 Runtime Profile via File
 ------------------------

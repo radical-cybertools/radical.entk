@@ -12,6 +12,7 @@ import time
 import saga
 import datetime
 import radical.pilot
+from radical.ensemblemd.utils import extract_timing_info
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
@@ -117,7 +118,7 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        pattern_start_time = time.time()
+        pattern_start_time = datetime.datetime.now()
 
         #-----------------------------------------------------------------------
         #
@@ -133,7 +134,7 @@ class Plugin(PluginBase):
         working_dirs = {}
         all_cus = []
 
-        pattern._execution_profile = {}
+        pattern._execution_profile = []
 
         try:
             resource._umgr.register_callback(unit_state_cb)
@@ -184,7 +185,12 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE SIMULATION STEPS
-                pattern._execution_profile["sim_{0}_start_time".format(iteration)] = time.time() - pattern_start_time
+                step_timings = {
+                    "name": "simulation_step_{0}".format(iteration),
+                    "timings": {}
+                }
+                step_start_time_abs = datetime.datetime.now()
+                step_start_time_rel = step_start_time_abs - pattern_start_time
 
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
@@ -239,12 +245,34 @@ class Plugin(PluginBase):
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
-                pattern._execution_profile["sim_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
+                step_end_time_abs = datetime.datetime.now()
+                step_end_time_rel = step_end_time_abs - pattern_start_time
+
+                step_timings['timings']['start_time'] = {}
+                step_timings['timings']['start_time']['abs'] = step_start_time_abs
+                step_timings['timings']['start_time']['rel'] = step_start_time_rel
+
+                step_timings['timings']['end_time'] = {}
+                step_timings['timings']['end_time']['abs'] = step_end_time_abs
+                step_timings['timings']['end_time']['rel'] = step_end_time_rel
+
+                # Process CU information and append it to the dictionary
+                tinfo = extract_timing_info(s_cus)
+                for key, val in tinfo.iteritems():
+                    step_timings['timings'][key] = val
+
+                # Write the whole thing to the profiling dict
+                pattern._execution_profile.append(step_timings)
 
 
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
-                pattern._execution_profile["ana_{0}_start_time".format(iteration)] = time.time() - pattern_start_time
+                step_timings = {
+                    "name": "analysis_step_{0}".format(iteration),
+                    "timings": {}
+                }
+                step_start_time_abs = datetime.datetime.now()
+                step_start_time_rel = step_start_time_abs - pattern_start_time
 
                 a_units = []
                 analysis_list = None
@@ -352,7 +380,25 @@ class Plugin(PluginBase):
                             i += 1
                             working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
-                pattern._execution_profile["ana_{0}_end_time".format(iteration)] = time.time() - pattern_start_time
+                step_end_time_abs = datetime.datetime.now()
+                step_end_time_rel = step_end_time_abs - pattern_start_time
+
+                step_timings['timings']['start_time'] = {}
+                step_timings['timings']['start_time']['abs'] = step_start_time_abs
+                step_timings['timings']['start_time']['rel'] = step_start_time_rel
+
+                step_timings['timings']['end_time'] = {}
+                step_timings['timings']['end_time']['abs'] = step_end_time_abs
+                step_timings['timings']['end_time']['rel'] = step_end_time_rel
+
+                # Process CU information and append it to the dictionary
+                tinfo = extract_timing_info(a_cus)
+
+                for key, val in tinfo.iteritems():
+                    step_timings['timings'][key] = val
+
+                # Write the whole thing to the profiling dict
+                pattern._execution_profile.append(step_timings)
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
