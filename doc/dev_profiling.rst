@@ -117,6 +117,10 @@ points will be ``None``.
 Runtime Profile via File
 ------------------------
 
+.. warning::
+   This can hopefully go.
+
+
 This way of profiling doesn't require any modification of your application
 code and is entirely controlled via environment variables. This way you can
 turn profiling off and on on-demand throughout the development process.
@@ -132,6 +136,9 @@ in your working directory containing some key execution timing.
 
 Profile Inspection
 ------------------
+
+.. warning::
+   This will be replaced with new iPython-based method, once 6.2.1 is fixed.
 
 The `ensemblemd-profile` tool installed with Ensemble MD Toolkit allows to
 generate summary data from a profile data .csv file.
