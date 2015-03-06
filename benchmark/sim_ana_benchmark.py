@@ -34,11 +34,15 @@ class NopSA(SimulationAnalysisLoop):
     def simulation_step(self, iteration, instance):
         k = Kernel(name="misc.idle")
         k.arguments = ["--duration={0}".format(self.idle_time)]
+        k.upload_input_data = "/etc/passwd"
+        #k.download_output_data = "/etc/passwd"
         return k
 
     def analysis_step(self, iteration, instance):
         k = Kernel(name="misc.idle")
         k.arguments = ["--duration={0}".format(self.idle_time)]
+        k.upload_input_data = "/etc/passwd"
+        #k.download_output_data = "/etc/passwd"
         return k
 
     def post_loop(self):
