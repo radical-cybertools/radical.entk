@@ -113,27 +113,6 @@ points will be ``None``.
 
    `Figure 1: Profile data.`
 
-
-Runtime Profile via File
-------------------------
-
-.. warning::
-   This can hopefully go.
-
-
-This way of profiling doesn't require any modification of your application
-code and is entirely controlled via environment variables. This way you can
-turn profiling off and on on-demand throughout the development process.
-
-To get started, simply set the ``RADICAL_ENMD_PROFILING`` variable to ``1``
-and run your application::
-
-    RADICAL_ENMD_PROFILING=1 python examples/pipeline.py
-
-Once your application has finished running, you will find a CSV file
-`execution_profile_{time}.csv` (where time is the time of creation)
-in your working directory containing some key execution timing.
-
 Profile Inspection
 ------------------
 

@@ -2,6 +2,7 @@
 
 
 import math
+import pprint
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
@@ -81,7 +82,8 @@ if __name__ == "__main__":
                     )
                     cluster.run(nopsa)
 
-                    print nopsa.execution_profile
+                    pp = pprint.PrettyPrinter(indent=4)
+                    pp.pprint(nopsa.execution_profile)
 
     except EnsemblemdError, er:
         print "Ensemble MD Toolkit Error: {0}".format(str(er))

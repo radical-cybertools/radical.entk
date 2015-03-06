@@ -407,29 +407,3 @@ class Plugin(PluginBase):
         finally:
             self.get_logger().info("Deallocating resource.")
             resource.deallocate()
-
-        # -----------------------------------------------------------------
-        # At this point, we have executed the pattern succesfully. Now,
-        # if profiling is enabled, we can write the profiling data to
-        # a file.
-        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
-
-        if do_profile != '0':
-
-            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
-            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
-
-            with open(outfile, 'w+') as f:
-                # General format of a profiling file is row based and follows the
-                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; stage; iteration; instance"
-                f.write("{row}\n".format(row=head))
-
-                for cu in all_cus:
-                    row = "{uid}; {start_time}; {stop_time}; {tags}".format(
-                        uid=cu.uid,
-                        start_time=cu.start_time,
-                        stop_time=cu.stop_time,
-                        tags=cu.name
-                    )
-                    f.write("{row}\n".format(row=row))
