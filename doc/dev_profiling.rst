@@ -15,7 +15,7 @@ Runtime Profile Access
 
 Accessing the runtime profile of a pattern is very simple. After the a pattern
 has been executed, i.e., the `run()` method returns, you can access the
-`execution_profile` property:
+`execution_profile_dict` and the `execution_profile_dataframe` property:
 
 .. code-block:: python
 
@@ -26,7 +26,7 @@ has been executed, i.e., the `run()` method returns, you can access the
 
     print p.execution_profile
 
-The `execution_profile` property returns a Python list with performance
+The `execution_profile_dict` property returns a Python list with performance
 numbers. For the Simulation-Analysis pattern for example, this would look
 something like this:
 
@@ -112,6 +112,28 @@ points will be ``None``.
    :alt: Profile.
 
    `Figure 1: Profile data.`
+
+   The `execution_profile_dataframe` property returns a PANDAS DataFrame
+   containing the same performance numbers as above.
+   For the Simulation-Analysis pattern for example, this would look something like this::
+
+            pattern_entity      value_type           lower           upper
+     0   simulation_step_1    pattern_step 00:00:00.000191 00:00:11.301823
+     1   simulation_step_1   units_stagein             NaT             NaT
+     2   simulation_step_1      units_exec        00:00:00 00:00:10.104000
+     3   simulation_step_1  units_stageout             NaT             NaT
+     4     analysis_step_1    pattern_step 00:00:11.301903 00:00:22.473606
+     5     analysis_step_1   units_stagein             NaT             NaT
+     6     analysis_step_1      units_exec        00:00:00 00:00:10.109000
+     7     analysis_step_1  units_stageout             NaT             NaT
+     8   simulation_step_2    pattern_step 00:00:22.473685 00:00:34.801743
+     9   simulation_step_2   units_stagein             NaT             NaT
+     10  simulation_step_2      units_exec        00:00:00 00:00:10.120000
+     11  simulation_step_2  units_stageout             NaT             NaT
+     12    analysis_step_2    pattern_step 00:00:34.801825 00:00:46.202820
+     13    analysis_step_2   units_stagein             NaT             NaT
+     14    analysis_step_2      units_exec        00:00:00 00:00:10.115000
+     15    analysis_step_2  units_stageout             NaT             NaT
 
 Profile Inspection
 ------------------

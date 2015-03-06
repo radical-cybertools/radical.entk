@@ -110,3 +110,40 @@ def extract_timing_info(units):
             "rel": t_ex_L_rel
         }
     }
+
+#------------------------------------------------------------------------------
+#
+def dataframes_from_profile_dict(profile):
+
+    try:
+        import pandas as pd
+    except Exception, ex:
+        print ex
+        return None
+
+    cols = ['pattern_entity', 'value_type', 'lower', 'upper']
+    df = pd.DataFrame(columns=cols)
+
+    # iterate over the entities
+    for entity in profile:
+        start = entity['timings']['start_time']['rel']
+        stop = entity['timings']['end_time']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'pattern_step', start, stop]],columns=cols)
+        df = df.append(df2, ignore_index=True )
+
+        start = entity['timings']['units_stagein_first_started']['rel']
+        stop = entity['timings']['units_stagein_last_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'units_stagein', start, stop]],columns=cols)
+        df = df.append(df2, ignore_index=True )
+
+        start = entity['timings']['units_exec_first_started']['rel']
+        stop = entity['timings']['units_exec_last_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'units_exec', start, stop]],columns=cols)
+        df = df.append(df2, ignore_index=True )
+
+        start = entity['timings']['units_stageout_first_started']['rel']
+        stop = entity['timings']['units_stageout_last_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'units_stageout', start, stop]],columns=cols)
+        df = df.append(df2, ignore_index=True )
+
+    return df
