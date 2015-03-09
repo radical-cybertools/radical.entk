@@ -58,7 +58,7 @@ class SimulationAnalysisLoopPatternProfilingTestCases(unittest.TestCase):
         """
         cluster = SingleClusterEnvironment(
             resource="localhost",
-            cores=cfg_core,
+            cores=1,
             walltime=30,
             username=None,
             allocation=None
