@@ -5,7 +5,7 @@ import sys
 import glob
 import unittest
 
-from radical.ensemblemd.exceptions import *
+from radical.ensemblemd.exceptions import TypeError
 from radical.ensemblemd.tests.helpers import _exception_test_helper
 
 #-----------------------------------------------------------------------------
@@ -45,7 +45,8 @@ class ExecutionContextAPITestCases(unittest.TestCase):
         )
 
         try:
+            sec.allocate()
             sec.run("wrong_type")
+            assert False, "TypeError execption expected."
         except Exception, ex:
             pass
-            _exception_test_helper(exception=ex, expected_type=TypeError)

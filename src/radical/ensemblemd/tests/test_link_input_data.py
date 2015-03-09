@@ -37,7 +37,7 @@ class TestLinkInputData(unittest.TestCase):
             os.remove(fl)
 
     def tearDown(self):
-        # clean up after ourselves 
+        # clean up after ourselves
         try:
             for fl in glob.glob("./CHKSUM_*"):
                 os.remove(fl)
@@ -50,8 +50,8 @@ class TestLinkInputData(unittest.TestCase):
         """Check if we can link input data from a location on the execution host - single input.
         """
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=5
         )
 
@@ -61,6 +61,7 @@ class TestLinkInputData(unittest.TestCase):
             checksum_inputfile="passwd",
             download_output="CHKSUM_1"
         )
+        cluster.allocate()
         cluster.run(test)
 
         # f = open("./CHKSUM_1")
@@ -75,8 +76,8 @@ class TestLinkInputData(unittest.TestCase):
         """Check if we can link input data from a location on the execution host - single input with rename.
         """
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=15
         )
 
@@ -86,6 +87,7 @@ class TestLinkInputData(unittest.TestCase):
             checksum_inputfile="input",
             download_output="CHKSUM_2"
         )
+        cluster.allocate()
         cluster.run(test)
 
         # f = open("./CHKSUM_2")
@@ -100,8 +102,8 @@ class TestLinkInputData(unittest.TestCase):
         """Check if we can link input data from a location on the execution host - multiple input.
         """
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=15
         )
 
@@ -111,6 +113,7 @@ class TestLinkInputData(unittest.TestCase):
             checksum_inputfile="passwd",
             download_output="CHKSUM_3"
         )
+        cluster.allocate()
         cluster.run(test)
 
         # f = open("./CHKSUM_3")
@@ -125,8 +128,8 @@ class TestLinkInputData(unittest.TestCase):
         """Check if we can link input data from a location on the execution host - multiple input with rename.
         """
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
+            resource="localhost",
+            cores=1,
             walltime=15
         )
 
@@ -136,6 +139,7 @@ class TestLinkInputData(unittest.TestCase):
             checksum_inputfile="input_p",
             download_output="CHKSUM_4"
         )
+        cluster.allocate()
         cluster.run(test)
 
         # f = open("./CHKSUM_4")
