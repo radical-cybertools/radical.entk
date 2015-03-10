@@ -186,7 +186,7 @@ class Plugin(PluginBase):
                 ################################################################
                 # EXECUTE SIMULATION STEPS
                 step_timings = {
-                    "name": "simulation_step_{0}".format(iteration),
+                    "name": "simulation_iteration_{0}".format(iteration),
                     "timings": {}
                 }
                 step_start_time_abs = datetime.datetime.now()
@@ -268,7 +268,7 @@ class Plugin(PluginBase):
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
                 step_timings = {
-                    "name": "analysis_step_{0}".format(iteration),
+                    "name": "analysis_iteration_{0}".format(iteration),
                     "timings": {}
                 }
                 step_start_time_abs = datetime.datetime.now()

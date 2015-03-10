@@ -86,11 +86,10 @@ if __name__ == "__main__":
                     )
                     cluster.run(nopsa)
 
-                    pp = pprint.PrettyPrinter(indent=4)
+                    pp = pprint.PrettyPrinter()
                     pp.pprint(nopsa.execution_profile_dict)
 
-                    pp = pprint.PrettyPrinter(indent=4)
-                    pp.pprint(nopsa.execution_profile_dataframe)
+                    print nopsa.execution_profile_dataframe
 
     except EnsemblemdError, er:
         print "Ensemble MD Toolkit Error: {0}".format(str(er))

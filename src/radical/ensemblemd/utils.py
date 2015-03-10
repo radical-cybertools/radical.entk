@@ -83,29 +83,29 @@ def extract_timing_info(units):
         t_ex_L_rel = t_ex_L_abs - t_origin
 
     return {
-        "units_stagein_first_started": {
+        "first_data_stagein_started": {
             "abs": t_id_E_abs,
             "rel": t_id_E_rel
         },
-        "units_stagein_last_finished": {
+        "last_data_stagein_finished": {
             "abs": t_id_L_abs,
             "rel": t_id_L_rel
         },
 
-        "units_stageout_first_started": {
+        "first_data_stageout_started": {
             "abs": t_od_E_abs,
             "rel": t_od_E_rel
         },
-        "units_stageout_last_finished": {
+        "last_data_stageout_finished": {
             "abs": t_od_L_abs,
             "rel": t_od_L_rel
         },
 
-        "units_exec_first_started": {
+        "first_execution_started": {
             "abs": t_ex_E_abs,
             "rel": t_ex_E_rel
         },
-        "units_exec_last_finished": {
+        "last_execution_finished": {
             "abs": t_ex_L_abs,
             "rel": t_ex_L_rel
         }
@@ -121,29 +121,37 @@ def dataframes_from_profile_dict(profile):
         print ex
         return None
 
-    cols = ['pattern_entity', 'value_type', 'lower', 'upper']
+    cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs', 'first_started_rel', 'last_finished_rel']
     df = pd.DataFrame(columns=cols)
 
     # iterate over the entities
     for entity in profile:
-        start = entity['timings']['start_time']['rel']
-        stop = entity['timings']['end_time']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'pattern_step', start, stop]],columns=cols)
+        start_abs = entity['timings']['start_time']['abs']
+        end_abs = entity['timings']['end_time']['abs']
+        start_rel = entity['timings']['start_time']['rel']
+        end_rel = entity['timings']['end_time']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
-        start = entity['timings']['units_stagein_first_started']['rel']
-        stop = entity['timings']['units_stagein_last_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'units_stagein', start, stop]],columns=cols)
+        start_abs = entity['timings']['first_data_stagein_started']['abs']
+        end_abs   = entity['timings']['last_data_stagein_finished']['abs']
+        start_rel = entity['timings']['first_data_stagein_started']['rel']
+        end_rel   = entity['timings']['last_data_stagein_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
-        start = entity['timings']['units_exec_first_started']['rel']
-        stop = entity['timings']['units_exec_last_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'units_exec', start, stop]],columns=cols)
+        start_abs = entity['timings']['first_execution_started']['abs']
+        end_abs   = entity['timings']['last_execution_finished']['abs']
+        start_rel = entity['timings']['first_execution_started']['rel']
+        end_rel   = entity['timings']['last_execution_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
-        start = entity['timings']['units_stageout_first_started']['rel']
-        stop = entity['timings']['units_stageout_last_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'units_stageout', start, stop]],columns=cols)
+        start_abs = entity['timings']['first_data_stageout_started']['abs']
+        end_abs   = entity['timings']['last_data_stageout_finished']['abs']
+        start_rel = entity['timings']['first_data_stageout_started']['rel']
+        end_rel   = entity['timings']['last_data_stageout_finished']['rel']
+        df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
     return df
