@@ -24,7 +24,7 @@ has been executed, i.e., the `run()` method returns, you can access the
     )
     cluster.run(p)
 
-    print p.execution_profile
+    print p.execution_profile_dict
 
 The `execution_profile_dict` property returns a Python list with performance
 numbers. For the Simulation-Analysis pattern for example, this would look
