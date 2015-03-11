@@ -2,6 +2,7 @@
 
 import os
 import math
+import shutil
 import pprint
 import tempfile
 import numpy.lib
@@ -166,4 +167,4 @@ if __name__ == "__main__":
 
     finally:
         os.remove(data_file_path)
-        os.rmdir(local_workdir)
+        shutil.rmtree(local_workdir)
