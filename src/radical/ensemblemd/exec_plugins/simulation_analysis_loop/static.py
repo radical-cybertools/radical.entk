@@ -190,7 +190,6 @@ class Plugin(PluginBase):
                     "timings": {}
                 }
                 step_start_time_abs = datetime.datetime.now()
-                step_start_time_rel = step_start_time_abs - pattern_start_time
 
                 s_units = []
                 for s_instance in range(1, pattern._simulation_instances+1):
@@ -246,18 +245,9 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 step_end_time_abs = datetime.datetime.now()
-                step_end_time_rel = step_end_time_abs - pattern_start_time
-
-                step_timings['timings']['start_time'] = {}
-                step_timings['timings']['start_time']['abs'] = step_start_time_abs
-                step_timings['timings']['start_time']['rel'] = step_start_time_rel
-
-                step_timings['timings']['end_time'] = {}
-                step_timings['timings']['end_time']['abs'] = step_end_time_abs
-                step_timings['timings']['end_time']['rel'] = step_end_time_rel
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(s_cus)
+                tinfo = extract_timing_info(s_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
                 for key, val in tinfo.iteritems():
                     step_timings['timings'][key] = val
 
@@ -272,7 +262,6 @@ class Plugin(PluginBase):
                     "timings": {}
                 }
                 step_start_time_abs = datetime.datetime.now()
-                step_start_time_rel = step_start_time_abs - pattern_start_time
 
                 a_units = []
                 analysis_list = None
@@ -381,18 +370,9 @@ class Plugin(PluginBase):
                             working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 step_end_time_abs = datetime.datetime.now()
-                step_end_time_rel = step_end_time_abs - pattern_start_time
-
-                step_timings['timings']['start_time'] = {}
-                step_timings['timings']['start_time']['abs'] = step_start_time_abs
-                step_timings['timings']['start_time']['rel'] = step_start_time_rel
-
-                step_timings['timings']['end_time'] = {}
-                step_timings['timings']['end_time']['abs'] = step_end_time_abs
-                step_timings['timings']['end_time']['rel'] = step_end_time_rel
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(a_cus)
+                tinfo = extract_timing_info(a_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
 
                 for key, val in tinfo.iteritems():
                     step_timings['timings'][key] = val

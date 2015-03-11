@@ -7,9 +7,11 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2015, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import datetime
+
 #------------------------------------------------------------------------------
 #
-def extract_timing_info(units):
+def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step_end_time_abs):
     """
     This function extracts timing from a set of CUs:
 
@@ -22,6 +24,9 @@ def extract_timing_info(units):
 
     Timings are returned both as absolute and as relative measures.
     """
+    step_start_time_rel = step_start_time_abs - pattern_start_time_abs
+    step_end_time_rel = step_end_time_abs - pattern_start_time_abs
+
     all_id_start = []; all_od_start = []; all_ex_start = []
     all_id_stop = []; all_od_stop = []; all_ex_stop = []
 
@@ -70,19 +75,27 @@ def extract_timing_info(units):
         t_origin = t_ex_E_abs
 
     if len(all_id_start) > 0:
-        t_id_E_rel = t_id_E_abs - t_origin
+        t_id_E_rel = step_start_time_rel + t_id_E_abs - t_origin
     if len(all_id_stop) > 0:
-        t_id_L_rel = t_id_L_abs - t_origin
+        t_id_L_rel = step_start_time_rel + t_id_L_abs - t_origin
     if len(all_od_start) > 0:
-        t_od_E_rel = t_od_E_abs - t_origin
+        t_od_E_rel = step_start_time_rel + t_od_E_abs - t_origin
     if len(all_od_stop) > 0:
-        t_od_L_rel = t_od_L_abs - t_origin
+        t_od_L_rel = step_start_time_rel + t_od_L_abs - t_origin
     if len(all_ex_start) > 0:
-        t_ex_E_rel = t_ex_E_abs - t_origin
+        t_ex_E_rel = step_start_time_rel + t_ex_E_abs - t_origin
     if len(all_ex_stop) > 0:
-        t_ex_L_rel = t_ex_L_abs - t_origin
+        t_ex_L_rel =step_start_time_rel +  t_ex_L_abs - t_origin
 
     return {
+        "step_start_time": {
+            "abs": step_start_time_abs,
+            "rel": step_start_time_rel
+        },
+        "step_end_time": {
+            "abs": step_end_time_abs,
+            "rel": step_end_time_rel
+        },
         "first_data_stagein_started": {
             "abs": t_id_E_abs,
             "rel": t_id_E_rel
@@ -126,10 +139,10 @@ def dataframes_from_profile_dict(profile):
 
     # iterate over the entities
     for entity in profile:
-        start_abs = entity['timings']['start_time']['abs']
-        end_abs = entity['timings']['end_time']['abs']
-        start_rel = entity['timings']['start_time']['rel']
-        end_rel = entity['timings']['end_time']['rel']
+        start_abs = entity['timings']['step_start_time']['abs']
+        end_abs = entity['timings']['step_end_time']['abs']
+        start_rel = entity['timings']['step_start_time']['rel']
+        end_rel = entity['timings']['step_end_time']['rel']
         df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
