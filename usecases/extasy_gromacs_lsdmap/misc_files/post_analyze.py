@@ -38,6 +38,16 @@ if __name__ =='__main__':
     os.system('python select.py %s -s %s -o %s' %(num_runs,evfile,num_clone_files))
     #Update Boltzman weights
 
+    try:
+        #Remove old weight file
+        os.remove('weight.w')
+
+        #Rename new weight file
+        os.rename('weight_new.w','weight.w')
+
+    except:
+        pass
+
     os.system('python reweighting.py -c %s -n %s -s %s -w %s -o %s --max_alive_neighbors=%s --max_dead_neighbors=%s' % (md_output_file,nearest_neighbor_file,num_clone_files,w_file,outgrofile_name,max_alive_neighbors,max_dead_neighbors))
 
     os.system('python spliter.py {0} {1}'.format(numCUs,outgrofile_name))

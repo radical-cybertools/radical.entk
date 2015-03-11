@@ -232,7 +232,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         lsdmap.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/lsdm.py']
         lsdmap.cores = RPconfig.PILOTSIZE
         if iteration > 1:
-            lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
+            lsdmap.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
         post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py",
@@ -249,7 +249,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                               "--numCUs={0}".format(Kconfig.num_CUs)]
 
         if iteration > 1:
-            post_ana.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
+            post_ana.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w > weight_new.w'.format(iteration-1)]
 
         if(iteration%Kconfig.nsave==0):
             post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
