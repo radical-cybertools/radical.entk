@@ -235,13 +235,22 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
             lsdmap.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
 
         post_ana = Kernel(name="md.post_lsdmap")
-        post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py","$PRE_LOOP/select.py","$PRE_LOOP/reweighting.py","$PRE_LOOP/spliter.py","$PRE_LOOP/gro.py"]
+        post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py",
+                                    "$PRE_LOOP/select.py",
+                                    "$PRE_LOOP/reweighting.py",
+                                    "$PRE_LOOP/spliter.py",
+                                    "$PRE_LOOP/gro.py"]
+
         post_ana.arguments = ["--num_runs={0}".format(Kconfig.num_runs),
                               "--out=out.gro",
                               "--cycle={0}".format(iteration-1),
                               "--max_dead_neighbors={0}".format(Kconfig.max_dead_neighbors),
                               "--max_alive_neighbors={0}".format(Kconfig.max_alive_neighbors),
                               "--numCUs={0}".format(Kconfig.num_CUs)]
+
+        if iteration > 1:
+            post_ana.copy_input_data = ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
+
         if(iteration%Kconfig.nsave==0):
             post_ana.download_output_data = ['out.gro > backup/iter{0}/out.gro'.format(iteration),
                                              'weight.w > backup/iter{0}/weight.w'.format(iteration),
