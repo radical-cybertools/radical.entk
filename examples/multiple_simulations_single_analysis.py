@@ -149,6 +149,8 @@ if __name__ == "__main__":
 
         cluster.run(mssa)
 
+	print mssa.execution_profile_dict
+
     except EnsemblemdError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))
