@@ -11,6 +11,7 @@ __license__      = "MIT"
 import math
 import os
 import ast
+
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import AllPairs
 from radical.ensemblemd import EnsemblemdError
@@ -257,7 +258,7 @@ if __name__ == "__main__":
 
         # For example the set has 10 elements.
         ElementsSet = range(1,11)
-        hausdorff = HausdorffAP(setelements=ElementsSet,windowsize=1)
+        hausdorff = HausdorffAP(setelements=ElementsSet,windowsize=5)
 
         cluster.run(hausdorff)
 

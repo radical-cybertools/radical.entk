@@ -215,14 +215,7 @@ class Plugin(PluginBase):
                         self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                             kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
 
-                        #sub_unit=resource._umgr.submit_units(cudesc)
-                        #all_cus.append(cudesc)
-                        journal["{p1}-{p2}".format(p1=i, p2=j)] = {
-                                "p1": i,
-                                "p2": j,
-                                "unit_description": cudesc,
-                                "compute_unit": resource._umgr.submit_units(cudesc)
-                                }
+                        all_cus.append(cudesc)
 
                 else:
                     for j in range(1,NumElementsSet2+1,windowsize2):
@@ -265,15 +258,9 @@ class Plugin(PluginBase):
                         self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Input: {4} Output: {5}".format(cudesc.pre_exec,
                             kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.input_staging,cudesc.output_staging))
 
-                        #all_cus.append(cudesc)
-                        journal["{p1}-{p2}".format(p1=i, p2=j)] = {
-                                "p1": i,
-                                "p2": j,
-                                "unit_description": cudesc,
-                                "compute_unit": resource._umgr.submit_units(cudesc)
-                                }
+                        all_cus.append(cudesc)
 
-            #sub_unit=resource._umgr.submit_units(all_cus)
+            sub_unit=resource._umgr.submit_units(all_cus)
             #self.get_logger().debug(sub_unit)
 
             resource._umgr.wait_units()
@@ -282,22 +269,19 @@ class Plugin(PluginBase):
 
             self.get_logger().info("Pattern execution successful.")
 
-            #self.get_logger().debug(type(sub_unit))
-            #self.get_logger().debug(len(sub_unit))
-            #try:
-            #    if sub_unit[0].log is None:
-            #        self.get_logger().debug("No Log")
-            #except:
-            #    self.get_logger().debug("log")
 
             # Process CU information and append it to the dictionary
-            #tinfo = extract_timing_info(sub_unit, pattern_start_time, step_start_time_abs, step_end_time_abs)
-
-            #for key, val in tinfo.iteritems():
-            #    step_timings['timings'][key] = val
+            tinfo = extract_timing_info(sub_unit, pattern_start_time, step_start_time_abs, step_end_time_abs)
+            self.get_logger().debug("Extracted timings Information")
+            
+            for key, val in tinfo.iteritems():
+                step_timings['timings'][key] = val
+            
+            self.get_logger().debug("Created step timings")
 
             ## Write the whole thing to the profiling dict
-            #pattern._execution_profile.append(step_timings)
+            pattern._execution_profile.append(step_timings)
+            self.get_logger().debug("Wrote the whole thing to the profiling dict")
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
@@ -306,33 +290,4 @@ class Plugin(PluginBase):
             self.get_logger().info("Deallocating resource.")
             resource.deallocate()
 
-
-        # -----------------------------------------------------------------
-        # At this point, we have executed the pattern succesfully. Now,
-        # if profiling is enabled, we can write the profiling data to
-        # a file.
-        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
-
-        if do_profile != '0':
-
-            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
-            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
-
-            with open(outfile, 'w+') as f:
-                # General format of a profiling file is row based and follows the
-                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; Element 1; Element 2"
-                f.write("{row}\n".format(row=head))
-
-                for pair in journal.keys():
-                    data = journal[pair]
-                    cu = data["compute_unit"]
-
-                    row = "{uid}; {start_time}; {stop_time}; {tags}".format(
-                        uid=cu.uid,
-                        start_time=cu.start_time,
-                        stop_time=cu.stop_time,
-                        tags="{p1}; {p2}".format(p1=data["p1"], p2=data["p2"])
-                    )
-                    f.write("{row}\n".format(row=row))
 

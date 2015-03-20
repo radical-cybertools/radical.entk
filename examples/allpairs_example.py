@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
         cluster.run(randAP)
 
-        print "Pattern Execution Completed Successfully! Results are downloaded!"
+        print "Pattern Execution Completed Successfully! Result files are downloaded!"
 
 
     except EnsemblemdError, er:

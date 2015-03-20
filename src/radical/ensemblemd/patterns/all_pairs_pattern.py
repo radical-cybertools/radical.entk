@@ -59,7 +59,7 @@ class AllPairs(ExecutionPattern):
         else:
             self._permutations = len(self._set1elements)*len(self._set1elements)
         
-        self._execution_profile = None
+        self._execution_profile = list()
 
         super(AllPairs, self).__init__()
 
