@@ -82,11 +82,12 @@ class RandomAP(AllPairs):
        inherits from radical.ensemblemd.AllPairPattern, the abstract
        base class for all All Pairs applications.
     """
-    def __init__(self,setelements):
-        AllPairs.__init__(self, setelements)
+    def __init__(self,set1elements, windowsize1, set2elements=None, windowsize2=None):
+        AllPairs.__init__(self, set1elements=set1elements,windowsize1=windowsize1,
+            set2elements=set2elements,windowsize2=windowsize2)
 
 
-    def element_initialization(self,element):
+    def set1element_initialization(self,element):
         """The initialization step creates the necessary files that will be
             needed for the comparison over the elements of the set.
         """
@@ -95,19 +96,30 @@ class RandomAP(AllPairs):
         # a element of the set.
         print "Creating Element {0}".format(element)
         k = Kernel(name = "misc.mkfile")
-        k.arguments = ["--size=10000", "--filename=asciifile-{0}.dat".format(element)]
+        k.arguments = ["--size=10000", "--filename=asciifile_{0}.dat".format(element)]
         return k
 
-    def element_comparison(self, element1, element2):
+    def set2element_initialization(self,element):
+        """The initialization step creates the necessary files that will be
+            needed for the comparison over the elements of the set.
+        """
+
+        # Creating an ASCII file by using the misc.mkfile kernel. Each file represents
+        # a element of the set.
+        print "Creating Element {0}".format(element)
+        k = Kernel(name = "misc.mkfile")
+        k.arguments = ["--size=10000", "--filename=newfile_{0}.dat".format(element)]
+        return k
+
+    def element_comparison(self, elements1, elements2):
         """In the comparison, we take the previously generated files
            and perform a difference between those files. Each file coresponds to
            an elements of the set.
-
         """
 
-        input_filename1 = "asciifile-{0}.dat".format(element1)
-        input_filename2 = "asciifile-{0}.dat".format(element2)
-        output_filename = "comparison-{0}-{1}.log".format(element1, element2)
+        input_filename1 = "asciifile_{0}.dat".format(elements1[0])
+        input_filename2 = "newfile_{0}.dat".format(elements2[0])
+        output_filename = "comparison_{0}_{1}.log".format(elements1[0], elements2[0])
         print "Comparing {0} with {1}. Saving result in {2}".format(input_filename1,input_filename2,output_filename)
 
         # Compare the previously generated files with the misc.diff kernel and
@@ -130,23 +142,25 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="local.localhost",
-            cores=1,
+            resource="xsede.stampede",
+            cores=16,
             walltime=30,
-            username=None,
-            allocation=None
+            username="tg824689",
+            allocation="TG-MCB090174",
+            queue="development"
         )
 
         # Allocate the resources.
         cluster.allocate()
 
         # For example the set has 5 elements.
-        ElementsSet = range(1,6)
-        randAP = RandomAP(setelements=ElementsSet)
+        ElementsSet1 = range(1,30)
+        randAP = RandomAP(set1elements=ElementsSet1,windowsize1=1)
 
         cluster.run(randAP)
 
-        print "Succefully Completed! Everything is downloaded!"
+        print "Pattern Execution Completed Successfully! Results are downloaded!"
+
 
     except EnsemblemdError, er:
 

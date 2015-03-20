@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 
+from radical.ensemblemd.utils import dataframes_from_profile_dict
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
@@ -22,30 +23,43 @@ class AllPairs(ExecutionPattern):
     """
     #---------------------------------------------------------------------------
     #
-    def __init__(self, setelements):
+    def __init__(self, set1elements, windowsize1=1, set2elements=None, windowsize2=None):
         """Creates a new AllPairs object.
 
         **Arguments:**
 
-            * **setelements** ['list']
-              The elements of the set in which All Pairs pattern will be applied. Can
-              be used as identifiers? Need to think about it.
+            * **set1elements** ['list']
+              The elements of the first set in which All Pairs pattern will be applied.
+
+            * **windowsize1** ['int']
+              The Window size for the elements if the first set. Must dividor of the
+              set's size. Default value is 1.
+
+            * **set2elements** ['list']
+              The elements of the first set in which All Pairs pattern will be applied.
+              Default Value is None.
+
+            * **windowsize2** ['int']
+              The Window size for the elements of the second set. Must dividor of the
+              set's size. Default Value is None.
 
         **Attributes:**
 
-            * **setsize** [`int`]
+            * **permutations** [`int`]
               The setsize parameter determines the size of the set where all possible
               permutations result to the same simulation with different parameters. The
               number of elements in the set is defined as the size
-
-            * **_permutations** [`int`]
-              The maximum number of permutations for a set of size defined by setsize. May
-              be used as some kind of identifier? Need to think about it.
-
         """
-        self._size = setelements.__len__()
-        self._setelements = setelements
-        self._permutations = self._size*(self.size-1)/2
+        self._set1elements = set1elements
+        self._set2elements = set2elements
+        self._windowsize1  = windowsize1
+        self._windowsize2  = windowsize2
+        if set2elements == None :
+            self._permutations = len(self._set1elements)*(len(self._set1elements)-1)/2
+        else:
+            self._permutations = len(self._set1elements)*len(self._set1elements)
+        
+        self._execution_profile = None
 
         super(AllPairs, self).__init__()
 
@@ -60,11 +74,23 @@ class AllPairs(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     @property
-    def size(self):
-        """Returns the size of the set.
+    def execution_profile_dict(self):
+        """Returns the execution profile as a Python dictionary after the
+           pattern has finished running, 'None' otheriwse.
         """
-        return self._size
+        return self._execution_profile
 
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def execution_profile_dataframe(self):
+        """Returns the execution profile as a PANDAS DataFrame after the
+           pattern has finished running, 'None' otheriwse.
+
+           Note that 'None' is also returned if PANDAS is not installed. 
+        """
+        return dataframes_from_profile_dict(self._execution_profile)
+        
     #---------------------------------------------------------------------------
     #
     @property
@@ -75,17 +101,26 @@ class AllPairs(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    @property
-    def elements(self):
-        """Returns the list with the elements of the set.
+    #@property
+    def set1_elements(self):
+        """Returns the list with the elements of the first set.
         """
-        return self._setelements
+        return self._set1elements
 
     #---------------------------------------------------------------------------
     #
-    def element_initialization(self, element):
+    #@property
+    def set2_elements(self):
+        """Returns the list with the elements of the second set.
+        """
+        return self._set2elements
+
+    #---------------------------------------------------------------------------
+    #
+    def set1element_initialization(self, element):
         """This method returns a :class:`radical.ensemblemd.Kernel` object
-           and is executed once before comparison for all the elements in the set
+           and is executed once before comparison for all the elements in the first
+           set
 
         **Arguments:**
 
@@ -100,22 +135,44 @@ class AllPairs(ExecutionPattern):
 
         """
         raise NotImplementedError(
-            method_name="element_initialization",
+            method_name="set1element_initialization",
             class_name=type(self))
-
 
     #---------------------------------------------------------------------------
     #
-    def element_comparison(self, element1, element2):
+    def set2element_initialization(self, element):
+        """This method returns a :class:`radical.ensemblemd.Kernel` object
+           and is executed once before comparison for all the elements in the
+           second set
+
+        **Arguments:**
+
+            * **element** [`int`]
+              The element parameter is a positive integer and references to an
+              element of the set
+
+        **Returns:**
+
+            Implementations of this method **must** return a
+            :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
+
+        """
+        raise NotImplementedError(
+            method_name="set2element_initialization",
+            class_name=type(self))
+
+    #---------------------------------------------------------------------------
+    #
+    def element_comparison(self, elements1, elements2):
         """This method returns a :class:`radical.ensemblemd.Kernel` object
 
         **Arguments:**
 
-            * **element1** [`int`]
-              The first element from the set used for the comparison
+            * **elements1** [`list`]
+              The first list of elements from the set used for the comparison
 
-            * **element2** [`int`]
-              The second element from the set used for the comparison
+            * **elements2** [`list`]
+              The second list of elements from the set used for the comparison
 
 
         **Returns:**
