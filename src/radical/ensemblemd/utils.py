@@ -40,19 +40,25 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         all_ex_start.append(unit.start_time)
         all_ex_stop.append(unit.stop_time)
 
-        for log in unit.log:
-            if "All FTW Input Staging Directives done" in log.logentry:
-                all_id_stop.append(log.timestamp)
-
-            if "All FTW output staging directives done" in log.logentry:
-                all_od_stop.append(log.timestamp)
+        # for log in unit.log:
+        #     if "All FTW Input Staging Directives done" in log.logentry:
+        #         all_id_stop.append(log.timestamp)
+        #
+        #     if "All FTW output staging directives done" in log.logentry:
+        #         all_od_stop.append(log.timestamp)
 
         for state in unit.state_history:
             if state.state == "StagingInput":
                 all_id_start.append(state.timestamp)
 
+            if state.state == "PendingExecution":
+                all_id_stop.append(state.timestamp)
+
             if state.state == "StagingOutput":
                 all_od_start.append(state.timestamp)
+
+            if state.state == "Done":
+                all_od_stop.append(state.timestamp)
 
     # Find the earliest / latest timings from the timing arrays
     if len(all_id_start) > 0:
