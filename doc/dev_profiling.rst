@@ -133,6 +133,32 @@ For the Simulation-Analysis pattern for example, this would look something like 
   15    analysis_iteration_2  data_stageout                          NaT                          NaT                NaT                NaT
 
 
+Saving and Loading Profile Data
+-------------------------------
+
+Sometimes it can be useful to write the profiling results to a file in order
+to use them at a later point in time. This can also come in handy for a
+reprodcible experimentation workflow.
+
+Writing dataframes to disk can easily be achieved with the `pickle` feature:
+
+.. code-block:: python
+
+    df = pattern.execution_profile_dataframe
+    df.to_pickle('results.pkl')
+
+Reading the dataframe back into Pandas is just as simple:
+
+.. code-block:: python
+
+    df = pandas.read_pickle("result.pkl")
+    print df
+
+.. note::
+   If you want to write the dictionary data that is returned by ``execution_profile_dict`` to file, you can use the Python
+   JSON module for serialization. See this `Stackoverflow article <https://stackoverflow.com/questions/12309269/write-json-data-to-file-in-python>`_ for more info.
+
+
 Profile Inspection
 ------------------
 

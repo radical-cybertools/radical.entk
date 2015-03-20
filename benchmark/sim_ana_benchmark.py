@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
                     df = nopsa.execution_profile_dataframe
                     print df
-                    save_pandas("result.df", df)
+                    df.to_pickle('result.pkl')
 
     except EnsemblemdError, er:
         print "Ensemble MD Toolkit Error: {0}".format(str(er))
