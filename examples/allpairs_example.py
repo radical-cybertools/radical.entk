@@ -142,19 +142,16 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="xsede.stampede",
-            cores=16,
-            walltime=30,
-            username="tg824689",
-            allocation="TG-MCB090174",
-            queue="development"
+            resource="local.localhost",
+            cores=1,
+            walltime=30
         )
 
         # Allocate the resources.
         cluster.allocate()
 
         # For example the set has 5 elements.
-        ElementsSet1 = range(1,30)
+        ElementsSet1 = range(1,6)
         randAP = RandomAP(set1elements=ElementsSet1,windowsize1=1)
 
         cluster.run(randAP)
