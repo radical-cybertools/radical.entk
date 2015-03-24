@@ -48,6 +48,8 @@ class KernelBase(object):
         self._link_input_data        = None
 
         self._download_output_data   = None
+        self._copy_output_data       = None
+
 
 
     # --------------------------------------------------------------------------

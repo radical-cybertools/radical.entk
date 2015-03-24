@@ -337,6 +337,39 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    @property
+    def copy_output_data(self):
+        """Instructs the application to copy one or more files or directories
+           from the kernel's execution directory to a directory on the
+           execution host.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.copy_output_data = ["output.txt > /home/me/results/result1.txt"]
+        """
+        return self._kernel._copy_output_data
+
+    @download_output_data.setter
+    def copy_output_data(self, data_directives):
+
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        # does not allow to use RP staging directives
+        """
+        for dd in data_directives:
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str,
+                    actual_type=type(dd))
+        """
+
+        self._kernel._copy_output_data = data_directives
+
+    #---------------------------------------------------------------------------
+    #
     def get_raw_args(self):
         """Returns the arguments  passed to the kernel.
         """
