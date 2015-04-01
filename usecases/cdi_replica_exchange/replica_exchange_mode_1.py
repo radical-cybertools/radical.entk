@@ -379,23 +379,13 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        """       
+        
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
         ) 
-        """
-
-        cluster = SingleClusterEnvironment(
-            resource="gordon.sdsc.xsede.org",
-            cores=16,
-            walltime=20,
-            username="antontre",
-            #queue="development",
-            allocation="unc101"
-        )        
-
+        
         # Allocate the resources.
         cluster.allocate()
 
