@@ -324,14 +324,11 @@ class Kernel(object):
         if type(data_directives) != list:
             data_directives = [data_directives]
 
-        # does not allow to use RP staging directives
-        """
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
                     expected_type=str,
                     actual_type=type(dd))
-        """
 
         self._kernel._download_output_data = data_directives
 
@@ -357,14 +354,11 @@ class Kernel(object):
         if type(data_directives) != list:
             data_directives = [data_directives]
 
-        # does not allow to use RP staging directives
-        """
         for dd in data_directives:
             if type(dd) != str:
                 raise TypeError(
                     expected_type=str,
                     actual_type=type(dd))
-        """
 
         self._kernel._copy_output_data = data_directives
 

@@ -59,8 +59,8 @@ class Plugin(PluginBase):
             # shared data
             pattern.prepare_shared_data()
 
-            shared_input_file_urls = pattern.get_shared_urls()
-            shared_input_files = pattern.get_shared_files()
+            shared_input_file_urls = pattern.shared_urls
+            shared_input_files = pattern.shared_files
             sd_shared_list = []
 
             for i in range(len(shared_input_files)):
@@ -111,6 +111,18 @@ class Plugin(PluginBase):
                     else:
                         r_kernel._bind_to_resource(resource._resource_key)
 
+                    # processing data directives
+                    # need means to distinguish between copy and link
+                    copy_out = []
+                    items_out = r_kernel._kernel._copy_output_data
+                    for item in items_out:
+                        i_out = {
+                            'source': item,
+                            'target': 'staging:///%s' % item,
+                            'action': radical.pilot.COPY
+                        }
+                        copy_out.append(i_out)
+
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
@@ -118,7 +130,7 @@ class Plugin(PluginBase):
                     cu.mpi            = r_kernel.uses_mpi
                     cu.cores          = r_kernel.cores
                     cu.input_staging  = sd_shared_list + r_kernel._cu_def_input_data
-                    cu.output_staging = r_kernel._cu_def_output_data
+                    cu.output_staging = copy_out + r_kernel._cu_def_output_data
 
                     current_entry["unit_description"] = cu
                     current_entry["compute_unit"] = None

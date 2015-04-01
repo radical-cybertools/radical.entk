@@ -6,10 +6,6 @@ __license__       = "MIT"
 __use_case_name__ = "CDI Replica Exchange: 'mode 1'."
 
 
-from radical.ensemblemd import Kernel
-from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
-
 import os
 import sys
 import json
@@ -17,7 +13,6 @@ import math
 import random
 import optparse
 from os import path
-import radical.pilot
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
@@ -101,16 +96,6 @@ class RePattern(ReplicaExchange):
 
     # ------------------------------------------------------------------------------
     #
-    def set_nr_replicas(self, replicas):
-        self.replicas = replicas
-
-    # ------------------------------------------------------------------------------
-    #
-    def set_nr_cycles(self, cycles):
-        self.nr_cycles = cycles
-
-    # ------------------------------------------------------------------------------
-    #
     def prepare_shared_data(self):
         """Populates shared_urls and shared_files lists.
         Files present in both of these lists will be transferred before simulation
@@ -132,20 +117,6 @@ class RePattern(ReplicaExchange):
 
         params_url = 'file://%s' % (params_path)
         self.shared_urls.append(params_url)
-
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_urls(self):
-        """getter method for shared_urls list
-        """
-        return self.shared_urls
-
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_files(self):
-        """getter method for shared_files list
-        """
-        return self.shared_files
 
     # ------------------------------------------------------------------------------
     #
@@ -262,40 +233,17 @@ class RePattern(ReplicaExchange):
         old_vel = replica.old_vel
         old_ext_system = replica.old_ext_system 
 
-        st_out = []
- 
-        history_out = {
-            'source': new_history,
-            'target': 'staging:///%s' % new_history,
-            'action': radical.pilot.COPY
-        }
-        st_out.append(history_out)
-        
-        coor_out = {
-            'source': new_coor,
-            'target': 'staging:///%s' % new_coor,
-            'action': radical.pilot.LINK
-        }                   
-        st_out.append(coor_out)        
-
-        vel_out = {
-            'source': new_vel,
-            'target': 'staging:///%s' % new_vel,
-            'action': radical.pilot.LINK
-        }
-        st_out.append(vel_out)
-        
-        ext_out = {
-            'source': new_ext_system,
-            'target': 'staging:///%s' % new_ext_system,
-            'action': radical.pilot.LINK
-        }
-        st_out.append(ext_out)
+        copy_out = []
+        copy_out.append(new_history)
+        copy_out.append(new_coor)
+        copy_out.append(new_vel)
+        copy_out.append(new_ext_system)
 
         k = Kernel(name="md.namd")
         k.arguments            = [input_file]
         k.upload_input_data    = [str(input_file)] 
-        k.download_output_data = st_out
+        k.copy_output_data = copy_out
+        k.download_output_data = new_history
 
         replica.cycle += 1
         return k
@@ -431,13 +379,23 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        
+        """       
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
         ) 
-        
+        """
+
+        cluster = SingleClusterEnvironment(
+            resource="gordon.sdsc.xsede.org",
+            cores=16,
+            walltime=20,
+            username="antontre",
+            #queue="development",
+            allocation="unc101"
+        )        
+
         # Allocate the resources.
         cluster.allocate()
 
@@ -445,10 +403,10 @@ if __name__ == "__main__":
         re_pattern = RePattern()
    
         # set number of replicas
-        re_pattern.set_nr_replicas(8)
+        re_pattern.replicas = 4
  
         # set number of cycles
-        re_pattern.set_nr_cycles(3)
+        re_pattern.nr_cycles = 3
 
         # initializing replica objects
         replicas = re_pattern.initialize_replicas()
