@@ -27,7 +27,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None, cleanup=False):
+    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None, cleanup=False, database_url=None):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
@@ -43,6 +43,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._username = username
         self._allocation = allocation
         self._cleanup = cleanup
+        self._database_url = database_url
 
         self._logger  = rul.getLogger ('radical.enmd', 'SingleClusterEnvironment')
 
@@ -106,7 +107,14 @@ class SingleClusterEnvironment(ExecutionContext):
 
         # Here we start the pilot(s).
         try:
-            self._session = radical.pilot.Session()
+
+            if not self._database_url:
+                self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
+
+            if  not self._database_url :
+                raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
+
+            self._session = radical.pilot.Session(database_url=self._database_url)
 
             if self._username is not None:
                 # Add an ssh identity to the session.
