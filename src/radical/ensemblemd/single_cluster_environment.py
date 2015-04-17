@@ -27,7 +27,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, queue=None, username=None, allocation=None, cleanup=False, database_url=None):
+    def __init__(self, resource, cores, walltime, queue=None, username=None, project=None, cleanup=False, database_url=None):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
@@ -41,7 +41,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._cores = cores
         self._walltime = walltime
         self._username = username
-        self._allocation = allocation
+        self._project = project
         self._cleanup = cleanup
         self._database_url = database_url
 
@@ -136,8 +136,8 @@ class SingleClusterEnvironment(ExecutionContext):
 
             pdesc.cleanup  = True
 
-            if self._allocation is not None:
-                pdesc.project = self._allocation
+            if self._project is not None:
+                pdesc.project = self._project
 
             self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 

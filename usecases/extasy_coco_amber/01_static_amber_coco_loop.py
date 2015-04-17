@@ -85,7 +85,7 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 Once the default script has finished running, you should see a folder called "iter2" inside backup/
@@ -240,8 +240,9 @@ if __name__ == "__main__":
             cores=RPconfig.PILOTSIZE,
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
-            allocation = RPconfig.ALLOCATION, #allocation
+            project = RPconfig.ALLOCATION, #project
 	        queue = RPconfig.QUEUE
+            database_url = RPconfig.DBURL
         )
 
         cluster.allocate()

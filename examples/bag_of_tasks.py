@@ -111,7 +111,7 @@ if __name__ == "__main__":
             cores=1,
             walltime=15,
             username=None,
-            allocation=None
+            project=None
         )
 
         # Allocate the resources.

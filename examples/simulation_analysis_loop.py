@@ -44,7 +44,7 @@ By default, simulation and analysis steps run on one core your local machine::
         cores=1,
         walltime=30,
         username=None,
-        allocation=None
+        project=None
     )
 
 You can change the script to use a remote HPC cluster and increase the number
@@ -56,7 +56,7 @@ pipeline instances can run in parallel::
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 .. _example_source_simulation_analysis_loop:
@@ -152,7 +152,7 @@ if __name__ == "__main__":
             cores=1,
             walltime=30,
             username=None,
-            allocation=None
+            project=None
         )
 
         # Allocate the resources.

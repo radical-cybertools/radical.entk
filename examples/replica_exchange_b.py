@@ -52,7 +52,7 @@ By default, the exchange steps and the analysis run on one core your local machi
         cores=1,
         walltime=30,
         username=None,
-        allocation=None
+        project=None
     )
 
 You can change the script to use a remote HPC cluster and increase the number
@@ -64,7 +64,7 @@ pipeline instances can run in parallel::
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 .. _example_replica_exchange_b:

@@ -19,7 +19,6 @@ class GroFile(object):
 
 
     def get_nlines(self):
-        time.sleep(30)          #BAD FIX NEEDS TO BE REMOVED ASAP
         with open(self.filename, 'r') as file:
             nlines = sum(1 for line in file)
         print nlines

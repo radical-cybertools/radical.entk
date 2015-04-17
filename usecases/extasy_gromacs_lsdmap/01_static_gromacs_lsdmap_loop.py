@@ -78,7 +78,7 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 **Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop.py>`.
@@ -114,6 +114,7 @@ import sys
 import imp
 import argparse
 import os
+import pprint
 
 
 # ------------------------------------------------------------------------------
@@ -291,8 +292,9 @@ if __name__ == "__main__":
             cores=RPconfig.PILOTSIZE,
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
-            allocation = RPconfig.ALLOCATION, #allocation
-	        queue = RPconfig.QUEUE
+            project = RPconfig.ALLOCATION, #project
+	          queue = RPconfig.QUEUE
+            database_url = RPconfig.DBURL 
       )
 
       cluster.allocate()
@@ -304,7 +306,11 @@ if __name__ == "__main__":
       randomsa = Gromacs_LSDMap(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
 
       cluster.run(randomsa)
-  
+
+      pp = pprint.PrettyPrinter()
+
+      pp.pprint(randomsa.execution_profile_dict)
+
   except EnsemblemdError, er:
 
     print "Ensemble MD Toolkit Error: {0}".format(str(er))
