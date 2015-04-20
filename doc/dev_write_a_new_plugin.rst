@@ -1,4 +1,4 @@
-Writing new Execution Pattern Plug-Ins
+Writing New Execution Pattern Plug-Ins
 ======================================
 
 These instructions assume that the execution pattern that we want to write

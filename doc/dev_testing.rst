@@ -26,7 +26,7 @@ You can run a subset of tests for the individual patterns:
 * ``easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.replica_exchange``
 
 
-Adding new Tests
+Adding New Tests
 ----------------
 
 If you are addressing an issue that was reported via the GitHub issue tracker,
