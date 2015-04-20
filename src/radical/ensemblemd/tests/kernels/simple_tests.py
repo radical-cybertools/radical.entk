@@ -120,14 +120,11 @@ class SimpleKernelTests(unittest.TestCase):
 
         k._bind_to_resource("*")
         assert k._cu_def_executable == "lsdmap", k._cu_def_executable
-        assert k.arguments == ['-f','config.ini','-c','tmpha.gro','-n','out.nn','-w','weight.w'], k.arguments
+
+        assert k.arguments == ['lsdm.py', '-f','config.ini','-c','tmpha.gro','-n','out.nn','-w','weight.w'], k.arguments
         assert k._cu_def_pre_exec == [], k._cu_def_pre_exec
         assert k._cu_def_post_exec == None, k._cu_def_post_exec
 
         k._bind_to_resource("stampede.tacc.utexas.edu")
-        assert k._cu_def_executable == ["lsdmap"], k._cu_def_executable
-        assert k.arguments == ['-f','config.ini','-c','tmpha.gro','-n','out.nn','-w','weight.w'], k.arguments
-        assert k._cu_def_pre_exec == ["module load -intel +intel/14.0.1.106","module load python",
-                                      "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH",
-                                      "export PATH=/home1/03036/jp43/.local/bin:$PATH"], k._cu_def_pre_exec
+        assert k.arguments == ['lsdm.py', '-f','config.ini','-c','tmpha.gro','-n','out.nn','-w','weight.w'], k.arguments
         assert k._cu_def_post_exec == None, k._cu_def_post_exec
