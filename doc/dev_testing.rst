@@ -1,5 +1,8 @@
-Testing
-=======
+Testing Framework
+=================
+
+Runing the Tests
+----------------
 
 radical.ensemblemd uses the 'Nose' testing framework. It is installed via pip::
 
@@ -23,8 +26,8 @@ You can run a subset of tests for the individual patterns:
 * ``easy_install . && NOSE_VERBOSE=2 nosetests radical.ensemblemd.tests.patterns.replica_exchange``
 
 
-Adding a New Test for an Issue
-------------------------------
+Adding new Tests
+----------------
 
 If you are addressing an issue that was reported via the GitHub issue tracker,
 add the tests to the ``issue_tests.py`` file in the respective test directory

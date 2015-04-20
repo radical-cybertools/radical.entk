@@ -10,8 +10,8 @@ and performance optimizations.  Looking at the execution times of the
 different stages and instances of your application is one of the key techniques
 to achieve this.
 
-Runtime Profile Access
-----------------------
+Execution Profile Access
+------------------------
 
 Accessing the runtime profile of a pattern is very simple. After the a pattern
 has been executed, i.e., the `run()` method returns, you can access the
@@ -157,45 +157,3 @@ Reading the dataframe back into Pandas is just as simple:
 .. note::
    If you want to write the dictionary data that is returned by ``execution_profile_dict`` to file, you can use the Python
    JSON module for serialization. See this `Stackoverflow article <https://stackoverflow.com/questions/12309269/write-json-data-to-file-in-python>`_ for more info.
-
-
-Profile Inspection
-------------------
-
-.. warning::
-   This will be replaced with new iPython-based method, once 6.2.1 is fixed.
-
-The `ensemblemd-profile` tool installed with Ensemble MD Toolkit allows to
-generate summary data from a profile data .csv file.
-
-The tools takes either the name of a local .csv file or the URL of a remote .csv
-file for analysis via the `-p` parameter:
-
-.. code-block:: bash
-
-   ensemblemd-profile -p execution_profile_2015-01-22T12:04:50.669529.csv
-
-or
-
-.. code-block:: bash
-
-   ensemblemd-profile -p https://gist.githubusercontent.com/AntonsT/5385498524e2c9de1779/raw/c3191ac1117e462d85beff5c0d51e104bd179426/bag-of-tasts-execution-profile-stampede-128-1024
-
-The output shows information about the runtimes of the individual stages /
-instances of the pattern, e.g.,::
-
-    1 Simulation step 1
-    ------------------------------------------------------------------
-     * Instances                : 16
-     * Step start time          : 2015-01-22 11:01:53
-     * Step stop time           : 2015-01-22 11:02:03
-     * Step duration            : 0:00:10
-     * Avg. duration / instance : 0:00:00.250000
-
-    2 Analysis step 1
-    ------------------------------------------------------------------
-     * Instances                : 16
-     * Step start time          : 2015-01-22 11:02:06
-     * Step stop time           : 2015-01-22 11:02:22
-     * Step duration            : 0:00:16
-     * Avg. duration / instance : 0:00:01
