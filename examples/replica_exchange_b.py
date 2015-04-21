@@ -262,20 +262,19 @@ class RePattern(ReplicaExchange):
         """
         dim = len(replicas)
 
-        try:
-            # init matrix
-            swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
+        # init matrix
+        swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
 
-            matrix_columns = sorted(matrix_columns)
+        matrix_columns = sorted(matrix_columns)
 
-            for r in replicas:
-                # populating one column at a time
-                for i in range(len(replicas)):
+        for r in replicas:
+            # populating one column at a time
+            for i in range(len(replicas)):    
+                if (matrix_columns[r.id][i][0].isdigit()):
                     swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
-
-        except:
-            print "Ensemble MD Toolkit Error: matrix_columns does not have enough elements."
-            raise
+                else:
+                    print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
+                    sys.exit()
 
         return swap_matrix
 

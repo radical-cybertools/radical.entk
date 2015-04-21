@@ -217,7 +217,7 @@ class Plugin(PluginBase):
                         matrix_columns.append(data)
 
                     # writing swap matrix out
-                    sw_file = "swap_matrix_" + "_" + str(c)
+                    sw_file = "matrix_columns_" + str(c)
                     try:
                         w_file = open( sw_file, "w")
                         for i in matrix_columns:

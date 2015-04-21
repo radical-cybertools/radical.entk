@@ -34,6 +34,7 @@ def get_historical_data(history_name):
  
     os.chdir(home_dir)
     value = (lines[0]).strip()
+ 
     return float(value) * random.uniform(1.1, 3.3)
 
 #-----------------------------------------------------------------------------------------------------------------------------------
