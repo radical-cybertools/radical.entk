@@ -47,9 +47,13 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern, resource):
-        try: 
-            cycles = pattern.nr_cycles+1
-
+        try:
+            try: 
+                cycles = pattern.nr_cycles+1
+            except:
+                self.get_logger().exception("Number of cycles (nr_cycles) must be defined for pattern ReplicaExchange!")
+                raise
+                
             pattern._execution_profile = []
             all_cus = []
 

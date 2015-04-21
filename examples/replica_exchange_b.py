@@ -160,21 +160,17 @@ class RePattern(ReplicaExchange):
         url = 'file://%s/%s' % (self.work_dir_local, self.sh_file)
         self.shared_urls.append(url)
 
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_urls(self):
-        return self.shared_urls
-
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_files(self):
-        return self.shared_files
-
     # ------------------------------------------------------------------------------
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values
         """
+        try:
+            self.replicas+1
+        except:
+            print "Ensemble MD Toolkit Error:  Number of replicas must be defined for pattern ReplicaExchange!"
+            raise      
+
         replicas = []
         N = self.replicas
         for k in range(N):
@@ -264,16 +260,22 @@ class RePattern(ReplicaExchange):
         replicas - a list of replica objects
         matrix_columns - matrix of energy parameters obtained during the exchange step
         """
-        # init matrix
-        swap_matrix = [[ 0. for j in range(len(replicas))]
-             for i in range(len(replicas))]
+        dim = len(replicas)
 
-        matrix_columns = sorted(matrix_columns)
+        try:
+            # init matrix
+            swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
 
-        for r in replicas:
-            # populating one column at a time
-            for i in range(len(replicas)):
-                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+            matrix_columns = sorted(matrix_columns)
+
+            for r in replicas:
+                # populating one column at a time
+                for i in range(len(replicas)):
+                    swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+
+        except:
+            print "Ensemble MD Toolkit Error: matrix_columns does not have enough elements."
+            raise
 
         return swap_matrix
 
@@ -311,7 +313,7 @@ if __name__ == "__main__":
         re_pattern = RePattern()
 
         # set number of replicas
-        re_pattern.replicas = 32
+        re_pattern.replicas = 4
  
         # set number of cycles
         re_pattern.nr_cycles = 3

@@ -85,8 +85,8 @@ class RePattern(ReplicaExchange):
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
-        self.replicas = 0
-        self.nr_cycles = 0
+        self.replicas = None
+        self.nr_cycles = None
 
         # list holding paths to shared files 
         self.shared_urls = []
@@ -127,6 +127,12 @@ class RePattern(ReplicaExchange):
         Returns:
         replicas - a list of initialised ReplicaP objects
         """
+        try:
+            self.replicas+1
+        except:        
+             print "Ensemble MD Toolkit Error: Number of replicas must be defined for pattern ReplicaExchnage"
+             raise
+
         replicas = []
         N = self.replicas
         factor = (self.max_temp/self.min_temp)**(1./(N-1))
@@ -288,22 +294,27 @@ class RePattern(ReplicaExchange):
         """
 
         base_name = "matrix_column"
+        dim = len(replicas)
  
         # init matrix
-        swap_matrix = [[ 0. for j in range(len(replicas))] 
-            for i in range(len(replicas))]
+        swap_matrix = [[ 0. for j in range(dim)] 
+            for i in range(dim)]
 
-        for r in replicas:
-            # populating one column at a time
-            for i in range(len(replicas)):
-                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+        try:
+            for r in replicas:
+                # populating one column at a time
+                for i in range(dim):
+                    swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
 
-            # setting old_path and first_path for each replica
-            if ( r.cycle == 1 ):
-                r.first_path = matrix_columns[r.id][len(replicas)]
-                r.old_path = matrix_columns[r.id][len(replicas)]
-            else:
-                r.old_path = matrix_columns[r.id][len(replicas)]
+                # setting old_path and first_path for each replica
+                if ( r.cycle == 1 ):
+                    r.first_path = matrix_columns[r.id][dim]
+                    r.old_path = matrix_columns[r.id][dim]
+                else:
+                    r.old_path = matrix_columns[r.id][dim]
+        except:
+            print "Ensemble MD Toolkit Error: matrix_columns does not have enough elements."
+            raise
 
         return swap_matrix
 

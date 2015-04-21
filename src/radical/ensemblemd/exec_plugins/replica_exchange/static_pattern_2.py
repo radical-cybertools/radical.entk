@@ -50,7 +50,12 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
         try:
-            cycles = pattern.nr_cycles+1
+            try:
+                cycles = pattern.nr_cycles+1
+            except:
+                self.get_logger().exception("Number of cycles (nr_cycles) must be defined for pattern ReplicaExchange!")
+                raise
+
             pattern._execution_profile = []
             all_cus = []
  
@@ -210,6 +215,18 @@ class Plugin(PluginBase):
                         d = str(r.stdout)
                         data = d.split()
                         matrix_columns.append(data)
+
+                    # writing swap matrix out
+                    sw_file = "swap_matrix_" + "_" + str(c)
+                    try:
+                        w_file = open( sw_file, "w")
+                        for i in matrix_columns:
+                            for j in i:
+                                w_file.write("%s " % j)
+                            w_file.write("\n")
+                        w_file.close()
+                    except IOError:
+                        self.get_logger().info('Warning: unable to access file %s' % sw_file)
 
                     # computing swap matrix
                     self.get_logger().info("Cycle %d: Composing swap matrix" % (c) )
