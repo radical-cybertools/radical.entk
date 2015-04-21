@@ -405,6 +405,12 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
+
+        cluster = SingleClusterEnvironment(
+             resource="localhost", 
+             cores=1, 
+             walltime=15
+        ) 
  
         # Allocate the resources.
         cluster.allocate()
