@@ -405,22 +405,6 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        """
-        cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
-            walltime=15
-        ) 
-        """       
-
-        cluster = SingleClusterEnvironment(
-            resource="stampede.tacc.utexas.edu",
-            cores=16,
-            walltime=20,
-            username="antontre",
-            queue="development",
-            allocation="TG-MCB090174"
-        )
  
         # Allocate the resources.
         cluster.allocate()
@@ -447,6 +431,7 @@ if __name__ == "__main__":
         print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
 
         # execution profile printing
+        print "Profiling info: "
         pp = pprint.PrettyPrinter()
         pp.pprint(re_pattern.execution_profile_dict)
 

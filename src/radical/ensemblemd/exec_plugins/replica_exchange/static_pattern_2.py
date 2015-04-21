@@ -57,8 +57,11 @@ class Plugin(PluginBase):
                 self.get_logger().exception("Number of cycles (nr_cycles) must be defined for pattern ReplicaExchange!")
                 raise
 
-            pattern._execution_profile = []
-            all_cus = []
+            do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
+
+            if do_profile == '1':
+                pattern._execution_profile = []
+                all_cus = []
  
             # shared data
             pattern.prepare_shared_data()
@@ -85,17 +88,18 @@ class Plugin(PluginBase):
             # Pilot must be active
             resource._pmgr.wait_pilots(resource._pilot.uid,'Active')       
      
-            pattern_start_time = datetime.datetime.now()
+            if do_profile == '1':
+                pattern_start_time = datetime.datetime.now()
 
             replicas = pattern.get_replicas()
 
             for c in range(1, cycles):
-
-                step_timings = {
-                    "name": "md_run_{0}".format(c),
-                    "timings": {}
-                }
-                step_start_time_abs = datetime.datetime.now()
+                if do_profile == '1':
+                    step_timings = {
+                        "name": "md_run_{0}".format(c),
+                        "timings": {}
+                    }
+                    step_start_time_abs = datetime.datetime.now()
 
                 md_units = []
                 for r in replicas:
@@ -138,12 +142,14 @@ class Plugin(PluginBase):
                     sub_replica = resource._umgr.submit_units(cu)
                     md_units.append(sub_replica)                    
 
-                all_cus.extend(md_units)
+                if do_profile == '1':
+                    all_cus.extend(md_units)
          
                 self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c) )
-
                 resource._umgr.wait_units()
-                step_end_time_abs = datetime.datetime.now()          
+
+                if do_profile == '1':
+                    step_end_time_abs = datetime.datetime.now()          
  
                 failed_units = ""
                 for unit in md_units:
@@ -153,36 +159,37 @@ class Plugin(PluginBase):
                 if len(failed_units) > 0:
                     sys.exit()
 
-                # Process CU information and append it to the dictionary
-                if isinstance(pattern_start_time, datetime.datetime):
-                    if isinstance(step_start_time_abs, datetime.datetime):
-                        if isinstance(step_end_time_abs, datetime.datetime):
-                            tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                if do_profile == '1':
+                    # Process CU information and append it to the dictionary
+                    if isinstance(pattern_start_time, datetime.datetime):
+                        if isinstance(step_start_time_abs, datetime.datetime):
+                            if isinstance(step_end_time_abs, datetime.datetime):
+                                tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                            else:
+                                sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
                         else:
-                            sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
+                            sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
                     else:
-                        sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                else:
-                    sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
+                        sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
 
+                    for key, val in tinfo.iteritems():
+                        step_timings['timings'][key] = val
 
-                for key, val in tinfo.iteritems():
-                    step_timings['timings'][key] = val
-
-                # Write the whole thing to the profiling dict
-                pattern._execution_profile.append(step_timings)
+                    # Write the whole thing to the profiling dict
+                    pattern._execution_profile.append(step_timings)
+                #-----------------------------------------------------------
 
                 if (c < cycles):
-                    step_timings = {
-                        "name": "ex_run_{0}".format(c),
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
+                    if do_profile == '1':
+                        step_timings = {
+                            "name": "ex_run_{0}".format(c),
+                            "timings": {}
+                        }
+                        step_start_time_abs = datetime.datetime.now()
 
                     ex_units = []
 
                     for r in replicas:
-
                         self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c), r.id) )
                         ex_kernel = pattern.prepare_replica_for_exchange(r)
                         ex_kernel._bind_to_resource(resource._resource_key)
@@ -202,8 +209,10 @@ class Plugin(PluginBase):
 
                     self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (c) )
                     resource._umgr.wait_units()
-                    step_end_time_abs = datetime.datetime.now()
-                    all_cus.extend(ex_units)
+ 
+                    if do_profile == '1':
+                        step_end_time_abs = datetime.datetime.now()
+                        all_cus.extend(ex_units)
 
                     failed_units = ""
                     for unit in ex_units:
@@ -213,29 +222,31 @@ class Plugin(PluginBase):
                     if len(failed_units) > 0:
                         sys.exit()
 
-                    # Process CU information and append it to the dictionary
-                    if isinstance(pattern_start_time, datetime.datetime):
-                        if isinstance(step_start_time_abs, datetime.datetime):
-                            if isinstance(step_end_time_abs, datetime.datetime):
-                                tinfo = extract_timing_info(ex_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    if do_profile == '1':
+                        # Process CU information and append it to the dictionary
+                        if isinstance(pattern_start_time, datetime.datetime):
+                            if isinstance(step_start_time_abs, datetime.datetime):
+                                if isinstance(step_end_time_abs, datetime.datetime):
+                                    tinfo = extract_timing_info(ex_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                                else:
+                                    sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
                             else:
-                                sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
+                                sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
                         else:
-                            sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                    else:
-                        sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
+                            sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
 
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
+                        for key, val in tinfo.iteritems():
+                            step_timings['timings'][key] = val
 
-                    # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
+                        # Write the whole thing to the profiling dict
+                        pattern._execution_profile.append(step_timings)
 
-                    step_timings = {
-                        "name": "post_processing_{0}".format(c),
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
+                        step_timings = {
+                            "name": "post_processing_{0}".format(c),
+                            "timings": {}
+                        }
+                        step_start_time_abs = datetime.datetime.now()
+                    #---------------------------------------------------------------
 
                     matrix_columns = []
                     for r in ex_units:
@@ -267,28 +278,30 @@ class Plugin(PluginBase):
                             # swap parameters
                             pattern.perform_swap(r_i, r_j)
 
-                    step_end_time_abs = datetime.datetime.now()
+                    if do_profile == '1':
+                        step_end_time_abs = datetime.datetime.now()
 
-                    # processing timings
-                    step_start_time_rel = step_start_time_abs - pattern_start_time
-                    step_end_time_rel = step_end_time_abs - pattern_start_time
+                        # processing timings
+                        step_start_time_rel = step_start_time_abs - pattern_start_time
+                        step_end_time_rel = step_end_time_abs - pattern_start_time
 
-                    tinfo = {
-                                "step_start_time": {
-                                    "abs": step_start_time_abs,
-                                    "rel": step_start_time_rel
-                                },
-                                "step_end_time": {
-                                    "abs": step_end_time_abs,
-                                    "rel": step_end_time_rel
+                        tinfo = {
+                                    "step_start_time": {
+                                        "abs": step_start_time_abs,
+                                        "rel": step_start_time_rel
+                                    },
+                                    "step_end_time": {
+                                        "abs": step_end_time_abs,
+                                        "rel": step_end_time_rel
+                                    }
                                 }
-                            }
 
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
+                        for key, val in tinfo.iteritems():
+                            step_timings['timings'][key] = val
 
-                    # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
+                        # Write the whole thing to the profiling dict
+                        pattern._execution_profile.append(step_timings)
+                    #------------------------------------------------------------------    
     
             # End of simulation loop
             #------------------------
