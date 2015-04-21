@@ -116,7 +116,18 @@ class Plugin(PluginBase):
                     sys.exit()
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                if isinstance(pattern_start_time, datetime.datetime):
+                    if isinstance(step_start_time_abs, datetime.datetime):
+                        if isinstance(step_end_time_abs, datetime.datetime):
+                            tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                        else:
+                            sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
+                    else:
+                        sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
+                else:
+                    sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
+
+
                 for key, val in tinfo.iteritems():
                     step_timings['timings'][key] = val
 

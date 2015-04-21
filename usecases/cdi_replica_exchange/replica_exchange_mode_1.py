@@ -315,7 +315,8 @@ class RePattern(ReplicaExchange):
         for r in replicas:
             # populating one column at a time
             for i in range(dim):
-                if (matrix_columns[r.id][i][0].isdigit()):
+                pos = len(matrix_columns[r.id][i]) - 1
+                if (matrix_columns[r.id][i][pos].isdigit()):
                     swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
                 else:
                     print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
@@ -404,13 +405,23 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        
+        """
         cluster = SingleClusterEnvironment(
             resource="localhost", 
             cores=1, 
             walltime=15
         ) 
-        
+        """       
+
+        cluster = SingleClusterEnvironment(
+            resource="stampede.tacc.utexas.edu",
+            cores=16,
+            walltime=20,
+            username="antontre",
+            queue="development",
+            allocation="TG-MCB090174"
+        )
+ 
         # Allocate the resources.
         cluster.allocate()
 
@@ -418,7 +429,7 @@ if __name__ == "__main__":
         re_pattern = RePattern()
    
         # set number of replicas
-        re_pattern.replicas = 4
+        re_pattern.replicas = 32
  
         # set number of cycles
         re_pattern.nr_cycles = 3

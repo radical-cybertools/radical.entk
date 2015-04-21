@@ -283,7 +283,8 @@ class RePattern(ReplicaExchange):
         for r in replicas:
             # populating one column at a time
             for i in range(len(replicas)):    
-                if (matrix_columns[r.id][i][0].isdigit()):
+                pos = len(matrix_columns[r.id][i]) - 1
+                if (matrix_columns[r.id][i][pos].isdigit()):
                     swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
                 else:
                     print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
