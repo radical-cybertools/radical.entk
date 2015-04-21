@@ -77,6 +77,7 @@ import sys
 import json
 import math
 import random
+import pprint
 import optparse
 from os import path
 import radical.pilot
@@ -123,9 +124,9 @@ class RePattern(ReplicaExchange):
         # hardcoded name of the input file base
         self.inp_basename = "md_input"
         # number of replicas to be launched during the simulation
-        self.replicas = 16
+        self.replicas = None
         # number of cycles the simulaiton will perform
-        self.nr_cycles = 3
+        self.nr_cycles = None
 
         super(RePattern, self).__init__()
 
@@ -249,6 +250,12 @@ if __name__ == "__main__":
         # creating RE pattern object
         re_pattern = RePattern()
 
+        # set number of replicas
+        re_pattern.replicas = 32
+ 
+        # set number of cycles
+        re_pattern.nr_cycles = 3
+
         # initializing replica objects
         replicas = re_pattern.initialize_replicas()
 
@@ -261,6 +268,11 @@ if __name__ == "__main__":
         print "Simulation performed {0} cycles for {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
         print "have {0} md_input_x_y.md files and {0} md_input_x_y.out files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1) )
         print ".md file is replica input file and .out is output file providing number of occurrences of each character."
+
+        # execution profile printing
+        print "Profiling info: "
+        pp = pprint.PrettyPrinter()
+        pp.pprint(re_pattern.execution_profile_dict)
 
     except EnsemblemdError, er:
 

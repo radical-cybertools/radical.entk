@@ -107,17 +107,20 @@ class Plugin(PluginBase):
                     # processing data directives
                     # need means to distinguish between copy and link
                     copy_out = []
+                    
                     items_out = r_kernel._kernel._copy_output_data
-                    for item in items_out:
-                        i_out = {
-                            'source': item,
-                            'target': 'staging:///%s' % item,
-                            'action': radical.pilot.COPY
-                        }
-                        copy_out.append(i_out)
+                    # copy_output_data is not mandatory
+                    if items_out:                    
+                        for item in items_out:
+                            i_out = {
+                                'source': item,
+                                'target': 'staging:///%s' % item,
+                                'action': radical.pilot.COPY
+                            }
+                            copy_out.append(i_out)
 
                     cu                = radical.pilot.ComputeUnitDescription()
-                    cu.name = "md ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
+                    cu.name           = "md ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
                     cu.arguments      = r_kernel.arguments
@@ -157,7 +160,7 @@ class Plugin(PluginBase):
                     step_start_time_abs = datetime.datetime.now()
 
                     ex_units = []
-                    # computing swap matrix
+
                     for r in replicas:
 
                         self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c), r.id) )
@@ -165,7 +168,7 @@ class Plugin(PluginBase):
                         ex_kernel._bind_to_resource(resource._resource_key)
                         
                         cu                = radical.pilot.ComputeUnitDescription()
-                        cu.name = "ex ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
+                        cu.name           = "ex ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
                         cu.pre_exec       = ex_kernel._cu_def_pre_exec
                         cu.executable     = ex_kernel._cu_def_executable
                         cu.arguments      = ex_kernel.arguments
