@@ -299,6 +299,19 @@ class RePattern(ReplicaExchange):
         # init matrix
         swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
         
+        # checking if matrix columns has enough rows
+        if (len(matrix_columns) < dim):
+            print "Ensemble MD Toolkit Error: matrix_columns does not have enough rows."
+            sys.exit()
+
+        # checking if matrix columns rows have enough elements
+        index = 0
+        for row in matrix_columns:
+            if (len(row) < dim):
+                print "Ensemble MD Toolkit Error: matrix_columns row {0} does not have enough elements.".format(index)
+                sys.exit()
+            index += 1
+
         for r in replicas:
             # populating one column at a time
             for i in range(dim):
