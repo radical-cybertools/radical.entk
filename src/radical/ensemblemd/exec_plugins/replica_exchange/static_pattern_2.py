@@ -11,8 +11,9 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
-import random
+import sys
 import time
+import random
 import datetime
 import radical.pilot
 from radical.ensemblemd.utils import extract_timing_info
@@ -149,6 +150,9 @@ class Plugin(PluginBase):
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * MD step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
+                if len(failed_units) > 0:
+                    sys.exit()
+
                 # Process CU information and append it to the dictionary
                 tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
                 for key, val in tinfo.iteritems():
@@ -194,6 +198,9 @@ class Plugin(PluginBase):
                     for unit in ex_units:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * EX step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+                    if len(failed_units) > 0:
+                        sys.exit()
 
                     # Process CU information and append it to the dictionary
                     tinfo = extract_timing_info(ex_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
