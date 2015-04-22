@@ -17,7 +17,7 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, name, args=None):
+    def __init__(self, name, args=None,instance_type=None):
         """Create a new Kernel object.
         """
         if type(name) != str:
@@ -30,6 +30,11 @@ class Kernel(object):
 
         if args is not None:
             self.set_args(args)
+
+        if ((instance_type==None)or(instance_type=='single')):
+            self._kernel.instance_type = 'single'
+        elif (instance_type=='multiple'):
+            self._kernel.instance_type = 'multiple'
 
     #---------------------------------------------------------------------------
     #
@@ -375,6 +380,15 @@ class Kernel(object):
         """Returns the value of the kernel argument given by 'arg_name'.
         """
         return self._kernel.get_arg(name)
+
+
+    #---------------------------------------------------------------------------
+    #
+    def get_instance_type(self):
+        """Returns the instance_type of the kernel. It can be 'single' or 'multiple'
+        """
+        return self._kernel.instance_type
+
 
     #---------------------------------------------------------------------------
     #
