@@ -85,8 +85,8 @@ class RePattern(ReplicaExchange):
         self.namd_structure = "alanin.psf"
         self.namd_coordinates = "unfolded.pdb"
         self.namd_parameters = "alanin.params"
-        self.replicas = 0
-        self.nr_cycles = 0
+        self.replicas = None
+        self.nr_cycles = None
 
         # list holding paths to shared files 
         self.shared_urls = []
@@ -127,6 +127,12 @@ class RePattern(ReplicaExchange):
         Returns:
         replicas - a list of initialised ReplicaP objects
         """
+        try:
+            self.replicas+1
+        except:        
+             print "Ensemble MD Toolkit Error: Number of replicas must be defined for pattern ReplicaExchnage"
+             raise
+
         replicas = []
         N = self.replicas
         factor = (self.max_temp/self.min_temp)**(1./(N-1))
@@ -288,23 +294,42 @@ class RePattern(ReplicaExchange):
         """
 
         base_name = "matrix_column"
+        dim = len(replicas)
  
         # init matrix
-        swap_matrix = [[ 0. for j in range(len(replicas))] 
-            for i in range(len(replicas))]
+        swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
+        
+        # checking if matrix columns has enough rows
+        if (len(matrix_columns) < dim):
+            print "Ensemble MD Toolkit Error: matrix_columns does not have enough rows."
+            sys.exit()
+
+        # checking if matrix columns rows have enough elements
+        index = 0
+        for row in matrix_columns:
+            if (len(row) < dim):
+                print "Ensemble MD Toolkit Error: matrix_columns row {0} does not have enough elements.".format(index)
+                sys.exit()
+            index += 1
 
         for r in replicas:
             # populating one column at a time
-            for i in range(len(replicas)):
-                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+            for i in range(dim):
+                pos = len(matrix_columns[r.id][i]) - 1
+                if (matrix_columns[r.id][i][pos].isdigit()):
+                    swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+                else:
+                    print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
+                    sys.exit()
 
             # setting old_path and first_path for each replica
             if ( r.cycle == 1 ):
-                r.first_path = matrix_columns[r.id][len(replicas)]
-                r.old_path = matrix_columns[r.id][len(replicas)]
+                r.first_path = matrix_columns[r.id][dim]
+                r.old_path = matrix_columns[r.id][dim]
             else:
-                r.old_path = matrix_columns[r.id][len(replicas)]
-
+                r.old_path = matrix_columns[r.id][dim]
+           
+            
         return swap_matrix
 
     #-------------------------------------------------------------------------------
@@ -380,13 +405,13 @@ if __name__ == "__main__":
     try:
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
-        
+
         cluster = SingleClusterEnvironment(
-            resource="localhost", 
-            cores=1, 
-            walltime=15
+             resource="localhost", 
+             cores=1, 
+             walltime=15
         ) 
-        
+ 
         # Allocate the resources.
         cluster.allocate()
 
@@ -394,7 +419,7 @@ if __name__ == "__main__":
         re_pattern = RePattern()
    
         # set number of replicas
-        re_pattern.replicas = 4
+        re_pattern.replicas = 32
  
         # set number of cycles
         re_pattern.nr_cycles = 3
@@ -412,6 +437,7 @@ if __name__ == "__main__":
         print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
 
         # execution profile printing
+        print "Profiling info: "
         pp = pprint.PrettyPrinter()
         pp.pprint(re_pattern.execution_profile_dict)
 

@@ -61,4 +61,4 @@ class PipelinePatternIssueTests(unittest.TestCase):
             ccount = Test22(instances=1)
             cluster.run(ccount)
         except radical.ensemblemd.EnsemblemdError, er:
-            assert "Transferring input file" in str(er), str(er)
+            assert "File does not exist" in str(er), str(er)

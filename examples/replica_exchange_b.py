@@ -85,6 +85,7 @@ import json
 import math
 import random
 import string
+import pprint
 import optparse
 from os import path
 import radical.pilot
@@ -131,9 +132,9 @@ class RePattern(ReplicaExchange):
         # hardcoded name of the input file base
         self.inp_basename = "md_input"
         # number of replicas to be launched during the simulation
-        self.replicas = 16
+        self.replicas = None
         # number of cycles the simulaiton will perform
-        self.nr_cycles = 3
+        self.nr_cycles = None
 
         self.work_dir_local = os.getcwd()
         self.sh_file = 'shared_md_input.dat'
@@ -159,21 +160,17 @@ class RePattern(ReplicaExchange):
         url = 'file://%s/%s' % (self.work_dir_local, self.sh_file)
         self.shared_urls.append(url)
 
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_urls(self):
-        return self.shared_urls
-
-    #-------------------------------------------------------------------------------
-    #
-    def get_shared_files(self):
-        return self.shared_files
-
     # ------------------------------------------------------------------------------
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values
         """
+        try:
+            self.replicas+1
+        except:
+            print "Ensemble MD Toolkit Error:  Number of replicas must be defined for pattern ReplicaExchange!"
+            raise      
+
         replicas = []
         N = self.replicas
         for k in range(N):
@@ -263,16 +260,35 @@ class RePattern(ReplicaExchange):
         replicas - a list of replica objects
         matrix_columns - matrix of energy parameters obtained during the exchange step
         """
+        dim = len(replicas)
+
         # init matrix
-        swap_matrix = [[ 0. for j in range(len(replicas))]
-             for i in range(len(replicas))]
+        swap_matrix = [[ 0. for j in range(dim)] for i in range(dim)]
 
         matrix_columns = sorted(matrix_columns)
 
+        # checking if matrix columns has enough rows
+        if (len(matrix_columns) < dim):
+            print "Ensemble MD Toolkit Error: matrix_columns does not have enough rows."
+            sys.exit()
+
+        # checking if matrix columns rows have enough elements
+        index = 0
+        for row in matrix_columns:
+            if (len(row) < dim):
+                print "Ensemble MD Toolkit Error: matrix_columns row {0} does not have enough elements.".format(index)
+                sys.exit()
+            index += 1
+
         for r in replicas:
             # populating one column at a time
-            for i in range(len(replicas)):
-                swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+            for i in range(len(replicas)):    
+                pos = len(matrix_columns[r.id][i]) - 1
+                if (matrix_columns[r.id][i][pos].isdigit()):
+                    swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
+                else:
+                    print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
+                    sys.exit()
 
         return swap_matrix
 
@@ -309,6 +325,12 @@ if __name__ == "__main__":
         # creating RE pattern object
         re_pattern = RePattern()
 
+        # set number of replicas
+        re_pattern.replicas = 32
+ 
+        # set number of cycles
+        re_pattern.nr_cycles = 3
+
         # initializing replica objects
         replicas = re_pattern.initialize_replicas()
 
@@ -320,6 +342,11 @@ if __name__ == "__main__":
         print "Simulation performed {0} cycles for {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
         print "have {0} md_input_x_y.md files and {0} md_input_x_y.out files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
         print ".md file is replica input file and .out is output file providing number of occurrences of each character."
+
+        # execution profile printing
+        print "Profiling info: "
+        pp = pprint.PrettyPrinter()
+        pp.pprint(re_pattern.execution_profile_dict)
 
     except EnsemblemdError, er:
 

@@ -1,8 +1,5 @@
-Writing a New Plug-In
-=====================
-
-1. Preparation
---------------
+Writing New Execution Pattern Plug-Ins
+======================================
 
 These instructions assume that the execution pattern that we want to write
 a new plug-in for already exists. The two possible execution plug-in
@@ -143,7 +140,3 @@ plug-in should get loaded and selected properly::
     [...]
     2014:08:13 14:43:02 46140  MainThread   radical.ensemblemd.Engine: [INFO    ] Loaded execution context plugin 'mypattern.static.improved' from radical.ensemblemd.execplugins.mypattern.static_improved
     2014:08:13 14:43:02 46140  MainThread   radical.ensemblemd.Engine: [INFO    ] Selected execution plug-in 'mypattern.static.improved' for pattern 'MyPattern' and context type 'Static'.
-
-
-2. Implementing Pattern Execution
----------------------------------
