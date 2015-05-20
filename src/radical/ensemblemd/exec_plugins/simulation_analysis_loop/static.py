@@ -292,7 +292,7 @@ class Plugin(PluginBase):
 
                             cud.pre_exec       = ana_step._cu_def_pre_exec
                             if cur_kernel > 1:
-                                cud.pre_exec.append('cp %s/*.* .'%kernel_wd)
+                                cud.pre_exec.append('cp -n %s/*.* .'%kernel_wd)
 
                             cud.executable     = ana_step._cu_def_executable
                             cud.arguments      = ana_step.arguments
