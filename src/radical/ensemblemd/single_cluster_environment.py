@@ -134,7 +134,7 @@ class SingleClusterEnvironment(ExecutionContext):
             if self._queue is not None:
                 pdesc.queue = self._queue
 
-            pdesc.cleanup  = True
+            pdesc.cleanup = self._cleanup
 
             if self._project is not None:
                 pdesc.project = self._project
