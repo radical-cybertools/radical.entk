@@ -35,6 +35,11 @@ _KERNEL_INFO = {
                             "mandatory": False,
                             "description": "Input topology filename"
                         },
+                    "--crdfile=":
+                        {
+                            "mandatory": False,
+                            "description": "Input coordinate filename"
+                        },
                     "--cycle=":
                         {
                             "mandatory": False,
@@ -83,7 +88,7 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : ["module load TACC","module load amber"],
-            "executable" : ["/bin/bash"],
+            "executable" : ["pmemd.MPI"],
             "uses_mpi"   : True
         },
         "xsede.stampede":
@@ -138,15 +143,31 @@ class Kernel(KernelBase):
 
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-            executable = "/bin/bash"
             #change to pmemd.MPI by splitting into two kernels
-            arguments = ['-l','-c','pmemd -O -i {0} -o min{2}.out -inf min{2}.inf -r md{2}.crd -p {1} -c min{2}.crd -ref min{2}.crd && pmemd -O -i {3} -o md{2}.out -inf md{2}.inf -x md{2}.ncdf -r md{2}.rst -p {1} -c md{2}.crd'.format(
-                                                                         self.get_arg("--mininfile="),
-                                                                         self.get_arg("--topfile="),
-                                                                         self.get_arg("--cycle="),
-                                                                         self.get_arg("--mdinfile="))]
+            try:
+                arguments = [
+                           '-O',
+                            '-i',self.get_arg("--mininfile="),
+                            '-o','min%s.out'%self.get_arg("--cycle="),
+                            '-inf','min%s.inf'%self.get_arg("--cycle="),
+                            '-r','md%s.crd'%self.get_arg("--cycle="),
+                            '-p',self.get_arg("--topfile="),
+                            '-c',self.get_arg("--crdfile="),
+                            '-ref','min%s.crd'%self.get_arg("--cycle=")
+                        ]
+            except:
+                arguments = [
+                            '-O',
+                            '-i',self.get_arg("--mdinfile="),
+                            '-o','md%s.out'%self.get_arg("--cycle="),
+                            '-inf','md%s.inf'%self.get_arg("--cycle="),
+                            '-x','md%s.ncdf'%self.get_arg("--cycle="),
+                            '-r','md%s.rst'%self.get_arg("--cycle="),
+                            '-p',self.get_arg("--topfile="),
+                            '-c','md%s.crd'%self.get_arg("--cycle="),
+                        ]
        
-            self._executable  = executable
+            self._executable  = cfg['executable']
             self._arguments   = arguments
             self._environment = cfg["environment"]
             self._uses_mpi    = cfg["uses_mpi"]

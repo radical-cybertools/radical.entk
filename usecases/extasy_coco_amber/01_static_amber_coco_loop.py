@@ -155,21 +155,40 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             --topfile   = Topology filename
                             --cycle     = current iteration number
         '''
-        k = Kernel(name="md.amber")
-        k.arguments = ["--mininfile={0}".format(os.path.basename(Kconfig.minimization_input_file)),
-                       "--mdinfile={0}".format(os.path.basename(Kconfig.md_input_file)),
+        k1 = Kernel(name="md.amber")
+        k1.arguments = ["--mininfile={0}".format(os.path.basename(Kconfig.minimization_input_file)),
+                       #"--mdinfile={0}".format(os.path.basename(Kconfig.md_input_file)),
                        "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
+                       "--crdfile={0}".format(os.path.basename(Kconfig.initial_crd_file)),
                        "--cycle=%s"%(iteration)]
-        k.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.minimization_input_file)),
+        k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.minimization_input_file)),
                              '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file)),
-                             '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.md_input_file))]
+                             '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.initial_crd_file))]
+        k1.cores=2
         if((iteration-1)==0):
-            k.link_input_data = k.link_input_data + ['$PRE_LOOP/{0} > min1.crd'.format(os.path.basename(Kconfig.initial_crd_file))]
+            k1.link_input_data = k1.link_input_data + ['$PRE_LOOP/{0} > min1.crd'.format(os.path.basename(Kconfig.initial_crd_file))]
         else:
-            k.link_input_data = k.link_input_data + ['$PREV_ANALYSIS_INSTANCE_1/min{0}{1}.crd > min{2}.crd'.format(iteration-1,instance-1,iteration)]
+                k1.link_input_data = k1.link_input_data + ['$PREV_ANALYSIS_INSTANCE_1/min{0}{1}.crd > min{2}.crd'.format(iteration-1,instance-1,iteration)]
+        k1.copy_output_data = ['md{0}.crd > $PRE_LOOP/md_{0}_{1}.crd'.format(iteration,instance)]
+        
+
+        k2 = Kernel(name="md.amber")
+        k2.arguments = [
+                            "--mdinfile={0}".format(os.path.basename(Kconfig.md_input_file)),
+                            "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
+                            "--cycle=%s"%(iteration)
+                        ]
+        k2.link_input_data = [  
+                                "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.md_input_file)),
+                                "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.top_file)),
+                                "$PRE_LOOP/md_{0}_{1}.crd > md{0}.crd".format(iteration,instance),
+                                "--cycle=%s"%(iteration)
+                            ]
         if(iteration%Kconfig.nsave==0):
-            k.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
-        return k
+            k1.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
+
+        k2.cores = 2
+        return k1
 
 
     def analysis_step(self, iteration, instance):
@@ -241,7 +260,7 @@ if __name__ == "__main__":
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
             project = RPconfig.ALLOCATION, #project
-	        queue = RPconfig.QUEUE
+	        queue = RPconfig.QUEUE,
             database_url = RPconfig.DBURL
         )
 

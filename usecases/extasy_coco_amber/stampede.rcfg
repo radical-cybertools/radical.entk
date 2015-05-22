@@ -4,6 +4,6 @@ ALLOCATION  = 'TG-MCB090174'              # Allocation to be charged
 WALLTIME    = 60                          # Walltime to be requested for the pilot
 PILOTSIZE   = 16                          # Number of cores to be reserved
 WORKDIR     = None                        # Working directory on the remote machine
-QUEUE       = 'normal'                    # Name of the queue in the remote machine
+QUEUE       = 'development'                    # Name of the queue in the remote machine
 
 DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'          #MongoDB link to be used for coordination purposes

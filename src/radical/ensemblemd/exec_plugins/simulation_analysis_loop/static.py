@@ -31,8 +31,14 @@ _PLUGIN_OPTIONS = []
 def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_width, type, path):
 
     # Extract placeholder from path
+
+    #source placeholder
     if path.startswith('$'):
         placeholder = path.split('/')[0]
+
+    #dest placeholder
+    else:
+        placeholder = path.split('>')[1].strip().split('/')[0]
 
     # $PRE_LOOP
     if placeholder == "$PRE_LOOP":
@@ -192,6 +198,7 @@ class Plugin(PluginBase):
                 step_start_time_abs = datetime.datetime.now()
 
                 s_units = []
+                sims_list = None
                 for s_instance in range(1, pattern._simulation_instances+1):
 
                     sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
@@ -203,6 +210,7 @@ class Plugin(PluginBase):
                         for i in range(len(sim_step.link_input_data)):
                             sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
 
+
                     cud = radical.pilot.ComputeUnitDescription()
                     cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
@@ -212,6 +220,21 @@ class Plugin(PluginBase):
                     cud.mpi            = sim_step.uses_mpi
                     cud.input_staging  = sim_step._cu_def_input_data
                     cud.output_staging = sim_step._cu_def_output_data
+
+                    shared_crd = []
+                    if sim_step._kernel._copy_output_data is not None:
+                        var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[0])
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                        shared_crd.append(temp)
+                        if cud.output_staging is None:
+                            cud.output_staging = shared_crd
+                        else:
+                            cud.output_staging += shared_crd
+
 
                     # This is a good time to replace all placeholders in the
                     # pre_exec list.
