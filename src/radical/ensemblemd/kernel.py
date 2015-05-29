@@ -31,10 +31,10 @@ class Kernel(object):
         if args is not None:
             self.set_args(args)
 
-        if ((instance_type==None)or(instance_type=='single')):
-            self._kernel.instance_type = 'single'
-        elif (instance_type=='multiple'):
+        if ((instance_type==None)or(instance_type=='multiple')):
             self._kernel.instance_type = 'multiple'
+        elif (instance_type=='single'):
+            self._kernel.instance_type = 'single'
 
     #---------------------------------------------------------------------------
     #

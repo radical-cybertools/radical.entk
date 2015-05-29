@@ -197,69 +197,112 @@ class Plugin(PluginBase):
                 }
                 step_start_time_abs = datetime.datetime.now()
 
-                s_units = []
-                sims_list = None
-                for s_instance in range(1, pattern._simulation_instances+1):
+                num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
+                #print num_sim_kerns
+                for kern_step in range(0,num_sim_kerns):
 
-                    sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
+                    if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
+                            sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
+                        else:
+                            sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
 
-                    sim_step._bind_to_resource(resource._resource_key)
+                    if sim_step.get_instance_type() == 'single':
 
-                    # Resolve all placeholders
-                    if sim_step.link_input_data is not None:
-                        for i in range(len(sim_step.link_input_data)):
-                            sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
+                        sim_step._bind_to_resource(resource._resource_key)
+
+                        # Resolve all placeholders
+                        if sim_step.link_input_data is not None:
+                            for i in range(len(sim_step.link_input_data)):
+                                sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
 
 
-                    cud = radical.pilot.ComputeUnitDescription()
-                    cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
+                        cud = radical.pilot.ComputeUnitDescription()
+                        cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
-                    cud.pre_exec       = sim_step._cu_def_pre_exec
-                    cud.executable     = sim_step._cu_def_executable
-                    cud.arguments      = sim_step.arguments
-                    cud.mpi            = sim_step.uses_mpi
-                    cud.input_staging  = sim_step._cu_def_input_data
-                    cud.output_staging = sim_step._cu_def_output_data
+                        cud.pre_exec       = sim_step._cu_def_pre_exec
+                        cud.executable     = sim_step._cu_def_executable
+                        cud.arguments      = sim_step.arguments
+                        cud.mpi            = sim_step.uses_mpi
+                        cud.input_staging  = sim_step._cu_def_input_data
+                        cud.output_staging = sim_step._cu_def_output_data
 
-                    shared_crd = []
-                    if sim_step._kernel._copy_output_data is not None:
-                        var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[0])
-                        temp = {
+                        data_out = []
+                        if sim_step._kernel._copy_output_data is not None:
+                            var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[0])
+                            temp = {
                                     'source': var.split('>')[0].strip(),
                                     'target': var.split('>')[1].strip(),
                                     'action': radical.pilot.COPY
                                 }
-                        shared_crd.append(temp)
+                            data_out.append(temp)
                         if cud.output_staging is None:
-                            cud.output_staging = shared_crd
+                            cud.output_staging = data_out
                         else:
-                            cud.output_staging += shared_crd
+                            cud.output_staging += data_out
+
+                        if sim_step.cores is not None:
+                            cud.cores = sim_step.cores
+
+                        self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
+                        s_cus = resource._umgr.submit_units(cud)
+                        all_cus.extend(s_cus)
+
+                    else:
+
+                    s_units = []
+                    for s_instance in range(1, pattern._simulation_instances+1):
+
+                        sim_step._bind_to_resource(resource._resource_key)
+
+                        # Resolve all placeholders
+                        if sim_step.link_input_data is not None:
+                            for i in range(len(sim_step.link_input_data)):
+                                sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
 
 
-                    # This is a good time to replace all placeholders in the
-                    # pre_exec list.
+                        cud = radical.pilot.ComputeUnitDescription()
+                        cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
-                    try:
-                        cud.cores = sim_step.cores
-                    except:
-                        pass
+                        cud.pre_exec       = sim_step._cu_def_pre_exec
+                        cud.executable     = sim_step._cu_def_executable
+                        cud.arguments      = sim_step.arguments
+                        cud.mpi            = sim_step.uses_mpi
+                        cud.input_staging  = sim_step._cu_def_input_data
+                        cud.output_staging = sim_step._cu_def_output_data
 
-                    s_units.append(cud)
+                        data_out = []
+                        if sim_step._kernel._copy_output_data is not None:
+                            var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[0])
+                            temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                            data_out.append(temp)
+                        if cud.output_staging is None:
+                            cud.output_staging = data_out
+                        else:
+                            cud.output_staging += data_out
+
+                        if sim_step.cores is not None:
+                            cud.cores = sim_step.cores
+
+                        s_units.append(cud)
+                        
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
+                    s_cus = resource._umgr.submit_units(s_units)
+                    all_cus.extend(s_cus)
 
-                s_cus = resource._umgr.submit_units(s_units)
-                all_cus.extend(s_cus)
-
-                self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
-                self.get_logger().info("Waiting for simulations in iteration {0} to complete.".format(iteration))
-                resource._umgr.wait_units()
-                self.get_logger().info("Simulations in iteration {0} completed.".format(iteration))
+                    self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
+                    self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
+                    resource._umgr.wait_units()
+                    self.get_logger().info("Simulations in iteration {0}/ kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
 
 
-                failed_units = ""
-                for unit in s_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+                    failed_units = ""
+                    for unit in s_cus:
+                        if unit.state != radical.pilot.DONE:
+                            failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
@@ -286,111 +329,73 @@ class Plugin(PluginBase):
                 }
                 step_start_time_abs = datetime.datetime.now()
 
-                a_units = []
-                analysis_list = None
-                for a_instance in range(1, pattern._analysis_instances+1):
+                num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
+                #print num_ana_kerns
+                for kern_step in range(0,num_ana_kerns):
+                    a_units = []
+                    for a_instance in range(1, pattern._analysis_instances+1):
 
-                    analysis_list = pattern.analysis_step(iteration=iteration, instance=a_instance)
 
-                    if not isinstance(analysis_list,list):
-                        analysis_list = [analysis_list]
+                        if isinstance(pattern.analysis_step(iteration=iteration, instance=s_instance),list):
+                            ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)[kern_step]
+                        else:
+                            ana_step = pattern.analysis_step(iteration=iteration, instance=s_instance)
 
-                    if len(analysis_list) > 1:
-
-                        kernel_wd = ""
-                        cur_kernel = 1
-
-                        for ana_step in analysis_list:
-
-                            a_units = []
-                            ana_step._bind_to_resource(resource._resource_key)
-
-                            # Resolve all placeholders
-                            if ana_step.link_input_data is not None:
-                                for i in range(len(ana_step.link_input_data)):
-                                    ana_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step.link_input_data[i])
-
-                            cud = radical.pilot.ComputeUnitDescription()
-                            cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
-
-                            cud.pre_exec       = ana_step._cu_def_pre_exec
-                            if cur_kernel > 1:
-                                cud.pre_exec.append('cp -n %s/*.* .'%kernel_wd)
-
-                            cud.executable     = ana_step._cu_def_executable
-                            cud.arguments      = ana_step.arguments
-                            cud.mpi            = ana_step.uses_mpi
-                            cud.input_staging  = ana_step._cu_def_input_data
-                            cud.output_staging = ana_step._cu_def_output_data
-
-                            try:
-                                cud.cores = ana_step.cores
-                            except:
-                                pass
-
-                            a_units.append(cud)
-                            self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
-
-                            a_cus = resource._umgr.submit_units(a_units)
-                            all_cus.extend(a_cus)
-
-                            self.get_logger().info("Submitted tasks for analysis iteration {0}/ kernel {1}.".format(iteration,cur_kernel))
-                            self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1} to complete.".format(iteration,cur_kernel))
-                            resource._umgr.wait_units()
-                            self.get_logger().info("Analysis in iteration {0}/kernel {1}:{2} completed.".format(iteration,cur_kernel,ana_step.name))
-
-                            failed_units = ""
-                            for unit in a_cus:
-                                if unit.state != radical.pilot.DONE:
-                                    failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-                                else:
-                                    kernel_wd = saga.Url(unit.working_directory).path
-                                    cur_kernel += 1
-                                    working_dirs['iteration_{0}'.format(iteration)]['analysis_1'] = saga.Url(unit.working_directory).path
-
-                    else:
-                        analysis_step = analysis_list[0]
-                        analysis_step._bind_to_resource(resource._resource_key)
+                        ana_step._bind_to_resource(resource._resource_key)
 
                         # Resolve all placeholders
-                        if analysis_step.link_input_data is not None:
-                            for i in range(len(analysis_step.link_input_data)):
-                                analysis_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", analysis_step.link_input_data[i])
+                        if ana_step.link_input_data is not None:
+                            for i in range(len(ana_step.link_input_data)):
+                                ana_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step.link_input_data[i])
 
                         cud = radical.pilot.ComputeUnitDescription()
-                        cud.name = "ana; {iteration};{instance}".format(iteration=iteration, instance=a_instance)
+                        cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
-                        cud.pre_exec       = analysis_step._cu_def_pre_exec
-                        cud.executable     = analysis_step._cu_def_executable
-                        cud.arguments      = analysis_step.arguments
-                        cud.mpi            = analysis_step.uses_mpi
-                        cud.input_staging  = analysis_step._cu_def_input_data
-                        cud.output_staging = analysis_step._cu_def_output_data
+                        cud.pre_exec       = ana_step._cu_def_pre_exec
+                        cud.executable     = ana_step._cu_def_executable
+                        cud.arguments      = ana_step.arguments
+                        cud.mpi            = ana_step.uses_mpi
+                        cud.input_staging  = ana_step._cu_def_input_data
+                        cud.output_staging = ana_step._cu_def_output_data
+
+                        data_out = []
+                        if ana_step._kernel._copy_output_data is not None:
+                            var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._copy_output_data[0])
+                            temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                            data_out.append(temp)
+                        if cud.output_staging is None:
+                            cud.output_staging = data_out
+                        else:
+                            cud.output_staging += data_out
+
+
+                        if ana_step.cores is not None:
+                            cud.cores = ana_step.cores
 
                         a_units.append(cud)
 
-                        self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
-
-                if len(analysis_list)==1:
+                    self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
                     a_cus = resource._umgr.submit_units(a_units)
                     all_cus.extend(a_cus)
 
-
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
-                    self.get_logger().info("Waiting for analysis tasks in iteration {0} to complete.".format(iteration))
+                    self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
                     resource._umgr.wait_units()
-                    self.get_logger().info("Analysis in iteration {0} completed.".format(iteration))
+                    self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
 
                     failed_units = ""
                     for unit in a_cus:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                     # TODO: ensure working_dir <-> instance mapping
-                        i = 0
-                        for cu in a_cus:
-                            i += 1
-                            working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                i = 0
+                for cu in a_cus:
+                    i += 1
+                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 step_end_time_abs = datetime.datetime.now()
 

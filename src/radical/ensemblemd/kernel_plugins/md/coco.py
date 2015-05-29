@@ -67,7 +67,7 @@ _KERNEL_INFO = {
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/13.0.2.146","module load python","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco_installation/bin:$PATH"],
+            "pre_exec" : ["module load intel/13.0.2.146","module load python/2.7.9","module load mpi4py","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco-0.6_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco-0.6_installation/bin:$PATH"],
             "executable" : ["/bin/bash"],
             "uses_mpi"   : True
         },

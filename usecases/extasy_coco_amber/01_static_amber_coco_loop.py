@@ -182,13 +182,12 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                                 "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.md_input_file)),
                                 "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.top_file)),
                                 "$PRE_LOOP/md_{0}_{1}.crd > md{0}.crd".format(iteration,instance),
-                                "--cycle=%s"%(iteration)
                             ]
         if(iteration%Kconfig.nsave==0):
             k1.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
 
         k2.cores = 2
-        return k1
+        return [k1,k2]
 
 
     def analysis_step(self, iteration, instance):

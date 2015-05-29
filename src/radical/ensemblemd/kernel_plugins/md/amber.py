@@ -144,7 +144,7 @@ class Kernel(KernelBase):
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
             #change to pmemd.MPI by splitting into two kernels
-            try:
+            if self.get_arg("--mininfile=") is not None:
                 arguments = [
                            '-O',
                             '-i',self.get_arg("--mininfile="),
@@ -155,7 +155,7 @@ class Kernel(KernelBase):
                             '-c',self.get_arg("--crdfile="),
                             '-ref','min%s.crd'%self.get_arg("--cycle=")
                         ]
-            except:
+            else:
                 arguments = [
                             '-O',
                             '-i',self.get_arg("--mdinfile="),
