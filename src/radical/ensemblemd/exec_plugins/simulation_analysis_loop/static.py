@@ -197,60 +197,20 @@ class Plugin(PluginBase):
                 }
                 step_start_time_abs = datetime.datetime.now()
 
-                num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
+                if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
+                    num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
+                else:
+                    num_sim_kerns = 1
                 #print num_sim_kerns
                 for kern_step in range(0,num_sim_kerns):
 
-                    if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
+                    s_units = []
+                    for s_instance in range(1, pattern._simulation_instances+1):
+
+                        if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
                             sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
                         else:
                             sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
-
-                    if sim_step.get_instance_type() == 'single':
-
-                        sim_step._bind_to_resource(resource._resource_key)
-
-                        # Resolve all placeholders
-                        if sim_step.link_input_data is not None:
-                            for i in range(len(sim_step.link_input_data)):
-                                sim_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step.link_input_data[i])
-
-
-                        cud = radical.pilot.ComputeUnitDescription()
-                        cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
-
-                        cud.pre_exec       = sim_step._cu_def_pre_exec
-                        cud.executable     = sim_step._cu_def_executable
-                        cud.arguments      = sim_step.arguments
-                        cud.mpi            = sim_step.uses_mpi
-                        cud.input_staging  = sim_step._cu_def_input_data
-                        cud.output_staging = sim_step._cu_def_output_data
-
-                        data_out = []
-                        if sim_step._kernel._copy_output_data is not None:
-                            var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[0])
-                            temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip(),
-                                    'action': radical.pilot.COPY
-                                }
-                            data_out.append(temp)
-                        if cud.output_staging is None:
-                            cud.output_staging = data_out
-                        else:
-                            cud.output_staging += data_out
-
-                        if sim_step.cores is not None:
-                            cud.cores = sim_step.cores
-
-                        self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
-                        s_cus = resource._umgr.submit_units(cud)
-                        all_cus.extend(s_cus)
-
-                    else:
-
-                    s_units = []
-                    for s_instance in range(1, pattern._simulation_instances+1):
 
                         sim_step._bind_to_resource(resource._resource_key)
 
@@ -288,6 +248,9 @@ class Plugin(PluginBase):
                             cud.cores = sim_step.cores
 
                         s_units.append(cud)
+
+                        if sim_step.get_instance_type() == 'single':
+                            break
                         
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
                     s_cus = resource._umgr.submit_units(s_units)
@@ -329,12 +292,15 @@ class Plugin(PluginBase):
                 }
                 step_start_time_abs = datetime.datetime.now()
 
-                num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
+                if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
+                    num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
+                else:
+                    num_ana_kerns = 1
                 #print num_ana_kerns
                 for kern_step in range(0,num_ana_kerns):
+
                     a_units = []
                     for a_instance in range(1, pattern._analysis_instances+1):
-
 
                         if isinstance(pattern.analysis_step(iteration=iteration, instance=s_instance),list):
                             ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)[kern_step]
@@ -378,6 +344,9 @@ class Plugin(PluginBase):
 
                         a_units.append(cud)
 
+                        if ana_step.get_instance_type == 'single':
+                            break
+
                     self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
                     a_cus = resource._umgr.submit_units(a_units)
                     all_cus.extend(a_cus)
@@ -385,7 +354,7 @@ class Plugin(PluginBase):
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
                     resource._umgr.wait_units()
-                    self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
+                    self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(iteration,kern_step+1,ana_step.name))
 
                     failed_units = ""
                     for unit in a_cus:

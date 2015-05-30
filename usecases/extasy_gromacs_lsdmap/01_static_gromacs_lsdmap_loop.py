@@ -293,7 +293,7 @@ if __name__ == "__main__":
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
             project = RPconfig.ALLOCATION, #project
-	          queue = RPconfig.QUEUE
+	          queue = RPconfig.QUEUE,
             database_url = RPconfig.DBURL 
       )
 
