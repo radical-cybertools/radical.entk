@@ -17,62 +17,43 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 #
 _KERNEL_INFO = {
 
-    "name":         "md.coco",
+    "name":         "md.tleap",
     "description":  "Creates a new file of given size and fills it with random ASCII characters.",
-    "arguments":   {"--grid=":
-                        {
-                            "mandatory": True,
-                            "description": "No. of grid points"
-                        },
-                    "--dims=":
-                        {
-                            "mandatory": True,
-                            "description": "No. of dimensions"
-                        },
-                    "--frontpoints=":
+    "arguments":   {
+                    "--numofsims=":
                         {
                             "mandatory": True,
                             "description": "No. of frontpoints = No. of simulation CUs"
                         },
-                    "--topfile=":
-                        {
-                            "mandatory": True,
-                            "description": "Topology filename"
-                        },
-                    "--mdfile=":
-                        {
-                            "mandatory": True,
-                            "description": "NetCDF filename"
-                        },
-                    "--output=":
+                    "--cycle=":
                         {
                             "mandatory": True,
                             "description": "Output filename for postexec"
-                        },
+                        }
                     },
     "machine_configs": 
     {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
-            "executable"    : "pyCoCo",
-            "uses_mpi"      : True
+            "executable"    : "python",
+            "uses_mpi"      : False
         },
 
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
             "pre_exec" : ["module load intel/13.0.2.146","module load python/2.7.9","module load mpi4py","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco-0.6_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco-0.6_installation/bin:$PATH"],
-            "executable" : ["pyCoCo"],
-            "uses_mpi"   : True
+            "executable" : ["python"],
+            "uses_mpi"   : False
         },
 
         "archer.ac.uk":
         {
             "environment" : {},
             "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],
-            "executable" : ["pyCoCo"],
-            "uses_mpi"   : True
+            "executable" : ["python"],
+            "uses_mpi"   : False
         }
     }
 }
@@ -111,15 +92,7 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg["executable"]
-        arguments = [
-                    '--grid','{0}'.format(self.get_arg("--grid=")),
-                    '--dims','{0}'.format(self.get_arg("--dims=")),
-                    '--frontpoints','{0}'.format(self.get_arg("--frontpoints=")),
-                    '--topfile','{0}'.format(self.get_arg("--topfile=")),
-                    '--mdfile','{0}'.format(self.get_arg("--mdfile=")),
-                    '--output','{0}'.format(self.get_arg("--output="))
-                    ]
-                                                                     
+        arguments = ['postexec.py','{0}'.format(self.get_arg("--numofsims=")),'{0}'.format(self.get_arg("--cycle="))]
        
         self._executable  = executable
         self._arguments   = arguments

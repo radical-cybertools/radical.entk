@@ -15,6 +15,7 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.md.pre_coam_loop",
     "radical.ensemblemd.kernel_plugins.md.amber",
     "radical.ensemblemd.kernel_plugins.md.coco",
+    "radical.ensemblemd.kernel_plugins.md.tleap",
 
     "radical.ensemblemd.kernel_plugins.md.mmpbsa",
     "radical.ensemblemd.kernel_plugins.md.namd",

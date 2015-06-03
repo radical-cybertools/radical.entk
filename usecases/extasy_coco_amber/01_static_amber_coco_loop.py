@@ -207,21 +207,34 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             --output        = Output filename
                             --cycle         = Current iteration number
         '''
-        k = Kernel(name="md.coco")
-        k.arguments = ["--grid={0}".format(Kconfig.grid),
+        k1 = Kernel(name="md.coco")
+        k1.arguments = ["--grid={0}".format(Kconfig.grid),
                        "--dims={0}".format(Kconfig.dims),
                        "--frontpoints={0}".format(Kconfig.num_CUs),
                        "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                        "--mdfile=*.ncdf",
-                       "--output=pentaopt%s"%(iteration),
-                       "--cycle=%s"%(iteration)]
-        k.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file)),
-                             '$PRE_LOOP/postexec.py']
-        k.cores = RPconfig.PILOTSIZE
+                       "--output=pentaopt%s"%(iteration)]
+        k1.cores = RPconfig.PILOTSIZE
+
+        k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file))]
         for iter in range(1,iteration+1):
             for i in range(1,Kconfig.num_CUs+1):
-                k.link_input_data = k.link_input_data + ['$SIMULATION_ITERATION_{0}_INSTANCE_{1}/md{0}.ncdf > md_{0}_{1}.ncdf'.format(iter,i)]
-        return k
+                k1.link_input_data = k1.link_input_data + ['$SIMULATION_ITERATION_{0}_INSTANCE_{1}/md{0}.ncdf > md_{0}_{1}.ncdf'.format(iter,i)]
+
+        k1.copy_output_data = ['STDERR > $PRE_LOOP/STDERR']
+        for i in range(0,Kconfig.num_CUs):
+            k1.copy_output_data = k1.copy_output_data + ['pentaopt{0}{1}.pdb > $PRE_LOOP/pentaopt{0}{1}.pdb'.format(iteration,i)]
+
+
+        k2 = Kernel(name="md.tleap")
+        k2.arguments = ["--numofsims={0}".format(Kconfig.num_CUs),
+                        "--cycle={0}".format(iteration)]
+
+        k2.link_input_data = []
+        for i in range(0,Kconfig.num_CUs):
+            k2.link_input_data = k2.link_input_data + ['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)]
+
+        return [k1,k2]
 
     def post_loop(self):
         pass
