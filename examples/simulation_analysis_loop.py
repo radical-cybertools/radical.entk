@@ -127,7 +127,7 @@ class RandomSA(SimulationAnalysisLoop):
         output_filename = "analysis-{0}-{1}.dat".format(iteration, instance)
 
         k = Kernel(name="misc.levenshtein")
-        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$PREV_SIMULATION/{0}".format(input_filename)]
+        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$SIMULATION_ITERATION_{1}_INSTANCE_{2}/{0}".format(input_filename,iteration,instance)]
         k.arguments            = ["--inputfile1=reference.dat",
                                   "--inputfile2={0}".format(input_filename),
                                   "--outputfile={0}".format(output_filename)]

@@ -10,7 +10,7 @@ nsave                = 2                    # # Iterations after which output is
 
 #--------------------------Simulation--------------------------------
 num_cores_per_sim_cu = 1                    # Number of cores per Simulation Compute Units
-md_input_file        = './inp_files/short.gro'        # Entire path to the MD Input file - Do not use $HOME or the likes
+md_input_file        = './inp_files/input.gro'        # Entire path to the MD Input file - Do not use $HOME or the likes
 mdp_file             = './inp_files/grompp.mdp'       # Entire path to the MD Parameters file - Do not use $HOME or the likes
 top_file             = './inp_files/topol.top'        # Entire path to the Topology file - Do not use $HOME or the likes
 ndx_file             = None                   # Entire path to the Index file - Do not use $HOME or the likes
