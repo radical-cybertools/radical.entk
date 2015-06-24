@@ -58,35 +58,62 @@ scenarios:
   * :ref:`usecase_extasy_gromacs_lsdmap`
   * :ref:`usecase_haussdorff`
 
-.. Ensemble MD Toolkit takes a different approach. It provides a set of
-.. explicit, predefined :ref:`patterns` that are commonly found in MD workflows.
-.. Currently, these patterns are:
-..
-..   * (Bag-of-Tasks)
-..   * Pipeline
-..   * Simulation-Analysis Loop
-..   * Replica Exchange
-..
-.. Instead of defining tasks and their dependencies, users of Ensemble MD
-.. Toolkit pick the pattern that represents their simulation's workflow and
-.. populate it with :ref:`kernels`, an abstraction around MD tools, like
-.. Amber, Gromacs, NAMD, etc.
-..
-.. The execution of the MD Kernels according to the pattern happens in the
-.. background, transparently to the user. The mechanisms for resource allocations,
-.. task submission and data transfer to one or more distributed execution hosts
-.. are completely hidden from the users, so they can solely focus on optimizing
-.. and improving the simulation workflow.
+Ensemble MD Toolkit takes a different approach. It provides a set of
+explicit, predefined :ref:`patterns` that are commonly found in MD workflows.
+Currently, these patterns are:
+
+  * (Bag-of-Tasks)
+  * Pipeline
+  * Simulation-Analysis Loop
+  * Replica Exchange
+
+Each of the pattern is uniquely targeted to a specific set of use-cases. While
+the Pipeline and AllPairs patterns are fairly generic (they implement generic
+algorithms), the ReplicaExchange and SimulationAnalysis patterns are much more
+specific.  Some of the pattern behavior, specifically the degree of parallelism
+can be controlled via parameters during object creation.
+
+Instead of defining tasks and their dependencies, users of Ensemble MD
+Toolkit pick the pattern that represents their simulation's workflow and
+populate it with :ref:`kernels`, an abstraction around MD tools, like
+Amber, Gromacs, NAMD, etc.
+
+The execution of the MD Kernels according to the pattern happens in the
+background, transparently to the user. The mechanisms for resource allocations,
+task submission and data transfer to one or more distributed execution hosts
+are completely hidden from the users, so they can solely focus on optimizing
+and improving the simulation workflow.
 
 
-.. Concepts
-.. ========
-..
-.. Patterns
-.. --------
-..
-.. Application Kernels
-.. -------------------
-..
-.. Execution Environments
-.. ----------------------
+Concepts
+========
+
+Patterns
+--------
+
+A pattern is an object that represents a high-level application control flow. A
+pattern can be seen as a parameterized template for an execution trajectory that
+implements a specific algorithm. A pattern provides placeholder methods for the
+individual steps and stages of an execution trajectory. These placeholders are
+populated with Kernels that get executed when it’s the step’s / stages’ turn to
+be executed.  The individual patterns provided in EnsembleMD can not be modified
+by the user and they can not be nested. However, new patterns can be added to
+EnsembleMD.
+
+Application Kernels
+-------------------
+
+A kernel is an object that represents and abstracts a computational task in
+EnsembleMD. A kernel can represent the invocation of a specific executable
+(e.g., an executable from the Amber or NAMD suite of tools) or a more complex
+invocation of compound tools.
+
+Execution Environments
+----------------------
+
+An execution context is an object that represents a computing resource, i.e., in
+most cases an HPC cluster. An execution context itself only represents the
+concept (‘abstract base class’) and can have one or more concrete realizations.
+Currently only one realization exists, the SingleClusterEnvironment,
+representing a single resource. Typically, only one execution contexts object
+exists throughout the lifetime of an EnsembleMD application. 

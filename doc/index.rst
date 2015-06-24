@@ -56,4 +56,3 @@ Contents:
    library
    developers
    faq
-   glossary
