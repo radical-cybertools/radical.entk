@@ -41,7 +41,7 @@ _KERNEL_INFO = {
         "stampede.tacc.utexas.edu":
         {
             "environment" : {},
-            "pre_exec" : ["module load gromacs python mpi4py"],
+            "pre_exec" : ["module load TACC","module load intel/13.0.2.146","module load gromacs","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },
