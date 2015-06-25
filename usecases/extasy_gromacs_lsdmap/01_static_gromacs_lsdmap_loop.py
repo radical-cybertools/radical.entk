@@ -170,9 +170,9 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         gromacs = Kernel(name="md.gromacs")
         gromacs.arguments = ["--grompp={0}".format(os.path.basename(Kconfig.mdp_file)),
                              "--topol={0}".format(os.path.basename(Kconfig.top_file))]
-        gromacs.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.mdp_file)),
-                                   '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file)),
-                                   '$PRE_LOOP/run.py']
+        gromacs.link_input_data = ['$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.mdp_file)),
+                                   '$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.top_file)),
+                                   '$PRE_LOOP/run.py > run.py']
 
         if (iteration-1==0):
             gromacs.link_input_data.append('$PRE_LOOP/temp/start{0}.gro > start.gro'.format(instance-1))
@@ -224,17 +224,17 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         pre_ana = Kernel(name="md.pre_lsdmap")
         pre_ana.arguments = ["--numCUs={0}".format(Kconfig.num_CUs)]
-        pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py"]
+        pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py > pre_analyze.py"]
         for i in range(1,Kconfig.num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
         pre_ana.copy_output_data = ['tmpha.gro > $PRE_LOOP/tmpha.gro','tmp.gro > $PRE_LOOP/tmp.gro']
 
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config={0}".format(os.path.basename(Kconfig.lsdm_config_file))]
-        lsdmap.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/lsdm.py','$PRE_LOOP/tmpha.gro > tmpha.gro']
+        lsdmap.link_input_data = ['$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/lsdm.py > lsdm.py','$PRE_LOOP/tmpha.gro > tmpha.gro']
         lsdmap.cores = RPconfig.PILOTSIZE
         if iteration > 1:
-            lsdmap.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w'.format(iteration-1)]
+            lsdmap.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w > weight.w'.format(iteration-1)]
             lsdmap.copy_output_data = ['weight.w > $PRE_LOOP/weight.w']
         lsdmap.copy_output_data = ['tmpha.ev > $PRE_LOOP/tmpha.ev','out.nn > $PRE_LOOP/out.nn']
         
@@ -242,15 +242,15 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
           lsdmap.download_output_data=['lsdmap.log > backup/iter{0}/lsdmap.log'.format(iteration)]
 
         post_ana = Kernel(name="md.post_lsdmap")
-        post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py",
-                                    "$PRE_LOOP/select.py",
-                                    "$PRE_LOOP/reweighting.py",
-                                    "$PRE_LOOP/spliter.py",
-                                    "$PRE_LOOP/gro.py",
-                                    "$PRE_LOOP/tmp.gro",
-                                    "$PRE_LOOP/tmpha.ev",
-                                    "$PRE_LOOP/out.nn",
-                                    "$PRE_LOOP/input.gro"]
+        post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py > post_analyze.py",
+                                    "$PRE_LOOP/select.py > select.py",
+                                    "$PRE_LOOP/reweighting.py > reweighting.py",
+                                    "$PRE_LOOP/spliter.py > spliter.py",
+                                    "$PRE_LOOP/gro.py > gro.py",
+                                    "$PRE_LOOP/tmp.gro > tmp.gro",
+                                    "$PRE_LOOP/tmpha.ev > tmpha.ev",
+                                    "$PRE_LOOP/out.nn > out.nn",
+                                    "$PRE_LOOP/input.gro > input.gro"]
 
         post_ana.arguments = ["--num_runs={0}".format(Kconfig.num_runs),
                               "--out=out.gro",
@@ -319,6 +319,10 @@ if __name__ == "__main__":
       pp = pprint.PrettyPrinter()
 
       pp.pprint(randomsa.execution_profile_dict)
+
+      df = randomsa.execution_profile_dataframe
+      df.to_pickle('exp_{0}_{1}.pkl'.format(RPconfig.PILOTSIZE,Kconfig.num_CUs))
+
 
   except EnsemblemdError, er:
 

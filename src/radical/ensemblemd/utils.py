@@ -37,8 +37,9 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     t_id_L_rel = None; t_od_L_rel = None; t_ex_L_rel = None
 
     for unit in units:
-        all_ex_start.append(unit.start_time)
-        all_ex_stop.append(unit.stop_time)
+        if ((unit.start_time is not None) and (unit.stop_time is not None)):
+            all_ex_start.append(unit.start_time)
+            all_ex_stop.append(unit.stop_time)
 
         # for log in unit.log:
         #     if "All FTW Input Staging Directives done" in log.logentry:
@@ -49,16 +50,20 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
 
         for state in unit.state_history:
             if state.state == "StagingInput":
-                all_id_start.append(state.timestamp)
+                if state.timestamp is not None:
+                    all_id_start.append(state.timestamp)
 
             if state.state == "PendingExecution":
-                all_id_stop.append(state.timestamp)
+                if state.timestamp is not None:
+                    all_id_stop.append(state.timestamp)
 
             if state.state == "StagingOutput":
-                all_od_start.append(state.timestamp)
+                if state.timestamp is not None:
+                    all_od_start.append(state.timestamp)
 
             if state.state == "Done":
-                all_od_stop.append(state.timestamp)
+                if state.timestamp is not None:
+                    all_od_stop.append(state.timestamp)
 
     # Find the earliest / latest timings from the timing arrays
     if len(all_id_start) > 0:
@@ -75,6 +80,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         t_ex_L_abs = max(all_ex_stop)
 
     # Determine the time 'origin' for relative timings
+    '''
     if t_id_E_abs is not None:
         t_origin = t_id_E_abs
     else:
@@ -92,41 +98,42 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         t_ex_E_rel = step_start_time_rel + t_ex_E_abs - t_origin
     if len(all_ex_stop) > 0:
         t_ex_L_rel =step_start_time_rel +  t_ex_L_abs - t_origin
+    '''
 
     return {
         "step_start_time": {
             "abs": step_start_time_abs,
-            "rel": step_start_time_rel
+    #        "rel": step_start_time_rel
         },
         "step_end_time": {
             "abs": step_end_time_abs,
-            "rel": step_end_time_rel
+    #        "rel": step_end_time_rel
         },
         "first_data_stagein_started": {
             "abs": t_id_E_abs,
-            "rel": t_id_E_rel
+    #        "rel": t_id_E_rel
         },
         "last_data_stagein_finished": {
             "abs": t_id_L_abs,
-            "rel": t_id_L_rel
+    #        "rel": t_id_L_rel
         },
 
         "first_data_stageout_started": {
             "abs": t_od_E_abs,
-            "rel": t_od_E_rel
+    #        "rel": t_od_E_rel
         },
         "last_data_stageout_finished": {
             "abs": t_od_L_abs,
-            "rel": t_od_L_rel
+    #        "rel": t_od_L_rel
         },
 
         "first_execution_started": {
             "abs": t_ex_E_abs,
-            "rel": t_ex_E_rel
+    #        "rel": t_ex_E_rel
         },
         "last_execution_finished": {
             "abs": t_ex_L_abs,
-            "rel": t_ex_L_rel
+    #        "rel": t_ex_L_rel
         }
     }
 
@@ -140,37 +147,42 @@ def dataframes_from_profile_dict(profile):
         print ex
         return None
 
-    cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs', 'first_started_rel', 'last_finished_rel']
+    #cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs','first_started_rel', 'last_finished_rel']
+    cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs']
     df = pd.DataFrame(columns=cols)
 
     # iterate over the entities
     for entity in profile:
         start_abs = entity['timings']['step_start_time']['abs']
         end_abs = entity['timings']['step_end_time']['abs']
-        start_rel = entity['timings']['step_start_time']['rel']
-        end_rel = entity['timings']['step_end_time']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #start_rel = entity['timings']['step_start_time']['rel']
+        #end_rel = entity['timings']['step_end_time']['rel']
+        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
         start_abs = entity['timings']['first_data_stagein_started']['abs']
         end_abs   = entity['timings']['last_data_stagein_finished']['abs']
-        start_rel = entity['timings']['first_data_stagein_started']['rel']
-        end_rel   = entity['timings']['last_data_stagein_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #start_rel = entity['timings']['first_data_stagein_started']['rel']
+        #end_rel   = entity['timings']['last_data_stagein_finished']['rel']
+        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
         start_abs = entity['timings']['first_execution_started']['abs']
         end_abs   = entity['timings']['last_execution_finished']['abs']
-        start_rel = entity['timings']['first_execution_started']['rel']
-        end_rel   = entity['timings']['last_execution_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #start_rel = entity['timings']['first_execution_started']['rel']
+        #end_rel   = entity['timings']['last_execution_finished']['rel']
+        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
         start_abs = entity['timings']['first_data_stageout_started']['abs']
         end_abs   = entity['timings']['last_data_stageout_finished']['abs']
-        start_rel = entity['timings']['first_data_stageout_started']['rel']
-        end_rel   = entity['timings']['last_data_stageout_finished']['rel']
-        df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #start_rel = entity['timings']['first_data_stageout_started']['rel']
+        #end_rel   = entity['timings']['last_data_stageout_finished']['rel']
+        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
     return df
