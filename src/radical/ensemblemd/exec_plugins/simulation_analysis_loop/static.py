@@ -230,7 +230,7 @@ class Plugin(PluginBase):
                         cud.input_staging  = None
                         cud.output_staging = None
 
-
+                        # INPUT DATA:
                         #------------------------------------------------------------------------------------------------------------------
                         # upload_input_data
                         data_in = []
@@ -241,10 +241,16 @@ class Plugin(PluginBase):
                                 sim_step._kernel._upload_input_data = [sim_step._kernel._upload_input_data]
                             for i in range(0,len(sim_step._kernel._upload_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._upload_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip()
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip())
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -263,11 +269,18 @@ class Plugin(PluginBase):
                                 sim_step._kernel._link_input_data = [sim_step._kernel._link_input_data]
                             for i in range(0,len(sim_step._kernel._link_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._link_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.LINK
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.LINK
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.LINK
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -286,11 +299,18 @@ class Plugin(PluginBase):
                                 sim_step._kernel._copy_input_data = [sim_step._kernel._copy_input_data]
                             for i in range(0,len(sim_step._kernel._copy_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.COPY
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.COPY
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -309,7 +329,7 @@ class Plugin(PluginBase):
                                 cud.input_staging += data_in
                         #------------------------------------------------------------------------------------------------------------------
 
-
+                        # OUTPUT DATA:
                         #------------------------------------------------------------------------------------------------------------------
                         # copy_output_data
                         data_out = []
@@ -320,11 +340,18 @@ class Plugin(PluginBase):
                                 sim_step._kernel._copy_output_data = [sim_step._kernel._copy_output_data]
                             for i in range(0,len(sim_step._kernel._copy_output_data)):
                                 var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.COPY
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.COPY
+                                        }
                                 data_out.append(temp)
 
                         if cud.output_staging is None:
@@ -343,10 +370,16 @@ class Plugin(PluginBase):
                                 sim_step._kernel._download_output_data = [sim_step._kernel._download_output_data]
                             for i in range(0,len(sim_step._kernel._download_output_data)):
                                 var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._download_output_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()                        
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip()
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip())
+                                        }
                                 data_out.append(temp)
 
                         if cud.output_staging is None:
@@ -446,10 +479,16 @@ class Plugin(PluginBase):
                                 ana_step._kernel._upload_input_data = [ana_step._kernel._upload_input_data]
                             for i in range(0,len(ana_step._kernel._upload_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._upload_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip()
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip())
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -468,11 +507,18 @@ class Plugin(PluginBase):
                                 ana_step._kernel._link_input_data = [ana_step._kernel._link_input_data]
                             for i in range(0,len(ana_step._kernel._link_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._link_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.LINK
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.LINK
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.LINK
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -491,11 +537,18 @@ class Plugin(PluginBase):
                                 ana_step._kernel._copy_input_data = [ana_step._kernel._copy_input_data]
                             for i in range(0,len(ana_step._kernel._copy_input_data)):
                                 var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._copy_input_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.COPY
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.COPY
+                                        }
                                 data_in.append(temp)
 
                         if cud.input_staging is None:
@@ -525,11 +578,18 @@ class Plugin(PluginBase):
                                 ana_step._kernel._copy_output_data = [ana_step._kernel._copy_output_data]
                             for i in range(0,len(ana_step._kernel._copy_output_data)):
                                 var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._copy_output_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip(),
+                                            'action': radical.pilot.COPY
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip()),
+                                            'action': radical.pilot.COPY
+                                        }
                                 data_out.append(temp)
 
                         if cud.output_staging is None:
@@ -548,10 +608,16 @@ class Plugin(PluginBase):
                                 ana_step._kernel._download_output_data = [ana_step._kernel._download_output_data]
                             for i in range(0,len(ana_step._kernel._download_output_data)):
                                 var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._download_output_data[i])
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()                        
-                                    }
+                                if len(var.split('>')) > 1:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': var.split('>')[1].strip()
+                                        }
+                                else:
+                                    temp = {
+                                            'source': var.split('>')[0].strip(),
+                                            'target': os.path.basename(var.split('>')[0].strip())
+                                        }
                                 data_out.append(temp)
 
                         if cud.output_staging is None:
