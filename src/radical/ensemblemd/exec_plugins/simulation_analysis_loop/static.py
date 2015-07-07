@@ -222,6 +222,9 @@ class Plugin(PluginBase):
                 else:
                     num_sim_kerns = 1
                 #print num_sim_kerns
+
+                all_sim_cus = []
+
                 for kern_step in range(0,num_sim_kerns):
 
                     s_units = []
@@ -420,6 +423,7 @@ class Plugin(PluginBase):
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
                     s_cus = resource._umgr.submit_units(s_units)
                     all_cus.extend(s_cus)
+                    all_sim_cus.extend(s_cus)
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
@@ -440,7 +444,7 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
        
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(s_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
                 for key, val in tinfo.iteritems():
                     step_timings['timings'][key] = val
 
@@ -461,6 +465,9 @@ class Plugin(PluginBase):
                 else:
                     num_ana_kerns = 1
                 #print num_ana_kerns
+
+                all_ana_cus = []
+
                 for kern_step in range(0,num_ana_kerns):
 
                     a_units = []
@@ -657,6 +664,7 @@ class Plugin(PluginBase):
                     self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
                     a_cus = resource._umgr.submit_units(a_units)
                     all_cus.extend(a_cus)
+                    all_ana_cus.extend(a_cus)
 
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
@@ -677,7 +685,7 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(a_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
 
                 for key, val in tinfo.iteritems():
                     step_timings['timings'][key] = val
