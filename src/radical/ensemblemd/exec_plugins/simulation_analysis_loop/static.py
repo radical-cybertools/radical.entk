@@ -149,6 +149,15 @@ class Plugin(PluginBase):
             # execute pre_loop
             #
             try:
+                ################################################################
+                # EXECUTE PRE-LOOP
+
+                step_timings = {
+                    "name": "pre_loop",
+                    "timings": {}
+                }
+                step_start_time_abs = datetime.datetime.now()
+
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
 
@@ -172,10 +181,21 @@ class Plugin(PluginBase):
                 resource._umgr.wait_units()
                 self.get_logger().info("Pre_loop completed.")
 
+                step_end_time_abs = datetime.datetime.now()
+
                 if unit.state != radical.pilot.DONE:
                     raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
-
+                pre_loop_cu = [unit]
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+
+                # Process CU information and append it to the dictionary
+                tinfo = extract_timing_info(pre_loop_cu, pattern_start_time, step_start_time_abs, step_end_time_abs)
+
+                for key, val in tinfo.iteritems():
+                    step_timings['timings'][key] = val
+
+                # Write the whole thing to the profiling dict
+                pattern._execution_profile.append(step_timings)
 
             except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
@@ -406,20 +426,19 @@ class Plugin(PluginBase):
                     resource._umgr.wait_units()
                     self.get_logger().info("Simulations in iteration {0}/ kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
 
-
                     failed_units = ""
                     for unit in s_cus:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+                step_end_time_abs = datetime.datetime.now()
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in s_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
-
-                step_end_time_abs = datetime.datetime.now()
-
+       
                 # Process CU information and append it to the dictionary
                 tinfo = extract_timing_info(s_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
                 for key, val in tinfo.iteritems():
@@ -649,12 +668,13 @@ class Plugin(PluginBase):
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
+                
+                step_end_time_abs = datetime.datetime.now()
+
                 i = 0
                 for cu in a_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
-
-                step_end_time_abs = datetime.datetime.now()
 
                 # Process CU information and append it to the dictionary
                 tinfo = extract_timing_info(a_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
