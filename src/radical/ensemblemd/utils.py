@@ -79,6 +79,11 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     if len(all_ex_stop) > 0:
         t_ex_L_abs = max(all_ex_stop)
 
+
+    #cases when CU does not reach PendingExecution Step
+    if t_id_L_abs is None:
+        t_id_L_abs = t_ex_E_abs
+
     # Determine the time 'origin' for relative timings
     if t_id_E_abs is not None:
         t_origin = t_id_E_abs
