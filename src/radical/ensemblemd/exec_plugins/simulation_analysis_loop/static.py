@@ -32,14 +32,6 @@ def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_w
 
     # Extract placeholder from path
 
-    #source placeholder
-    if path.startswith('$'):
-        placeholder = path.split('/')[0]
-
-    #dest placeholder
-    else:
-        placeholder = path.split('>')[1].strip().split('/')[0]
-
     if len(path.split('>'))==1:
         placeholder = path.split('/')[0]
     else:
@@ -481,17 +473,17 @@ class Plugin(PluginBase):
                     a_units = []
                     for a_instance in range(1, pattern._analysis_instances+1):
 
-                        if isinstance(pattern.analysis_step(iteration=iteration, instance=s_instance),list):
+                        if isinstance(pattern.analysis_step(iteration=iteration, instance=a_instance),list):
                             ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)[kern_step]
                         else:
-                            ana_step = pattern.analysis_step(iteration=iteration, instance=s_instance)
+                            ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
 
                         ana_step._bind_to_resource(resource._resource_key)
 
                         # Resolve all placeholders
-                        if ana_step.link_input_data is not None:
-                            for i in range(len(ana_step.link_input_data)):
-                                ana_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step.link_input_data[i])
+                        #if ana_step.link_input_data is not None:
+                        #    for i in range(len(ana_step.link_input_data)):
+                        #        ana_step.link_input_data[i] = resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step.link_input_data[i])
 
                         cud = radical.pilot.ComputeUnitDescription()
                         cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
