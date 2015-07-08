@@ -163,7 +163,7 @@ def dataframes_from_profile_dict(profile):
         end_abs   = entity['timings']['last_data_stagein_finished']['abs']
         #start_rel = entity['timings']['first_data_stagein_started']['rel']
         #end_rel   = entity['timings']['last_data_stagein_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
@@ -171,7 +171,7 @@ def dataframes_from_profile_dict(profile):
         end_abs   = entity['timings']['last_execution_finished']['abs']
         #start_rel = entity['timings']['first_execution_started']['rel']
         #end_rel   = entity['timings']['last_execution_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
@@ -179,7 +179,7 @@ def dataframes_from_profile_dict(profile):
         end_abs   = entity['timings']['last_data_stageout_finished']['abs']
         #start_rel = entity['timings']['first_data_stageout_started']['rel']
         #end_rel   = entity['timings']['last_data_stageout_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
+        #df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
