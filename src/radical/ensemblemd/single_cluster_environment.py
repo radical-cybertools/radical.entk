@@ -118,7 +118,7 @@ class SingleClusterEnvironment(ExecutionContext):
             if self._database_name is None:
                 self._session = radical.pilot.Session(database_url=self._database_url)
             else:
-            self._session = radical.pilot.Session(database_url=self._database_url,database_name=self._database_name)
+                self._session = radical.pilot.Session(database_url=self._database_url,database_name=self._database_name)
 
             if self._username is not None:
                 # Add an ssh identity to the session.
