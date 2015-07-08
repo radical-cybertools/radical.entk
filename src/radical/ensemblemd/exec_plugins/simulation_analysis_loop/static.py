@@ -40,6 +40,14 @@ def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_w
     else:
         placeholder = path.split('>')[1].strip().split('/')[0]
 
+    if len(path.split('>'))==1:
+        placeholder = path.split('/')[0]
+    else:
+        if path.split('>')[0].strip().startswith('$'):
+            placeholder = path.split('>')[0].strip().split('/')[0]
+        else:
+            placeholder = path.split('>')[1].strip().split('/')[0]
+
     # $PRE_LOOP
     if placeholder == "$PRE_LOOP":
         return path.replace(placeholder, working_dirs["pre_loop"])
