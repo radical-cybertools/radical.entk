@@ -96,6 +96,7 @@ class RandomSA(SimulationAnalysisLoop):
         """
         k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=reference.dat"]
+	k.upload_input_data = ['levenshtein.py']
         return k
 
     def simulation_step(self, iteration, instance):
@@ -127,7 +128,7 @@ class RandomSA(SimulationAnalysisLoop):
         output_filename = "analysis-{0}-{1}.dat".format(iteration, instance)
 
         k = Kernel(name="misc.levenshtein")
-        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$SIMULATION_ITERATION_{1}_INSTANCE_{2}/{0}".format(input_filename,iteration,instance)]
+        k.link_input_data      = ["$PRE_LOOP/reference.dat", "$SIMULATION_ITERATION_{1}_INSTANCE_{2}/{0}".format(input_filename,iteration,instance),"$PRE_LOOP/levenshtein.py"]
         k.arguments            = ["--inputfile1=reference.dat",
                                   "--inputfile2={0}".format(input_filename),
                                   "--outputfile={0}".format(output_filename)]
@@ -153,7 +154,8 @@ if __name__ == "__main__":
             walltime=30,
             username=None,
             project=None,
-	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242'
+	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+	    database_name = 'myexps'
         )
 
         # Allocate the resources.

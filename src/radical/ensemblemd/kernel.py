@@ -60,40 +60,8 @@ class Kernel(object):
 
                 pre_exec.append(cmd)
 
-        # Translate copy directives into cp command(s)
-        if self._kernel._copy_input_data is not None:
-            for copy in self._kernel._copy_input_data:
-
-                # see if a rename is requested
-                dl = copy.split(">")
-                if len(dl) == 1:
-                    # no rename
-                     cmd = "cp -r {0} .".format(dl[0].strip())
-                elif len(dl) == 2:
-                     cmd = "cp -r {0} ./{1}".format(dl[0].strip(), dl[1].strip())
-                else:
-                    # error
-                    raise Exception("Invalid transfer directive %s" % copy)
-
-                pre_exec.append(cmd)
-
-        # Translate link directives into ln command(s)
-        if self._kernel._link_input_data is not None:
-            for link in self._kernel._link_input_data:
-
-                # see if a rename is requested
-                dl = link.split(">")
-                if len(dl) == 1:
-                    # no rename
-                     cmd = "ln -s {0}".format(dl[0].strip())
-                elif len(dl) == 2:
-                     cmd = "ln -s {0} {1}".format(dl[0].strip(), dl[1].strip())
-                else:
-                    # error
-                    raise Exception("Invalid transfer directive %s" % link)
-
-                pre_exec.append(cmd)
-
+        # Removed other directives since you are using RP directives in the execution plugin
+        
         # Add existing pre-exec.
         if self._kernel._pre_exec is not None:
             pre_exec.extend(self._kernel._pre_exec)
