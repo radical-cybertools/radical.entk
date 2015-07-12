@@ -82,7 +82,7 @@ if __name__ == '__main__':
             ndxfile_opts = ''
 
         write_script(args.grofile_name,args.output_grofile_name,grompp_opts,ndxfile_opts,args.mdpfile_name,args.topfile_name,tprfile_name,size,mdrun_opts,trrfile_name,edrfile_name)
-        os.system('. run.sh')
+        os.system('sh run.sh')
 
     else:
         pass
