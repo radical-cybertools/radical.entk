@@ -33,7 +33,7 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
             "pre_exec" : ["module load TACC","module load intel/13.0.2.146","module load gromacs","module load python"],
@@ -41,7 +41,7 @@ _KERNEL_INFO = {
             "uses_mpi"   : True
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],

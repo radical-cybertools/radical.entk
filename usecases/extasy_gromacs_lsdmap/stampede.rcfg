@@ -1,4 +1,4 @@
-REMOTE_HOST = 'stampede.tacc.utexas.edu'  # Label/Name of the Remote Machine
+REMOTE_HOST = 'xsede.stampede'  # Label/Name of the Remote Machine
 UNAME       = 'vivek91'                  # Username on the Remote Machine
 ALLOCATION  = 'TG-MCB090174'              # Allocation to be charged
 WALLTIME    = 120                          # Walltime to be requested for the pilot

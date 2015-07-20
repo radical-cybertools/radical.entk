@@ -33,7 +33,7 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
             "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
@@ -41,7 +41,7 @@ _KERNEL_INFO = {
             "uses_mpi"   : True
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
             "pre_exec" : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],

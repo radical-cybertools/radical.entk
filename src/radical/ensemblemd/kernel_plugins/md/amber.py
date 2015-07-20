@@ -84,13 +84,6 @@ _KERNEL_INFO = {
             "executable"    : "/bin/bash",
             "uses_mpi"      : True
         },
-        "stampede.tacc.utexas.edu":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load TACC","module load amber"],
-            "executable" : ["pmemd.MPI"],
-            "uses_mpi"   : True
-        },
         "xsede.stampede":
         {
                 "environment" : {},
@@ -98,7 +91,7 @@ _KERNEL_INFO = {
                 "executable"  : ["/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/sander.MPI"],
                 "uses_mpi"    : True
         },
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load amber"],
@@ -132,7 +125,7 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. 
         """
         
-        if (pattern_name == None):        
+        if (pattern_name == 'SimulationAnalysisLoop'):        
 
             if resource_key not in _KERNEL_INFO["machine_configs"]:
                 if "*" in _KERNEL_INFO["machine_configs"]:
@@ -167,7 +160,7 @@ class Kernel(KernelBase):
                             '-c','md%s.crd'%self.get_arg("--cycle="),
                         ]
        
-            self._executable  = cfg['executable']
+            self._executable  = "pmemd.MPI"
             self._arguments   = arguments
             self._environment = cfg["environment"]
             self._uses_mpi    = cfg["uses_mpi"]

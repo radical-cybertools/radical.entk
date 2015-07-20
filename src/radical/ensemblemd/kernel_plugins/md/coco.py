@@ -59,7 +59,7 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
             "pre_exec" : ["module load intel/13.0.2.146","module load python/2.7.9","module load mpi4py","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco-0.6_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco-0.6_installation/bin:$PATH"],
@@ -67,7 +67,7 @@ _KERNEL_INFO = {
             "uses_mpi"   : True
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
             "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],

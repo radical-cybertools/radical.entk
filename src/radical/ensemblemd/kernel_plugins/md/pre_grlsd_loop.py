@@ -37,13 +37,13 @@ _KERNEL_INFO = {
             "executable"    : ".",
             "uses_mpi"      : False
         },
-        "stampede.tacc.utexas.edu": {
+        "xsede.stampede": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load python"],
             "executable"    : "python",
             "uses_mpi"      : False
         },
-        "archer.ac.uk": {
+        "epsrc.archer": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load python"],
             "executable"    : "python",
