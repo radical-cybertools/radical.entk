@@ -95,7 +95,7 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load amber"],
-            "executable" : ["/bin/bash"],
+            "executable" : ["pmemd.MPI"],
             "uses_mpi"   : True
         }
     }
@@ -125,7 +125,7 @@ class Kernel(KernelBase):
         """(PRIVATE) Implements parent class method. 
         """
         
-        if (pattern_name == 'SimulationAnalysisLoop'):        
+        if (pattern_name == None):        
 
             if resource_key not in _KERNEL_INFO["machine_configs"]:
                 if "*" in _KERNEL_INFO["machine_configs"]:
