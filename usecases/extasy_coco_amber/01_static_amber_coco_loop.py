@@ -230,9 +230,9 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         k2.arguments = ["--numofsims={0}".format(Kconfig.num_CUs),
                         "--cycle={0}".format(iteration)]
 
-        k2.link_input_data = []
+        k2.link_input_data = list()
         for i in range(0,Kconfig.num_CUs):
-            k2.link_input_data = k2.link_input_data + ['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)]
+            k2.link_input_data.append(['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)])
 
         return [k1,k2]
 
