@@ -12,6 +12,7 @@ Available Kernels
    kernels/_generated_kernel_md.pre_coam_loop.rst
    kernels/_generated_kernel_md.amber.rst
    kernels/_generated_kernel_md.coco.rst
+   kernels/_generated_kernel_md.tleap.rst
    kernels/_generated_kernel_md.mmpbsa.rst
    kernels/_generated_kernel_md.namd.rst
    kernels/_generated_kernel_md.re_exchange.rst
