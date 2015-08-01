@@ -17,7 +17,6 @@ from radical.ensemblemd.execution_context import ExecutionContext
 
 CONTEXT_NAME = "Static"
 
-
 #-------------------------------------------------------------------------------
 #
 class SingleClusterEnvironment(ExecutionContext):
@@ -27,7 +26,16 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, queue=None, username=None, project=None, cleanup=False, database_url=None,database_name=None):
+    def __init__(self, 
+                 resource, 
+                 cores, 
+                 walltime, 
+                 queue=None, 
+                 username=None, 
+                 project=None, 
+                 cleanup=False, 
+                 database_url=None, 
+                 database_name=None):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
@@ -46,7 +54,8 @@ class SingleClusterEnvironment(ExecutionContext):
         self._database_url = database_url
         self._database_name = database_name
 
-        self._logger  = rul.getLogger ('radical.enmd', 'SingleClusterEnvironment')
+        self._logger  = rul.getLogger ('radical.enmd', 
+                                       'SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 
@@ -78,8 +87,8 @@ class SingleClusterEnvironment(ExecutionContext):
         #-----------------------------------------------------------------------
         #
         def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Resource {0} state has changed to {1}".format(
-                self._resource_key, state))
+            self.get_logger().info("Resource {0} state has changed to {1}"
+                .format(self._resource_key, state))
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))

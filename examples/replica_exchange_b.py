@@ -194,8 +194,8 @@ class RePattern(ReplicaExchange):
         parameters
         """
 
-        file_name = self.inp_basename + "_" + 
-                    str(replica.id) + "_" + 
+        file_name = self.inp_basename + "_" + \
+                    str(replica.id) + "_" + \
                     str(replica.cycle) + ".md"
         fo = open(file_name, "wb")
         for i in range(1,500):
@@ -213,17 +213,17 @@ class RePattern(ReplicaExchange):
         replica - object representing a given replica and it's associated \
         parameters
         """
-        input_name = self.inp_basename + "_" + 
-                     str(replica.id) + "_" + 
+        input_name = self.inp_basename + "_" + \
+                     str(replica.id) + "_" + \
                      str(replica.cycle) + ".md"
-        output_name = self.inp_basename + "_" + 
-                      str(replica.id) + "_" + 
+        output_name = self.inp_basename + "_" + \
+                      str(replica.id) + "_" + \
                       str(replica.cycle) + ".out"
 
         k = Kernel(name="misc.ccount")
-        k.arguments = ["--inputfile=" + 
-                       input_name + " " + 
-                       self.sh_file, "--outputfile=" + 
+        k.arguments = ["--inputfile=" + \
+                       input_name + " " + \
+                       self.sh_file, "--outputfile=" + \
                        output_name]
         # no need to specify shared data here
         # everything in shared_files list will be staged in
@@ -339,7 +339,8 @@ if __name__ == "__main__":
         cluster = SingleClusterEnvironment(
             resource="localhost",
             cores=1,
-            walltime=15
+            walltime=15,
+            database_name='enmd-tests'
         )
 
         # Allocate the resources.
@@ -363,15 +364,15 @@ if __name__ == "__main__":
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
         print "RE simulation finished!"
         print "Simulation performed {0} cycles for {1} replicas. \
-               In your working directory you should"
+        In your working directory you should"\
                .format(re_pattern.nr_cycles, re_pattern.replicas)
         print "have {0} md_input_x_y.md files and {0} md_input_x_y.out \
-               files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}."
+        files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}."\
                .format( (re_pattern.nr_cycles*re_pattern.replicas), 
                         (re_pattern.replicas-1), 
                         (re_pattern.nr_cycles-1))
         print ".md file is replica input file and .out is output file \
-               providing number of occurrences of each character."
+        providing number of occurrences of each character."
 
         # execution profile printing
         print "Profiling info: "

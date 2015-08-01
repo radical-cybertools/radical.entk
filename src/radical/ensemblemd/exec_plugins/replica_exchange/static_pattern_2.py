@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """A static execution plugin RE pattern 2
-For this pattern exchange is synchronous - all replicas must finish MD run before
-an exchange can take place and all replicas must participate. Exchange is performed
-on compute
+For this pattern exchange is synchronous - all replicas must finish MD run 
+before an exchange can take place and all replicas must participate. Exchange 
+is performed on compute
 """
 
 __author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
@@ -17,7 +17,6 @@ import random
 import datetime
 import radical.pilot
 from radical.ensemblemd.utils import extract_timing_info
-
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
@@ -54,7 +53,8 @@ class Plugin(PluginBase):
             try:
                 cycles = pattern.nr_cycles+1
             except:
-                self.get_logger().exception("Number of cycles (nr_cycles) must be defined for pattern ReplicaExchange!")
+                self.get_logger().exception("Number of cycles (nr_cycles) \
+                    must be defined for pattern ReplicaExchange!")
                 raise
 
             do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
@@ -130,14 +130,27 @@ class Plugin(PluginBase):
                             copy_out.append(i_out)
 
                     cu                = radical.pilot.ComputeUnitDescription()
-                    cu.name           = "md ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
+                    cu.name           = "md ;{cycle} ;{replica}"\
+                                        .format(cycle=c, replica=r.id)
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
                     cu.arguments      = r_kernel.arguments
                     cu.mpi            = r_kernel.uses_mpi
                     cu.cores          = r_kernel.cores
-                    cu.input_staging  = sd_shared_list + r_kernel._cu_def_input_data
-                    cu.output_staging = copy_out + r_kernel._cu_def_output_data
+
+                    in_list           = []
+                    if r_kernel._cu_def_input_data:
+                        in_list = in_list + r_kernel._cu_def_input_data
+                    if sd_shared_list:
+                        in_list = in_list + sd_shared_list
+                    cu.input_staging  = in_list
+
+                    out_list = []
+                    if r_kernel._cu_def_output_data:
+                        out_list = out_list + r_kernel._cu_def_output_data
+                    if copy_out:
+                        out_list = out_list + copy_out
+                    cu.output_staging = out_list
 
                     sub_replica = resource._umgr.submit_units(cu)
                     md_units.append(sub_replica)                    
@@ -179,7 +192,7 @@ class Plugin(PluginBase):
                     pattern._execution_profile.append(step_timings)
                 #-----------------------------------------------------------
 
-                if (c < cycles):
+                if (c <= cycles):
                     if do_profile == '1':
                         step_timings = {
                             "name": "ex_run_{0}".format(c),
@@ -246,13 +259,14 @@ class Plugin(PluginBase):
                             "timings": {}
                         }
                         step_start_time_abs = datetime.datetime.now()
-                    #---------------------------------------------------------------
+                    #-----------------------------------------------------------
+                    matrix_columns = pattern.build_swap_matrix(replicas)
 
-                    matrix_columns = []
-                    for r in ex_units:
-                        d = str(r.stdout)
-                        data = d.split()
-                        matrix_columns.append(data)
+                    #matrix_columns = []
+                    #for r in ex_units:
+                    #    d = str(r.stdout)
+                    #    data = d.split()
+                    #    matrix_columns.append(data)
 
                     # writing swap matrix out
                     sw_file = "matrix_columns_" + str(c)
@@ -268,11 +282,12 @@ class Plugin(PluginBase):
 
                     # computing swap matrix
                     self.get_logger().info("Cycle %d: Composing swap matrix" % (c) )
-                    swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
+                    # why???
+                    #swap_matrix = pattern.get_swap_matrix(replicas, matrix_columns)
 
                     # this is actual exchange
                     for r_i in replicas:
-                        r_j = pattern.exchange(r_i, replicas, swap_matrix)
+                        r_j = pattern.exchange(r_i, replicas, matrix_columns)
                         if (r_j != r_i):
                             self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
                             # swap parameters

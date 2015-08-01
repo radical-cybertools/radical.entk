@@ -88,7 +88,7 @@ from radical.ensemblemd import SingleClusterEnvironment
 from radical.ensemblemd.patterns.replica_exchange import Replica
 from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 
-#------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #
 
 class ReplicaP(Replica):
@@ -130,7 +130,7 @@ class RePattern(ReplicaExchange):
 
         super(RePattern, self).__init__()
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values
@@ -138,7 +138,8 @@ class RePattern(ReplicaExchange):
         try:
             self.replicas+1
         except:
-            print "Ensemble MD Toolkit Error: Number of replicas must be defined for pattern ReplicaExchange!"
+            print "Ensemble MD Toolkit Error: Number of replicas must be \
+            defined for pattern ReplicaExchange!"
             raise
 
 
@@ -150,16 +151,19 @@ class RePattern(ReplicaExchange):
 
         return replicas
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
         """Generates dummy input file
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's associated \
+        parameters
         """
 
-        file_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
+        file_name = self.inp_basename + "_" + \
+                    str(replica.id) + "_" + \
+                    str(replica.cycle) + ".md"
 
         fo = open(file_name, "wb")
         for i in range(1,500):
@@ -168,19 +172,25 @@ class RePattern(ReplicaExchange):
                 fo.write(str("\n"));
         fo.close()
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
         """Specifies input and output files and passes them to kernel
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's associated \
+        parameters
         """
-        input_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".md"
-        output_name = self.inp_basename + "_" + str(replica.id) + "_" + str(replica.cycle) + ".out"
+        input_name = self.inp_basename + "_" + \
+                     str(replica.id) + "_" + \
+                     str(replica.cycle) + ".md"
+        output_name = self.inp_basename + "_" + \
+                      str(replica.id) + "_" + \
+                      str(replica.cycle) + ".out"
 
         k = Kernel(name="misc.ccount")
-        k.arguments            = ["--inputfile=" + input_name, "--outputfile=" + output_name]
+        k.arguments            = ["--inputfile=" + input_name, 
+                                  "--outputfile=" + output_name]
         k.upload_input_data      = input_name
         k.download_output_data = output_name
         k.cores = 1
@@ -188,32 +198,36 @@ class RePattern(ReplicaExchange):
         replica.cycle = replica.cycle + 1
         return k
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """This is not used in this example, but implementation is still required
+        """This is not used in this example, but implementation is still \
+        required
 
         Arguments:
-        replica - object representing a given replica and it's associated parameters
+        replica - object representing a given replica and it's associated \
+        parameters
         """
         pass
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
-        """Given replica r_i returns replica r_j for r_i to perform an exchange with
+        """Given replica r_i returns replica r_j for r_i to perform an \
+        exchange with
 
         Arguments:
         replicas - a list of replica objects
-        swap_matrix - matrix of dimension-less energies, where each column is a replica
-        and each row is a state
+        swap_matrix - matrix of dimension-less energies, where each column is \
+        a replica and each row is a state
         """
         return random.choice(replicas)
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas):
-        """Creates and populates swap matrix used to determine exchange probabilities
+        """Creates and populates swap matrix used to determine exchange \
+        probabilities
 
         Arguments:
         replicas - a list of replica objects
@@ -224,7 +238,7 @@ class RePattern(ReplicaExchange):
 
         return swap_matrix
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
         """Performs an exchange of parameters
@@ -249,6 +263,7 @@ if __name__ == "__main__":
             resource="localhost",
             cores=1,
             walltime=15,
+            database_name='enmd-tests'
         )
 
         # Allocate the resources.
