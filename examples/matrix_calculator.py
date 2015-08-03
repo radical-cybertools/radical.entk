@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
+__author__    = "Antons Treikalis <antons.treikalis@gmail.com>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -8,7 +8,7 @@ import os
 import sys
 import random
 
-#-----------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 def get_historical_data(history_name):
     """
@@ -37,7 +37,7 @@ def get_historical_data(history_name):
  
     return float(value) * random.uniform(1.1, 3.3)
 
-#-----------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     """This module calculates one swap matrix column for replica 
@@ -59,6 +59,17 @@ if __name__ == '__main__':
         except:
              pass 
 
-    for item in parameters:
-        print item,
+    #---------------------------------------------------------------------------
+    # writing to file
+    outfile = "matrix_column_{cycle}_{replica}.dat"\
+    .format(cycle=replica_cycle, replica=replica_id )
+    with open(outfile, 'w+') as f:
+        row_str = ""
+        for item in parameters:        
+            if len(row_str) != 0:
+                row_str = row_str + " " + str(item)
+            else:
+                row_str = str(item)   
+        f.write(row_str)    
+    f.close()
   

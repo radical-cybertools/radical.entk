@@ -190,7 +190,7 @@ class RePattern(ReplicaExchange):
         """Generates dummy input file
 
         Arguments:
-        replica - object representing a given replica and it's associated \
+        replica - object representing a given replica and it's associated
         parameters
         """
 
@@ -210,7 +210,7 @@ class RePattern(ReplicaExchange):
         """Specifies input and output files and passes them to kernel
 
         Arguments:
-        replica - object representing a given replica and it's associated \
+        replica - object representing a given replica and it's associated
         parameters
         """
         input_name = self.inp_basename + "_" + \
@@ -236,16 +236,17 @@ class RePattern(ReplicaExchange):
     # --------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """Launches matrix_calculator.py script on target resource in order to \
+        """Launches matrix_calculator.py script on target resource in order to
         populate columns of swap matrix
 
         Arguments:
-        replica - object representing a given replica and it's associated \
+        replica - object representing a given replica and it's associated
         parameters
         """
 
-        # Note: no files are transferred back from resource
-        # Matrix columns are obtained through CU.stdout
+        matrix_col = "matrix_column_{cycle}_{replica}.dat"\
+                     .format(cycle=replica.cycle-1, replica=replica.id )
+
         k = Kernel(name="md.re_exchange")
         k.arguments = ["--calculator=matrix_calculator.py",
                        "--replica_id=" + str(replica.id),
@@ -253,18 +254,19 @@ class RePattern(ReplicaExchange):
                        "--replicas=" + str(self.replicas),
                        "--replica_basename=" + self.inp_basename]
         k.upload_input_data      = "matrix_calculator.py"
+        k.download_output_data = matrix_col
 
         return k
 
     #---------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
-        """Given replica r_i returns replica r_i needs to perform an exchange \
+        """Given replica r_i returns replica r_i needs to perform an exchange
         with
 
         Arguments:
         replicas - a list of replica objects
-        swap_matrix - matrix of dimension-less energies, where each column is \
+        swap_matrix - matrix of dimension-less energies, where each column is
         a replica and each row is a state
         """
         return random.choice(replicas)
@@ -272,12 +274,12 @@ class RePattern(ReplicaExchange):
     #---------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas, matrix_columns):
-        """Creates and populates swap matrix which is used to determine \
+        """Creates and populates swap matrix which is used to determine
         exchange probabilities
 
         Arguments:
         replicas - a list of replica objects
-        matrix_columns - matrix of energy parameters obtained during the \
+        matrix_columns - matrix of energy parameters obtained during the
         exchange step
         """
         dim = len(replicas)
@@ -327,6 +329,48 @@ class RePattern(ReplicaExchange):
         param_i = replica_i.parameter
         replica_i.parameter = replica_j.parameter
         replica_j.parameter = param_i
+
+    #---------------------------------------------------------------------------
+    #
+    def build_swap_matrix(self, replicas):
+        """Creates a swap matrix from matrix_column_x.dat files. 
+        matrix_column_x.dat - is populated on targer resource and then 
+        transferred back. This file is created for each replica and has data 
+        for one column of swap matrix. In addition to that, this file holds 
+        path to pilot compute unit of the previous run, where reside NAMD output
+        files for a given replica. 
+
+        Arguments:
+        replicas - list of Replica objects
+
+        Returns:
+        swap_matrix - 2D list of lists of dimension-less energies, where each 
+        column is a replica and each row is a state
+        """
+
+        base_name = "matrix_column"
+        size = len(replicas)
+
+        # init matrix
+        swap_matrix = [[ 0. for j in range(size)]
+             for i in range(size)]
+
+        for r in replicas:
+            column_file = base_name + "_" + \
+                          str(r.cycle-1) + "_" + \
+                          str(r.id) +  ".dat"       
+            try:
+                f = open(column_file)
+                lines = f.readlines()
+                f.close()
+                data = lines[0].split()
+                # populating one column at a time
+                for i in range(size):
+                    swap_matrix[i][r.id] = float(data[i])
+            except:
+                raise
+
+        return swap_matrix
 
 # ------------------------------------------------------------------------------
 #
