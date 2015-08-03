@@ -23,7 +23,7 @@ from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 # ------------------------------------------------------------------------------
 #
 _PLUGIN_INFO = {
-    "name":         "replica_exchange.static_pattern_2",
+    "name":         "replica_exchange.static_pattern_3",
     "pattern":      "ReplicaExchange",
     "context_type": "Static"
 }
@@ -106,7 +106,7 @@ class Plugin(PluginBase):
 
                     #self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c), r.id) )
                     #pattern.build_input_file(r)
-                    
+
                     self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c), r.id) )
                     r_kernel = pattern.prepare_replica_for_md(r)
 
@@ -133,6 +133,7 @@ class Plugin(PluginBase):
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.name           = "md ;{cycle} ;{replica}"\
                                         .format(cycle=c, replica=r.id)
+
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
                     cu.arguments      = r_kernel.arguments

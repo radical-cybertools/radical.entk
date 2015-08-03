@@ -38,6 +38,8 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    """
+    ANTONS: COMMENTED OUT FOR NOW, HAVE NO IDEA WHAT THIS IS SUPPOSED TO DO!
     @property
     def _cu_def_pre_exec(self):
 
@@ -67,6 +69,23 @@ class Kernel(object):
             pre_exec.extend(self._kernel._pre_exec)
 
         return pre_exec
+    """
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def _cu_def_pre_exec(self):
+        return self._kernel._pre_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def pre_exec(self):
+        return self._kernel._pre_exec
+
+    @pre_exec.setter
+    def pre_exec(self, commands):
+        self._kernel._pre_exec = commands
 
     #---------------------------------------------------------------------------
     #
@@ -79,6 +98,16 @@ class Kernel(object):
     @property
     def _cu_def_post_exec(self):
         return self._kernel._post_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def post_exec(self):
+        return self._kernel._post_exec
+
+    @post_exec.setter
+    def post_exec(self, commands):
+        self._kernel._post_exec = commands
 
     #---------------------------------------------------------------------------
     #
@@ -110,11 +139,16 @@ class Kernel(object):
     def uses_mpi(self):
         return self._kernel._uses_mpi
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def cores(self):
-        return self._kernel._cores
+    @uses_mpi.setter
+    def uses_mpi(self, uses_mpi):
+
+        if type(uses_mpi) != bool:
+            raise TypeError(
+                expected_type=bool,
+                actual_type=type(uses_mpi))
+
+        # Call the validate_args() method of the plug-in.
+        self._kernel._uses_mpi = uses_mpi
 
     #---------------------------------------------------------------------------
     #
@@ -353,7 +387,8 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     def get_instance_type(self):
-        """Returns the instance_type of the kernel. It can be 'single' or 'multiple'
+        """Returns the instance_type of the kernel. It can be 'single' or
+        'multiple'
         """
         return self._kernel.instance_type
 

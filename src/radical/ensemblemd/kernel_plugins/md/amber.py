@@ -82,14 +82,14 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : "/bin/bash",
-            "uses_mpi"      : True
+            "uses_mpi"      : False
         },
         "xsede.stampede":
         {
                 "environment" : {},
                 "pre_exec"    : ["module load TACC", "module load amber/12.0"],
-                "executable"  : ["/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/sander.MPI"],
-                "uses_mpi"    : True
+                "executable"  : ["/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/sander"],
+                "uses_mpi"    : False
         },
         "epsrc.archer":
         {
@@ -97,7 +97,21 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load packages-archer","module load amber"],
             "executable" : ["pmemd.MPI"],
             "uses_mpi"   : True
-        }
+        },
+        "xsede.gordon":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load python", "module load amber"],
+                "executable"  : ["/opt/amber/bin/sander"],
+                "uses_mpi"    : False
+        },
+        "localhost":
+        {
+                "environment" : {},
+                "pre_exec"    : [],
+                "executable"  : ["$AMBERHOME/bin/sander"],
+                "uses_mpi"    : False
+        },
     }
 }
 
@@ -167,7 +181,7 @@ class Kernel(KernelBase):
             self._pre_exec    = cfg["pre_exec"] 
             self._post_exec   = None
         
-        #----------------------------------------
+        #-----------------------------------------------------------------------
         # below only for RE
         elif (pattern_name == 'ReplicaExchange'):
         # if (pattern_name == None):
@@ -178,11 +192,17 @@ class Kernel(KernelBase):
                     # Fall-back to generic resource key
                     resource_key = "*"
                 else:
-                    raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+                    raise NoKernelConfigurationError(kernel_name=KERNEL_INFO["name"], \
+                                                     resource_key=resource_key)
 
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-            self._executable  = cfg["executable"]
+            if self._uses_mpi:
+                self._executable = cfg["executable"] + ".MPI"
+            else:
+                self._executable = cfg["executable"]
+                # by default MPI is false
+                self._uses_mpi = cfg["uses_mpi"]
             self._arguments   = ["-O ",
                                  "-i ", self.get_arg("--mdinfile="),
                                  "-o ", self.get_arg("--outfile="),
@@ -193,6 +213,9 @@ class Kernel(KernelBase):
                                  "-inf ", self.get_arg("--nwinfo=")]
                                                                                               
             self._environment = cfg["environment"]
-            self._uses_mpi    = cfg["uses_mpi"]
-            self._pre_exec    = cfg["pre_exec"] 
+
+            if not self._pre_exec:
+                self._pre_exec = cfg["pre_exec"]
+            else:
+                self._pre_exec = self._pre_exec + cfg["pre_exec"] 
       
