@@ -104,8 +104,9 @@ class Plugin(PluginBase):
                 md_units = []
                 for r in replicas:
 
-                    self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c), r.id) )
-                    pattern.build_input_file(r)
+                    #self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c), r.id) )
+                    #pattern.build_input_file(r)
+                    
                     self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c), r.id) )
                     r_kernel = pattern.prepare_replica_for_md(r)
 
