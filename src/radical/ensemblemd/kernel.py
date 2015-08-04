@@ -90,6 +90,16 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
+    def subname(self):
+        return self._kernel._subname
+
+    @subname.setter
+    def subname(self, name):
+        self._kernel._subname = name
+
+    #---------------------------------------------------------------------------
+    #
+    @property
     def name(self):
         return self._kernel.get_name()
 
@@ -252,37 +262,6 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
-    def copy_input_data(self):
-        """Instructs the kernel to copy one or more files or directories from
-           the execution host's filesystem into the kernel's execution
-           directory.
-
-           Example::
-
-                k = Kernel(name="misc.ccount")
-                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
-                k.copy_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
-
-        """
-        return self._kernel._copy_input_data
-
-    @copy_input_data.setter
-    def copy_input_data(self, data_directives):
-
-        if type(data_directives) != list:
-            data_directives = [data_directives]
-
-        for dd in data_directives:
-            if type(dd) != str:
-                raise TypeError(
-                    expected_type=str,
-                    actual_type=type(dd))
-
-        self._kernel._copy_input_data = data_directives
-
-    #---------------------------------------------------------------------------
-    #
-    @property
     def link_input_data(self):
         """Instructs the kernel to create a link to one or more files or
            directories on the execution host's filesystem in the kernel's
@@ -338,6 +317,38 @@ class Kernel(object):
                     actual_type=type(dd))
 
         self._kernel._download_output_data = data_directives
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def copy_input_data(self):
+        """Instructs the kernel to copy one or more files or directories from
+           the execution host's filesystem into the kernel's execution
+           directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.copy_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
+
+        """
+        return self._kernel._copy_input_data
+
+    @copy_input_data.setter
+    def copy_input_data(self, data_directives):
+
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            dd = str(dd)
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str,
+                    actual_type=type(dd))
+
+        self._kernel._copy_input_data = data_directives
 
     #---------------------------------------------------------------------------
     #

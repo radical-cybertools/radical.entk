@@ -93,6 +93,11 @@ class Plugin(PluginBase):
 
             replicas = pattern.get_replicas()
 
+            #-------------------------------------------------------------------
+            # GL = 0: submit global calculator before
+            # GL = 1: submit global calculator after
+            GL = 0
+
             for c in range(1, cycles):
                 if do_profile == '1':
                     step_timings = {
@@ -117,10 +122,10 @@ class Plugin(PluginBase):
 
                     # processing data directives
                     # need means to distinguish between copy and link
+                    #-----------------------------------------------------------
                     copy_out = []
                     
                     items_out = r_kernel._kernel._copy_output_data
-                    # copy_output_data is not mandatory
                     if items_out:                    
                         for item in items_out:
                             i_out = {
@@ -129,6 +134,20 @@ class Plugin(PluginBase):
                                 'action': radical.pilot.COPY
                             }
                             copy_out.append(i_out)
+                    #-----------------------------------------------------------
+                    copy_in = []
+                    
+                    items_in = r_kernel._kernel._copy_input_data
+                    if items_in:                    
+                        for item in items_in:
+                            i_in = {
+                                'source': 'staging:///%s' % item,
+                                'target': item,
+                                'action': radical.pilot.COPY
+                            }
+                            copy_in.append(i_in)
+                            
+                    #-----------------------------------------------------------
 
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.name           = "md ;{cycle} ;{replica}"\
@@ -139,20 +158,21 @@ class Plugin(PluginBase):
                     cu.arguments      = r_kernel.arguments
                     cu.mpi            = r_kernel.uses_mpi
                     cu.cores          = r_kernel.cores
-
-                    in_list           = []
+                    #-----------------------------------------------------------
+                    in_list = []
                     if r_kernel._cu_def_input_data:
                         in_list = in_list + r_kernel._cu_def_input_data
-                    if sd_shared_list:
-                        in_list = in_list + sd_shared_list
+                    if copy_in:
+                        in_list = in_list + copy_in
                     cu.input_staging  = in_list
-
+                    #-----------------------------------------------------------
                     out_list = []
                     if r_kernel._cu_def_output_data:
                         out_list = out_list + r_kernel._cu_def_output_data
                     if copy_out:
                         out_list = out_list + copy_out
                     cu.output_staging = out_list
+                    #-----------------------------------------------------------
 
                     sub_replica = resource._umgr.submit_units(cu)
                     md_units.append(sub_replica)                    
@@ -192,9 +212,67 @@ class Plugin(PluginBase):
 
                     # Write the whole thing to the profiling dict
                     pattern._execution_profile.append(step_timings)
-                #-----------------------------------------------------------
+                #---------------------------------------------------------------
 
                 if (c <= cycles):
+                    #-----------------------------------------------------------
+                    # global calc
+                    #-----------------------------------------------------------
+              
+                    gl_ex_kernel = pattern.prepare_global_ex_calc(GL, c, replicas)
+                    gl_ex_kernel._bind_to_resource(resource._resource_key)
+
+                    cu                = radical.pilot.ComputeUnitDescription()
+
+                    #-----------------------------------------------------------
+                    copy_out = []
+                    
+                    items_out = gl_ex_kernel._kernel._copy_output_data
+                    if items_out:                    
+                        for item in items_out:
+                            i_out = {
+                                'source': item,
+                                'target': 'staging:///%s' % item,
+                                'action': radical.pilot.COPY
+                            }
+                            copy_out.append(i_out)
+                    #-----------------------------------------------------------
+                    copy_in = []
+                    
+                    items_in = gl_ex_kernel._kernel._copy_input_data
+                    if items_in:                    
+                        for item in items_in:
+                            i_in = {
+                                'source': 'staging:///%s' % item,
+                                'target': item,
+                                'action': radical.pilot.COPY
+                            }
+                            copy_in.append(i_in)
+                    #-----------------------------------------------------------
+                    in_list = []
+                    if gl_ex_kernel._cu_def_input_data:
+                        in_list = in_list + gl_ex_kernel._cu_def_input_data
+                    if copy_in:
+                        in_list = in_list + copy_in
+                    cu.input_staging  = in_list
+                    #-----------------------------------------------------------
+                    out_list = []
+                    if gl_ex_kernel._cu_def_output_data:
+                        out_list = out_list + gl_ex_kernel._cu_def_output_data
+                    if copy_out:
+                        out_list = out_list + copy_out
+                    cu.output_staging = out_list
+                    #-----------------------------------------------------------
+                    cu.pre_exec       = gl_ex_kernel._cu_def_pre_exec
+                    cu.executable     = gl_ex_kernel._cu_def_executable
+                    cu.arguments      = gl_ex_kernel.arguments
+                    cu.mpi            = gl_ex_kernel.uses_mpi
+                    cu.cores          = gl_ex_kernel.cores
+
+                    sub_replica = resource._umgr.submit_units(cu)
+
+                    #-----------------------------------------------------------
+
                     if do_profile == '1':
                         step_timings = {
                             "name": "ex_run_{0}".format(c),
@@ -203,21 +281,60 @@ class Plugin(PluginBase):
                         step_start_time_abs = datetime.datetime.now()
 
                     ex_units = []
-
                     for r in replicas:
                         self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c), r.id) )
+
                         ex_kernel = pattern.prepare_replica_for_exchange(r)
                         ex_kernel._bind_to_resource(resource._resource_key)
                         
                         cu                = radical.pilot.ComputeUnitDescription()
+
+                        #-------------------------------------------------------
+                        copy_out = []
+                    
+                        items_out = ex_kernel._kernel._copy_output_data
+                        if items_out:                    
+                            for item in items_out:
+                                i_out = {
+                                    'source': item,
+                                    'target': 'staging:///%s' % item,
+                                    'action': radical.pilot.COPY
+                                }
+                                copy_out.append(i_out)
+                        #-------------------------------------------------------
+                        copy_in = []
+                    
+                        items_in = ex_kernel._kernel._copy_input_data
+                        if items_in:                    
+                            for item in items_in:
+                                i_in = {
+                                    'source': 'staging:///%s' % item,
+                                    'target': item,
+                                    'action': radical.pilot.COPY
+                                }
+                                copy_in.append(i_in)
+                        #-------------------------------------------------------
+                        in_list = []
+                        if ex_kernel._cu_def_input_data:
+                            in_list = in_list + ex_kernel._cu_def_input_data
+                        if copy_in:
+                            in_list = in_list + copy_in
+                        cu.input_staging  = in_list
+                        #-------------------------------------------------------
+                        out_list = []
+                        if ex_kernel._cu_def_output_data:
+                            out_list = out_list + ex_kernel._cu_def_output_data
+                        if copy_out:
+                            out_list = out_list + copy_out
+                        cu.output_staging = out_list
+                        #-------------------------------------------------------
+
                         cu.name           = "ex ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
                         cu.pre_exec       = ex_kernel._cu_def_pre_exec
                         cu.executable     = ex_kernel._cu_def_executable
                         cu.arguments      = ex_kernel.arguments
                         cu.mpi            = ex_kernel.uses_mpi
                         cu.cores          = ex_kernel.cores
-                        cu.input_staging  = ex_kernel._cu_def_input_data
-                        cu.output_staging = ex_kernel._cu_def_output_data
 
                         sub_replica = resource._umgr.submit_units(cu)
                         ex_units.append(sub_replica)
@@ -262,36 +379,7 @@ class Plugin(PluginBase):
                         }
                         step_start_time_abs = datetime.datetime.now()
                     #-----------------------------------------------------------
-                    matrix_columns = pattern.build_swap_matrix(replicas)
-
-                    #matrix_columns = []
-                    #for r in ex_units:
-                    #    d = str(r.stdout)
-                    #    data = d.split()
-                    #    matrix_columns.append(data)
-
-                    # writing swap matrix out
-                    sw_file = "matrix_columns_" + str(c)
-                    try:
-                        w_file = open( sw_file, "w")
-                        for i in matrix_columns:
-                            for j in i:
-                                w_file.write("%s " % j)
-                            w_file.write("\n")
-                        w_file.close()
-                    except IOError:
-                        self.get_logger().info('Warning: unable to access file %s' % sw_file)
-
-                    # computing swap matrix
-                    self.get_logger().info("Cycle %d: Composing swap matrix" % (c) )
-
-                    # this is actual exchange
-                    for r_i in replicas:
-                        r_j = pattern.exchange(r_i, replicas, matrix_columns)
-                        if (r_j != r_i):
-                            self.get_logger().info("Performing exchange of parameters between replica %d and replica %d" % ( r_j.id, r_i.id ))
-                            # swap parameters
-                            pattern.perform_swap(r_i, r_j)
+                    pattern.do_exchange(c, replicas)
 
                     if do_profile == '1':
                         step_end_time_abs = datetime.datetime.now()
@@ -316,10 +404,10 @@ class Plugin(PluginBase):
 
                         # Write the whole thing to the profiling dict
                         pattern._execution_profile.append(step_timings)
-                    #------------------------------------------------------------------    
+                    #-----------------------------------------------------------    
     
             # End of simulation loop
-            #------------------------
+            #-------------------------------------------------------------------
             
         except Exception, ex:
             self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
