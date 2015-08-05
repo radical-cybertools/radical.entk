@@ -36,7 +36,7 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/15.0.2","module load gromacs","module load python"],
+            "pre_exec" : ["module load intel/15.0.2","module load boost","module load gromacs","module load python"],
             "executable" : ["/bin/bash"],
             "uses_mpi"   : False
         },
