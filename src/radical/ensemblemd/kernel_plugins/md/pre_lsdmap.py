@@ -36,9 +36,9 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load TACC","module load intel/13.0.2.146","module load gromacs","module load python"],
+            "pre_exec" : ["module load intel/15.0.2","module load boost","module load gromacs","module load python"],
             "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         },
 
         "epsrc.archer":
@@ -46,7 +46,7 @@ _KERNEL_INFO = {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
             "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         }
     }
 }
