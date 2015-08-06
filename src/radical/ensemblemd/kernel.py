@@ -90,22 +90,6 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
-    def subname(self):
-        return self._kernel._subname
-
-    @subname.setter
-    def subname(self, name):
-        self._kernel._subname = name
-
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def name(self):
-        return self._kernel.get_name()
-
-    #---------------------------------------------------------------------------
-    #
-    @property
     def _cu_def_post_exec(self):
         return self._kernel._post_exec
 
@@ -118,6 +102,22 @@ class Kernel(object):
     @post_exec.setter
     def post_exec(self, commands):
         self._kernel._post_exec = commands
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def subname(self):
+        return self._kernel._subname
+
+    @subname.setter
+    def subname(self, name):
+        self._kernel._subname = name
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def name(self):
+        return self._kernel.get_name()
 
     #---------------------------------------------------------------------------
     #

@@ -107,12 +107,10 @@ class Plugin(PluginBase):
                     step_start_time_abs = datetime.datetime.now()
 
                 md_units = []
+                cus = []
                 for r in replicas:
 
-                    #self.get_logger().info("Cycle %d: Building input files for replica %d" % ((c), r.id) )
-                    #pattern.build_input_file(r)
-
-                    self.get_logger().info("Cycle %d: Preparing replica %d for MD run" % ((c), r.id) )
+                    self.get_logger().info("Cycle %d: Preparing replica %d for MD-step" % ((c), r.id) )
                     r_kernel = pattern.prepare_replica_for_md(r)
 
                     if ((r_kernel._kernel.get_name()) == "md.amber"):
@@ -124,7 +122,6 @@ class Plugin(PluginBase):
                     # need means to distinguish between copy and link
                     #-----------------------------------------------------------
                     copy_out = []
-                    
                     items_out = r_kernel._kernel._copy_output_data
                     if items_out:                    
                         for item in items_out:
@@ -134,9 +131,9 @@ class Plugin(PluginBase):
                                 'action': radical.pilot.COPY
                             }
                             copy_out.append(i_out)
+
                     #-----------------------------------------------------------
                     copy_in = []
-                    
                     items_in = r_kernel._kernel._copy_input_data
                     if items_in:                    
                         for item in items_in:
@@ -148,13 +145,13 @@ class Plugin(PluginBase):
                             copy_in.append(i_in)
                             
                     #-----------------------------------------------------------
-
                     cu                = radical.pilot.ComputeUnitDescription()
                     cu.name           = "md ;{cycle} ;{replica}"\
                                         .format(cycle=c, replica=r.id)
 
                     cu.pre_exec       = r_kernel._cu_def_pre_exec
                     cu.executable     = r_kernel._cu_def_executable
+                    cu.post_exec       = r_kernel._cu_def_post_exec
                     cu.arguments      = r_kernel.arguments
                     cu.mpi            = r_kernel.uses_mpi
                     cu.cores          = r_kernel.cores
@@ -173,14 +170,17 @@ class Plugin(PluginBase):
                         out_list = out_list + copy_out
                     cu.output_staging = out_list
                     #-----------------------------------------------------------
-
-                    sub_replica = resource._umgr.submit_units(cu)
-                    md_units.append(sub_replica)                    
+                    cus.append(cu)
+         
+                # bulk submission
+                sub_replicas = resource._umgr.submit_units(cus)  
+                for r in sub_replicas:
+                    md_units.append(r)                 
 
                 if do_profile == '1':
                     all_cus.extend(md_units)
          
-                self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c) )
+                self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
                 resource._umgr.wait_units()
 
                 if do_profile == '1':
@@ -215,14 +215,24 @@ class Plugin(PluginBase):
                 #---------------------------------------------------------------
 
                 if (c <= cycles):
+                    if do_profile == '1':
+                        step_timings = {
+                            "name": "ex_run_{0}".format(c),
+                            "timings": {}
+                        }
+                        step_start_time_abs = datetime.datetime.now()
                     #-----------------------------------------------------------
                     # global calc
-                    #-----------------------------------------------------------
-              
-                    gl_ex_kernel = pattern.prepare_global_ex_calc(GL, c, replicas)
+                    #----------- ------------------------------------------------
+                    ex_units = []
+
+                    self.get_logger().info("Cycle %d: Preparing replicas for Exchange-Step" % (c) )
+
+                    gl_ex_kernel = pattern.prepare_global_ex_calc(GL, c, \
+                                                                  replicas)
                     gl_ex_kernel._bind_to_resource(resource._resource_key)
 
-                    cu                = radical.pilot.ComputeUnitDescription()
+                    cu = radical.pilot.ComputeUnitDescription()
 
                     #-----------------------------------------------------------
                     copy_out = []
@@ -265,87 +275,20 @@ class Plugin(PluginBase):
                     #-----------------------------------------------------------
                     cu.pre_exec       = gl_ex_kernel._cu_def_pre_exec
                     cu.executable     = gl_ex_kernel._cu_def_executable
+                    cu.post_exec      = gl_ex_kernel._cu_def_post_exec
                     cu.arguments      = gl_ex_kernel.arguments
                     cu.mpi            = gl_ex_kernel.uses_mpi
                     cu.cores          = gl_ex_kernel.cores
 
                     sub_replica = resource._umgr.submit_units(cu)
-
-                    #-----------------------------------------------------------
-
-                    if do_profile == '1':
-                        step_timings = {
-                            "name": "ex_run_{0}".format(c),
-                            "timings": {}
-                        }
-                        step_start_time_abs = datetime.datetime.now()
-
-                    ex_units = []
-                    for r in replicas:
-                        self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c), r.id) )
-
-                        ex_kernel = pattern.prepare_replica_for_exchange(r)
-                        ex_kernel._bind_to_resource(resource._resource_key)
-                        
-                        cu                = radical.pilot.ComputeUnitDescription()
-
-                        #-------------------------------------------------------
-                        copy_out = []
-                    
-                        items_out = ex_kernel._kernel._copy_output_data
-                        if items_out:                    
-                            for item in items_out:
-                                i_out = {
-                                    'source': item,
-                                    'target': 'staging:///%s' % item,
-                                    'action': radical.pilot.COPY
-                                }
-                                copy_out.append(i_out)
-                        #-------------------------------------------------------
-                        copy_in = []
-                    
-                        items_in = ex_kernel._kernel._copy_input_data
-                        if items_in:                    
-                            for item in items_in:
-                                i_in = {
-                                    'source': 'staging:///%s' % item,
-                                    'target': item,
-                                    'action': radical.pilot.COPY
-                                }
-                                copy_in.append(i_in)
-                        #-------------------------------------------------------
-                        in_list = []
-                        if ex_kernel._cu_def_input_data:
-                            in_list = in_list + ex_kernel._cu_def_input_data
-                        if copy_in:
-                            in_list = in_list + copy_in
-                        cu.input_staging  = in_list
-                        #-------------------------------------------------------
-                        out_list = []
-                        if ex_kernel._cu_def_output_data:
-                            out_list = out_list + ex_kernel._cu_def_output_data
-                        if copy_out:
-                            out_list = out_list + copy_out
-                        cu.output_staging = out_list
-                        #-------------------------------------------------------
-
-                        cu.name           = "ex ;{cycle} ;{replica}".format(cycle=c, replica=r.id)
-                        cu.pre_exec       = ex_kernel._cu_def_pre_exec
-                        cu.executable     = ex_kernel._cu_def_executable
-                        cu.arguments      = ex_kernel.arguments
-                        cu.mpi            = ex_kernel.uses_mpi
-                        cu.cores          = ex_kernel.cores
-
-                        sub_replica = resource._umgr.submit_units(cu)
-                        ex_units.append(sub_replica)
-
-                    self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (c) )
                     resource._umgr.wait_units()
- 
+
+                    ex_units.append(sub_replica)
+                    
                     if do_profile == '1':
                         step_end_time_abs = datetime.datetime.now()
                         all_cus.extend(ex_units)
-
+                    
                     failed_units = ""
                     for unit in ex_units:
                         if unit.state != radical.pilot.DONE:
@@ -353,7 +296,7 @@ class Plugin(PluginBase):
 
                     if len(failed_units) > 0:
                         sys.exit()
-
+                    
                     if do_profile == '1':
                         # Process CU information and append it to the dictionary
                         if isinstance(pattern_start_time, datetime.datetime):
@@ -378,6 +321,7 @@ class Plugin(PluginBase):
                             "timings": {}
                         }
                         step_start_time_abs = datetime.datetime.now()
+                    
                     #-----------------------------------------------------------
                     pattern.do_exchange(c, replicas)
 
