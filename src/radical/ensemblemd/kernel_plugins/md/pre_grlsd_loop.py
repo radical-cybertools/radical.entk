@@ -39,7 +39,7 @@ _KERNEL_INFO = {
         },
         "xsede.stampede": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load python"],
+            "pre_exec"      : ["module load python", "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/apps/intel/15/composer_xe_2015.2.164/mkl/lib/intel64/:/opt/apps/intel/15/composer_xe_2015.2.164/compiler/lib/intel64/:/opt/apps/intel15/python/2.7.9/lib/"],
             "executable"    : "python",
             "uses_mpi"      : False
         },
