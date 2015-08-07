@@ -92,19 +92,24 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        if self._subname == "matrix_calculator_temp_ex":
+        if self._subname == None:
+            arguments  = [self.get_arg("--calculator="), 
+                          self.get_arg("--replica_id="),
+                          self.get_arg("--replica_cycle="),
+                          self.get_arg("--replicas="),
+                          self.get_arg("--replica_basename=")]
+        elif self._subname == "matrix_calculator_temp_ex":
             arguments  = [self.get_arg("--calculator="), 
                           self.get_arg("--replica_id="),
                           self.get_arg("--replica_cycle="),
                           self.get_arg("--replicas="),
                           self.get_arg("--replica_basename="),
                           self.get_arg("--new_temperature=")]
-
-        if self._subname == "global_ex_calculator":
+        elif self._subname == "global_ex_calculator":
             arguments  = [self.get_arg("--calculator="), 
                           self.get_arg("--replica_cycle="),
                           self.get_arg("--replicas=")]
-
+       
         self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
