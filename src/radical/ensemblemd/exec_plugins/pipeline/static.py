@@ -11,6 +11,7 @@ import os
 import sys
 import saga
 import time
+import traceback
 import pickle
 import datetime
 import radical.pilot
@@ -169,14 +170,8 @@ class Plugin(PluginBase):
 
                 pattern._execution_profile["step_{0}_stop_time".format(step)] = time.time() - pattern_start_time
 
-
-        except Exception, ex:
-            self.get_logger().exception("Fatal error during pattern execution: {0}.".format(str(ex)))
-            raise
-
-        finally:
-            self.get_logger().info("Deallocating resource.")
-            resource.deallocate()
+        except KeyboardInterrupt:
+            traceback.print_exc()
 
         # -----------------------------------------------------------------
         # At this point, we have executed the pattern succesfully. Now,

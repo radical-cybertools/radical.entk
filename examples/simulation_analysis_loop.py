@@ -153,9 +153,7 @@ if __name__ == "__main__":
             cores=1,
             walltime=30,
             username=None,
-            project=None,
-	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-	    database_name = 'myexps'
+            project=None
         )
 
         # Allocate the resources.
@@ -167,6 +165,9 @@ if __name__ == "__main__":
         randomsa = RandomSA(maxiterations=4, simulation_instances=16, analysis_instances=16)
 
         cluster.run(randomsa)
+        
+
+        cluster.deallocate()
 
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.
