@@ -52,6 +52,13 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
+        },
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
         }
     }
 }

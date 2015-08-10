@@ -57,6 +57,18 @@ _KERNEL_INFO = {
                         ],
             "executable" : ["/bin/bash"],
             "uses_mpi"   : False
+        },
+
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : [
+                            "module load openmpi",
+                            "module load python",
+                            "export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin:/N/u/vivek91/.local/bin"
+                        ],
+            "executable" : ["python"],
+            "uses_mpi"   : False
         }
     }
 }

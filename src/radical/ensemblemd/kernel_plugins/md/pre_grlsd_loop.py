@@ -48,7 +48,14 @@ _KERNEL_INFO = {
             "pre_exec"      : ["module load python"],
             "executable"    : "python",
             "uses_mpi"      : False
+        },
+        "futuregrid.india": {
+            "environment"   : {},
+            "pre_exec"      : ["module load python"],
+            "executable"    : "python",
+            "uses_mpi"      : False
         }
+
     }
 }
 
