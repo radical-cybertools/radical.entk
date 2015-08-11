@@ -104,7 +104,7 @@ class MSSA(SimulationAnalysisLoop):
     def simulation_step(self, iteration, instance):
         """In the simulation step we
         """
-        k = Kernel(name="misc.mkfile",instance_type="single")
+        k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
         return [k]
 
