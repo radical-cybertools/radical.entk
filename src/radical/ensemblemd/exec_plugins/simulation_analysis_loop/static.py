@@ -718,4 +718,4 @@ class Plugin(PluginBase):
             self.get_logger().info("Deallocating resource.")
             resource.deallocate()
             stop_now = datetime.datetime.now()
-            print 'Time for entire execution plugin: ',(stop_now - start_now)
+            print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
