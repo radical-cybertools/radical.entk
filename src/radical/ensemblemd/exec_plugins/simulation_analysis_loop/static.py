@@ -140,7 +140,10 @@ class Plugin(PluginBase):
         working_dirs = {}
         all_cus = []
 
-        pattern._execution_profile = []
+        profiler = int(os.environ['RADICAL_ENMD_PROFILING'])
+
+        if profiling == 1:
+            pattern._execution_profile = []
 
         try:
             resource._umgr.register_callback(unit_state_cb)
@@ -149,14 +152,17 @@ class Plugin(PluginBase):
             # execute pre_loop
             #
             try:
+
                 ################################################################
                 # EXECUTE PRE-LOOP
 
-                step_timings = {
-                    "name": "pre_loop",
-                    "timings": {}
-                }
-                step_start_time_abs = datetime.datetime.now()
+                if profiling == 1:
+                    step_timings = {
+                        "name": "pre_loop",
+                        "timings": {}
+                    }
+                    step_start_time_abs = datetime.datetime.now()
+
 
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
@@ -181,7 +187,8 @@ class Plugin(PluginBase):
                 resource._umgr.wait_units()
                 self.get_logger().info("Pre_loop completed.")
 
-                step_end_time_abs = datetime.datetime.now()
+                if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
 
                 if unit.state != radical.pilot.DONE:
                     raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
@@ -189,13 +196,14 @@ class Plugin(PluginBase):
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(pre_loop_cu, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                if profiling == 1:
+                    tinfo = extract_timing_info(pre_loop_cu, pattern_start_time, step_start_time_abs, step_end_time_abs)
 
-                for key, val in tinfo.iteritems():
-                    step_timings['timings'][key] = val
+                    for key, val in tinfo.iteritems():
+                        step_timings['timings'][key] = val
 
                 # Write the whole thing to the profiling dict
-                pattern._execution_profile.append(step_timings)
+                    pattern._execution_profile.append(step_timings)
 
             except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
@@ -211,11 +219,13 @@ class Plugin(PluginBase):
 
                 ################################################################
                 # EXECUTE SIMULATION STEPS
-                step_timings = {
-                    "name": "simulation_iteration_{0}".format(iteration),
-                    "timings": {}
-                }
-                step_start_time_abs = datetime.datetime.now()
+
+                if profiling == 1:
+                    step_timings = {
+                        "name": "simulation_iteration_{0}".format(iteration),
+                        "timings": {}
+                    }
+                    step_start_time_abs = datetime.datetime.now()
 
                 if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
                     num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
@@ -435,7 +445,8 @@ class Plugin(PluginBase):
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                step_end_time_abs = datetime.datetime.now()
+                if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
@@ -444,21 +455,24 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
        
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
-                for key, val in tinfo.iteritems():
-                    step_timings['timings'][key] = val
+                if profiling == 1:
+                    tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    for key, val in tinfo.iteritems():
+                        step_timings['timings'][key] = val
 
                 # Write the whole thing to the profiling dict
-                pattern._execution_profile.append(step_timings)
+                    pattern._execution_profile.append(step_timings)
 
 
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
-                step_timings = {
-                    "name": "analysis_iteration_{0}".format(iteration),
-                    "timings": {}
-                }
-                step_start_time_abs = datetime.datetime.now()
+
+                if profiling == 1:
+                    step_timings = {
+                        "name": "analysis_iteration_{0}".format(iteration),
+                        "timings": {}
+                    }
+                    step_start_time_abs = datetime.datetime.now()
 
                 if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
                     num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
@@ -676,8 +690,8 @@ class Plugin(PluginBase):
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                
-                step_end_time_abs = datetime.datetime.now()
+                if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
 
                 i = 0
                 for cu in a_cus:
@@ -685,13 +699,14 @@ class Plugin(PluginBase):
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 # Process CU information and append it to the dictionary
-                tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                if profiling == 1:
+                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
 
-                for key, val in tinfo.iteritems():
-                    step_timings['timings'][key] = val
+                    for key, val in tinfo.iteritems():
+                        step_timings['timings'][key] = val
 
-                # Write the whole thing to the profiling dict
-                pattern._execution_profile.append(step_timings)
+                    # Write the whole thing to the profiling dict
+                    pattern._execution_profile.append(step_timings)
 
         except Exception, ex:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))

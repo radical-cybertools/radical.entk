@@ -30,11 +30,11 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     all_id_start = []; all_od_start = []; all_ex_start = []
     all_id_stop = []; all_od_stop = []; all_ex_stop = []
 
-    t_id_E_abs = None; t_od_E_abs = None; t_ex_E_abs = None
-    t_id_L_abs = None; t_od_L_abs = None; t_ex_L_abs = None
+    t_id_E_abs = None; t_od_E_abs = None; t_ex_E_abs = None; t_startup_E_abs = None
+    t_id_L_abs = None; t_od_L_abs = None; t_ex_L_abs = None; t_startup_L_abs = None
 
-    t_id_E_rel = None; t_od_E_rel = None; t_ex_E_rel = None
-    t_id_L_rel = None; t_od_L_rel = None; t_ex_L_rel = None
+    #t_id_E_rel = None; t_od_E_rel = None; t_ex_E_rel = None
+    #t_id_L_rel = None; t_od_L_rel = None; t_ex_L_rel = None
 
     for unit in units:
         if ((unit.start_time is not None) and (unit.stop_time is not None)):
@@ -85,6 +85,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         t_id_L_abs = t_ex_E_abs
 
     # Determine the time 'origin' for relative timings
+    '''
     if t_id_E_abs is not None:
         t_origin = t_id_E_abs
     else:
@@ -102,7 +103,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         t_ex_E_rel = step_start_time_rel + t_ex_E_abs - t_origin
     if len(all_ex_stop) > 0:
         t_ex_L_rel =step_start_time_rel +  t_ex_L_abs - t_origin
-
+    '''
     return {
         "step_start_time": {
             "abs": step_start_time_abs,
