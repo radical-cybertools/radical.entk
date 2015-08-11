@@ -140,6 +140,8 @@ class Plugin(PluginBase):
         working_dirs = {}
         all_cus = []
 
+        start_now = datetime.datetime.now()
+
         profiler = int(os.environ['RADICAL_ENMD_PROFILING'])
 
         if profiling == 1:
@@ -715,3 +717,5 @@ class Plugin(PluginBase):
         finally:
             self.get_logger().info("Deallocating resource.")
             resource.deallocate()
+            stop_now = datetime.datetime.now()
+            print 'Time for entire execution plugin: ',(stop_now - start_now)
