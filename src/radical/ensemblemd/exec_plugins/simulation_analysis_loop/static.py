@@ -142,7 +142,7 @@ class Plugin(PluginBase):
 
         start_now = datetime.datetime.now()
 
-        profiler = int(os.environ['RADICAL_ENMD_PROFILING'])
+        profiling = int(os.environ['RADICAL_ENMD_PROFILING'])
 
         if profiling == 1:
             pattern._execution_profile = []
