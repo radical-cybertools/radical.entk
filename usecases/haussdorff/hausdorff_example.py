@@ -262,6 +262,8 @@ if __name__ == "__main__":
 
         cluster.run(hausdorff)
 
+        cluster.deallocate()
+
         #Message printed when everything is completed succefully
         print "Hausdorff Distance Files Donwnloaded."
         print "Please check file distance-x-y.dat to find the Hausdorff Distance for Atom Trajectories x and y."
