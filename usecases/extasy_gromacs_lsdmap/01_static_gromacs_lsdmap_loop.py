@@ -316,6 +316,8 @@ if __name__ == "__main__":
 
       cluster.run(randomsa)
 
+      cluster.deallocate()
+
       pp = pprint.PrettyPrinter()
 
       pp.pprint(randomsa.execution_profile_dict)
