@@ -56,7 +56,21 @@ _KERNEL_INFO = {
             "pre_exec"      : None,
             "executable"    : "python",
             "uses_mpi"      : False
-        }
+        },
+        "xsede.stampede":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module restore", "module load python"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load python"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
     }
 }
 
@@ -98,6 +112,12 @@ class Kernel(KernelBase):
                           self.get_arg("--replica_cycle="),
                           self.get_arg("--replicas="),
                           self.get_arg("--replica_basename=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = cfg["uses_mpi"]
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
         elif self._subname == "matrix_calculator_temp_ex":
             arguments  = [self.get_arg("--calculator="), 
                           self.get_arg("--replica_id="),
@@ -105,15 +125,21 @@ class Kernel(KernelBase):
                           self.get_arg("--replicas="),
                           self.get_arg("--replica_basename="),
                           self.get_arg("--new_temperature=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = cfg["uses_mpi"]
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
         elif self._subname == "global_ex_calculator":
             arguments  = [self.get_arg("--calculator="), 
                           self.get_arg("--replica_cycle="),
-                          self.get_arg("--replicas=")]
-       
-        self._executable  = cfg["executable"]
-        self._arguments   = arguments
-        self._environment = cfg["environment"]
-        self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
-        self._post_exec   = None
+                          self.get_arg("--replicas="),
+                          self.get_arg("--replica_basename=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = True
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
 

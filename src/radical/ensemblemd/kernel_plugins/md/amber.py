@@ -110,6 +110,13 @@ _KERNEL_INFO = {
                 "executable"  : ["/opt/amber/bin/sander"],
                 "uses_mpi"    : False
         },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load amber", "module load python"],
+                "executable"  : ["/opt/amber/bin/sander"],
+                "uses_mpi"    : False
+        },
         "localhost":
         {
                 "environment" : {},
