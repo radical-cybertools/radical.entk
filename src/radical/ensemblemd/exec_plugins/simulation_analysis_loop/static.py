@@ -713,8 +713,8 @@ class Plugin(PluginBase):
                     pattern._execution_profile.append(step_timings)
 
         except KeyboardInterrupt:
+            stop_now = datetime.datetime.now()
             traceback.print_exc()
 
-        finally:
-            stop_now = datetime.datetime.now()
+        finally:    
             print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
