@@ -49,7 +49,7 @@ _KERNEL_INFO = {
                         {
                             "mandatory": False,
                             "description": "Instance number"
-                        }
+                        },
                     "--outfile=":
                         {
                             "mandatory": False,
@@ -107,6 +107,13 @@ _KERNEL_INFO = {
         {
                 "environment" : {},
                 "pre_exec"    : ["module load python", "module load amber"],
+                "executable"  : ["/opt/amber/bin/sander"],
+                "uses_mpi"    : False
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load amber", "module load python"],
                 "executable"  : ["/opt/amber/bin/sander"],
                 "uses_mpi"    : False
         },
