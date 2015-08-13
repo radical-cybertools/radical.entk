@@ -24,10 +24,11 @@ class Pipeline(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, instances=1):
+    def __init__(self, instances=1,steps=1):
         """Creates a new Pipeline instance.
         """
         self._instances = instances
+        self._steps = steps
         super(Pipeline, self).__init__()
 
     #---------------------------------------------------------------------------
@@ -46,6 +47,14 @@ class Pipeline(ExecutionPattern):
         """Returns the instances of the pipeline.
         """
         return self._instances
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def steps(self):
+        """Returns the instances of the pipeline.
+        """
+        return self._steps
 
     #---------------------------------------------------------------------------
     #

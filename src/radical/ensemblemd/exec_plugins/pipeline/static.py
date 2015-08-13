@@ -30,6 +30,28 @@ _PLUGIN_INFO = {
 _PLUGIN_OPTIONS = []
 
 
+def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
+
+    # If replacement not require, return the path as is
+    if '$' not in path:
+        return path
+
+    # Extract placeholder from path
+    if len(path.split('>'))==1:
+        placeholder = path.split('/')[0]
+    else:
+        if path.split('>')[0].strip().startswith('$'):
+            placeholder = path.split('>')[0].strip().split('/')[0]
+        else:
+            placeholder = path.split('>')[1].strip().split('/')[0]
+
+    step_number = placeholder.split('_')[1]
+
+    if ((step_number < 1)or(step_number > total_steps)):
+        raise Exception("$STEP_{0} used in invalid context.".format(step_number))
+    else:
+        return path.replace(placeholder, working_dirs['step_{0}'.format(step_number)]['instance_{0}'.format(instance)])
+         
 # ------------------------------------------------------------------------------
 #
 class Plugin(PluginBase):
@@ -48,157 +70,274 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        failed_units = []
-
+        pattern_start_time = datetime.datetime.now()
+        
         #-----------------------------------------------------------------------
         #
         def unit_state_cb (unit, state) :
 
-            if state == radical.pilot.DONE:
-                self.get_logger().info("Task with ID {0} has completed.".format(unit.uid))
-
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                failed_units.append(unit)
 
         pipeline_instances = pattern.instances
+        pipeline_steps = pattern.steps
+        self.get_logger().info("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
+            pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
 
-        self.get_logger().info("Executing {0} pipeline instances on {1} allocated core(s) on '{2}'".format(
-            pipeline_instances, resource._cores, resource._resource_key))
+        
+        working_dirs = {}
+        all_cus = []
 
-        # We use the journal to keep track of the stage / instance to
-        # job mapping as well as to record associated timing informations.
-        journal= {}
-        steps = 0
+        self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
 
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
-        pattern._execution_profile = {}
-        pattern_start_time  = time.time()
+        if profiling == 1:
+            pattern._execution_profile = []
 
         try:
+
+            start_now = datetime.datetime.now()
             resource._umgr.register_callback(unit_state_cb)
 
             # Iterate over the different steps.
-            for step in range(1, 64):
-                # Create a new empty journal entry for the step.
-                journal["step_{0}".format(step)] = {}
+            for step in range(1, pipeline_steps+1):
+
+                if profiling == 1:
+                    step_timings = {
+                        "name": "step_{0}".format(step),
+                        "timings": {}
+                    }
+                    step_start_time_abs = datetime.datetime.now()
+
+                working_dirs['step_{0}'.format(step)] = {}
 
                 # Get the method names
                 s_meth = getattr(pattern, 'step_{0}'.format(step))
 
                 try:
                     kernel = s_meth(0)
-                    steps += 1
                 except NotImplementedError, ex:
                     # Not implemented means there are no further steps.
                     break
 
+                p_units=[]
+                all_step_cus = []
+
                 for instance in range(1, pipeline_instances+1):
 
                     # Create a new journal entry for the instance.
-                    journal["step_{0}".format(step)]["instance_{0}".format(instance)] = {}
-                    inst_entry = journal["step_{0}".format(step)]["instance_{0}".format(instance)]
-
                     kernel = s_meth(instance)
                     kernel._bind_to_resource(resource._resource_key)
 
                     cud = radical.pilot.ComputeUnitDescription()
+                    cud.name = "step_{0}".format(step)
 
                     cud.pre_exec       = kernel._cu_def_pre_exec
                     cud.executable     = kernel._cu_def_executable
                     cud.arguments      = kernel.arguments
                     cud.mpi            = kernel.uses_mpi
-                    cud.input_staging  = kernel._cu_def_input_data
-                    cud.output_staging = kernel._cu_def_output_data
+                    cud.input_staging  = None
+                    cud.output_staging = None
 
-                    inst_entry["unit_description"] = cud
-                    inst_entry["compute_unit"] = None
-                    inst_entry["working_dir"] = "WORKDIR-s%s-i%s" % (step, instance)
+                    # INPUT DATA:
+                    #------------------------------------------------------------------------------------------------------------------
+                    # upload_input_data
+                    data_in = []
+                    if kernel._kernel._upload_input_data is not None:
+                        if isinstance(kernel._kernel._upload_input_data,list):
+                            pass
+                        else:
+                            kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
+                        for i in range(0,len(kernel._kernel._upload_input_data)):
+                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps,kernel._kernel._upload_input_data[i])
+                            if len(var.split('>')) > 1:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': var.split('>')[1].strip()
+                                    }
+                            else:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': os.path.basename(var.split('>')[0].strip())
+                                    }
+                            data_in.append(temp)
 
-                    self.get_logger().debug("Created step_1 CU ({0}/{1}): {2}.".format(instance+1, pipeline_instances, cud.as_dict()))
+                    if cud.input_staging is None:
+                        cud.input_staging = data_in
+                    else:
+                        cud.input_staging += data_in
+                    #------------------------------------------------------------------------------------------------------------------
 
-                self.get_logger().info("Created {0} ComputeUnits for pipeline step {1}.".format(pipeline_instances, step))
+                    #------------------------------------------------------------------------------------------------------------------
+                    # link_input_data
+                    data_in = []
+                    if kernel._kernel._link_input_data is not None:
+                        if isinstance(kernel._kernel._link_input_data,list):
+                            pass
+                        else:
+                            kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
+                        for i in range(0,len(kernel._kernel._link_input_data)):
+                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._link_input_data[i])
+                            if len(var.split('>')) > 1:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': var.split('>')[1].strip(),
+                                        'action': radical.pilot.LINK
+                                    }
+                            else:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': os.path.basename(var.split('>')[0].strip()),
+                                        'action': radical.pilot.LINK
+                                    }
+                            data_in.append(temp)
 
-            # -----------------------------------------------------------------
-            # At this point, we have created a complete journal for the
-            # pattern instance. We can now start 'enacting' it through
-            # radical pilot.
-            for step in range(1, steps+1):
-                step_key = "step_%s" % step
+                    if cud.input_staging is None:
+                        cud.input_staging = data_in
+                    else:
+                        cud.input_staging += data_in
+                    #------------------------------------------------------------------------------------------------------------------
 
-                pattern._execution_profile["step_{0}_start_time".format(step)] = time.time() - pattern_start_time
+                    #------------------------------------------------------------------------------------------------------------------
+                    # copy_input_data
+                    data_in = []
+                    if kernel._kernel._copy_input_data is not None:
+                        if isinstance(kernel._kernel._copy_input_data,list):
+                            pass
+                        else:
+                            kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
+                        for i in range(0,len(kernel._kernel._copy_input_data)):
+                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_input_data[i])
+                            if len(var.split('>')) > 1:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': var.split('>')[1].strip(),
+                                        'action': radical.pilot.COPY
+                                    }
+                            else:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': os.path.basename(var.split('>')[0].strip()),
+                                        'action': radical.pilot.COPY
+                                    }
+                            data_in.append(temp)
 
-                for instance in range(1, pipeline_instances+1):
-                    instance_key = "instance_%s" % instance
+                    if cud.input_staging is None:
+                        cud.input_staging = data_in
+                    else:
+                        cud.input_staging += data_in
+                    #------------------------------------------------------------------------------------------------------------------
 
-                    step_units = []
+                    #------------------------------------------------------------------------------------------------------------------
+                    # download input data
+                    if kernel.download_input_data is not None:
+                        data_in  = kernel.download_input_data
+                        if cud.input_staging is None:
+                            cud.input_staging = data_in
+                        else:
+                            cud.input_staging += data_in
+                    #------------------------------------------------------------------------------------------------------------------
 
-                    # Now we can replace the data-linkage placeholders.
-                    jd = journal[step_key][instance_key]["unit_description"]
-                    for pe in jd.pre_exec:
+                    # OUTPUT DATA:
+                    #------------------------------------------------------------------------------------------------------------------
+                    # copy_output_data
+                    data_out = []
+                    if kernel._kernel._copy_output_data is not None:
+                        if isinstance(kernel._kernel._copy_output_data,list):
+                            pass
+                        else:
+                            kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
+                        for i in range(0,len(kernel._kernel._copy_output_data)):
+                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_output_data[i])
+                            if len(var.split('>')) > 1:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': var.split('>')[1].strip(),
+                                        'action': radical.pilot.COPY
+                                    }
+                            else:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': os.path.basename(var.split('>')[0].strip()),
+                                        'action': radical.pilot.COPY
+                                    }
+                            data_out.append(temp)
 
-                        for i in range(1,33):
-                            placeholder = "$STEP_{step}".format(step=i)
-                            journal_key = "step_{step}".format(step=i)
+                    if cud.output_staging is None:
+                        cud.output_staging = data_out
+                    else:
+                        cud.output_staging += data_out
+                    #------------------------------------------------------------------------------------------------------------------
 
-                            if placeholder in pe:
-                                jd.pre_exec.remove(pe)
-                                expanded_pe = pe.replace(placeholder, journal[journal_key][instance_key]["working_dir"])
-                                jd.pre_exec.append(expanded_pe)
+                    #------------------------------------------------------------------------------------------------------------------
+                    # download_output_data
+                    data_out = []
+                    if kernel._kernel._download_output_data is not None:
+                        if isinstance(kernel._kernel._download_output_data,list):
+                            pass
+                        else:
+                            kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
+                        for i in range(0,len(kernel._kernel._download_output_data)):
+                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._download_output_data[i])
+                            if len(var.split('>')) > 1:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': var.split('>')[1].strip()
+                                        }
+                            else:
+                                temp = {
+                                        'source': var.split('>')[0].strip(),
+                                        'target': os.path.basename(var.split('>')[0].strip())
+                                    }
+                            data_out.append(temp)
 
-                    unit = resource._umgr.submit_units(jd)
-                    step_units.append(unit)
-                    journal[step_key][instance_key]["compute_unit"] = unit
+                    if cud.output_staging is None:
+                        cud.output_staging = data_out
+                    else:
+                        cud.output_staging += data_out
+                    #------------------------------------------------------------------------------------------------------------------
 
-                self.get_logger().info("Submitted ComputeUnits for pipeline step {0}.".format(step))
+
+                    if kernel.cores is not None:
+                        cud.cores = kernel.cores
+
+                    p_units.append(cud)
+
+                self.get_logger().debug("Created step_{0} CU: {1}.".format(step,cud.as_dict()))
+                p_cus = resource._umgr.submit_units(p_units)
+                all_step_cus.extend(p_cus)
+
+                self.get_logger().info("Submitted tasks for step_{0}.".format(step))
+                self.get_logger().info("Waiting for step_{0} to complete.".format(step))
                 resource._umgr.wait_units()
+                self.get_logger().info("step_{0} completed.".format(step))
 
-                # Update all working directories so they can be accessed from
-                # the next step(s).
-                for instance in range(1, pipeline_instances+1):
-                    instance_key = "instance_%s" % instance
-                    work_dir = saga.Url(journal[step_key][instance_key]["compute_unit"].working_directory).path
-                    journal[step_key][instance_key]["working_dir"] = work_dir
+                failed_units = ""
+                for unit in p_cus:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
 
-                time.sleep(2)
-                if failed_units != []:
-                    errors = []
-                    for unit in failed_units:
-                        error = ("NAME: {0} LAST LOG: {1} STDOUT: {2} STDERR: {3}").format(unit.name, unit.log[-1], unit.stderr, unit.stdout)
-                        errors.append(error)
-                        raise EnsemblemdError("One or more ComputeUnits failed in pipeline step {0}: \n{1}".format(step, errors))
+                if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
 
-                pattern._execution_profile["step_{0}_stop_time".format(step)] = time.time() - pattern_start_time
+                # TODO: ensure working_dir <-> instance mapping
+                i = 0
+                for cu in p_cus:
+                    i += 1
+                    working_dirs['step_{0}'.format(step)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
+
+
+                # Process CU information and append it to the dictionary
+                if profiling == 1:
+                    tinfo = extract_timing_info(all_step_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    for key, val in tinfo.iteritems():
+                        step_timings['timings'][key] = val
+
+                # Write the whole thing to the profiling dict
+                    pattern._execution_profile.append(step_timings)
+
 
         except KeyboardInterrupt:
             traceback.print_exc()
-
-        # -----------------------------------------------------------------
-        # At this point, we have executed the pattern succesfully. Now,
-        # if profiling is enabled, we can write the profiling data to
-        # a file.
-        do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
-
-        if do_profile != '0':
-
-            outfile = "execution_profile_{time}.csv".format(time=datetime.datetime.now().isoformat())
-            self.get_logger().info("Saving execution profile in {outfile}".format(outfile=outfile))
-
-            with open(outfile, 'w+') as f:
-                # General format of a profiling file is row based and follows the
-                # structure <unit id>; <s_time>; <stop_t>; <tag1>; <tag2>; ...
-                head = "task; start_time; stop_time; step; iteration"
-                f.write("{row}\n".format(row=head))
-
-                for step in journal.keys():
-                    for iteration in journal[step].keys():
-                        data = journal[step][iteration]
-                        cu = data["compute_unit"]
-
-                        row = "{uid}; {start_time}; {stop_time}; {tags}".format(
-                            uid=cu.uid,
-                            start_time=cu.start_time,
-                            stop_time=cu.stop_time,
-                            tags="{step}; {iteration}".format(step=step.split('_')[1], iteration=iteration.split('_')[1])
-                        )
-                        f.write("{row}\n".format(row=row))

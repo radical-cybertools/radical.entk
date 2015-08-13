@@ -85,8 +85,8 @@ class CharCount(Pipeline):
         radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
     """
 
-    def __init__(self, instances):
-        Pipeline.__init__(self, instances)
+    def __init__(self, instances,steps):
+        Pipeline.__init__(self, instances,steps)
 
     def step_1(self, instance):
         """The first step of the pipeline creates a 1 MB ASCI file.
@@ -133,7 +133,9 @@ if __name__ == "__main__":
             cores=1,
             walltime=30,
             username=None,
-            project=None
+            project=None,
+	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+	    database_name='myexps'
         )
 
         # Allocate the resources. 
@@ -145,15 +147,15 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or
         # sequentially, depending on the resources (cores) available in the
         # SingleClusterEnvironment.
-        ccount = CharCount(instances=16)
+        ccount = CharCount(instances=16,steps=3)
 
         cluster.run(ccount)
 
         # Print the checksums
-        print "\nResulting checksums:"
-        import glob
-        for result in glob.glob("cfreqs-*.sha1"):
-            print "  * {0}".format(open(result, "r").readline().strip())
+        #print "\nResulting checksums:"
+        #import glob
+        #for result in glob.glob("cfreqs-*.sha1"):
+        #    print "  * {0}".format(open(result, "r").readline().strip())
 
         cluster.deallocate()
 

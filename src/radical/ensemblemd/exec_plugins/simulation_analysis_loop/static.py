@@ -32,8 +32,11 @@ _PLUGIN_OPTIONS = []
 #
 def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_width, type, path):
 
-    # Extract placeholder from path
+    # If replacement not require, return the path as is
+    if '$' not in path:
+        return path
 
+    # Extract placeholder from path
     if len(path.split('>'))==1:
         placeholder = path.split('/')[0]
     else:
