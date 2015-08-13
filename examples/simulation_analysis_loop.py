@@ -78,6 +78,7 @@ from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import SingleClusterEnvironment
 
+import pprint
 
 # ------------------------------------------------------------------------------
 #
@@ -164,10 +165,17 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16.
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=4, simulation_instances=16, analysis_instances=16)
+        randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=16)
 
         cluster.run(randomsa)
 
+
+        pp = pprint.PrettyPrinter()
+
+        pp.pprint(randomsa.execution_profile_dict)
+
+	df = randomsa.execution_profile_dict
+	df.to_pickle('exp.pkl')
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.
         for it in range(1, randomsa.iterations+1):

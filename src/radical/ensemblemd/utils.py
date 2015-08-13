@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2015, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import datetime
+import math
 import numpy as np
 
 #------------------------------------------------------------------------------
@@ -72,14 +73,14 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
             if state.state == "PendingInputStaging":
                 if state.timestamp is not None:
                     id_start = state.timestamp
-                else:
-                    missing_state_ip = True
+            else:
+                missing_state_ip = True
 
             if ((missing_state_ip==True)and(state.state == "StagingInput")):
                 if state.timestamp is not None:
                     id_start = state.timestamp
                 else:
-                    break
+                    continue
 
             #Input Staging stop time:
             if state.state == "PendingExecution":
@@ -92,14 +93,14 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
             if state.state == "PendingAgentOutputStaging":
                 if state.timestamp is not None:
                     od_start = state.timestamp
-                else:
-                    missing_state_op = True
+            else:
+                missing_state_op = True
 
             if ((missing_state_op==True)and(state.state == "AgentStagingOutput")):
                 if state.timestamp is not None:
                     od_start = state.timestamp
                 else:
-                    break
+                    continue
 
             #Output Staging stop time:
             if state.state == "Done":
@@ -194,11 +195,18 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     '''
 
     return {
-        "execution_time": np.average(all_ex_dur_list),
-        "data_movement_time": np.average(all_id_dur_list)+np.average(all_od_dur_list),
-        "step_time": step_end_time_abs - step_start_time_abs,
+        "execution_time": {
+                "average":np.average(all_ex_dur_list),
+                "error": (np.std(all_ex_dur_list)/len(all_ex_dur_list))
+                },
+        "data_movement_time": {
+            "average": np.average(all_id_dur_list)+np.average(all_od_dur_list),
+            "error": (math.sqrt(np.var(all_id_dur_list) + np.var(all_od_dur_list)))/len(all_id_dur_list)
+             },
+            
+        "step_time": (step_end_time_abs - step_start_time_abs).total_seconds(),
         }
-    }
+    
 
 #------------------------------------------------------------------------------
 #
@@ -212,7 +220,7 @@ def dataframes_from_profile_dict(profile):
 
     #cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs','first_started_rel', 'last_finished_rel']
     #cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs']
-    cols = ['pattern_entity','value_type','duration']
+    cols = ['pattern_entity','value_type','average duration', 'error']
     df = pd.DataFrame(columns=cols)
 
     # iterate over the entities
@@ -223,7 +231,7 @@ def dataframes_from_profile_dict(profile):
         #start_rel = entity['timings']['step_start_time']['rel']
         #end_rel = entity['timings']['step_end_time']['rel']
         #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
-        df2 = pd.DataFrame([[entity['name'], 'pattern_step', step_duration_abs]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'pattern_step', step_duration_abs,0]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
         #start_abs = entity['timings']['first_data_stagein_started']['abs']
@@ -236,20 +244,22 @@ def dataframes_from_profile_dict(profile):
 
         #start_abs = entity['timings']['first_execution_started']['abs']
         #end_abs   = entity['timings']['last_execution_finished']['abs']
-        execution_time_abs = entity['timings']['execution_time']
+        execution_time_average = entity['timings']['execution_time']['average']
+        execution_time_error = entity['timings']['execution_time']['error']
         #start_rel = entity['timings']['first_execution_started']['rel']
         #end_rel   = entity['timings']['last_execution_finished']['rel']
         #df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs, start_rel, end_rel]],columns=cols)
-        df2 = pd.DataFrame([[entity['name'], 'execution', execution_time_abs]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'execution', execution_time_average,execution_time_error]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
         #start_abs = entity['timings']['first_data_stageout_started']['abs']
         #end_abs   = entity['timings']['last_data_stageout_finished']['abs']
-        data_movement_time_abs = entity['timings']['data_movement_time']
+        data_movement_time_average = entity['timings']['data_movement_time']['average']
+        data_movement_time_error = entity['timings']['data_movement_time']['error']
         #start_rel = entity['timings']['first_data_stageout_started']['rel']
         #end_rel   = entity['timings']['last_data_stageout_finished']['rel']
         #df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs, start_rel, end_rel]],columns=cols)
-        df2 = pd.DataFrame([[entity['name'], 'data_movement', data_movement_time_abs]],columns=cols)
+        df2 = pd.DataFrame([[entity['name'], 'data_movement', data_movement_time_average,data_movement_time_error]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
     return df
