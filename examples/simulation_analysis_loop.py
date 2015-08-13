@@ -173,12 +173,11 @@ if __name__ == "__main__":
         cluster.deallocate()
 
 
-        pp = pprint.PrettyPrinter()
-
-        pp.pprint(randomsa.execution_profile_dict)
-
-	df = randomsa.execution_profile_dict
-	df.to_pickle('exp.pkl')
+        #pp = pprint.PrettyPrinter()
+        #pp.pprint(randomsa.execution_profile_dict)
+        
+        df = randomsa.execution_profile_dict
+        df.to_pickle('exp.pkl')
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.
         for it in range(1, randomsa.iterations+1):

@@ -159,6 +159,9 @@ if __name__ == "__main__":
 
         cluster.deallocate()
 
+        df = ccount.execution_profile_dict
+        df.to_pickle('exp.pkl')
+
     except EnsemblemdError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))

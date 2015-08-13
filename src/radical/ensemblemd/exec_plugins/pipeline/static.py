@@ -45,7 +45,7 @@ def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
         else:
             placeholder = path.split('>')[1].strip().split('/')[0]
 
-    step_number = placeholder.split('_')[1]
+    step_number = int(placeholder.split('_')[1])
 
     if ((step_number < 1)or(step_number > total_steps)):
         raise Exception("$STEP_{0} used in invalid context.".format(step_number))
@@ -335,7 +335,7 @@ class Plugin(PluginBase):
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
 
-                # Write the whole thing to the profiling dict
+                    # Write the whole thing to the profiling dict
                     pattern._execution_profile.append(step_timings)
 
 
