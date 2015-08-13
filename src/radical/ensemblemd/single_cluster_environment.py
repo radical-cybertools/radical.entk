@@ -8,6 +8,8 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
+import sys
+import traceback
 import radical.pilot
 import radical.utils.logger  as rul
 from radical.ensemblemd.engine import Engine
@@ -43,6 +45,9 @@ class SingleClusterEnvironment(ExecutionContext):
         self._session = None
         self._pilot = None
         self._pmgr = None
+        self._exctype = None
+        self._excvalue = None
+        self._traceback = None
 
         self._resource_key = resource
         self._queue = queue
@@ -77,6 +82,11 @@ class SingleClusterEnvironment(ExecutionContext):
     def deallocate(self):
         """Deallocates the resources.
         """
+        self.get_logger().info("Deallocating Cluster")
+        if self._exctype != None:
+            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+            traceback.print_tb(self._traceback)
+            
         self._session.close(cleanup=self._cleanup)
 
     #---------------------------------------------------------------------------
@@ -195,4 +205,9 @@ class SingleClusterEnvironment(ExecutionContext):
             plugin_name=force_plugin)
 
         plugin.verify_pattern(pattern, self)
-        plugin.execute_pattern(pattern, self)
+        try:
+            plugin.execute_pattern(pattern, self)
+        except KeyboardInterrupt:
+            self._exctype,self._excvalue,self._traceback = sys.exc_info()            
+        except Exception, ex:
+            self._exctype,self._excvalue,self._traceback = sys.exc_info()

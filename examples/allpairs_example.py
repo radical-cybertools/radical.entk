@@ -156,6 +156,7 @@ if __name__ == "__main__":
 
         cluster.run(randAP)
 
+        cluster.deallocate()
         print "Pattern Execution Completed Successfully! Result files are downloaded!"
 
 

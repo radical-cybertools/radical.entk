@@ -281,6 +281,8 @@ if __name__ == "__main__":
         coco_amber_static = Extasy_CocoAmber_Static(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
         cluster.run(coco_amber_static)
 
+        cluster.deallocate()
+
     except EnsemblemdError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))

@@ -7,7 +7,7 @@ Toolkit is released under the MIT License.
 
 ### Documentation
 
-The latest documentation can be found at http://radicalensemblemd.readthedocs.org.
+The latest documentation can be found at http://radicalensemblemd.readthedocs.org/en/latest/.
 
 ### Mailing Lists
 
