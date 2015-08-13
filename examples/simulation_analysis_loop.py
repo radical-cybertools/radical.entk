@@ -154,7 +154,9 @@ if __name__ == "__main__":
             cores=1,
             walltime=30,
             username=None,
-            project=None
+            project=None,
+	    database_name='myexps',
+	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242'
         )
 
         # Allocate the resources.

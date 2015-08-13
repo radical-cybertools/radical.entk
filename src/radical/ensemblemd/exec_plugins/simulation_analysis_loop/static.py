@@ -142,7 +142,8 @@ class Plugin(PluginBase):
         working_dirs = {}
         all_cus = []
 
-        start_now = datetime.datetime.now()
+        self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
 
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
@@ -150,6 +151,9 @@ class Plugin(PluginBase):
             pattern._execution_profile = []
 
         try:
+
+            start_now = datetime.datetime.now()
+
             resource._umgr.register_callback(unit_state_cb)
 
             ########################################################################
@@ -711,10 +715,9 @@ class Plugin(PluginBase):
 
                     # Write the whole thing to the profiling dict
                     pattern._execution_profile.append(step_timings)
+                stop_now = datetime.datetime.now()    
+
+                print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
 
         except KeyboardInterrupt:
-            stop_now = datetime.datetime.now()
             traceback.print_exc()
-
-        finally:    
-            print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
