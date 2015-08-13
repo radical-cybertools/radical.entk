@@ -12,6 +12,7 @@ __license__   = "MIT"
 
 import os
 import sys
+import traceback
 import time
 import random
 import datetime
@@ -318,12 +319,9 @@ class Plugin(PluginBase):
     
             # End of simulation loop
             #------------------------
+            self.get_logger().info("Replica Exchange simulation finished successfully!")
             
-        except Exception, ex:
-            self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
-            raise
 
-        self.get_logger().info("Replica Exchange simulation finished successfully!")
-        self.get_logger().info("Deallocating resource.")
-        resource.deallocate()
+        except KeyboardInterrupt:
+            traceback.print_exc()
 

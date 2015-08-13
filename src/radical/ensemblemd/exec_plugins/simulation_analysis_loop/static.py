@@ -8,6 +8,8 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
+import sys
+import traceback
 import time
 import saga
 import datetime
@@ -693,10 +695,5 @@ class Plugin(PluginBase):
                 # Write the whole thing to the profiling dict
                 pattern._execution_profile.append(step_timings)
 
-        except Exception, ex:
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(ex)))
-            raise
-
-        finally:
-            self.get_logger().info("Deallocating resource.")
-            resource.deallocate()
+        except KeyboardInterrupt:
+            traceback.print_exc()

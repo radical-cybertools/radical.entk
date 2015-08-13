@@ -386,6 +386,7 @@ if __name__ == "__main__":
             walltime=15,
             database_name='enmd-tests'
         )
+        
 
         # Allocate the resources.
         cluster.allocate()
@@ -406,6 +407,9 @@ if __name__ == "__main__":
 
         # run RE simulation
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
+
+        cluster.deallocate()
+        
         print "RE simulation finished!"
         print "Simulation performed {0} cycles for {1} replicas. \
         In your working directory you should"\
