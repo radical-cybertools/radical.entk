@@ -72,6 +72,17 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load packages-archer","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
+        },
+
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load openmpi","module load python",
+                        "export PATH=$PATH:/N/u/vivek91/.local/bin",
+                        "export PYTHONPATH=$PYTHONPATH:/N/u/vivek91/.local/lib/python2.7/site-packages"
+                        ],
+            "executable" : ["python"],
+            "uses_mpi"   : True
         }
     }
 }

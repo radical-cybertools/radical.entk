@@ -36,16 +36,38 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/15.0.2","module load boost","module load gromacs","module load python"],
-            "executable" : ["/bin/bash"],
+            "pre_exec" : [
+                            "module load intel/15.0.2",
+                            "module load boost",
+                            "module load gromacs",
+                            "module load python",
+                            "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/apps/intel/15/composer_xe_2015.2.164/mkl/lib/intel64/:/opt/apps/intel/15/composer_xe_2015.2.164/compiler/lib/intel64/:/opt/apps/intel15/python/2.7.9/lib/",
+                        ],
+            "executable" : ["python"],
             "uses_mpi"   : False
         },
 
         "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
+            "pre_exec" : [
+                            "module load packages-archer",
+                            "module load gromacs/5.0.0",
+                            "module load python",
+                        ],
             "executable" : ["/bin/bash"],
+            "uses_mpi"   : False
+        },
+
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : [
+                            "module load openmpi",
+                            "module load python",
+                            "export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin:/N/u/vivek91/.local/bin"
+                        ],
+            "executable" : ["python"],
             "uses_mpi"   : False
         }
     }
@@ -83,7 +105,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['-l','-c','python pre_analyze.py {0} tmp.gro . && echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro'.format(self.get_arg("--numCUs="))]
+        arguments = ['pre_analyze.py','{0}'.format(self.get_arg("--numCUs=")),'tmp.gro','.'] 
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

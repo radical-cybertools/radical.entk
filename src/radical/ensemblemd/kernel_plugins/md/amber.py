@@ -45,6 +45,11 @@ _KERNEL_INFO = {
                             "mandatory": False,
                             "description": "Cycle number"
                         },
+                    "--instance=":
+                        {
+                            "mandatory": False,
+                            "description": "Instance number"
+                        }
                     "--outfile=":
                         {
                             "mandatory": False,
