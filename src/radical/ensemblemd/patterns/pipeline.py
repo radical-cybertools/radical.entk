@@ -34,14 +34,6 @@ class Pipeline(ExecutionPattern):
 
         super(Pipeline, self).__init__()
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def execution_profile(self):
-        """Returns the execution profile after the pattern has finished
-           running, 'None' otheriwse.
-        """
-        return self._execution_profile
 
     #---------------------------------------------------------------------------
     #

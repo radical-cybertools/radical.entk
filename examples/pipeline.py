@@ -158,9 +158,15 @@ if __name__ == "__main__":
         #    print "  * {0}".format(open(result, "r").readline().strip())
 
         cluster.deallocate()
+        
+        import pprint as pp
+        pp.pprint(ccount.execution_profile_dict)
 
-        df = ccount.execution_profile_dict
-        df.to_pickle('exp.pkl')
+        import os
+        os.system("rm *.sha1 *.dat")
+
+        #df = ccount.execution_profile_dict
+        #df.to_pickle('exp.pkl')
 
     except EnsemblemdError, er:
 
