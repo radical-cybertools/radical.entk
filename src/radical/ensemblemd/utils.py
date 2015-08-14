@@ -52,12 +52,12 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         missing_state_ip = False
         missing_state_op = False
 
-        ex_start    = None
-        ex_stop     = None
-        id_start    = None
-        id_stop     = None
-        od_start    = None
-        od_stop     = None
+        ex_start    = 0
+        ex_stop     = 0
+        id_start    = 0
+        id_stop     = 0
+        od_start    = 0
+        od_stop     = 0
 
 
         #Execution time:
