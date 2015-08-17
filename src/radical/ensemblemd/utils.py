@@ -57,7 +57,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         id_start    = 0
         id_stop     = 0
         od_start    = 0
-        od_stop     = 0
+        od_stop     = 0 
 
 
         #Execution time:
@@ -83,7 +83,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
                     continue
 
             #Input Staging stop time:
-            if state.state == "PendingExecution":
+            if state.state == "Allocating":
                 if state.timestamp is not None:
                     id_stop = state.timestamp
 
