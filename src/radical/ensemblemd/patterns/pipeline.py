@@ -9,6 +9,7 @@ __license__   = "MIT"
 
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
+from radical.ensemblemd.utils import dataframes_from_profile_dict
 
 PATTERN_NAME = "Pipeline"
 
