@@ -13,7 +13,7 @@ import numpy as np
 
 #------------------------------------------------------------------------------
 #
-def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step_end_time_abs):
+def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step_end_time_abs, num_kerns=1):
     """
     This function extracts timing from a set of CUs:
 
@@ -26,182 +26,123 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
 
     Timings are returned both as absolute and as relative measures.
     """
-    #step_start_time_rel = step_start_time_abs - pattern_start_time_abs
-    #step_end_time_rel = step_end_time_abs - pattern_start_time_abs
 
     step_execution_time_abs = None
     step_data_movement_time_abs = None
 
     step_total_time = step_end_time_abs - step_start_time_abs
-    #all_id_start = []; all_od_start = []; all_ex_start = []
-    #all_id_stop = []; all_od_stop = []; all_ex_stop = []
+
 
     all_id_dur_list = []
     all_od_dur_list = []
     all_ex_dur_list = []
 
-    #t_id_E_abs = None; t_od_E_abs = None; t_ex_E_abs = None; t_startup_E_abs = None
-    #t_id_L_abs = None; t_od_L_abs = None; t_ex_L_abs = None; t_startup_L_abs = None
+    exec_time_ave_kern = []
+    data_time_ave_kern = []
+    exec_time_err_kern = []
+    data_time_err_kern = []
 
-    #t_id_E_rel = None; t_od_E_rel = None; t_ex_E_rel = None
-    #t_id_L_rel = None; t_od_L_rel = None; t_ex_L_rel = None
+    units_per_kern = len(units)/num_kerns
 
-    #Iterate through all the units of the stage/step and extract the timestamps
-    for unit in units:
+    for i in range(0,num_kerns)
 
-        missing_state_ip = False
-        missing_state_op = False
+        units_list = units[i*units_per_kern:(i+1)*units_per_kern]
+        #Iterate through all the units of the stage/step and extract the timestamps
+        for unit in units_list:
 
-        ex_start    = 0
-        ex_stop     = 0
-        id_start    = 0
-        id_stop     = 0
-        od_start    = 0
-        od_stop     = 0 
+            missing_state_ip = False
+            missing_state_op = False
+
+            ex_start    = 0
+            ex_stop     = 0
+            id_start    = 0
+            id_stop     = 0
+            od_start    = 0
+            od_stop     = 0 
 
 
-        #Execution time:
-        if ((unit.start_time is not None) and (unit.stop_time is not None)):
-            ex_start = unit.start_time
-            ex_stop = unit.stop_time
+            #Execution time:
+            if ((unit.start_time is not None) and (unit.stop_time is not None)):
+                ex_start = unit.start_time
+                ex_stop = unit.stop_time
 
-        #Input Staging time + Output Staging time:
-        for state in unit.state_history:
+            #Input Staging time + Output Staging time:
+            for state in unit.state_history:
 
-            #Input Staging start time:
-            #To account for missing states, use both states - PendingInputStaging & StagingInput - using flags
-            if state.state == "PendingInputStaging":
-                if state.timestamp is not None:
-                    id_start = state.timestamp
-            else:
-                missing_state_ip = True
+                #Input Staging start time:
+                #To account for missing states, use both states - PendingInputStaging & StagingInput - using flags
+                if state.state == "PendingInputStaging":
+                    if state.timestamp is not None:
+                        id_start = state.timestamp
+                    else:
+                        missing_state_ip = True
 
-            if ((missing_state_ip==True)and(state.state == "StagingInput")):
-                if state.timestamp is not None:
-                    id_start = state.timestamp
+                if ((missing_state_ip==True)and(state.state == "StagingInput")):
+                    if state.timestamp is not None:
+                        id_start = state.timestamp
+                    else:
+                        continue
+
+                #Input Staging stop time:
+                if state.state == "Allocating":
+                    if state.timestamp is not None:
+                        id_stop = state.timestamp
+
+
+                #Output Staging start time:
+                #To account for missing states, use both states - PendingAgentOutputStaging & AgentStagingOutput - using flags
+                if state.state == "PendingAgentOutputStaging":
+                    if state.timestamp is not None:
+                        od_start = state.timestamp
                 else:
-                    continue
+                    missing_state_op = True
 
-            #Input Staging stop time:
-            if state.state == "Allocating":
-                if state.timestamp is not None:
-                    id_stop = state.timestamp
+                if ((missing_state_op==True)and(state.state == "AgentStagingOutput")):
+                    if state.timestamp is not None:
+                        od_start = state.timestamp
+                    else:
+                        continue
 
+                #Output Staging stop time:
+                if state.state == "Done":
+                    if state.timestamp is not None:
+                        od_stop = state.timestamp
 
-            #Output Staging start time:
-            #To account for missing states, use both states - PendingAgentOutputStaging & AgentStagingOutput - using flags
-            if state.state == "PendingAgentOutputStaging":
-                if state.timestamp is not None:
-                    od_start = state.timestamp
-            else:
-                missing_state_op = True
+            #Aggregation per CU
+            all_ex_dur_list.append((ex_stop - ex_start).total_seconds())
+            all_id_dur_list.append((id_stop - id_start).total_seconds())
+            all_od_dur_list.append((od_stop - od_start).total_seconds())
 
-            if ((missing_state_op==True)and(state.state == "AgentStagingOutput")):
-                if state.timestamp is not None:
-                    od_start = state.timestamp
-                else:
-                    continue
+        #Aggregation per kernel within same stage/step
+        exec_time_ave_kern.append(np.average(all_ex_dur_list))
+        data_time_ave_kern.append(np.average(all_id_dur_list)+np.average(all_od_dur_list))
+        
+        #Find standard errors
+        exec_time_err_kern.append(math.sqrt(np.var(all_ex_dur_list))/len(all_ex_dur_list))
+        data_time_err_kern.append(math.sqrt(np.var(all_id_dur_list) + np.var(all_od_dur_list)))/len(all_id_dur_list)
 
-            #Output Staging stop time:
-            if state.state == "Done":
-                if state.timestamp is not None:
-                    od_stop = state.timestamp
-
-        all_ex_dur_list.append((ex_stop - ex_start).total_seconds())
-        all_id_dur_list.append((id_stop - id_start).total_seconds())
-        all_od_dur_list.append((od_stop - od_start).total_seconds())
-
-    # Find the earliest / latest timings from the timing arrays
-    '''
-    if len(all_id_start) > 0:
-        t_id_E_abs = min(all_id_start)
-    if len(all_id_stop) > 0:
-        t_id_L_abs = max(all_id_stop)
-    if len(all_od_start) > 0:
-        t_od_E_abs = min(all_od_start)
-    if len(all_od_stop) > 0:
-        t_od_L_abs = max(all_od_stop)
-    if len(all_ex_start) > 0:
-        t_ex_E_abs = min(all_ex_start)
-    if len(all_ex_stop) > 0:
-        t_ex_L_abs = max(all_ex_stop)
-    '''
-
-    #cases when CU does not reach PendingExecution Step
-    '''
-    if t_id_L_abs is None:
-        t_id_L_abs = t_ex_E_abs
-    '''
-
-    # Determine the time 'origin' for relative timings
-    '''
-    if t_id_E_abs is not None:
-        t_origin = t_id_E_abs
-    else:
-        t_origin = t_ex_E_abs
-
-    if len(all_id_start) > 0:
-        t_id_E_rel = step_start_time_rel + t_id_E_abs - t_origin
-    if len(all_id_stop) > 0:
-        t_id_L_rel = step_start_time_rel + t_id_L_abs - t_origin
-    if len(all_od_start) > 0:
-        t_od_E_rel = step_start_time_rel + t_od_E_abs - t_origin
-    if len(all_od_stop) > 0:
-        t_od_L_rel = step_start_time_rel + t_od_L_abs - t_origin
-    if len(all_ex_start) > 0:
-        t_ex_E_rel = step_start_time_rel + t_ex_E_abs - t_origin
-    if len(all_ex_stop) > 0:
-        t_ex_L_rel =step_start_time_rel +  t_ex_L_abs - t_origin
-    '''
-
-    '''
-    #Old dataframe
-    return {
-        "step_start_time": {
-            "abs": step_start_time_abs,
-        #    "rel": step_start_time_rel
-        },
-        "step_end_time": {
-            "abs": step_end_time_abs,
-        #    "rel": step_end_time_rel
-        },
-        "first_data_stagein_started": {
-            "abs": t_id_E_abs,
-        #    "rel": t_id_E_rel
-        },
-        "last_data_stagein_finished": {
-            "abs": t_id_L_abs,
-        #    "rel": t_id_L_rel
-        },
-
-        "first_data_stageout_started": {
-            "abs": t_od_E_abs,
-        #    "rel": t_od_E_rel
-        },
-        "last_data_stageout_finished": {
-            "abs": t_od_L_abs,
-        #    "rel": t_od_L_rel
-        },
-
-        "first_execution_started": {
-            "abs": t_ex_E_abs,
-        #    "rel": t_ex_E_rel
-        },
-        "last_execution_finished": {
-            "abs": t_ex_L_abs,
-        #    "rel": t_ex_L_rel
-        }
-    }
-    '''
+    #Aggregation per stage/step
+    summ=0
+    #new stderr = sqrt(s1^2 + s2^2)
+    for i in range(0,num_kerns):
+        summ+=exec_time_err_kern[i]*exec_time_err_kern[i]
+    err_exec_abs = math.sqrt(summ)
+    ave_exec_abs = sum(exec_time_ave_kern)
+    
+    summ=0
+    for i in range(0,num_kerns):
+        summ+=data_time_err_kern[i]*data_time_err_kern[i]
+    err_data_abs = math.sqrt(summ)
+    ave_data_abs = sum(data_time_ave_kern)
 
     return {
         "execution_time": {
-                "average":np.average(all_ex_dur_list),
-                "error": (np.std(all_ex_dur_list)/len(all_ex_dur_list))
+                "average":ave_exec_abs,
+                "error": err_exec_abs
                 },
         "data_movement_time": {
-            "average": np.average(all_id_dur_list)+np.average(all_od_dur_list),
-            "error": (math.sqrt(np.var(all_id_dur_list) + np.var(all_od_dur_list)))/len(all_id_dur_list)
+            "average": , ave_data_abs,
+            "error": err_data_abs
              },
             
         "step_time": (step_end_time_abs - step_start_time_abs).total_seconds(),
