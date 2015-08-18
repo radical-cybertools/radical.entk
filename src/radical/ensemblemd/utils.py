@@ -44,7 +44,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
 
     units_per_kern = len(units)/num_kerns
 
-    for i in range(0,num_kerns)
+    for i in range(0,num_kerns):
 
         units_list = units[i*units_per_kern:(i+1)*units_per_kern]
         #Iterate through all the units of the stage/step and extract the timestamps
@@ -74,8 +74,8 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
                 if state.state == "PendingInputStaging":
                     if state.timestamp is not None:
                         id_start = state.timestamp
-                    else:
-                        missing_state_ip = True
+                else:
+                    missing_state_ip = True
 
                 if ((missing_state_ip==True)and(state.state == "StagingInput")):
                     if state.timestamp is not None:
@@ -141,7 +141,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
                 "error": err_exec_abs
                 },
         "data_movement_time": {
-            "average": , ave_data_abs,
+            "average": ave_data_abs,
             "error": err_data_abs
              },
             
