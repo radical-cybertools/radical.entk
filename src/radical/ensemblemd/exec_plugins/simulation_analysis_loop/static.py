@@ -711,7 +711,7 @@ class Plugin(PluginBase):
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_ana_kerns)
 
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
