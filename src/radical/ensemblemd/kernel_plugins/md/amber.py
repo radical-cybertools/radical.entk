@@ -186,10 +186,10 @@ class Kernel(KernelBase):
                             '-c','md%s.crd'%self.get_arg("--cycle="),
                         ]
        
-            self._executable  = "pmemd.MPI"
+            self._executable  = "pmemd"
             self._arguments   = arguments
             self._environment = cfg["environment"]
-            self._uses_mpi    = cfg["uses_mpi"]
+            self._uses_mpi    = False
             self._pre_exec    = cfg["pre_exec"] 
             self._post_exec   = None
         

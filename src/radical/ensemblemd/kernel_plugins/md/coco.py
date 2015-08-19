@@ -62,16 +62,15 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load intel/13.0.2.146",
+            "pre_exec" : [  "module load TACC",
+                            "module load intel/13.0.2.146",
                             "module load python/2.7.9",
-                            "module load mpi4py",
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
-                            "module load amber",
-                            "export PYTHONPATH=/work/02998/ardi/coco-0.6_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.6_installation/bin:$PATH"],
-            "executable" : ["pyCoCo"],
-            "uses_mpi"   : True
+                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.9_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.9_installation/bin:$PATH"],
+            "executable" : ["python"],
+            "uses_mpi"   : False    #Fails with sel.atoms error if True
         },
 
         "epsrc.archer":
@@ -118,13 +117,15 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg["executable"]
-        arguments = [
+        arguments = ['pycoco.py'
                     '--grid','{0}'.format(self.get_arg("--grid=")),
                     '--dims','{0}'.format(self.get_arg("--dims=")),
                     '--frontpoints','{0}'.format(self.get_arg("--frontpoints=")),
                     '--topfile','{0}'.format(self.get_arg("--topfile=")),
                     '--mdfile','{0}'.format(self.get_arg("--mdfile=")),
-                    '--output','{0}'.format(self.get_arg("--output="))
+                    '--output','{0}'.format(self.get_arg("--output=")),
+                    '--logfile','coco.log',
+                    '--mpi'
                     ]
                                                                      
        

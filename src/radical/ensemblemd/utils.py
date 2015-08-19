@@ -119,7 +119,7 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
         
         #Find standard errors
         exec_time_err_kern.append(math.sqrt(np.var(all_ex_dur_list))/len(all_ex_dur_list))
-        data_time_err_kern.append(math.sqrt(np.var(all_id_dur_list) + np.var(all_od_dur_list)))/len(all_id_dur_list)
+        data_time_err_kern.append(math.sqrt(np.var(all_id_dur_list) + np.var(all_od_dur_list))/len(all_id_dur_list))
 
     #Aggregation per stage/step
     summ=0
