@@ -145,6 +145,8 @@ class Plugin(PluginBase):
         working_dirs = {}
         all_cus = []
 
+        #print resource._pilot.description['cores']
+
         self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
         resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
 
@@ -467,7 +469,7 @@ class Plugin(PluginBase):
        
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_sim_kerns)
+                    tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_sim_kerns,resource._pilot.description['cores'])
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
 
@@ -711,7 +713,7 @@ class Plugin(PluginBase):
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_ana_kerns)
+                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_ana_kerns,resource._pilot.description['cores'])
 
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
