@@ -33,10 +33,6 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     step_total_time = step_end_time_abs - step_start_time_abs
 
 
-    all_id_dur_list = []
-    all_od_dur_list = []
-    all_ex_dur_list = []
-
     exec_time_ave_kern = []
     data_time_ave_kern = []
     exec_time_err_kern = []
@@ -45,6 +41,10 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
     units_per_kern = len(units)/num_kerns
 
     for i in range(0,num_kerns):
+
+        all_id_dur_list = []
+        all_od_dur_list = []
+        all_ex_dur_list = []
 
         units_list = units[i*units_per_kern:(i+1)*units_per_kern]
         #Iterate through all the units of the stage/step and extract the timestamps

@@ -117,7 +117,7 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg["executable"]
-        arguments = ['pycoco.py'
+        arguments = ['pycoco.py',
                     '--grid','{0}'.format(self.get_arg("--grid=")),
                     '--dims','{0}'.format(self.get_arg("--dims=")),
                     '--frontpoints','{0}'.format(self.get_arg("--frontpoints=")),
