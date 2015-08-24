@@ -79,6 +79,19 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],
             "executable" : ["pyCoCo"],
             "uses_mpi"   : True
+        },
+
+        "lsu.supermic":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load hdf5/1.8.12/INTEL-140-MVAPICH2-2.0",
+                        "module load netcdf/4.2.1.1/INTEL-140-MVAPICH2-2.0",
+                        "module load fftw/3.3.3/INTEL-140-MVAPICH2-2.0",
+                        "module load python/2.7.7-anaconda",
+                        "export PATH=/home/vivek91/.local/bin:$PATH",
+                        "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
         }
     }
 }

@@ -103,12 +103,13 @@ _KERNEL_INFO = {
             "executable" : ["pmemd.MPI"],
             "uses_mpi"   : True
         },
-        "xsede.gordon":
+        "lsu.supermic":
         {
-                "environment" : {},
-                "pre_exec"    : ["module load python", "module load amber"],
-                "executable"  : ["/opt/amber/bin/sander"],
-                "uses_mpi"    : False
+            "environment" : {},
+            "pre_exec"    : [". /home/vivek91/modules/amber14/amber.sh",
+                            "export PATH=$PATH:/home/vivek91/modules/amber14/bin"],
+            "executable"  : ["sander"],
+            "uses_mpi"    : False
         },
         "xsede.comet":
         {
@@ -186,7 +187,7 @@ class Kernel(KernelBase):
                             '-c','md%s.crd'%self.get_arg("--cycle="),
                         ]
        
-            self._executable  = "pmemd"
+            self._executable  = cfg["executable"]
             self._arguments   = arguments
             self._environment = cfg["environment"]
             self._uses_mpi    = False

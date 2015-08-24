@@ -59,6 +59,20 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],
             "executable" : ["python"],
             "uses_mpi"   : False
+        },
+
+        "lsu.supermic":
+        {
+            "environment" : {},
+            "pre_exec" : [". /home/vivek91/modules/amber14/amber.sh",
+                        "export PATH=/home/vivek91/.local/bin:/home/vivek91/modules/amber14/bin:/home/vivek91/modules/amber14/dat/leap/cmd:$PATH",
+                        "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH",
+                        "module load hdf5/1.8.12/INTEL-140-MVAPICH2-2.0",
+                        "module load netcdf/4.2.1.1/INTEL-140-MVAPICH2-2.0",
+                        "module load fftw/3.3.3/INTEL-140-MVAPICH2-2.0",
+                        "module load python/2.7.7-anaconda"],
+            "executable" : ["python"],
+            "uses_mpi"   : False
         }
     }
 }
