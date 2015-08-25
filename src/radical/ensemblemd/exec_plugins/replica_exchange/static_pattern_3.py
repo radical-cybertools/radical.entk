@@ -12,7 +12,6 @@ __license__   = "MIT"
 
 import os
 import sys
-import traceback
 import time
 import random
 import datetime
@@ -61,8 +60,8 @@ class Plugin(PluginBase):
             do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
 
             if do_profile == '1':
-                pattern._execution_profile = []
-                all_cus = []
+                cu_performance_data = {}
+                step_performance_data = {}
  
             # shared data
             pattern.prepare_shared_data()
@@ -101,11 +100,17 @@ class Plugin(PluginBase):
 
             for c in range(1, cycles):
                 if do_profile == '1':
-                    step_timings = {
-                        "name": "md_run_{0}".format(c),
-                        "timings": {}
-                    }
                     step_start_time_abs = datetime.datetime.now()
+
+                    cu_performance_data['cycle_{0}'.format(c)] = {}
+                    cu_performance_data['cycle_{0}'.format(c)]['md_step'] = {}
+
+                    step_performance_data['cycle_{0}'.format(c)] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']      = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_start_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']      = step_start_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_start_time_abs'] = step_start_time_abs
 
                 md_units = []
                 cus = []
@@ -178,184 +183,241 @@ class Plugin(PluginBase):
                 for r in sub_replicas:
                     md_units.append(r)                 
 
-                if do_profile == '1':
-                    all_cus.extend(md_units)
-         
                 self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
+                if do_profile == '1':
+                    enmd_ov_step_end_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = enmd_ov_step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds() 
+
                 resource._umgr.wait_units()
 
                 if do_profile == '1':
-                    step_end_time_abs = datetime.datetime.now()          
+                    step_end_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_end_time_abs'] =  step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['duration'] = (step_end_time_abs - step_start_time_abs).total_seconds() 
+
+                    for cu in sub_replicas:    
+                        cu_performance_data['cycle_{0}'.format(c)]['md_step']["cu.uid_{0}".format(cu.uid)] = cu 
  
+                #---------------------------------------------------------------
                 failed_units = ""
                 for unit in md_units:
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * MD step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                if len(failed_units) > 0:
-                    sys.exit()
+                #if len(failed_units) > 0:
+                #    sys.exit()
 
-                if do_profile == '1':
-                    # Process CU information and append it to the dictionary
-                    if isinstance(pattern_start_time, datetime.datetime):
-                        if isinstance(step_start_time_abs, datetime.datetime):
-                            if isinstance(step_end_time_abs, datetime.datetime):
-                                tinfo = extract_timing_info(md_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
-                            else:
-                                sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                        else:
-                            sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                    else:
-                        sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
-
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
-
-                    # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
+                #---------------------------------------------------------------
+                # exchange 
                 #---------------------------------------------------------------
 
-                if (c <= cycles):
-                    if do_profile == '1':
-                        step_timings = {
-                            "name": "ex_run_{0}".format(c),
-                            "timings": {}
-                        }
-                        step_start_time_abs = datetime.datetime.now()
-                    #-----------------------------------------------------------
-                    # global calc
-                    #----------- ------------------------------------------------
-                    ex_units = []
+                if do_profile == '1':
+                    step_start_time_abs = datetime.datetime.now()
+                    cu_performance_data['cycle_{0}'.format(c)]['ex_step'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_start_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_start_time_abs'] = step_start_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_start_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_start_time_abs'] = step_start_time_abs
+                
+                ex_units = []
 
-                    self.get_logger().info("Cycle %d: Preparing replicas for Exchange-Step" % (c) )
+                self.get_logger().info("Cycle %d: Preparing replicas for Exchange-Step" % (c) )
 
-                    gl_ex_kernel = pattern.prepare_global_ex_calc(GL, c, \
+                gl_ex_kernel = pattern.prepare_global_ex_calc(GL, c, \
                                                                   replicas)
-                    gl_ex_kernel._bind_to_resource(resource._resource_key)
+                gl_ex_kernel._bind_to_resource(resource._resource_key)
 
-                    cu = radical.pilot.ComputeUnitDescription()
+                cu = radical.pilot.ComputeUnitDescription()
 
-                    #-----------------------------------------------------------
-                    copy_out = []
+                #---------------------------------------------------------------
+                copy_out = []
                     
-                    items_out = gl_ex_kernel._kernel._copy_output_data
-                    if items_out:                    
-                        for item in items_out:
-                            i_out = {
-                                'source': item,
-                                'target': 'staging:///%s' % item,
-                                'action': radical.pilot.COPY
-                            }
-                            copy_out.append(i_out)
-                    #-----------------------------------------------------------
-                    copy_in = []
-                    
-                    items_in = gl_ex_kernel._kernel._copy_input_data
-                    if items_in:                    
-                        for item in items_in:
-                            i_in = {
-                                'source': 'staging:///%s' % item,
-                                'target': item,
-                                'action': radical.pilot.COPY
-                            }
-                            copy_in.append(i_in)
-                    #-----------------------------------------------------------
-                    in_list = []
-                    if gl_ex_kernel._cu_def_input_data:
-                        in_list = in_list + gl_ex_kernel._cu_def_input_data
-                    if copy_in:
-                        in_list = in_list + copy_in
-                    cu.input_staging  = in_list
-                    #-----------------------------------------------------------
-                    out_list = []
-                    if gl_ex_kernel._cu_def_output_data:
-                        out_list = out_list + gl_ex_kernel._cu_def_output_data
-                    if copy_out:
-                        out_list = out_list + copy_out
-                    cu.output_staging = out_list
-                    #-----------------------------------------------------------
-                    cu.pre_exec       = gl_ex_kernel._cu_def_pre_exec
-                    cu.executable     = gl_ex_kernel._cu_def_executable
-                    cu.post_exec      = gl_ex_kernel._cu_def_post_exec
-                    cu.arguments      = gl_ex_kernel.arguments
-                    cu.mpi            = gl_ex_kernel.uses_mpi
-                    cu.cores          = gl_ex_kernel.cores
-
-                    sub_replica = resource._umgr.submit_units(cu)
-                    resource._umgr.wait_units()
-
-                    ex_units.append(sub_replica)
-                    
-                    if do_profile == '1':
-                        step_end_time_abs = datetime.datetime.now()
-                        all_cus.extend(ex_units)
-                    
-                    failed_units = ""
-                    for unit in ex_units:
-                        if unit.state != radical.pilot.DONE:
-                            failed_units += " * EX step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
-
-                    if len(failed_units) > 0:
-                        sys.exit()
-                    
-                    if do_profile == '1':
-                        # Process CU information and append it to the dictionary
-                        if isinstance(pattern_start_time, datetime.datetime):
-                            if isinstance(step_start_time_abs, datetime.datetime):
-                                if isinstance(step_end_time_abs, datetime.datetime):
-                                    tinfo = extract_timing_info(ex_units, pattern_start_time, step_start_time_abs, step_end_time_abs)
-                                else:
-                                    sys.exit("Ensemble MD Toolkit Error: step_end_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                            else:
-                                sys.exit("Ensemble MD Toolkit Error: step_start_time_abs for {0} is not datetime.datetime instance.".format(step_timings["name"]))
-                        else:
-                            sys.exit("Ensemble MD Toolkit Error: pattern_start_time is not datetime.datetime instance.")
-
-                        for key, val in tinfo.iteritems():
-                            step_timings['timings'][key] = val
-
-                        # Write the whole thing to the profiling dict
-                        pattern._execution_profile.append(step_timings)
-
-                        step_timings = {
-                            "name": "post_processing_{0}".format(c),
-                            "timings": {}
+                items_out = gl_ex_kernel._kernel._copy_output_data
+                if items_out:                    
+                    for item in items_out:
+                        i_out = {
+                            'source': item,
+                            'target': 'staging:///%s' % item,
+                            'action': radical.pilot.COPY
                         }
-                        step_start_time_abs = datetime.datetime.now()
+                        copy_out.append(i_out)
+                #---------------------------------------------------------------
+                copy_in = []
                     
-                    #-----------------------------------------------------------
-                    pattern.do_exchange(c, replicas)
+                items_in = gl_ex_kernel._kernel._copy_input_data
+                if items_in:                    
+                    for item in items_in:
+                        i_in = {
+                            'source': 'staging:///%s' % item,
+                            'target': item,
+                            'action': radical.pilot.COPY
+                        }
+                        copy_in.append(i_in)
+                #---------------------------------------------------------------
+                in_list = []
+                if gl_ex_kernel._cu_def_input_data:
+                    in_list = in_list + gl_ex_kernel._cu_def_input_data
+                if copy_in:
+                    in_list = in_list + copy_in
+                cu.input_staging  = in_list
+                #---------------------------------------------------------------
+                out_list = []
+                if gl_ex_kernel._cu_def_output_data:
+                    out_list = out_list + gl_ex_kernel._cu_def_output_data
+                if copy_out:
+                    out_list = out_list + copy_out
+                cu.output_staging = out_list
+                #---------------------------------------------------------------
+                cu.name           = "gl_ex ;{cycle}".format(cycle=c)
+                cu.pre_exec       = gl_ex_kernel._cu_def_pre_exec
+                cu.executable     = gl_ex_kernel._cu_def_executable
+                cu.post_exec      = gl_ex_kernel._cu_def_post_exec
+                cu.arguments      = gl_ex_kernel.arguments
+                cu.mpi            = gl_ex_kernel.uses_mpi
+                cu.cores          = gl_ex_kernel.cores
 
-                    if do_profile == '1':
-                        step_end_time_abs = datetime.datetime.now()
+                sub_replica = resource._umgr.submit_units(cu)
+ 
+                if do_profile == '1':
+                    enmd_ov_step_end_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_end_time_abs'] = enmd_ov_step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds()  
 
-                        # processing timings
-                        step_start_time_rel = step_start_time_abs - pattern_start_time
-                        step_end_time_rel = step_end_time_abs - pattern_start_time
 
-                        tinfo = {
-                                    "step_start_time": {
-                                        "abs": step_start_time_abs,
-                                        "rel": step_start_time_rel
-                                    },
-                                    "step_end_time": {
-                                        "abs": step_end_time_abs,
-                                        "rel": step_end_time_rel
-                                    }
-                                }
+                resource._umgr.wait_units()
 
-                        for key, val in tinfo.iteritems():
-                            step_timings['timings'][key] = val
+                ex_units.append(sub_replica)
+                    
+                if do_profile == '1':
+                    step_end_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_end_time_abs'] = step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['ex_step']['duration'] = (step_end_time_abs - step_start_time_abs).total_seconds()  
 
-                        # Write the whole thing to the profiling dict
-                        pattern._execution_profile.append(step_timings)
-                    #-----------------------------------------------------------    
+                    for cu in ex_units:    
+                        cu_performance_data['cycle_{0}'.format(c)]['ex_step']["cu.uid_{0}".format(cu.uid)] = cu 
+                    
+                failed_units = ""
+                for unit in ex_units:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * EX step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+                #if len(failed_units) > 0:
+                #    sys.exit()
+
+                #---------------------------------------------------------------
+                # post processing
+                #---------------------------------------------------------------
+                 
+                if do_profile == '1':
+                    step_start_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_start_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_start_time_abs'] = step_start_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_step_start_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_step_start_time_abs'] = step_start_time_abs
+                
+                #---------------------------------------------------------------
+                pattern.do_exchange(c, replicas)
+                
+                if do_profile == '1':
+                    step_end_time_abs = datetime.datetime.now()
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_end_time_abs'] = step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_step_end_time_abs'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_step_end_time_abs'] = step_end_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['duration'] = ( step_end_time_abs - step_start_time_abs ).total_seconds()
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_duration'] = {}
+                    step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_duration'] = ( step_end_time_abs - step_start_time_abs ).total_seconds()
+                
+                #---------------------------------------------------------------    
     
+            #-------------------------------------------------------------------
             # End of simulation loop
             #-------------------------------------------------------------------
-            self.get_logger().info("Replica Exchange simulation finished successfully!")
+            outfile = "execution_profile_{mysession}.csv".format(mysession=resource._session.uid)
+            with open(outfile, 'w+') as f:
+
+                head = "Cycle; Step; Start; Stop; Duration"
+                f.write("{row}\n".format(row=head))
+
+                for cycle in step_performance_data:
+                    for step in step_performance_data[cycle].keys():
+                        dur = step_performance_data[cycle][step]['duration']
+                        start = step_performance_data[cycle][step]['step_start_time_abs']
+                        end = step_performance_data[cycle][step]['step_end_time_abs']
+                        row = "{Cycle}; {Step}; {Start}; {End}; {Duration}".format(
+                            Duration=dur,
+                            Cycle=cycle,
+                            Step=step,
+                            Start=start,
+                            End=end)
+
+                        f.write("{r}\n".format(r=row))
+                        #-------------------------------------------------------
+                        # enmd overhead
+                        dur = step_performance_data[cycle][step]['enmd_ov_duration']
+                        start = step_performance_data[cycle][step]['enmd_ov_step_start_time_abs']
+                        end = step_performance_data[cycle][step]['enmd_ov_step_end_time_abs']
+                        row = "{Cycle}; {Step}; {Start}; {End}; {Duration}".format(
+                            Duration=dur,
+                            Cycle=cycle,
+                            Step=step + "_enmd_overhead",
+                            Start=start,
+                            End=end)
+
+                        f.write("{r}\n".format(r=row))
+
+                #---------------------------------------------------------------
+                head = "CU_ID; Scheduling; StagingInput; Allocating; Executing; StagingOutput; Done; Cycle; Step;"
+                f.write("{row}\n".format(row=head))
             
-        
-        except KeyboardInterrupt:
-            traceback.print_exc()
+                for cycle in cu_performance_data:
+                    for step in cu_performance_data[cycle].keys():
+                        for cid in cu_performance_data[cycle][step].keys():
+                            cu = cu_performance_data[cycle][step][cid]
+                            st_data = {}
+                            for st in cu.state_history:
+                                st_dict = st.as_dict()
+                                st_data["{0}".format( st_dict["state"] )] = {}
+                                st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+
+                            #print st_data
+                            #start = step_performance_data[cycle][step]['step_start_time_abs']
+                            if 'StagingOutput' not in st_data:
+                                st_data['StagingOutput'] = st_data['Executing']
+
+                            if 'Done' not in st_data:
+                                st_data['Done'] = st_data['Executing']
+
+                            row = "{uid}; {Scheduling}; {StagingInput}; {Allocating}; {Executing}; {StagingOutput}; {Done}; {Cycle}; {Step}".format(
+                                uid=cu.uid,
+                                Scheduling=(st_data['Scheduling']),
+                                StagingInput=(st_data['StagingInput']),
+                                Allocating=(st_data['Allocating']),
+                                Executing=(st_data['Executing']),
+                                StagingOutput=(st_data['StagingOutput']),
+                                Done=(st_data['Done']),
+                                Cycle=cycle,
+                                Step=step)
+                        
+                            f.write("{r}\n".format(r=row))
+
+        except Exception, ex:
+            self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
+            raise
+
+        self.get_logger().info("Replica Exchange simulation finished successfully!")
+        self.get_logger().info("Deallocating resource.")
+        resource.deallocate()
 

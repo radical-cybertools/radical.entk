@@ -67,10 +67,17 @@ _KERNEL_INFO = {
         "xsede.comet":
         {
                 "environment" : {},
-                "pre_exec"    : ["module load python"],
+                "pre_exec"    : ["module load amber", "module load python", "module load mpi4py"],
                 "executable"  : ["python"],
                 "uses_mpi"    : False
         },
+        "lsu.supermic":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load python"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        }
     }
 }
 
