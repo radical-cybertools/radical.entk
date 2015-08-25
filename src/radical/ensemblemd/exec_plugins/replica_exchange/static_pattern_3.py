@@ -15,6 +15,7 @@ import sys
 import time
 import random
 import datetime
+import traceback
 import radical.pilot
 from radical.ensemblemd.utils import extract_timing_info
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
@@ -413,9 +414,8 @@ class Plugin(PluginBase):
                         
                             f.write("{r}\n".format(r=row))
 
-        except Exception, ex:
-            self.get_logger().exception("Fatal error during execution: {0}.".format(str(ex)))
-            raise
+        except KeyboardInterrupt:
+            traceback.print_exc()
 
         self.get_logger().info("Replica Exchange simulation finished successfully!")
         self.get_logger().info("Deallocating resource.")
