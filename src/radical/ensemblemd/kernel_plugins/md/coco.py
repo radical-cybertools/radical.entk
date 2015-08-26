@@ -92,7 +92,20 @@ _KERNEL_INFO = {
                         "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH"],
             "executable" : ["python"],
             "uses_mpi"   : True
-        }
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load hdf5/1.8.14",
+                        "module load netcdf/4.3.2",
+                        "module load fftw/3.3.4",
+                        "module load python",
+                        "module load scipy",
+                        "module load mpi4py",
+                        "export PYTHONPATH=$PYTHONPATH:/home/vivek91/.local/lib/python2.7/site-packages"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
     }
 }
 

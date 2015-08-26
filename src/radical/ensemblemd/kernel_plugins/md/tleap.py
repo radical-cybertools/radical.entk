@@ -73,7 +73,21 @@ _KERNEL_INFO = {
                         "module load python/2.7.7-anaconda"],
             "executable" : ["python"],
             "uses_mpi"   : False
-        }
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load hdf5/1.8.14",
+                        "module load netcdf/4.3.2",
+                        "module load fftw/3.3.4",
+                        "module load python",
+                        "module load scipy",
+                        "module load mpi4py",
+                        "module load amber",
+                        "export PYTHONPATH=$PYTHONPATH:/home/vivek91/.local/lib/python2.7/site-packages"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
     }
 }
 

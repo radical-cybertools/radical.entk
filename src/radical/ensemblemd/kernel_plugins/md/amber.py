@@ -118,13 +118,6 @@ _KERNEL_INFO = {
                 "executable"  : ["/opt/amber/bin/sander"],
                 "uses_mpi"    : False
         },
-        "localhost":
-        {
-                "environment" : {},
-                "pre_exec"    : [],
-                "executable"  : ["$AMBERHOME/bin/sander"],
-                "uses_mpi"    : False
-        },
     }
 }
 
