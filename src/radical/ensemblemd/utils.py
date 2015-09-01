@@ -13,7 +13,7 @@ import numpy as np
 
 #------------------------------------------------------------------------------
 #
-def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step_end_time_abs, num_kerns=1,cores=None):
+def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step_end_time_abs, enmd_overhead, num_kerns=1,cores=None):
     """
     This function extracts timing from a set of CUs:
 
@@ -178,8 +178,9 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
             "average": ave_data_abs,
             "error": err_data_abs
              },
-            
-        "step_time": (step_end_time_abs - step_start_time_abs).total_seconds(),
+        "enmd_overhead_pat": enmd_overhead,
+        "rp_overhead": ((step_end_time_abs - step_start_time_abs).total_seconds()) - 
+                        ave_data_abs - ave_exec_abs - enmd_overhead,
         }
     
 
@@ -193,47 +194,27 @@ def dataframes_from_profile_dict(profile):
         print ex
         return None
 
-    #cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs','first_started_rel', 'last_finished_rel']
-    #cols = ['pattern_entity', 'value_type', 'first_started_abs', 'last_finished_abs']
     cols = ['pattern_entity','value_type','average duration', 'error']
     df = pd.DataFrame(columns=cols)
 
     # iterate over the entities
     for entity in profile:
-        #start_abs = entity['timings']['step_start_time']['abs']
-        #end_abs = entity['timings']['step_end_time']['abs']
-        step_duration_abs = entity['timings']['step_time']
-        #start_rel = entity['timings']['step_start_time']['rel']
-        #end_rel = entity['timings']['step_end_time']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'pattern_step', start_abs, end_abs, start_rel, end_rel]],columns=cols)
-        df2 = pd.DataFrame([[entity['name'], 'pattern_step', step_duration_abs,0]],columns=cols)
+        enmd_overhead_pat = entity['timings']['enmd_overhead_pat']
+        df2 = pd.DataFrame([[entity['name'], 'enmd_overhead_pat',enmd_overhead_pat,0]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
-        #start_abs = entity['timings']['first_data_stagein_started']['abs']
-        #end_abs   = entity['timings']['last_data_stagein_finished']['abs']
-        #start_rel = entity['timings']['first_data_stagein_started']['rel']
-        #end_rel   = entity['timings']['last_data_stagein_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs, start_rel, end_rel]],columns=cols)
-        #df2 = pd.DataFrame([[entity['name'], 'data_stagein', start_abs, end_abs]],columns=cols)
-        #df = df.append(df2, ignore_index=True )
+        rp_overhead = entity['timings']['rp_overhead']
+        df2 = pd.DataFrame([[entity['name'], 'rp_overhead',rp_overhead,0]],columns=cols)
+        df = df.append(df2, ignore_index=True )
 
-        #start_abs = entity['timings']['first_execution_started']['abs']
-        #end_abs   = entity['timings']['last_execution_finished']['abs']
+
         execution_time_average = entity['timings']['execution_time']['average']
         execution_time_error = entity['timings']['execution_time']['error']
-        #start_rel = entity['timings']['first_execution_started']['rel']
-        #end_rel   = entity['timings']['last_execution_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'execution', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df2 = pd.DataFrame([[entity['name'], 'execution', execution_time_average,execution_time_error]],columns=cols)
         df = df.append(df2, ignore_index=True )
 
-        #start_abs = entity['timings']['first_data_stageout_started']['abs']
-        #end_abs   = entity['timings']['last_data_stageout_finished']['abs']
         data_movement_time_average = entity['timings']['data_movement_time']['average']
         data_movement_time_error = entity['timings']['data_movement_time']['error']
-        #start_rel = entity['timings']['first_data_stageout_started']['rel']
-        #end_rel   = entity['timings']['last_data_stageout_finished']['rel']
-        #df2 = pd.DataFrame([[entity['name'], 'data_stageout', start_abs, end_abs, start_rel, end_rel]],columns=cols)
         df2 = pd.DataFrame([[entity['name'], 'data_movement', data_movement_time_average,data_movement_time_error]],columns=cols)
         df = df.append(df2, ignore_index=True )
 

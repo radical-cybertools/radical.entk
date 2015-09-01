@@ -176,7 +176,7 @@ class Plugin(PluginBase):
                     }
                     step_start_time_abs = datetime.datetime.now()
 
-
+                enmd_overhead_preloop_start = datetime.datetime.now()
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
 
@@ -197,7 +197,11 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
+                if profiling == 1:
+                    enmd_overhead_preloop_wait = datetime.datetime.now()
                 resource._umgr.wait_units()
+                if profiling == 1:
+                    enmd_overhead_preloop_res = datetime.datetime.now()
                 self.get_logger().info("Pre_loop completed.")
 
                 if profiling == 1:
@@ -210,7 +214,14 @@ class Plugin(PluginBase):
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(pre_loop_cu, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    enmd_overhead_preloop_stop = datetime.datetime.now()
+                    enmd_overhead_preloop = (enmd_overhead_preloop_stop - enmd_overhead_preloop_res).total_seconds() + (enmd_overhead_preloop_wait - enmd_overhead_preloop_start).total_seconds()
+
+                    tinfo = extract_timing_info(pre_loop_cu, 
+                                                pattern_start_time, 
+                                                step_start_time_abs, 
+                                                step_end_time_abs,
+                                                enmd_overhead_preloop)
 
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
@@ -239,6 +250,7 @@ class Plugin(PluginBase):
                         "timings": {}
                     }
                     step_start_time_abs = datetime.datetime.now()
+                    enmd_overhead_sim = 0
 
                 if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
                     num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
@@ -250,6 +262,8 @@ class Plugin(PluginBase):
 
                 for kern_step in range(0,num_sim_kerns):
 
+                    if profiling == 1:
+                        enmd_overhead_sim_start = datetime.datetime.now()
                     s_units = []
                     for s_instance in range(1, pattern._simulation_instances+1):
 
@@ -450,13 +464,21 @@ class Plugin(PluginBase):
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
+                    if profiling == 1:
+                        enmd_overhead_sim_wait = datetime.datetime.now()
                     resource._umgr.wait_units()
+                    if profiling == 1:
+                        enmd_overhead_sim_res = datetime.datetime.now()
                     self.get_logger().info("Simulations in iteration {0}/ kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
 
                     failed_units = ""
                     for unit in s_cus:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+                    if profiling == 1:
+                        enmd_overhead_sim_done = datetime.datetime.now()
+                        enmd_overhead_sim += (enmd_overhead_sim_wait - enmd_overhead_sim_start).total_seconds() + (enmd_overhead_sim_done - enmd_overhead_sim_res).total_seconds()
 
                 if profiling == 1:
                     step_end_time_abs = datetime.datetime.now()
@@ -469,7 +491,13 @@ class Plugin(PluginBase):
        
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_sim_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_sim_kerns,resource._pilot.description['cores'])
+                    tinfo = extract_timing_info(all_sim_cus, 
+                                                pattern_start_time, 
+                                                step_start_time_abs, 
+                                                step_end_time_abs,
+                                                enmd_overhead_sim,
+                                                num_sim_kerns,
+                                                resource._pilot.description['cores'])
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
 
@@ -486,6 +514,7 @@ class Plugin(PluginBase):
                         "timings": {}
                     }
                     step_start_time_abs = datetime.datetime.now()
+                    enmd_overhead_ana = 0
 
                 if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
                     num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
@@ -496,6 +525,9 @@ class Plugin(PluginBase):
                 all_ana_cus = []
 
                 for kern_step in range(0,num_ana_kerns):
+
+                    if profiling == 1:
+                        enmd_overhead_ana_start = datetime.datetime.now()
 
                     a_units = []
                     for a_instance in range(1, pattern._analysis_instances+1):
@@ -695,13 +727,21 @@ class Plugin(PluginBase):
 
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
+                    if profiling == 1:
+                        enmd_overhead_ana_wait = datetime.datetime.now()
                     resource._umgr.wait_units()
+                    if profiling == 1:
+                        enmd_overhead_ana_res = datetime.datetime.now()
                     self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(iteration,kern_step+1,ana_step.name))
 
                     failed_units = ""
                     for unit in a_cus:
                         if unit.state != radical.pilot.DONE:
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
+
+                    if profiling == 1:
+                        enmd_overhead_ana_done = datetime.datetime.now()
+                        enmd_overhead_ana += (enmd_overhead_ana_wait - enmd_overhead_ana_start).total_seconds() + (enmd_overhead_ana_done - enmd_overhead_ana_res).total_seconds()
 
                 if profiling == 1:
                     step_end_time_abs = datetime.datetime.now()
@@ -713,7 +753,13 @@ class Plugin(PluginBase):
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_ana_cus, pattern_start_time, step_start_time_abs, step_end_time_abs,num_ana_kerns,resource._pilot.description['cores'])
+                    tinfo = extract_timing_info(all_ana_cus, 
+                                                pattern_start_time, 
+                                                step_start_time_abs, 
+                                                step_end_time_abs,
+                                                enmd_overhead_ana,
+                                                num_ana_kerns,
+                                                resource._pilot.description['cores'])
 
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val

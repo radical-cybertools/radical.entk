@@ -70,7 +70,7 @@ _KERNEL_INFO = {
                             "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.9_installation/lib/python2.7/site-packages:$PYTHONPATH",
                             "export PATH=/work/02998/ardi/coco-0.9_installation/bin:$PATH"],
             "executable" : ["python"],
-            "uses_mpi"   : False    #Fails with sel.atoms error if True
+            "uses_mpi"   : False    
         },
 
         "epsrc.archer":
@@ -91,7 +91,7 @@ _KERNEL_INFO = {
                         "export PATH=/home/vivek91/.local/bin:$PATH",
                         "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH"],
             "executable" : ["python"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False    
         },
         "xsede.comet":
         {

@@ -150,11 +150,11 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="localhost",
-            cores=1,
+            resource="xsede.stampede",
+            cores=16,
             walltime=30,
-            username=None,
-            project=None,
+            username='vivek91',
+            project='TG-MCB090174',
 	    database_name='myexps',
 	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242'
         )
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16.
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=16)
+        randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=1)
 
         cluster.run(randomsa)
         
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         #pp = pprint.PrettyPrinter()
         #pp.pprint(randomsa.execution_profile_dict)
         
-        df = randomsa.execution_profile_dict
+        df = randomsa.execution_profile_dataframe
         df.to_pickle('exp.pkl')
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.
