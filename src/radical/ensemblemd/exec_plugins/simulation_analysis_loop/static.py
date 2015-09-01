@@ -175,8 +175,9 @@ class Plugin(PluginBase):
                         "timings": {}
                     }
                     step_start_time_abs = datetime.datetime.now()
+                    enmd_overhead_preloop_start = step_start_time_abs
 
-                enmd_overhead_preloop_start = datetime.datetime.now()
+                
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
 
@@ -204,9 +205,6 @@ class Plugin(PluginBase):
                     enmd_overhead_preloop_res = datetime.datetime.now()
                 self.get_logger().info("Pre_loop completed.")
 
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
-
                 if unit.state != radical.pilot.DONE:
                     raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
                 pre_loop_cu = [unit]
@@ -216,6 +214,7 @@ class Plugin(PluginBase):
                 if profiling == 1:
                     enmd_overhead_preloop_stop = datetime.datetime.now()
                     enmd_overhead_preloop = (enmd_overhead_preloop_stop - enmd_overhead_preloop_res).total_seconds() + (enmd_overhead_preloop_wait - enmd_overhead_preloop_start).total_seconds()
+                    step_end_time_abs = datetime.datetime.now()
 
                     tinfo = extract_timing_info(pre_loop_cu, 
                                                 pattern_start_time, 
@@ -480,17 +479,19 @@ class Plugin(PluginBase):
                         enmd_overhead_sim_done = datetime.datetime.now()
                         enmd_overhead_sim += (enmd_overhead_sim_wait - enmd_overhead_sim_start).total_seconds() + (enmd_overhead_sim_done - enmd_overhead_sim_res).total_seconds()
 
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
-
+                    
+                post_sim_start = datetime.datetime.now()
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in s_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                post_sim_stop = datetime.datetime.now()
+                enmd_overhead_sim += (post_sim_stop - post_sim_start).total_seconds()
        
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
                     tinfo = extract_timing_info(all_sim_cus, 
                                                 pattern_start_time, 
                                                 step_start_time_abs, 
@@ -743,16 +744,19 @@ class Plugin(PluginBase):
                         enmd_overhead_ana_done = datetime.datetime.now()
                         enmd_overhead_ana += (enmd_overhead_ana_wait - enmd_overhead_ana_start).total_seconds() + (enmd_overhead_ana_done - enmd_overhead_ana_res).total_seconds()
 
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
 
+                post_ana_start = datetime.datetime.now()
                 i = 0
                 for cu in a_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                post_ana_stop = datetime.datetime.now()
+
+                enmd_overhead_ana += (post_ana_stop - post_ana_start).total_seconds()
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
+                    step_end_time_abs = datetime.datetime.now()
                     tinfo = extract_timing_info(all_ana_cus, 
                                                 pattern_start_time, 
                                                 step_start_time_abs, 
