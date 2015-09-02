@@ -745,14 +745,15 @@ class Plugin(PluginBase):
                         enmd_overhead_ana += (enmd_overhead_ana_wait - enmd_overhead_ana_start).total_seconds() + (enmd_overhead_ana_done - enmd_overhead_ana_res).total_seconds()
 
 
-                post_ana_start = datetime.datetime.now()
+                if profiling == 1:
+                    post_ana_start = datetime.datetime.now()
                 i = 0
                 for cu in a_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
-                post_ana_stop = datetime.datetime.now()
-
-                enmd_overhead_ana += (post_ana_stop - post_ana_start).total_seconds()
+                if profiling == 1:
+                    post_ana_stop = datetime.datetime.now()
+                    enmd_overhead_ana += (post_ana_stop - post_ana_start).total_seconds()
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:

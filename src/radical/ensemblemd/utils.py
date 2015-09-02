@@ -40,8 +40,8 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
 
     units_per_kern = len(units)/num_kerns
 
-    if (cores is not None) and (cores < len(units)):
-        generations = len(units)/cores
+    if (cores is not None) and (cores < units_per_kern):
+        generations = units_per_kern/cores
     else:
         generations = 1
 
