@@ -99,7 +99,6 @@ class Plugin(PluginBase):
 
         try:
 
-            start_now = datetime.datetime.now()
             resource._umgr.register_callback(unit_state_cb)
 
             enmd_overhead_list = []
@@ -107,13 +106,13 @@ class Plugin(PluginBase):
             # Iterate over the different steps.
             for step in range(1, pipeline_steps+1):
 
-                enmd_overhead_pre_wait_start = datetime.datetime.now()
                 if profiling == 1:
                     step_timings = {
                         "name": "step_{0}".format(step),
                         "timings": {}
                     }
                     step_start_time_abs = datetime.datetime.now()
+                    enmd_overhead_step = 0
 
                 working_dirs['step_{0}'.format(step)] = {}
 
@@ -128,6 +127,9 @@ class Plugin(PluginBase):
 
                 p_units=[]
                 all_step_cus = []
+
+                if profiling == 1:
+                    enmd_overhead_step_start = datetime.datetime.now()
 
                 for instance in range(1, pipeline_instances+1):
 
@@ -315,18 +317,17 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Submitted tasks for step_{0}.".format(step))
                 self.get_logger().info("Waiting for step_{0} to complete.".format(step))
-                enmd_overhead_pre_wait_end = datetime.datetime.now()
+                if profiling == 1:
+                    enmd_overhead_step_wait = datetime.datetime.now()
                 resource._umgr.wait_units()
-                enmd_overhead_post_wait_start = datetime.datetime.now()
+                if profiling == 1:
+                    enmd_overhead_step_res = datetime.datetime.now()
                 self.get_logger().info("step_{0} completed.".format(step))
 
                 failed_units = ""
                 for unit in p_cus:
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
-
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
@@ -335,23 +336,25 @@ class Plugin(PluginBase):
                     working_dirs['step_{0}'.format(step)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
 
-                enmd_overhead_post_wait_end = datetime.datetime.now()
+                if profiling == 1:
+                    enmd_overhead_step_done = datetime.datetime.now()
+                    enmd_overhead_step = (enmd_overhead_step_wait - enmd_overhead_step_start).total_seconds() + (enmd_overhead_step_done - enmd_overhead_step_res).total_seconds()
+
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    tinfo = extract_timing_info(all_step_cus, pattern_start_time, step_start_time_abs, step_end_time_abs)
+                    step_end_time_abs = datetime.datetime.now()
+                    tinfo = extract_timing_info(
+                                                all_step_cus, 
+                                                pattern_start_time, 
+                                                step_start_time_abs, 
+                                                step_end_time_abs,
+                                                enmd_overhead_step)
                     for key, val in tinfo.iteritems():
                         step_timings['timings'][key] = val
 
                     # Write the whole thing to the profiling dict
                     pattern._execution_profile.append(step_timings)
-                    enmd_overhead = (enmd_overhead_pre_wait_end - enmd_overhead_pre_wait_start) + (enmd_overhead_post_wait_end - enmd_overhead_post_wait_start)
-
-                    rp_overhead = (enmd_overhead_post_wait_start - enmd_overhead_pre_wait_end)
-
-
-                    step_timings['timings']['enmd_overhead'] = enmd_overhead.total_seconds()
-                    step_timings['timings']['rp_overhead'] = rp_overhead.total_seconds()
 
 
         except KeyboardInterrupt:
