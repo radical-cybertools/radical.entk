@@ -156,8 +156,8 @@ class Plugin(PluginBase):
             pattern._execution_profile = []
 
         try:
-
-            start_now = datetime.datetime.now()
+            if profiling == 1:
+                start_now = datetime.datetime.now()
 
             resource._umgr.register_callback(unit_state_cb)
 
@@ -479,15 +479,18 @@ class Plugin(PluginBase):
                         enmd_overhead_sim_done = datetime.datetime.now()
                         enmd_overhead_sim += (enmd_overhead_sim_wait - enmd_overhead_sim_start).total_seconds() + (enmd_overhead_sim_done - enmd_overhead_sim_res).total_seconds()
 
-                    
-                post_sim_start = datetime.datetime.now()
+
+                if profiling == 1:                    
+                    post_sim_start = datetime.datetime.now()
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in s_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
-                post_sim_stop = datetime.datetime.now()
-                enmd_overhead_sim += (post_sim_stop - post_sim_start).total_seconds()
+
+                if profiling == 1:
+                    post_sim_stop = datetime.datetime.now()
+                    enmd_overhead_sim += (post_sim_stop - post_sim_start).total_seconds()
        
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
@@ -771,7 +774,7 @@ class Plugin(PluginBase):
 
                     # Write the whole thing to the profiling dict
                     pattern._execution_profile.append(step_timings)
-                stop_now = datetime.datetime.now()    
+                    stop_now = datetime.datetime.now()    
 
                 #print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
 

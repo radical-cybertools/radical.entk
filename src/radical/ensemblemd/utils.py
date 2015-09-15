@@ -8,8 +8,8 @@ __copyright__ = "Copyright 2015, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import datetime
+import os
 import math
-import numpy as np
 
 #------------------------------------------------------------------------------
 #
@@ -26,6 +26,8 @@ def extract_timing_info(units, pattern_start_time_abs, step_start_time_abs, step
 
     Timings are returned both as absolute and as relative measures.
     """
+
+    import numpy as np
 
     step_execution_time_abs = None
     step_data_movement_time_abs = None
