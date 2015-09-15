@@ -367,7 +367,7 @@ class Kernel(object):
         """
         return self._kernel._copy_output_data
 
-    @download_output_data.setter
+    @copy_output_data.setter
     def copy_output_data(self, data_directives):
 
         if type(data_directives) != list:
