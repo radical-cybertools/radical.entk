@@ -36,7 +36,10 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load -intel +intel/14.0.1.106","module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages","export PATH=/home1/03036/jp43/.local/bin:$PATH"],
+            "pre_exec" : [  "module load -intel +intel/14.0.1.106",
+                            "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages",
+                            "module load python/2.7.6",
+                            "export PATH=/home1/03036/jp43/.local/bin:$PATH"],
             "executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
             "uses_mpi"   : True
         },
@@ -44,7 +47,11 @@ _KERNEL_INFO = {
         "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","module load numpy","module load scipy"," module load lsdmap","export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
+            "pre_exec" : [  "module load python-compute/2.7.6",
+                            "module load pc-numpy/1.8.0-libsci",
+                            "module load pc-scipy/0.13.3-libsci",
+                            "module load lsdmap",
+                            "export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },

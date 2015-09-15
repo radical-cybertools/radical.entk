@@ -43,12 +43,14 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load TACC",
-                            "module load intel/13.0.2.146",
+            "pre_exec" : [  "module load intel/13.0.2.146",
                             "module load python/2.7.9",
+                            "module load mpi4py",
+                            "module load netcdf/4.3.2",
+                            "module load hdf5/1.8.13",
                             "module load amber",
-                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.9_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.6_installation/bin:$PATH"],
+                            "export PYTHONPATH=/work/02998/ardi/coco-0.19_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.19_installation/bin:$PATH"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },
@@ -56,7 +58,12 @@ _KERNEL_INFO = {
         "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],
+            "pre_exec" : ["module load python-compute/2.7.6",
+                      "module load pc-numpy/1.8.0-libsci",
+                      "module load pc-scipy/0.13.3-libsci",
+                      "module load pc-coco/0.18",
+                      "module load pc-netcdf4-python/1.1.0",
+                      "module load amber"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },

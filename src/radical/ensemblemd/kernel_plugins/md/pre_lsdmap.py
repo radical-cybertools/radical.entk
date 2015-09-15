@@ -53,9 +53,9 @@ _KERNEL_INFO = {
             "pre_exec" : [
                             "module load packages-archer",
                             "module load gromacs/5.0.0",
-                            "module load python",
+                            "module load python-compute/2.7.6"
                         ],
-            "executable" : ["/bin/bash"],
+            "executable" : ["python"],
             "uses_mpi"   : False
         },
 

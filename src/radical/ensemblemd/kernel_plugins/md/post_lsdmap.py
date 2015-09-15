@@ -69,7 +69,10 @@ _KERNEL_INFO = {
         "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load python"],
+            "pre_exec" : [  "module load python-compute/2.7.6",
+                            "module load pc-numpy/1.8.0-libsci",
+                            "module load pc-scipy/0.13.3-libsci",
+                            "module load lsdmap"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },
