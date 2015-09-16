@@ -39,9 +39,15 @@ _KERNEL_INFO = {
             "pre_exec" : [
                             "module load intel/15.0.2",
                             "module load boost",
-                            "module load gromacs",
                             "module load python",
+                            "export TACC_GROMACS_DIR=/opt/apps/intel13/mvapich2_1_9/gromacs/5.0.1",
+                            "export TACC_GROMACS_LIB=$TACC_GROMACS_DIR/lib",
+                            "export TACC_GROMACS_INC=$TACC_GROMACS_DIR/include",
+                            "export TACC_GROMACS_BIN=$TACC_GROMACS_DIR/bin",
+                            "export TACC_GROMACS_DOC=$TACC_GROMACS_DIR/share",
+                            "export GMXLIB=/opt/apps/intel13/mvapich2_1_9/gromacs/5.0.1/share/gromacs/top",
                             "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/apps/intel/15/composer_xe_2015.2.164/mkl/lib/intel64/:/opt/apps/intel/15/composer_xe_2015.2.164/compiler/lib/intel64/:/opt/apps/intel15/python/2.7.9/lib/",
+                            "export PATH=$TACC_GROMACS_BIN:$PATH"
                         ],
             "executable" : ["python"],
             "uses_mpi"   : False
