@@ -82,7 +82,7 @@ _KERNEL_INFO = {
                       "module load pc-netcdf4-python/1.1.0",
                       "module load amber"],
             "executable" : ["pyCoCo"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         },
 
         "lsu.supermic":
