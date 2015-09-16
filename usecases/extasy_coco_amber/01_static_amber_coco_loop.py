@@ -184,7 +184,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                                 "$PRE_LOOP/md_{0}_{1}.crd > md{0}.crd".format(iteration,instance),
                             ]
         if(iteration%Kconfig.nsave==0):
-            k1.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
+            k2.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
 
         k2.cores = 2
         return [k1,k2]
@@ -213,7 +213,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--frontpoints={0}".format(Kconfig.num_CUs),
                        "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                        "--mdfile=*.ncdf",
-                       "--output=pentaopt%s"%(iteration)]
+                       "--output=pdbs"]
         k1.cores = RPconfig.PILOTSIZE
 
         k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file))]
@@ -223,14 +223,14 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
         k1.copy_output_data = ['STDERR > $PRE_LOOP/STDERR']
         for i in range(0,Kconfig.num_CUs):
-            k1.copy_output_data = k1.copy_output_data + ['pentaopt{0}{1}.pdb > $PRE_LOOP/pentaopt{0}{1}.pdb'.format(iteration,i)]
+            k1.copy_output_data = k1.copy_output_data + ['pdbs/{1}.pdb > $PRE_LOOP/pentaopt{0}{1}.pdb'.format(iteration,i)]
 
 
         k2 = Kernel(name="md.tleap")
         k2.arguments = ["--numofsims={0}".format(Kconfig.num_CUs),
                         "--cycle={0}".format(iteration)]
 
-        k2.link_input_data = list()
+        k2.link_input_data = ['']
         for i in range(0,Kconfig.num_CUs):
             k2.link_input_data.append(['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)])
 
