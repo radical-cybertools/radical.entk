@@ -552,6 +552,7 @@ class Plugin(PluginBase):
                         cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
                         cud.pre_exec       = ana_step._cu_def_pre_exec
+                        cud.post_exec      = ana_step._cu_def_post_exec
                         cud.executable     = ana_step._cu_def_executable
                         cud.arguments      = ana_step.arguments
                         cud.mpi            = ana_step.uses_mpi
