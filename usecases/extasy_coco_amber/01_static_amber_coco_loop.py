@@ -214,7 +214,8 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                        "--mdfile=*.ncdf",
                        "--output=pdbs"]
-        k1.cores = RPconfig.PILOTSIZE
+        k1.cores = 1
+  k1.uses_mpi = False
 
         k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file))]
         for iter in range(1,iteration+1):
@@ -232,7 +233,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
 
         k2.link_input_data = ['$PRE_LOOP/postexec.py > postexec.py']
         for i in range(0,Kconfig.num_CUs):
-            k2.link_input_data.append(['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)])
+            k2.link_input_data = k2.link_input_data + ['$PRE_LOOP/pentaopt{0}{1}.pdb > pentaopt{0}{1}.pdb'.format(iteration,i)]
 
         return [k1,k2]
 
@@ -272,7 +273,7 @@ if __name__ == "__main__":
             walltime=RPconfig.WALLTIME,
             username = RPconfig.UNAME, #username
             project = RPconfig.ALLOCATION, #project
-	        queue = RPconfig.QUEUE,
+          queue = RPconfig.QUEUE,
             database_url = RPconfig.DBURL
         )
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
         coco_amber_static = Extasy_CocoAmber_Static(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
         cluster.run(coco_amber_static)
 
-        cluster.deallocate()
+  cluster.deallocate()
 
     except EnsemblemdError, er:
 
