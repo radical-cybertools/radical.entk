@@ -225,7 +225,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         pre_ana = Kernel(name="md.pre_lsdmap")
         pre_ana.arguments = ["--numCUs={0}".format(Kconfig.num_CUs)]
-  pre_ana.post_exec = ["echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro"]
+        pre_ana.post_exec = ["echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro"]
         pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py > pre_analyze.py"]
         for i in range(1,Kconfig.num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]

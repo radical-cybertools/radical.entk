@@ -215,7 +215,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--mdfile=*.ncdf",
                        "--output=pdbs"]
         k1.cores = 1
-  k1.uses_mpi = False
+        k1.uses_mpi = False
 
         k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file))]
         for iter in range(1,iteration+1):
@@ -282,7 +282,7 @@ if __name__ == "__main__":
         coco_amber_static = Extasy_CocoAmber_Static(maxiterations=Kconfig.num_iterations, simulation_instances=Kconfig.num_CUs, analysis_instances=1)
         cluster.run(coco_amber_static)
 
-  cluster.deallocate()
+        cluster.deallocate()
 
     except EnsemblemdError, er:
 
