@@ -82,12 +82,21 @@ class SingleClusterEnvironment(ExecutionContext):
     def deallocate(self):
         """Deallocates the resources.
         """
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+        if profiling == 1:
+            start_time = datetime.datetime.now()
         self.get_logger().info("Deallocating Cluster")
         if self._exctype != None:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
             traceback.print_tb(self._traceback)
             
         self._session.close(cleanup=self._cleanup)
+        if profiling == 1:
+            stop_time = datetime.datetime.now()
+            f1 = open('enmd_core_overhead.csv','a')
+            f1.write('deallocate,start_time,{0}\n'.format(start_time))
+            f1.write('deallocate,stop_time,{0}\n'.format(stop_time))
+            f1.close()
 
     #---------------------------------------------------------------------------
     #
@@ -127,6 +136,10 @@ class SingleClusterEnvironment(ExecutionContext):
 
         # Here we start the pilot(s).
         try:
+
+            profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+            if profiling == 1:
+                start_time = datetime.datetime.now()
 
             if not self._database_url:
                 self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
@@ -177,9 +190,21 @@ class SingleClusterEnvironment(ExecutionContext):
 
             self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
 
+            if profiling == 1:
+                stop_time = datetime.datetime.now()
+
         except Exception, ex:
             self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
             raise
+
+        finally:
+            if profiling == 1:
+                title = 'step,probe,timestamp'
+                f1 = open('enmd_core_overhead.csv','w')
+                f1.write(title+'\n\n')
+                f1.write('allocate,start_time,{0}\n'.format(start_time))
+                f1.write('allocate,stop_time,{0}\n'.format(stop_time))
+                f1.close()
 
     #---------------------------------------------------------------------------
     #
