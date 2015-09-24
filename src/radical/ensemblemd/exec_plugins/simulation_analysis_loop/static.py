@@ -791,7 +791,7 @@ class Plugin(PluginBase):
 
                 #CU data logging
                 title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
-                f2 = open('enmd_cu_data.csv','w')
+                f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
                 iter = 'None'
                 step = 'pre_loop'
