@@ -16,7 +16,7 @@ import datetime
 import radical.pilot
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
-from collections import OrderedDict as od
+
 
 # ------------------------------------------------------------------------------
 #
@@ -153,10 +153,10 @@ class Plugin(PluginBase):
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
         if profiling == 1:
+            from collections import OrderedDict as od
             pattern._execution_profile = []
             enmd_overhead_dict = od()
             cu_dict = od()
-            step_time_dict = od()
 
         try:
 

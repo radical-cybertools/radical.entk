@@ -20,6 +20,7 @@ from radical.ensemblemd.utils import extract_timing_info
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
+
 # ------------------------------------------------------------------------------
 #
 _PLUGIN_INFO = {
@@ -87,7 +88,6 @@ class Plugin(PluginBase):
 
         
         working_dirs = {}
-        all_cus = []
 
         self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
         resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
@@ -95,7 +95,10 @@ class Plugin(PluginBase):
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
         if profiling == 1:
+            from collections import OrderedDict as od
             pattern._execution_profile = []
+            enmd_overhead_dict = od()
+            cu_dict = od()
 
         try:
 
@@ -107,12 +110,11 @@ class Plugin(PluginBase):
             for step in range(1, pipeline_steps+1):
 
                 if profiling == 1:
-                    step_timings = {
-                        "name": "step_{0}".format(step),
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
-                    enmd_overhead_step = 0
+                    probe_start_time = datetime.datetime.now()
+                    enmd_overhead_dict['step_{0}'.format(step)] = od()
+                    cu_dict['step_{0}'.format(step)] = list()
+
+                    enmd_overhead_dict['step_{0}'.format(step)]['start_time'] = probe_start_time
 
                 working_dirs['step_{0}'.format(step)] = {}
 
@@ -128,12 +130,8 @@ class Plugin(PluginBase):
                 p_units=[]
                 all_step_cus = []
 
-                if profiling == 1:
-                    enmd_overhead_step_start = datetime.datetime.now()
-
                 for instance in range(1, pipeline_instances+1):
 
-                    # Create a new journal entry for the instance.
                     kernel = s_meth(instance)
                     kernel._bind_to_resource(resource._resource_key)
 
@@ -318,10 +316,11 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted tasks for step_{0}.".format(step))
                 self.get_logger().info("Waiting for step_{0} to complete.".format(step))
                 if profiling == 1:
-                    enmd_overhead_step_wait = datetime.datetime.now()
+                    enmd_overhead_dict['step_{0}'.format(step)]['wait_time'] = datetime.datetime.now()
                 resource._umgr.wait_units()
                 if profiling == 1:
-                    enmd_overhead_step_res = datetime.datetime.now()
+                    enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
+
                 self.get_logger().info("step_{0} completed.".format(step))
 
                 failed_units = ""
@@ -337,25 +336,58 @@ class Plugin(PluginBase):
 
 
                 if profiling == 1:
-                    enmd_overhead_step_done = datetime.datetime.now()
-                    enmd_overhead_step = (enmd_overhead_step_wait - enmd_overhead_step_start).total_seconds() + (enmd_overhead_step_done - enmd_overhead_step_res).total_seconds()
-
-
-                # Process CU information and append it to the dictionary
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
-                    tinfo = extract_timing_info(
-                                                all_step_cus, 
-                                                pattern_start_time, 
-                                                step_start_time_abs, 
-                                                step_end_time_abs,
-                                                enmd_overhead_step)
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
-
-                    # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
-
+                    enmd_overhead_dict['step_{0}'.format(step)]['stop_time'] = datetime.datetime.now()
+                    cu_dict['step_{0}'.format(step)] = p_cus
+                    
 
         except KeyboardInterrupt:
             traceback.print_exc()
+
+        finally:
+
+            if profiling == 1:
+
+                #Pattern overhead logging
+                title = "step,probe,timestamp"
+                f1 = open('enmd_pat_overhead.csv','w')
+                f1.write(title + "\n\n")
+
+                pipeline_steps = pattern.steps
+
+                for i in range(1,pipeline_steps+1):
+                    step = 'step_{0}'.format(i)
+                    for key,val in enmd_overhead_dict[iter].items():                        
+                        probe = key
+                        timestamp = val
+                        entry = '{0},{1},{2}\n'.format(step,probe,timestamp)
+                        f1.write(entry)
+
+                f1.close()
+
+                #CU data logging
+                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                f2 = open('enmd_cu_data.csv','w')
+                f2.write(title + "\n\n")
+
+                for i in range(1,steps+1):
+                    step = 'step_{0}'.format(i)
+                    cus = cu_dict[iter].items():
+
+                    for cu in cus:
+                        st_data = {}
+                        for st in cu.state_history:
+                            st_dict = st.as_dict()
+                            st_data["{0}".format( st_dict["state"] )] = {}
+                            st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+                            line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                    uid=cu.uid,
+                                    iter=iter.split('_')[1],
+                                    step=step,
+                                    Scheduling=(st_data['Scheduling']),
+                                    StagingInput=(st_data['StagingInput']),
+                                    Allocating=(st_data['Allocating']),
+                                    Executing=(st_data['Executing']),
+                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    Done=(st_data['Done']))
+
+                        f2.write(line + '\n')
