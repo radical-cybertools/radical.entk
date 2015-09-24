@@ -1,5 +1,3 @@
-.. include:: _generated_version.rst
-
 RADICAL Ensemble MD Toolkit |VERSION|
 #####################################
 
@@ -19,6 +17,7 @@ at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
 * Ioannis Paraskevakos
 * Antons Treikalis
 * Ole Weidner
+* Ming Tai Ha
 
 **Project Github Page**
 
@@ -39,20 +38,21 @@ at https://github.com/radical-cybertools/radical.ensemblemd/wiki
   .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD%20Toolkit
       :target: http://ci.radical-project.org/job/EnsembleMD%20Toolkit/
 
+
+
 #########
 Contents:
 #########
 
 .. toctree::
    :numbered:
-   :maxdepth: 3
+   :maxdepth: 2
 
    introduction
    installation
    getstarted
-   the_patterns
-   kernels
-
-   library
+   patterns
    developers
    faq
+   api
+

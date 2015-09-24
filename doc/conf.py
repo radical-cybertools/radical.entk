@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# radical.ensemblemd documentation build configuration file, created by
-# sphinx-quickstart on Thu Jul 24 13:51:41 2014.
+# EnsembleMD Tutorial documentation build configuration file, created by
+# sphinx-quickstart on Mon Aug 31 12:44:39 2015.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -12,139 +12,17 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import glob
-import imp
 import sys
 import os
-import shutil
+import shlex
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-
-################################################################################
-##
-print "* Generating Application kernel list: the_kernels.rst"
-
-try:
-    os.remove("{0}/the_kernels.rst".format(script_dir))
-except OSError:
-    pass
-
-try:
-    shutil.rmtree("{0}/kernels/".format(script_dir))
-except OSError, e:
-    pass
-
-os.makedirs("{0}/kernels/".format(script_dir))
-
-with open ("{0}/the_kernels.rst".format(script_dir), "w") as toc:
-    toc.write(".. _the_kernels:\n")
-    toc.write("\n")
-    toc.write("*****************\n")
-    toc.write("Available Kernels\n")
-    toc.write("*****************\n")
-    toc.write("\n")
-    toc.write(".. toctree::\n")
-    toc.write("   :maxdepth: 1\n\n")
-    toc.write("\n\n")
-
-    from radical.ensemblemd.engine.engine import Engine
-    e = Engine()
-    for kernel in  e._kernel_plugins:
-        ki = kernel().get_info()
-        kernel_rst_filename = "kernels/_generated_kernel_{0}.rst".format(ki["name"])
-        with open("{0}/{1}".format(script_dir, kernel_rst_filename), "w") as kernel_rst:
-
-            try:
-                # ki = kernel().get_info()
-                # print " > {0}".format(ki["name"])
-                # kernels.write("{0}\n".format(ki["name"]))
-                # kernels.write("{0}\n\n".format("-"*len(ki["name"])))
-                # kernels.write("{0}\n\n".format(ki["description"]))
-
-                # kernels.write("**Arguments:**\n\n")
-                # kernels.write(".. code-block:: python\n\n")
-                # kernels.write("    {0}\n\n".format(ki["arguments"]))
-
-
-
-                kernel_rst.write("{0}\n".format(ki["name"]))
-                kernel_rst.write("{0}\n\n".format("-"*len(ki["name"])))
-                kernel_rst.write("{0}\n\n".format(ki["description"]))
-                kernel_rst.write("**Arguments:**\n\n")
-
-                if ki["arguments"] == "*":
-                    kernel_rst.write("This Kernel takes the same arguments and command-line parameters as the as the encapsulated tool.\n\n")
-
-                else:
-                    kernel_rst.write("+----------------------------+----------------------------------------------------------------------------------+-----------+\n")
-                    kernel_rst.write("| Argument Name              | Description                                                                      | Mandatory |\n")
-                    kernel_rst.write("+============================+==================================================================================+===========+\n")
-                    for arg, cfg in ki["arguments"].iteritems():
-                        kernel_rst.write("| {:26s} | {:80s} | {:9b} |\n".format(arg, cfg["description"], cfg["mandatory"] ))
-                        kernel_rst.write("+----------------------------+----------------------------------------------------------------------------------+-----------+\n")
-
-                kernel_rst.write("\n**Machine Configurations:**\n\n")
-                kernel_rst.write("Machine configurations describe specific configurations of the tool on a specific platform. ``*`` is a catch-all for all hosts for which no specific configuration exists.\n\n")
-
-                for key, cfg in ki["machine_configs"].iteritems():
-                    kernel_rst.write("\n* Key: **{0}**\n\n".format(key))
-                    for k, v in cfg.iteritems():
-                        kernel_rst.write("  * {0}: ``{1}``\n".format(k,v))
-
-                toc.write("   {0}\n".format(kernel_rst_filename))
-
-
-            except Exception, ex:
-                print "=== WARNING: %s " % str(ex)
-##
-################################################################################
-
-
-################################################################################
-##
-print "* Generating code examples"
-
-try:
-    shutil.rmtree("{0}/examples".format(script_dir))
-except OSError:
-    pass
-
-os.makedirs("{0}/examples".format(script_dir))
-
-examples = os.listdir("{0}/../examples/".format(script_dir))
-for example in examples:
-
-  foo = None
-
-  if example.endswith(".py") is False:
-      continue # skip all non-python files
-
-  try:
-      foo = imp.load_source('{0}'.format(example.split(".")[0]), "../examples/{0}".format(example))
-      example_name = foo.__example_name__
-
-      example_rst_filename = "examples/_generated_example_"+example.replace(".py", ".rst")
-      with open("{0}/{1}".format(script_dir, example_rst_filename), "w") as example_rst:
-
-          example_rst.write("{0}\n".format(example_name))
-          example_rst.write("{0}\n\n".format("-"*len(foo.__example_name__)))
-          example_rst.write(foo.__doc__+"\n")
-          example_rst.write(":download:`Download example: {0} <../../examples/{0}>`\n\n".format(example))
-          example_rst.write(".. literalinclude:: ../../examples/{0}\n".format(example))
-          example_rst.write("   :linenos:\n")
-          example_rst.write("   :start-after: __example_name__\n\n")
-
-  except Exception, ex:
-      print "=== WARNING: %s " % str(ex)
-##
-################################################################################
-
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../'))
+#sys.path.insert(0, os.path.abspath('../src/radical/ensemblemd'))
 
 # -- General configuration ------------------------------------------------
 
@@ -160,13 +38,15 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
+    'sphinx.ext.viewcode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# The suffix of source filenames.
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
+# source_suffix = ['.rst', '.md']
 source_suffix = '.rst'
 
 # The encoding of source files.
@@ -185,20 +65,17 @@ copyright = u'2014, The Radical Group at Rutgers University'
 #
 # The short X.Y version.
 version = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").readline()
+
 # The full version, including alpha/beta/rc tags.
 release = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").readline()
 
-try:
-    os.remove("{0}/_generated_version.rst".format(script_dir))
-except OSError:
-    pass
-
-with open("{0}/_generated_version.rst".format(script_dir), "w") as gv:
-    gv.write(".. |VERSION| replace:: {version}\n".format(version=version))
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
-#language = None
+#
+# This is also used if you do content translation via gettext catalogs.
+# Usually you set "language" from the command line for these cases.
+language = None
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -208,7 +85,7 @@ with open("{0}/_generated_version.rst".format(script_dir), "w") as gv:
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'examples_toc.rst', 'kernels_toc.rst', '_generated_usecases.rst']
+exclude_patterns = ['_build']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -233,6 +110,9 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -316,9 +196,22 @@ html_static_path = ['_static']
 # This is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = None
 
+# Language to be used for generating the HTML full-text search index.
+# Sphinx supports the following languages:
+#   'da', 'de', 'en', 'es', 'fi', 'fr', 'hu', 'it', 'ja'
+#   'nl', 'no', 'pt', 'ro', 'ru', 'sv', 'tr'
+#html_search_language = 'en'
+
+# A dictionary with options for the search language support, empty by default.
+# Now only 'ja' uses this config value
+#html_search_options = {'type': 'default'}
+
+# The name of a javascript file (relative to the configuration directory) that
+# implements a search results scorer. If empty, the default will be used.
+#html_search_scorer = 'scorer.js'
+
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'radicalensemblemddoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -331,6 +224,9 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
+
+# Latex figure (float) alignment
+#'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -397,5 +293,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-autodoc_member_order = 'bysource'

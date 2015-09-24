@@ -1,7 +1,5 @@
 .. _installation:
 
-.. include:: _generated_version.rst
-
 ************
 Installation
 ************

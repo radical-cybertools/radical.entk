@@ -1,4 +1,4 @@
-.. _the_patterns:
+.. _patterns:
 
 ************
 The Patterns

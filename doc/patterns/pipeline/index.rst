@@ -6,6 +6,5 @@ Pipeline
 .. toctree::
    :numbered:
 
-   ./api
-   ../../examples/_generated_example_bag_of_tasks
-   ../../examples/_generated_example_pipeline
+   bag_of_tasks
+   pipeline

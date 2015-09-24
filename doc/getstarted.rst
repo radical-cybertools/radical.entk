@@ -10,9 +10,7 @@ of MD tasks, to a Pipeline of MD tasks to a  complex  Simulation-Analysis loop.
 
 There are a few key terms that you should try to understand while reading through
 this section, like `application logic`, `application workload`, `pattern`,
-`kernel` and `execution context`. You can find these terms also in the
-:ref:`glossary`.
-
+`kernel` and `execution context`.
 The Basics
 ==========
 

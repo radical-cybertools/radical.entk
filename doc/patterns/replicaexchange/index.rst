@@ -6,7 +6,7 @@ Replica Exchange
 .. toctree::
    :numbered:
 
-   ./api
-   ../../examples/_generated_example_replica_exchange
-   ../../examples/_generated_example_replica_exchange_b
-   ../../usecases/cdi_replica_exchange
+
+   replica_exchange_local
+   replica_exchange_remote
+   cdi_replica_exchange

@@ -1,4 +1,4 @@
-.. pipeline_api:
+.. _api_pipeline:
 
 Pipeline API Reference
 ----------------------

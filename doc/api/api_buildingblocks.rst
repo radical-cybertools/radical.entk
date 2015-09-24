@@ -1,8 +1,8 @@
 .. _library:
 
-*************
-API Reference
-*************
+*****************************
+Building Blocks API Reference
+*****************************
 
 Execution Context API
 =====================

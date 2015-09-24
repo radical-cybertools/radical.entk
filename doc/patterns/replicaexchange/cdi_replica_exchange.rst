@@ -1,7 +1,8 @@
 .. _usecase_cdi_replica_exchange:
 
+****************************************************
 Use-Case: Synchronous Temperature Exchange with NAMD
-----------------------------------------------------
+****************************************************
 
 This script is an example of simple application using the Ensemble MD Toolkit ``ReplicaExchange``
 pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 
@@ -25,7 +26,7 @@ python script. This script calculates one swap matrix column for replica by retr
 and potential energy from simulation output file .history file.
 
 Run Locally
-^^^^^^^^^^^
+===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
              set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
@@ -50,7 +51,7 @@ see log messages about simulation progress::
 output files where x is replica id and y is cycle number.
 
 Run Remotely
-^^^^^^^^^^^^
+============
 
 By default, this use-case runs on your local machine::
 

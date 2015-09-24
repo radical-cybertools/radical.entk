@@ -7,6 +7,5 @@ AllPairs
    :numbered:
    :maxdepth: 0
 
-   ./api
-   ../../examples/_generated_example_allpairs_example
-   ../../usecases/haussdorff
+   allpairs
+   haussdorff
