@@ -10,6 +10,7 @@ __license__   = "MIT"
 import os
 import sys
 import traceback
+import datetime
 import radical.pilot
 import radical.utils.logger  as rul
 from radical.ensemblemd.engine import Engine
