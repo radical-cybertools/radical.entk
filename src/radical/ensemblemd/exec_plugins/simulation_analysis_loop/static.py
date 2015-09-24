@@ -14,9 +14,9 @@ import time
 import saga
 import datetime
 import radical.pilot
-from radical.ensemblemd.utils import extract_timing_info
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
+from collections import OrderedDict as od
 
 # ------------------------------------------------------------------------------
 #
@@ -154,10 +154,13 @@ class Plugin(PluginBase):
 
         if profiling == 1:
             pattern._execution_profile = []
+            enmd_overhead_dict = od()
+            cu_dict = od()
+            step_time_dict = od()
 
         try:
-            if profiling == 1:
-                start_now = datetime.datetime.now()
+
+            start_now = datetime.datetime.now()
 
             resource._umgr.register_callback(unit_state_cb)
 
@@ -170,13 +173,9 @@ class Plugin(PluginBase):
                 # EXECUTE PRE-LOOP
 
                 if profiling == 1:
-                    step_timings = {
-                        "name": "pre_loop",
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
-                    enmd_overhead_preloop_start = step_start_time_abs
-
+                    probe_preloop_start = datetime.datetime.now()
+                    enmd_overhead_dict['preloop'] = od()
+                    enmd_overhead_dict['preloop']['start_time'] = probe_preloop_start
                 
                 pre_loop = pattern.pre_loop()
                 pre_loop._bind_to_resource(resource._resource_key)
@@ -199,34 +198,26 @@ class Plugin(PluginBase):
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
                 if profiling == 1:
-                    enmd_overhead_preloop_wait = datetime.datetime.now()
+                    probe_preloop_wait = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
+
                 resource._umgr.wait_units()
+
                 if profiling == 1:
-                    enmd_overhead_preloop_res = datetime.datetime.now()
+                    probe_preloop_res = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['res_time'] = probe_preloop_res
+
                 self.get_logger().info("Pre_loop completed.")
 
                 if unit.state != radical.pilot.DONE:
                     raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
-                pre_loop_cu = [unit]
                 working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
 
                 # Process CU information and append it to the dictionary
                 if profiling == 1:
-                    enmd_overhead_preloop_stop = datetime.datetime.now()
-                    enmd_overhead_preloop = (enmd_overhead_preloop_stop - enmd_overhead_preloop_res).total_seconds() + (enmd_overhead_preloop_wait - enmd_overhead_preloop_start).total_seconds()
-                    step_end_time_abs = datetime.datetime.now()
-
-                    tinfo = extract_timing_info(pre_loop_cu, 
-                                                pattern_start_time, 
-                                                step_start_time_abs, 
-                                                step_end_time_abs,
-                                                enmd_overhead_preloop)
-
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
-
-                # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
+                    probe_preloop_done = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
+                    cu_dict['pre_loop'] = unit
 
             except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
@@ -244,12 +235,8 @@ class Plugin(PluginBase):
                 # EXECUTE SIMULATION STEPS
 
                 if profiling == 1:
-                    step_timings = {
-                        "name": "simulation_iteration_{0}".format(iteration),
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
-                    enmd_overhead_sim = 0
+                    enmd_overhead_dict['iter_{0}'.format(iteration)] = od()
+                    cu_dict['iter_{0}'.format(iteration)] = od()
 
                 if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
                     num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
@@ -258,11 +245,18 @@ class Plugin(PluginBase):
                 #print num_sim_kerns
 
                 all_sim_cus = []
+                if profiling == 1:
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
+                    cu_dict['iter_{0}'.format(iteration)]['sim']= list()
 
                 for kern_step in range(0,num_sim_kerns):
 
                     if profiling == 1:
-                        enmd_overhead_sim_start = datetime.datetime.now()
+                        probe_sim_start = datetime.datetime.now()
+
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]= od()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['start_time'] = probe_sim_start
+
                     s_units = []
                     for s_instance in range(1, pattern._simulation_instances+1):
 
@@ -463,11 +457,18 @@ class Plugin(PluginBase):
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
+
                     if profiling == 1:
-                        enmd_overhead_sim_wait = datetime.datetime.now()
+                        probe_sim_wait = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
+
                     resource._umgr.wait_units()
+
                     if profiling == 1:
-                        enmd_overhead_sim_res = datetime.datetime.now()
+                        probe_sim_res = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['res_time'] = probe_sim_res
+
+
                     self.get_logger().info("Simulations in iteration {0}/ kernel {1}: {2} completed.".format(iteration,kern_step+1,sim_step.name))
 
                     failed_units = ""
@@ -476,49 +477,29 @@ class Plugin(PluginBase):
                             failed_units += " * Simulation task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
                     if profiling == 1:
-                        enmd_overhead_sim_done = datetime.datetime.now()
-                        enmd_overhead_sim += (enmd_overhead_sim_wait - enmd_overhead_sim_start).total_seconds() + (enmd_overhead_sim_done - enmd_overhead_sim_res).total_seconds()
+                        probe_sim_done = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_sim_done
 
+                    
+                if profiling == 1:
+                    probe_post_sim_start = datetime.datetime.now()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post'] = od()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post']['start_time'] = probe_post_sim_start
 
-                if profiling == 1:                    
-                    post_sim_start = datetime.datetime.now()
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
                 for cu in s_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
-
+                
                 if profiling == 1:
-                    post_sim_stop = datetime.datetime.now()
-                    enmd_overhead_sim += (post_sim_stop - post_sim_start).total_seconds()
-       
-                # Process CU information and append it to the dictionary
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
-                    tinfo = extract_timing_info(all_sim_cus, 
-                                                pattern_start_time, 
-                                                step_start_time_abs, 
-                                                step_end_time_abs,
-                                                enmd_overhead_sim,
-                                                num_sim_kerns,
-                                                resource._pilot.description['cores'])
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
-
-                # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
+                    probe_post_sim_end = datetime.datetime.now()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post']['stop_time'] = probe_post_sim_end
+                    cu_dict['iter_{0}'.format(iteration)]['sim'] = all_sim_cus
 
 
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
-
-                if profiling == 1:
-                    step_timings = {
-                        "name": "analysis_iteration_{0}".format(iteration),
-                        "timings": {}
-                    }
-                    step_start_time_abs = datetime.datetime.now()
-                    enmd_overhead_ana = 0
 
                 if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
                     num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
@@ -527,11 +508,16 @@ class Plugin(PluginBase):
                 #print num_ana_kerns
 
                 all_ana_cus = []
+                if profiling == 1:
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['ana'] = od()
+                    cu_dict['iter_{0}'.format(iteration)]['ana']= list()
 
                 for kern_step in range(0,num_ana_kerns):
 
                     if profiling == 1:
-                        enmd_overhead_ana_start = datetime.datetime.now()
+                        probe_ana_start = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]= od()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['start_time'] = probe_ana_start
 
                     a_units = []
                     for a_instance in range(1, pattern._analysis_instances+1):
@@ -552,7 +538,6 @@ class Plugin(PluginBase):
                         cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
                         cud.pre_exec       = ana_step._cu_def_pre_exec
-                        cud.post_exec      = ana_step._cu_def_post_exec
                         cud.executable     = ana_step._cu_def_executable
                         cud.arguments      = ana_step.arguments
                         cud.mpi            = ana_step.uses_mpi
@@ -733,10 +718,15 @@ class Plugin(PluginBase):
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
                     if profiling == 1:
-                        enmd_overhead_ana_wait = datetime.datetime.now()
+                        probe_ana_wait = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_ana_wait
+
                     resource._umgr.wait_units()
+
                     if profiling == 1:
-                        enmd_overhead_ana_res = datetime.datetime.now()
+                        probe_ana_res = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['res_time'] = probe_ana_res
+                        
                     self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(iteration,kern_step+1,ana_step.name))
 
                     failed_units = ""
@@ -745,39 +735,133 @@ class Plugin(PluginBase):
                             failed_units += " * Analysis task {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
                     if profiling == 1:
-                        enmd_overhead_ana_done = datetime.datetime.now()
-                        enmd_overhead_ana += (enmd_overhead_ana_wait - enmd_overhead_ana_start).total_seconds() + (enmd_overhead_ana_done - enmd_overhead_ana_res).total_seconds()
+                        probe_ana_done = datetime.datetime.now()
+                        enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_ana_done
 
 
                 if profiling == 1:
-                    post_ana_start = datetime.datetime.now()
+                    probe_post_ana_start = datetime.datetime.now()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post'] = od()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
+
                 i = 0
                 for cu in a_cus:
                     i += 1
                     working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+
                 if profiling == 1:
-                    post_ana_stop = datetime.datetime.now()
-                    enmd_overhead_ana += (post_ana_stop - post_ana_start).total_seconds()
-
-                # Process CU information and append it to the dictionary
-                if profiling == 1:
-                    step_end_time_abs = datetime.datetime.now()
-                    tinfo = extract_timing_info(all_ana_cus, 
-                                                pattern_start_time, 
-                                                step_start_time_abs, 
-                                                step_end_time_abs,
-                                                enmd_overhead_ana,
-                                                num_ana_kerns,
-                                                resource._pilot.description['cores'])
-
-                    for key, val in tinfo.iteritems():
-                        step_timings['timings'][key] = val
-
-                    # Write the whole thing to the profiling dict
-                    pattern._execution_profile.append(step_timings)
-                    stop_now = datetime.datetime.now()    
-
-                #print 'Time for entire execution plugin: {0} secs'.format((stop_now - start_now).total_seconds())
+                    probe_post_ana_end = datetime.datetime.now()
+                    enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['stop_time'] = probe_post_ana_end
+                    cu_dict['iter_{0}'.format(iteration)]['ana'] = all_ana_cus
 
         except KeyboardInterrupt:
             traceback.print_exc()
+
+        finally:
+            if profiling == 1:
+
+                #Pattern overhead logging
+                title = "iteration,step,kernel,probe,timestamp"
+                f1 = open('enmd_pat_overhead.csv','w')
+                f1.write(title + "\n\n")
+                iter = 'None'
+                step = 'pre_loop'
+                kern = 'None'
+                for key,val in enmd_overhead_dict['preloop'].items():
+                    probe = key
+                    timestamp = val
+                    entry = '{0},{1},{2},{3},{4}\n'.format(iter,step,kern,probe,timestamp)
+                    f1.write(entry)
+
+                iters = pattern.iterations
+
+                for i in range(1,iters+1):
+                    iter = 'iter_{0}'.format(i)
+                    for key1,val1 in enmd_overhead_dict[iter].items():
+                        step = key1
+                        for key2,val2 in val1.items():
+                            kern = key2
+                            for key3,val3 in val2.items():
+                                probe = key3
+                                timestamp = val3
+                                entry = '{0},{1},{2},{3},{4}\n'.format(iter.split('_')[1],step,kern,probe,timestamp)
+                                f1.write(entry)
+
+                f1.close()
+
+                #CU data logging
+                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                f2 = open('enmd_cu_data.csv','w')
+                f2.write(title + "\n\n")
+                iter = 'None'
+                step = 'pre_loop'
+                cu = cu_dict['pre_loop']
+
+                st_data = {}
+                for st in cu.state_history:
+                    st_dict = st.as_dict()
+                    st_data["{0}".format( st_dict["state"] )] = {}
+                    st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+
+                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                        uid=cu.uid,
+                        iter=0,
+                        step='pre_loop',
+                        Scheduling=(st_data['Scheduling']),
+                        StagingInput=(st_data['StagingInput']),
+                        Allocating=(st_data['Allocating']),
+                        Executing=(st_data['Executing']),
+                        PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                        Done=(st_data['Done']))
+                f2.write(line + '\n')
+
+                for i in range(1,iters+1):
+                    iter = 'iter_{0}'.format(i)
+                    for key,val in cu_dict[iter].items():
+                        step = key
+                        cus = val
+
+                        if step == 'sim':
+                            for cu in cus:
+                                st_data = {}
+                                for st in cu.state_history:
+                                    st_dict = st.as_dict()
+                                    st_data["{0}".format( st_dict["state"] )] = {}
+                                    st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                    uid=cu.uid,
+                                    iter=iter.split('_')[1],
+                                    step=step,
+                                    Scheduling=(st_data['Scheduling']),
+                                    StagingInput=(st_data['StagingInput']),
+                                    Allocating=(st_data['Allocating']),
+                                    Executing=(st_data['Executing']),
+                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    Done=(st_data['Done']))
+
+                                f2.write(line + '\n')
+
+                        elif step == 'ana':
+                            for cu in cus:
+                                st_data = {}
+                                for st in cu.state_history:
+                                    st_dict = st.as_dict()
+                                    st_data["{0}".format( st_dict["state"] )] = {}
+                                    st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                    uid=cu.uid,
+                                    iter=iter.split('_')[1],
+                                    step=step,
+                                    Scheduling=(st_data['Scheduling']),
+                                    StagingInput=(st_data['StagingInput']),
+                                    Allocating=(st_data['Allocating']),
+                                    Executing=(st_data['Executing']),
+                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    Done=(st_data['Done']))
+
+                                f2.write(line + '\n')
+
+                f2.close()
+
+
+
