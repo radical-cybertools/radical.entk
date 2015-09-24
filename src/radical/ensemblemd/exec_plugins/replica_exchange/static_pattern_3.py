@@ -58,6 +58,21 @@ class Plugin(PluginBase):
                     must be defined for pattern ReplicaExchange!")
                 raise
 
+            #-------------------------------------------------------------------
+            t4 = datetime.datetime.utcnow()
+            outfile = pattern.workdir_local + "/enmd-core-overhead.csv"
+            try:
+                f = open(outfile, 'a')
+
+                row = "ENMD-core-t-inside cluster.run() call: {0}".format(t4)
+                f.write("{row}\n".format(row=row))
+
+                f.close()
+            except IOError:
+                print 'Warning: unable to access file %s' % outfile
+                raise
+            #-------------------------------------------------------------------
+
             do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
 
             if do_profile == '1':
@@ -90,7 +105,7 @@ class Plugin(PluginBase):
             resource._pmgr.wait_pilots(resource._pilot.uid,'Active')       
      
             if do_profile == '1':
-                pattern_start_time = datetime.datetime.now()
+                pattern_start_time = datetime.datetime.utcnow()
 
             replicas = pattern.get_replicas()
 
@@ -101,16 +116,16 @@ class Plugin(PluginBase):
 
             for c in range(1, cycles):
                 if do_profile == '1':
-                    step_start_time_abs = datetime.datetime.now()
+                    step_start_time_abs = datetime.datetime.utcnow()
 
                     cu_performance_data['cycle_{0}'.format(c)] = {}
                     cu_performance_data['cycle_{0}'.format(c)]['md_step'] = {}
 
                     step_performance_data['cycle_{0}'.format(c)] = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step'] = {}
-                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']      = {}
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']         = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_start_time_abs'] = {}
-                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']      = step_start_time_abs
+                    step_performance_data['cycle_{0}'.format(c)]['md_step']['step_start_time_abs']         = step_start_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_start_time_abs'] = step_start_time_abs
 
                 md_units = []
@@ -186,7 +201,7 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
                 if do_profile == '1':
-                    enmd_ov_step_end_time_abs = datetime.datetime.now()
+                    enmd_ov_step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = enmd_ov_step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = {}
@@ -195,7 +210,7 @@ class Plugin(PluginBase):
                 resource._umgr.wait_units()
 
                 if do_profile == '1':
-                    step_end_time_abs = datetime.datetime.now()
+                    step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['step_end_time_abs'] =  step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['duration'] = {}
@@ -218,7 +233,7 @@ class Plugin(PluginBase):
                 #---------------------------------------------------------------
 
                 if do_profile == '1':
-                    step_start_time_abs = datetime.datetime.now()
+                    step_start_time_abs = datetime.datetime.utcnow()
                     cu_performance_data['cycle_{0}'.format(c)]['ex_step'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_start_time_abs'] = {}
@@ -286,19 +301,18 @@ class Plugin(PluginBase):
                 sub_replica = resource._umgr.submit_units(cu)
  
                 if do_profile == '1':
-                    enmd_ov_step_end_time_abs = datetime.datetime.now()
+                    enmd_ov_step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_end_time_abs'] = enmd_ov_step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds()  
-
 
                 resource._umgr.wait_units()
 
                 ex_units.append(sub_replica)
                     
                 if do_profile == '1':
-                    step_end_time_abs = datetime.datetime.now()
+                    step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['step_end_time_abs'] = step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['duration'] = {}
@@ -312,15 +326,12 @@ class Plugin(PluginBase):
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * EX step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                #if len(failed_units) > 0:
-                #    sys.exit()
-
                 #---------------------------------------------------------------
                 # post processing
                 #---------------------------------------------------------------
                  
                 if do_profile == '1':
-                    step_start_time_abs = datetime.datetime.now()
+                    step_start_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['pp_step'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_start_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_start_time_abs'] = step_start_time_abs
@@ -331,7 +342,7 @@ class Plugin(PluginBase):
                 pattern.do_exchange(c, replicas)
                 
                 if do_profile == '1':
-                    step_end_time_abs = datetime.datetime.now()
+                    step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['pp_step']['step_end_time_abs'] = step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['pp_step']['enmd_ov_step_end_time_abs'] = {}
