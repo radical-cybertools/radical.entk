@@ -100,7 +100,7 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load amber"],
-            "executable" : ["pmemd.MPI"],
+            "executable" : ["pmemd"],
             "uses_mpi"   : True
         },
         "lsu.supermic":
