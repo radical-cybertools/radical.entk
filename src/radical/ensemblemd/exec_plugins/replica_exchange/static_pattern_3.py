@@ -193,19 +193,20 @@ class Plugin(PluginBase):
                     cu.output_staging = out_list
                     #-----------------------------------------------------------
                     cus.append(cu)
-         
-                # bulk submission
-                sub_replicas = resource._umgr.submit_units(cus)  
-                for r in sub_replicas:
-                    md_units.append(r)                 
-
-                self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
+               
                 if do_profile == '1':
                     enmd_ov_step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_step_end_time_abs'] = enmd_ov_step_end_time_abs
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds() 
+
+                # bulk submission
+                sub_replicas = resource._umgr.submit_units(cus)  
+                for r in sub_replicas:
+                    md_units.append(r)                 
+
+                self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
 
                 resource._umgr.wait_units()
 
@@ -298,8 +299,6 @@ class Plugin(PluginBase):
                 cu.mpi            = gl_ex_kernel.uses_mpi
                 cu.cores          = gl_ex_kernel.cores
 
-                sub_replica = resource._umgr.submit_units(cu)
- 
                 if do_profile == '1':
                     enmd_ov_step_end_time_abs = datetime.datetime.utcnow()
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_step_end_time_abs'] = {}
@@ -307,6 +306,7 @@ class Plugin(PluginBase):
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = {}
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds()  
 
+                sub_replica = resource._umgr.submit_units(cu)
                 resource._umgr.wait_units()
 
                 ex_units.append(sub_replica)

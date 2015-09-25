@@ -126,6 +126,7 @@ class Plugin(PluginBase):
                 #---------------------------------------------------------------
                 # start of MD step preparation
                 #---------------------------------------------------------------
+                cus = []
                 md_units = []
                 for r in replicas:
 
@@ -176,9 +177,7 @@ class Plugin(PluginBase):
                     if copy_out:
                         out_list = out_list + copy_out
                     cu.output_staging = out_list
-
-                    sub_replica = resource._umgr.submit_units(cu)
-                    md_units.append(sub_replica)                    
+                    cus.append(cu)
 
                 #---------------------------------------------------------------
                 # end of MD step preparation
@@ -191,6 +190,7 @@ class Plugin(PluginBase):
                     step_performance_data['cycle_{0}'.format(c)]['md_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds() 
          
                 self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c) )
+                md_units = resource._umgr.submit_units(cus)
                 resource._umgr.wait_units()
 
                 if do_profile == '1':
@@ -221,8 +221,8 @@ class Plugin(PluginBase):
                 #---------------------------------------------------------------
                 # start of Exchange step preparation 
                 #---------------------------------------------------------------
+                cus = []
                 ex_units = []
-
                 for r in replicas:
                     self.get_logger().info("Cycle %d: Preparing replica %d for Exchange run" % ((c), r.id) )
                     ex_kernel = pattern.prepare_replica_for_exchange(r)
@@ -237,9 +237,8 @@ class Plugin(PluginBase):
                     cu.cores          = ex_kernel.cores
                     cu.input_staging  = ex_kernel._cu_def_input_data
                     cu.output_staging = ex_kernel._cu_def_output_data
+                    cus.append(cu)
 
-                    sub_replica = resource._umgr.submit_units(cu)
-                    ex_units.append(sub_replica)
                 #---------------------------------------------------------------
                 # end of Exchange step preparation 
                 #---------------------------------------------------------------
@@ -252,6 +251,7 @@ class Plugin(PluginBase):
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds()  
 
                 self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (c) )
+                ex_units = resource._umgr.submit_units(cus)
                 resource._umgr.wait_units()
 
                 if do_profile == '1':
