@@ -192,15 +192,14 @@ class Plugin(PluginBase):
 
                 self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
 
-                unit = resource._umgr.submit_units(cu)
-                all_cus.append(unit)
-
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
                 self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
                 if profiling == 1:
                     probe_preloop_wait = datetime.datetime.now()
                     enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
 
+                unit = resource._umgr.submit_units(cu)
+                all_cus.append(unit)
                 resource._umgr.wait_units()
 
                 if profiling == 1:
@@ -451,9 +450,7 @@ class Plugin(PluginBase):
                             break
                         
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
-                    s_cus = resource._umgr.submit_units(s_units)
-                    all_cus.extend(s_cus)
-                    all_sim_cus.extend(s_cus)
+                    
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
@@ -461,6 +458,10 @@ class Plugin(PluginBase):
                     if profiling == 1:
                         probe_sim_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
+
+                    s_cus = resource._umgr.submit_units(s_units)
+                    all_cus.extend(s_cus)
+                    all_sim_cus.extend(s_cus)
 
                     resource._umgr.wait_units()
 
@@ -711,15 +712,17 @@ class Plugin(PluginBase):
                             break
 
                     self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
-                    a_cus = resource._umgr.submit_units(a_units)
-                    all_cus.extend(a_cus)
-                    all_ana_cus.extend(a_cus)
-
+                    
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
                     if profiling == 1:
                         probe_ana_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_ana_wait
+
+
+                    a_cus = resource._umgr.submit_units(a_units)
+                    all_cus.extend(a_cus)
+                    all_ana_cus.extend(a_cus)
 
                     resource._umgr.wait_units()
 
