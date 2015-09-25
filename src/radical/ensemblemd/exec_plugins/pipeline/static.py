@@ -375,7 +375,7 @@ class Plugin(PluginBase):
 
                 for i in range(1,steps+1):
                     step = 'step_{0}'.format(i)
-                    cus = cu_dict[iter].items():
+                    cus = cu_dict[step].items()
 
                     for cu in cus:
                         st_data = {}
