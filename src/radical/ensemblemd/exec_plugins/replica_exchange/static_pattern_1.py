@@ -16,7 +16,6 @@ import traceback
 import random
 import datetime
 import radical.pilot
-from radical.ensemblemd.utils import extract_timing_info
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 
