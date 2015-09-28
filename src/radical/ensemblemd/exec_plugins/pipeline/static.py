@@ -373,9 +373,9 @@ class Plugin(PluginBase):
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
 
-                for i in range(1,steps+1):
+                for i in range(1,pipeline_steps+1):
                     step = 'step_{0}'.format(i)
-                    cus = cu_dict[step].items()
+                    cus = cu_dict[step]
 
                     for cu in cus:
                         st_data = {}
@@ -383,15 +383,16 @@ class Plugin(PluginBase):
                             st_dict = st.as_dict()
                             st_data["{0}".format( st_dict["state"] )] = {}
                             st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                            line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
-                                    uid=cu.uid,
-                                    iter=iter.split('_')[1],
-                                    step=step,
-                                    Scheduling=(st_data['Scheduling']),
-                                    StagingInput=(st_data['StagingInput']),
-                                    Allocating=(st_data['Allocating']),
-                                    Executing=(st_data['Executing']),
-                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
-                                    Done=(st_data['Done']))
+                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                            uid=cu.uid,
+                            step=step,
+                            Scheduling=(st_data['Scheduling']),
+                            StagingInput=(st_data['StagingInput']),
+                            Allocating=(st_data['Allocating']),
+                            Executing=(st_data['Executing']),
+                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            Done=(st_data['Done']))
 
                         f2.write(line + '\n')
+
+                f2.close()

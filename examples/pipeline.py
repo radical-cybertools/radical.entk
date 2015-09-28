@@ -159,8 +159,6 @@ if __name__ == "__main__":
 
         cluster.deallocate()
         
-        import pprint as pp
-        pp.pprint(ccount.execution_profile_dict)
 
         import os
         os.system("rm *.sha1 *.dat")

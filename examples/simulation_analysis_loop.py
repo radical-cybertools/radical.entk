@@ -150,11 +150,11 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="xsede.stampede",
-            cores=16,
+            resource="local.localhost",
+            cores=1,
             walltime=30,
-            username='vivek91',
-            project='TG-MCB090174',
+            #username='vivek91',
+            #project='TG-MCB090174',
 	    database_name='myexps',
 	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242'
         )
