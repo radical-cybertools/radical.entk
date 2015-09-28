@@ -360,7 +360,7 @@ class Plugin(PluginBase):
 
                 for i in range(1,pipeline_steps+1):
                     step = 'step_{0}'.format(i)
-                    for key,val in enmd_overhead_dict[iter].items():                        
+                    for key,val in enmd_overhead_dict[step].items():                        
                         probe = key
                         timestamp = val
                         entry = '{0},{1},{2}\n'.format(step,probe,timestamp)
