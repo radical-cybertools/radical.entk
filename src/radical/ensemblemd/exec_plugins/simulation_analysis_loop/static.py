@@ -798,25 +798,29 @@ class Plugin(PluginBase):
                 f2.write(title + "\n\n")
                 iter = 'None'
                 step = 'pre_loop'
-                cu = cu_dict['pre_loop']
 
-                st_data = {}
-                for st in cu.state_history:
-                    st_dict = st.as_dict()
-                    st_data["{0}".format( st_dict["state"] )] = {}
-                    st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+                if step in cu_dict:
+                    cu = cu_dict['pre_loop']
 
-                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
-                        uid=cu.uid,
-                        iter=0,
-                        step='pre_loop',
-                        Scheduling=(st_data['Scheduling']),
-                        StagingInput=(st_data['StagingInput']),
-                        Allocating=(st_data['Allocating']),
-                        Executing=(st_data['Executing']),
-                        PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
-                        Done=(st_data['Done']))
-                f2.write(line + '\n')
+                    st_data = {}
+                    for st in cu.state_history:
+                        st_dict = st.as_dict()
+                        st_data["{0}".format( st_dict["state"] )] = {}
+                        st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+
+                    line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                            uid=cu.uid,
+                            iter=0,
+                            step='pre_loop',
+                            Scheduling=(st_data['Scheduling']),
+                            StagingInput=(st_data['StagingInput']),
+                            Allocating=(st_data['Allocating']),
+                            Executing=(st_data['Executing']),
+                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            Done=(st_data['Done']))
+                    f2.write(line + '\n')
+                else:
+                    print 'No pre_loop step in the pattern'
 
                 for i in range(1,iters+1):
                     iter = 'iter_{0}'.format(i)
