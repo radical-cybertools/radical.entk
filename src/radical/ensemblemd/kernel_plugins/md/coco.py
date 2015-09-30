@@ -49,6 +49,11 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Output filename for postexec"
                         },
+                    "--atom_selection=":
+                        {
+                            "mandatory": True,
+                            "description": "Selection of atoms - None(all) or protein"
+                        }
                     },
     "machine_configs": 
     {
@@ -66,10 +71,10 @@ _KERNEL_INFO = {
                             "module load python/2.7.9",
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
-                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.19_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.19_installation/bin:$PATH"],
+                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.21_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.21_installation/bin:$PATH"],
             "executable" : ["pyCoCo"],
-            "uses_mpi"   : False    
+            "uses_mpi"   : True    
         },
 
         "epsrc.archer":
@@ -78,37 +83,11 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load python-compute/2.7.6",
                       "module load pc-numpy/1.8.0-libsci",
                       "module load pc-scipy/0.13.3-libsci",
-                      "module load pc-coco/0.18",
+                      "module load pc-coco/0.21",
                       "module load pc-netcdf4-python/1.1.0",
                       "module load amber"],
             "executable" : ["pyCoCo"],
-            "uses_mpi"   : False
-        },
-
-        "lsu.supermic":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load hdf5/1.8.12/INTEL-140-MVAPICH2-2.0",
-                        "module load netcdf/4.2.1.1/INTEL-140-MVAPICH2-2.0",
-                        "module load fftw/3.3.3/INTEL-140-MVAPICH2-2.0",
-                        "module load python/2.7.7-anaconda",
-                        "export PATH=/home/vivek91/.local/bin:$PATH",
-                        "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable" : ["python"],
-            "uses_mpi"   : False    
-        },
-        "xsede.comet":
-        {
-                "environment" : {},
-                "pre_exec"    : ["module load hdf5/1.8.14",
-                        "module load netcdf/4.3.2",
-                        "module load fftw/3.3.4",
-                        "module load python",
-                        "module load scipy",
-                        "module load mpi4py",
-                        "export PYTHONPATH=$PYTHONPATH:/home/vivek91/.local/lib/python2.7/site-packages"],
-                "executable"  : ["python"],
-                "uses_mpi"    : False
+            "uses_mpi"   : True
         },
     }
 }
@@ -154,7 +133,8 @@ class Kernel(KernelBase):
                     '--mdfile','{0}'.format(self.get_arg("--mdfile=")),
                     '--output','{0}'.format(self.get_arg("--output=")),
                     '--logfile','coco.log',
-                    '--mpi'
+                    '--mpi',
+                    '--selection','{0}'.format(self.get_arg("--atom_selection="))
                     ]
                                                                      
        

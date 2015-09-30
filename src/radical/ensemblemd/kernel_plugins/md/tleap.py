@@ -48,8 +48,8 @@ _KERNEL_INFO = {
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
                             "export AMBERHOME=/opt/apps/intel13/mvapich2_1_9/amber/12.0",
-                            "export PYTHONPATH=/work/02998/ardi/coco-0.19_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.19_installation/bin:$AMBERHOME/bin:$PATH"],
+                            "export PYTHONPATH=/work/02998/ardi/coco-0.21_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.21_installation/bin:$AMBERHOME/bin:$PATH"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },
@@ -60,39 +60,11 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load python-compute/2.7.6",
                       "module load pc-numpy/1.8.0-libsci",
                       "module load pc-scipy/0.13.3-libsci",
-                      "module load pc-coco/0.18",
+                      "module load pc-coco/0.21",
                       "module load pc-netcdf4-python/1.1.0",
                       "module load amber"],
             "executable" : ["python"],
             "uses_mpi"   : False
-        },
-
-        "lsu.supermic":
-        {
-            "environment" : {},
-            "pre_exec" : [". /home/vivek91/modules/amber14/amber.sh",
-                        "export PATH=/home/vivek91/.local/bin:/home/vivek91/modules/amber14/bin:/home/vivek91/modules/amber14/dat/leap/cmd:$PATH",
-                        "export PYTHONPATH=/home/vivek91/.local/lib/python2.7/site-packages:$PYTHONPATH",
-                        "module load hdf5/1.8.12/INTEL-140-MVAPICH2-2.0",
-                        "module load netcdf/4.2.1.1/INTEL-140-MVAPICH2-2.0",
-                        "module load fftw/3.3.3/INTEL-140-MVAPICH2-2.0",
-                        "module load python/2.7.7-anaconda"],
-            "executable" : ["python"],
-            "uses_mpi"   : False
-        },
-        "xsede.comet":
-        {
-                "environment" : {},
-                "pre_exec"    : ["module load hdf5/1.8.14",
-                        "module load netcdf/4.3.2",
-                        "module load fftw/3.3.4",
-                        "module load python",
-                        "module load scipy",
-                        "module load mpi4py",
-                        "module load amber",
-                        "export PYTHONPATH=$PYTHONPATH:/home/vivek91/.local/lib/python2.7/site-packages"],
-                "executable"  : ["python"],
-                "uses_mpi"    : False
         },
     }
 }
