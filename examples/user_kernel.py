@@ -153,6 +153,8 @@ if __name__ == "__main__":
 
         cluster.run(sleep)
 
+        cluster.deallocate()
+
     except EnsemblemdError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))

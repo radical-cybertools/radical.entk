@@ -38,18 +38,32 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load gromacs python mpi4py"],
+            "pre_exec" : ["module load intel/15.0.2","module load boost","module load gromacs","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
+            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python-compute/2.7.6"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
+        },
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
+        },
+        "lsu.supermic":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
             "executable" : ["python"],
             "uses_mpi"   : True
         }

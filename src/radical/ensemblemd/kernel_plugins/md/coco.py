@@ -49,10 +49,10 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Output filename for postexec"
                         },
-                    "--cycle=":
+                    "--atom_selection=":
                         {
                             "mandatory": True,
-                            "description": "Output filename for postexec"
+                            "description": "Selection of atoms - None(all) or protein"
                         }
                     },
     "machine_configs": 
@@ -60,25 +60,35 @@ _KERNEL_INFO = {
         "*": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
-            "executable"    : "/bin/bash",
+            "executable"    : "pyCoCo",
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/13.0.2.146","module load python","module load netcdf/4.3.2","module load hdf5/1.8.13","module load amber","export PYTHONPATH=/work/02998/ardi/coco_installation/lib/python2.7/site-packages:$PYTHONPATH","export PATH=/work/02998/ardi/coco_installation/bin:$PATH"],
-            "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "pre_exec" : [  "module load intel/13.0.2.146",
+                            "module load python/2.7.9",
+                            "module load netcdf/4.3.2",
+                            "module load hdf5/1.8.13",
+                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.21_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.21_installation/bin:$PATH"],
+            "executable" : ["pyCoCo"],
+            "uses_mpi"   : True    
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","module load numpy","module load scipy","module load coco","module load netcdf4-python","module load amber"],
-            "executable" : ["/bin/bash"],
+            "pre_exec" : ["module load python-compute/2.7.6",
+                      "module load pc-numpy/1.8.0-libsci",
+                      "module load pc-scipy/0.13.3-libsci",
+                      "module load pc-coco/0.21",
+                      "module load pc-netcdf4-python/1.1.0",
+                      "module load amber"],
+            "executable" : ["pyCoCo"],
             "uses_mpi"   : True
-        }
+        },
     }
 }
 
@@ -115,15 +125,18 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        executable = "/bin/bash"
-        arguments = ['-l','-c','pyCoCo --grid {0} --dims {1} --frontpoints {2} --topfile {3} --mdfile {4} --output {5} && python postexec.py {2} {6}'.format(
-                                                                     self.get_arg("--grid="),
-                                                                     self.get_arg("--dims="),
-                                                                     self.get_arg("--frontpoints="),
-                                                                     self.get_arg("--topfile="),
-                                                                     self.get_arg("--mdfile="),
-                                                                     self.get_arg("--output="),
-                                                                     self.get_arg("--cycle="))]
+        executable = cfg["executable"]
+        arguments = ['--grid','{0}'.format(self.get_arg("--grid=")),
+                    '--dims','{0}'.format(self.get_arg("--dims=")),
+                    '--frontpoints','{0}'.format(self.get_arg("--frontpoints=")),
+                    '--topfile','{0}'.format(self.get_arg("--topfile=")),
+                    '--mdfile','{0}'.format(self.get_arg("--mdfile=")),
+                    '--output','{0}'.format(self.get_arg("--output=")),
+                    '--logfile','coco.log',
+                    '--mpi',
+                    '--selection','{0}'.format(self.get_arg("--atom_selection="))
+                    ]
+                                                                     
        
         self._executable  = executable
         self._arguments   = arguments

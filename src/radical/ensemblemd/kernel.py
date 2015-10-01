@@ -31,13 +31,16 @@ class Kernel(object):
         if args is not None:
             self.set_args(args)
 
-        if ((instance_type==None)or(instance_type=='single')):
+        if (instance_type == 'single'):
             self._kernel.instance_type = 'single'
-        elif (instance_type=='multiple'):
+        else:
             self._kernel.instance_type = 'multiple'
+            
 
     #---------------------------------------------------------------------------
     #
+    """
+    ANTONS: COMMENTED OUT FOR NOW, HAVE NO IDEA WHAT THIS IS SUPPOSED TO DO!
     @property
     def _cu_def_pre_exec(self):
 
@@ -60,57 +63,62 @@ class Kernel(object):
 
                 pre_exec.append(cmd)
 
-        # Translate copy directives into cp command(s)
-        if self._kernel._copy_input_data is not None:
-            for copy in self._kernel._copy_input_data:
-
-                # see if a rename is requested
-                dl = copy.split(">")
-                if len(dl) == 1:
-                    # no rename
-                     cmd = "cp -r {0} .".format(dl[0].strip())
-                elif len(dl) == 2:
-                     cmd = "cp -r {0} ./{1}".format(dl[0].strip(), dl[1].strip())
-                else:
-                    # error
-                    raise Exception("Invalid transfer directive %s" % copy)
-
-                pre_exec.append(cmd)
-
-        # Translate link directives into ln command(s)
-        if self._kernel._link_input_data is not None:
-            for link in self._kernel._link_input_data:
-
-                # see if a rename is requested
-                dl = link.split(">")
-                if len(dl) == 1:
-                    # no rename
-                     cmd = "ln -s {0}".format(dl[0].strip())
-                elif len(dl) == 2:
-                     cmd = "ln -s {0} {1}".format(dl[0].strip(), dl[1].strip())
-                else:
-                    # error
-                    raise Exception("Invalid transfer directive %s" % link)
-
-                pre_exec.append(cmd)
-
+        # Removed other directives since you are using RP directives in the execution plugin
+        
         # Add existing pre-exec.
         if self._kernel._pre_exec is not None:
             pre_exec.extend(self._kernel._pre_exec)
 
         return pre_exec
+    """
 
     #---------------------------------------------------------------------------
     #
     @property
-    def name(self):
-        return self._kernel.get_name()
+    def _cu_def_pre_exec(self):
+        return self._kernel._pre_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def pre_exec(self):
+        return self._kernel._pre_exec
+
+    @pre_exec.setter
+    def pre_exec(self, commands):
+        self._kernel._pre_exec = commands
 
     #---------------------------------------------------------------------------
     #
     @property
     def _cu_def_post_exec(self):
         return self._kernel._post_exec
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def post_exec(self):
+        return self._kernel._post_exec
+
+    @post_exec.setter
+    def post_exec(self, commands):
+        self._kernel._post_exec = commands
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def subname(self):
+        return self._kernel._subname
+
+    @subname.setter
+    def subname(self, name):
+        self._kernel._subname = name
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def name(self):
+        return self._kernel.get_name()
 
     #---------------------------------------------------------------------------
     #
@@ -142,11 +150,16 @@ class Kernel(object):
     def uses_mpi(self):
         return self._kernel._uses_mpi
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def cores(self):
-        return self._kernel._cores
+    @uses_mpi.setter
+    def uses_mpi(self, uses_mpi):
+
+        if type(uses_mpi) != bool:
+            raise TypeError(
+                expected_type=bool,
+                actual_type=type(uses_mpi))
+
+        # Call the validate_args() method of the plug-in.
+        self._kernel._uses_mpi = uses_mpi
 
     #---------------------------------------------------------------------------
     #
@@ -250,37 +263,6 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
-    def copy_input_data(self):
-        """Instructs the kernel to copy one or more files or directories from
-           the execution host's filesystem into the kernel's execution
-           directory.
-
-           Example::
-
-                k = Kernel(name="misc.ccount")
-                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
-                k.copy_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
-
-        """
-        return self._kernel._copy_input_data
-
-    @copy_input_data.setter
-    def copy_input_data(self, data_directives):
-
-        if type(data_directives) != list:
-            data_directives = [data_directives]
-
-        for dd in data_directives:
-            if type(dd) != str:
-                raise TypeError(
-                    expected_type=str,
-                    actual_type=type(dd))
-
-        self._kernel._copy_input_data = data_directives
-
-    #---------------------------------------------------------------------------
-    #
-    @property
     def link_input_data(self):
         """Instructs the kernel to create a link to one or more files or
            directories on the execution host's filesystem in the kernel's
@@ -340,6 +322,38 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     @property
+    def copy_input_data(self):
+        """Instructs the kernel to copy one or more files or directories from
+           the execution host's filesystem into the kernel's execution
+           directory.
+
+           Example::
+
+                k = Kernel(name="misc.ccount")
+                k.arguments = ["--inputfile=input.txt", "--outputfile=output.txt"]
+                k.copy_input_data = ["/location/on/EXECUTION/HOST/data.txt > input.txt"]
+
+        """
+        return self._kernel._copy_input_data
+
+    @copy_input_data.setter
+    def copy_input_data(self, data_directives):
+
+        if type(data_directives) != list:
+            data_directives = [data_directives]
+
+        for dd in data_directives:
+            dd = str(dd)
+            if type(dd) != str:
+                raise TypeError(
+                    expected_type=str,
+                    actual_type=type(dd))
+
+        self._kernel._copy_input_data = data_directives
+
+    #---------------------------------------------------------------------------
+    #
+    @property
     def copy_output_data(self):
         """Instructs the application to copy one or more files or directories
            from the kernel's execution directory to a directory on the
@@ -353,7 +367,7 @@ class Kernel(object):
         """
         return self._kernel._copy_output_data
 
-    @download_output_data.setter
+    @copy_output_data.setter
     def copy_output_data(self, data_directives):
 
         if type(data_directives) != list:
@@ -385,7 +399,8 @@ class Kernel(object):
     #---------------------------------------------------------------------------
     #
     def get_instance_type(self):
-        """Returns the instance_type of the kernel. It can be 'single' or 'multiple'
+        """Returns the instance_type of the kernel. It can be 'single' or
+        'multiple'
         """
         return self._kernel.instance_type
 

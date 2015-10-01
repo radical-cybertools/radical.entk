@@ -27,6 +27,7 @@ class KernelBase(object):
 
         self._info     = kernel_info
         self._name     = kernel_info['name']
+        self._subname  = None
 
         self._logger   = rul.getLogger ('radical.enmd', self._name)
         self._args     = []
@@ -43,11 +44,13 @@ class KernelBase(object):
 
 
         self._upload_input_data      = None
-        self._download_input_data    = None
-        self._copy_input_data        = None
+        
         self._link_input_data        = None
 
+        self._download_input_data    = None
         self._download_output_data   = None
+
+        self._copy_input_data        = None
         self._copy_output_data       = None
 
 

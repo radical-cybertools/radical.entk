@@ -8,6 +8,9 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
+import sys
+import traceback
+import datetime
 import radical.pilot
 import radical.utils.logger  as rul
 from radical.ensemblemd.engine import Engine
@@ -16,7 +19,6 @@ from radical.ensemblemd.execution_pattern import ExecutionPattern
 from radical.ensemblemd.execution_context import ExecutionContext
 
 CONTEXT_NAME = "Static"
-
 
 #-------------------------------------------------------------------------------
 #
@@ -27,7 +29,16 @@ class SingleClusterEnvironment(ExecutionContext):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, resource, cores, walltime, queue=None, username=None, project=None, cleanup=False, database_url=None):
+    def __init__(self, 
+                 resource, 
+                 cores, 
+                 walltime, 
+                 queue=None, 
+                 username=None, 
+                 project=None, 
+                 cleanup=False, 
+                 database_url=None, 
+                 database_name=None):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
@@ -35,6 +46,9 @@ class SingleClusterEnvironment(ExecutionContext):
         self._session = None
         self._pilot = None
         self._pmgr = None
+        self._exctype = None
+        self._excvalue = None
+        self._traceback = None
 
         self._resource_key = resource
         self._queue = queue
@@ -44,8 +58,10 @@ class SingleClusterEnvironment(ExecutionContext):
         self._project = project
         self._cleanup = cleanup
         self._database_url = database_url
+        self._database_name = database_name
 
-        self._logger  = rul.getLogger ('radical.enmd', 'SingleClusterEnvironment')
+        self._logger  = rul.getLogger ('radical.enmd', 
+                                       'SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 
@@ -67,7 +83,21 @@ class SingleClusterEnvironment(ExecutionContext):
     def deallocate(self):
         """Deallocates the resources.
         """
-        self._session.close()
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+        if profiling == 1:
+            start_time = datetime.datetime.now()
+        self.get_logger().info("Deallocating Cluster")
+        if self._exctype != None:
+            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+            traceback.print_tb(self._traceback)
+            
+        self._session.close(cleanup=self._cleanup)
+        if profiling == 1:
+            stop_time = datetime.datetime.now()
+            f1 = open('enmd_core_overhead.csv','a')
+            f1.write('deallocate,start_time,{0}\n'.format(start_time))
+            f1.write('deallocate,stop_time,{0}\n'.format(stop_time))
+            f1.close()
 
     #---------------------------------------------------------------------------
     #
@@ -77,8 +107,8 @@ class SingleClusterEnvironment(ExecutionContext):
         #-----------------------------------------------------------------------
         #
         def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Resource {0} state has changed to {1}".format(
-                self._resource_key, state))
+            self.get_logger().info("Resource {0} state has changed to {1}"
+                .format(self._resource_key, state))
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))
@@ -108,13 +138,20 @@ class SingleClusterEnvironment(ExecutionContext):
         # Here we start the pilot(s).
         try:
 
+            profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+            if profiling == 1:
+                start_time = datetime.datetime.now()
+
             if not self._database_url:
                 self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
 
             if  not self._database_url :
                 raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
 
-            self._session = radical.pilot.Session(database_url=self._database_url)
+            if self._database_name is None:
+                self._session = radical.pilot.Session(database_url=self._database_url)
+            else:
+                self._session = radical.pilot.Session(database_url=self._database_url,database_name=self._database_name)
 
             if self._username is not None:
                 # Add an ssh identity to the session.
@@ -154,9 +191,21 @@ class SingleClusterEnvironment(ExecutionContext):
 
             self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
 
+            if profiling == 1:
+                stop_time = datetime.datetime.now()
+
         except Exception, ex:
             self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
             raise
+
+        finally:
+            if profiling == 1:
+                title = 'step,probe,timestamp'
+                f1 = open('enmd_core_overhead.csv','w')
+                f1.write(title+'\n\n')
+                f1.write('allocate,start_time,{0}\n'.format(start_time))
+                f1.write('allocate,stop_time,{0}\n'.format(stop_time))
+                f1.close()
 
     #---------------------------------------------------------------------------
     #
@@ -182,4 +231,9 @@ class SingleClusterEnvironment(ExecutionContext):
             plugin_name=force_plugin)
 
         plugin.verify_pattern(pattern, self)
-        plugin.execute_pattern(pattern, self)
+        try:
+            plugin.execute_pattern(pattern, self)
+        except KeyboardInterrupt:
+            self._exctype,self._excvalue,self._traceback = sys.exc_info()            
+        except Exception, ex:
+            self._exctype,self._excvalue,self._traceback = sys.exc_info()

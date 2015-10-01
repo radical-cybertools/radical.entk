@@ -33,20 +33,48 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load gromacs python mpi4py"],
-            "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "pre_exec" : [
+                            "module load intel/15.0.2",
+                            "module load boost",
+                            "module load python",
+                            "export TACC_GROMACS_DIR=/opt/apps/intel13/mvapich2_1_9/gromacs/5.0.1",
+                            "export TACC_GROMACS_LIB=$TACC_GROMACS_DIR/lib",
+                            "export TACC_GROMACS_INC=$TACC_GROMACS_DIR/include",
+                            "export TACC_GROMACS_BIN=$TACC_GROMACS_DIR/bin",
+                            "export TACC_GROMACS_DOC=$TACC_GROMACS_DIR/share",
+                            "export GMXLIB=/opt/apps/intel13/mvapich2_1_9/gromacs/5.0.1/share/gromacs/top",
+                            "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/apps/intel/15/composer_xe_2015.2.164/mkl/lib/intel64/:/opt/apps/intel/15/composer_xe_2015.2.164/compiler/lib/intel64/:/opt/apps/intel15/python/2.7.9/lib/",
+                            "export PATH=$TACC_GROMACS_BIN:$PATH"
+                        ],
+            "executable" : ["python"],
+            "uses_mpi"   : False
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load gromacs/5.0.0","module load python"],
-            "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "pre_exec" : [
+                            "module load packages-archer",
+                            "module load gromacs/5.0.0",
+                            "module load python-compute/2.7.6"
+                        ],
+            "executable" : ["python"],
+            "uses_mpi"   : False
+        },
+
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : [
+                            "module load openmpi",
+                            "module load python",
+                            "export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin:/N/u/vivek91/.local/bin"
+                        ],
+            "executable" : ["python"],
+            "uses_mpi"   : False
         }
     }
 }
@@ -83,7 +111,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['-l','-c','python pre_analyze.py {0} tmp.gro . && echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro'.format(self.get_arg("--numCUs="))]
+        arguments = ['pre_analyze.py','{0}'.format(self.get_arg("--numCUs=")),'tmp.gro','.'] 
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

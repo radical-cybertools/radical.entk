@@ -7,8 +7,6 @@ __author__    = "Ole Weider <ole.weidner@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.ensemblemd.utils import dataframes_from_profile_dict
-
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
@@ -75,8 +73,6 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
 
-        self._execution_profile = None
-
         super(SimulationAnalysisLoop, self).__init__()
 
     #---------------------------------------------------------------------------
@@ -86,26 +82,6 @@ class SimulationAnalysisLoop(ExecutionPattern):
         """Returns the name of the pattern.
         """
         return PATTERN_NAME
-
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def execution_profile_dict(self):
-        """Returns the execution profile as a Python dictionary after the
-           pattern has finished running, 'None' otheriwse.
-        """
-        return self._execution_profile
-
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def execution_profile_dataframe(self):
-        """Returns the execution profile as a PANDAS DataFrame after the
-           pattern has finished running, 'None' otheriwse.
-
-           Note that 'None' is also returned if PANDAS is not installed. 
-        """
-        return dataframes_from_profile_dict(self._execution_profile)
 
     #---------------------------------------------------------------------------
     #

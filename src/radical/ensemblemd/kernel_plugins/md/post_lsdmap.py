@@ -58,7 +58,7 @@ _KERNEL_INFO = {
             "uses_mpi"      : True
         },
 
-        "stampede.tacc.utexas.edu":
+        "xsede.stampede":
         {
             "environment" : {},
             "pre_exec" : ["module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
@@ -66,10 +66,24 @@ _KERNEL_INFO = {
             "uses_mpi"   : True
         },
 
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
-            "pre_exec" : ["module load packages-archer","module load python"],
+            "pre_exec" : [  "module load python-compute/2.7.6",
+                            "module load pc-numpy/1.8.0-libsci",
+                            "module load pc-scipy/0.13.3-libsci",
+                            "module load lsdmap"],
+            "executable" : ["python"],
+            "uses_mpi"   : True
+        },
+
+        "futuregrid.india":
+        {
+            "environment" : {},
+            "pre_exec" : ["module load openmpi","module load python",
+                        "export PATH=$PATH:/N/u/vivek91/.local/bin",
+                        "export PYTHONPATH=$PYTHONPATH:/N/u/vivek91/.local/lib/python2.7/site-packages"
+                        ],
             "executable" : ["python"],
             "uses_mpi"   : True
         }

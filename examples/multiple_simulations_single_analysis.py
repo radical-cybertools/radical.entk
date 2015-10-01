@@ -104,9 +104,9 @@ class MSSA(SimulationAnalysisLoop):
     def simulation_step(self, iteration, instance):
         """In the simulation step we
         """
-        k = Kernel(name="misc.mkfile",instance_type="single")
+        k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
-        return k
+        return [k]
 
     def analysis_step(self, iteration, instance):
         """In the analysis step we use the ``$PREV_SIMULATION`` data reference
@@ -122,7 +122,7 @@ class MSSA(SimulationAnalysisLoop):
         k.arguments            = ["--inputfile=asciifile-*.dat", "--outputfile=cfreqs.dat"]
         k.link_input_data      = link_input_data
         k.download_output_data = "cfreqs.dat > cfreqs-{iteration}.dat".format(iteration=iteration)
-        return k
+        return [k]
 
 
 # ------------------------------------------------------------------------------
@@ -148,6 +148,8 @@ if __name__ == "__main__":
         mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
 
         cluster.run(mssa)
+
+        cluster.deallocate()
 
 	print mssa.execution_profile_dict
 

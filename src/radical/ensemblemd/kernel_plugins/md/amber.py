@@ -35,10 +35,20 @@ _KERNEL_INFO = {
                             "mandatory": False,
                             "description": "Input topology filename"
                         },
+                    "--crdfile=":
+                        {
+                            "mandatory": False,
+                            "description": "Input coordinate filename"
+                        },
                     "--cycle=":
                         {
                             "mandatory": False,
                             "description": "Cycle number"
+                        },
+                    "--instance=":
+                        {
+                            "mandatory": False,
+                            "description": "Instance number"
                         },
                     "--outfile=":
                         {
@@ -77,29 +87,37 @@ _KERNEL_INFO = {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : [],
             "executable"    : "/bin/bash",
-            "uses_mpi"      : True
-        },
-        "stampede.tacc.utexas.edu":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load TACC","module load amber"],
-            "executable" : ["/bin/bash"],
-            "uses_mpi"   : True
+            "uses_mpi"      : False
         },
         "xsede.stampede":
         {
                 "environment" : {},
                 "pre_exec"    : ["module load TACC", "module load amber/12.0"],
-                "executable"  : ["/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/sander.MPI"],
-                "uses_mpi"    : True
+                "executable"  : ["/opt/apps/intel13/mvapich2_1_9/amber/12.0/bin/sander"],
+                "uses_mpi"    : False
         },
-        "archer.ac.uk":
+        "epsrc.archer":
         {
             "environment" : {},
             "pre_exec" : ["module load packages-archer","module load amber"],
-            "executable" : ["/bin/bash"],
+            "executable" : ["pmemd"],
             "uses_mpi"   : True
-        }
+        },
+        "lsu.supermic":
+        {
+            "environment" : {},
+            "pre_exec"    : [". /home/vivek91/modules/amber14/amber.sh",
+                            "export PATH=$PATH:/home/vivek91/modules/amber14/bin"],
+            "executable"  : ["sander"],
+            "uses_mpi"    : False
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load amber", "module load python"],
+                "executable"  : ["/opt/amber/bin/sander"],
+                "uses_mpi"    : False
+        },
     }
 }
 
@@ -138,22 +156,38 @@ class Kernel(KernelBase):
 
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-            executable = "/bin/bash"
             #change to pmemd.MPI by splitting into two kernels
-            arguments = ['-l','-c','pmemd -O -i {0} -o min{2}.out -inf min{2}.inf -r md{2}.crd -p {1} -c min{2}.crd -ref min{2}.crd && pmemd -O -i {3} -o md{2}.out -inf md{2}.inf -x md{2}.ncdf -r md{2}.rst -p {1} -c md{2}.crd'.format(
-                                                                         self.get_arg("--mininfile="),
-                                                                         self.get_arg("--topfile="),
-                                                                         self.get_arg("--cycle="),
-                                                                         self.get_arg("--mdinfile="))]
+            if self.get_arg("--mininfile=") is not None:
+                arguments = [
+                           '-O',
+                            '-i',self.get_arg("--mininfile="),
+                            '-o','min%s.out'%self.get_arg("--cycle="),
+                            '-inf','min%s.inf'%self.get_arg("--cycle="),
+                            '-r','md%s.crd'%self.get_arg("--cycle="),
+                            '-p',self.get_arg("--topfile="),
+                            '-c',self.get_arg("--crdfile="),
+                            '-ref','min%s.crd'%self.get_arg("--cycle=")
+                        ]
+            else:
+                arguments = [
+                            '-O',
+                            '-i',self.get_arg("--mdinfile="),
+                            '-o','md%s.out'%self.get_arg("--cycle="),
+                            '-inf','md%s.inf'%self.get_arg("--cycle="),
+                            '-x','md%s.ncdf'%self.get_arg("--cycle="),
+                            '-r','md%s.rst'%self.get_arg("--cycle="),
+                            '-p',self.get_arg("--topfile="),
+                            '-c','md%s.crd'%self.get_arg("--cycle="),
+                        ]
        
-            self._executable  = executable
+            self._executable  = cfg["executable"]
             self._arguments   = arguments
             self._environment = cfg["environment"]
-            self._uses_mpi    = cfg["uses_mpi"]
+            self._uses_mpi    = False
             self._pre_exec    = cfg["pre_exec"] 
             self._post_exec   = None
         
-        #----------------------------------------
+        #-----------------------------------------------------------------------
         # below only for RE
         elif (pattern_name == 'ReplicaExchange'):
         # if (pattern_name == None):
@@ -164,11 +198,17 @@ class Kernel(KernelBase):
                     # Fall-back to generic resource key
                     resource_key = "*"
                 else:
-                    raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+                    raise NoKernelConfigurationError(kernel_name=KERNEL_INFO["name"], \
+                                                     resource_key=resource_key)
 
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-            self._executable  = cfg["executable"]
+            if self._uses_mpi:
+                self._executable = cfg["executable"] + ".MPI"
+            else:
+                self._executable = cfg["executable"]
+                # by default MPI is false
+                self._uses_mpi = cfg["uses_mpi"]
             self._arguments   = ["-O ",
                                  "-i ", self.get_arg("--mdinfile="),
                                  "-o ", self.get_arg("--outfile="),
@@ -179,6 +219,9 @@ class Kernel(KernelBase):
                                  "-inf ", self.get_arg("--nwinfo=")]
                                                                                               
             self._environment = cfg["environment"]
-            self._uses_mpi    = cfg["uses_mpi"]
-            self._pre_exec    = cfg["pre_exec"] 
+
+            if not self._pre_exec:
+                self._pre_exec = cfg["pre_exec"]
+            else:
+                self._pre_exec = self._pre_exec + cfg["pre_exec"] 
       

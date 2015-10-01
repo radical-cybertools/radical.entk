@@ -3,10 +3,10 @@ simulator             = 'Gromacs'           # Simulator to be loaded
 analyzer              = 'LSDMap'            # Analyzer to be loaded
 
 #--------------------------General--------------------------------
-num_CUs              = 16                   # Number of tasks or Compute Units
-num_iterations       = 2                    # Number of iterations of Simulation-Analysis
+num_CUs              = 64                  # Number of tasks or Compute Units
+num_iterations       = 10                    # Number of iterations of Simulation-Analysis
 start_iter           = 0                    # Iteration number with which to start
-nsave                = 2                    # # Iterations after which output is transfered to local machine
+nsave                = 11                    # # Iterations after which output is transfered to local machine
 
 #--------------------------Simulation--------------------------------
 num_cores_per_sim_cu = 1                    # Number of cores per Simulation Compute Units
@@ -21,7 +21,7 @@ md_output_file       = 'tmp.gro'            # Filename to be used for the simula
 
 #--------------------------Analysis----------------------------------
 lsdm_config_file     = './inp_files/config.ini'       # Entire path to the LSDMap configuration file - Do not use $HOME or the likes
-num_runs             = 10000                # Number of runs to be performed in the Selection step in Analysis
+num_runs             = 64                # Number of runs to be performed in the Selection step in Analysis
 w_file               = 'weight.w'           # Filename to be used for the weight file
 max_alive_neighbors  = '10'                 # Maximum alive neighbors to be considered while reweighting
 max_dead_neighbors   = '1'                  # Maximum dead neighbors to be considered while reweighting

@@ -7,7 +7,6 @@ __author__    = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.ensemblemd.utils import dataframes_from_profile_dict
 from radical.ensemblemd.exceptions import NotImplementedError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
 
@@ -42,9 +41,7 @@ class ReplicaExchange(ExecutionPattern):
         super(ReplicaExchange, self).__init__()
         self._replica_objects = None
 
-        self._execution_profile = None
-
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     @property
     def name(self):
@@ -54,32 +51,13 @@ class ReplicaExchange(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    @property
-    def execution_profile_dict(self):
-        """Returns the execution profile as a Python dictionary after the
-           pattern has finished running, 'None' otheriwse.
-        """
-        return self._execution_profile
-
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def execution_profile_dataframe(self):
-        """Returns the execution profile as a PANDAS DataFrame after the
-           pattern has finished running, 'None' otheriwse.
-
-           Note that 'None' is also returned if PANDAS is not installed. 
-        """
-        return dataframes_from_profile_dict(self._execution_profile)
-
-    #-------------------------------------------------------------------------------
-    #
     def initialize_replicas(self):
         """Initializes replicas and their attributes to default values.
         """
-        raise NotImplementedError(method_name="initialize_replicas", class_name=type(self))
+        raise NotImplementedError(method_name="initialize_replicas", \
+                                  class_name=type(self))
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def add_replicas(self, replicas):
         """Adds initialised replicas to this pattern.
@@ -89,30 +67,33 @@ class ReplicaExchange(ExecutionPattern):
         """
         self.replica_objects = replicas
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def get_replicas(self):
         """Returns a list of replica objects associated with this pattern.
         """
         return self.replica_objects
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def get_swap_matrix(self, replicas, matrix_columns):
-        """Creates and populates swap matrix, which is used to determine exchange probabilities.
+        """Creates and populates swap matrix, which is used to determine 
+        exchange probabilities.
 
         Arguments:
         replicas - list of Replica objects
-        matrix_columns - matrix of energy parameters obtained during the exchange step
+        matrix_columns - matrix of energy parameters obtained during the 
+        exchange step
 
         Returns:
-        swap_matrix - 2D list of lists of dimension-less energies, where each column is a replica
-        and each row is a state
+        swap_matrix - 2D list of lists of dimension-less energies, where each 
+        column is a replica and each row is a state
         """
 
-        raise NotImplementedError(method_name="compose_swap_matrix", class_name=type(self))
+        raise NotImplementedError(method_name="compose_swap_matrix", \
+                                  class_name=type(self))
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def perform_swap(self, replica_i, replica_j):
         """Performs an exchange of replica parameters
@@ -122,25 +103,28 @@ class ReplicaExchange(ExecutionPattern):
         replica_j - a replica object
         """
 
-        raise NotImplementedError(method_name="compose_swap_matrix", class_name=type(self))
+        raise NotImplementedError(method_name="compose_swap_matrix", \
+                                  class_name=type(self))
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def build_input_file(self, replica):
-        """Generates input file for individual replica, based on template input file
+        """Generates input file for individual replica, based on template input 
+        file
 
         Arguments:
         replica - Replica object
         """
 
-        raise NotImplementedError(method_name="build_input_file", class_name=type(self))
+        raise NotImplementedError(method_name="build_input_file", \
+                                  class_name=type(self))
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def prepare_replica_for_md(self, replica):
-        """Creates a list of radical.ensemblemd.Kernel objects for MD simulation step. Here are
-        specified input/output files to be transferred to/from target resource and other details
-        associated with execution of MD step.
+        """Creates a list of radical.ensemblemd.Kernel objects for MD simulation 
+        step. Here are specified input/output files to be transferred to/from 
+        target resource and other details associated with execution of MD step.
 
         Arguments:
         replica - Replica object
@@ -149,13 +133,14 @@ class ReplicaExchange(ExecutionPattern):
         compute_replica - radical.ensemblemd.Kernel object
         """
 
-        raise NotImplementedError(method_name="prepare_replica_for_md", class_name=type(self))
+        raise NotImplementedError(method_name="prepare_replica_for_md", \
+                                  class_name=type(self))
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def prepare_replica_for_exchange(self, replica):
-        """Creates a list of radical.ensemblemd.Kernel objects for exchange step to be
-        performed on a target resource.
+        """Creates a list of radical.ensemblemd.Kernel objects for exchange step 
+        to be performed on a target resource.
 
         Arguments:
         replica - Replica object
@@ -164,9 +149,10 @@ class ReplicaExchange(ExecutionPattern):
         exchange_replica - radical.ensemblemd.Kernel object
         """
 
-        raise NotImplementedError(method_name="prepare_replica_for_exchange", class_name=type(self))
+        raise NotImplementedError(method_name="prepare_replica_for_exchange", \
+                                  class_name=type(self))
 
-    #--------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def exchange(self, r_i, replicas, swap_matrix):
         """Produces a replica "j" for exchange with given replica "i"
@@ -174,10 +160,11 @@ class ReplicaExchange(ExecutionPattern):
         Arguments:
         r_i - given replica for which is found partner replica
         replicas - list of Replica objects
-        swap_matrix - matrix of dimension-less energies, where each column is a replica
-        and each row is a state
+        swap_matrix - matrix of dimension-less energies, where each column is a 
+        replica and each row is a state
 
         Returns:
         r_j - replica to exchnage parameters with
         """
         raise NotImplementedError(method_name="exchange", class_name=type(self))
+

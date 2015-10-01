@@ -25,7 +25,7 @@ _KERNEL_INFO = {
                         },
                     "--replica_id=":     
                         {
-                        "mandatory": True,
+                        "mandatory": False,
                         "description": "replica id"
                         },
                     "--replica_cycle=":     
@@ -40,8 +40,13 @@ _KERNEL_INFO = {
                         },
                     "--replica_basename=":     
                         {
-                        "mandatory": True,
+                        "mandatory": False,
                         "description": "name of base file"
+                        },
+                    "--new_temperature=":
+                        {
+                        "mandatory": False,
+                        "description": "temp"
                         },
                     },
     "machine_configs": 
@@ -51,29 +56,49 @@ _KERNEL_INFO = {
             "pre_exec"      : None,
             "executable"    : "python",
             "uses_mpi"      : False
+        },
+        "xsede.stampede":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module restore", "module load python"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
+        "xsede.comet":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load amber", "module load python", "module load mpi4py"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
+        },
+        "lsu.supermic":
+        {
+                "environment" : {},
+                "pre_exec"    : ["module load python"],
+                "executable"  : ["python"],
+                "uses_mpi"    : False
         }
     }
 }
 
-
-# ------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # 
 class Kernel(KernelBase):
 
-    # --------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def __init__(self):
         """Le constructor.
         """
         super(Kernel, self).__init__(_KERNEL_INFO)
 
-    # --------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     @staticmethod
     def get_name():
         return _KERNEL_INFO["name"]
 
-    # --------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     #
     def _bind_to_resource(self, resource_key):
         """(PRIVATE) Implements parent class method. 
@@ -83,20 +108,45 @@ class Kernel(KernelBase):
                 # Fall-back to generic resource key
                 resource_key = "*"
             else:
-                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], \
+                                                 resource_key=resource_key)
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments  = [self.get_arg("--calculator="), 
-                      self.get_arg("--replica_id="),
-                      self.get_arg("--replica_cycle="),
-                      self.get_arg("--replicas="),
-                      self.get_arg("--replica_basename=")]
-
-        self._executable  = cfg["executable"]
-        self._arguments   = arguments
-        self._environment = cfg["environment"]
-        self._uses_mpi    = cfg["uses_mpi"]
-        self._pre_exec    = cfg["pre_exec"] 
-        self._post_exec   = None
+        if self._subname == None:
+            arguments  = [self.get_arg("--calculator="), 
+                          self.get_arg("--replica_id="),
+                          self.get_arg("--replica_cycle="),
+                          self.get_arg("--replicas="),
+                          self.get_arg("--replica_basename=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = cfg["uses_mpi"]
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
+        elif self._subname == "matrix_calculator_temp_ex":
+            arguments  = [self.get_arg("--calculator="), 
+                          self.get_arg("--replica_id="),
+                          self.get_arg("--replica_cycle="),
+                          self.get_arg("--replicas="),
+                          self.get_arg("--replica_basename="),
+                          self.get_arg("--new_temperature=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = cfg["uses_mpi"]
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
+        elif self._subname == "global_ex_calculator":
+            arguments  = [self.get_arg("--calculator="), 
+                          self.get_arg("--replica_cycle="),
+                          self.get_arg("--replicas="),
+                          self.get_arg("--replica_basename=")]
+            self._executable  = cfg["executable"]
+            self._arguments   = arguments
+            self._environment = cfg["environment"]
+            self._uses_mpi    = True
+            self._pre_exec    = cfg["pre_exec"] 
+            self._post_exec   = None
 

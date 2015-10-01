@@ -11,8 +11,8 @@ __license__ = "MIT"
 import os
 import sys
 
-#-----------------------------------------------------------------------------------------------------------------------------------
-
+#-------------------------------------------------------------------------------
+#
 def reduced_energy(temperature, potential):
     """Calculates reduced energy.
 
@@ -31,12 +31,13 @@ def reduced_energy(temperature, potential):
         beta = 1. / kb     
     return float(beta * potential)
 
-#-----------------------------------------------------------------------------------------------------------------------------------
-
+#-------------------------------------------------------------------------------
+#
 def get_historical_data(history_name):
-    """Retrieves temperature and potential energy from simulation output file .history file.
-    This file is generated after each simulation run. The function searches for directory 
-    where .history file resides by checking all ComputeUnit directories on target resource.
+    """Retrieves temperature and potential energy from simulation output file
+    .history file. This file is generated after each simulation run. The 
+    function searches for directory where .history file resides by checking all 
+    ComputeUnit directories on target resource.
 
     Arguments:
     history_name - name of .history file for a given replica. 
@@ -44,8 +45,8 @@ def get_historical_data(history_name):
     Returns:
     data[0] - temperature obtained from .history file
     data[1] - potential energy obtained from .history file
-    path_to_replica_folder - path to ComputeUnit directory on a target resource where all
-    input/output files for a given replica recide.
+    path_to_replica_folder - path to ComputeUnit directory on a target resource 
+    where all input/output files for a given replica recide.
     """
     home_dir = os.getcwd()
     os.chdir("../")
@@ -64,7 +65,7 @@ def get_historical_data(history_name):
     os.chdir(home_dir)
     return float(data[0]), float(data[1]), path_to_replica_folder
 
-#-----------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     """This module calculates one swap matrix column for a single replica, 
@@ -81,16 +82,22 @@ if __name__ == '__main__':
     pwd = os.getcwd()
 
     # getting history data for self
-    history_name = base_name + "_" + replica_id + "_" + replica_cycle + ".history"
-    replica_temp, replica_energy, path_to_replica_folder = get_historical_data( history_name )
+    history_name = base_name + "_" + \
+                   replica_id + "_" + \
+                   replica_cycle + ".history"
+    replica_temp, \
+    replica_energy, \
+    path_to_replica_folder = get_historical_data( history_name )
 
     # getting history data for all replicas
-    # we rely on the fact that last cycle for every replica is the same, e.g. == replica_cycle
-    # but this is easily changeble for arbitrary cycle numbers
+    # we rely on the fact that last cycle for every replica is the same, 
+    # e.g. == replica_cycle but this is easily changeble for arbitrary cycle 
+    # numbers
     temperatures = [0.0]*replicas
     energies = [0.0]*replicas
     for j in range(replicas):
-        history_name = base_name + "_" + str(j) + "_" + replica_cycle + ".history" 
+        history_name = base_name + "_" + str(j) + "_" + \
+                       replica_cycle + ".history" 
         try:
             rj_temp, rj_energy, temp = get_historical_data( history_name )
             temperatures[j] = rj_temp
@@ -104,13 +111,19 @@ if __name__ == '__main__':
     for j in range(replicas):        
         swap_column[j] = reduced_energy(temperatures[j], replica_energy)
 
-
-    for item in swap_column:
-        print item,    
-        
-    # printing path
-    print str(path_to_replica_folder).rstrip()
-
-    print str(replica_id)
-    
+    #---------------------------------------------------------------------------
+    # writing to file
+    outfile = "matrix_column_{cycle}_{replica}.dat"\
+    .format(cycle=replica_cycle, replica=replica_id )
+    with open(outfile, 'w+') as f:
+        row_str = ""
+        for item in swap_column:        
+            if len(row_str) != 0:
+                row_str = row_str + " " + str(item)
+            else:
+                row_str = str(item)   
+        f.write( row_str ) 
+        #f.write('\n')   
+        #f.write( str(path_to_replica_folder).rstrip() )
+    f.close()
      
