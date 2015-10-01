@@ -154,12 +154,12 @@ class Plugin(PluginBase):
             
             windowsize1 = pattern._windowsize1
             windowsize2 = pattern._windowsize2
-            journal = dict()
+            #journal = dict()
             
-            step_timings = {
-                "name": "AllPairs",
-                "timings": {}
-            }
+            #step_timings = {
+            #    "name": "AllPairs",
+            #    "timings": {}
+            #}
             
             step_start_time_abs = datetime.datetime.now()
             
@@ -265,24 +265,24 @@ class Plugin(PluginBase):
             step_end_time_abs = datetime.datetime.now()
             self.get_logger().info("Pattern execution successful.")
             
-            # Process CU information and append it to the dictionary
-            tinfo = extract_timing_info(sub_unit, pattern_start_time, step_start_time_abs, step_end_time_abs)
-            self.get_logger().debug("Extracted timings Information")
+            ## Process CU information and append it to the dictionary
+            #tinfo = extract_timing_info(sub_unit, pattern_start_time, step_start_time_abs, step_end_time_abs)
+            #self.get_logger().debug("Extracted timings Information")
             
-            mean_unit_time = 0
+            #mean_unit_time = 0
             
-            for unit in sub_unit:
-                mean_unit_time =mean_unit_time+(unit.stop_time-unit.start_time).total_seconds()
-            mean_unit_time = mean_unit_time/len(sub_unit)
-            self.get_logger().debug("Mean CU execution time is %f"%mean_unit_time)
+            #for unit in sub_unit:
+            #    mean_unit_time =mean_unit_time+(unit.stop_time-unit.start_time).total_seconds()
+            #mean_unit_time = mean_unit_time/len(sub_unit)
+            #self.get_logger().debug("Mean CU execution time is %f"%mean_unit_time)
             
-            for key, val in tinfo.iteritems():
-                step_timings['timings'][key] = val
-            self.get_logger().debug("Created step timings")
+            #for key, val in tinfo.iteritems():
+            #    step_timings['timings'][key] = val
+            #self.get_logger().debug("Created step timings")
             
             ## Write the whole thing to the profiling dict
-            pattern._execution_profile.append(step_timings)
-            self.get_logger().debug("Wrote the whole thing to the profiling dict")
+            #pattern._execution_profile.append(step_timings)
+            #self.get_logger().debug("Wrote the whole thing to the profiling dict")
         except KeyboardInterrupt:
             traceback.print_exc()
 
