@@ -81,14 +81,15 @@ Please change the number of cores and the number of replicas according to sugges
 Example Source
 ^^^^^^^^^^^^^^
 
-:download:`Download example: replica_exchange_mode_1.py <../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py>`
+:download:`Download example: replica_exchange_mode_1.py <../../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py>`
 
-:download:`Download matrix calculator: namd_matrix_calculator.py <../../usecases/cdi_replica_exchange/namd_matrix_calculator.py>`
+:download:`Download matrix calculator: namd_matrix_calculator.py <../../../usecases/cdi_replica_exchange/namd_matrix_calculator.py>`
 
-:download:`Download NAMD input files: namd_inp.tar.gz <../../usecases/cdi_replica_exchange/namd_inp.tar.gz>`
+:download:`Download NAMD input files: namd_inp.tar.gz <../../../usecases/cdi_replica_exchange/namd_inp.tar.gz>`
 
 .. warning:: Before running this example you must uncompress the ``namd_inp.tar.gz`` 
              archive in your working directory.
 
-.. literalinclude:: ../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py
+.. literalinclude:: ../../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py
    :linenos:
+   :language: python
