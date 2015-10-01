@@ -1,7 +1,8 @@
 .. _usecase_extasy_gromacs_lsdmap:
 
+*********************************
 Use-Case: ExTASY (Gromacs-LSDMap)
----------------------------------
+*********************************
 
 This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
 pattern for the Gromacs-LSDMap usecase which has multiple Gromacs based Simulation
@@ -37,7 +38,7 @@ machine under a folder called "backup".
                           :
 
 Run Locally
-^^^^^^^^^^^
+===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
              set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
@@ -68,7 +69,7 @@ Once the script has finished running, you should see a folder called "iter2" ins
 which would contain
 
 Run Remotely
-^^^^^^^^^^^^
+============
 
 The script is configured to run on Stampede. You can increase the number
 of cores to see how this affects the runtime of the script as the individual
@@ -83,7 +84,7 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         allocation=None # add your allocation or project id here if required
     )
 
-**Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop.py>`.
+**Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
@@ -95,10 +96,10 @@ Once the default script has finished running, you should see a folder called "it
 which would contain the coordinate file for the next iteration(out.gro), output log of lsdmap (lsdmap.log)
 and the weight file (weight.w).
 
-.. _01_static_gromacs_lsdmap_loop.py:
+.. _01_static_gromacs_lsdmap_loop:
 
 Example Source
-^^^^^^^^^^^^^^
+==============
 
 :download:`Download example: 01_static_gromacs_lsdmap_loop.py <../../../usecases/extasy_gromacs_lsdmap/01_static_gromacs_lsdmap_loop.py>`
 

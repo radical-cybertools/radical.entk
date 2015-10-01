@@ -1,7 +1,9 @@
 .. _usecase_extasy_coco_amber:
 
+
+*****************************
 Use-Case: ExTASY (Amber-CoCo)
------------------------------
+*****************************
 
 This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
 pattern for the Amber-CoCo usecase which has multiple Amber based Simulation
@@ -37,7 +39,7 @@ machine under a folder called "backup".
                           :
 
 Run Locally
-^^^^^^^^^^^
+===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
              set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
@@ -69,7 +71,7 @@ which would contain 16 .ncdf files which are the output of the second simulation
 see 16 .ncdf files since there were 16 simulation instances.
 
 Run Remotely
-^^^^^^^^^^^^
+============
 
 The script is configured to run on Stampede. You can increase the number
 of cores to see how this affects the runtime of the script as the individual
@@ -84,7 +86,7 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         allocation=None # add your allocation or project id here if required
     )
 
-**Step 1:** View and download the example sources :ref:`below <01_static_amber_coco_loop.py>`.
+**Step 1:** View and download the example sources :ref:`below <01_static_amber_coco_loop>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
@@ -96,10 +98,10 @@ Once the default script has finished running, you should see a folder called "it
 which would contain 16 .ncdf files which are the output of the second simulation stage. You
 see 16 .ncdf files since there were 16 simulation instances.
 
-.. _01_static_amber_coco_loop.py:
+.. _01_static_amber_coco_loop:
 
 Example Source
-^^^^^^^^^^^^^^
+==============
 
 :download:`Download example: 01_static_amber_coco_loop.py <../../../usecases/extasy_coco_amber/01_static_amber_coco_loop.py>`
 

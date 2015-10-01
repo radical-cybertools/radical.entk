@@ -28,15 +28,10 @@ https://github.com/radical-cybertools/radical.ensemblemd
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-devel
 
-**Developer Wiki**
-
-We maintain a wiki, mostly for internal planning and technical documents
-at https://github.com/radical-cybertools/radical.ensemblemd/wiki
-
 **Current Build Status**
 
-  .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD%20Toolkit
-      :target: http://ci.radical-project.org/job/EnsembleMD%20Toolkit/
+   .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD%20Toolkit
+         :target: http://ci.radical-project.org/job/EnsembleMD%20Toolkit/
 
 
 

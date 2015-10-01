@@ -1,4 +1,4 @@
-.. _pattern_pipleine:
+.. _pattern_pipeline:
 
 Pipeline
 ========

@@ -78,10 +78,11 @@ pipeline instances can run in parallel::
 
 .. _multiple_simulations_multiple_analysis:
 
-:download:`Download multiple_simulations_multiple_analysis.py <../../../examples/multiple_simulations_multiple_analysis.py>`
 
 Example Source
-^^^^^^^^^^^^^^
+==============
+
+:download:`Download multiple_simulations_multiple_analysis.py <../../../examples/multiple_simulations_multiple_analysis.py>`
 
 .. literalinclude:: ../../../examples/multiple_simulations_multiple_analysis.py
     :language: python

@@ -1,4 +1,4 @@
-.. _allpairs example (generic):
+.. _allpairs_example:
 
 ****************
 AllPairs Example
@@ -62,10 +62,10 @@ all pair instances can run in parallel::
 
 .. _example_source_all_pairs_pattern:
 
-:download:`Download allpairs_example.py <../../../examples/allpairs_example.py>`
-
 Example Source
-^^^^^^^^^^^^^^
+==============
+
+:download:`Download allpairs_example.py <../../../examples/allpairs_example.py>`
 
 .. literalinclude:: ../../../examples/allpairs_example.py
     :language: python

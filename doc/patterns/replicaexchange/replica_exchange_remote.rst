@@ -1,4 +1,4 @@
-.. _replica_exchange_remote (generic):
+.. _replica_exchange_remote:
 
 *********************************************************************
 Synchronous Replica Exchange Example with 'remote' Exchange (generic)
@@ -70,17 +70,19 @@ pipeline instances can run in parallel::
         project=None # add your allocation or project id here if required
     )
 
+
+
+Example Source
+==============
+
 .. _example_matrix_calculator:
 
 :download:`Download: matrix_calculator.py <../../../examples/matrix_calculator.py>`
 
 .. _example_replica_exchange_b:
 
-:download: `Download: replica_exchange_b.py <../../../examples/replica_exchange_b.py>`
+:download:`Download: replica_exchange_b.py <../../../examples/replica_exchange_b.py>`
 
-
-Example Source
-^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../../examples/replica_exchange_b.py
     :language: python

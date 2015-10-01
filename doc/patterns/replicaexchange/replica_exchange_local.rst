@@ -1,4 +1,4 @@
-.. _replica_exchange_local (generic):
+.. _replica_exchange_local:
 
 ********************************************************************
 Synchronous Replica Exchange Example with 'local' Exchange (generic)
@@ -65,11 +65,11 @@ pipeline instances can run in parallel::
 
 .. _example_replica_exchange:
 
-`Download: replica_exchange.py <../../../examples/replica_exchange.py>`
-
 
 Example Source
-^^^^^^^^^^^^^^
+==============
+
+:download: `Download: replica_exchange.py <../../../examples/replica_exchange.py>`
 
 .. literalinclude:: ../../../examples/replica_exchange.py
     :language: python

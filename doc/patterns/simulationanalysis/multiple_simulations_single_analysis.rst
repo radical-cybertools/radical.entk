@@ -79,10 +79,10 @@ simulations instances can run in parallel::
 
 .. _multiple_simulations_single_analysis:
 
-:download:`Download multiple_simulations_single_analysis.py <../../../examples/multiple_simulations_single_analysis.py>`
-
 Example Source
-^^^^^^^^^^^^^^
+==============
+
+:download:`Download multiple_simulations_single_analysis.py <../../../examples/multiple_simulations_single_analysis.py>`
 
 .. literalinclude:: ../../../examples/multiple_simulations_single_analysis.py
     :language: python

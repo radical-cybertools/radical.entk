@@ -77,12 +77,15 @@ all pair instances can run in parallel::
 .. _source_hausdorff:
 
 
+
+Example Source
+==============
+
+
 :download:`Download hausdorff_example.py <../../../usecases/hausdorff/hausdorff_example.py>`
 
 :download:`Download hausdorff_kernel.py <../../../usecases/hausdorff/hausdorff_kernel.py>`
 
-Example Source
-^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../../usecases/hausdorff/hausdorff_example.py
     :language: python

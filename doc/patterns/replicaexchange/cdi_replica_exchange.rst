@@ -79,7 +79,7 @@ Please change the number of cores and the number of replicas according to sugges
 .. _example_cdi_usecase:
 
 Example Source
-^^^^^^^^^^^^^^
+==============
 
 :download:`Download example: replica_exchange_mode_1.py <../../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py>`
 
