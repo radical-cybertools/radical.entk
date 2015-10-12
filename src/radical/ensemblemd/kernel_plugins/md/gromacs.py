@@ -41,7 +41,7 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/15.0.2","module load boost","module load gromacs","module load python"],
+            "pre_exec" : ["module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },
@@ -53,20 +53,6 @@ _KERNEL_INFO = {
             "executable" : ["python"],
             "uses_mpi"   : True
         },
-        "futuregrid.india":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
-            "executable" : ["python"],
-            "uses_mpi"   : True
-        },
-        "lsu.supermic":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
-            "executable" : ["python"],
-            "uses_mpi"   : True
-        }
     }
 }
 
