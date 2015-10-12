@@ -10,6 +10,8 @@ __license__   = "MIT"
 from copy import deepcopy
 import radical.utils.logger  as rul
 
+import radical.utils as ru
+
 from radical.ensemblemd.exceptions import ArgumentError
 from radical.ensemblemd.exceptions import NotImplementedError
 
@@ -29,7 +31,7 @@ class KernelBase(object):
         self._name     = kernel_info['name']
         self._subname  = None
 
-        self._logger   = rul.getLogger ('radical.enmd', self._name)
+        self._logger   = ru.get_logger ('radical.enmd.{0}'.format(self._name))
         self._args     = []
         self._raw_args = []
 

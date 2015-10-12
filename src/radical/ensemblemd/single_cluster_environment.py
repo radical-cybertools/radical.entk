@@ -12,7 +12,7 @@ import sys
 import traceback
 import datetime
 import radical.pilot
-import radical.utils.logger  as rul
+import radical.utils as ru
 from radical.ensemblemd.engine import Engine
 from radical.ensemblemd.exceptions import EnsemblemdError, TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
@@ -60,8 +60,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._database_url = database_url
         self._database_name = database_name
 
-        self._logger  = rul.getLogger ('radical.enmd', 
-                                       'SingleClusterEnvironment')
+        self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 
@@ -151,7 +150,8 @@ class SingleClusterEnvironment(ExecutionContext):
             if self._database_name is None:
                 self._session = radical.pilot.Session(database_url=self._database_url)
             else:
-                self._session = radical.pilot.Session(database_url=self._database_url,database_name=self._database_name)
+                db_url = self._database_url + '/' + self._database_name
+                self._session = radical.pilot.Session(database_url=db_url)
 
             if self._username is not None:
                 # Add an ssh identity to the session.

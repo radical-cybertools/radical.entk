@@ -8,7 +8,8 @@ __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 
-import radical.utils.logger as rul
+import radical.utils as ru
+
 from radical.utils import Singleton
 
 from radical.ensemblemd.exceptions import NoKernelPluginError
@@ -36,7 +37,7 @@ class Engine(object):
         """
 
         # Initialize the logging
-        self._logger = rul.logger.getLogger('radical.enmd', "Engine")
+        self._logger = ru.get_logger('radical.enmd.Engine')
 
         # Load execution plug-ins
         self._execution_plugins = list()
