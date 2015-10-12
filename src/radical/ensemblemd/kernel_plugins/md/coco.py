@@ -49,7 +49,7 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Output filename for postexec"
                         },
-                    "--atom_selection=":
+                    "--selection=":
                         {
                             "mandatory": True,
                             "description": "Selection of atoms - None(all) or protein"
@@ -134,7 +134,7 @@ class Kernel(KernelBase):
                     '--output','{0}'.format(self.get_arg("--output=")),
                     '--logfile','coco.log',
                     '--mpi',
-                    '--selection','{0}'.format(self.get_arg("--atom_selection="))
+                    '--selection','{0}'.format(self.get_arg("--selection="))
                     ]
                                                                      
        

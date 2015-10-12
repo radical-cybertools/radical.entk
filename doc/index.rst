@@ -1,5 +1,5 @@
-RADICAL Ensemble MD Toolkit |VERSION|
-#####################################
+RADICAL Ensemble MD Toolkit 
+#######################################
 
 .. figure:: images/oxytocin.*
    :width: 160pt
@@ -11,14 +11,6 @@ It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu
 at Rutgers University. Ensemble MD Toolkit is released under the `MIT License
 <http://opensource.org/licenses/MIT>`_.
 
-**Authors**
-
-* Vivekanandan Balasubramanian
-* Ioannis Paraskevakos
-* Antons Treikalis
-* Ole Weidner
-* Ming Tai Ha
-
 **Project Github Page**
 
 https://github.com/radical-cybertools/radical.ensemblemd
@@ -27,12 +19,6 @@ https://github.com/radical-cybertools/radical.ensemblemd
 
 * For users: https://groups.google.com/d/forum/ensemblemd-users
 * For developers: https://groups.google.com/d/forum/ensemblemd-devel
-
-**Current Build Status**
-
-   .. image:: http://ci.radical-project.org/buildStatus/icon?job=EnsembleMD%20Toolkit
-         :target: http://ci.radical-project.org/job/EnsembleMD%20Toolkit/
-
 
 
 #########
@@ -44,8 +30,10 @@ Contents:
    :maxdepth: 2
 
    introduction
+   overview
    installation
-   getstarted
+   user
+   tutorial
    patterns
    developers
    faq
