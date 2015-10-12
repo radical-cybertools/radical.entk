@@ -106,10 +106,10 @@ _KERNEL_INFO = {
         "lsu.supermic":
         {
             "environment" : {},
-            "pre_exec"    : [". /home/vivek91/modules/amber14/amber.sh",
-                            "export PATH=$PATH:/home/vivek91/modules/amber14/bin"],
-            "executable"  : ["sander"],
-            "uses_mpi"    : False
+            "pre_exec"    : ["module load  python/2.7.7/GCC-4.9.0",
+                             "module load amber/14/INTEL-140-MVAPICH2-2.0"],
+            "executable"  : ["sander.MPI"],
+            "uses_mpi"    : True
         },
         "xsede.comet":
         {
