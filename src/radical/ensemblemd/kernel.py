@@ -41,6 +41,10 @@ class Kernel(object):
     #
     """
     ANTONS: COMMENTED OUT FOR NOW, HAVE NO IDEA WHAT THIS IS SUPPOSED TO DO!
+    Giannis: This is used to conbine to a single list the Kernel's plugin pre
+    exec with the commands needed to download any input data the user wants from
+    a remote server.
+    """
     @property
     def _cu_def_pre_exec(self):
 
@@ -70,13 +74,12 @@ class Kernel(object):
             pre_exec.extend(self._kernel._pre_exec)
 
         return pre_exec
-    """
 
     #---------------------------------------------------------------------------
     #
-    @property
-    def _cu_def_pre_exec(self):
-        return self._kernel._pre_exec
+    #@property
+    #def _cu_def_pre_exec(self):
+    #    return self._kernel._pre_exec
 
     #---------------------------------------------------------------------------
     #

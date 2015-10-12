@@ -34,6 +34,6 @@ if __name__ == "__main__":
     for i in range(1,len(set1)+1):
         for j in range(1,len(set2)+1):
             comp=dH((trj_list1[i-1],trj_list2[j-1]))
-            #out_file.write('[{0},{1}] : {2}\n'.format(set1[i-1],set2[j-1],comp))
+            out_file.write('[{0},{1}] : {2}\n'.format(set1[i-1],set2[j-1],comp))
 
-    #out_file.close()
+    out_file.close()
