@@ -813,7 +813,7 @@ class Plugin(PluginBase):
                 f1.close()
 
                 #CU data logging
-                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, AgentStagingOutputPending, Done"
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
                 iter = 'None'
@@ -828,7 +828,7 @@ class Plugin(PluginBase):
                         st_data["{0}".format( st_dict["state"] )] = {}
                         st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
 
-                    line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                    line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                             uid=cu.uid,
                             iter=0,
                             step='pre_loop',
@@ -836,7 +836,7 @@ class Plugin(PluginBase):
                             StagingInput=(st_data['StagingInput']),
                             Allocating=(st_data['Allocating']),
                             Executing=(st_data['Executing']),
-                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                             Done=(st_data['Done']))
                     f2.write(line + '\n')
                 else:
@@ -855,7 +855,7 @@ class Plugin(PluginBase):
                                     st_dict = st.as_dict()
                                     st_data["{0}".format( st_dict["state"] )] = {}
                                     st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                                     uid=cu.uid,
                                     iter=iter.split('_')[1],
                                     step=step,
@@ -863,7 +863,7 @@ class Plugin(PluginBase):
                                     StagingInput=(st_data['StagingInput']),
                                     Allocating=(st_data['Allocating']),
                                     Executing=(st_data['Executing']),
-                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                                     Done=(st_data['Done']))
 
                                 f2.write(line + '\n')
@@ -875,7 +875,7 @@ class Plugin(PluginBase):
                                     st_dict = st.as_dict()
                                     st_data["{0}".format( st_dict["state"] )] = {}
                                     st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                                     uid=cu.uid,
                                     iter=iter.split('_')[1],
                                     step=step,
@@ -883,7 +883,7 @@ class Plugin(PluginBase):
                                     StagingInput=(st_data['StagingInput']),
                                     Allocating=(st_data['Allocating']),
                                     Executing=(st_data['Executing']),
-                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                                     Done=(st_data['Done']))
 
                                 f2.write(line + '\n')

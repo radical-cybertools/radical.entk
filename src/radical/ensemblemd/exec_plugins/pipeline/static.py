@@ -381,7 +381,7 @@ class Plugin(PluginBase):
                 f1.close()
 
                 #CU data logging
-                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                title = "uid, step, Scheduling, StagingInput, Allocating, Executing, AgentStagingOutputPending, Done"
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
 
@@ -395,14 +395,14 @@ class Plugin(PluginBase):
                             st_dict = st.as_dict()
                             st_data["{0}".format( st_dict["state"] )] = {}
                             st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Scheduling}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                             uid=cu.uid,
                             step=step,
                             Scheduling=(st_data['Scheduling']),
                             StagingInput=(st_data['StagingInput']),
                             Allocating=(st_data['Allocating']),
                             Executing=(st_data['Executing']),
-                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                             Done=(st_data['Done']))
 
                         f2.write(line + '\n')
