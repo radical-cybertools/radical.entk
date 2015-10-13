@@ -1,3 +1,5 @@
+.. _perf_prof:
+
 Performance Profiling
 =====================
 

@@ -1,3 +1,6 @@
+.. _custom_exec_plugin:
+
+
 Writing New Execution Pattern Plug-Ins
 ======================================
 

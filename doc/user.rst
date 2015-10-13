@@ -16,3 +16,4 @@ This chapter will guide the reader through the most common usage patterns of Ens
 	user_guide/adding_instances
 	user_guide/adding_steps
 	user_guide/character_count
+	user_guide/changing_remote

@@ -1,4 +1,4 @@
-.. _dev:
+.. _writing_kernels:
 
 
 Writing New Application Kernels

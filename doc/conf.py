@@ -15,8 +15,117 @@
 import sys
 import os
 import shlex
+import urllib2
+import radical.utils as ru
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
+
+################################################################################
+##
+print "* Generating resource configuration docs: resources.rst"
+
+try:
+    os.remove("{0}/resources.rst".format(script_dir))
+except OSError:
+    pass
+
+try:
+    os.mkdir('resource_list')
+except OSError:
+    pass
+
+with open("{0}/resources.rst".format(script_dir), "w") as resources_rst:
+
+    resources_rst.write("""
+.. _chapter_resources:
+
+List of Pre-Configured Resources
+================================
+
+
+""")
+
+    resource_list = [ 
+  "resource_das4.json",
+  "resource_epsrc.json",
+  "resource_futuregrid.json",
+  "resource_iu.json",
+  "resource_local.json",
+  "resource_lrz.json",
+  "resource_ncar.json",
+  "resource_ncsa.json",
+  "resource_nersc.json",
+  "resource_ornl.json",
+  "resource_radical.json",
+  "resource_rice.json",
+  "resource_stfc.json",
+  "resource_xsede.json"]
+
+    for res in resource_list:
+      response = urllib2.urlopen('https://raw.githubusercontent.com/radical-cybertools/radical.pilot/feature/docs_am/src/radical/pilot/configs/%s'%res)
+      html = response.read()
+      with open('resource_list/'+res,'w') as f:
+        f.write(html)
+      f.close()
+    import glob
+    configs = glob.glob("resource_list/resource_*.json" )
+    for config in configs:
+
+        if not config.endswith(".json"):
+            continue # skip all non-python files
+
+        if "/resource_aliases" in config:
+            continue # skip alias files
+
+        print " * %s" % config
+
+        try: 
+             json_data = ru.read_json_str(config)
+        except Exception, ex:
+             print "    * JSON PARSING ERROR: %s" % str(ex)
+             continue
+
+        config = config.split('/')[-1]
+
+        resources_rst.write("{0}\n".format(config[:-5].upper()))
+        resources_rst.write("{0}\n\n".format("-"*len(config[:-5])))
+
+        for host_key, resource_config in json_data.iteritems():
+            resource_key = "%s.%s" % (config[:-5], host_key)
+            print "   * %s" % resource_key
+            try:
+                default_queue = resource_config["default_queue"]
+            except Exception, ex:
+                default_queue = None
+
+            try:
+                working_dir = resource_config["default_remote_workdir"]
+            except Exception, ex:
+                working_dir = "$HOME"
+
+            try:
+                python_interpreter = resource_config["python_interpreter"]
+            except Exception, ex:
+                python_interpreter = None
+
+            try:
+                access_schemas = resource_config["schemas"]
+            except Exception, ex:
+                access_schemas = ['n/a']
+
+            resources_rst.write("{0}\n".format(host_key.upper()))
+            resources_rst.write("{0}\n\n".format("*"*len(host_key)))
+            resources_rst.write("{0}\n\n".format(resource_config["description"]))
+            resources_rst.write("* **Resource label**      : ``{0}``\n".format(resource_key[9:]))
+            resources_rst.write("* **Raw config**          : :download:`{0} <../../src/radical/pilot/configs/{0}>`\n".format(config))
+            if resource_config["notes"] != "None":
+                resources_rst.write("* **Note**            : {0}\n".format(resource_config["notes"]))
+            resources_rst.write("* **Default values** for ComputePilotDescription attributes:\n\n")
+            resources_rst.write(" * ``queue         : {0}``\n".format(default_queue))
+            resources_rst.write(" * ``sandbox       : {0}``\n".format(working_dir))
+            resources_rst.write(" * ``access_schema : {0}``\n\n".format(access_schemas[0]))
+            resources_rst.write("* **Available schemas**   : ``{0}``\n".format(', '.join(access_schemas)))
+            resources_rst.write("\n")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
