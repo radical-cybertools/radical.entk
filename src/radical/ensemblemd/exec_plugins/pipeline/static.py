@@ -349,6 +349,7 @@ class Plugin(PluginBase):
                     cu_dict['step_{0}'.format(step)] = p_cus
 
                 self._reporter.ok('>> done')
+                self._reporter.header('Pattern execution successfully finished')
                     
 
         except KeyboardInterrupt:
@@ -358,7 +359,7 @@ class Plugin(PluginBase):
 
         finally:
 
-            self._reporter.header('Pattern execution successfully finished')
+            
 
             if profiling == 1:
 

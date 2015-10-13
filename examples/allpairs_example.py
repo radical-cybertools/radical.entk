@@ -58,7 +58,7 @@ class RandomAP(AllPairs):
         input_filename1 = "asciifile_{0}.dat".format(elements1[0])
         input_filename2 = "newfile_{0}.dat".format(elements2[0])
         output_filename = "comparison_{0}_{1}.log".format(elements1[0], elements2[0])
-        print "Comparing {0} with {1}. Saving result in {2}".format(input_filename1,input_filename2,output_filename)
+        print "\nComparing {0} with {1}. Saving result in {2}".format(input_filename1,input_filename2,output_filename)
 
         # Compare the previously generated files with the misc.diff kernel and
         # write the result of each comparison to a specific output file.

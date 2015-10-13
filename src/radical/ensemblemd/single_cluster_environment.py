@@ -101,7 +101,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._session.close(cleanup=self._cleanup)
         self._reporter.ok('>>done \n')    
 
-        
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
         if profiling == 1:
             stop_time = datetime.datetime.now()
             f1 = open('enmd_core_overhead.csv','a')
@@ -128,7 +128,7 @@ class SingleClusterEnvironment(ExecutionContext):
         # Here we start the pilot(s).
         try:
 
-            self._reporter.title(' Using EnsembleMD (%s)' % version)
+            self._reporter.title('EnsembleMD (%s)' % version)
 
             self._reporter.info('Starting Allocation')
 
