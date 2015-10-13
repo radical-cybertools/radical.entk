@@ -20,7 +20,7 @@ You may find the script containing the execution context as follows:
                         walltime=15,
                         username=None,
                         allocation=None,
-                        database_name="mongod:mymongodburl"
+                        database_name="mongod:mymongodburl" #Can be skipped if using ENV variable
                     )
 
 To change the target to a machine with a label ``XYZ.new_machine``, the execution context may look like:
@@ -33,6 +33,6 @@ To change the target to a machine with a label ``XYZ.new_machine``, the executio
                         walltime=<specify the duration of the acquisition>,
                         username=<set username to access new_machine>,
                         allocation=<set allocation id for new_machine>,
-                        database_name="mongod:mymongodburl"
+                        database_name="mongod:mymongodburl" #Can be skipped if using ENV variable
                     )
 
