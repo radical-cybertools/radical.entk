@@ -41,7 +41,7 @@ _KERNEL_INFO = {
                             "module load python/2.7.6",
                             "export PATH=/home1/03036/jp43/.local/bin:$PATH"],
             #"executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
-            "executable": ["lsdmap"]
+            "executable": ["lsdmap"],
             "uses_mpi"   : True
         },
 
