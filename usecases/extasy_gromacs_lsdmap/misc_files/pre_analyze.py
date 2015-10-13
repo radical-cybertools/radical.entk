@@ -26,3 +26,5 @@ if __name__ == '__main__':
             with open('%s/out%s.gro' % (path,i), 'r') as output_file:
                 for line in output_file:
                     print >> output_grofile, line.replace("\n", "")
+                    
+    os.system('echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro')

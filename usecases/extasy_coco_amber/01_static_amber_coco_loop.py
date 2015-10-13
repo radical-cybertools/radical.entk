@@ -79,6 +79,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             "--mdinfile={0}".format(os.path.basename(Kconfig.md_input_file)),
                             "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                             "--cycle=%s"%(iteration)
+			    
                         ]
         k2.link_input_data = [  
                                 "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.md_input_file)),
@@ -115,7 +116,8 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--frontpoints={0}".format(Kconfig.num_CUs),
                        "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                        "--mdfile=*.ncdf",
-                       "--output=pdbs"]
+                       "--output=pdbs",
+                       "--atom_selection={0}".format(Kconfig.atom_selection)]
         k1.cores = 1
         k1.uses_mpi = False
 

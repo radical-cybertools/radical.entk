@@ -40,7 +40,8 @@ _KERNEL_INFO = {
                             "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages",
                             "module load python/2.7.6",
                             "export PATH=/home1/03036/jp43/.local/bin:$PATH"],
-            "executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
+            #"executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
+            "executable": ["lsdmap"]
             "uses_mpi"   : True
         },
 
@@ -52,7 +53,7 @@ _KERNEL_INFO = {
                             "module load pc-scipy/0.13.3-libsci",
                             "module load lsdmap",
                             "export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable" : ["python"],
+            "executable" : ["lsdmap"],
             "uses_mpi"   : True
         },
 

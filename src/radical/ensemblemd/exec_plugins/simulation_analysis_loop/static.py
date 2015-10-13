@@ -771,7 +771,7 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['stop_time'] = probe_post_ana_end
                     cu_dict['iter_{0}'.format(iteration)]['ana'] = all_ana_cus
 
-                self._reporter.header('Pattern execution successfully finished')
+            self._reporter.header('Pattern execution successfully finished')
 
         except KeyboardInterrupt:
 
