@@ -34,6 +34,8 @@ class PluginBase(object):
         self._lock    = ru.RLock      (self._name)
         self._logger  = ru.get_logger ('radical.enmd.{0}'.format(self._name))
 
+        self._reporter = ru.LogReporter(name='radical.enmd.{0}'.format(self._name))
+
         # has_enabled = False
         # for option in self._opts :
         #     if option['name'] == 'enabled' :
