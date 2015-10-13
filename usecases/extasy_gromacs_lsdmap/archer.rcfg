@@ -1,0 +1,9 @@
+REMOTE_HOST = 'epsrc.archer'  # Label/Name of the Remote Machine
+UNAME       = 'vb224'                  # Username on the Remote Machine
+ALLOCATION  = 'e290'              # Allocation to be charged
+WALLTIME    = 20                          # Walltime to be requested for the pilot
+PILOTSIZE   = 24                          # Number of cores to be reserved
+WORKDIR     = None                        # Working directory on the remote machine
+QUEUE       = 'standard'                    # Name of the queue in the remote machine
+
+DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'          #MongoDB link to be used for coordination purposes
