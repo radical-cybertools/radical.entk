@@ -34,7 +34,6 @@ Contents:
    installation
    user
    tutorial
-   patterns
    developers
    faq
    api
