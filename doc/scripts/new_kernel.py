@@ -10,7 +10,7 @@ _KERNEL_INFO = {
             "mandatory": True,        #Mandatory argument? True or False
             "description": "Number of seconds to do nothing."
     	    },
-        }
+        },
     "machine_configs":             #Use a dictionary with keys as resource names and values specific to the resource
         {
             "local.localhost":
@@ -32,6 +32,13 @@ class MyUserDefinedKernel(KernelBase):
         super(MyUserDefinedKernel, self).__init__(_KERNEL_INFO)
      	"""Le constructor."""
         		
+    # --------------------------------------------------------------------------
+    #
+    @staticmethod
+    def get_name():
+        return _KERNEL_INFO["name"]
+        
+
     def _bind_to_resource(self, resource_key):
         """This function binds the Kernel to a specific resource defined in
         "resource_key".
