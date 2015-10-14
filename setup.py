@@ -124,7 +124,7 @@ setup_args = {
                            'bin/ensemblemd-profile'],
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
-    'install_requires'  :  ['radical.utils', 'radical.pilot', 'setuptools>=1'],
+    'install_requires'  :  ['radical.utils==0.35','saga-python==0.35','radical.pilot==0.35', 'setuptools>=1'],
 
     'test_suite'        : 'radical.ensemblemd.tests',
 
