@@ -35,7 +35,7 @@ if __name__ =='__main__':
     cycle = int(sys.argv[11])
     numCUs = int(sys.argv[12])
 
-    os.system('python select.py %s -s %s -o %s' %(num_runs,evfile,num_clone_files))
+    os.system('python selection.py %s -s %s -o %s' %(num_runs,evfile,num_clone_files))
     #Update Boltzman weights
 
     try:
