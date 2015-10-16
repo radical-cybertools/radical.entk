@@ -75,5 +75,4 @@ class Kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = None 
-        self._post_exec   = None
 

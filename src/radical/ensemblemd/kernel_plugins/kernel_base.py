@@ -36,7 +36,6 @@ class KernelBase(object):
         self._raw_args = []
 
         self._pre_exec               = None
-        self._post_exec              = None
         self._environment            = None
 
         self._executable             = None
@@ -63,7 +62,6 @@ class KernelBase(object):
         """Returns a dictionary representation of the kernel.
         """
         d = {"pre_exec": self._pre_exec,
-             "post_exec": self._post_exec,
              "environment": self._environment,
              "executable": self._executable,
              "arguments": self._arguments,

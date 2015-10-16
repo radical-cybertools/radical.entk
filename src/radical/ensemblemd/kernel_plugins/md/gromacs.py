@@ -41,7 +41,7 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
+            "pre_exec" : ["module load TACC","module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
             "executable" : ["python"],
             "uses_mpi"   : True
         },
@@ -96,4 +96,3 @@ class Kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None
