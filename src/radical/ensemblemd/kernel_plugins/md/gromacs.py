@@ -41,11 +41,7 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-<<<<<<< HEAD
-            "pre_exec" : ["module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
-=======
             "pre_exec" : ["module load TACC","module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
->>>>>>> RC_changes
             "executable" : ["python"],
             "uses_mpi"   : True
         },
