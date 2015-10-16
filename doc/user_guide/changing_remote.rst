@@ -19,7 +19,7 @@ You may find the script containing the execution context as follows:
                         cores=1,
                         walltime=15,
                         username=None,
-                        allocation=None,
+                        project=None,
                         database_name="mongod:mymongodburl" #Can be skipped if using ENV variable
                     )
 
@@ -32,7 +32,7 @@ To change the target to a machine with a label ``XYZ.new_machine``, the executio
                         cores=<specify the no. of cores to be acquired>,
                         walltime=<specify the duration of the acquisition>,
                         username=<set username to access new_machine>,
-                        allocation=<set allocation id for new_machine>,
+                        project=<set allocation id for new_machine>,
                         database_name="mongod:mymongodburl" #Can be skipped if using ENV variable
                     )
 
