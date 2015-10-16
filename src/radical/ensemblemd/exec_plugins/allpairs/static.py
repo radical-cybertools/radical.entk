@@ -48,6 +48,7 @@ class Plugin(PluginBase):
         
         pattern_start_time = datetime.datetime.now()
 
+        self._reporter.ok('>>ok')
         
         def unit_state_cb(unit, state):
             # Callback function for the messages printed when
@@ -82,8 +83,9 @@ class Plugin(PluginBase):
         Permutations = pattern.permutations
         if pattern.set2_elements() is None:
             self.get_logger().info("Number of Elements {0}".format(NumElementsSet1))
-            self.get_logger().info("Executing All Pairs Pattern on the set {0} with {1} cores on {2}"
-            .format(pattern.set1_elements(),resource._cores,resource._resource_key))
+            self.get_logger().info("Executing All Pairs Pattern on the set {0} with {1} cores on {2}".format( pattern.set1_elements() ,resource._cores,resource._resource_key))
+
+            self._reporter.header("Executing All Pairs Pattern on the set {0} with {1} cores on {2}".format(pattern.set1_elements() ,resource._cores,resource._resource_key))
         else:
             NumElementsSet2 = len(pattern.set2_elements())
             self.get_logger().info("Number of Elements of the First Set {0}".format(NumElementsSet1))
@@ -91,9 +93,17 @@ class Plugin(PluginBase):
             self.get_logger().info("Executing All Pairs Pattern on the sets {0}-{1} with {2} cores on {3}"
             .format(pattern.set1_elements(),pattern.set2_elements(),resource._cores,resource._resource_key))
 
+            self._reporter.header("Executing All Pairs Pattern on the set {0}-{1} with {2} cores on {3}".format(pattern.set1_elements(),pattern.set2_elements(),resource._cores,resource._resource_key))
+
 
         STAGING_AREA = 'staging:///'
         
+
+        self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        self._reporter.info("Job waiting on queue...".format(resource._resource_key))
+        resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
+        self._reporter.ok("\nJob is now running !".format(resource._resource_key))
+
         try:
             
             resource._umgr.register_callback(unit_state_cb)
@@ -147,8 +157,9 @@ class Plugin(PluginBase):
             
             Units = resource._umgr.submit_units(CUDesc_list)
             
+            self._reporter.info("\nWaiting to create the elements of set 2 ")
             resource._umgr.wait_units()
-            
+            self._reporter.ok('>> done')
             CUDesc_list = list()
             all_cus = []
             
@@ -261,9 +272,15 @@ class Plugin(PluginBase):
             sub_unit=resource._umgr.submit_units(all_cus)
             
             #self.get_logger().debug(sub_unit)
+            self._reporter.info("\nWaiting for analysis step to complete.")
             resource._umgr.wait_units()
+            self._reporter.ok('>> done')
+
             step_end_time_abs = datetime.datetime.now()
+
             self.get_logger().info("Pattern execution successful.")
+            self._reporter.header('Pattern execution successfully finished')
+            
             
             ## Process CU information and append it to the dictionary
             #tinfo = extract_timing_info(sub_unit, pattern_start_time, step_start_time_abs, step_end_time_abs)
@@ -286,4 +303,7 @@ class Plugin(PluginBase):
         except KeyboardInterrupt:
             traceback.print_exc()
 
+
+
+            
 

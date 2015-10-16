@@ -43,7 +43,9 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load intel/13.0.2.146",
+            "pre_exec" : [ 
+                            "module load TACC",
+                             "module load intel/13.0.2.146",
                             "module load python/2.7.9",
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",

@@ -67,12 +67,14 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load intel/13.0.2.146",
+            "pre_exec" : [  
+                            "module load TACC",
+                            "module load intel/13.0.2.146",
                             "module load python/2.7.9",
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
-                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.21_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.21_installation/bin:$PATH"],
+                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.24_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco-0.24_installation/bin:$PATH"],
             "executable" : ["pyCoCo"],
             "uses_mpi"   : True    
         },
@@ -83,7 +85,7 @@ _KERNEL_INFO = {
             "pre_exec" : ["module load python-compute/2.7.6",
                       "module load pc-numpy/1.8.0-libsci",
                       "module load pc-scipy/0.13.3-libsci",
-                      "module load pc-coco/0.21",
+                      "module load pc-coco",
                       "module load pc-netcdf4-python/1.1.0",
                       "module load amber"],
             "executable" : ["pyCoCo"],
@@ -143,4 +145,4 @@ class Kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"] 
-        self._post_exec   = None
+

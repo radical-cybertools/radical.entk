@@ -12,7 +12,9 @@ import sys
 import traceback
 import datetime
 import radical.pilot
-import radical.utils.logger  as rul
+import radical.utils as ru
+
+from radical.ensemblemd import version
 from radical.ensemblemd.engine import Engine
 from radical.ensemblemd.exceptions import EnsemblemdError, TypeError
 from radical.ensemblemd.execution_pattern import ExecutionPattern
@@ -60,8 +62,8 @@ class SingleClusterEnvironment(ExecutionContext):
         self._database_url = database_url
         self._database_name = database_name
 
-        self._logger  = rul.getLogger ('radical.enmd', 
-                                       'SingleClusterEnvironment')
+        self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
+        self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 
@@ -84,14 +86,22 @@ class SingleClusterEnvironment(ExecutionContext):
         """Deallocates the resources.
         """
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+        self._reporter.info('Starting Deallocation')
         if profiling == 1:
             start_time = datetime.datetime.now()
+
         self.get_logger().info("Deallocating Cluster")
+
         if self._exctype != None:
             self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+            self._reporter.error("Fatal error: {0}.".format(str(self._excvalue)))
             traceback.print_tb(self._traceback)
-            
+        
+
         self._session.close(cleanup=self._cleanup)
+        self._reporter.ok('>>done \n')    
+
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
         if profiling == 1:
             stop_time = datetime.datetime.now()
             f1 = open('enmd_core_overhead.csv','a')
@@ -107,36 +117,20 @@ class SingleClusterEnvironment(ExecutionContext):
         #-----------------------------------------------------------------------
         #
         def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Resource {0} state has changed to {1}"
-                .format(self._resource_key, state))
+            self.get_logger().info("Resource {0} state has changed to {1}".format(self._resource_key, state))
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))
                 self.get_logger().error("Pattern execution FAILED.")
 
-                # Try to get some information here...
-                if os.getenv("RADICAL_ENMD_TRAVIS_DEBUG") is not None:
-
-                    sb = saga.Url(pilot.sandbox).path
-                    agent_stderr = "{0}/AGENT.STDERR".format(sb)
-                    agent_stdout = "{0}/AGENT.STDOUT".format(sb)
-                    agent_log = "{0}/AGENT.LOG".format(sb)
-                    pip_cmd = "{0}/virtualenv/bin/pip".format(sb)
-
-                    self.get_logger().error(pip_cmd)
-                    os.system("head {0}".format(pip_cmd))
-                    self.get_logger().error(agent_stderr)
-                    os.system("cat {0}".format(agent_stderr))
-                    self.get_logger().error(agent_stdout)
-                    os.system("cat {0}".format(agent_stdout))
-                    self.get_logger().error(agent_log)
-                    os.system("cat {0}".format(agent_log))
-
-
         self._allocate_called = True
 
         # Here we start the pilot(s).
         try:
+
+            self._reporter.title('EnsembleMD (%s)' % version)
+
+            self._reporter.info('Starting Allocation')
 
             profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
             if profiling == 1:
@@ -151,7 +145,8 @@ class SingleClusterEnvironment(ExecutionContext):
             if self._database_name is None:
                 self._session = radical.pilot.Session(database_url=self._database_url)
             else:
-                self._session = radical.pilot.Session(database_url=self._database_url,database_name=self._database_name)
+                db_url = self._database_url + '/' + self._database_name
+                self._session = radical.pilot.Session(database_url=db_url)
 
             if self._username is not None:
                 # Add an ssh identity to the session.
@@ -194,8 +189,11 @@ class SingleClusterEnvironment(ExecutionContext):
             if profiling == 1:
                 stop_time = datetime.datetime.now()
 
+            self._reporter.ok('>> ok')
+
         except Exception, ex:
             self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
+            self._reporter.error('Allocation failed: {0}'.format(str(ex)))
             raise
 
         finally:
@@ -230,10 +228,18 @@ class SingleClusterEnvironment(ExecutionContext):
             context_name=self.name,
             plugin_name=force_plugin)
 
+
+        self._reporter.info('Verifying pattern')
         plugin.verify_pattern(pattern, self)
+        self._reporter.ok('>>ok')
         try:
+            self._reporter.info('Starting pattern execution')
             plugin.execute_pattern(pattern, self)
         except KeyboardInterrupt:
-            self._exctype,self._excvalue,self._traceback = sys.exc_info()            
+            self._exctype,self._excvalue,self._traceback = sys.exc_info()           
+            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue))) 
+            self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
         except Exception, ex:
             self._exctype,self._excvalue,self._traceback = sys.exc_info()
+            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+            self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))

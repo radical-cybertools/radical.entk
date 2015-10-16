@@ -49,8 +49,6 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                                '{0}/post_analyze.py'.format(Kconfig.misc_loc),
                                '{0}/select.py'.format(Kconfig.misc_loc),
                                '{0}/reweighting.py'.format(Kconfig.misc_loc),
-                               '{0}/lsdm.py'.format(Kconfig.misc_loc)]
-        #k.download_input_data = ['http://sourceforge.net/p/lsdmap/git/ci/extasy-0.1-rc2/tree/lsdmap/lsdm.py?format=raw > lsdm.py']
         k.arguments = ["--inputfile={0}".format(os.path.basename(Kconfig.md_input_file)),"--numCUs={0}".format(Kconfig.num_CUs)]
         return k
 
@@ -126,7 +124,6 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         pre_ana = Kernel(name="md.pre_lsdmap")
         pre_ana.arguments = ["--numCUs={0}".format(Kconfig.num_CUs)]
-        pre_ana.post_exec = ["echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro"]
         pre_ana.link_input_data = ["$PRE_LOOP/pre_analyze.py > pre_analyze.py"]
         for i in range(1,Kconfig.num_CUs+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
@@ -134,7 +131,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config={0}".format(os.path.basename(Kconfig.lsdm_config_file))]
-        lsdmap.link_input_data = ['$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/lsdm.py > lsdm.py','$PRE_LOOP/tmpha.gro > tmpha.gro']
+        lsdmap.link_input_data = ['$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/tmpha.gro > tmpha.gro']
         lsdmap.cores = RPconfig.PILOTSIZE
         if iteration > 1:
             lsdmap.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w > weight.w'.format(iteration-1)]

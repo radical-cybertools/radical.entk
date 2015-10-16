@@ -15,6 +15,7 @@ minimization_input_file = './inp_files/min.in'        # Entire path to Minimizat
 initial_crd_file        = './inp_files/penta.crd'     # Entire path to Coordinates file - Do not use $HOME or the likes
 top_file                = './inp_files/penta.top'     # Entire path to Topology file - Do not use $HOME or the likes
 logfile                 = 'coco.log'        # Name of the log file created by pyCoCo
+atom_selection          = 'protein'
 
 #-------------------------Analysis--------------------------
 grid                    = '5'               # Number of points along each dimension of the CoCo histogram

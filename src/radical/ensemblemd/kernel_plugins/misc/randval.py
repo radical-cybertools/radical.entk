@@ -63,7 +63,6 @@ class Kernel(KernelBase):
         return {
             "environment" : None,
             "pre_exec"    : None,
-            "post_exec"   : None,
             "executable"  : executable,
             "arguments"   : arguments,
             "use_mpi"     : False
