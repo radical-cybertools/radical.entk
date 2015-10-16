@@ -11,11 +11,11 @@ _KERNEL_INFO = {
             "description": "Number of seconds to do nothing."
     	    },
         },
-    "machine_configs":             #Use a dictionary with keys as resource names and values specific to the resource
-        {
+    "machine_configs":             #Use a dictionary with keys as resource 
+        {                                       #names and values specific to the resource
             "local.localhost":
             {
-                "environment" : None,        #list or None, can be used to set environment variables
+                "environment" : None,        #list or None, can be used to set env variables
                 "pre_exec"    : None,            #list or None, can be used to load modules
                 "executable"  : ["/bin/sleep"],        #specify the executable to be used
                 "uses_mpi"    : False            #mpi-enabled? True or False

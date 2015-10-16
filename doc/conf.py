@@ -175,8 +175,8 @@ copyright = u'2015, The Radical Group at Rutgers University'
 # built documents.
 #
 # The short X.Y version.
-version = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").readline()
-rst_epilog = '.. |VERSION| replace:: %s' % version
+#version = open("{0}/../src/radical/ensemblemd/VERSION".format(script_dir), "r").readline()
+# rst_epilog = '.. |VERSION| replace:: %s' % version
 
 
 
