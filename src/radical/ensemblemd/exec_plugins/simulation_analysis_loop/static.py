@@ -246,8 +246,8 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)] = od()
                     cu_dict['iter_{0}'.format(iteration)] = od()
 
-                if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
-                    num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
+                if isinstance(pattern.simulation_step(iteration=iteration, instance=1),list):
+                    num_sim_kerns = len(pattern.simulation_step(iteration=iteration, instance=1))
                 else:
                     num_sim_kerns = 1
                 #print num_sim_kerns
@@ -513,8 +513,8 @@ class Plugin(PluginBase):
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
 
-                if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
-                    num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
+                if isinstance(pattern.analysis_step(iteration=iteration, instance=1),list):
+                    num_ana_kerns = len(pattern.analysis_step(iteration=iteration, instance=1))
                 else:
                     num_ana_kerns = 1
                 #print num_ana_kerns

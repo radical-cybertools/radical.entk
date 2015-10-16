@@ -66,7 +66,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.minimization_input_file)),
                              '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file)),
                              '$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.initial_crd_file))]
-        k1.cores=2
+        k1.cores=1
         if((iteration-1)==0):
             k1.link_input_data = k1.link_input_data + ['$PRE_LOOP/{0} > min1.crd'.format(os.path.basename(Kconfig.initial_crd_file))]
         else:
@@ -89,7 +89,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         if(iteration%Kconfig.nsave==0):
             k2.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
 
-        k2.cores = 2
+        k2.cores = 1
         return [k1,k2]
 
 
@@ -118,8 +118,8 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                        "--mdfile=*.ncdf",
                        "--output=pdbs",
                        "--atom_selection={0}".format(Kconfig.atom_selection)]
-        k1.cores = 1
-        k1.uses_mpi = False
+        k1.cores = min(Kconfig.num_CUs,RPconfig.PILOTSIZE)
+        k1.uses_mpi = True
 
         k1.link_input_data = ['$PRE_LOOP/{0}'.format(os.path.basename(Kconfig.top_file))]
         for iter in range(1,iteration+1):

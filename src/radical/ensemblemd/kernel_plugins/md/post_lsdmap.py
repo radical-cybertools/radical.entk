@@ -61,9 +61,10 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load python","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
+            "pre_exec" : ["module load TACC","module load python"]
+            #"export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
             "executable" : ["python"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         },
 
         "epsrc.archer":
@@ -74,7 +75,7 @@ _KERNEL_INFO = {
                             "module load pc-scipy/0.13.3-libsci",
                             "module load lsdmap"],
             "executable" : ["python"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         },
 
         "futuregrid.india":
@@ -85,7 +86,7 @@ _KERNEL_INFO = {
                         "export PYTHONPATH=$PYTHONPATH:/N/u/vivek91/.local/lib/python2.7/site-packages"
                         ],
             "executable" : ["python"],
-            "uses_mpi"   : True
+            "uses_mpi"   : False
         }
     }
 }

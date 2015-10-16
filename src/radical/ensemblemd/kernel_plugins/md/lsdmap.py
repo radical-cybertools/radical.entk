@@ -36,7 +36,9 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load -intel +intel/14.0.1.106",
+            "pre_exec" : [      
+                            "module load TACC",
+                            "module load -intel +intel/14.0.1.106",
                             "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages",
                             "module load python/2.7.6",
                             "export PATH=/home1/03036/jp43/.local/bin:$PATH"],
