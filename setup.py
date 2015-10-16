@@ -117,7 +117,7 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    'scripts'           : ['bin/ensemblemd-version']
+    'scripts'           : ['bin/ensemblemd-version'],
                            
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
