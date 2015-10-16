@@ -12,7 +12,6 @@ __license__   = "MIT"
 
 import radical.utils         as ru
 import radical.utils.config  as ruc
-import radical.utils.logger  as rul
 
 from radical.ensemblemd.exceptions import NotImplementedError
 
@@ -33,7 +32,9 @@ class PluginBase(object):
         self._name    = adaptor_info['name']
 
         self._lock    = ru.RLock      (self._name)
-        self._logger  = rul.getLogger ('radical.enmd', self._name)
+        self._logger  = ru.get_logger ('radical.enmd.{0}'.format(self._name))
+
+        self._reporter = ru.LogReporter(name='radical.enmd.{0}'.format(self._name))
 
         # has_enabled = False
         # for option in self._opts :

@@ -41,7 +41,11 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
+<<<<<<< HEAD
             "pre_exec" : ["module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
+=======
+            "pre_exec" : ["module load TACC","module load intel/15.0.2","module load boost","module load cxx11","module load gromacs","module load python"],
+>>>>>>> devel
             "executable" : ["python"],
             "uses_mpi"   : True
         },
@@ -53,20 +57,6 @@ _KERNEL_INFO = {
             "executable" : ["python"],
             "uses_mpi"   : True
         },
-        "futuregrid.india":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
-            "executable" : ["python"],
-            "uses_mpi"   : True
-        },
-        "lsu.supermic":
-        {
-            "environment" : {},
-            "pre_exec" : ["module load openmpi","module load python","export PATH=$PATH:/N/u/vivek91/modules/gromacs-5/bin"],
-            "executable" : ["python"],
-            "uses_mpi"   : True
-        }
     }
 }
 
@@ -110,4 +100,3 @@ class Kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
-        self._post_exec   = None

@@ -80,16 +80,23 @@ class Plugin(PluginBase):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
 
+        self._reporter.ok('>>ok')
         pipeline_instances = pattern.instances
+
         pipeline_steps = pattern.steps
         self.get_logger().info("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
+            pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
+
+        self._reporter.header("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
             pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
 
         
         working_dirs = {}
 
         self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        self._reporter.info("Job waiting on queue...".format(resource._resource_key))
         resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
+        self._reporter.ok("\nJob is now running !".format(resource._resource_key))
 
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
@@ -312,7 +319,7 @@ class Plugin(PluginBase):
                 
 
                 self.get_logger().info("Submitted tasks for step_{0}.".format(step))
-                self.get_logger().info("Waiting for step_{0} to complete.".format(step))
+                self._reporter.info("\nWaiting for step_{0} to complete.".format(step))
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['wait_time'] = datetime.datetime.now()
 
@@ -324,8 +331,6 @@ class Plugin(PluginBase):
                 
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
-
-                self.get_logger().info("step_{0} completed.".format(step))
 
                 failed_units = ""
                 for unit in p_cus:
@@ -342,12 +347,19 @@ class Plugin(PluginBase):
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['stop_time'] = datetime.datetime.now()
                     cu_dict['step_{0}'.format(step)] = p_cus
+
+                self._reporter.ok('>> done')
+                self._reporter.header('Pattern execution successfully finished')
                     
 
         except KeyboardInterrupt:
+
+            self._reporter.error('Execution interupted')
             traceback.print_exc()
 
         finally:
+
+            
 
             if profiling == 1:
 
@@ -369,7 +381,7 @@ class Plugin(PluginBase):
                 f1.close()
 
                 #CU data logging
-                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                title = "uid, step, Scheduling, StagingInput, Allocating, Executing, AgentStagingOutputPending, Done"
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
 
@@ -383,14 +395,14 @@ class Plugin(PluginBase):
                             st_dict = st.as_dict()
                             st_data["{0}".format( st_dict["state"] )] = {}
                             st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Scheduling}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                             uid=cu.uid,
                             step=step,
                             Scheduling=(st_data['Scheduling']),
                             StagingInput=(st_data['StagingInput']),
                             Allocating=(st_data['Allocating']),
                             Executing=(st_data['Executing']),
-                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                             Done=(st_data['Done']))
 
                         f2.write(line + '\n')

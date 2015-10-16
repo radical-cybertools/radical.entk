@@ -140,7 +140,10 @@ class Plugin(PluginBase):
                 self.get_logger().error("Pattern execution FAILED.")
 
 
+        self._reporter.ok('>>ok')
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(pattern.iterations, resource._cores, resource._resource_key))
+
+        self._reporter.header("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(pattern.iterations, resource._cores, resource._resource_key))
 
         working_dirs = {}
         all_cus = []
@@ -148,7 +151,9 @@ class Plugin(PluginBase):
         #print resource._pilot.description['cores']
 
         self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        self._reporter.info("Job waiting on queue...".format(resource._resource_key))
         resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
+        self._reporter.ok("\nJob is now running !".format(resource._resource_key))
 
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
@@ -193,7 +198,7 @@ class Plugin(PluginBase):
                 self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
 
                 self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
-                self.get_logger().info("Waiting for ComputeUnit(s) in pre_loop step to complete.")
+                self._reporter.info("\nWaiting for pre_loop step to complete.")
                 if profiling == 1:
                     probe_preloop_wait = datetime.datetime.now()
                     enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
@@ -218,9 +223,13 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
                     cu_dict['pre_loop'] = unit
 
+
+                self._reporter.ok('>> done')
+                 
             except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
                 self.get_logger().info("pre_loop() not defined. Skipping.")
+                self._reporter.info("pre_loop() not defined. Skipping.")
                 pass
 
             ########################################################################
@@ -237,8 +246,8 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)] = od()
                     cu_dict['iter_{0}'.format(iteration)] = od()
 
-                if isinstance(pattern.simulation_step(iteration=1, instance=1),list):
-                    num_sim_kerns = len(pattern.simulation_step(iteration=1, instance=1))
+                if isinstance(pattern.simulation_step(iteration=iteration, instance=1),list):
+                    num_sim_kerns = len(pattern.simulation_step(iteration=iteration, instance=1))
                 else:
                     num_sim_kerns = 1
                 #print num_sim_kerns
@@ -455,6 +464,8 @@ class Plugin(PluginBase):
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
 
+
+                    self._reporter.info("\nIteration {0}: Waiting for simulation tasks: {1} to complete".format(iteration,sim_step.name))
                     if profiling == 1:
                         probe_sim_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
@@ -481,7 +492,8 @@ class Plugin(PluginBase):
                         probe_sim_done = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_sim_done
 
-                    
+                    self._reporter.ok('>> done')
+
                 if profiling == 1:
                     probe_post_sim_start = datetime.datetime.now()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post'] = od()
@@ -498,12 +510,11 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post']['stop_time'] = probe_post_sim_end
                     cu_dict['iter_{0}'.format(iteration)]['sim'] = all_sim_cus
 
-
                 ################################################################
                 # EXECUTE ANALYSIS STEPS
 
-                if isinstance(pattern.analysis_step(iteration=1, instance=1),list):
-                    num_ana_kerns = len(pattern.analysis_step(iteration=1, instance=1))
+                if isinstance(pattern.analysis_step(iteration=iteration, instance=1),list):
+                    num_ana_kerns = len(pattern.analysis_step(iteration=iteration, instance=1))
                 else:
                     num_ana_kerns = 1
                 #print num_ana_kerns
@@ -715,6 +726,8 @@ class Plugin(PluginBase):
                     
                     self.get_logger().info("Submitted tasks for analysis iteration {0}.".format(iteration))
                     self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(iteration,kern_step+1,ana_step.name))
+
+                    self._reporter.info("\nIteration {0}: Waiting for analysis tasks: {1} to complete".format(iteration,ana_step.name))
                     if profiling == 1:
                         probe_ana_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_ana_wait
@@ -741,6 +754,7 @@ class Plugin(PluginBase):
                         probe_ana_done = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_ana_done
 
+                    self._reporter.ok('>> done')
 
                 if profiling == 1:
                     probe_post_ana_start = datetime.datetime.now()
@@ -757,10 +771,16 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['stop_time'] = probe_post_ana_end
                     cu_dict['iter_{0}'.format(iteration)]['ana'] = all_ana_cus
 
+            self._reporter.header('Pattern execution successfully finished')
+
         except KeyboardInterrupt:
+
+            self._reporter.error('Execution interupted')
             traceback.print_exc()
 
         finally:
+
+
             if profiling == 1:
 
                 #Pattern overhead logging
@@ -793,7 +813,7 @@ class Plugin(PluginBase):
                 f1.close()
 
                 #CU data logging
-                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, PendingAgentOutputStaging, Done"
+                title = "uid, iter, step, Scheduling, StagingInput, Allocating, Executing, AgentStagingOutputPending, Done"
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
                 iter = 'None'
@@ -808,7 +828,7 @@ class Plugin(PluginBase):
                         st_data["{0}".format( st_dict["state"] )] = {}
                         st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
 
-                    line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                    line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                             uid=cu.uid,
                             iter=0,
                             step='pre_loop',
@@ -816,7 +836,7 @@ class Plugin(PluginBase):
                             StagingInput=(st_data['StagingInput']),
                             Allocating=(st_data['Allocating']),
                             Executing=(st_data['Executing']),
-                            PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                            AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                             Done=(st_data['Done']))
                     f2.write(line + '\n')
                 else:
@@ -835,7 +855,7 @@ class Plugin(PluginBase):
                                     st_dict = st.as_dict()
                                     st_data["{0}".format( st_dict["state"] )] = {}
                                     st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                                     uid=cu.uid,
                                     iter=iter.split('_')[1],
                                     step=step,
@@ -843,7 +863,7 @@ class Plugin(PluginBase):
                                     StagingInput=(st_data['StagingInput']),
                                     Allocating=(st_data['Allocating']),
                                     Executing=(st_data['Executing']),
-                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                                     Done=(st_data['Done']))
 
                                 f2.write(line + '\n')
@@ -855,7 +875,7 @@ class Plugin(PluginBase):
                                     st_dict = st.as_dict()
                                     st_data["{0}".format( st_dict["state"] )] = {}
                                     st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {PendingAgentOutputStaging}, {Done}".format(
+                                line = "{uid}, {iter}, {step}, {Scheduling}, {StagingInput}, {Allocating}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
                                     uid=cu.uid,
                                     iter=iter.split('_')[1],
                                     step=step,
@@ -863,7 +883,7 @@ class Plugin(PluginBase):
                                     StagingInput=(st_data['StagingInput']),
                                     Allocating=(st_data['Allocating']),
                                     Executing=(st_data['Executing']),
-                                    PendingAgentOutputStaging=(st_data['PendingAgentOutputStaging']),
+                                    AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                                     Done=(st_data['Done']))
 
                                 f2.write(line + '\n')

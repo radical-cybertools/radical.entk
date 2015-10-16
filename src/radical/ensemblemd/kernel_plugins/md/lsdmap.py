@@ -36,11 +36,14 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : [  "module load -intel +intel/14.0.1.106",
+            "pre_exec" : [      
+                            "module load TACC",
+                            "module load -intel +intel/14.0.1.106",
                             "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages",
                             "module load python/2.7.6",
                             "export PATH=/home1/03036/jp43/.local/bin:$PATH"],
-            "executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
+            #"executable" : ["/opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib/python2.7/site-packages/mpi4py/bin/python-mpi"],
+            "executable": ["lsdmap"],
             "uses_mpi"   : True
         },
 
@@ -52,7 +55,7 @@ _KERNEL_INFO = {
                             "module load pc-scipy/0.13.3-libsci",
                             "module load lsdmap",
                             "export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
-            "executable" : ["python"],
+            "executable" : ["lsdmap"],
             "uses_mpi"   : True
         },
 
@@ -101,7 +104,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['lsdm.py','-f','{0}'.format(self.get_arg("--config=")),'-c','tmpha.gro','-n','out.nn','-w','weight.w']
+        arguments = ['-f','{0}'.format(self.get_arg("--config=")),'-c','tmpha.gro','-n','out.nn','-w','weight.w']
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments
