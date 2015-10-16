@@ -200,8 +200,6 @@ if __name__ == "__main__":
 
         workdir_local = os.getcwd()
 
-        t1 = datetime.datetime.utcnow()
-
         cluster = SingleClusterEnvironment(
             resource="localhost",
             cores=1,
@@ -215,10 +213,6 @@ if __name__ == "__main__":
         # creating RE pattern object
         re_pattern = RePattern(workdir_local)
 
-        t2 = datetime.datetime.utcnow()
-        enmd_core_t1 = (t2-t1).total_seconds()
-
-        t1 = datetime.datetime.utcnow()
         # set number of replicas
         re_pattern.replicas = 8
  
@@ -230,44 +224,17 @@ if __name__ == "__main__":
 
         re_pattern.add_replicas( replicas )
 
-        t2 = datetime.datetime.utcnow()
-        enmd_appl_t1 = (t2-t1).total_seconds()
-
-        t3 = datetime.datetime.utcnow()
         # run RE simulation
         cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_1")
 
-        t1 = datetime.datetime.utcnow()
         cluster.deallocate()
-        t2 = datetime.datetime.utcnow()
-        enmd_core_t2 = (t2-t1).total_seconds()
         
         print "RE simulation finished!"
         print "Simulation performed {0} cycles for {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
         print "have {0} md_input_x_y.md files and {0} md_input_x_y.out files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1) )
         print ".md file is replica input file and .out is output file providing number of occurrences of each character."
 
-        #-----------------------------------------------------------------------
-        outfile = workdir_local + "/enmd-core-overhead.csv"
-        try:
-            f = open(outfile, 'a')
-            row = "ENMD-core-timing-1: %f" % enmd_core_t1
-            f.write("{row}\n".format(row=row))
 
-            row = "ENMD-core-timing-2: %f" % enmd_core_t2
-            f.write("{row}\n".format(row=row))
-
-            row = "ENMD-appl-timing-1: %f" % enmd_appl_t1
-            f.write("{row}\n".format(row=row))
-
-            row = "ENMD-core-t-before cluster.run() call: {0}".format(t3)
-            f.write("{row}\n".format(row=row))
-
-            f.close()
-        except IOError:
-            print 'Warning: unable to access file %s' % outfile
-            raise
-        #-----------------------------------------------------------------------
 
     except EnsemblemdError, er:
 
