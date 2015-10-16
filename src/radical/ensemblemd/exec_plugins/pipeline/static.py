@@ -349,18 +349,12 @@ class Plugin(PluginBase):
                     cu_dict['step_{0}'.format(step)] = p_cus
 
                 self._reporter.ok('>> done')
-                self._reporter.header('Pattern execution successfully finished')
-                    
 
-        except KeyboardInterrupt:
+            #Pattern Finished
+            self._reporter.header('Pattern execution successfully finished')
 
-            self._reporter.error('Execution interupted')
-            traceback.print_exc()
 
-        finally:
-
-            
-
+            #PROFILING
             if profiling == 1:
 
                 #Pattern overhead logging
@@ -408,3 +402,9 @@ class Plugin(PluginBase):
                         f2.write(line + '\n')
 
                 f2.close()
+                    
+
+        except KeyboardInterrupt:
+
+            self._reporter.error('Execution interupted')
+            traceback.print_exc()

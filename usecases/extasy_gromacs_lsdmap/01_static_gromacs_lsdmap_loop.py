@@ -47,8 +47,8 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                                '{0}/run.py'.format(Kconfig.misc_loc),
                                '{0}/pre_analyze.py'.format(Kconfig.misc_loc),
                                '{0}/post_analyze.py'.format(Kconfig.misc_loc),
-                               '{0}/select.py'.format(Kconfig.misc_loc),
-                               '{0}/reweighting.py'.format(Kconfig.misc_loc),
+                               '{0}/selection.py'.format(Kconfig.misc_loc),
+                               '{0}/reweighting.py'.format(Kconfig.misc_loc)]
         k.arguments = ["--inputfile={0}".format(os.path.basename(Kconfig.md_input_file)),"--numCUs={0}".format(Kconfig.num_CUs)]
         return k
 
@@ -143,7 +143,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         post_ana = Kernel(name="md.post_lsdmap")
         post_ana.link_input_data = ["$PRE_LOOP/post_analyze.py > post_analyze.py",
-                                    "$PRE_LOOP/select.py > select.py",
+                                    "$PRE_LOOP/selection.py > selection.py",
                                     "$PRE_LOOP/reweighting.py > reweighting.py",
                                     "$PRE_LOOP/spliter.py > spliter.py",
                                     "$PRE_LOOP/gro.py > gro.py",

@@ -87,7 +87,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                                 "$PRE_LOOP/md_{0}_{1}.crd > md{0}.crd".format(iteration,instance),
                             ]
         if(iteration%Kconfig.nsave==0):
-            k2.download_output_data = ['md{0}.ncdf > backup/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
+            k2.download_output_data = ['md{0}.ncdf > output/iter{0}/md_{0}_{1}.ncdf'.format(iteration,instance)]
 
         k2.cores = 1
         return [k1,k2]
@@ -129,6 +129,9 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
         k1.copy_output_data = list()
         for i in range(0,Kconfig.num_CUs):
             k1.copy_output_data = k1.copy_output_data + ['pdbs{1}.pdb > $PRE_LOOP/pentaopt{0}{1}.pdb'.format(iteration,i)]
+
+        if(iteration%Kconfig.nsave==0):
+            k1.download_output_data = ['coco.log > output/iter{0}/coco.log'.format(iteration,instance)]
 
 
         k2 = Kernel(name="md.tleap")

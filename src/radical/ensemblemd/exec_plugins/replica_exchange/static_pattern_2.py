@@ -59,22 +59,24 @@ class Plugin(PluginBase):
                 self._reporter.error("Number of cycles (nr_cycles) must be defined for pattern ReplicaExchange!")
                 raise
 
-            #-------------------------------------------------------------------
-            t4 = datetime.datetime.utcnow()
-            outfile = pattern.workdir_local + "/enmd-core-overhead.csv"
-            try:
-                f = open(outfile, 'a')
-
-                row = "ENMD-core-t-inside cluster.run() call: {0}".format(t4)
-                f.write("{row}\n".format(row=row))
-
-                f.close()
-            except IOError:
-                print 'Warning: unable to access file %s' % outfile
-                raise
-            #-------------------------------------------------------------------
 
             do_profile = os.getenv('RADICAL_ENMD_PROFILING', '0')
+            #-------------------------------------------------------------------
+            if do_profile == '1':
+                t4 = datetime.datetime.utcnow()
+                outfile = pattern.workdir_local + "/enmd-core-overhead.csv"
+                try:
+                    f = open(outfile, 'a')
+
+                    row = "ENMD-core-t-inside cluster.run() call: {0}".format(t4)
+                    f.write("{row}\n".format(row=row))
+
+                    f.close()
+                except IOError:
+                    print 'Warning: unable to access file %s' % outfile
+                    raise
+            #-------------------------------------------------------------------
+
 
             if do_profile == '1':
                 cu_performance_data = {}
@@ -324,18 +326,16 @@ class Plugin(PluginBase):
 
                 self._reporter.ok('>> done')
                 self.get_logger().info("Replica Exchange simulation finished successfully!")
-                self._reporter.header('Pattern execution successfully finished')
+                
             #-------------------------------------------------------------------   
             # End of simulation loop
             #-------------------------------------------------------------------
 
-        except KeyboardInterrupt:
-            traceback.print_exc()
+            # Pattern Finished
+            self._reporter.header('Pattern execution successfully finished')
 
-        finally:
 
-            
-
+            # PROFILING
             if do_profile == '1':
 
                 outfile = "execution_profile_{mysession}.csv".format(mysession=resource._session.uid)
@@ -406,4 +406,6 @@ class Plugin(PluginBase):
                                     Step=step)
                         
                                 f.write("{r}\n".format(r=row))
-            
+
+        except KeyboardInterrupt:
+            traceback.print_exc()

@@ -773,14 +773,6 @@ class Plugin(PluginBase):
 
             self._reporter.header('Pattern execution successfully finished')
 
-        except KeyboardInterrupt:
-
-            self._reporter.error('Execution interupted')
-            traceback.print_exc()
-
-        finally:
-
-
             if profiling == 1:
 
                 #Pattern overhead logging
@@ -890,5 +882,8 @@ class Plugin(PluginBase):
 
                 f2.close()
 
+        except KeyboardInterrupt:
 
+            self._reporter.error('Execution interupted')
+            traceback.print_exc()
 
