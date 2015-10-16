@@ -61,8 +61,10 @@ _KERNEL_INFO = {
         "xsede.stampede":
         {
             "environment" : {},
-            "pre_exec" : ["module load TACC","module load python"],
-            #"export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH","export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
+            "pre_exec" : ["module load TACC","module load python",
+            "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages:$PYTHONPATH",
+            "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/lsdmap/rw:$PYTHONPATH",
+            "export PYTHONPATH=/home1/03036/jp43/.local/lib/python2.7/site-packages/util:$PYTHONPATH"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },
