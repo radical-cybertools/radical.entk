@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-"""Setup file for HT-BAC Tools.
-"""
-
 __author__    = "Ole Weidner"
 __email__     = "ole.weidner@rutgers.edu"
 __copyright__ = "Copyright 2014, The RADICAL Project at Rutgers"
@@ -85,11 +82,11 @@ setup_args = {
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
     'author_email'     : 'ole.weidner@rutgers.edu',
-    'maintainer'       : "Ole Weidner",
-    'maintainer_email' : 'ole.weidner@rutgers.edu',
+    'maintainer'       : "Vivek Balasubramanian",
+    'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
     'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
     'license'          : 'MIT',
-    'keywords'         : "molecular dynamics toolkit pyhthon",
+    'keywords'         : "molecular dynamics toolkit python",
     'classifiers'      :  [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -120,17 +117,13 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    'scripts'           : ['bin/ensemblemd-version',
-                           'bin/ensemblemd-profile'],
+    'scripts'           : ['bin/ensemblemd-version']
+                           
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
-<<<<<<< HEAD
-    'install_requires'  :  ['radical.utils==0.35','saga-python==0.35','radical.pilot==0.35', 'setuptools>=1'],
-=======
-    'install_requires'  :  ['radical.pilot', 'setuptools>=1'],
->>>>>>> RC_changes
 
-    'test_suite'        : 'radical.ensemblemd.tests',
+    'install_requires'  :  ['radical.pilot', 'setuptools>=1'],
+    #'test_suite'        : 'radical.ensemblemd.tests',
 
     'zip_safe'          : False,
 }
