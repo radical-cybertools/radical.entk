@@ -7,9 +7,9 @@ RADICAL EnsembleMD Overview
 Who uses Ensemble MD Toolkit?
 ================================
 
-While the concepts in EnsembleMD Toolkit are fairly generic, the framework is
-currently targeted towards the molecular dynamics community: the currently
-implemented patterns and kernel abstractions are directly addressing the
+While the concepts in EnsembleMD Toolkit are fairly generic to ensemble-based simulations, the framework 
+currently targets  molecular dynamics simulations: current
+patterns and kernel abstractions  directly address the
 requirements for this community.
 
 EnsembleMD Toolkit is being used in multiple molecular dynamic application
