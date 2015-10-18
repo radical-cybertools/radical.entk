@@ -30,7 +30,7 @@ You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` c
 Preparing the Environment
 ===================================
 
-ExTASY is developed using Ensemble MD Toolkit which is a client-side library and relies on a set of external software packages. One of these packages is `radical.pilot <http://radicalpilot.readthedocs.org>`_, an HPC cluster resource access and management library. It can access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up SSH environment.
+Ensemble MD Toolkit which is a client-side library and relies on a set of external software packages. One of these packages is `radical.pilot <http://radicalpilot.readthedocs.org>`_, an HPC cluster resource access and management library. It can access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up SSH environment.
 
 .. figure:: images/hosts_and_ports.png
    :width: 360pt
