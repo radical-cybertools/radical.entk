@@ -17,7 +17,7 @@ You can download the complete code discussed in this section :download:`here <ex
 Importing components from the Ensemble MD Module
 ===========================================================
 
-To create any application using EnsembleMD, you would need to import three modules: Kernel, Pattern, Execution Context. The Pattern imported depends on the application requirement. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
+To create any application using EnsembleMD, you need to import three modules: Kernel, Pattern, Execution Context. The Pattern imported depends on the application requirement. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
 
 .. code-block:: python
     
@@ -33,7 +33,7 @@ Creating an Execution Context
 ================================
 
 We create an execution context in order to get access to a machine and acquire resources on that machine. In the 
-following snipper of code, we create an execution context of ``SingleClusterEnvironment`` type which gives access to 
+following snippet of code, we create an execution context of ``SingleClusterEnvironment`` type which gives access to 
 a single machine. We create it targetting the local machine, requesting 1 core for a period of 15 mins. The 'username' 
 and 'allocation' are required machines where there is a different username and an allocation number required. The 
 'database_url' specific the mongodb instance to be used.
