@@ -40,34 +40,26 @@ Components
 Execution Patterns
 --------------------------------
 
-It is a high-level object that represents an application control flow that describes “what to do”. An execution pattern 
-can be seen as a parameterized template for an execution trajectory that implements a specific algorithm. A pattern 
-provides placeholder methods for the individual steps and stages of an execution trajectory. These placeholders are 
-populated with Kernels that get executed when it’s the step’s turn to be executed. The user's interactions are confined 
-to this object with and the various MD tools tobe executed during the various steps of the pattern. 
+An execution pattern is a parameterized template that captures commonly occuring execution traces. It is a high-level object that represents the control flow that describes “what to do”.  A pattern provides placeholder methods for the individual steps and stages of an execution trace. 
+
+These placeholders are populated with Kernels that get executed when it’s the step’s turn to be executed. The user's interactions are confined to this object with and the various tools (MD simulations, specific collective variable analysis etc.) to be executed during the various steps of the pattern. 
 
 Execution Plugins
 ---------------------------------
 
-Ensemble MD Toolkit separates the application expression from the execution strategy. The user facing script, i.e. the 
-execution pattern, expresses the ensemble-based execution patterns while the management of its execution is 
-described by ”Execution Plugins”. Decoupling the execution from the expression of the pattern allows the execution 
-plugins to analyze an application’s control- and dataflow, combine the results with existing information about the 
-execution resource and execute according to the derived strategy. Keeping the execution strategy separated from its 
-expression also enables experimenting with different execution strategies without affecting the user application/
-workload. 
+Ensemble MD Toolkit separates the expression of the execution trace from the details of the execution. The user expresses the ensemble-based execution patterns, while the management of its execution is described by ”Execution Plugins”. 
+
+Decoupling the execution from the expression of the pattern allows the execution plugins to analyze an application’s control- and dataflow, combine the results with existing information about the execution resource and execute according to the derived strategy. 
 
 Execution Context
 ----------------------------------
 
 The execution context can be see as a container that acquires the resources on the remote machine, sets up the 
 environment for the tasks to be launched and provides application level control of these resources. The execution 
-context is the component that provides a uniform method to access different HPC clusters. It, thus, becomes the 
-component responsible for providing resource-level heterogeneity. It is constructed with the information required to 
-access the desired HPC cluster, i.e., its address, user credentials and core requirements, and URL to a database for 
-bookkeeping. Currently, only the SingleClusterEnvironment, which creates an execution context targetting one specific 
-machine, is available. We plan to extend this to be able to execute on multiple machines simultaneously with a
-MultiClusterEnviornment in the future.
+context is the component that provides a uniform method to access different HPC clusters. It thus, becomes the 
+component responsible for hiding resource-level heterogeneity. 
+
+It is constructed with the information required to access the desired HPC cluster, i.e., its address, user credentials and core requirements, and URL to a database for book-keeping. Currently, only the SingleClusterEnvironment, which creates an execution context targetting one specific machine, is available. 
 
 Kernel Plugins
 --------------------------
