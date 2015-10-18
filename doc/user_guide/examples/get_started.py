@@ -15,22 +15,31 @@ class MyApp(Pipeline):
 
 if __name__ == "__main__":
 
-       cluster = SingleClusterEnvironment(
-                   resource="localhost",
-                   cores=1,
-                   walltime=15,
-                   username=None,
-                   allocation=None,
-                   database_name="mongod:mymongodburl"
-             )
+      try:
 
-       cluster.allocate()
+            # Create a new static execution context with one resource and a fixed
+            # number of cores and runtime.
+            cluster = SingleClusterEnvironment(
+                         resource="localhost",
+                        cores=1,
+                        walltime=15,
+                        username=None,
+                        allocation=None,
+                        database_name="mongod:mymongodburl"
+                  )
 
-       app = MyApp(steps=1,instances=1)
 
-       cluster.run(app)
+            # Allocate the resources. 
+            cluster.allocate()
 
-       cluster.deallocate()
+            # Set the 'instances' of the pipeline to 1. This means that 1 instance
+            # of each pipeline step is executed.
+            app = MyApp(steps=1,instances=1)
+
+            cluster.run(app)
+
+            # Deallocate the resources. 
+            cluster.deallocate()
 
        except EnsemblemdError, er:
 

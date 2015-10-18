@@ -70,6 +70,10 @@ if __name__ == "__main__":
 
         cluster.run(ccount)
 
+
+        # Deallocate the resources. 
+        cluster.deallocate()
+
         # Print the checksums
         print "\nResulting checksums:"
         import glob

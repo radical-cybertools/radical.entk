@@ -26,24 +26,32 @@ class MyApp(Pipeline):
 
 if __name__ == "__main__":
 
-       cluster = SingleClusterEnvironment(
-                   resource="localhost",
-                   cores=1,
-                   walltime=15,
-                   username=None,
-                   allocation=None,
-                   database_name="mongod:mymongodburl"
-             )
+      try:
 
-       os.system('Welcome! > input_file.txt')
+            # Create a new static execution context with one resource and a fixed
+            # number of cores and runtime.
+            cluster = SingleClusterEnvironment(
+                         resource="localhost",
+                         cores=1,
+                        walltime=15,
+                        username=None,
+                        allocation=None,
+                        database_name="mongod:mymongodburl"
+                  )
 
-       cluster.allocate()
+            os.system('Welcome! > input_file.txt')
 
-       app = MyApp(steps=2,instances=16)
+            # Allocate the resources. 
+            cluster.allocate()
 
-       cluster.run(app)
+            # Set the 'instances' of the pipeline to 16. This means that 16 instance
+            # of each pipeline step are executed
+            app = MyApp(steps=2,instances=16)
 
-       cluster.deallocate()
+            cluster.run(app)
+
+            # Deallocate the resources. 
+            cluster.deallocate()
 
        except EnsemblemdError, er:
 

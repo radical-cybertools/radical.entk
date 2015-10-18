@@ -33,7 +33,7 @@ Contents:
    overview
    installation
    user
-   tutorial
+   examples
    developers
    faq
    api
