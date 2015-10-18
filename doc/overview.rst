@@ -7,8 +7,6 @@ RADICAL EnsembleMD Overview
 Who uses Ensemble MD Toolkit?
 ================================
 
-While the concepts in EnsembleMD Toolkit are fairly generic to ensemble-based simulations, the framework 
-currently targets  molecular dynamics simulations: current patterns and kernel abstractions directly address the requirements for this community.
 
 EnsembleMD Toolkit is being used in multiple molecular dynamic application
 projects, like for example the `ExTASY Project <http://extasy-project.org/>`_.
@@ -19,6 +17,10 @@ scenarios:
   * :ref:`usecase_cdi_replica_exchange`
   * :ref:`usecase_extasy_coco_amber`
   * :ref:`usecase_extasy_gromacs_lsdmap`
+
+While the concepts in EnsembleMD Toolkit are fairly generic to ensemble-based simulations, the framework 
+currently targets  molecular dynamics simulations: current patterns and kernel abstractions directly address the requirements for this community.
+
 
 
 Why do I need a MongoDB to run EnsembleMD ?
