@@ -1,4 +1,5 @@
-RADICAL Ensemble MD Toolkit 
+#######################################
+RADICAL Ensemble MD Toolkit 0.3
 #######################################
 
 .. figure:: images/oxytocin.*
