@@ -70,8 +70,8 @@ if __name__ == "__main__":
             walltime=30,
             username=None,
             project=None,
-	    database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-	    database_name='myexps'
+            database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+            database_name='myexps'
         )
 
         # Allocate the resources. 

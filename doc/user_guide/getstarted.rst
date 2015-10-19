@@ -35,7 +35,7 @@ Creating an Execution Context
 We create an execution context in order to get access to a machine and acquire resources on that machine. In the 
 following snippet of code, we create an execution context of ``SingleClusterEnvironment`` type which gives access to 
 a single machine. We create it targetting the local machine, requesting 1 core for a period of 15 mins. The 'username' 
-and 'allocation' are required machines where there is a different username and an allocation number required. The 
+and 'project' are required machines where there is a different username and an allocation number required. The 
 'database_url' specific the mongodb instance to be used.
 
 .. code-block:: python
@@ -46,8 +46,9 @@ and 'allocation' are required machines where there is a different username and a
                         cores=1,
                         walltime=15,
                         username=None,
-                        allocation=None,
-                        database_name="mongod:mymongodburl"
+                        project=None,
+                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+                        database_name='myexps'
                     )
 
 Once created, you can now perform the following operations:
@@ -135,6 +136,6 @@ To run the script, simply do the following from command line:
 
 ::
 
-     python myapp.py
+     python get_started.py
 
 
