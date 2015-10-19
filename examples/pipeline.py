@@ -94,10 +94,6 @@ if __name__ == "__main__":
         #    print "  * {0}".format(open(result, "r").readline().strip())
 
         cluster.deallocate()
-        
-
-        import os
-        os.system("rm *.sha1 *.dat")
 
         #df = ccount.execution_profile_dict
         #df.to_pickle('exp.pkl')
