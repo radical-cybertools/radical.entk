@@ -126,27 +126,27 @@ class SingleClusterEnvironment(ExecutionContext):
         self._allocate_called = True
 
         # Here we start the pilot(s).
+        self._reporter.title('EnsembleMD (%s)' % version)
+
+        self._reporter.info('Starting Allocation')
+
+        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+        if profiling == 1:
+            start_time = datetime.datetime.now()
+
+        if not self._database_url:
+            self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
+
+        if  not self._database_url :
+            raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
+
+        if self._database_name is None:
+            self._session = radical.pilot.Session(database_url=self._database_url)
+        else:
+            db_url = self._database_url + '/' + self._database_name
+            self._session = radical.pilot.Session(database_url=db_url)
+
         try:
-
-            self._reporter.title('EnsembleMD (%s)' % version)
-
-            self._reporter.info('Starting Allocation')
-
-            profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-            if profiling == 1:
-                start_time = datetime.datetime.now()
-
-            if not self._database_url:
-                self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
-
-            if  not self._database_url :
-                raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
-
-            if self._database_name is None:
-                self._session = radical.pilot.Session(database_url=self._database_url)
-            else:
-                db_url = self._database_url + '/' + self._database_name
-                self._session = radical.pilot.Session(database_url=db_url)
 
             if self._username is not None:
                 # Add an ssh identity to the session.
@@ -194,6 +194,8 @@ class SingleClusterEnvironment(ExecutionContext):
         except Exception, ex:
             self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
             self._reporter.error('Allocation failed: {0}'.format(str(ex)))
+            if self._session:
+                self._session.close()
             raise
 
         finally:
