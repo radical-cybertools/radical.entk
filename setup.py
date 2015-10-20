@@ -208,7 +208,8 @@ setup_args = {
     # This copies the contents of the examples/ dir under
     # sys.prefix/share/radical.pilot.
     # It needs the MANIFEST.in entries to work.
-    'data_files'        : makeDataFiles('share/radical.pilot/examples/', 'examples'),
+    'data_files'        : makeDataFiles('share/radical.ensemblemd/examples/', 'examples'),
 }
 
 setup (**setup_args)
+
