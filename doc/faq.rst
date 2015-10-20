@@ -29,3 +29,8 @@ If you encounter an error in any of the examples in the document or in a script 
 
 * Using this, you can now create a ticket using the `bug tracker <https://github.com/radical-cybertools/ExTASY/issues>`_. Click on the green **New Issue** button, give it a title, attach the file (or paste the contents in text field), add any detail that you can give us and Submit.
 * You can also report the same to the `mailing list <ensemblemd-users@googlegroups.com>`_.
+
+
+Can I interrupt my script to terminate gracefully ?
+==============================
+Yes. You can gracefully terminate the executing script by pressing **Ctrl+C**. Once you do this, please wait for a few seconds as it may take time to cancel the job running on the target machine and cleanup other components.
