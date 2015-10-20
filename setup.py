@@ -155,10 +155,11 @@ setup_args = {
     'description'      : "Radical Ensemble Molecular Dynamics (MD) Toolkit.",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
-    'author_email'     : 'ole.weidner@rutgers.edu',
+    'author_email'     : 'vivek.balasubramanian@rutgers.edu',
     'maintainer'       : "Vivek Balasubramanian",
     'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
     'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
+    'download_url' : 'https://github.com/radical-cybertools/radical.ensemblemd/archive/0.3.2.tar.gz',
     'license'          : 'MIT',
     'keywords'         : "molecular dynamics toolkit python",
     'classifiers'      :  [
