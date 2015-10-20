@@ -1,0 +1,85 @@
+.TH hostgrep 1 "Version 1.14"
+
+.SH NAME
+hostgrep \- print lines matching hostlist
+
+.SH SYNOPSIS
+.B hostgrep
+.RI [ OPTION "]... " HOSTLIST " [" FILE ]...
+
+.SH DESCRIPTION
+Search the files for lines matching the given hostlist.
+If no files are given, search the standard input.
+
+For each line, the program tries to find all hostnames and hostlists.
+Hostlists are then expanded to hostnames. The set of hostnames in a line
+is then compared to the set of hostnames given by the 
+.I HOSTLIST
+on the command line. By default, the line is printed if any hostname
+from the
+.I HOSTLIST
+is found in the line.
+
+.SH OPTIONS
+.TP
+.B --all
+Print a line if all hostnames in the given
+.I HOSTLIST
+is found in the line.
+.TP
+.B --any
+Print a line if any hostname in the given
+.I HOSTLIST
+is found in the line (the default).
+.TP
+.B -h
+Do not show the filename in front of matching line. This is the default
+if at most one
+.I FILE
+is given.
+.TP
+.B -H
+Show the filename in front of matching lines. This is the default
+if two or more
+.I FILES
+are given.
+
+.SH EXAMPLES
+.TP
+Search for lines in an accounting file where any of the three hosts \
+is present (as a hostname or part of a hostlist):
+.B hostgrep
+n[100-102] /var/log/slurm/accounting/2009-02-22 
+.TP
+Search for lines in the accounting files where all of the three hosts \
+are present (as a hostname or part of a hostlist). Do not show filenames:
+.B hostgrep
+-h
+n[100-102] /var/log/slurm/accounting/*
+
+.SH BUGS
+The program has a rather naive notion of what constitutes hostnames
+and hostlist.
+
+.SH AUTHOR
+Written by Kent Engström <kent@nsc.liu.se>.
+
+The program is published at http://www.nsc.liu.se/~kent/python-hostlist/
+
+.SH SEE ALSO
+.I hostlist
+(1)
+
+The hostlist expression syntax is used by several programs developed at 
+.B LLNL
+(https://computing.llnl.gov/linux/), for example
+.B SLURM
+(https://computing.llnl.gov/linux/slurm/) and 
+.B Pdsh
+(https://computing.llnl.gov/linux/pdsh.html).
+
+See the
+.B HOSTLIST EXPRESSIONS
+section of the
+.BR pdsh (1)
+manual page for a short introduction to the hostlist syntax.
