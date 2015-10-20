@@ -12,7 +12,7 @@ of tasks, to a Pipeline of tasks.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble MD, and also configured access to the resources you intent to use for the examples (see chapter :ref:`Installation`).
 
-You can download the complete code discussed in this section :download:`here <examples/get_started.py>`.
+You can download the complete code discussed in this section :download:`here <scripts/get_started.py>`.
 
 Importing components from the Ensemble MD Module
 ===========================================================
@@ -135,7 +135,9 @@ To run the script, simply execute the following from command line:
 And that's it ! That's all the steps of the pattern. Let's take a look at the complete code in the example.
 
 
-.. literalinclude:: examples/get_started.py
+.. literalinclude:: scripts/get_started.py
+
+
 
 .. note::
 

@@ -60,6 +60,8 @@ class Plugin(PluginBase):
                 # In Case the pilot fails report Error messsage
                 self.get_logger().error("Task {0} FAILED.".format(unit.uid))
                 self.get_logger().error("Error: {0}".format(unit.stderr))
+                self.get_logger().error("Pattern execution FAILED.")
+                sys.exit(1)
 
         def comparisons (set1,set2):
             ret = list ()

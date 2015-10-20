@@ -138,6 +138,7 @@ class Plugin(PluginBase):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
                 self.get_logger().error("Pattern execution FAILED.")
+                sys.exit(1)
 
 
         self._reporter.ok('>>ok')

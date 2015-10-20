@@ -6,7 +6,7 @@ Adding Instances
 
 So far in our example, we have only 1 instance of the step, i.e. a Bag of Tasks with a bag size of 1. Let's now increase the bag size to 16, keeping the workload same as in the previous examples. This is pretty trivial, you simply specify the bag size as the number of instances during pattern object creation.
 
-You can download the entire script for this section :download:`here <examples/add_instances.py>`.
+You can download the entire script for this section :download:`here <scripts/add_instances.py>`.
 
 .. code-block:: python
 
@@ -34,4 +34,4 @@ To run the script, simply execute the following from command line:
 
 So now we will obtain 16 different output files. Let's take a look at the complete code:
 
-.. literalinclude:: examples/add_instances.py
+.. literalinclude:: scripts/add_instances.py

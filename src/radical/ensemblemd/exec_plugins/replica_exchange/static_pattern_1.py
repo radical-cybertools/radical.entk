@@ -48,6 +48,15 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def execute_pattern(self, pattern, resource):
+
+
+        def unit_state_cb (unit, state) :
+
+            if state == radical.pilot.FAILED:
+                self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
+                self.get_logger().error("Pattern execution FAILED.")
+                sys.exit(1)
+
         try:
 
             self._reporter.ok('>>ok')
@@ -86,6 +95,8 @@ class Plugin(PluginBase):
             self._reporter.info("Job waiting on queue...".format(resource._resource_key))
             resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
             self._reporter.ok("\nJob is now running !".format(resource._resource_key))
+
+            resource._umgr.register_callback(unit_state_cb)
 
             if do_profile == '1':
                 pattern_start_time = datetime.datetime.utcnow()

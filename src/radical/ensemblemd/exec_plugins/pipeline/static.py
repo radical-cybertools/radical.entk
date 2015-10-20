@@ -79,6 +79,8 @@ class Plugin(PluginBase):
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                self.get_logger().error("Pattern execution FAILED.")
+                sys.exit(1)
 
         self._reporter.ok('>>ok')
         pipeline_instances = pattern.instances
