@@ -197,7 +197,7 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
 
-    'install_requires'  :  ['radical.pilot', 'setuptools>=1'],
+    'install_requires'  :  ['radical.utils','radical.pilot', 'setuptools>=1'],
     #'test_suite'        : 'radical.ensemblemd.tests',
 
     'zip_safe'          : False,

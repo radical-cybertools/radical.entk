@@ -58,7 +58,7 @@ docs/_build/
 .idea/
 
 # Specifics
-src/radical/ensemblemd/VERSION
+.pypirc
 
 #editor specifics
 .idea/
