@@ -4,6 +4,8 @@
 Kernel APIs
 ***********
 
+In this section, we provide a list of kernels that are pre-configured for use by EnsembleMD. Please note that these kernel definitions are specific (say in terms of arguments supported) to the examples in the documentation. Depending on your usecase, you can either use these kernels or create your own custom kernels (discussed in :ref:`writing_kernels`).
+
 .. toctree::
    :maxdepth: 1
 

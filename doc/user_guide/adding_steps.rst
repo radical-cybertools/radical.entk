@@ -32,6 +32,13 @@ A few points to note:
 
 All the data references can be found `here <>`_.
 
+
+To run the script, simply execute the following from command line:
+
+::
+
+     RADICAL_ENMD_VERBOSE=REPORT python add_steps.py
+
 Complete script:
 
 

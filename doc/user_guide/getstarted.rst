@@ -124,7 +124,16 @@ Ok, so by now we have seen how to create an execution context, define a pattern 
 
 We deallocate the resources once the application has finished executing.
 
+
+To run the script, simply execute the following from command line:
+
+::
+
+     RADICAL_ENMD_VERBOSE=REPORT python get_started.py
+
+
 And that's it ! That's all the steps of the pattern. Let's take a look at the complete code in the example.
+
 
 .. literalinclude:: examples/get_started.py
 
@@ -132,10 +141,6 @@ And that's it ! That's all the steps of the pattern. Let's take a look at the co
 
       You can use the Pipeline pattern to create a Bag of Tasks by having only one step. In this case, this is an example of a Bag of Tasks with a bag size of 1.
 
-To run the script, simply do the following from command line:
 
-::
-
-     python get_started.py
 
 

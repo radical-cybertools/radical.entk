@@ -36,6 +36,13 @@ So you can simply rename files by using the '>' operator. The convention is as f
 	['old_name' > 'new_name']
 
 
+To run the script, simply execute the following from command line:
+
+::
+
+     RADICAL_ENMD_VERBOSE=REPORT python add_data.py
+
+
 The complete code is as follows:
 
 

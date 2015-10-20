@@ -24,6 +24,14 @@ Let's change the name of the file staged out using the instance number.
 
 	k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
 
+
+To run the script, simply execute the following from command line:
+
+::
+
+     RADICAL_ENMD_VERBOSE=REPORT python add_instances.py
+
+
 So now we will obtain 16 different output files. Let's take a look at the complete code:
 
 .. literalinclude:: examples/add_instances.py
