@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__    = "Ole Weidner"
-__email__     = "ole.weidner@rutgers.edu"
+__author__    = "Vivek Balasubramanian"
+__email__     = "vivek.balasubramanian@rutgers.edu"
 __copyright__ = "Copyright 2014, The RADICAL Project at Rutgers"
 __license__   = "MIT"
 
