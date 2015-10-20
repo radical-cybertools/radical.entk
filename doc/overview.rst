@@ -22,11 +22,6 @@ While the concepts in EnsembleMD Toolkit are fairly generic to ensemble-based si
 currently targets  molecular dynamics simulations: current patterns and kernel abstractions directly address the requirements for this community.
 
 
-
-Why do I need a MongoDB to run EnsembleMD ?
-======================================================
-
-
 How about data ?
 ===================
 
