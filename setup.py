@@ -59,6 +59,8 @@ def get_version():
         if not short_version or not long_version:
             raise RuntimeError("SETUP ERROR: Cannot determine version from git or ./VERSION\n")
 
+        short_version = open('VERSION', 'r').read().strip()
+
         # make sure the version files exist for the runtime version inspection
         #open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
         open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
@@ -151,7 +153,7 @@ short_version, long_version = get_version()
 
 setup_args = {
     'name'             : 'radical.ensemblemd',
-    'version'          : open ('{0}/src/radical/ensemblemd/VERSION'.format(srcroot), 'r').readline().rstrip(),
+    'version'          : short_version,
     'description'      : "Radical Ensemble Molecular Dynamics (MD) Toolkit.",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
