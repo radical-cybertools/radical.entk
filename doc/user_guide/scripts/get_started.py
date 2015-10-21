@@ -17,6 +17,8 @@ if __name__ == "__main__":
 
       try:
 
+            config = ru.read_json('%s/config.json' % os.path.dirname(os.path.abspath(__file__)))
+
             # Create a new static execution context with one resource and a fixed
             # number of cores and runtime.
             cluster = SingleClusterEnvironment(
@@ -26,7 +28,8 @@ if __name__ == "__main__":
                         username=None,
                         project=None,
                         database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-                        database_name='myexps'
+                        database_name='myexps',
+                        access_schema = ,
                   )
 
 

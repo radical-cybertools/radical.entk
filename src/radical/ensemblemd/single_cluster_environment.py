@@ -40,7 +40,8 @@ class SingleClusterEnvironment(ExecutionContext):
                  project=None, 
                  cleanup=False, 
                  database_url=None, 
-                 database_name=None):
+                 database_name=None,
+                 access_schema='ssh'):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
@@ -61,6 +62,7 @@ class SingleClusterEnvironment(ExecutionContext):
         self._cleanup = cleanup
         self._database_url = database_url
         self._database_name = database_name
+        self._schema = access_schema
 
         self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
         self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
@@ -170,6 +172,8 @@ class SingleClusterEnvironment(ExecutionContext):
 
             if self._project is not None:
                 pdesc.project = self._project
+
+            pdesc.access_schema = self._schema
 
             self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
