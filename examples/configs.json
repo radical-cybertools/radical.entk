@@ -2,7 +2,7 @@
 	"local.localhost" : {
             				"project"  : null,
             				"queue"    : null,
-            				"schema"   : null
+            				"schema"   : "local"
         			},
 
         	"epsrc.archer" : {
