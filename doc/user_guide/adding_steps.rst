@@ -6,7 +6,8 @@ Adding Steps
 
 We have looked at creating a simple pipeline application, adding data movement, creating BoT with varying bag size using the pipeline pattern. What next ? Let's add more steps to the pattern !
 
-You can download the entire script for this section :download:`here <scripts/add_steps.py>`.
+You can download the entire script for this section :download:`here <scripts/add_steps.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 In this section, we will use the example from previous section and another step which concatenates two files and stage the output back to localhost. One of the files is staged from localhost and the other file is the file from step_1.The kernel for concatenation is already part of Ensemble MD. This is how our step_2 looks:
 

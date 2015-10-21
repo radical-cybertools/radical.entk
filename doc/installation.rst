@@ -10,20 +10,24 @@ Installing Ensemble MD Toolkit
 To install the Ensemble MD Toolkit Python modules in a virtual environment,
 open a terminal and run:
 
-.. parsed-literal::
+.. code-block:: bash
 
-    export ENMD_INSTALL_VERSION="master"
-    virtualenv $HOME/EnMDToolkit
-    source $HOME/EnMDToolkit/bin/activate
-    pip install --upgrade git+https://github.com/radical-cybertools/radical.ensemblemd.git@$ENMD_INSTALL_VERSION#egg=radical.ensemblemd
+    virtualenv $HOME/myenv
+    source $HOME/myenv/bin/activate
+    pip install radical.ensemblemd
 
 You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` command-line tool. It should return 0.3.
 
-.. parsed-literal::
+.. code-block:: bash
 
     ensemblemd-version
-
     0.3
+
+
+.. note::
+
+    All the scripts of the user guide and the example will now be available in myenv/share/radical.ensemblemd. 
+    Although links to the scripts/examples are still provided on each page.
 
 .. _envpreparation:
 
@@ -85,7 +89,7 @@ Setup an easy method for SSH Access to machines
 An easy way to setup SSH Access to multiple remote machines is to create a file ``~/.ssh/config``.
 Suppose the url used to access a specific machine is ``foo@machine.example.com``. You can create an entry in this config file as follows:
 
-.. parsed-literal::
+.. code-block:: bash
 
     # contents of $HOME/.ssh/config
     Host mach1

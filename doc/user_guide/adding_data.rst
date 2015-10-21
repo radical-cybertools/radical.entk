@@ -8,7 +8,8 @@ Now that we have a basic example running, let's try to add some data to this app
 creates a file if it does not already exist and adds `Hello World` to the file. In this section, we'll try to first transfer an 
 input file ("input_file.txt") from localhost, add `Hello World` to this file and transfer it back to the local machine.
 
-You can download the complete code for this section :download:`here <scripts/add_data.py>`.
+You can download the complete code for this section :download:`here <scripts/add_data.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 To do this, we just have to add the ``upload_input_data`` and ``download_output_data`` properties of the kernel. This is how our new kernel will look,
 

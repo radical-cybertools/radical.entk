@@ -50,8 +50,8 @@ _KERNEL_INFO = {
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
                             "export AMBERHOME=/opt/apps/intel13/mvapich2_1_9/amber/12.0",
-                            "export PYTHONPATH=/work/02998/ardi/coco-0.21_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.21_installation/bin:$AMBERHOME/bin:$PATH"],
+                            "export PYTHONPATH=//work/02998/ardi/coco_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco_installation/bin:$AMBERHOME/bin:$PATH"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },

@@ -12,7 +12,8 @@ of tasks, to a Pipeline of tasks.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble MD, and also configured access to the resources you intent to use for the examples (see chapter :ref:`Installation`).
 
-You can download the complete code discussed in this section :download:`here <scripts/get_started.py>`.
+You can download the complete code discussed in this section :download:`here <scripts/get_started.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 Importing components from the Ensemble MD Module
 ===========================================================

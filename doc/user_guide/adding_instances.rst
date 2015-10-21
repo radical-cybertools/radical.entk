@@ -6,7 +6,8 @@ Adding Instances
 
 So far in our example, we have only 1 instance of the step, i.e. a Bag of Tasks with a bag size of 1. Let's now increase the bag size to 16, keeping the workload same as in the previous examples. This is pretty trivial, you simply specify the bag size as the number of instances during pattern object creation.
 
-You can download the entire script for this section :download:`here <scripts/add_instances.py>`.
+You can download the entire script for this section :download:`here <scripts/add_instances.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 .. code-block:: python
 

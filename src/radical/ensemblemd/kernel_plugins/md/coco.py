@@ -73,8 +73,8 @@ _KERNEL_INFO = {
                             "module load python/2.7.9",
                             "module load netcdf/4.3.2",
                             "module load hdf5/1.8.13",
-                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco-0.24_installation/lib/python2.7/site-packages:$PYTHONPATH",
-                            "export PATH=/work/02998/ardi/coco-0.24_installation/bin:$PATH"],
+                            "export PYTHONPATH=/opt/apps/intel13/mvapich2_1_9/python/2.7.9/lib/python2.7/site-packages:/work/02998/ardi/coco_installation/lib/python2.7/site-packages:$PYTHONPATH",
+                            "export PATH=/work/02998/ardi/coco_installation/bin:$PATH"],
             "executable" : ["pyCoCo"],
             "uses_mpi"   : True    
         },
