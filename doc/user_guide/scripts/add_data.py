@@ -67,7 +67,7 @@ if __name__ == "__main__":
             # Deallocate the resources. 
             cluster.deallocate()
 
-       except EnsemblemdError, er:
+      except EnsemblemdError, er:
 
-             print "Ensemble MD Toolkit Error: {0}".format(str(er))
-             raise # Just raise the execption again to get the backtrace
+            print "Ensemble MD Toolkit Error: {0}".format(str(er))
+            raise # Just raise the execption again to get the backtrace
