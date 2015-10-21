@@ -52,7 +52,7 @@ if __name__ == "__main__":
                         database_name='myexps',
                   )
 
-            os.system('Welcome! > input_file.txt')
+            os.system('/bin/echo Welcome! > input_file.txt')
 
             # Allocate the resources. 
             cluster.allocate()
