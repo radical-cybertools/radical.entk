@@ -34,7 +34,7 @@ So you can simply rename files by using the '>' operator. The convention is as f
 
 ::
 
-	['old_name' > 'new_name']
+	['old_name > new_name']
 
 
 To run the script, simply execute the following from command line:
