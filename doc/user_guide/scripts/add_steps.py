@@ -17,7 +17,7 @@ class MyApp(Pipeline):
             k.upload_input_data = ['./input_file.txt > temp.txt']
             k.arguments = ["--file=temp.txt"]
             k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
-             return k
+            return k
 
       def step_2(self, instances):
 
