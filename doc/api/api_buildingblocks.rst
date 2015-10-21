@@ -15,6 +15,8 @@ Execution Context API
 ..     :members:
 ..     :inherited-members:
 
+
+.. _kern_api:
 Application Kernel API
 ======================
 

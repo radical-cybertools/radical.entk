@@ -36,6 +36,7 @@ So you can simply rename files by using the '>' operator. The convention is as f
 
 	['old_name' > 'new_name']
 
+All the data staging properties of the Kernel can be found in the API discussion :ref:`here <kern_api>`.
 
 To run the script, simply execute the following from command line:
 

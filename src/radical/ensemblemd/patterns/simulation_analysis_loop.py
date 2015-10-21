@@ -23,7 +23,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         **Data references**:
 
-        The following placeholders can be used to reference the output data
+        The following placeholders can be used to reference the data during staging
         generated in previous steps accross different instances:
 
         * ``$PRE_LOOP`` - References the pre_loop step.
