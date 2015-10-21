@@ -29,7 +29,6 @@ if __name__ == "__main__":
       else: 
             resource = 'local.localhost'
 
-
       try:
 
             with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
@@ -52,7 +51,7 @@ if __name__ == "__main__":
                   )
 
 
-            # Allocate the resources. 
+            # Allocate the resources.
             cluster.allocate()
 
             # Set the 'instances' of the pipeline to 1. This means that 1 instance
