@@ -25,8 +25,8 @@ class CalculateChecksums(Pipeline):
         radical.ensemblemd.Pipeline pattern and define just one step.
     """
 
-    def __init__(self, instances):
-        Pipeline.__init__(self, instances)
+    def __init__(self, steps, instances):
+        Pipeline.__init__(self, steps, instances)
 
     def step_1(self, instance):
         """This step downloads a sample UTF-8 file from a remote websever and
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or
         # sequentially, depending on the resources (cores) available in the
         # SingleClusterEnvironment.
-        ccount = CalculateChecksums(instances=16)
+        ccount = CalculateChecksums(steps=1,instances=16)
 
         os.system('wget -q -o UTF-8-demo.txt http://gist.githubusercontent.com/oleweidner/6084b9d56b04389717b9/raw/611dd0c184be5f35d75f876b13604c86c470872f/gistfile1.txt')
 

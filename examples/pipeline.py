@@ -104,7 +104,7 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or
         # sequentially, depending on the resources (cores) available in the
         # SingleClusterEnvironment.
-        ccount = CharCount(steps=3,instances=16,)
+        ccount = CharCount(steps=3,instances=16)
 
         cluster.run(ccount)
 
