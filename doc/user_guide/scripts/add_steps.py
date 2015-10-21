@@ -22,7 +22,7 @@ class MyApp(Pipeline):
       def step_2(self, instances):
 
             k = Kernel(name="misc.cat")
-            k.upload_input_data = ['./input_file_2.txt > file2.txt']
+            k.upload_input_data = ['./output_file_2.txt > file2.txt']
             k.copy_input_data = ['$STEP_1/temp.txt > file1.txt']
             k.arguments = ["--file1=file1.txt","--file2=file2.txt"]
             k.download_output_data = ['./file1.txt > output_file.txt']
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                         database_name='myexps',
                   )
 
-            os.system('Welcome! > input_file.txt')
+            os.system('/bin/echo Welcome! > input_file.txt')
 
             # Allocate the resources. 
             cluster.allocate()
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             # Deallocate the resources. 
             cluster.deallocate()
 
-       except EnsemblemdError, er:
+      except EnsemblemdError, er:
 
-             print "Ensemble MD Toolkit Error: {0}".format(str(er))
-             raise # Just raise the execption again to get the backtrace
+            print "Ensemble MD Toolkit Error: {0}".format(str(er))
+            raise # Just raise the execption again to get the backtrace
