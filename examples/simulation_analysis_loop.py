@@ -7,6 +7,10 @@ __license__      = "MIT"
 __example_name__ = "Simulation-Analysis Example (generic)"
 
 
+import sys
+import os
+import json
+
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import EnsemblemdError
@@ -79,17 +83,35 @@ class RandomSA(SimulationAnalysisLoop):
 #
 if __name__ == "__main__":
 
+    # use the resource specified as argument, fall back to localhost
+    if   len(sys.argv)  > 2: 
+        print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+        sys.exit(1)
+    elif len(sys.argv) == 2: 
+        resource = sys.argv[1]
+    else: 
+        resource = 'local.localhost'
+
+
     try:
+
+        with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
+            config = json.load(data_file)
+
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="local.localhost",
-            cores=1,
-            walltime=30,
-            #username='vivek91',
-            #project='TG-MCB090174',
-            database_name='myexps',
-	database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242'
+                        resource=resource,
+                        cores=1,
+                        walltime=15,
+                        #username=None,
+
+                        project=config[resource]['project'],
+                        access_schema = config[resource]['schema'],
+                        queue = config[resource]['queue'],
+
+                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+                        database_name='myexps',
         )
 
         # Allocate the resources.
@@ -98,7 +120,7 @@ if __name__ == "__main__":
         # We set both the the simulation and the analysis step 'instances' to 16.
         # This means that 16 instances of the simulation step and 16 instances of
         # the analysis step are executed every iteration.
-        randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=1)
+        randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=16)
 
         cluster.run(randomsa)
         

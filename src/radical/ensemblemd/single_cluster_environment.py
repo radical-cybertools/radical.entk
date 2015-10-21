@@ -124,6 +124,7 @@ class SingleClusterEnvironment(ExecutionContext):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))
                 self.get_logger().error("Pattern execution FAILED.")
+                sys.exit(2)
 
         self._allocate_called = True
 
