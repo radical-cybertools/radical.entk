@@ -13,11 +13,11 @@ class MyApp(Pipeline):
              Pipeline.__init__(self, steps,instances)
 
       def step_1(self, instance):
-             k = Kernel(name="misc.hello")
-             k.upload_input_data = ['./input_file.txt > temp.txt']
-             k.arguments = ["--file=temp.txt"]
-             k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
-             return k
+            k = Kernel(name="misc.hello")
+            k.upload_input_data = ['./input_file.txt > temp.txt']
+            k.arguments = ["--file=temp.txt"]
+            k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
+            return k
 
       def step_2(self, instances):
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             # Create a new static execution context with one resource and a fixed
             # number of cores and runtime.
             cluster = SingleClusterEnvironment(
-                         resource=resource,
+                        resource=resource,
                         cores=1,
                         walltime=15,
                         #username=None,
@@ -63,11 +63,11 @@ if __name__ == "__main__":
 
             os.system('/bin/echo Welcome! > input_file.txt')
 
-            # Allocate the resources. 
+            # Allocate the resources.
             cluster.allocate()
 
-            # Set the 'instances' of the pipeline to 16. This means that 16 instance
-            # of each pipeline step are executed
+            # Set the 'instances' of the pipeline to 16. This means that 16 instances
+            # of each pipeline step are executed.
             app = MyApp(steps=2,instances=16)
 
             cluster.run(app)

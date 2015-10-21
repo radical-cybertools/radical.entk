@@ -33,14 +33,13 @@ if __name__ == "__main__":
 
       try:
 
-
             with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
                   config = json.load(data_file)
-                  
+
             # Create a new static execution context with one resource and a fixed
             # number of cores and runtime.
             cluster = SingleClusterEnvironment(
-                         resource=resource,
+                        resource=resource,
                         cores=1,
                         walltime=15,
                         #username=None,
@@ -53,7 +52,7 @@ if __name__ == "__main__":
                         database_name='myexps',
                   )
 
-            os.system('Welcome! > input_file.txt')
+            os.system('/bin/echo Welcome! > input_file.txt')
 
             # Allocate the resources.
             cluster.allocate()
@@ -67,7 +66,7 @@ if __name__ == "__main__":
             # Deallocate the resources. 
             cluster.deallocate()
 
-       except EnsemblemdError, er:
+      except EnsemblemdError, er:
 
-             print "Ensemble MD Toolkit Error: {0}".format(str(er))
-             raise # Just raise the execption again to get the backtrace
+            print "Ensemble MD Toolkit Error: {0}".format(str(er))
+            raise # Just raise the execption again to get the backtrace

@@ -5,10 +5,10 @@ Introduction
 ************
 
 The Ensemble MD Toolkit (EnsembleMD Toolkit) is a Python framework for developing and executing applications 
-which are comprised of many simulations, aka ensembles. The Ensemble MD Toolkit has the following unique 
-features: (i) programming abstractions that enable the expression of ensembles as primary entities, (ii) a well-defined 
-API which provides support for the execution patterns of ensembles, (iii) the ability to abstracts the execution details 
-of these patterns from the expression of the patterns, and (iv) well-established runtime capabilities to enable efficient 
+comprised of many simulations, aka ensembles. The Ensemble MD Toolkit has the following unique 
+features: (i) abstractions that enable the expression of ensembles as primary entities, (ii) an
+API that provides support for ensembles-based execution pattern, (iii) the ability to abstract the execution details 
+from the expression of the patterns, and (iv) well-established runtime capabilities to enable efficient 
 and dynamic usage of resources ranging from clouds, distributed clusters and supercomputers.
 
 
