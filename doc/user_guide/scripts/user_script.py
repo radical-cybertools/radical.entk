@@ -16,8 +16,8 @@ get_engine().add_kernel_plugin(MyUserDefinedKernel)
 #Now carry on with your application as usual !
 class Sleep(Pipeline):
 
-    def __init__(self, instances,steps):
-        Pipeline.__init__(self, instances,steps)
+    def __init__(self, steps, instances):
+        Pipeline.__init__(self, steps, instances)
 
     def step_1(self, instance):
         """This step sleeps for 60 seconds."""
