@@ -24,7 +24,7 @@ class Pipeline(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, instances=1,steps=1):
+    def __init__(self, steps=1,instances=1):
         """Creates a new Pipeline instance.
         """
         self._instances = instances
