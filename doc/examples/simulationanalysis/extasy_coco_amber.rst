@@ -86,12 +86,18 @@ by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. :
         allocation=None # add your allocation or project id here if required
     )
 
-**Step 1:** View and download the example sources :ref:`below <01_static_amber_coco_loop>`.
+You can download the tarball containing the scripts and the input files using,
 
-**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about simulation progress::
+.. code-block:: bash
 
-    RADICAL_ENMD_VERBOSE=info python 01_static_amber_coco_loop.py --RPconfig stampede.rcfg --Kconfig cocoamber.wcfg
+    wget https://github.com/radical-cybertools/radical.ensemblemd/blob/master/usecases/extasy_coco_amber.tar.gz?raw=true
+
+
+You can run the script using the following command:
+
+.. code-block:: bash
+
+    RADICAL_ENMD_VERBOSE=REPORT python 01_static_amber_coco_loop.py --RPconfig stampede.rcfg --Kconfig cocoamber.wcfg
 
 
 Once the default script has finished running, you should see a folder called "iter2" inside backup/
