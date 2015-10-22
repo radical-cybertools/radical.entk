@@ -207,7 +207,8 @@ class Plugin(PluginBase):
                 self.get_logger().info("Cycle %d: Performing MD step for replicas" % (c) )
                 md_units = resource._umgr.submit_units(cus)
                 self._reporter.info("\nCycle {0}: Waiting for MD step to complete".format(c))
-                resource._umgr.wait_units()
+                uids = [cu.uid for cu in md_units]
+                resource._umgr.wait_units(uids)
 
                 if do_profile == '1':
                     step_end_time_abs = datetime.datetime.utcnow()
@@ -270,7 +271,8 @@ class Plugin(PluginBase):
                 self.get_logger().info("Cycle %d: Performing Exchange step for replicas" % (c) )
                 ex_units = resource._umgr.submit_units(cus)
                 self._reporter.info("\nCycle {0}: Waiting for Exchange step to complete".format(c))
-                resource._umgr.wait_units()
+                uids = [cu.uid for cu in ex_units]
+                resource._umgr.wait_units(uids)
 
                 if do_profile == '1':
                     step_end_time_abs = datetime.datetime.utcnow()

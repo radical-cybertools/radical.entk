@@ -154,7 +154,8 @@ class Plugin(PluginBase):
                 self.get_logger().info("Performing MD step for replicas")
                 self._reporter.info("\nCycle {0}: Waiting for MD step to complete".format(c))
                 md_units = resource._umgr.submit_units(cus)
-                resource._umgr.wait_units()
+                uids = [cu.uid for cu in md_units]
+                resource._umgr.wait_units(uids)
 
                 if do_profile == '1':
                     step_end_time_abs = datetime.datetime.utcnow()
