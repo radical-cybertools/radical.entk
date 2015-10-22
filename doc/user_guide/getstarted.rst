@@ -115,7 +115,7 @@ needs to execute. We use the kernels to ``define what to do`` in the first step.
 We use the kernel ``misc.hello`` already predefined in EnsembleMD. This kernel creates a file (if it does not exist alread) with the name as defined in the argument and prints a **Hello World** within it. 
 
 
-Ok, so by now we have seen how to create an execution context, define a pattern and add a kernel to the pattern. To specify the pattern to be exeted on the resources is simple:
+Ok, so by now we have seen how to create an execution context, define a pattern and add a kernel to the pattern. To specify the pattern to be executed on the resources is simple:
 
 .. code-block:: python
     
