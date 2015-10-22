@@ -66,8 +66,8 @@ component responsible for hiding resource-level heterogeneity.
 It is constructed with the information required to access the desired HPC cluster, i.e., its address, user credentials and core requirements, and URL to a 
 database for book-keeping. Currently, only the SingleClusterEnvironment, which creates an execution context targetting one specific machine, is available. 
 
-Execution Plugins
----------------------------------
+Execution Plugins (Internal Component)
+------------------------------------------------------------
 
 Ensemble MD Toolkit separates the expression of the execution trace from the details of the execution. The user expresses the ensemble-based execution 
 patterns, while the management of its execution is described by ”Execution Plugins”. 
