@@ -1,5 +1,5 @@
 include *.py *.json *.sh MANIFEST.in README.md CHANGES.md LICENSE.md VERSION
 recursive-include src            *
-recursive-include examples       *
-recursive-include examples/amber_input       *
+recursive-include examples *.py *.json
+recursive-include examples/amber_input *.in *.crd *.top
 recursive-include doc/user_guide *
