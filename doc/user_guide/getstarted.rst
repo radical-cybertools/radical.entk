@@ -35,7 +35,7 @@ Creating an Execution Context
 
 We create an execution context in order to get access to a machine and acquire resources on that machine. In the 
 following snippet of code, we create an execution context of ``SingleClusterEnvironment`` type which gives access to 
-a single machine. We create it targetting the local machine, requesting 1 core for a period of 15 mins. The 'username' 
+a single machine. The execution context targets the local machine, requesting 1 core for a period of 15 mins. The 'username' 
 and 'project' are required machines where there is a different username and an allocation number required. The 
 'database_url' specific the mongodb instance to be used.
 
