@@ -230,7 +230,7 @@ class Plugin(PluginBase):
             except Exception:
                 # Doesn't exist. That's fine as it is not mandatory.
                 self.get_logger().info("pre_loop() not defined. Skipping.")
-                self._reporter.info("pre_loop() not defined. Skipping.")
+                self._reporter.info("\npre_loop() not defined. Skipping.")
                 pass
 
             ########################################################################
