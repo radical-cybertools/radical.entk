@@ -46,7 +46,7 @@ Complete script:
 .. literalinclude:: scripts/add_steps.py
 
 
-**And that's pretty much all there is to EnselbleMD Toolkit.** The rest is
+**And that's pretty much all there is to EnsembleMD Toolkit.** The rest is
 really all about defining your application logic with the different patterns
 and Kernels. We will go through some examples throughout the rest of this
 User guide.
