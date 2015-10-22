@@ -14,7 +14,7 @@ class MyApp(Pipeline):
 
       def step_1(self, instance):
             k = Kernel(name="misc.hello")
-            k.arguments = ["--file=output.txt".format(instance)]
+            k.arguments = ["--file=output.txt"]
             return k
 
 if __name__ == "__main__":
