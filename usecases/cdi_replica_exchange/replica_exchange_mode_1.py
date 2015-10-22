@@ -443,14 +443,9 @@ if __name__ == "__main__":
 
         cluster.deallocate()
 
-        print "Simulation finished!"
-        print "Simulation performed {0} cycles with {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
-        print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
-
-        # execution profile printing
-        print "Profiling info: "
-        pp = pprint.PrettyPrinter()
-        pp.pprint(re_pattern.execution_profile_dict)
+        #print "Simulation finished!"
+        #print "Simulation performed {0} cycles with {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
+        #print "have {0} alanin_base_x_y.namd files and {0} alanin_base_x_y.history files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1))
 
     except EnsemblemdError, er:
 

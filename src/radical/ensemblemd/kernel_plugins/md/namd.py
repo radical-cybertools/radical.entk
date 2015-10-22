@@ -27,25 +27,19 @@ _KERNEL_INFO = {
             "executable"    : "namd2",
             "uses_mpi"      : "False"
         },
-        "stampede.tacc.utexas.edu": {
+        "xsede.stampede": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load TACC && module load namd/2.9"],
             "executable"    : "/opt/apps/intel13/mvapich2_1_9/namd/2.9/bin/namd2",
             "uses_mpi"      : "True"
         },
-        "archer.ac.uk": {
+        "epsrc.archer": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load namd"],
             "executable"    : "/usr/local/packages/namd/namd-2.9/bin/namd2",
             "uses_mpi"      : "True"
         },
-        "trestles.sdsc.xsede.org": {
-            "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load namd/2.9"],
-            "executable"    : "/opt/namd/bin/namd2",
-            "uses_mpi"      : "True"
-        },
-        "gordon.sdsc.xsede.org": {
+        "xsede.gordon": {
             "environment"   : {"FOO": "bar"},
             "pre_exec"      : ["module load namd/2.9"],
             "executable"    : "/opt/namd/2.9/bin/namd2",
