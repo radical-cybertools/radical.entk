@@ -2,7 +2,7 @@
 
 
 Writing New Application Kernels
--------------------------------
+--------------------------------------------------
 
 While the current set of available application kernels might provide a good set of tools to start, sooner or later you will probably want to use a tool for which no application Kernel exsits. This section describes how you can add your custom kernels. 
 
