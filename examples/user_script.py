@@ -1,3 +1,7 @@
+import sys
+import os
+import json
+
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import Pipeline
 from radical.ensemblemd import EnsemblemdError
@@ -7,7 +11,8 @@ from radical.ensemblemd import SingleClusterEnvironment
 from radical.ensemblemd.engine import get_engine
 
 #Import our new kernel
-from new_kernel import MyUserDefinedKernel
+#from dev_kernel import MyUserDefinedKernel     #Solution
+from user_kernel import MyUserDefinedKernel
 
 # Register the user-defined kernel with Ensemble MD Toolkit.
 get_engine().add_kernel_plugin(MyUserDefinedKernel)
@@ -20,10 +25,15 @@ class Sleep(Pipeline):
         Pipeline.__init__(self, steps, instances)
 
     def step_1(self, instance):
-        """This step sleeps for 60 seconds."""
+        """Run AMBER MD Simulations"""
 
-        k = Kernel(name="sleep")
-        k.arguments = ["--interval=10"]
+        k = Kernel(name="amber")
+        k.arguments = [  "--minfile=min.in",
+                                    "--topfile=penta.top",
+                                    "--crdfile=penta.crd",
+                                    "--output=md.crd"]
+        k.upload_input_data = ['amber_input/min.in','amber_input/penta.top','amber_input/penta.crd']
+        k.download_output_data = ['md.crd > amber_output/md_{0}.crd'.format(instance)]
         return k
 
 
@@ -31,15 +41,34 @@ class Sleep(Pipeline):
 #
 if __name__ == "__main__":
 
+    # use the resource specified as argument, fall back to localhost
+    if   len(sys.argv)  > 2: 
+        print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+        sys.exit(1)
+    elif len(sys.argv) == 2: 
+        resource = sys.argv[1]
+    else: 
+        resource = 'local.localhost'
+
     try:
+
+        with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
+            config = json.load(data_file)
+
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-                resource="local.localhost",
-                cores=1,
-                walltime=15,
-        	   username=None,
-        	    project=None
+                        resource=resource,
+                        cores=16,
+                        walltime=15,
+                        #username=None,
+
+                        project=config[resource]['project'],
+                        access_schema = config[resource]['schema'],
+                        queue = config[resource]['queue'],
+
+                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+                        database_name='myexps',
         	)
 
         # Allocate the resources.
