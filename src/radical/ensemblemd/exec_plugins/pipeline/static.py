@@ -329,8 +329,7 @@ class Plugin(PluginBase):
                 p_cus = resource._umgr.submit_units(p_units)
                 all_step_cus.extend(p_cus)
 
-                uids = [cu.uid for cu in p_cus]
-                resource._umgr.wait_units(uids)
+                resource._umgr.wait_units()
                 
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()

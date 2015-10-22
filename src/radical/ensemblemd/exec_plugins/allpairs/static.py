@@ -160,8 +160,7 @@ class Plugin(PluginBase):
             Units = resource._umgr.submit_units(CUDesc_list)
             
             self._reporter.info("\nWaiting to create the elements of set 2 ")
-            uids = [cu.uid for cu in Units]
-            resource._umgr.wait_units(uids)
+            resource._umgr.wait_units()
             self._reporter.ok('>> done')
             CUDesc_list = list()
             all_cus = []
@@ -276,8 +275,7 @@ class Plugin(PluginBase):
             
             #self.get_logger().debug(sub_unit)
             self._reporter.info("\nWaiting for analysis step to complete.")
-            uids = [cu.uid for cu in sub_unit]
-            resource._umgr.wait_units(uids)
+            resource._umgr.wait_units()
             self._reporter.ok('>> done')
 
             step_end_time_abs = datetime.datetime.now()

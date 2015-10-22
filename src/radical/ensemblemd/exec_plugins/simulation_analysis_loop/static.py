@@ -206,7 +206,7 @@ class Plugin(PluginBase):
 
                 unit = resource._umgr.submit_units(cu)
                 all_cus.append(unit)
-                resource._umgr.wait_units(unit.uid)
+                resource._umgr.wait_units()
 
                 if profiling == 1:
                     probe_preloop_res = datetime.datetime.now()
@@ -475,8 +475,7 @@ class Plugin(PluginBase):
                     all_cus.extend(s_cus)
                     all_sim_cus.extend(s_cus)
 
-                    uids = [cu.uid for cu in s_cus]
-                    resource._umgr.wait_units(uids)
+                    resource._umgr.wait_units()
 
                     if profiling == 1:
                         probe_sim_res = datetime.datetime.now()
@@ -739,8 +738,7 @@ class Plugin(PluginBase):
                     all_cus.extend(a_cus)
                     all_ana_cus.extend(a_cus)
 
-                    uids = [cu.uid for cu in a_cus]
-                    resource._umgr.wait_units(uids)
+                    resource._umgr.wait_units()
 
                     if profiling == 1:
                         probe_ana_res = datetime.datetime.now()
