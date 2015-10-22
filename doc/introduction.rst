@@ -57,7 +57,7 @@ EnsembleMD a :ref:`kernels_list` is available. Users can also create custom kern
 Execution Context
 ----------------------------------
 
-The execution context is a logical representation of a computing infrastructure (CI), providing methods to:
+The execution context is a representation of a computing infrastructure (CI), providing methods to:
 
 * allocate resources
 * run an execution pattern on these resources
