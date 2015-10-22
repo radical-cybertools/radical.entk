@@ -22,9 +22,9 @@ Design
 
    `Figure 1: The Ensemble MD Toolkit`
 
-EnsembleMD Toolkit provides a set of explicit, predefined patterns (see :ref:`patterns`) that are commonly found in 
+EnsembleMD Toolkit provides a set of explicit, predefined patterns (see :ref:`api_patterns`) that are commonly found in 
 ensemble-based MD workflows. Instead of defining tasks and their dependencies, users can pick the pattern that 
-represents the simulation workflow and populate it with the "kernels" (see :ref:`api_kernels`) that captures 
+represents the simulation workflow and populate it with the "kernels" (see :ref:`kern_api`) that captures 
 the MD engine of choice, like Amber, Gromacs, NAMD, etc. (see Figure 1). The EnMD toolkit provides a useful balance 
 between the free form scripting and the some what restrictive environment of traditional workflows.
 

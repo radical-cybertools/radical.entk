@@ -31,7 +31,7 @@ A few points to note:
 * As part of the pattern, the data at each step can be referred by ``$STEP\_*``. So in step_2 we refer to the output of step_1 by ``$STEP_1``. We create a copy of the ``temp.txt`` created in step_1 and rename it to file1.txt
 * We concatenate file2.txt to file1.txt and download file1.txt
 
-All the data references can be found `here <>`_.
+All the data references can be found :ref:`here <data_refs>`.
 
 
 To run the script, simply execute the following from command line:

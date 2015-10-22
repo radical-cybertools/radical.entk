@@ -20,6 +20,13 @@ class Pipeline(ExecutionPattern):
 
             .. image:: ../../images/pipeline_pattern.*
                :width: 300pt
+
+        The following placeholders can be used to reference the data during staging of files
+        generated in previous steps and same instance:
+
+        * ``$STEP_X`` - References the step X with the same instance number as the current instance.
+
+
     """
 
     #---------------------------------------------------------------------------
