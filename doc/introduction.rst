@@ -82,6 +82,8 @@ along various parameters: total time to completion, amount of data transferred, 
 Five steps to create an application
 =======================
 
+Each of the steps are labelled in Figure 1.
+
 1. User picks an execution pattern that best represents their application and create an instance/object of the pattern class.
 2. The various steps of the execution pattern can now be filled with Kernels: pre-defined or user-defined. These kernels also specify the data movement for that step.
 3. Users now create an execution context targetting a machine that would acquire a set of resources for a period of time.
