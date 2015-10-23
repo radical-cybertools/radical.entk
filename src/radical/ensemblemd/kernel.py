@@ -401,6 +401,7 @@ class Kernel(object):
 
     #---------------------------------------------------------------------------
     #
+    @property
     def get_instance_type(self):
         """Returns the instance_type of the kernel. It can be 'single' or
         'multiple'
