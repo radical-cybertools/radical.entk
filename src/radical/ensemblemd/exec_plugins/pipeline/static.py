@@ -331,6 +331,9 @@ class Plugin(PluginBase):
 
                 resource._umgr.wait_units()
                 
+
+                self.get_logger().info("step_{0}/kernel {1}: completed.".format(step,kernel.name))
+
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
 
