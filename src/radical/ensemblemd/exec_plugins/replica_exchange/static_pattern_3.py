@@ -207,7 +207,8 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
 
-                resource._umgr.wait_units()
+                uids = [cu.uid for cu in cus]
+                resource._umgr.wait_units(uids)
 
                 if do_profile == '1':
                     step_end_time_abs = datetime.datetime.utcnow()
@@ -306,7 +307,7 @@ class Plugin(PluginBase):
                     step_performance_data['cycle_{0}'.format(c)]['ex_step']['enmd_ov_duration'] = (enmd_ov_step_end_time_abs - step_start_time_abs).total_seconds()  
 
                 sub_replica = resource._umgr.submit_units(cu)
-                resource._umgr.wait_units()
+                resource._umgr.wait_units(sub_replica.uid)
 
                 ex_units.append(sub_replica)
                     
