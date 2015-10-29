@@ -41,7 +41,7 @@ class SingleClusterEnvironment(ExecutionContext):
                  cleanup=False, 
                  database_url=None, 
                  database_name=None,
-                 access_schema='ssh'):
+                 access_schema=None):
         """Creates a new ExecutionContext instance.
         """
         self._allocate_called = False
