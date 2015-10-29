@@ -126,6 +126,18 @@ class SingleClusterEnvironment(ExecutionContext):
                 self.get_logger().error("Pattern execution FAILED.")
                 sys.exit(2)
 
+            if state == radical.pilot.DONE:
+                self.get_logger().info("Resource allocation time over.")
+                self._reporter.info('Resource allocation time over.')
+                sys.exit(0)
+
+            if state == radical.pilot.CANCELLED:
+                self.get_logger().info("Resource allocation cancelled.")
+                self._reporter.info('Resource allocation cancelled.')
+                sys.exit(0)
+
+
+
         self._allocate_called = True
 
         # Here we start the pilot(s).
