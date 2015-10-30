@@ -131,7 +131,7 @@ class SingleClusterEnvironment(ExecutionContext):
                 self._reporter.info('Resource allocation time over.')
                 sys.exit(0)
 
-            if state == radical.pilot.CANCELLED:
+            if state == radical.pilot.CANCELED:
                 self.get_logger().info("Resource allocation cancelled.")
                 self._reporter.info('Resource allocation cancelled.')
                 sys.exit(0)
