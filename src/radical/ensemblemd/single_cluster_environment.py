@@ -129,12 +129,10 @@ class SingleClusterEnvironment(ExecutionContext):
             if state == radical.pilot.DONE:
                 self.get_logger().info("Resource allocation time over.")
                 self._reporter.info('Resource allocation time over.')
-                sys.exit(0)
 
             if state == radical.pilot.CANCELED:
-                self.get_logger().info("Resource allocation cancelled.")
-                self._reporter.info('Resource allocation cancelled.')
-                sys.exit(0)
+                self.get_logger().info("Resource allocation cancelled. You probably ran out of walltime")
+                self._reporter.info('Resource allocation cancelled. You probably ran out of walltime')
 
 
 
