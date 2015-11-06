@@ -107,9 +107,10 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec"    : ["module unload python/2.7.7-anaconda",
-                             "module load  python/2.7.7/GCC-4.9.0"],
-            "executable"  : ["/home/antontre/amber14/bin/sander"],
-            "uses_mpi"    : False
+                             "module load  python/2.7.7/GCC-4.9.0",
+                             "module load amber/14/INTEL-140-MVAPICH2-2.0"],
+            "executable"  : ["sander.MPI"],
+            "uses_mpi"    : True
         },
         "xsede.comet":
         {
