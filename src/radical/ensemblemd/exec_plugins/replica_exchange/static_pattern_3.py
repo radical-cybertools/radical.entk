@@ -111,7 +111,7 @@ class Plugin(PluginBase):
             #-------------------------------------------------------------------
             # GL = 0: submit global calculator before
             # GL = 1: submit global calculator after
-            GL = 0
+            GL = 1
 
             for c in range(1, cycles):
                 if do_profile == '1':
@@ -207,8 +207,8 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Cycle %d: Performing MD-step for replicas" % (c) )
 
-                uids = [cu.uid for cu in cus]
-                resource._umgr.wait_units(uids)
+                resource._umgr.wait_units()
+                #uids = [cu.uid for cu in cus]
 
                 if do_profile == '1':
                     step_end_time_abs = datetime.datetime.utcnow()
@@ -226,8 +226,8 @@ class Plugin(PluginBase):
                     if unit.state != radical.pilot.DONE:
                         failed_units += " * MD step: Unit {0} failed with an error: {1}\n".format(unit.uid, unit.stderr)
 
-                #if len(failed_units) > 0:
-                #    sys.exit()
+                if len(failed_units) > 10:
+                    sys.exit()
 
                 #---------------------------------------------------------------
                 # exchange 

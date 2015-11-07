@@ -36,6 +36,7 @@ class KernelBase(object):
         self._raw_args = []
 
         self._pre_exec               = None
+        self._post_exec              = None
         self._environment            = None
 
         self._executable             = None
