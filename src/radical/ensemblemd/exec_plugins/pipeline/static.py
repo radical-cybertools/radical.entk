@@ -392,14 +392,33 @@ class Plugin(PluginBase):
                             st_dict = st.as_dict()
                             st_data["{0}".format( st_dict["state"] )] = {}
                             st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {Scheduling}, {Executing}, {AgentStagingOutputPending}, {Done}".format(
+
+                        states = [Scheduling, 
+                                                StagingInput, AgentStagingInputPending, AgentStagingInput,
+                                                AllocatingPending, Allocating, 
+                                                ExecutingPending, Executing, 
+                                                AgentStagingOutputPending, AgentStagingOutput, PendingOutputStaging,StagingOutput, 
+                                                Done]
+
+                        for state in states:
+                            if ('%s'%state in st_data) is False:
+                                st_data['%s'%state] = None
+
+                        line = "{uid}, {step}, {{Scheduling}, {StagingInput}, {AgentStagingInputPending}, {AgentStagingInput}, {AllocatingPending}, {Allocating}, {ExecutingPending},{Executing}, {AgentStagingOutputPending}, {AgentStagingOutput}, {PendingOutputStaging}, {StagingOutput}, {Done}".format(
                             uid=cu.uid,
                             step=step,
                             Scheduling=(st_data['Scheduling']),
                             StagingInput=(st_data['StagingInput']),
+                            AgentStagingInputPending=(st_data['AgentStagingInputPending']),
+                            AgentStagingInput=(st_data['AgentStagingInput']),
+                            AllocatingPending=(st_data['AllocatingPending']),
                             Allocating=(st_data['Allocating']),
+                            Executing=(st_data['ExecutingPending']),
                             Executing=(st_data['Executing']),
                             AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
+                            AgentStagingOutput=(st_data['AgentStagingOutput']),
+                            PendingOutputStaging=(st_data['PendingOutputStaging']),
+                            StagingOutput=(st_data['StagingOutput']),
                             Done=(st_data['Done']))
 
                         f2.write(line + '\n')
