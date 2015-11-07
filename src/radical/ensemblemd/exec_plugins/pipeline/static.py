@@ -404,7 +404,7 @@ class Plugin(PluginBase):
                             if ('%s'%state in st_data) is False:
                                 st_data['%s'%state] = None
 
-                        line = "{uid}, {step}, {{Scheduling}, {StagingInput}, {AgentStagingInputPending}, {AgentStagingInput}, {AllocatingPending}, {Allocating}, {ExecutingPending},{Executing}, {AgentStagingOutputPending}, {AgentStagingOutput}, {PendingOutputStaging}, {StagingOutput}, {Done}".format(
+                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {AgentStagingInputPending}, {AgentStagingInput}, {AllocatingPending}, {Allocating}, {ExecutingPending},{Executing}, {AgentStagingOutputPending}, {AgentStagingOutput}, {PendingOutputStaging}, {StagingOutput}, {Done}".format(
                             uid=cu.uid,
                             step=step,
                             Scheduling=(st_data['Scheduling']),
@@ -413,7 +413,7 @@ class Plugin(PluginBase):
                             AgentStagingInput=(st_data['AgentStagingInput']),
                             AllocatingPending=(st_data['AllocatingPending']),
                             Allocating=(st_data['Allocating']),
-                            Executing=(st_data['ExecutingPending']),
+                            ExecutingPending=(st_data['ExecutingPending']),
                             Executing=(st_data['Executing']),
                             AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
                             AgentStagingOutput=(st_data['AgentStagingOutput']),
