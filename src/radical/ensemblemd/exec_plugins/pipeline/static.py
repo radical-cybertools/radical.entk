@@ -378,7 +378,7 @@ class Plugin(PluginBase):
                 f1.close()
 
                 #CU data logging
-                title = "uid, step, Scheduling, StagingInput, Allocating, Executing, AgentStagingOutputPending, Done"
+                title = "uid, step, Scheduling, StagingInput, AgentStagingInputPending, AgentStagingInput, AllocatingPending, Allocating, ExecutingPending, Executing, AgentStagingOutputPending, AgentStagingOutput, PendingOutputStaging, StagingOutput, Done"
                 f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
                 f2.write(title + "\n\n")
 
@@ -393,16 +393,17 @@ class Plugin(PluginBase):
                             st_data["{0}".format( st_dict["state"] )] = {}
                             st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
 
-                        states = [Scheduling, 
-                                                StagingInput, AgentStagingInputPending, AgentStagingInput,
-                                                AllocatingPending, Allocating, 
-                                                ExecutingPending, Executing, 
-                                                AgentStagingOutputPending, AgentStagingOutput, PendingOutputStaging,StagingOutput, 
-                                                Done]
+                        states = ['Scheduling,' 
+                                                'StagingInput', 'AgentStagingInputPending', 'AgentStagingInput',
+                                                'AllocatingPending', 'Allocating', 
+                                                'ExecutingPending', 'Executing', 
+                                                'AgentStagingOutputPending', 'AgentStagingOutput', 'PendingOutputStaging', 
+                                                'StagingOutput', 
+                                                'Done']
 
                         for state in states:
-                            if ('%s'%state in st_data) is False:
-                                st_data['%s'%state] = None
+                            if (state in st_data) is False:
+                                st_data[state] = None
 
                         line = "{uid}, {step}, {Scheduling}, {StagingInput}, {AgentStagingInputPending}, {AgentStagingInput}, {AllocatingPending}, {Allocating}, {ExecutingPending},{Executing}, {AgentStagingOutputPending}, {AgentStagingOutput}, {PendingOutputStaging}, {StagingOutput}, {Done}".format(
                             uid=cu.uid,
