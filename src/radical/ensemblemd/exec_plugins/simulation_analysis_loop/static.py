@@ -456,7 +456,7 @@ class Plugin(PluginBase):
 
                         s_units.append(cud)
 
-                        if sim_step.get_instance_type() == 'single':
+                        if sim_step.get_instance_type == 'single':
                             break
                         
                     self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))

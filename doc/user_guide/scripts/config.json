@@ -24,8 +24,8 @@
         			},
 
         	"xsede.comet"  : {
-			            "project"  : "unc100",
+			            "project"  : "unc104",
             				"queue"    : "",
-            				"schema"   : null
+            				"schema"   : "gsissh"
         			}
 }
