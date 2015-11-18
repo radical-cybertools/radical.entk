@@ -20,6 +20,7 @@ from radical.ensemblemd.patterns.all_pairs_pattern import AllPairs
 from radical.ensemblemd.patterns.pipeline import Pipeline
 from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 from radical.ensemblemd.patterns.simulation_analysis_loop import SimulationAnalysisLoop
+from radical.ensemblemd.patterns.mtms import MTMS
 
 # Execution Contexts
 from radical.ensemblemd.multi_cluster_environment import MultiClusterEnvironment
