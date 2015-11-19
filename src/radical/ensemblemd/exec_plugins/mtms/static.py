@@ -55,7 +55,7 @@ class Plugin(PluginBase):
         def unit_state_cb (unit, state) :
 
             if state == radical.pilot.DONE:
-        		cud = create_next_stage_cud()
+        		cud = create_next_stage_cud(unit)
         		launch_next_stage(cud)
         #-----------------------------------------------------------------------
 
@@ -101,22 +101,44 @@ class Plugin(PluginBase):
             kernel._bind_to_resource(resource._resource_key)
 
             cud = radical.pilot.ComputeUnitDescription()
-            cud.name = "stage_1"
+            cud.name = "stage_1_instance_{0}".format(task_instance)
 
             cud.pre_exec 		= kernel._cu_def_pre_exec
             cud.executable     	= kernel._cu_def_executable
             cud.arguments      	= kernel.arguments
-            cud.mpi            		= kernel.uses_mpi
+            cud.mpi            	= kernel.uses_mpi
             cud.input_staging  	= get_input_data(kernel,1,task_instance)
             cud.output_staging 	= get_output_data(kernel,1,task_instance)
 
-            task_units = resource._umgr.submit_units(task_units_desc)
+            task_units_desc.append(cud)
+
+        task_units = resource._umgr.submit_units(task_units_desc)
 
         #-----------------------------------------------------------------------
 
-        def create_next_stage_cud():
-            pass
+        def create_next_stage_cud(unit):
+            cur_stage = int(unit.name.split('_')[1])+1
+            task_instance = int(unit.name.split('_')[3])
 
-        def launch_next_stage():
-            pass
+            task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
+
+            kernel = task_method(cur_instance)
+            kernel._bind_to_resource(resource._resource_key)
+
+            cud = radical.pilot.ComputeUnitDescription()
+            cud.name = "stage_{0}_instance_{1}".format(cur_stage,task_instance)
+
+            cud.pre_exec        = kernel._cu_def_pre_exec
+            cud.executable      = kernel._cu_def_executable
+            cud.arguments       = kernel.arguments
+            cud.mpi             = kernel.uses_mpi
+            cud.input_staging   = get_input_data(kernel,1,task_instance)
+            cud.output_staging  = get_output_data(kernel,1,task_instance)
+
+            return cud
+
+        def launch_next_stage(cud):
+            resource._umgr.submit_units(cud)            
+
+        resource._umgr.wait_units()
 
