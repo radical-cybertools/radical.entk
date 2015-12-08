@@ -3,7 +3,7 @@
 """A static execution plugin for the MTMS pattern
 """
 
-__author__    = "Vivek Balasubramanian <vivek.Balasubramanian@rutgers.edu>"
+__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2015, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -39,6 +39,7 @@ class Plugin(PluginBase):
     #
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
+        self.tot_fin_tasks=0
 
     # --------------------------------------------------------------------------
     #
@@ -49,26 +50,33 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        
-        #-----------------------------------------------------------------------
-        # Use callback to trigger next stage
-        def unit_state_cb (unit, state) :
-
-            if state == radical.pilot.DONE:
-        		cud = create_next_stage_cud(unit)
-        		launch_next_stage(cud)
-        #-----------------------------------------------------------------------
-
-        #-----------------------------------------------------------------------
-        # Wait for Pilot to go Active
-        resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
-		#-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
         # Get details of the Bag of Pipes
         num_tasks = pattern.tasks
         num_stages = pattern.stages
         #-----------------------------------------------------------------------
+        
+        #-----------------------------------------------------------------------
+        # Use callback to trigger next stage
+        def unit_state_cb (unit, state):
+
+            if state == radical.pilot.DONE:
+                cur_stage = int(unit.name.split('-')[1])
+                cur_task = int(unit.name.split('-')[3])
+                self.get_logger().info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
+                cud = create_next_stage_cud(unit)
+                if cud is not None:
+                    launch_next_stage(cud)
+        #-----------------------------------------------------------------------
+
+        self.get_logger().info("Executing {0} pipeline instances of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
+            resource._cores, resource._resource_key))
+        #-----------------------------------------------------------------------
+        # Wait for Pilot to go Active
+        resource._pmgr.wait_pilots(resource._pilot.uid,u'Active')
+		#-----------------------------------------------------------------------
+
 
         #-----------------------------------------------------------------------
         # Register CB
@@ -78,14 +86,12 @@ class Plugin(PluginBase):
 
         #-----------------------------------------------------------------------
         # Get input data for the kernel
-
         def get_input_data(kernel,stage,task):
         	return None
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
         # Get output data for the kernel
-
         def get_output_data(kernel,stage,task):
             return None
         #-----------------------------------------------------------------------
@@ -101,7 +107,7 @@ class Plugin(PluginBase):
             kernel._bind_to_resource(resource._resource_key)
 
             cud = radical.pilot.ComputeUnitDescription()
-            cud.name = "stage_1_instance_{0}".format(task_instance)
+            cud.name = "stage-1-task-{0}".format(task_instance)
 
             cud.pre_exec 		= kernel._cu_def_pre_exec
             cud.executable     	= kernel._cu_def_executable
@@ -113,32 +119,55 @@ class Plugin(PluginBase):
             task_units_desc.append(cud)
 
         task_units = resource._umgr.submit_units(task_units_desc)
+        self.get_logger().info('Submitted all tasks of stage 1')
 
         #-----------------------------------------------------------------------
 
+        #-----------------------------------------------------------------------
+        # Create next CU at the end of each CU
         def create_next_stage_cud(unit):
-            cur_stage = int(unit.name.split('_')[1])+1
-            task_instance = int(unit.name.split('_')[3])
+            
+            
+            cur_stage = int(unit.name.split('-')[1])+1
+            cur_task = int(unit.name.split('-')[3])
+            self.tot_fin_tasks+=1
 
-            task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
+            if cur_stage <= num_stages:
+                self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
 
-            kernel = task_method(cur_instance)
-            kernel._bind_to_resource(resource._resource_key)
+                task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
 
-            cud = radical.pilot.ComputeUnitDescription()
-            cud.name = "stage_{0}_instance_{1}".format(cur_stage,task_instance)
+                kernel = task_method(cur_task)
+                kernel._bind_to_resource(resource._resource_key)
 
-            cud.pre_exec        = kernel._cu_def_pre_exec
-            cud.executable      = kernel._cu_def_executable
-            cud.arguments       = kernel.arguments
-            cud.mpi             = kernel.uses_mpi
-            cud.input_staging   = get_input_data(kernel,1,task_instance)
-            cud.output_staging  = get_output_data(kernel,1,task_instance)
+                cud = radical.pilot.ComputeUnitDescription()
+                cud.name = "stage-{0}-task-{1}".format(cur_stage,cur_task)
 
-            return cud
+                cud.pre_exec        = kernel._cu_def_pre_exec
+                cud.executable      = kernel._cu_def_executable
+                cud.arguments       = kernel.arguments
+                cud.mpi             = kernel.uses_mpi
+                cud.input_staging   = get_input_data(kernel,1,task_instance)
+                cud.output_staging  = get_output_data(kernel,1,task_instance)
 
+                return cud
+
+            else:
+                return None
+
+        #-----------------------------------------------------------------------
+
+        #-----------------------------------------------------------------------
+        # Launch the CU of the next stage
         def launch_next_stage(cud):
-            resource._umgr.submit_units(cud)            
 
-        resource._umgr.wait_units()
+            resource._umgr.submit_units(cud)    
+            return None    
+        #-----------------------------------------------------------------------
 
+        #-----------------------------------------------------------------------
+        # Wait for all tasks to finish
+        while(self.tot_fin_tasks<(num_stages*num_tasks)):
+            resource._umgr.wait_units()    
+
+        #-----------------------------------------------------------------------

@@ -122,7 +122,7 @@ class SingleClusterEnvironment(ExecutionContext):
             self.get_logger().info("Resource {0} state has changed to {1}".format(self._resource_key, state))
 
             if state == radical.pilot.FAILED:
-                self.get_logger().error("Resource error: {0}".format(pilot.log[-1]))
+                self.get_logger().error("Resource error: ")
                 self.get_logger().error("Pattern execution FAILED.")
                 sys.exit(2)
 
@@ -131,8 +131,8 @@ class SingleClusterEnvironment(ExecutionContext):
                 self._reporter.info('Resource allocation time over.')
 
             if state == radical.pilot.CANCELED:
-                self.get_logger().info("Resource allocation cancelled. You probably ran out of walltime")
-                self._reporter.info('Resource allocation cancelled. You probably ran out of walltime')
+                self.get_logger().info("Resource allocation cancelled.")
+                self._reporter.info('Resource allocation cancelled.')
 
 
 

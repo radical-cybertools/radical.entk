@@ -24,6 +24,12 @@ class CalculateChecksums(MTMS):
         k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
         return k
 
+    def stage_2(self, instance):
+        k = Kernel(name="misc.mkfile")
+        k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
+        return k
+
+
 
 # ------------------------------------------------------------------------------
 #
@@ -41,7 +47,7 @@ if __name__ == "__main__":
         # Allocate the resources.
         cluster.allocate()
 
-        ccount = CalculateChecksums(stages=1,tasks=16)
+        ccount = CalculateChecksums(stages=2,tasks=16)
         cluster.run(ccount)
         cluster.deallocate()
 

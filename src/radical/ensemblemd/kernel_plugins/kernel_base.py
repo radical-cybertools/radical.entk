@@ -31,7 +31,7 @@ class KernelBase(object):
         self._name     = kernel_info['name']
         self._subname  = None
 
-        self._logger   = ru.get_logger ('radical.enmd.{0}'.format(self._name))
+        #self._logger   = ru.get_logger ('radical.enmd.{0}'.format(self._name))
         self._args     = []
         self._raw_args = []
 
