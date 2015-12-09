@@ -33,6 +33,28 @@ _PLUGIN_OPTIONS = []
 # ------------------------------------------------------------------------------
 #
 
+def resolve_placeholder_vars(working_dirs, stage, instance, path):
+
+    # If replacement not require, return the path as is
+    if '$' not in path:
+        return path
+
+    # Extract placeholder from path
+    if len(path.split('>'))==1:
+        placeholder = path.split('/')[0]
+    else:
+        if path.split('>')[0].strip().startswith('$'):
+            placeholder = path.split('>')[0].strip().split('/')[0]
+        else:
+            placeholder = path.split('>')[1].strip().split('/')[0]
+
+
+    if placeholder.startswith("$STAGE_"):
+        stage = placeholder.split("$STAGE_")[1]
+        return path.replace(placeholder,working_dirs['stage_{0}'.format(stage)]['task_{0}'.format(instance)])
+    else:
+        raise Exception("placeholder $STAGE_ used in invalid context.")
+
 class Plugin(PluginBase):
 
 	# --------------------------------------------------------------------------
@@ -40,6 +62,7 @@ class Plugin(PluginBase):
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
         self.tot_fin_tasks=0
+        self.working_dirs = {}
 
     # --------------------------------------------------------------------------
     #
@@ -65,6 +88,16 @@ class Plugin(PluginBase):
                 cur_stage = int(unit.name.split('-')[1])
                 cur_task = int(unit.name.split('-')[3])
                 self.get_logger().info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
+
+                #-----------------------------------------------------------------------
+                # Log unit working directories for placeholders
+                if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
+                    self.working_dirs['stage_{0}'.format(cur_stage)] = {}
+
+                self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)] = unit.working_directory
+                #print self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)]
+                #-----------------------------------------------------------------------
+
                 cud = create_next_stage_cud(unit)
                 if cud is not None:
                     launch_next_stage(cud)
