@@ -95,7 +95,6 @@ class Plugin(PluginBase):
                     self.working_dirs['stage_{0}'.format(cur_stage)] = {}
 
                 self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)] = unit.working_directory
-                #print self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)]
                 #-----------------------------------------------------------------------
 
                 cud = create_next_stage_cud(unit)
@@ -303,6 +302,8 @@ class Plugin(PluginBase):
             kernel = task_method(task_instance)
             kernel._bind_to_resource(resource._resource_key)
 
+            self.get_logger().debug('Creating task {0} of stage 1'.format(task_instance))
+
             cud = radical.pilot.ComputeUnitDescription()
             cud.name = "stage-1-task-{0}".format(task_instance)
 
@@ -329,7 +330,7 @@ class Plugin(PluginBase):
             self.tot_fin_tasks+=1
 
             if cur_stage <= num_stages:
-                self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
+                self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
                 task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
 
@@ -357,8 +358,10 @@ class Plugin(PluginBase):
         # Launch the CU of the next stage
         def launch_next_stage(cud):
 
+            cur_stage = int(cud.name.split('-')[1])
+            cur_task = int(cud.name.split('-')[3])
+            self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
             resource._umgr.submit_units(cud)    
-            return None    
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
