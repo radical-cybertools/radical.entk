@@ -33,7 +33,7 @@ _PLUGIN_OPTIONS = []
 # ------------------------------------------------------------------------------
 #
 
-def resolve_placeholder_vars(working_dirs, stage, instance, path):
+def resolve_placeholder_vars(working_dirs, stage, task, path):
 
     # If replacement not require, return the path as is
     if '$' not in path:
@@ -51,7 +51,7 @@ def resolve_placeholder_vars(working_dirs, stage, instance, path):
 
     if placeholder.startswith("$STAGE_"):
         stage = placeholder.split("$STAGE_")[1]
-        return path.replace(placeholder,working_dirs['stage_{0}'.format(stage)]['task_{0}'.format(instance)])
+        return path.replace(placeholder,working_dirs['stage_{0}'.format(stage)]['task_{0}'.format(task)])
     else:
         raise Exception("placeholder $STAGE_ used in invalid context.")
 
@@ -120,13 +120,177 @@ class Plugin(PluginBase):
         #-----------------------------------------------------------------------
         # Get input data for the kernel
         def get_input_data(kernel,stage,task):
-        	return None
+            # INPUT DATA:
+
+            ip_list = []
+            #------------------------------------------------------------------------------------------------------------------
+            # upload_input_data
+            data_in = []
+            if kernel._kernel._upload_input_data is not None:
+                if isinstance(kernel._kernel._upload_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
+                for i in range(0,len(kernel._kernel._upload_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._upload_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip()
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip())
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #-----------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # link_input_data
+            data_in = []
+            if kernel._kernel._link_input_data is not None:
+                if isinstance(kernel._kernel._link_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
+                for i in range(0,len(kernel._kernel._link_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._link_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.LINK
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.LINK
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_input_data
+            data_in = []
+            if kernel._kernel._copy_input_data is not None:
+                if isinstance(kernel._kernel._copy_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
+                for i in range(0,len(kernel._kernel._copy_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.COPY
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.COPY
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download input data
+            if kernel.download_input_data is not None:
+                data_in  = kernel.download_input_data
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+
+            return ip_list
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
         # Get output data for the kernel
         def get_output_data(kernel,stage,task):
-            return None
+
+            # OUTPUT DATA:
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_output_data
+            op_list = []
+            data_out = []
+            if kernel._kernel._copy_output_data is not None:
+                if isinstance(kernel._kernel._copy_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
+                for i in range(0,len(kernel._kernel._copy_output_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.COPY
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.COPY
+                            }
+                    data_out.append(temp)
+
+            if op_list is None:
+                op_list = data_out
+            else:
+                op_list += data_out
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download_output_data
+            data_out = []
+            if kernel._kernel._download_output_data is not None:
+                if isinstance(kernel._kernel._download_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
+                for i in range(0,len(kernel._kernel._download_output_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._download_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip()
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip())
+                            }
+                    data_out.append(temp)
+
+            if op_list is None:
+                op_list = data_out
+            else:
+                op_list += data_out
+            #------------------------------------------------------------------------------------------------------------------
+
+            return op_list
+            
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
@@ -159,8 +323,7 @@ class Plugin(PluginBase):
         #-----------------------------------------------------------------------
         # Create next CU at the end of each CU
         def create_next_stage_cud(unit):
-            
-            
+                        
             cur_stage = int(unit.name.split('-')[1])+1
             cur_task = int(unit.name.split('-')[3])
             self.tot_fin_tasks+=1
@@ -180,8 +343,8 @@ class Plugin(PluginBase):
                 cud.executable      = kernel._cu_def_executable
                 cud.arguments       = kernel.arguments
                 cud.mpi             = kernel.uses_mpi
-                cud.input_staging   = get_input_data(kernel,1,task_instance)
-                cud.output_staging  = get_output_data(kernel,1,task_instance)
+                cud.input_staging   = get_input_data(kernel,cur_stage,cur_task)
+                cud.output_staging  = get_output_data(kernel,cur_stage,cur_task)
 
                 return cud
 
