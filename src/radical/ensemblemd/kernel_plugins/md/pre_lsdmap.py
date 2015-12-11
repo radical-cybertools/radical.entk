@@ -75,7 +75,8 @@ _KERNEL_INFO = {
         "ncsa.bw":
         {
             "environment" : {},
-            "pre_exec" : ["source /projects/sciteam/gkd/virtenvs/lsdmap/20151210_OMPI20151210-DYN/bin/activate"],
+            "pre_exec" : ["source /projects/sciteam/gkd/virtenvs/lsdmap/20151210_OMPI20151210-DYN/bin/activate",
+                            "export PATH=$PATH:/projects/sciteam/gkd/gromacs/5.1.1/20151210-NO_MPI/install-cpu/bin"],
             "executable" : ["python"],
             "uses_mpi"   : False
         },
