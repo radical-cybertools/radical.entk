@@ -100,7 +100,7 @@ _KERNEL_INFO = {
             "pre_exec" : ["source /projects/sciteam/gkd/virtenvs/lsdmap/20151210_OMPI20151210-DYN/bin/activate"],
             "executable" : ["python"],
             "uses_mpi"   : False
-        }
+        },
     }
 }
 

@@ -71,11 +71,12 @@ _KERNEL_INFO = {
         },
 
         "ncsa.bw":
-        {}
+        {
             "environment" : {},
             "pre_exec" : ["source /projects/sciteam/gkd/virtenvs/lsdmap/20151210_OMPI20151210-DYN/bin/activate"],
             "executable" : ["lsdmap"],
             "uses_mpi"   : False
+        },
     }
 }
 
