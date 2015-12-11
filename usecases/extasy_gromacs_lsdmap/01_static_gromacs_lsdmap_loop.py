@@ -132,7 +132,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         lsdmap = Kernel(name="md.lsdmap")
         lsdmap.arguments = ["--config={0}".format(os.path.basename(Kconfig.lsdm_config_file))]
         lsdmap.link_input_data = ['$PRE_LOOP/{0} > {0}'.format(os.path.basename(Kconfig.lsdm_config_file)),'$PRE_LOOP/tmpha.gro > tmpha.gro']
-        lsdmap.cores = RPconfig.PILOTSIZE
+        lsdmap.cores = 1
         if iteration > 1:
             lsdmap.link_input_data += ['$ANALYSIS_ITERATION_{0}_INSTANCE_1/weight.w > weight.w'.format(iteration-1)]
             lsdmap.copy_output_data = ['weight.w > $PRE_LOOP/weight.w']
