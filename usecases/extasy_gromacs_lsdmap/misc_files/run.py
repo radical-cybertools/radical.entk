@@ -41,8 +41,8 @@ def write_script(grofile_name,output_grofile_name,grompp_options,ndxfile_options
             sed "$start"','"$end"'!d' $startgro > $tmpstartgro
 
             # gromacs preprocessing & MD
-            grompp %(grompp_options)s %(ndxfile_options)s -f %(mdpfile_name)s -c $tmpstartgro -p %(topfile_name)s -o %(tprfile_name)s
-            mdrun -nt %(size)s %(mdrun_options)s -s %(tprfile_name)s -o %(trrfile_name)s -e %(edrfile_name)s
+            gmx grompp %(grompp_options)s %(ndxfile_options)s -f %(mdpfile_name)s -c $tmpstartgro -p %(topfile_name)s -o %(tprfile_name)s
+            gmx mdrun -nt %(size)s %(mdrun_options)s -s %(tprfile_name)s -o %(trrfile_name)s -e %(edrfile_name)s
 
             # store data
             cat confout.gro >> $outgro

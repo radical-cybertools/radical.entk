@@ -27,4 +27,4 @@ if __name__ == '__main__':
                 for line in output_file:
                     print >> output_grofile, line.replace("\n", "")
                     
-    os.system('echo 2 | trjconv -f tmp.gro -s tmp.gro -o tmpha.gro')
+    os.system('echo 2 | gmx trjconv -f tmp.gro -s tmp.gro -o tmpha.gro')
