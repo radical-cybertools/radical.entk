@@ -50,7 +50,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, iterations, simulation_instances=1, analysis_instances=1):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1,adaptive_simulation=False,adaptive_analysis=False):
         """Creates a new SimulationAnalysisLoop.
 
         **Arguments:**
@@ -72,6 +72,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._iterations = iterations
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
+        self._adaptive_simulation = adaptive_simulation
+        self._adaptive_analysis = adaptive_analysis
 
         super(SimulationAnalysisLoop, self).__init__()
 
@@ -198,3 +200,33 @@ class SimulationAnalysisLoop(ExecutionPattern):
         raise NotImplementedError(
           method_name="post_loop",
           class_name=type(self))
+
+    @property
+    def get_simulation_adaptivity(self):
+        return self._adaptive_simulation
+
+    @property
+    def get_analysis_adaptivity(self):
+        return self._adaptive_analysis
+
+    @property
+    def get_new_simulation_instances(self,cu_output,extract_script=None):
+
+        if extract_script == None:
+            return cu_output
+        else:
+            import subprocess as sub
+            p = sub.Popen('python {0} {1}'.format(extract_script,cu_output),stdout=sub.PIPE,stderr=sub.PIPE)
+            out,err = p.communicate()
+            return out
+
+
+    def get_new_analysis_instances(self,cu_output,extract_script=None):
+
+        if extract_script == None:
+            return cu_output
+        else:
+            import subprocess as sub
+            p = sub.Popen('python {0} {1}'.format(extract_script,cu_output),stdout=sub.PIPE,stderr=sub.PIPE)
+            out,err = p.communicate()
+            return out
