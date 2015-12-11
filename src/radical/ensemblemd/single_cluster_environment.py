@@ -88,7 +88,7 @@ class SingleClusterEnvironment(ExecutionContext):
         """Deallocates the resources.
         """
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-        self._reporter.info('Starting Deallocation')
+        self._reporter.info('Starting Deallocation\n')
         if profiling == 1:
             start_time = datetime.datetime.now()
 

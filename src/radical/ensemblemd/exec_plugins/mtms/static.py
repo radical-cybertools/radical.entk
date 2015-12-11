@@ -57,11 +57,11 @@ def resolve_placeholder_vars(working_dirs, stage, task, path):
 
 class Plugin(PluginBase):
 
-	# --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
-        self.tot_fin_tasks= []
+        self.tot_fin_tasks= [0]
         self.working_dirs = {}
 
     # --------------------------------------------------------------------------
@@ -262,22 +262,22 @@ class Plugin(PluginBase):
         def unit_state_cb (unit, state):
 
             if state == radical.pilot.DONE:
-
                 try:
                     cur_stage = int(unit.name.split('-')[1])
                     cur_task = int(unit.name.split('-')[3])
+            
                     self.get_logger().info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
 
                     #-----------------------------------------------------------------------
                     # Increment tasks list accordingly
-                    if len(self.tot_fin_tasks) < cur_stage:
-                        self.tot_fin_tasks.append(1)
+            if self.tot_fin_tasks[0] == 0:
+            self.tot_fin_tasks[0] = 1
                     else:
                         self.tot_fin_tasks[cur_stage-1]+=1
                         # Check if this is the last task of the stage
                         if self.tot_fin_tasks[cur_stage-1] == num_tasks:
-                            self._reporter.info('All tasks in stage {0} have finished'.format(cur_stage))
-
+                            self._reporter.info('All tasks in stage {0} have finished\n'.format(cur_stage))
+                self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
                     #-----------------------------------------------------------------------
                     # Log unit working directories for placeholders
                     if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
@@ -285,7 +285,6 @@ class Plugin(PluginBase):
 
                     self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)] = unit.working_directory
                     #-----------------------------------------------------------------------
-
                     cud = create_next_stage_cud(unit)
                     if cud is not None:
                         launch_next_stage(cud)
@@ -303,7 +302,7 @@ class Plugin(PluginBase):
         #-----------------------------------------------------------------------
         # Wait for Pilot to go Active
         resource._pmgr.wait_pilots(resource._pilot.uid,u'Active')
-		#-----------------------------------------------------------------------
+        #-----------------------------------------------------------------------
 
 
         #-----------------------------------------------------------------------
@@ -327,19 +326,18 @@ class Plugin(PluginBase):
             cud = radical.pilot.ComputeUnitDescription()
             cud.name = "stage-1-task-{0}".format(task_instance)
 
-            cud.pre_exec 		= kernel._cu_def_pre_exec
-            cud.executable     	= kernel._cu_def_executable
-            cud.arguments      	= kernel.arguments
-            cud.mpi            	= kernel.uses_mpi
-            cud.input_staging  	= get_input_data(kernel,1,task_instance)
-            cud.output_staging 	= get_output_data(kernel,1,task_instance)
+            cud.pre_exec        = kernel._cu_def_pre_exec
+            cud.executable      = kernel._cu_def_executable
+            cud.arguments       = kernel.arguments
+            cud.mpi             = kernel.uses_mpi
+            cud.input_staging   = get_input_data(kernel,1,task_instance)
+            cud.output_staging  = get_output_data(kernel,1,task_instance)
 
             task_units_desc.append(cud)
 
         task_units = resource._umgr.submit_units(task_units_desc)
         self.get_logger().info('Submitted all tasks of stage 1')
-        self._reporter.info('Submitted all tasks of stage 1')
-
+        self._reporter.info('Submitted all tasks of stage 1\n')
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
@@ -349,11 +347,11 @@ class Plugin(PluginBase):
             cur_stage = int(unit.name.split('-')[1])+1
             cur_task = int(unit.name.split('-')[3])
 
-            #Check if this is the first cud of the next stage
-            if self.tot_fin_tasks[cur_stage-1]==1:
-                self._reporter.info('Starting submission of tasks in stage {0}'.format(cur_stage))
-
             if cur_stage <= num_stages:
+
+        if len(self.tot_fin_tasks) < cur_stage:
+                    self.tot_fin_tasks.append(0)
+            self._reporter.info('Starting submission of tasks in stage {0}\n'.format(cur_stage))
                 self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
                 task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
@@ -390,7 +388,7 @@ class Plugin(PluginBase):
 
         #-----------------------------------------------------------------------
         # Wait for all tasks to finish
-        while(self.tot_fin_tasks<(num_stages*num_tasks)):
+        while(sum(self.tot_fin_tasks)!=(num_stages*num_tasks)):
             resource._umgr.wait_units()    
 
         #-----------------------------------------------------------------------
