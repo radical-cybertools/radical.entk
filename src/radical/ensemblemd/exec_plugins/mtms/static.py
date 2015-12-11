@@ -270,14 +270,14 @@ class Plugin(PluginBase):
 
                     #-----------------------------------------------------------------------
                     # Increment tasks list accordingly
-            if self.tot_fin_tasks[0] == 0:
-            self.tot_fin_tasks[0] = 1
+                    if self.tot_fin_tasks[0] == 0:
+                        self.tot_fin_tasks[0] = 1
                     else:
                         self.tot_fin_tasks[cur_stage-1]+=1
                         # Check if this is the last task of the stage
                         if self.tot_fin_tasks[cur_stage-1] == num_tasks:
                             self._reporter.info('All tasks in stage {0} have finished\n'.format(cur_stage))
-                self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
+                            self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
                     #-----------------------------------------------------------------------
                     # Log unit working directories for placeholders
                     if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
@@ -349,9 +349,10 @@ class Plugin(PluginBase):
 
             if cur_stage <= num_stages:
 
-        if len(self.tot_fin_tasks) < cur_stage:
+                if len(self.tot_fin_tasks) < cur_stage:
                     self.tot_fin_tasks.append(0)
-            self._reporter.info('Starting submission of tasks in stage {0}\n'.format(cur_stage))
+                    self._reporter.info('Starting submission of tasks in stage {0}\n'.format(cur_stage))
+                    
                 self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
                 task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
