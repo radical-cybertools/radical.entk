@@ -3,22 +3,22 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 #
 _KERNEL_INFO = {
-    "name":         "sleep",        #Mandatory
-    "description":  "sleeping kernel",        #Optional
-    "arguments":   {                #Mandatory
+    "name":         "sleep",                  # Mandatory
+    "description":  "sleeping kernel",        # Optional
+    "arguments":   {                          # Mandatory
         "--interval=": {
-            "mandatory": True,        #Mandatory argument? True or False
+            "mandatory": True,                # Mandatory argument? True or False
             "description": "Number of seconds to do nothing."
     	    },
         },
-    "machine_configs":             #Use a dictionary with keys as resource 
-        {                                       #names and values specific to the resource
-            "local.localhost":
+    "machine_configs":                        # Use a dictionary with keys as
+        {                                     # resource names and values specific
+            "local.localhost":                # to the resource
             {
-                "environment" : None,        #list or None, can be used to set env variables
-                "pre_exec"    : None,            #list or None, can be used to load modules
-                "executable"  : ["/bin/sleep"],        #specify the executable to be used
-                "uses_mpi"    : False            #mpi-enabled? True or False
+                "environment" : None,         # dict or None, can be used to set env variables
+                "pre_exec"    : None,         # list or None, can be used to load modules
+                "executable"  : ["/bin/sleep"],        # specify the executable to be used
+                "uses_mpi"    : False         # mpi-enabled? True or False
             },
         }
 }
