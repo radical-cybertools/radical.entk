@@ -258,6 +258,9 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
                     cu_dict['iter_{0}'.format(iteration)]['sim']= list()
 
+                if iteration == 1:
+                    num_sims = pattern._simulation_instances
+
                 for kern_step in range(0,num_sim_kerns):
 
                     if profiling == 1:
@@ -267,7 +270,7 @@ class Plugin(PluginBase):
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['start_time'] = probe_sim_start
 
                     s_units = []
-                    for s_instance in range(1, pattern._simulation_instances+1):
+                    for s_instance in range(1, num_sims+1):
 
                         if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
                             sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
@@ -763,6 +766,11 @@ class Plugin(PluginBase):
                     probe_post_ana_start = datetime.datetime.now()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post'] = od()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
+
+                if (pattern.simulation_adaptivity == False):
+                    num_sims = pattern._simulation_instances
+                else:
+                    num_sims = get_new_simulation_instances(a_cus[0].stdout)
 
                 i = 0
                 for cu in a_cus:
