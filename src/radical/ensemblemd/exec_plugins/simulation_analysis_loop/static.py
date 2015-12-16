@@ -764,6 +764,11 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post'] = od()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
 
+                if (pattern.simulation_adaptivity == False):
+                    num_sims = pattern._simulation_instances
+                else:
+                    num_sims = get_new_simulation_instances(a_cus[0].stdout)
+
                 i = 0
                 for cu in a_cus:
                     i += 1
