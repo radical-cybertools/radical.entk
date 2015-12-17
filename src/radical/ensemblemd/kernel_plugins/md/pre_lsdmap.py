@@ -53,7 +53,7 @@ _KERNEL_INFO = {
             "environment" : {},
             "pre_exec" : [
                             "module load packages-archer",
-                            "module load gromacs/5.0.0",
+                            "module load gromacs",
                             "module load python-compute/2.7.6"
                         ],
             "executable" : ["python"],
