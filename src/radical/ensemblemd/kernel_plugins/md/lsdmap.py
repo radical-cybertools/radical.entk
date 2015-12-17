@@ -51,8 +51,8 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : [  "module load python-compute/2.7.6",
-                            "module load pc-numpy/1.8.0-libsci",
-                            "module load pc-scipy/0.13.3-libsci",
+                            "module load pc-numpy/1.9.2-libsci",
+                            "module load pc-scipy/0.15.1-libsci",
                             "module load lsdmap",
                             "export PYTHONPATH=/work/y07/y07/cse/lsdmap/lib/python2.7/site-packages:$PYTHONPATH"],
             "executable" : ["lsdmap"],
