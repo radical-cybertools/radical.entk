@@ -46,7 +46,7 @@ _KERNEL_INFO = {
         },
         "epsrc.archer": {
             "environment"   : {"FOO": "bar"},
-            "pre_exec"      : ["module load python"],
+            "pre_exec"      : ["module load python-compute/2.7.6"],
             "executable"    : "python",
             "uses_mpi"      : False
         },
