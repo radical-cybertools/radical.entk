@@ -72,6 +72,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._iterations = iterations
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
+        self._simulation_adaptivity = False
 
         super(SimulationAnalysisLoop, self).__init__()
 
@@ -106,6 +107,13 @@ class SimulationAnalysisLoop(ExecutionPattern):
         """Returns the number of analysis instances per loop iteration.
         """
         return self._analysis_instances
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def simulation_adaptivity(self):
+        return self._simulation_adaptivity
+    
 
     #---------------------------------------------------------------------------
     #
