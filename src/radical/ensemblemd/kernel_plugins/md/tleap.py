@@ -60,10 +60,10 @@ _KERNEL_INFO = {
         {
             "environment" : {},
             "pre_exec" : ["module load python-compute/2.7.6",
-                      "module load pc-numpy/1.8.0-libsci",
-                      "module load pc-scipy/0.13.3-libsci",
-                      "module load pc-coco/0.21",
-                      "module load pc-netcdf4-python/1.1.0",
+                      "module load pc-numpy/1.9.2-libsci",
+                      "module load pc-scipy/0.15.1-libsci",
+                      "module load pc-coco",
+                      "module load pc-netcdf4-python",
                       "module load amber"],
             "executable" : ["python"],
             "uses_mpi"   : False
