@@ -124,7 +124,7 @@ class SingleClusterEnvironment(ExecutionContext):
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: ")
                 self.get_logger().error("Pattern execution FAILED.")
-                sys.exit(2)
+                sys.exit(1)
 
             if state == radical.pilot.DONE:
                 self.get_logger().info("Resource allocation time over.")
