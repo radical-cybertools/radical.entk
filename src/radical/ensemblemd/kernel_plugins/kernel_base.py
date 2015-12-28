@@ -37,7 +37,7 @@ class KernelBase(object):
 
         self._pre_exec               = None
         self._post_exec              = None
-        self._environment            = None
+        self._environment            = {}
 
         self._executable             = None
         self._arguments              = None

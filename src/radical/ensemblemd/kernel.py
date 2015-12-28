@@ -147,6 +147,20 @@ class Kernel(object):
     def environment(self):
         return self._kernel._environment
 
+    @environment.setter
+    def environment(self,key_vals):
+
+        """Sets the environment for the kernel.
+        """
+        if type(key_vals) != dict:
+            raise TypeError(
+                expected_type=dict,
+                actual_type=type(key_vals))
+
+        #Iterate through dict and set environment
+        for key, val in key_vals.iteritems():
+            self._kernel._environment[key] = val
+
     #---------------------------------------------------------------------------
     #
     @property
