@@ -24,7 +24,7 @@ _KERNEL_INFO = {
                         },
                     "--filename=": 
                         {
-                        "mandatory": True,
+                        "mandatory": False,
                         "description": "Output filename."
                         }
                     }
@@ -55,10 +55,14 @@ class Kernel(KernelBase):
            description as a dictionary.
         """
         executable = "/bin/bash"
-        arguments  = ["-c \"echo $[ 1 + $[ RANDOM % %{0} ]] > %{1}\"".format(
-            self.get_arg("--upperlimit="),
-            self.get_arg("--filename="))
-        ]
+        if self.get_arg("--filename=")) is not None:
+            arguments  = ["-c \"echo $[ 1 + $[ RANDOM % %{0} ]] > %{1}\"".format(
+                self.get_arg("--upperlimit="),
+                self.get_arg("--filename="))
+                ]
+        else:
+            arguments  = ["-c \"echo $[ 1 + $[ RANDOM % %{0} ]]\"".format(
+                self.get_arg("--upperlimit=")]
 
         return {
             "environment" : None,

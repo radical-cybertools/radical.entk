@@ -50,7 +50,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, iterations, simulation_instances=1, analysis_instances=1):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=None, num_sim_extraction_script=None):
         """Creates a new SimulationAnalysisLoop.
 
         **Arguments:**
@@ -72,8 +72,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._iterations = iterations
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
-        self._adaptive_simulation = False
-        self._num_sim_extraction_script = None
+        self._adaptive_simulation = adaptive_simulation
+        self._num_sim_extraction_script = num_sim_extraction_script
 
         super(SimulationAnalysisLoop, self).__init__()
 
@@ -202,11 +202,11 @@ class SimulationAnalysisLoop(ExecutionPattern):
           class_name=type(self))
 
     @property
-    def simulation_adaptivity(self):
+    def adaptive_simulation(self):
         return self._adaptive_simulation
 
-    @setter.simulation_adaptivity
-    def simulation_adaptivity(self,value):
+    @adaptive_simulation.setter
+    def adaptive_simulation(self,value):
         self._adaptive_simulation = value
 
 
@@ -214,17 +214,17 @@ class SimulationAnalysisLoop(ExecutionPattern):
     def num_sim_extraction_script(self):
         return self._num_sim_extraction_script
 
-    @setter.num_sim_extraction_script
+    @num_sim_extraction_script.setter
     def num_sim_extraction_script(self,script):
         self._num_sim_extraction_script = script
 
     def get_new_simulation_instances(self,cu_output):
 
         if self._num_sim_extraction_script == None:
-            return cu_output
+            return int(cu_output)
 
         else:
             import subprocess as sub
             p = sub.Popen('python {0} "{1}"'.format(self._num_sim_extraction_script,cu_output),stdout=sub.PIPE,stderr=sub.PIPE)
             out,err = p.communicate()
-            return out
+            return int(out)

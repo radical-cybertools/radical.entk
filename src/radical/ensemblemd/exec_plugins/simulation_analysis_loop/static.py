@@ -258,9 +258,6 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
                     cu_dict['iter_{0}'.format(iteration)]['sim']= list()
 
-                if iteration == 1:
-                    num_sims = pattern._simulation_instances
-
                 for kern_step in range(0,num_sim_kerns):
 
                     if profiling == 1:
@@ -767,7 +764,7 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post'] = od()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
 
-                if (pattern.simulation_adaptivity == False):
+                if (pattern.adaptive_simulation == False):
                     num_sims = pattern._simulation_instances
                 else:
                     num_sims = get_new_simulation_instances(a_cus[0].stdout)
@@ -784,6 +781,8 @@ class Plugin(PluginBase):
 
             self._reporter.header('Pattern execution successfully finished')
 
+
+            # ONLY PROFILING SECTION BELOW
             if profiling == 1:
 
                 #Pattern overhead logging
