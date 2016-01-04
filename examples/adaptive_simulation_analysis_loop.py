@@ -55,13 +55,13 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-                        resource="local.localhost",
-                        cores=1,
-                        walltime=15,
-                        #username=None,
+                        resource="xsede.stampede",
+                        cores=16,
+                        walltime=5,
+                        username='vivek91',
 
-                        #project = None,
-                        #queue = None,
+                        project = 'TG-MCB090174',
+                        queue = 'development',
 
                         database_url='mongodb://vivek:hawkie@ds037145.mongolab.com:37145/rp',
                         #database_name='myexps',

@@ -27,7 +27,16 @@ _KERNEL_INFO = {
                         "mandatory": False,
                         "description": "Output filename."
                         }
-                    }
+                    },
+    "machine_configs": 
+    {
+        "*": {
+            "environment"   : None,
+            "pre_exec"      : None,
+            "executable"    : "/bin/bash",
+            "uses_mpi"      : False
+        }
+    }
 }
 
 
@@ -50,24 +59,29 @@ class Kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
-    def _get_kernel_description(self):
-        """(PRIVATE) Implements parent class method. Returns the kernel
-           description as a dictionary.
+    def _bind_to_resource(self, resource_key):
+        """(PRIVATE) Implements parent class method. 
         """
-        executable = "/bin/bash"
-        if self.get_arg("--filename=")) is not None:
-            arguments  = ["-c \"echo $[ 1 + $[ RANDOM % %{0} ]] > %{1}\"".format(
+        if resource_key not in _KERNEL_INFO["machine_configs"]:
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
+
+        if self.get_arg("--filename=") is not None:
+            arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]] > {1}'".format(
                 self.get_arg("--upperlimit="),
                 self.get_arg("--filename="))
                 ]
         else:
-            arguments  = ["-c \"echo $[ 1 + $[ RANDOM % %{0} ]]\"".format(
-                self.get_arg("--upperlimit=")]
+            arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]]'".format(
+                self.get_arg("--upperlimit="))]
 
-        return {
-            "environment" : None,
-            "pre_exec"    : None,
-            "executable"  : executable,
-            "arguments"   : arguments,
-            "use_mpi"     : False
-        }
+        self._executable  = executable
+        self._arguments   = arguments
+        self._environment = cfg["environment"]
+        self._uses_mpi    = cfg["uses_mpi"]
+        self._pre_exec    = None
