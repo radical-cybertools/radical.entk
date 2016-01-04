@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 
+'''
+This script is an example of how the simulation adaptivity can be used. In the first iteration,
+the number of simulations is the same as that set while pattern creation ('simulation_instances').
 
+NOTE: There is an extra parameter during pattern creation, "adaptive_simulation=True". If this is
+not set, every iteration will have the same number of simulations.
+
+The analysis step (or the last kernel of the analysis step, if there are multiple kernels) is expected
+to produce the number of simulations for the next iteration. There are two methods of extracting this 
+value:
+
+1) If the analysis kernel directly prints the number of simulations (prints ONLY the number of simulations).
+Then that output is automatically returned by the pattern, assigned as the number of simulations 
+for the next iteration.
+
+2) If the analysis kernel prints messages/logs in addition to the number of simulations. The user can 
+specify a script to be run (locally/client side) to extra the number of simulations from the verbose 
+output.
+
+This example presents case 1.
+'''
 
 __author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
@@ -28,7 +48,7 @@ class MSSA(SimulationAnalysisLoop):
 
 
     def simulation_step(self, iteration, instance):
-        """In the simulation step we
+        """In the simulation step we simply create files with 1000 characters.
         """
         k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(instance)]
@@ -36,13 +56,12 @@ class MSSA(SimulationAnalysisLoop):
         return [k]
 
     def analysis_step(self, iteration, instance):
-        """In the analysis step we use the ``$PREV_SIMULATION`` data reference
-           to refer to the previous simulation. The same
-           instance is picked implicitly, i.e., if this is instance 5, the
-           previous simulation with instance 5 is referenced.
+        """ In the analysis step, we use the 'randval' kernel to output a random number within 
+        the upperlimit. The output is simply a number (and no other messages). Hence, we do not mention
+        and extraction scripts. The pattern automatically picks up the number.
         """
         k = Kernel(name="misc.randval")
-        k.arguments            = ["--upperlimit=16"]
+        k.arguments = ["--upperlimit=16"]
         return [k]
 
 

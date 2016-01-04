@@ -80,7 +80,7 @@ class Kernel(KernelBase):
             arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]]'".format(
                 self.get_arg("--upperlimit="))]
 
-        self._executable  = executable
+        self._executable  = cfg["executable"]
         self._arguments   = arguments
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
