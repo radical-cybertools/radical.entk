@@ -101,12 +101,14 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-                        resource='local.localhost',
+                        resource=resource,
                         cores=1,
                         walltime=15,
                         #username=None,
-                        #project=None,
-                        #queue = None,
+
+                        project=config[resource]['project'],
+                        access_schema = config[resource]['schema'],
+                        queue = config[resource]['queue'],
 
                         database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
                         database_name='myexps',

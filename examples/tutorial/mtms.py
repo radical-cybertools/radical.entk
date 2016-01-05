@@ -36,18 +36,17 @@ class CalculateChecksums(MTMS):
 # ------------------------------------------------------------------------------
 #
 if __name__ == "__main__":
-
     try:
 
         cluster = SingleClusterEnvironment(
-            resource="local.localhost",
-            cores=1,
-            walltime=15,
-			#username=None,
-			#project=None,
-			#queue=None,
-            database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-            database_name='myexps',
+                        resource="local.localhost",
+                        cores=1,
+                        walltime=15,
+#			username='vivek91',
+#			project='TG-MCB090174',
+#			queue='development',
+                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
+                        database_name='myexps',
         )
 
         # Allocate the resources.

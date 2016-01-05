@@ -45,18 +45,31 @@ class CalculateChecksums(Pipeline):
 #
 if __name__ == "__main__":
 
-    
+    # use the resource specified as argument, fall back to localhost
+    if   len(sys.argv)  > 2: 
+        print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+        sys.exit(1)
+    elif len(sys.argv) == 2: 
+        resource = sys.argv[1]
+    else: 
+        resource = 'local.localhost'
+
     try:
+
+        with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
+            config = json.load(data_file)
 
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-                        resource='local.localhost',
+                        resource=resource,
                         cores=1,
                         walltime=15,
-                        #username = None,
-                        #project = None,
-                        #queue = None,
+                        #username=None,
+
+                        project=config[resource]['project'],
+                        access_schema = config[resource]['schema'],
+                        queue = config[resource]['queue'],
 
                         database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
                         database_name='myexps',
