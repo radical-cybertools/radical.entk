@@ -16,10 +16,11 @@ Then that output is automatically returned by the pattern, assigned as the numbe
 for the next iteration.
 
 2) If the analysis kernel prints messages/logs in addition to the number of simulations. The user can 
-specify a script to be run (locally/client side) to extra the number of simulations from the verbose 
-output.
+specify a script to be run (locally/client side) to extract the number of simulations from the verbose 
+output. This script should be capable of accepting the output of the analysis stage as standard input
+and should output just the number of simulations.
 
-This example presents case 1.
+This example presents case 2.
 '''
 
 __author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
@@ -43,8 +44,8 @@ class MSSA(SimulationAnalysisLoop):
     """MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)
        scheme can be implemented with the SimulationAnalysisLoop pattern.
     """
-    def __init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation):
-        SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation)
+    def __init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation, sim_extraction_script):
+        SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation, sim_extraction_script)
 
 
     def simulation_step(self, iteration, instance):
@@ -60,7 +61,7 @@ class MSSA(SimulationAnalysisLoop):
         the upperlimit. The output is simply a number (and no other messages). Hence, we do not mention
         and extraction scripts. The pattern automatically picks up the number.
         """
-        k = Kernel(name="misc.randval")
+        k = Kernel(name="misc.randval_2")
         k.arguments = ["--upperlimit=16"]
         return [k]
 
@@ -90,8 +91,9 @@ if __name__ == "__main__":
         cluster.allocate()
 
         # We set the simulation 'instances' to 16 and analysis 'instances' to 1. We set the adaptive
-        # simulation to True.
-        mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
+        # simulation to True and specify the simulation extraction script to be used.
+        cur_path = os.path.dirname(os.path.abspath(__file__))
+        mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True, sim_extraction_script='{0}/extract.py'.format(cur_path))
 
         cluster.run(mssa)
 

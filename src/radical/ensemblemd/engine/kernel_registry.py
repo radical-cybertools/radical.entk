@@ -36,5 +36,6 @@ kernel_registry = [
     "radical.ensemblemd.kernel_plugins.misc.chksum",
     "radical.ensemblemd.kernel_plugins.misc.levenshtein",
     "radical.ensemblemd.kernel_plugins.misc.diff",
-    "radical.ensemblemd.kernel_plugins.misc.randval"
+    "radical.ensemblemd.kernel_plugins.misc.randval",
+    "radical.ensemblemd.kernel_plugins.misc.randval_2"
 ]

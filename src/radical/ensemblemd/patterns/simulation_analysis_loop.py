@@ -50,7 +50,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=None, num_sim_extraction_script=None):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=None, sim_extraction_script=None):
         """Creates a new SimulationAnalysisLoop.
 
         **Arguments:**
@@ -73,7 +73,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
         self._adaptive_simulation = adaptive_simulation
-        self._num_sim_extraction_script = num_sim_extraction_script
+        self._sim_extraction_script = sim_extraction_script
 
         super(SimulationAnalysisLoop, self).__init__()
 
@@ -211,20 +211,25 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
 
     @property
-    def num_sim_extraction_script(self):
-        return self._num_sim_extraction_script
+    def sim_extraction_script(self):
+        return self._sim_extraction_script
 
-    @num_sim_extraction_script.setter
-    def num_sim_extraction_script(self,script):
-        self._num_sim_extraction_script = script
+    @sim_extraction_script.setter
+    def sim_extraction_script(self,script):
+        self._sim_extraction_script = script
 
     def get_new_simulation_instances(self,cu_output):
 
-        if self._num_sim_extraction_script == None:
+        if self._sim_extraction_script == None:
             return int(cu_output)
 
         else:
-            import subprocess as sub
-            p = sub.Popen('python {0} "{1}"'.format(self._num_sim_extraction_script,cu_output),stdout=sub.PIPE,stderr=sub.PIPE)
+            f1=open('temp1.dat','w')
+            f1.write(cu_output)
+            f1.close()
+            import os
+            import subprocess as sp
+            p = sp.Popen('python {0} < temp1.dat'.format(self._sim_extraction_script),stdout=sp.PIPE,stderr=sp.PIPE,shell=True)
             out,err = p.communicate()
+            os.remove('temp1.dat')
             return int(out)
