@@ -50,7 +50,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, iterations, simulation_instances=1, analysis_instances=1):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=None, sim_extraction_script=None):
         """Creates a new SimulationAnalysisLoop.
 
         **Arguments:**
@@ -72,7 +72,8 @@ class SimulationAnalysisLoop(ExecutionPattern):
         self._iterations = iterations
         self._simulation_instances = simulation_instances
         self._analysis_instances = analysis_instances
-        self._simulation_adaptivity = False
+        self._adaptive_simulation = adaptive_simulation
+        self._sim_extraction_script = sim_extraction_script
 
         super(SimulationAnalysisLoop, self).__init__()
 
@@ -206,3 +207,36 @@ class SimulationAnalysisLoop(ExecutionPattern):
         raise NotImplementedError(
           method_name="post_loop",
           class_name=type(self))
+
+    @property
+    def adaptive_simulation(self):
+        return self._adaptive_simulation
+
+    @adaptive_simulation.setter
+    def adaptive_simulation(self,value):
+        self._adaptive_simulation = value
+
+
+    @property
+    def sim_extraction_script(self):
+        return self._sim_extraction_script
+
+    @sim_extraction_script.setter
+    def sim_extraction_script(self,script):
+        self._sim_extraction_script = script
+
+    def get_new_simulation_instances(self,cu_output):
+
+        if self._sim_extraction_script == None:
+            return int(cu_output)
+
+        else:
+            f1=open('temp1.dat','w')
+            f1.write(cu_output)
+            f1.close()
+            import os
+            import subprocess as sp
+            p = sp.Popen('python {0} < temp1.dat'.format(self._sim_extraction_script),stdout=sp.PIPE,stderr=sp.PIPE,shell=True)
+            out,err = p.communicate()
+            os.remove('temp1.dat')
+            return int(out)

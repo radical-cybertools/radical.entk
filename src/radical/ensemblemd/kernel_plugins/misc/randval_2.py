@@ -15,7 +15,7 @@ from radical.ensemblemd.kernel_plugins.kernel_base import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-    "name":         "misc.randval",
+    "name":         "misc.randval_2",
     "description":  "Creates a new file containing a single ramdom integer value between 0 and 'upperlimit'.",
     "arguments":   {"--upperlimit=":     
                         {
@@ -72,12 +72,12 @@ class Kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         if self.get_arg("--filename=") is not None:
-            arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]] > {1}'".format(
+            arguments  = ['-c','printf "Ignore this line \n$[ 1 + $[ RANDOM % {0} ]] > {1}"'.format(
                 self.get_arg("--upperlimit="),
                 self.get_arg("--filename="))
                 ]
         else:
-            arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]]'".format(
+            arguments  = ['-c','printf "Ignore this line \n$[ 1 + $[ RANDOM % {0} ]]"'.format(
                 self.get_arg("--upperlimit="))]
 
         self._executable  = cfg["executable"]

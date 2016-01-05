@@ -253,13 +253,13 @@ class Plugin(PluginBase):
                     num_sim_kerns = 1
                 #print num_sim_kerns
 
+                if iteration == 1:
+                    num_sims = pattern._simulation_instances
+
                 all_sim_cus = []
                 if profiling == 1:
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
                     cu_dict['iter_{0}'.format(iteration)]['sim']= list()
-
-                if iteration == 1:
-                    num_sims = pattern._simulation_instances
 
                 for kern_step in range(0,num_sim_kerns):
 
@@ -466,10 +466,10 @@ class Plugin(PluginBase):
                     
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
-                    self.get_logger().info("Waiting for simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name))
+                    self.get_logger().info("Waiting for {3} simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name,num_sims))
 
 
-                    self._reporter.info("\nIteration {0}: Waiting for simulation tasks: {1} to complete".format(iteration,sim_step.name))
+                    self._reporter.info("\nIteration {0}: Waiting for {2} simulation tasks: {1} to complete".format(iteration,sim_step.name, num_sims))
                     if profiling == 1:
                         probe_sim_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
@@ -767,10 +767,10 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post'] = od()
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
 
-                if (pattern.simulation_adaptivity == False):
+                if (pattern.adaptive_simulation == False):
                     num_sims = pattern._simulation_instances
                 else:
-                    num_sims = get_new_simulation_instances(a_cus[0].stdout)
+                    num_sims = pattern.get_new_simulation_instances(a_cus[0].stdout)
 
                 i = 0
                 for cu in a_cus:
@@ -784,6 +784,8 @@ class Plugin(PluginBase):
 
             self._reporter.header('Pattern execution successfully finished')
 
+
+            # ONLY PROFILING SECTION BELOW
             if profiling == 1:
 
                 #Pattern overhead logging

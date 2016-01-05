@@ -91,8 +91,8 @@ if __name__ == "__main__":
                         access_schema = config[resource]['schema'],
                         queue = config[resource]['queue'],
 
-                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-                        database_name='myexps',
+                        database_url='mongodb://vivek:bala@ds037145.mongolab.com:37145/rp',
+#                        database_name='myexps',
         )
 
         # Allocate the resources. 
