@@ -64,6 +64,10 @@ class SingleClusterEnvironment(ExecutionContext):
         self._database_name = database_name
         self._schema = access_schema
 
+
+        #shared data
+        self._shared_data = None
+
         self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
         self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
 
@@ -81,6 +85,16 @@ class SingleClusterEnvironment(ExecutionContext):
         """Returns the name of the execution context.
         """
         return CONTEXT_NAME
+
+
+    @property
+    def shared_data(self):
+        return self._shared_data
+
+    @shared_data.setter
+    def shared_data(self,data):
+        self._shared_data = data
+    
 
     #---------------------------------------------------------------------------
     #
@@ -189,6 +203,21 @@ class SingleClusterEnvironment(ExecutionContext):
             self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
             self._pilot = pmgr.submit_pilots(pdesc)
+            self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
+
+            if self._shared_data is not None:
+                self.get_logger().info("Commencing transfer of shared data to {0}".format(self._resource_key))
+                shared_list = []
+                for f in self._shared_data:
+                    shared_dict =   {
+                                        'source': f,
+                                        'target': 'staging:///%s' %os.path.basename(f),
+                                        'action': radical.pilot.TRANSFER
+                                    }
+
+                    shared_list.append(shared_dict)
+
+                self._pilot.stage_in(shared_list)
 
             if wait is True:
                 self._pilot.wait(radical.pilot.ACTIVE)
@@ -199,7 +228,7 @@ class SingleClusterEnvironment(ExecutionContext):
 
             self._umgr.add_pilots(self._pilot)
 
-            self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
+            
 
             if profiling == 1:
                 stop_time = datetime.datetime.now()

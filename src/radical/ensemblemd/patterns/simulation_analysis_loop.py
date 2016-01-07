@@ -50,7 +50,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=None, sim_extraction_script=None):
+    def __init__(self, iterations, simulation_instances=1, analysis_instances=1, adaptive_simulation=False, sim_extraction_script=None):
         """Creates a new SimulationAnalysisLoop.
 
         **Arguments:**

@@ -1,0 +1,30 @@
+#-------------------------Applications----------------------
+simulator             = 'Gromacs'           # Simulator to be loaded
+analyzer              = 'LSDMap'            # Analyzer to be loaded
+
+#--------------------------General--------------------------------
+num_CUs              = 16                  # Number of tasks or Compute Units
+num_iterations       = 1                    # Number of iterations of Simulation-Analysis
+start_iter           = 0                    # Iteration number with which to start
+nsave                = 11                    # # Iterations after which output is transfered to local machine
+
+#--------------------------Simulation--------------------------------
+num_cores_per_sim_cu = 1                    # Number of cores per Simulation Compute Units
+md_input_file        = './inp_files/input.gro'        # Entire path to the MD Input file - Do not use $HOME or the likes
+mdp_file             = './inp_files/grompp.mdp'       # Entire path to the MD Parameters file - Do not use $HOME or the likes
+top_file             = './inp_files/topol.top'        # Entire path to the Topology file - Do not use $HOME or the likes
+ndx_file             = None                   # Entire path to the Index file - Do not use $HOME or the likes
+grompp_options       = None                   # Command line options for when grompp is used
+mdrun_options        = None                   # Command line options for when mdrun is used
+itp_file_loc         = None                   # Entire path to the location of .itp files - Do not use $HOME or the likes
+md_output_file       = 'tmp.gro'            # Filename to be used for the simulation output
+
+#--------------------------Analysis----------------------------------
+lsdm_config_file     = './inp_files/config.ini'       # Entire path to the LSDMap configuration file - Do not use $HOME or the likes
+num_runs             = 1000                # Number of runs to be performed in the Selection step in Analysis
+w_file               = 'weight.w'           # Filename to be used for the weight file
+max_alive_neighbors  = '10'                 # Maximum alive neighbors to be considered while reweighting
+max_dead_neighbors   = '1'                  # Maximum dead neighbors to be considered while reweighting
+
+#--------------------------Misc----------------------------------
+misc_loc = './misc_files'
