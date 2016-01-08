@@ -115,7 +115,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['pre_analyze.py','{0}'.format(self.get_arg("--numCUs=")),'tmp.gro','.'] 
+        arguments = ['pre_analyze.py','tmp.gro','.'] 
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

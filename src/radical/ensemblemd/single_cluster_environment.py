@@ -209,8 +209,10 @@ class SingleClusterEnvironment(ExecutionContext):
                 self.get_logger().info("Commencing transfer of shared data to {0}".format(self._resource_key))
                 shared_list = []
                 for f in self._shared_data:
+                    if f.startswith('.'):
+                        f = os.getcwd() + f.split('.')[1] + '.' + f.split('.')[2]
                     shared_dict =   {
-                                        'source': f,
+                                        'source': 'file://%s'%f,
                                         'target': 'staging:///%s' %os.path.basename(f),
                                         'action': radical.pilot.TRANSFER
                                     }

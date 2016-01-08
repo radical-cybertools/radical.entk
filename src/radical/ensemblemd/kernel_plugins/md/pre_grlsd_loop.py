@@ -23,11 +23,6 @@ _KERNEL_INFO = {
                             "mandatory": True,
                             "description": "Input filename"
                         },
-                    "--numCUs=":
-                        {
-                            "mandatory": True,
-                            "description": "No. of files to be generated"
-                        }
                     },
     "machine_configs":
     {
@@ -104,7 +99,7 @@ class Kernel(KernelBase):
 
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-        arguments = ['spliter.py','{0}'.format(self.get_arg("--numCUs=")), '{0}'.format(self.get_arg("--inputfile="))]
+        arguments = ['spliter.py','{0}'.format(self.get_arg("--inputfile="))]
 
         self._executable  = cfg["executable"]
         self._arguments   = arguments

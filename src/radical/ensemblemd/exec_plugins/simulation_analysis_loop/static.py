@@ -30,7 +30,7 @@ _PLUGIN_OPTIONS = []
 
 # ------------------------------------------------------------------------------
 #
-def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_width, type, path):
+def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, sim_width=None, ana_width=None, type=None):
 
     # If replacement not require, return the path as is
     if '$' not in path:
@@ -44,6 +44,11 @@ def resolve_placeholder_vars(working_dirs, instance, iteration, sim_width, ana_w
             placeholder = path.split('>')[0].strip().split('/')[0]
         else:
             placeholder = path.split('>')[1].strip().split('/')[0]
+
+
+    # SHARED
+    if placeholder == "$SHARED":
+        return path.replace(placeholder, 'staging://')
 
     # $PRE_LOOP
     if placeholder == "$PRE_LOOP":
@@ -173,65 +178,218 @@ class Plugin(PluginBase):
             ########################################################################
             # execute pre_loop
             #
-            try:
 
-                ################################################################
-                # EXECUTE PRE-LOOP
+            ################################################################
+            # EXECUTE PRE-LOOP
 
-                if profiling == 1:
-                    probe_preloop_start = datetime.datetime.now()
-                    enmd_overhead_dict['preloop'] = od()
-                    enmd_overhead_dict['preloop']['start_time'] = probe_preloop_start
+            if profiling == 1:
+                probe_preloop_start = datetime.datetime.now()
+                enmd_overhead_dict['preloop'] = od()
+                enmd_overhead_dict['preloop']['start_time'] = probe_preloop_start
                 
-                pre_loop = pattern.pre_loop()
-                pre_loop._bind_to_resource(resource._resource_key)
+            pre_loop = pattern.pre_loop()
+            pre_loop._bind_to_resource(resource._resource_key)
 
-                cu = radical.pilot.ComputeUnitDescription()
-                cu.name = "pre_loop"
+            cud = radical.pilot.ComputeUnitDescription()
+            cud.name = "pre_loop"
 
-                cu.pre_exec       = pre_loop._cu_def_pre_exec
-                cu.executable     = pre_loop._cu_def_executable
-                cu.arguments      = pre_loop.arguments
-                cu.mpi            = pre_loop.uses_mpi
-                cu.input_staging  = pre_loop._cu_def_input_data
-                cu.output_staging = pre_loop._cu_def_output_data
+            cud.pre_exec       = pre_loop._cu_def_pre_exec
+            cud.executable     = pre_loop._cu_def_executable
+            cud.arguments      = pre_loop.arguments
+            cud.mpi            = pre_loop.uses_mpi
+            cud.input_staging  = None
+            cud.output_staging = None
 
-                self.get_logger().debug("Created pre_loop CU: {0}.".format(cu.as_dict()))
+            # INPUT DATA:
+            #------------------------------------------------------------------------------------------------------------------
+            # upload_input_data
+            data_in = []
+            if pre_loop._kernel._upload_input_data is not None:
+                if isinstance(pre_loop._kernel._upload_input_data,list):
+                    pass
+                else:
+                    pre_loop._kernel._upload_input_data = [pre_loop._kernel._upload_input_data]
+                for i in range(0,len(pre_loop._kernel._upload_input_data)):
+                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._upload_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip()
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip())
+                                }
+                    data_in.append(temp)
 
-                self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
-                self._reporter.info("\nWaiting for pre_loop step to complete.")
-                if profiling == 1:
-                    probe_preloop_wait = datetime.datetime.now()
-                    enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
+                if cud.input_staging is None:
+                    cud.input_staging = data_in
+                else:
+                    cud.input_staging += data_in
+            #------------------------------------------------------------------------------------------------------------------
 
-                unit = resource._umgr.submit_units(cu)
-                all_cus.append(unit)
-                resource._umgr.wait_units(unit.uid)
+            #------------------------------------------------------------------------------------------------------------------
+            # link_input_data
+            data_in = []
+            if pre_loop._kernel._link_input_data is not None:
+                if isinstance(pre_loop._kernel._link_input_data,list):
+                    pass
+                else:
+                    pre_loop._kernel._link_input_data = [pre_loop._kernel._link_input_data]
+                for i in range(0,len(pre_loop._kernel._link_input_data)):
+                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._link_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.LINK
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.LINK
+                                }
+                    data_in.append(temp)
 
-                if profiling == 1:
-                    probe_preloop_res = datetime.datetime.now()
-                    enmd_overhead_dict['preloop']['res_time'] = probe_preloop_res
+                if cud.input_staging is None:
+                    cud.input_staging = data_in
+                else:
+                    cud.input_staging += data_in
+            #------------------------------------------------------------------------------------------------------------------
 
-                self.get_logger().info("Pre_loop completed.")
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_input_data
+            data_in = []
+            if pre_loop._kernel._copy_input_data is not None:
+                if isinstance(pre_loop._kernel._copy_input_data,list):
+                    pass
+                else:
+                    pre_loop._kernel._copy_input_data = [pre_loop._kernel._copy_input_data]
+                for i in range(0,len(pre_loop._kernel._copy_input_data)):
+                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._copy_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.COPY
+                                }
+                    data_in.append(temp)
 
-                if unit.state != radical.pilot.DONE:
-                    raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
-                working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+                if cud.input_staging is None:
+                    cud.input_staging = data_in
+                else:
+                    cud.input_staging += data_in
+            #------------------------------------------------------------------------------------------------------------------
 
-                # Process CU information and append it to the dictionary
-                if profiling == 1:
-                    probe_preloop_done = datetime.datetime.now()
-                    enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
-                    cu_dict['pre_loop'] = unit
+            #------------------------------------------------------------------------------------------------------------------
+            # download input data
+            if pre_loop.download_input_data is not None:
+                data_in  = pre_loop.download_input_data
+            if cud.input_staging is None:
+                cud.input_staging = data_in
+            else:
+                cud.input_staging += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            # OUTPUT DATA:
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_output_data
+            data_out = []
+            if pre_loop._kernel._copy_output_data is not None:
+                if isinstance(pre_loop._kernel._copy_output_data,list):
+                    pass
+                else:
+                    pre_loop._kernel._copy_output_data = [pre_loop._kernel._copy_output_data]
+                for i in range(0,len(pre_loop._kernel._copy_output_data)):
+                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._copy_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.COPY
+                                }
+                    data_out.append(temp)
+
+                if cud.output_staging is None:
+                    cud.output_staging = data_out
+                else:
+                    cud.output_staging += data_out
+            #-----------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download_output_data
+            data_out = []
+            if pre_loop._kernel._download_output_data is not None:
+                if isinstance(pre_loop._kernel._download_output_data,list):
+                    pass
+                else:
+                    pre_loop._kernel._download_output_data = [pre_loop._kernel._download_output_data]
+                for i in range(0,len(pre_loop._kernel._download_output_data)):
+                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._download_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip()
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip())
+                                }
+                    data_out.append(temp)
+
+                if cud.output_staging is None:
+                    cud.output_staging = data_out
+                else:
+                    cud.output_staging += data_out
+            #------------------------------------------------------------------------------------------------------------------
+
+            self.get_logger().debug("Created pre_loop CU: {0}.".format(cud.as_dict()))
+
+            self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
+            self._reporter.info("\nWaiting for pre_loop step to complete.")
+            if profiling == 1:
+                probe_preloop_wait = datetime.datetime.now()
+                enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
+
+            unit = resource._umgr.submit_units(cud)
+            all_cus.append(unit)
+            resource._umgr.wait_units(unit.uid)
+
+            if profiling == 1:
+                probe_preloop_res = datetime.datetime.now()
+                enmd_overhead_dict['preloop']['res_time'] = probe_preloop_res
+
+            self.get_logger().info("Pre_loop completed.")
+
+            if unit.state != radical.pilot.DONE:
+                raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
+
+            working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+
+            # Process CU information and append it to the dictionary
+            if profiling == 1:
+                probe_preloop_done = datetime.datetime.now()
+                enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
+                cu_dict['pre_loop'] = unit
 
 
-                self._reporter.ok('>> done')
+            self._reporter.ok('>> done')
                  
-            except Exception:
-                # Doesn't exist. That's fine as it is not mandatory.
-                self.get_logger().info("pre_loop() not defined. Skipping.")
-                self._reporter.info("\npre_loop() not defined. Skipping.")
-                pass
 
             ########################################################################
             # execute simulation analysis loop
@@ -305,7 +463,7 @@ class Plugin(PluginBase):
                             else:
                                 sim_step._kernel._upload_input_data = [sim_step._kernel._upload_input_data]
                             for i in range(0,len(sim_step._kernel._upload_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._upload_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._upload_input_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -333,7 +491,7 @@ class Plugin(PluginBase):
                             else:
                                 sim_step._kernel._link_input_data = [sim_step._kernel._link_input_data]
                             for i in range(0,len(sim_step._kernel._link_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._link_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._link_input_data[i],s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -363,7 +521,7 @@ class Plugin(PluginBase):
                             else:
                                 sim_step._kernel._copy_input_data = [sim_step._kernel._copy_input_data]
                             for i in range(0,len(sim_step._kernel._copy_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._copy_input_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -404,7 +562,7 @@ class Plugin(PluginBase):
                             else:
                                 sim_step._kernel._copy_output_data = [sim_step._kernel._copy_output_data]
                             for i in range(0,len(sim_step._kernel._copy_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._copy_output_data[i])
+                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._copy_output_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -434,7 +592,7 @@ class Plugin(PluginBase):
                             else:
                                 sim_step._kernel._download_output_data = [sim_step._kernel._download_output_data]
                             for i in range(0,len(sim_step._kernel._download_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation", sim_step._kernel._download_output_data[i])
+                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._download_output_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -570,7 +728,7 @@ class Plugin(PluginBase):
                             else:
                                 ana_step._kernel._upload_input_data = [ana_step._kernel._upload_input_data]
                             for i in range(0,len(ana_step._kernel._upload_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._upload_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._upload_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -598,7 +756,7 @@ class Plugin(PluginBase):
                             else:
                                 ana_step._kernel._link_input_data = [ana_step._kernel._link_input_data]
                             for i in range(0,len(ana_step._kernel._link_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._link_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._link_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -628,7 +786,7 @@ class Plugin(PluginBase):
                             else:
                                 ana_step._kernel._copy_input_data = [ana_step._kernel._copy_input_data]
                             for i in range(0,len(ana_step._kernel._copy_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._copy_input_data[i])
+                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._copy_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -669,7 +827,7 @@ class Plugin(PluginBase):
                             else:
                                 ana_step._kernel._copy_output_data = [ana_step._kernel._copy_output_data]
                             for i in range(0,len(ana_step._kernel._copy_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._copy_output_data[i])
+                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._copy_output_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
@@ -699,7 +857,7 @@ class Plugin(PluginBase):
                             else:
                                 ana_step._kernel._download_output_data = [ana_step._kernel._download_output_data]
                             for i in range(0,len(ana_step._kernel._download_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis", ana_step._kernel._download_output_data[i])
+                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._download_output_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
                                 if len(var.split('>')) > 1:
                                     temp = {
                                             'source': var.split('>')[0].strip(),
