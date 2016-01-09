@@ -96,10 +96,19 @@ class SimulationAnalysisLoop(ExecutionPattern):
     #---------------------------------------------------------------------------
     #
     @property
-    def simlation_instances(self):
+    def simulation_instances(self):
         """Returns the number of simulation instances per loop iteration.
         """
         return self._simulation_instances
+
+
+    #---------------------------------------------------------------------------
+    #
+    @simulation_instances.setter
+    def simulation_instances(self,sims):
+        """Returns the number of simulation instances per loop iteration.
+        """
+        self._simulation_instances = sims
 
     #---------------------------------------------------------------------------
     #

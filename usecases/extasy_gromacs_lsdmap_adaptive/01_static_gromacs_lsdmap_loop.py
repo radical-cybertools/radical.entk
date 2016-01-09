@@ -48,7 +48,6 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         k = Kernel(name="md.pre_grlsd_loop")
         k.copy_input_data = ['$SHARED/spliter.py','$SHARED/gro.py','$SHARED/{0}'.format(os.path.basename(Kconfig.md_input_file))]
         k.arguments = ["--inputfile={0}".format(os.path.basename(Kconfig.md_input_file))]
-        print simulation_instances()
 
         return k
 
@@ -148,7 +147,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
 
         pre_ana = Kernel(name="md.pre_lsdmap")
         pre_ana.link_input_data = ["$SHARED/pre_analyze.py > pre_analyze.py"]
-        for i in range(1,Kconfig.num_CUs+1):
+        for i in range(1,self._simulation_instances+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
         pre_ana.copy_output_data = ['tmpha.gro > $SHARED/iter_{0}/tmpha.gro'.format(iteration-1),'tmp.gro > $SHARED/iter_{0}/tmp.gro'.format(iteration-1)]
 

@@ -411,9 +411,6 @@ class Plugin(PluginBase):
                     num_sim_kerns = 1
                 #print num_sim_kerns
 
-                if iteration == 1:
-                    num_sims = pattern._simulation_instances
-
                 all_sim_cus = []
                 if profiling == 1:
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
@@ -428,7 +425,7 @@ class Plugin(PluginBase):
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['start_time'] = probe_sim_start
 
                     s_units = []
-                    for s_instance in range(1, num_sims+1):
+                    for s_instance in range(1, pattern._simulation_instances+1):
 
                         if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
                             sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
@@ -624,10 +621,10 @@ class Plugin(PluginBase):
                     
 
                     self.get_logger().info("Submitted tasks for simulation iteration {0}.".format(iteration))
-                    self.get_logger().info("Waiting for {3} simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name,num_sims))
+                    self.get_logger().info("Waiting for {3} simulations in iteration {0}/ kernel {1}: {2} to complete.".format(iteration,kern_step+1,sim_step.name,pattern._simulation_instances))
 
 
-                    self._reporter.info("\nIteration {0}: Waiting for {2} simulation tasks: {1} to complete".format(iteration,sim_step.name, num_sims))
+                    self._reporter.info("\nIteration {0}: Waiting for {2} simulation tasks: {1} to complete".format(iteration,sim_step.name, pattern._simulation_instances))
                     if profiling == 1:
                         probe_sim_wait = datetime.datetime.now()
                         enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
@@ -926,9 +923,9 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['post']['start_time'] = probe_post_ana_start
 
                 if (pattern.adaptive_simulation == False):
-                    num_sims = pattern._simulation_instances
+                    pass
                 else:
-                    num_sims = pattern.get_new_simulation_instances(a_cus[0].stdout)
+                    pattern._simulation_instances = pattern.get_new_simulation_instances(a_cus[0].stdout)
 
                 i = 0
                 for cu in a_cus:
