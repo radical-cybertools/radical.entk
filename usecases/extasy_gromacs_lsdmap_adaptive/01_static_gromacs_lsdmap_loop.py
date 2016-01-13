@@ -20,12 +20,24 @@ import imp
 import argparse
 import os
 
-from grompp import grompp_Kernel
+# ------------------------------------------------------------------------------
+#Load all custom Kernels
+
+from custom_kernels.grompp import grompp_Kernel
 get_engine().add_kernel_plugin(grompp_Kernel)
 
-from mdrun import mdrun_Kernel
+from custom_kernels.mdrun import mdrun_Kernel
 get_engine().add_kernel_plugin(mdrun_Kernel)
 
+from custom_kernels.pre_grlsd_loop import pre_loop_Kernel
+get_engine().add_kernel_plugin(pre_loop_Kernel)
+
+from custom_kernels.pre_lsdmap import pre_lsdmap_Kernel
+get_engine().add_kernel_plugin(pre_lsdmap_Kernel)
+
+from custom_kernels.post_lsdmap import post_lsdmap_Kernel
+get_engine().add_kernel_plugin(post_lsdmap_Kernel)
+# ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 #
 class Gromacs_LSDMap(SimulationAnalysisLoop):
@@ -45,7 +57,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                 Arguments : --inputfile = file to be split
                             --numCUs    = number of simulation instances/ number of smaller files
         '''
-        k = Kernel(name="md.pre_grlsd_loop")
+        k = Kernel(name="custom.pre_grlsd_loop")
         k.copy_input_data = ['$SHARED/spliter.py','$SHARED/gro.py','$SHARED/{0}'.format(os.path.basename(Kconfig.md_input_file))]
         k.arguments = ["--inputfile={0}".format(os.path.basename(Kconfig.md_input_file))]
 
@@ -145,7 +157,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
                             --numCUs                = number of simulation instances/ number of smaller files
         '''
 
-        pre_ana = Kernel(name="md.pre_lsdmap")
+        pre_ana = Kernel(name="custom.pre_lsdmap")
         pre_ana.link_input_data = ["$SHARED/pre_analyze.py > pre_analyze.py"]
         for i in range(1,self._simulation_instances+1):
             pre_ana.link_input_data = pre_ana.link_input_data + ["$SIMULATION_ITERATION_{2}_INSTANCE_{0}/out.gro > out{1}.gro".format(i,i-1,iteration)]
@@ -163,7 +175,7 @@ class Gromacs_LSDMap(SimulationAnalysisLoop):
         if(iteration%Kconfig.nsave==0):
           lsdmap.download_output_data=['lsdmap.log > backup/iter{0}/lsdmap.log'.format(iteration-1)]
 
-        post_ana = Kernel(name="md.post_lsdmap")
+        post_ana = Kernel(name="custom.post_lsdmap")
         post_ana.link_input_data = ["$SHARED/post_analyze.py > post_analyze.py",
                                     "$SHARED/selection.py > selection.py",
                                     "$SHARED/reweighting.py > reweighting.py",
