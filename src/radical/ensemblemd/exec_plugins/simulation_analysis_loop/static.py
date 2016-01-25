@@ -989,12 +989,12 @@ class Plugin(PluginBase):
                         st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
 
                     states = ['Scheduling,' 
-                                                'StagingInput', 'AgentStagingInputPending', 'AgentStagingInput',
-                                                'AllocatingPending', 'Allocating', 
-                                                'ExecutingPending', 'Executing', 
-                                                'AgentStagingOutputPending', 'AgentStagingOutput', 'PendingOutputStaging', 
-                                                'StagingOutput', 
-                                                'Done']
+                                'StagingInput', 'AgentStagingInputPending', 'AgentStagingInput',
+                                'AllocatingPending', 'Allocating', 
+                                'ExecutingPending', 'Executing', 
+                                'AgentStagingOutputPending', 'AgentStagingOutput', 'PendingOutputStaging', 
+                                'StagingOutput', 
+                                'Done']
                                                 
                     for state in states:
                         if (state in st_data) is False:
