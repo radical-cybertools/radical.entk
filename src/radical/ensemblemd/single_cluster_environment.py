@@ -111,6 +111,33 @@ class SingleClusterEnvironment(ExecutionContext):
             f1.write('deallocate,stop_time,{0}\n'.format(stop_time))
             f1.close()
 
+            f1 = open('pilot_profile_{mysession}.csv'.format(mysession=self._session.uid),'w')
+            title = "uid, New, PendingLaunch, Launching, PendingActive, Active, Canceled, Done"
+            f1.write(title + "\n\n")
+            st_data = {}
+            for st in self._pilot.state_history:
+                st_dict = st.as_dict()
+                st_data["{0}".format( st_dict["state"] )] = {}
+                st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+
+            states = ['New','PendingLaunch','Launching','PendingActive','Active','Canceled','Done']
+
+            for state in states:
+                if (state in st_data) is False:
+                    st_data[state] = None
+
+            line = "{uid}, {New}, {PendingLaunch}, {Launching}, {PendingActive}, {Active}, {Canceled}, {Done}".format(
+                            uid=self._pilot.uid,
+                            New=st_data['New'],
+                            PendingLaunch=st_data['PendingLaunch'],
+                            Launching=(st_data['Launching']),
+                            PendingActive=(st_data['PendingActive']),
+                            Active=(st_data['Active']),
+                            Canceled=(st_data['Canceled']),
+                            Done=(st_data['Done']),
+                        )
+            f1.write(line + '\n')
+
     #---------------------------------------------------------------------------
     #
     def allocate(self, wait=False):
