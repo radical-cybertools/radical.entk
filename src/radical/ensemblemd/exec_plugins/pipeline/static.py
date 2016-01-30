@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-"""A static execution plugin for single tasks.
+"""A static execution plugin for the MTMS pattern
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
-__copyright__ = "Copyright 2014, http://radical.rutgers.edu"
+__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
+__copyright__ = "Copyright 2015, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
@@ -30,8 +30,10 @@ _PLUGIN_INFO = {
 
 _PLUGIN_OPTIONS = []
 
+# ------------------------------------------------------------------------------
+#
 
-def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
+def resolve_placeholder_vars(working_dirs, stage, task, path):
 
     # If replacement not require, return the path as is
     if '$' not in path:
@@ -46,21 +48,21 @@ def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
         else:
             placeholder = path.split('>')[1].strip().split('/')[0]
 
-    step_number = int(placeholder.split('_')[1])
 
-    if ((step_number < 1)or(step_number > total_steps)):
-        raise Exception("$STEP_{0} used in invalid context.".format(step_number))
+    if placeholder.startswith("$STAGE_"):
+        stage = placeholder.split("$STAGE_")[1]
+        return path.replace(placeholder,working_dirs['stage_{0}'.format(stage)]['task_{0}'.format(task)])
     else:
-        return path.replace(placeholder, working_dirs['step_{0}'.format(step_number)]['instance_{0}'.format(instance)])
-         
-# ------------------------------------------------------------------------------
-#
+        raise Exception("placeholder $STAGE_ used in invalid context.")
+
 class Plugin(PluginBase):
 
     # --------------------------------------------------------------------------
     #
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
+        self.tot_fin_tasks= [0]
+        self.working_dirs = {}
 
     # --------------------------------------------------------------------------
     #
@@ -71,366 +73,323 @@ class Plugin(PluginBase):
     #
     def execute_pattern(self, pattern, resource):
 
-        pattern_start_time = datetime.datetime.now()
-        
-        #-----------------------------------------------------------------------
-        #
-        def unit_state_cb (unit, state) :
 
-            if state == radical.pilot.FAILED:
-                self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                self.get_logger().error("Pattern execution FAILED.")
-                sys.exit(1)
+        #-----------------------------------------------------------------------
+        # Get input data for the kernel
+        def get_input_data(kernel,stage,task):
+            # INPUT DATA:
+
+            ip_list = []
+            #------------------------------------------------------------------------------------------------------------------
+            # upload_input_data
+            data_in = []
+            if kernel._kernel._upload_input_data is not None:
+                if isinstance(kernel._kernel._upload_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
+                for i in range(0,len(kernel._kernel._upload_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._upload_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip()
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip())
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #-----------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # link_input_data
+            data_in = []
+            if kernel._kernel._link_input_data is not None:
+                if isinstance(kernel._kernel._link_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
+                for i in range(0,len(kernel._kernel._link_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._link_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.LINK
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.LINK
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_input_data
+            data_in = []
+            if kernel._kernel._copy_input_data is not None:
+                if isinstance(kernel._kernel._copy_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
+                for i in range(0,len(kernel._kernel._copy_input_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.COPY
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.COPY
+                            }
+                    data_in.append(temp)
+
+            if ip_list is None:
+                ip_list = data_in
+            else:
+                ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download input data
+            if kernel.download_input_data is not None:
+                data_in  = kernel.download_input_data
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+
+            return ip_list
+        #-----------------------------------------------------------------------
+
+        #-----------------------------------------------------------------------
+        # Get output data for the kernel
+        def get_output_data(kernel,stage,task):
+
+            # OUTPUT DATA:
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_output_data
+            op_list = []
+            data_out = []
+            if kernel._kernel._copy_output_data is not None:
+                if isinstance(kernel._kernel._copy_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
+                for i in range(0,len(kernel._kernel._copy_output_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip(),
+                                'action': radical.pilot.COPY
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip()),
+                                'action': radical.pilot.COPY
+                            }
+                    data_out.append(temp)
+
+            if op_list is None:
+                op_list = data_out
+            else:
+                op_list += data_out
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download_output_data
+            data_out = []
+            if kernel._kernel._download_output_data is not None:
+                if isinstance(kernel._kernel._download_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
+                for i in range(0,len(kernel._kernel._download_output_data)):
+                    var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._download_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': var.split('>')[1].strip()
+                            }
+                    else:
+                        temp = {
+                                'source': var.split('>')[0].strip(),
+                                'target': os.path.basename(var.split('>')[0].strip())
+                            }
+                    data_out.append(temp)
+
+            if op_list is None:
+                op_list = data_out
+            else:
+                op_list += data_out
+            #------------------------------------------------------------------------------------------------------------------
+
+            return op_list
+            
+        #-----------------------------------------------------------------------
 
         self._reporter.ok('>>ok')
-        pipeline_instances = pattern.instances
-
-        pipeline_steps = pattern.steps
-        self.get_logger().info("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
-            pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
-
-        self._reporter.header("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
-            pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
-
+        #-----------------------------------------------------------------------
+        # Get details of the Bag of Pipes
+        num_tasks = pattern.tasks
+        num_stages = pattern.stages
+        #-----------------------------------------------------------------------
         
-        working_dirs = {}
+        #-----------------------------------------------------------------------
+        # Use callback to trigger next stage
+        def unit_state_cb (unit, state):
 
-        self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
-        self._reporter.info("Job waiting on queue...".format(resource._resource_key))
-        resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
-        self._reporter.ok("\nJob is now running !".format(resource._resource_key))
-
-        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-
-        if profiling == 1:
-            from collections import OrderedDict as od
-            pattern._execution_profile = []
-            enmd_overhead_dict = od()
-            cu_dict = od()
-
-        try:
-
-            resource._umgr.register_callback(unit_state_cb)
-
-            enmd_overhead_list = []
-            rp_overhead_list = []
-            # Iterate over the different steps.
-            for step in range(1, pipeline_steps+1):
-
-                if profiling == 1:
-                    probe_start_time = datetime.datetime.now()
-                    enmd_overhead_dict['step_{0}'.format(step)] = od()
-                    cu_dict['step_{0}'.format(step)] = list()
-
-                    enmd_overhead_dict['step_{0}'.format(step)]['start_time'] = probe_start_time
-
-                working_dirs['step_{0}'.format(step)] = {}
-
-                # Get the method names
-                s_meth = getattr(pattern, 'step_{0}'.format(step))
-
+            if state == radical.pilot.DONE:
                 try:
-                    kernel = s_meth(0)
-                except NotImplementedError, ex:
-                    # Not implemented means there are no further steps.
-                    break
+                    cur_stage = int(unit.name.split('-')[1])
+                    cur_task = int(unit.name.split('-')[3])
+            
+                    self.get_logger().info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
 
-                p_units=[]
-                all_step_cus = []
-
-                for instance in range(1, pipeline_instances+1):
-
-                    kernel = s_meth(instance)
-                    kernel._bind_to_resource(resource._resource_key)
-
-                    cud = radical.pilot.ComputeUnitDescription()
-                    cud.name = "step_{0}".format(step)
-
-                    cud.pre_exec       = kernel._cu_def_pre_exec
-                    cud.executable     = kernel._cu_def_executable
-                    cud.arguments      = kernel.arguments
-                    cud.mpi            = kernel.uses_mpi
-                    cud.input_staging  = None
-                    cud.output_staging = None
-
-                    # INPUT DATA:
-                    #------------------------------------------------------------------------------------------------------------------
-                    # upload_input_data
-                    data_in = []
-                    if kernel._kernel._upload_input_data is not None:
-                        if isinstance(kernel._kernel._upload_input_data,list):
-                            pass
-                        else:
-                            kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
-                        for i in range(0,len(kernel._kernel._upload_input_data)):
-                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps,kernel._kernel._upload_input_data[i])
-                            if len(var.split('>')) > 1:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()
-                                    }
-                            else:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': os.path.basename(var.split('>')[0].strip())
-                                    }
-                            data_in.append(temp)
-
-                    if cud.input_staging is None:
-                        cud.input_staging = data_in
+                    #-----------------------------------------------------------------------
+                    # Increment tasks list accordingly
+                    if self.tot_fin_tasks[0] == 0:
+                        self.tot_fin_tasks[0] = 1
                     else:
-                        cud.input_staging += data_in
-                    #------------------------------------------------------------------------------------------------------------------
+                        self.tot_fin_tasks[cur_stage-1]+=1
+                        # Check if this is the last task of the stage
+                        if self.tot_fin_tasks[cur_stage-1] == num_tasks:
+                            self._reporter.info('All tasks in stage {0} have finished\n'.format(cur_stage))
+                            self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
+                    #-----------------------------------------------------------------------
+                    # Log unit working directories for placeholders
+                    if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
+                        self.working_dirs['stage_{0}'.format(cur_stage)] = {}
 
-                    #------------------------------------------------------------------------------------------------------------------
-                    # link_input_data
-                    data_in = []
-                    if kernel._kernel._link_input_data is not None:
-                        if isinstance(kernel._kernel._link_input_data,list):
-                            pass
-                        else:
-                            kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
-                        for i in range(0,len(kernel._kernel._link_input_data)):
-                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._link_input_data[i])
-                            if len(var.split('>')) > 1:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.LINK
-                                    }
-                            else:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': os.path.basename(var.split('>')[0].strip()),
-                                        'action': radical.pilot.LINK
-                                    }
-                            data_in.append(temp)
+                    self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)] = unit.working_directory
+                    #-----------------------------------------------------------------------
+                    cud = create_next_stage_cud(unit)
+                    if cud is not None:
+                        launch_next_stage(cud)
 
-                    if cud.input_staging is None:
-                        cud.input_staging = data_in
-                    else:
-                        cud.input_staging += data_in
-                    #------------------------------------------------------------------------------------------------------------------
+                except:
+                    raise Exception("Trigger failed. Next stage not invoked")
 
-                    #------------------------------------------------------------------------------------------------------------------
-                    # copy_input_data
-                    data_in = []
-                    if kernel._kernel._copy_input_data is not None:
-                        if isinstance(kernel._kernel._copy_input_data,list):
-                            pass
-                        else:
-                            kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
-                        for i in range(0,len(kernel._kernel._copy_input_data)):
-                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_input_data[i])
-                            if len(var.split('>')) > 1:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
-                            else:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': os.path.basename(var.split('>')[0].strip()),
-                                        'action': radical.pilot.COPY
-                                    }
-                            data_in.append(temp)
+        #-----------------------------------------------------------------------
 
-                    if cud.input_staging is None:
-                        cud.input_staging = data_in
-                    else:
-                        cud.input_staging += data_in
-                    #------------------------------------------------------------------------------------------------------------------
+        self.get_logger().info("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
+            resource._cores, resource._resource_key))
 
-                    #------------------------------------------------------------------------------------------------------------------
-                    # download input data
-                    if kernel.download_input_data is not None:
-                        data_in  = kernel.download_input_data
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                    #------------------------------------------------------------------------------------------------------------------
-
-                    # OUTPUT DATA:
-                    #------------------------------------------------------------------------------------------------------------------
-                    # copy_output_data
-                    data_out = []
-                    if kernel._kernel._copy_output_data is not None:
-                        if isinstance(kernel._kernel._copy_output_data,list):
-                            pass
-                        else:
-                            kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
-                        for i in range(0,len(kernel._kernel._copy_output_data)):
-                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_output_data[i])
-                            if len(var.split('>')) > 1:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip(),
-                                        'action': radical.pilot.COPY
-                                    }
-                            else:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': os.path.basename(var.split('>')[0].strip()),
-                                        'action': radical.pilot.COPY
-                                    }
-                            data_out.append(temp)
-
-                    if cud.output_staging is None:
-                        cud.output_staging = data_out
-                    else:
-                        cud.output_staging += data_out
-                    #------------------------------------------------------------------------------------------------------------------
-
-                    #------------------------------------------------------------------------------------------------------------------
-                    # download_output_data
-                    data_out = []
-                    if kernel._kernel._download_output_data is not None:
-                        if isinstance(kernel._kernel._download_output_data,list):
-                            pass
-                        else:
-                            kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
-                        for i in range(0,len(kernel._kernel._download_output_data)):
-                            var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._download_output_data[i])
-                            if len(var.split('>')) > 1:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': var.split('>')[1].strip()
-                                        }
-                            else:
-                                temp = {
-                                        'source': var.split('>')[0].strip(),
-                                        'target': os.path.basename(var.split('>')[0].strip())
-                                    }
-                            data_out.append(temp)
-
-                    if cud.output_staging is None:
-                        cud.output_staging = data_out
-                    else:
-                        cud.output_staging += data_out
-                    #------------------------------------------------------------------------------------------------------------------
+        self._reporter.header("Executing {0} pipes of {1} steps on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
+            resource._cores, resource._resource_key))
+        #-----------------------------------------------------------------------
+        # Wait for Pilot to go Active
+        resource._pmgr.wait_pilots(resource._pilot.uid,u'Active')
+        #-----------------------------------------------------------------------
 
 
-                    if kernel.cores is not None:
-                        cud.cores = kernel.cores
-
-                    p_units.append(cud)
-
-                self.get_logger().debug("Created step_{0} CU: {1}.".format(step,cud.as_dict()))
-                
-
-                self.get_logger().info("Submitted tasks for step_{0}.".format(step))
-                self._reporter.info("\nWaiting for step_{0} to complete.".format(step))
-                if profiling == 1:
-                    enmd_overhead_dict['step_{0}'.format(step)]['wait_time'] = datetime.datetime.now()
+        #-----------------------------------------------------------------------
+        # Register CB
+        resource._umgr.register_callback(unit_state_cb)
+        #-----------------------------------------------------------------------
 
 
-                p_cus = resource._umgr.submit_units(p_units)
-                all_step_cus.extend(p_cus)
+        #-----------------------------------------------------------------------
+        # Launch first stage of all tasks
 
-                uids = [cu.uid for cu in p_cus]
-                resource._umgr.wait_units(uids)
-                
+        task_method = getattr(pattern, 'stage_1')
+        task_units_desc = []
+        for task_instance in range(1, num_tasks+1):
 
-                self.get_logger().info("step_{0}/kernel {1}: completed.".format(step,kernel.name))
+            kernel = task_method(task_instance)
+            kernel._bind_to_resource(resource._resource_key)
 
-                if profiling == 1:
-                    enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
+            self.get_logger().debug('Creating task {0} of stage 1'.format(task_instance))
 
-                failed_units = ""
-                for unit in p_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
+            cud = radical.pilot.ComputeUnitDescription()
+            cud.name = "stage-1-task-{0}".format(task_instance)
 
-                # TODO: ensure working_dir <-> instance mapping
-                i = 0
-                for cu in p_cus:
-                    i += 1
-                    working_dirs['step_{0}'.format(step)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
+            cud.pre_exec        = kernel._cu_def_pre_exec
+            cud.executable      = kernel._cu_def_executable
+            cud.arguments       = kernel.arguments
+            cud.mpi             = kernel.uses_mpi
+            cud.input_staging   = get_input_data(kernel,1,task_instance)
+            cud.output_staging  = get_output_data(kernel,1,task_instance)
 
+            task_units_desc.append(cud)
 
-                if profiling == 1:
-                    enmd_overhead_dict['step_{0}'.format(step)]['stop_time'] = datetime.datetime.now()
-                    cu_dict['step_{0}'.format(step)] = p_cus
+        task_units = resource._umgr.submit_units(task_units_desc)
+        self.get_logger().info('Submitted all tasks of stage 1')
+        self._reporter.info('Submitted all tasks of stage 1\n')
+        #-----------------------------------------------------------------------
 
-                self._reporter.ok('>> done')
+        #-----------------------------------------------------------------------
+        # Create next CU at the end of each CU
+        def create_next_stage_cud(unit):
+                        
+            cur_stage = int(unit.name.split('-')[1])+1
+            cur_task = int(unit.name.split('-')[3])
 
-            #Pattern Finished
-            self._reporter.header('Pattern execution successfully finished')
+            if cur_stage <= num_stages:
 
-
-            #PROFILING
-            if profiling == 1:
-
-                #Pattern overhead logging
-                title = "step,probe,timestamp"
-                f1 = open('enmd_pat_overhead.csv','w')
-                f1.write(title + "\n\n")
-
-                pipeline_steps = pattern.steps
-
-                for i in range(1,pipeline_steps+1):
-                    step = 'step_{0}'.format(i)
-                    for key,val in enmd_overhead_dict[step].items():                        
-                        probe = key
-                        timestamp = val
-                        entry = '{0},{1},{2}\n'.format(step,probe,timestamp)
-                        f1.write(entry)
-
-                f1.close()
-
-                #CU data logging
-                title = "uid, step, Scheduling, StagingInput, AgentStagingInputPending, AgentStagingInput, AllocatingPending, Allocating, ExecutingPending, Executing, AgentStagingOutputPending, AgentStagingOutput, PendingOutputStaging, StagingOutput, Done"
-                f2 = open("execution_profile_{mysession}.csv".format(mysession=resource._session.uid),'w')
-                f2.write(title + "\n\n")
-
-                for i in range(1,pipeline_steps+1):
-                    step = 'step_{0}'.format(i)
-                    cus = cu_dict[step]
-
-                    for cu in cus:
-                        st_data = {}
-                        for st in cu.state_history:
-                            st_dict = st.as_dict()
-                            st_data["{0}".format( st_dict["state"] )] = {}
-                            st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-
-                        states = ['Scheduling,' 
-                                                'StagingInput', 'AgentStagingInputPending', 'AgentStagingInput',
-                                                'AllocatingPending', 'Allocating', 
-                                                'ExecutingPending', 'Executing', 
-                                                'AgentStagingOutputPending', 'AgentStagingOutput', 'PendingOutputStaging', 
-                                                'StagingOutput', 
-                                                'Done']
-
-                        for state in states:
-                            if (state in st_data) is False:
-                                st_data[state] = None
-
-                        line = "{uid}, {step}, {Scheduling}, {StagingInput}, {AgentStagingInputPending}, {AgentStagingInput}, {AllocatingPending}, {Allocating}, {ExecutingPending},{Executing}, {AgentStagingOutputPending}, {AgentStagingOutput}, {PendingOutputStaging}, {StagingOutput}, {Done}".format(
-                            uid=cu.uid,
-                            step=step,
-                            Scheduling=(st_data['Scheduling']),
-                            StagingInput=(st_data['StagingInput']),
-                            AgentStagingInputPending=(st_data['AgentStagingInputPending']),
-                            AgentStagingInput=(st_data['AgentStagingInput']),
-                            AllocatingPending=(st_data['AllocatingPending']),
-                            Allocating=(st_data['Allocating']),
-                            ExecutingPending=(st_data['ExecutingPending']),
-                            Executing=(st_data['Executing']),
-                            AgentStagingOutputPending=(st_data['AgentStagingOutputPending']),
-                            AgentStagingOutput=(st_data['AgentStagingOutput']),
-                            PendingOutputStaging=(st_data['PendingOutputStaging']),
-                            StagingOutput=(st_data['StagingOutput']),
-                            Done=(st_data['Done']))
-
-                        f2.write(line + '\n')
-
-                f2.close()
+                if len(self.tot_fin_tasks) < cur_stage:
+                    self.tot_fin_tasks.append(0)
+                    self._reporter.info('Starting submission of tasks in stage {0}\n'.format(cur_stage))
                     
+                self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
-        except KeyboardInterrupt:
+                task_method = getattr(pattern, 'stage_{0}'.format(cur_stage))
 
-            self._reporter.error('Execution interupted')
-            traceback.print_exc()
+                kernel = task_method(cur_task)
+                kernel._bind_to_resource(resource._resource_key)
+
+                cud = radical.pilot.ComputeUnitDescription()
+                cud.name = "stage-{0}-task-{1}".format(cur_stage,cur_task)
+
+                cud.pre_exec        = kernel._cu_def_pre_exec
+                cud.executable      = kernel._cu_def_executable
+                cud.arguments       = kernel.arguments
+                cud.mpi             = kernel.uses_mpi
+                cud.input_staging   = get_input_data(kernel,cur_stage,cur_task)
+                cud.output_staging  = get_output_data(kernel,cur_stage,cur_task)
+
+                return cud
+
+            else:
+                return None
+
+        #-----------------------------------------------------------------------
+
+        #-----------------------------------------------------------------------
+        # Launch the CU of the next stage
+        def launch_next_stage(cud):
+
+            cur_stage = int(cud.name.split('-')[1])
+            cur_task = int(cud.name.split('-')[3])
+            self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
+            resource._umgr.submit_units(cud)    
+        #-----------------------------------------------------------------------
+
+        #-----------------------------------------------------------------------
+        # Wait for all tasks to finish
+        while(sum(self.tot_fin_tasks)!=(num_stages*num_tasks)):
+            resource._umgr.wait_units()    
+
+        #-----------------------------------------------------------------------
