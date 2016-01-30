@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         #database_name='',
         )
 
-        # Allocate the resources. 
+	# Allocate the resources. 
         cluster.allocate()
 
         # Set the 'instances' of the pipeline to 16. This means that 16 instances

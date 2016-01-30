@@ -205,11 +205,11 @@ setup_args = {
     # This copies the contents of the examples/ dir under
     # sys.prefix/share/radical.pilot.
     # It needs the MANIFEST.in entries to work.
-    #'data_files'        : [
-    #                                makeDataFiles('share/radical.ensemblemd/examples/', 'examples'),
-    #                                makeDataFiles('share/radical.ensemblemd/examples/amber_input', 'examples/amber_input'),
-    #                                makeDataFiles('share/radical.ensemblemd/user_guide/scripts', 'doc/user_guide/scripts')
-                                    #],
+    'data_files'        : [
+                                    makeDataFiles('share/radical.ensemblemd/examples/', 'examples'),
+                                    makeDataFiles('share/radical.ensemblemd/examples/amber_input', 'examples/amber_input'),
+                                    makeDataFiles('share/radical.ensemblemd/user_guide/scripts', 'doc/user_guide/scripts')
+                          ],
 }
 
 setup (**setup_args)

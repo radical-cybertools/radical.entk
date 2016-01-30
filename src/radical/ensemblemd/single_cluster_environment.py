@@ -35,7 +35,7 @@ class SingleClusterEnvironment(ExecutionContext):
                  resource, 
                  cores, 
                  walltime, 
-                 queue=None, 
+                 queue=None, /home/vivek/Research/ves/test_enmd/local/lib/python2.7/site-packages/radical/ensemblemd/single_cluster_environment.py
                  username=None, 
                  project=None, 
                  cleanup=False, 
