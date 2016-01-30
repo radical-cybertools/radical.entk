@@ -41,7 +41,7 @@ class MSSA(SimulationAnalysisLoop):
            previous simulation with instance 5 is referenced.
         """
         link_input_data = []
-        for i in range(1, self.simlation_instances+1):
+        for i in range(1, self.simulation_instances+1):
             link_input_data.append("$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
 
         k = Kernel(name="misc.ccount")
@@ -63,12 +63,12 @@ if __name__ == "__main__":
                         resource='local.localhost',
                         cores=1,
                         walltime=15,
+                        
                         #username=None,
                         #project=None,
                         #queue = None,
-
-                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-                        database_name='myexps',
+                        #database_url='',
+                        #database_name='',
         )
 
         # Allocate the resources.

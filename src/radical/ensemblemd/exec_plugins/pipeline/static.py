@@ -48,6 +48,9 @@ def resolve_placeholder_vars(working_dirs, stage, task, path):
         else:
             placeholder = path.split('>')[1].strip().split('/')[0]
 
+    # SHARED
+    if placeholder == "$SHARED":
+        return path.replace(placeholder, 'staging://')
 
     if placeholder.startswith("$STAGE_"):
         stage = placeholder.split("$STAGE_")[1]

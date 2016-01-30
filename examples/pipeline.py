@@ -72,12 +72,12 @@ if __name__ == "__main__":
                         resource='local.localhost',
                         cores=1,
                         walltime=15,
+                        
                         #username=None,
                         #project=None,
                         #queue = None,
-
-                        database_url='mongodb://vivek:hawkie91@ds039145.mongolab.com:39145/vivek_enmd',
-#                        database_name='myexps',
+                        #database_url='',
+                        #database_name='',
         )
 
         # Allocate the resources. 

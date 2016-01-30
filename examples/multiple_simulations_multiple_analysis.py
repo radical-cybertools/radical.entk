@@ -57,11 +57,12 @@ if __name__ == "__main__":
                         resource='local.localhost',
                         cores=1,
                         walltime=15,
+                        
                         #username=None,
                         #project=None,
                         #queue = None,
-                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-                        database_name='myexps',
+                        #database_url='',
+                        #database_name='',
         )
 
         # Allocate the resources.

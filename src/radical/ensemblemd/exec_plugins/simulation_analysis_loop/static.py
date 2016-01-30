@@ -30,7 +30,7 @@ _PLUGIN_OPTIONS = []
 
 # ------------------------------------------------------------------------------
 #
-def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, sim_width=None, ana_width=None, type=None):
+def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, type=None):
 
     # If replacement not require, return the path as is
     if '$' not in path:
@@ -57,26 +57,6 @@ def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, 
     # $POST_LOOP
     elif placeholder == "$POST_LOOP":
         return path.replace(placeholder, working_dirs["post_loop"])
-
-    # $PREV_SIMULATION
-    elif placeholder == "$PREV_SIMULATION":
-        if sim_width == ana_width:
-            if type == "analysis":
-                return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(instance)])
-            else:
-                raise Exception("$PREV_SIMULATION can only be referenced within analysis step. ")
-        else:
-            raise Exception("Simulation and analysis 'width' need to be identical for $PREV_SIMULATION to work.")
-
-    # $PREV_ANALYSIS
-    elif placeholder == "$PREV_ANALYSIS":
-        if sim_width == ana_width:
-            if type == "simulation":
-                return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration-1)]['analysis_{0}'.format(instance)])
-            else:
-                raise Exception("$PREV_ANALYSIS can only be referenced within simulation step. ")
-        else:
-            raise Exception("Simulation and analysis 'width' need to be identical for $PREV_SIMULATION to work.")
 
     # $PREV_SIMULATION_INSTANCE_Y
     elif placeholder.startswith("$PREV_SIMULATION_INSTANCE_"):
@@ -124,6 +104,7 @@ class Plugin(PluginBase):
     #
     def __init__(self):
         super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
+        self.working_dirs = {}
 
     # --------------------------------------------------------------------------
     #
@@ -135,6 +116,197 @@ class Plugin(PluginBase):
     def execute_pattern(self, pattern, resource):
 
         pattern_start_time = datetime.datetime.now()
+
+        def get_input_data(kernel,instance=None,iteration=None,ktype=None):
+
+            # INPUT DATA:
+            ip_list = []
+            #------------------------------------------------------------------------------------------------------------------
+            # upload_input_data
+            data_in = []
+            if kernel._kernel._upload_input_data is not None:
+                if isinstance(kernel._kernel._upload_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
+                for i in range(0,len(kernel._kernel._upload_input_data)):
+                    if (ktype=='simulation' or ktype=='analysis'):
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._upload_input_data[i], 
+                        instance=instance, iteration=iteration, type=ktype)
+                    else:
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._upload_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip()
+                                }   
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip())
+                                }   
+                    data_in.append(temp)
+
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # link_input_data
+            data_in = []
+            if kernel._kernel._link_input_data is not None:
+                if isinstance(kernel._kernel._link_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
+                for i in range(0,len(kernel._kernel._link_input_data)):
+                    if (ktype=='simulation' or ktype=='analysis'):
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._link_input_data[i], 
+                        instance=instance, iteration=iteration, type=ktype)
+                    else:
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._link_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.LINK
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.LINK
+                                }
+                    data_in.append(temp)
+
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_input_data
+            data_in = []
+            if kernel._kernel._copy_input_data is not None:
+                if isinstance(kernel._kernel._copy_input_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
+                for i in range(0,len(kernel._kernel._copy_input_data)):
+                    if (ktype=='simulation' or ktype=='analysis'):
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_input_data[i], 
+                        instance=instance, iteration=iteration, type=ktype)
+                    else:
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_input_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.COPY
+                                }
+                    data_in.append(temp)
+
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download input data
+            if kernel.download_input_data is not None:
+                data_in  = kernel.download_input_data
+
+                if ip_list is None:
+                    ip_list = data_in
+                else:
+                    ip_list += data_in
+            #------------------------------------------------------------------------------------------------------------------
+            return ip_list
+            #------------------------------------------------------------------------------------------------------------------
+
+        def get_output_data(kernel,instance=None,iteration=None,ktype=None):
+            # OUTPUT DATA:
+            op_list = []
+            #------------------------------------------------------------------------------------------------------------------
+            # copy_output_data
+            data_out = []
+            if kernel._kernel._copy_output_data is not None:
+                if isinstance(kernel._kernel._copy_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
+                for i in range(0,len(kernel._kernel._copy_output_data)):
+                    if (ktype=='simulation' or ktype=='analysis'):
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_output_data[i], 
+                        instance=instance, iteration=iteration, type=ktype)
+                    else:
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip(),
+                                    'action': radical.pilot.COPY
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip()),
+                                    'action': radical.pilot.COPY
+                                }
+                    data_out.append(temp)
+
+                if op_list is None:
+                    op_list = data_out
+                else:
+                    op_list += data_out
+            #-----------------------------------------------------------------------------------------------------------------
+
+            #------------------------------------------------------------------------------------------------------------------
+            # download_output_data
+            data_out = []
+            if kernel._kernel._download_output_data is not None:
+                if isinstance(kernel._kernel._download_output_data,list):
+                    pass
+                else:
+                    kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
+                for i in range(0,len(kernel._kernel._download_output_data)):
+                    if (ktype=='simulation' or ktype=='analysis'):
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._download_output_data[i], 
+                        instance=instance, iteration=iteration, type=ktype)
+                    else:
+                        var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._download_output_data[i])
+                    if len(var.split('>')) > 1:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': var.split('>')[1].strip()
+                                }
+                    else:
+                        temp = {
+                                    'source': var.split('>')[0].strip(),
+                                    'target': os.path.basename(var.split('>')[0].strip())
+                                }
+                    data_out.append(temp)
+
+                if op_list is None:
+                    op_list = data_out
+                else:
+                    op_list += data_out
+
+            #------------------------------------------------------------------------------------------------------------------
+            return op_list
+            #------------------------------------------------------------------------------------------------------------------
+
+
 
         #-----------------------------------------------------------------------
         #
@@ -151,7 +323,6 @@ class Plugin(PluginBase):
 
         self._reporter.header("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(pattern.iterations, resource._cores, resource._resource_key))
 
-        working_dirs = {}
         all_cus = []
 
         #print resource._pilot.description['cores']
@@ -188,207 +359,54 @@ class Plugin(PluginBase):
                 enmd_overhead_dict['preloop']['start_time'] = probe_preloop_start
                 
             pre_loop = pattern.pre_loop()
-            pre_loop._bind_to_resource(resource._resource_key)
 
-            cud = radical.pilot.ComputeUnitDescription()
-            cud.name = "pre_loop"
+            if pre_loop is not None:
+                pre_loop._bind_to_resource(resource._resource_key)
 
-            cud.pre_exec       = pre_loop._cu_def_pre_exec
-            cud.executable     = pre_loop._cu_def_executable
-            cud.arguments      = pre_loop.arguments
-            cud.mpi            = pre_loop.uses_mpi
-            cud.input_staging  = None
-            cud.output_staging = None
+                cud = radical.pilot.ComputeUnitDescription()
+                cud.name = "pre_loop"
 
-            # INPUT DATA:
-            #------------------------------------------------------------------------------------------------------------------
-            # upload_input_data
-            data_in = []
-            if pre_loop._kernel._upload_input_data is not None:
-                if isinstance(pre_loop._kernel._upload_input_data,list):
-                    pass
-                else:
-                    pre_loop._kernel._upload_input_data = [pre_loop._kernel._upload_input_data]
-                for i in range(0,len(pre_loop._kernel._upload_input_data)):
-                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._upload_input_data[i])
-                    if len(var.split('>')) > 1:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip()
-                                }
-                    else:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': os.path.basename(var.split('>')[0].strip())
-                                }
-                    data_in.append(temp)
+                cud.pre_exec       = pre_loop._cu_def_pre_exec
+                cud.executable     = pre_loop._cu_def_executable
+                cud.arguments      = pre_loop.arguments
+                cud.mpi            = pre_loop.uses_mpi
+                cud.input_staging  = get_input_data(kernel=pre_loop)
+                cud.output_staging = get_output_data(kernel=pre_loop)
+                           
 
-                if cud.input_staging is None:
-                    cud.input_staging = data_in
-                else:
-                    cud.input_staging += data_in
-            #------------------------------------------------------------------------------------------------------------------
+                self.get_logger().debug("Created pre_loop CU: {0}.".format(cud.as_dict()))
 
-            #------------------------------------------------------------------------------------------------------------------
-            # link_input_data
-            data_in = []
-            if pre_loop._kernel._link_input_data is not None:
-                if isinstance(pre_loop._kernel._link_input_data,list):
-                    pass
-                else:
-                    pre_loop._kernel._link_input_data = [pre_loop._kernel._link_input_data]
-                for i in range(0,len(pre_loop._kernel._link_input_data)):
-                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._link_input_data[i])
-                    if len(var.split('>')) > 1:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip(),
-                                    'action': radical.pilot.LINK
-                                }
-                    else:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': os.path.basename(var.split('>')[0].strip()),
-                                    'action': radical.pilot.LINK
-                                }
-                    data_in.append(temp)
+                self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
+                self._reporter.info("\nWaiting for pre_loop step to complete.")
+                if profiling == 1:
+                    probe_preloop_wait = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
 
-                if cud.input_staging is None:
-                    cud.input_staging = data_in
-                else:
-                    cud.input_staging += data_in
-            #------------------------------------------------------------------------------------------------------------------
+                unit = resource._umgr.submit_units(cud)
+                all_cus.append(unit)
+                resource._umgr.wait_units(unit.uid)
 
-            #------------------------------------------------------------------------------------------------------------------
-            # copy_input_data
-            data_in = []
-            if pre_loop._kernel._copy_input_data is not None:
-                if isinstance(pre_loop._kernel._copy_input_data,list):
-                    pass
-                else:
-                    pre_loop._kernel._copy_input_data = [pre_loop._kernel._copy_input_data]
-                for i in range(0,len(pre_loop._kernel._copy_input_data)):
-                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._copy_input_data[i])
-                    if len(var.split('>')) > 1:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip(),
-                                    'action': radical.pilot.COPY
-                                }
-                    else:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': os.path.basename(var.split('>')[0].strip()),
-                                    'action': radical.pilot.COPY
-                                }
-                    data_in.append(temp)
+                if profiling == 1:
+                    probe_preloop_res = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['res_time'] = probe_preloop_res
 
-                if cud.input_staging is None:
-                    cud.input_staging = data_in
-                else:
-                    cud.input_staging += data_in
-            #------------------------------------------------------------------------------------------------------------------
+                self.get_logger().info("Pre_loop completed.")
 
-            #------------------------------------------------------------------------------------------------------------------
-            # download input data
-            if pre_loop.download_input_data is not None:
-                data_in  = pre_loop.download_input_data
-            if cud.input_staging is None:
-                cud.input_staging = data_in
+                if unit.state != radical.pilot.DONE:
+                    raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
+
+                self.working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
+
+                # Process CU information and append it to the dictionary
+                if profiling == 1:
+                    probe_preloop_done = datetime.datetime.now()
+                    enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
+                    cu_dict['pre_loop'] = unit
+
+
+                self._reporter.ok('>> done')
             else:
-                cud.input_staging += data_in
-            #------------------------------------------------------------------------------------------------------------------
-
-            # OUTPUT DATA:
-            #------------------------------------------------------------------------------------------------------------------
-            # copy_output_data
-            data_out = []
-            if pre_loop._kernel._copy_output_data is not None:
-                if isinstance(pre_loop._kernel._copy_output_data,list):
-                    pass
-                else:
-                    pre_loop._kernel._copy_output_data = [pre_loop._kernel._copy_output_data]
-                for i in range(0,len(pre_loop._kernel._copy_output_data)):
-                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._copy_output_data[i])
-                    if len(var.split('>')) > 1:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip(),
-                                    'action': radical.pilot.COPY
-                                }
-                    else:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': os.path.basename(var.split('>')[0].strip()),
-                                    'action': radical.pilot.COPY
-                                }
-                    data_out.append(temp)
-
-                if cud.output_staging is None:
-                    cud.output_staging = data_out
-                else:
-                    cud.output_staging += data_out
-            #-----------------------------------------------------------------------------------------------------------------
-
-            #------------------------------------------------------------------------------------------------------------------
-            # download_output_data
-            data_out = []
-            if pre_loop._kernel._download_output_data is not None:
-                if isinstance(pre_loop._kernel._download_output_data,list):
-                    pass
-                else:
-                    pre_loop._kernel._download_output_data = [pre_loop._kernel._download_output_data]
-                for i in range(0,len(pre_loop._kernel._download_output_data)):
-                    var=resolve_placeholder_vars(working_dirs=working_dirs, path=pre_loop._kernel._download_output_data[i])
-                    if len(var.split('>')) > 1:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': var.split('>')[1].strip()
-                                }
-                    else:
-                        temp = {
-                                    'source': var.split('>')[0].strip(),
-                                    'target': os.path.basename(var.split('>')[0].strip())
-                                }
-                    data_out.append(temp)
-
-                if cud.output_staging is None:
-                    cud.output_staging = data_out
-                else:
-                    cud.output_staging += data_out
-            #------------------------------------------------------------------------------------------------------------------
-
-            self.get_logger().debug("Created pre_loop CU: {0}.".format(cud.as_dict()))
-
-            self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
-            self._reporter.info("\nWaiting for pre_loop step to complete.")
-            if profiling == 1:
-                probe_preloop_wait = datetime.datetime.now()
-                enmd_overhead_dict['preloop']['wait_time'] = probe_preloop_wait
-
-            unit = resource._umgr.submit_units(cud)
-            all_cus.append(unit)
-            resource._umgr.wait_units(unit.uid)
-
-            if profiling == 1:
-                probe_preloop_res = datetime.datetime.now()
-                enmd_overhead_dict['preloop']['res_time'] = probe_preloop_res
-
-            self.get_logger().info("Pre_loop completed.")
-
-            if unit.state != radical.pilot.DONE:
-                raise EnsemblemdError("Pre-loop CU failed with error: {0}".format(unit.stdout))
-
-            working_dirs["pre_loop"] = saga.Url(unit.working_directory).path
-
-            # Process CU information and append it to the dictionary
-            if profiling == 1:
-                probe_preloop_done = datetime.datetime.now()
-                enmd_overhead_dict['preloop']['stop_time'] = probe_preloop_done
-                cu_dict['pre_loop'] = unit
-
-
-            self._reporter.ok('>> done')
+                self.get_logger().info("No pre_loop stage.")
                  
 
             ########################################################################
@@ -396,7 +414,7 @@ class Plugin(PluginBase):
             #
             for iteration in range(1, pattern.iterations+1):
 
-                working_dirs['iteration_{0}'.format(iteration)] = {}
+                self.working_dirs['iteration_{0}'.format(iteration)] = {}
 
                 ################################################################
                 # EXECUTE SIMULATION STEPS
@@ -447,168 +465,9 @@ class Plugin(PluginBase):
                         cud.executable     = sim_step._cu_def_executable
                         cud.arguments      = sim_step.arguments
                         cud.mpi            = sim_step.uses_mpi
-                        cud.input_staging  = None
-                        cud.output_staging = None
-
-                        # INPUT DATA:
-                        #------------------------------------------------------------------------------------------------------------------
-                        # upload_input_data
-                        data_in = []
-                        if sim_step._kernel._upload_input_data is not None:
-                            if isinstance(sim_step._kernel._upload_input_data,list):
-                                pass
-                            else:
-                                sim_step._kernel._upload_input_data = [sim_step._kernel._upload_input_data]
-                            for i in range(0,len(sim_step._kernel._upload_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._upload_input_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip()
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip())
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # link_input_data
-                        data_in = []
-                        if sim_step._kernel._link_input_data is not None:
-                            if isinstance(sim_step._kernel._link_input_data,list):
-                                pass
-                            else:
-                                sim_step._kernel._link_input_data = [sim_step._kernel._link_input_data]
-                            for i in range(0,len(sim_step._kernel._link_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._link_input_data[i],s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.LINK
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.LINK
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # copy_input_data
-                        data_in = []
-                        if sim_step._kernel._copy_input_data is not None:
-                            if isinstance(sim_step._kernel._copy_input_data,list):
-                                pass
-                            else:
-                                sim_step._kernel._copy_input_data = [sim_step._kernel._copy_input_data]
-                            for i in range(0,len(sim_step._kernel._copy_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._copy_input_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.COPY
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.COPY
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # download input data
-                        if sim_step.download_input_data is not None:
-                            data_in  = sim_step.download_input_data
-                            if cud.input_staging is None:
-                                cud.input_staging = data_in
-                            else:
-                                cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        # OUTPUT DATA:
-                        #------------------------------------------------------------------------------------------------------------------
-                        # copy_output_data
-                        data_out = []
-                        if sim_step._kernel._copy_output_data is not None:
-                            if isinstance(sim_step._kernel._copy_output_data,list):
-                                pass
-                            else:
-                                sim_step._kernel._copy_output_data = [sim_step._kernel._copy_output_data]
-                            for i in range(0,len(sim_step._kernel._copy_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._copy_output_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.COPY
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.COPY
-                                        }
-                                data_out.append(temp)
-
-                        if cud.output_staging is None:
-                            cud.output_staging = data_out
-                        else:
-                            cud.output_staging += data_out
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # download_output_data
-                        data_out = []
-                        if sim_step._kernel._download_output_data is not None:
-                            if isinstance(sim_step._kernel._download_output_data,list):
-                                pass
-                            else:
-                                sim_step._kernel._download_output_data = [sim_step._kernel._download_output_data]
-                            for i in range(0,len(sim_step._kernel._download_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, sim_step._kernel._download_output_data[i], s_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "simulation")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip()
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip())
-                                        }
-                                data_out.append(temp)
-
-                        if cud.output_staging is None:
-                            cud.output_staging = data_out
-                        else:
-                            cud.output_staging += data_out
-                        #------------------------------------------------------------------------------------------------------------------
-
-
+                        cud.input_staging  = get_input_data(kernel=sim_step,instance=s_instance, iteration=iteration,ktype='simulation')
+                        cud.output_staging = get_output_data(kernel=sim_step,instance=s_instance, iteration=iteration,ktype='simulation')
+                     
                         if sim_step.cores is not None:
                             cud.cores = sim_step.cores
 
@@ -663,7 +522,7 @@ class Plugin(PluginBase):
                 i = 0
                 for cu in s_cus:
                     i += 1
-                    working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                    self.working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
                 
                 if profiling == 1:
                     probe_post_sim_end = datetime.datetime.now()
@@ -713,165 +572,8 @@ class Plugin(PluginBase):
                         cud.executable     = ana_step._cu_def_executable
                         cud.arguments      = ana_step.arguments
                         cud.mpi            = ana_step.uses_mpi
-                        cud.input_staging  = None
-                        cud.output_staging = None
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # upload_input_data
-                        data_in = []
-                        if ana_step._kernel._upload_input_data is not None:
-                            if isinstance(ana_step._kernel._upload_input_data,list):
-                                pass
-                            else:
-                                ana_step._kernel._upload_input_data = [ana_step._kernel._upload_input_data]
-                            for i in range(0,len(ana_step._kernel._upload_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._upload_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip()
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip())
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # link_input_data
-                        data_in = []
-                        if ana_step._kernel._link_input_data is not None:
-                            if isinstance(ana_step._kernel._link_input_data,list):
-                                pass
-                            else:
-                                ana_step._kernel._link_input_data = [ana_step._kernel._link_input_data]
-                            for i in range(0,len(ana_step._kernel._link_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._link_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.LINK
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.LINK
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # copy_input_data
-                        data_in = []
-                        if ana_step._kernel._copy_input_data is not None:
-                            if isinstance(ana_step._kernel._copy_input_data,list):
-                                pass
-                            else:
-                                ana_step._kernel._copy_input_data = [ana_step._kernel._copy_input_data]
-                            for i in range(0,len(ana_step._kernel._copy_input_data)):
-                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._copy_input_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.COPY
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.COPY
-                                        }
-                                data_in.append(temp)
-
-                        if cud.input_staging is None:
-                            cud.input_staging = data_in
-                        else:
-                            cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # download input data
-                        if ana_step.download_input_data is not None:
-                            data_in  = ana_step.download_input_data
-                            if cud.input_staging is None:
-                                cud.input_staging = data_in
-                            else:
-                                cud.input_staging += data_in
-                        #------------------------------------------------------------------------------------------------------------------
-
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # copy_output_data
-                        data_out = []
-                        if ana_step._kernel._copy_output_data is not None:
-                            if isinstance(ana_step._kernel._copy_output_data,list):
-                                pass
-                            else:
-                                ana_step._kernel._copy_output_data = [ana_step._kernel._copy_output_data]
-                            for i in range(0,len(ana_step._kernel._copy_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._copy_output_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip(),
-                                            'action': radical.pilot.COPY
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip()),
-                                            'action': radical.pilot.COPY
-                                        }
-                                data_out.append(temp)
-
-                        if cud.output_staging is None:
-                            cud.output_staging = data_out
-                        else:
-                            cud.output_staging += data_out
-                        #------------------------------------------------------------------------------------------------------------------
-
-                        #------------------------------------------------------------------------------------------------------------------
-                        # download_output_data
-                        data_out = []
-                        if ana_step._kernel._download_output_data is not None:
-                            if isinstance(ana_step._kernel._download_output_data,list):
-                                pass
-                            else:
-                                ana_step._kernel._download_output_data = [ana_step._kernel._download_output_data]
-                            for i in range(0,len(ana_step._kernel._download_output_data)):
-                                var=resolve_placeholder_vars(working_dirs, ana_step._kernel._download_output_data[i], a_instance, iteration, pattern._simulation_instances, pattern._analysis_instances, "analysis")
-                                if len(var.split('>')) > 1:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': var.split('>')[1].strip()
-                                        }
-                                else:
-                                    temp = {
-                                            'source': var.split('>')[0].strip(),
-                                            'target': os.path.basename(var.split('>')[0].strip())
-                                        }
-                                data_out.append(temp)
-
-                        if cud.output_staging is None:
-                            cud.output_staging = data_out
-                        else:
-                            cud.output_staging += data_out
-                        #------------------------------------------------------------------------------------------------------------------
+                        cud.input_staging  = get_input_data(kernel=ana_step,instance=a_instance, iteration=iteration,ktype='analysis')
+                        cud.output_staging = get_output_data(kernel=ana_step,instance=a_instance, iteration=iteration,ktype='analysis')
 
 
                         if ana_step.cores is not None:
@@ -930,7 +632,7 @@ class Plugin(PluginBase):
                 i = 0
                 for cu in a_cus:
                     i += 1
-                    working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
+                    self.working_dirs['iteration_{0}'.format(iteration)]['analysis_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
                 if profiling == 1:
                     probe_post_ana_end = datetime.datetime.now()

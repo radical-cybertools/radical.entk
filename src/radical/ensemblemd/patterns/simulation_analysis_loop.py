@@ -140,9 +140,10 @@ class SimulationAnalysisLoop(ExecutionPattern):
             :class:`radical.ensemblemd.Kernel` object(s). An exception is thrown otherwise.
 
         """
-        raise NotImplementedError(
-            method_name="pre_loop",
-            class_name=type(self))
+        #raise NotImplementedError(
+        #    method_name="pre_loop",
+        #    class_name=type(self))
+        return None
 
     #---------------------------------------------------------------------------
     #
@@ -213,9 +214,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
             :class:`radical.ensemblemd.Kernel` object. An exception is thrown otherwise.
 
         """
-        raise NotImplementedError(
-          method_name="post_loop",
-          class_name=type(self))
+        return None
 
     @property
     def adaptive_simulation(self):
