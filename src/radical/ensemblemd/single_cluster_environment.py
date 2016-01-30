@@ -102,7 +102,7 @@ class SingleClusterEnvironment(ExecutionContext):
         """Deallocates the resources.
         """
         profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-        self._reporter.info('Starting Deallocation\n')
+        self._reporter.info('\nStarting Deallocation..\n')
         if profiling == 1:
             start_time = datetime.datetime.now()
 
@@ -304,11 +304,11 @@ class SingleClusterEnvironment(ExecutionContext):
             plugin_name=force_plugin)
 
 
-        self._reporter.info('Verifying pattern')
+        self._reporter.info('\nVerifying pattern')
         plugin.verify_pattern(pattern, self)
         self._reporter.ok('>>ok')
         try:
-            self._reporter.info('Starting pattern execution')
+            self._reporter.info('\nStarting pattern execution')
             plugin.execute_pattern(pattern, self)
         except KeyboardInterrupt:
             self._exctype,self._excvalue,self._traceback = sys.exc_info()           

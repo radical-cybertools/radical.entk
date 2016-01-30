@@ -27,14 +27,14 @@ class CharCount(Pipeline):
     def __init__(self, steps,instances):
         Pipeline.__init__(self, steps,instances)
 
-    def step_1(self, instance):
+    def stage_1(self, instance):
         """The first step of the pipeline creates a 1 MB ASCI file.
         """
         k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
         return k
 
-    def step_2(self, instance):
+    def stage_2(self, instance):
         """The second step of the pipeline does a character frequency analysis
            on the file generated the first step. The result is transferred back
            to the host running this script.
@@ -45,18 +45,18 @@ class CharCount(Pipeline):
         """
         k = Kernel(name="misc.ccount")
         k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
-        k.link_input_data      = "$STEP_1/asciifile-{0}.dat".format(instance)
+        k.link_input_data      = "$STAGE_1/asciifile-{0}.dat".format(instance)
         k.download_output_data = "cfreqs-{0}.dat".format(instance)
         return k
 
-    def step_3(self, instance):
+    def stage_3(self, instance):
         """The third step of the pipeline creates a checksum of the output file
            of the second step. The result is transferred back to the host
            running this script.
         """
         k = Kernel(name="misc.chksum")
         k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sha1".format(instance)]
-        k.link_input_data      = "$STEP_2/cfreqs-{0}.dat".format(instance)
+        k.link_input_data      = "$STAGE_2/cfreqs-{0}.dat".format(instance)
         k.download_output_data = "cfreqs-{0}.sha1".format(instance)
         return k
 
@@ -76,8 +76,8 @@ if __name__ == "__main__":
                         #project=None,
                         #queue = None,
 
-                        database_url='mongodb://ec2-54-221-194-147.compute-1.amazonaws.com:24242',
-                        database_name='myexps',
+                        database_url='mongodb://vivek:hawkie91@ds039145.mongolab.com:39145/vivek_enmd',
+#                        database_name='myexps',
         )
 
         # Allocate the resources. 

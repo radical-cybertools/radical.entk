@@ -67,7 +67,7 @@ class Plugin(PluginBase):
     # --------------------------------------------------------------------------
     #
     def verify_pattern(self, pattern, resource):
-        self.get_logger().info("Verifying pattern...")
+        pass
 
     # --------------------------------------------------------------------------
     #
@@ -250,7 +250,7 @@ class Plugin(PluginBase):
             
         #-----------------------------------------------------------------------
 
-        self._reporter.ok('>>ok')
+        
         #-----------------------------------------------------------------------
         # Get details of the Bag of Pipes
         num_tasks = pattern.tasks
@@ -276,7 +276,8 @@ class Plugin(PluginBase):
                         self.tot_fin_tasks[cur_stage-1]+=1
                         # Check if this is the last task of the stage
                         if self.tot_fin_tasks[cur_stage-1] == num_tasks:
-                            self._reporter.info('All tasks in stage {0} have finished\n'.format(cur_stage))
+                            self._reporter.info('\nAll tasks in stage {0} have finished'.format(cur_stage))
+                            self._reporter.ok('>> done')
                             self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
                     #-----------------------------------------------------------------------
                     # Log unit working directories for placeholders
@@ -301,7 +302,10 @@ class Plugin(PluginBase):
             resource._cores, resource._resource_key))
         #-----------------------------------------------------------------------
         # Wait for Pilot to go Active
+        self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
+        self._reporter.info("Job waiting on queue...".format(resource._resource_key))
         resource._pmgr.wait_pilots(resource._pilot.uid,u'Active')
+        self._reporter.ok("\nJob is now running !\n".format(resource._resource_key))
         #-----------------------------------------------------------------------
 
 
@@ -337,7 +341,8 @@ class Plugin(PluginBase):
 
         task_units = resource._umgr.submit_units(task_units_desc)
         self.get_logger().info('Submitted all tasks of stage 1')
-        self._reporter.info('Submitted all tasks of stage 1\n')
+        self._reporter.info('Submitted all tasks of stage 1')
+        self._reporter.ok('>> ok')
         #-----------------------------------------------------------------------
 
         #-----------------------------------------------------------------------
@@ -351,7 +356,8 @@ class Plugin(PluginBase):
 
                 if len(self.tot_fin_tasks) < cur_stage:
                     self.tot_fin_tasks.append(0)
-                    self._reporter.info('Starting submission of tasks in stage {0}\n'.format(cur_stage))
+                    self._reporter.info('\nStarting submission of tasks in stage {0}'.format(cur_stage))
+                    self._reporter.ok('>> ok')
                     
                 self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
