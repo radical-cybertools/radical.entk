@@ -16,6 +16,5 @@ plugin_registry = [ "radical.ensemblemd.exec_plugins.pipeline.static",
                     "radical.ensemblemd.exec_plugins.replica_exchange.static_pattern_1",
                     "radical.ensemblemd.exec_plugins.replica_exchange.static_pattern_2",
                     "radical.ensemblemd.exec_plugins.replica_exchange.static_pattern_3",
-                    "radical.ensemblemd.exec_plugins.allpairs.static",
-                    "radical.ensemblemd.exec_plugins.bag_of_tasks.static"
+                    "radical.ensemblemd.exec_plugins.allpairs.static"
                   ]
