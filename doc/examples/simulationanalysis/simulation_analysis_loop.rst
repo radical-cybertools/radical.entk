@@ -1,7 +1,7 @@
 .. _simulation_analysis_example:
 
 *************************************
-Simulation-Analysis Example 
+Simulation Analysis Loop Example 
 *************************************
 
 This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
