@@ -317,6 +317,16 @@ class Plugin(PluginBase):
                 self.get_logger().error("Pattern execution FAILED.")
                 sys.exit(1)
 
+        #-----------------------------------------------------------------------
+        #
+        def create_filecheck_command(files_list):
+
+            command_list = []
+            for f in files_list:
+                command = 'if [ -f "{0}" ]; then exit 0; else echo "File {0} does not exist" >&2; exit 1; fi;'.format(f)
+                command_list.append(command)
+
+            return command_list
 
         self._reporter.ok('>>ok')
         self.get_logger().info("Executing simulation-analysis loop with {0} iterations on {1} allocated core(s) on '{2}'".format(pattern.iterations, resource._cores, resource._resource_key))
@@ -372,6 +382,9 @@ class Plugin(PluginBase):
                 cud.mpi            = pre_loop.uses_mpi
                 cud.input_staging  = get_input_data(kernel=pre_loop)
                 cud.output_staging = get_output_data(kernel=pre_loop)
+
+                if pre_loop.exists_remote is not None:
+                    cud.post_exec = create_filecheck_command(pre_loop.exists_remote)
                            
 
                 self.get_logger().debug("Created pre_loop CU: {0}.".format(cud.as_dict()))
@@ -470,6 +483,9 @@ class Plugin(PluginBase):
                      
                         if sim_step.cores is not None:
                             cud.cores = sim_step.cores
+
+                        if sim_step.exists_remote is not None:
+                            cud.post_exec = create_filecheck_command(sim_step.exists_remote)
 
                         s_units.append(cud)
 
@@ -578,6 +594,9 @@ class Plugin(PluginBase):
 
                         if ana_step.cores is not None:
                             cud.cores = ana_step.cores
+
+                        if ana_step.exists_remote is not None:
+                            cud.post_exec = create_filecheck_command(ana_step.exists_remote)
 
                         a_units.append(cud)
 

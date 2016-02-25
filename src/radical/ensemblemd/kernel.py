@@ -27,6 +27,7 @@ class Kernel(object):
 
         self._engine = Engine()
         self._kernel = self._engine.get_kernel_plugin(name)
+        self._kernel._exists_remote = None
 
         if args is not None:
             self.set_args(args)
@@ -422,6 +423,21 @@ class Kernel(object):
         """
         return self._kernel.instance_type
 
+
+    #---------------------------------------------------------------------------
+    #
+    @property
+    def exists_remote(self):
+        return self._kernel._exists_remote
+
+    @exists_remote.setter
+    def exists_remote(self, files_list):
+
+        if type(files_list) != list:
+            files_list = [files_list]
+
+        self._kernel._exists_remote = files_list
+    
 
     #---------------------------------------------------------------------------
     #

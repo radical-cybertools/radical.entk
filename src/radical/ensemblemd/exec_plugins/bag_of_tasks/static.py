@@ -125,6 +125,7 @@ class Plugin(PluginBase):
                     enmd_overhead_dict['step_{0}'.format(step)]['start_time'] = probe_start_time
 
                 working_dirs['step_{0}'.format(step)] = {}
+                check_instance_files = []
 
                 # Get the method names
                 s_meth = getattr(pattern, 'step_{0}'.format(step))
@@ -322,6 +323,7 @@ class Plugin(PluginBase):
 
                 self.get_logger().info("Submitted tasks for step_{0}.".format(step))
                 self._reporter.info("\nWaiting for step_{0} to complete.".format(step))
+
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['wait_time'] = datetime.datetime.now()
 
@@ -338,10 +340,6 @@ class Plugin(PluginBase):
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
 
-                failed_units = ""
-                for unit in p_cus:
-                    if unit.state != radical.pilot.DONE:
-                        failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
 
                 # TODO: ensure working_dir <-> instance mapping
                 i = 0
@@ -349,6 +347,10 @@ class Plugin(PluginBase):
                     i += 1
                     working_dirs['step_{0}'.format(step)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
+                failed_units = ""
+                for unit in p_cus:
+                    if unit.state != radical.pilot.DONE:
+                        failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
 
                 if profiling == 1:
                     enmd_overhead_dict['step_{0}'.format(step)]['stop_time'] = datetime.datetime.now()
