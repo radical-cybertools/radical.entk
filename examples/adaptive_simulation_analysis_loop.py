@@ -74,15 +74,15 @@ if __name__ == "__main__":
         # Create a new static execution context with one resource and a fixed
         # number of cores and runtime.
         cluster = SingleClusterEnvironment(
-            resource="xsede.stampede",
+            resource="local.localhost",
             cores=16,
             walltime=5,
-            username='vivek91',
+            #username='username',
 
-            project = 'TG-MCB090174',
-            queue = 'development',
+            #project = None,
+            #queue = None,
 
-            database_url=None,
+            #database_url=None,
             #database_name='myexps',
         )
 

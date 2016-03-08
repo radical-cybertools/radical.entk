@@ -183,6 +183,7 @@ class Kernel(object):
     #
     @property
     def arguments(self):
+        """List of arguments to the kernel as defined by the kernel definition files"""
         return self._kernel._arguments
 
     @arguments.setter
@@ -428,6 +429,9 @@ class Kernel(object):
     #
     @property
     def exists_remote(self):
+        """Method to check if a kernel output file (or a list of files) exists on remote. This method is useful when 
+        using wrappers around executables
+        """
         return self._kernel._exists_remote
 
     @exists_remote.setter

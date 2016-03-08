@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-
-
 
 __author__       = "Vivek <vivek.balasubramanian@rutgers.edu>"
-__copyright__    = "Copyright 2014, http://radical.rutgers.edu"
+__copyright__    = "Copyright 2016, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Multiple Simulations Instances, Single Analysis Instance Example (MSSA)"
+__example_name__ = "Sequential SAL"
 
 
 import sys
@@ -19,10 +16,34 @@ from radical.ensemblemd import SingleClusterEnvironment
 
 # ------------------------------------------------------------------------------
 #
-class MSSA(SimulationAnalysisLoop):
-    """MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)
-       scheme can be implemented with the SimulationAnalysisLoop pattern.
-    """
+class SAL_1(SimulationAnalysisLoop):
+
+    def __init__(self, iterations, simulation_instances, analysis_instances):
+        SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances)
+
+
+    def simulation_step(self, iteration, instance):
+        """In the simulation step we
+        """
+        k = Kernel(name="misc.mkfile")
+        k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(instance)]
+        k.download_output_data = ['asciifile-{0}.dat'.format(instance)]
+        return [k]
+
+    def analysis_step(self, iteration, instance):
+
+        k1 = Kernel(name="misc.randval")
+        k1.arguments            = ["--upperlimit=3", "--filename=iters.dat"]
+        k1.download_output_data = "iters.dat"
+
+        k2 = Kernel(name="misc.randval")
+        k2.arguments = ["--upperlimit=16","--filename=sims.dat"]
+        k2.download_output_data = "sims.dat"
+
+        return [k1,k2]
+
+class SAL_2(SimulationAnalysisLoop):
+
     def __init__(self, iterations, simulation_instances, analysis_instances):
         SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances)
 
@@ -32,15 +53,10 @@ class MSSA(SimulationAnalysisLoop):
         """
         k = Kernel(name="misc.mkfile")
         k.arguments = ["--size=1000", "--filename=asciifile.dat"]
-        k.exists_remote = ['asciifile.dat']
         return [k]
 
     def analysis_step(self, iteration, instance):
-        """In the analysis step we use the ``$PREV_SIMULATION`` data reference
-           to refer to the previous simulation. The same
-           instance is picked implicitly, i.e., if this is instance 5, the
-           previous simulation with instance 5 is referenced.
-        """
+
         link_input_data = []
         for i in range(1, self.simulation_instances+1):
             link_input_data.append("$PREV_SIMULATION_INSTANCE_{instance}/asciifile.dat > asciifile-{instance}.dat".format(instance=i))
@@ -77,9 +93,24 @@ if __name__ == "__main__":
 
         # We set both the the simulation and the analysis step 'instances' to 16.
         # If they
-        mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
+        sal_1 = SAL_1(iterations=1, simulation_instances=8, analysis_instances=1)
+        cluster.run(sal_1)
 
-        cluster.run(mssa)
+        while( not ((os.path.isfile('iters.dat')) and(os.path.isfile('sims.dat')))):
+            continue
+
+
+        f1 = open('iters.dat','r')
+        new_iters = int(f1.readline().strip())
+        f1.close()
+
+        f2 = open('sims.dat','r')
+        new_sims = int(f2.readline().strip())
+        f2.close()
+
+        print 'Commencing second SAL workload'
+        sal_2 = SAL_2(iterations=new_iters, simulation_instances=new_sims, analysis_instances=1)
+        cluster.run(sal_2)
 
         cluster.deallocate()
 

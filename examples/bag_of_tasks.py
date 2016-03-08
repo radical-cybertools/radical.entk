@@ -38,6 +38,8 @@ class CalculateChecksums(BagofTasks):
         k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
         k.upload_input_data  = "UTF-8-demo.txt"
         k.download_output_data = "checksum{0}.sha1".format(instance)
+        k.post_exec = ['if [ -f "checksu{0}.sha1" ]; then exit 0; else echo "File checksum{0}.sha1 does not exist" >&2; exit 1; fi'.format(instance)]
+		
         return k
 
 
