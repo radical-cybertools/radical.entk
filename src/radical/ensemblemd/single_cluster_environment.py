@@ -3,7 +3,7 @@
 """TODO: Docstring.
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -25,296 +25,318 @@ CONTEXT_NAME = "Static"
 #-------------------------------------------------------------------------------
 #
 class SingleClusterEnvironment(ExecutionContext):
-    """A static execution context provides a fixed set of computational
-       resources.
-    """
+	"""A static execution context provides a fixed set of computational
+	   resources.
+	"""
 
-    #---------------------------------------------------------------------------
-    #
-    def __init__(self, 
-                 resource, 
-                 cores, 
-                 walltime, 
-                 queue=None,
-                 username=None, 
-                 project=None, 
-                 cleanup=False, 
-                 database_url=None, 
-                 database_name=None,
-                 access_schema=None):
-        """Creates a new ExecutionContext instance.
-        """
-        self._allocate_called = False
-        self._umgr = None
-        self._session = None
-        self._pilot = None
-        self._pmgr = None
-        self._exctype = None
-        self._excvalue = None
-        self._traceback = None
+	#---------------------------------------------------------------------------
+	#
+	def __init__(self, 
+				 resource, 
+				 cores, 
+				 walltime, 
+				 queue=None,
+				 username=None, 
+				 project=None, 
+				 cleanup=False, 
+				 database_url=None, 
+				 database_name=None,
+				 access_schema=None):
+		"""Creates a new ExecutionContext instance.
+		"""
+		self._allocate_called = False
+		self._umgr = None
+		self._session = None
+		self._pilot = None
+		self._pmgr = None
+		self._exctype = None
+		self._excvalue = None
+		self._traceback = None
 
-        self._resource_key = resource
-        self._queue = queue
-        self._cores = cores
-        self._walltime = walltime
-        self._username = username
-        self._project = project
-        self._cleanup = cleanup
-        self._database_url = database_url
-        self._database_name = database_name
-        self._schema = access_schema
-
-
-        #shared data
-        self._shared_data = None
-
-        self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
-        self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
-
-        super(SingleClusterEnvironment, self).__init__()
-
-    # --------------------------------------------------------------------------
-    #
-    def get_logger(self):
-        return self._logger
-
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def name(self):
-        """Returns the name of the execution context.
-        """
-        return CONTEXT_NAME
+		self._resource_key = resource
+		self._queue = queue
+		self._cores = cores
+		self._walltime = walltime
+		self._username = username
+		self._project = project
+		self._cleanup = cleanup
+		self._database_url = database_url
+		self._database_name = database_name
+		self._schema = access_schema
 
 
-    @property
-    def shared_data(self):
-        return self._shared_data
+		#shared data
+		self._shared_data = None
 
-    @shared_data.setter
-    def shared_data(self,data):
-        self._shared_data = data
-    
+		self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
+		self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
 
-    #---------------------------------------------------------------------------
-    #
-    def deallocate(self):
-        """Deallocates the resources.
-        """
-        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-        self._reporter.info('\nStarting Deallocation..\n')
-        if profiling == 1:
-            start_time = datetime.datetime.now()
+		# Profiling
+		self._profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+		self._profile_entities = {}
+		self._num_patterns = 0
+		self._core_ov_dict = {}
 
-        self.get_logger().info("Deallocating Cluster")
+		super(SingleClusterEnvironment, self).__init__()
 
-        if self._exctype != None:
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
-            self._reporter.error("Fatal error: {0}.".format(str(self._excvalue)))
-            traceback.print_tb(self._traceback)
-        
+	# --------------------------------------------------------------------------
+	#
+	def get_logger(self):
+		return self._logger
 
-        self._session.close(cleanup=self._cleanup)
-        self._reporter.ok('>>done \n')    
+	#---------------------------------------------------------------------------
+	#
+	@property
+	def name(self):
+		"""Returns the name of the execution context.
+		"""
+		return CONTEXT_NAME
 
-        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-        if profiling == 1:
-            stop_time = datetime.datetime.now()
-            f1 = open('enmd_core_overhead.csv','a')
-            f1.write('deallocate,start_time,{0}\n'.format(start_time))
-            f1.write('deallocate,stop_time,{0}\n'.format(stop_time))
-            f1.close()
 
-            f1 = open('pilot_profile_{mysession}.csv'.format(mysession=self._session.uid),'w')
-            title = "uid, New, PendingLaunch, Launching, PendingActive, Active, Canceled, Done"
-            f1.write(title + "\n\n")
-            st_data = {}
-            for st in self._pilot.state_history:
-                st_dict = st.as_dict()
-                st_data["{0}".format( st_dict["state"] )] = {}
-                st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
+	@property
+	def shared_data(self):
+		return self._shared_data
 
-            states = ['New','PendingLaunch','Launching','PendingActive','Active','Canceled','Done']
+	@shared_data.setter
+	def shared_data(self,data):
+		self._shared_data = data
+	
 
-            for state in states:
-                if (state in st_data) is False:
-                    st_data[state] = None
+	#---------------------------------------------------------------------------
+	#
+	def deallocate(self):
+		"""Deallocates the resources.
+		"""
+		
+		self._reporter.info('\nStarting Deallocation..\n')
 
-            line = "{uid}, {New}, {PendingLaunch}, {Launching}, {PendingActive}, {Active}, {Canceled}, {Done}".format(
-                            uid=self._pilot.uid,
-                            New=st_data['New'],
-                            PendingLaunch=st_data['PendingLaunch'],
-                            Launching=(st_data['Launching']),
-                            PendingActive=(st_data['PendingActive']),
-                            Active=(st_data['Active']),
-                            Canceled=(st_data['Canceled']),
-                            Done=(st_data['Done']),
-                        )
-            f1.write(line + '\n')
+		if self._profiling == 1:
+			self._core_ov_dict['dealloc_start'] = datetime.datetime.now()
 
-    #---------------------------------------------------------------------------
-    #
-    def allocate(self, wait=False):
-        """Allocates the requested resources.
-        """
-        #-----------------------------------------------------------------------
-        #
-        def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Resource {0} state has changed to {1}".format(self._resource_key, state))
+		self.get_logger().info("Deallocating Cluster")
 
-            if state == radical.pilot.FAILED:
-                self.get_logger().error("Resource error: ")
-                self.get_logger().error("Pattern execution FAILED.")
-                sys.exit(1)
+		if self._exctype != None:
+			self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+			self._reporter.error("Fatal error: {0}.".format(str(self._excvalue)))
+			traceback.print_tb(self._traceback)
+		
 
-            if state == radical.pilot.DONE:
-                self.get_logger().info("Resource allocation time over.")
-                self._reporter.info('Resource allocation time over.')
+		self._session.close(cleanup=self._cleanup)
+		self._reporter.ok('>>done \n')    
 
-            if state == radical.pilot.CANCELED:
-                self.get_logger().info("Resource allocation cancelled.")
-                self._reporter.info('Resource allocation cancelled.')
+		if self._profiling == 1:
+			self._core_ov_dict['dealloc_stop'] = datetime.datetime.now()
+		
+	#---------------------------------------------------------------------------
+	#
+	def allocate(self, wait=False):
+		"""Allocates the requested resources.
+		"""
+		#-----------------------------------------------------------------------
+		#
+		def pilot_state_cb (pilot, state) :
+			self.get_logger().info("Resource {0} state has changed to {1}".format(self._resource_key, state))
+
+			if state == radical.pilot.FAILED:
+				self.get_logger().error("Resource error: ")
+				self.get_logger().error("Pattern execution FAILED.")
+				sys.exit(1)
+
+			if state == radical.pilot.DONE:
+				self.get_logger().info("Resource allocation time over.")
+				self._reporter.info('Resource allocation time over.')
+
+			if state == radical.pilot.CANCELED:
+				self.get_logger().info("Resource allocation cancelled.")
+				self._reporter.info('Resource allocation cancelled.')
 
 
 
-        self._allocate_called = True
+		self._allocate_called = True
 
-        # Here we start the pilot(s).
-        self._reporter.title('EnsembleMD (%s)' % version)
+		# Here we start the pilot(s).
+		self._reporter.title('EnsembleMD (%s)' % version)
 
-        self._reporter.info('Starting Allocation')
+		self._reporter.info('Starting Allocation')
 
-        profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-        if profiling == 1:
-            start_time = datetime.datetime.now()
+		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
-        if not self._database_url:
-            self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
+		if self._profiling == 1:
+			self._core_ov_dict["alloc_start"] = datetime.datetime.now()
 
-        if  not self._database_url :
-            raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
+		if not self._database_url:
+			self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
 
-        if self._database_name is None:
-            self._session = radical.pilot.Session(database_url=self._database_url)
-        else:
-            db_url = self._database_url + '/' + self._database_name
-            self._session = radical.pilot.Session(database_url=db_url)
+		if  not self._database_url :
+			raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
 
-        try:
+		if self._database_name is None:
+			self._session = radical.pilot.Session(database_url=self._database_url)
+		else:
+			db_url = self._database_url + '/' + self._database_name
+			self._session = radical.pilot.Session(database_url=db_url)
 
-            if self._username is not None:
-                # Add an ssh identity to the session.
-                c = radical.pilot.Context('ssh')
-                c.user_id = self._username
-                self._session.add_context(c)
+		try:
 
-            pmgr = radical.pilot.PilotManager(session=self._session)
-            pmgr.register_callback(pilot_state_cb)
-            self._pmgr = pmgr
+			if self._username is not None:
+				# Add an ssh identity to the session.
+				c = radical.pilot.Context('ssh')
+				c.user_id = self._username
+				self._session.add_context(c)
 
-            pdesc = radical.pilot.ComputePilotDescription()
-            pdesc.resource = self._resource_key
-            pdesc.runtime  = self._walltime
-            pdesc.cores    = self._cores
+			pmgr = radical.pilot.PilotManager(session=self._session)
+			pmgr.register_callback(pilot_state_cb)
+			self._pmgr = pmgr
 
-            if self._queue is not None:
-                pdesc.queue = self._queue
+			pdesc = radical.pilot.ComputePilotDescription()
+			pdesc.resource = self._resource_key
+			pdesc.runtime  = self._walltime
+			pdesc.cores    = self._cores
 
-            pdesc.cleanup = self._cleanup
+			if self._queue is not None:
+				pdesc.queue = self._queue
 
-            if self._project is not None:
-                pdesc.project = self._project
+			pdesc.cleanup = self._cleanup
 
-            pdesc.access_schema = self._schema
+			if self._project is not None:
+				pdesc.project = self._project
 
-            self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
+			pdesc.access_schema = self._schema
 
-            self._pilot = pmgr.submit_pilots(pdesc)
-            self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
+			self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
-            if self._shared_data is not None:
-                self.get_logger().info("Commencing transfer of shared data to {0}".format(self._resource_key))
-                shared_list = []
-                for f in self._shared_data:
-                    if f.startswith('.'):
-                        f = os.getcwd() + f.split('.')[1] + '.' + f.split('.')[2]
-                    shared_dict =   {
-                                        'source': 'file://%s'%f,
-                                        'target': 'staging:///%s' %os.path.basename(f),
-                                        'action': radical.pilot.TRANSFER
-                                    }
+			self._pilot = pmgr.submit_pilots(pdesc)
+			self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
 
-                    shared_list.append(shared_dict)
+			if self._shared_data is not None:
+				self.get_logger().info("Commencing transfer of shared data to {0}".format(self._resource_key))
+				shared_list = []
+				for f in self._shared_data:
+					if f.startswith('.'):
+						f = os.getcwd() + f.split('.')[1] + '.' + f.split('.')[2]
+					shared_dict =   {
+										'source': 'file://%s'%f,
+										'target': 'staging:///%s' %os.path.basename(f),
+										'action': radical.pilot.TRANSFER
+									}
 
-                self._pilot.stage_in(shared_list)
+					shared_list.append(shared_dict)
 
-            if wait is True:
-                self._pilot.wait(radical.pilot.ACTIVE)
+				self._pilot.stage_in(shared_list)
 
-            self._umgr = radical.pilot.UnitManager(
-                session=self._session,
-                scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
+			if wait is True:
+				self._pilot.wait(radical.pilot.ACTIVE)
 
-            self._umgr.add_pilots(self._pilot)
+			self._umgr = radical.pilot.UnitManager(
+				session=self._session,
+				scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 
-            
+			self._umgr.add_pilots(self._pilot)
 
-            if profiling == 1:
-                stop_time = datetime.datetime.now()
+			if self._profiling == 1:
+				alloc_stop_time = datetime.datetime.now()
 
-            self._reporter.ok('>> ok')
+			self._reporter.ok('>> ok')
 
-        except Exception, ex:
-            self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
-            self._reporter.error('Allocation failed: {0}'.format(str(ex)))
-            if self._session:
-                self._session.close()
-            raise
+		except Exception, ex:
+			self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
+			self._reporter.error('Allocation failed: {0}'.format(str(ex)))
+			if self._session:
+				self._session.close()
+			raise
 
-        finally:
-            if profiling == 1:
-                title = 'step,probe,timestamp'
-                f1 = open('enmd_core_overhead.csv','w')
-                f1.write(title+'\n\n')
-                f1.write('allocate,start_time,{0}\n'.format(start_time))
-                f1.write('allocate,stop_time,{0}\n'.format(stop_time))
-                f1.close()
+		finally:
+			if self._profiling == 1:
+				self._core_ov_dict["alloc_stop"] = datetime.datetime.now()
 
-    #---------------------------------------------------------------------------
-    #
-    def run(self, pattern, force_plugin=None):
-        """Creates a new SingleClusterEnvironment instance.
-        """
-        # Make sure resources were allocated.
-        if self._allocate_called is False:
-            raise EnsemblemdError(
-                msg="Resource(s) not allocated. Call allocate() first."
-            )
+	#---------------------------------------------------------------------------
+	#
+	def run(self, pattern, force_plugin=None):
+		"""Creates a new SingleClusterEnvironment instance.
+		"""
+		# Make sure resources were allocated.
+		if self._allocate_called is False:
+			raise EnsemblemdError(
+				msg="Resource(s) not allocated. Call allocate() first."
+			)
 
-        # Some basic type checks.
-        if not isinstance(pattern, ExecutionPattern):
-            raise TypeError(
-              expected_type=ExecutionPattern,
-              actual_type=type(pattern))
+		# Some basic type checks.
+		if not isinstance(pattern, ExecutionPattern):
+			raise TypeError(
+			  expected_type=ExecutionPattern,
+			  actual_type=type(pattern))
 
-        self._engine = Engine()
-        plugin = self._engine.get_execution_plugin_for_pattern(
-            pattern_name=pattern.name,
-            context_name=self.name,
-            plugin_name=force_plugin)
+		self._engine = Engine()
+		plugin = self._engine.get_execution_plugin_for_pattern(
+			pattern_name=pattern.name,
+			context_name=self.name,
+			plugin_name=force_plugin)
 
 
-        self._reporter.info('\nVerifying pattern')
-        plugin.verify_pattern(pattern, self)
-        self._reporter.ok('>>ok')
-        try:
-            self._reporter.info('\nStarting pattern execution')
-            plugin.execute_pattern(pattern, self)
-        except KeyboardInterrupt:
-            self._exctype,self._excvalue,self._traceback = sys.exc_info()           
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue))) 
-            self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
-        except Exception, ex:
-            self._exctype,self._excvalue,self._traceback = sys.exc_info()
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
-            self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+		self._reporter.info('\nVerifying pattern')
+		plugin.verify_pattern(pattern, self)
+		self._reporter.ok('>>ok')
+		try:
+			self._reporter.info('\nStarting pattern execution')
+			self._num_patterns += 1
+			pat_overhead_dict, cu_dict = plugin.execute_pattern(pattern, self)
+			self._profile_entities["{0}_{1}".format(pattern.name, self._num_patterns)] = [pat_overhead_dict, cu_dict]
+		except KeyboardInterrupt:
+			self._exctype,self._excvalue,self._traceback = sys.exc_info()           
+			self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue))) 
+			self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+		except Exception, ex:
+			self._exctype,self._excvalue,self._traceback = sys.exc_info()
+			self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+			self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+
+	def profile(self):
+
+		## ------------------------------------------------------------------------------------------------------------------------
+		## Profile -- Pilot
+
+		import radical.pilot.utils as rpu
+
+		sid        		= self._session.uid
+		profiles 	= rpu.fetch_profiles(sid=sid, tgt='/tmp/')
+		profile    	= rpu.combine_profiles (profiles)
+		frame      	= rpu.prof2frame(profile)
+		sf, pf, uf 	= rpu.split_frame(frame)
+
+		rpu.add_info(uf)
+		rpu.add_states(uf)
+		s_frame, p_frame, u_frame = rpu.get_session_frames(sid)
+
+		# Save Pilot DF to csv file
+		p_frame.to_csv("pilot_profile_{mysession}.csv".format(mysession=self._session.uid))
+
+		## ------------------------------------------------------------------------------------------------------------------------
+
+		## ------------------------------------------------------------------------------------------------------------------------
+		## Profile -- EnMD Core Overhead
+
+		title = 'step,probe,timestamp'
+		f1 = open('enmd_core_overhead.csv','w')
+		f1.write(title+'\n\n')
+
+		for key, val in self._core_ov_dict.iteritems():
+
+			f1.write("{0},{1},{2}\n".format(
+				key.split("_")[0],
+				key.split("_")[1],
+				val))
+
+		f1.close()
+
+		## ------------------------------------------------------------------------------------------------------------------------
+
+		## ------------------------------------------------------------------------------------------------------------------------
+		## Profile -- EnMD Pattern Overhead
+
+		## ------------------------------------------------------------------------------------------------------------------------
+
+		
+		## ------------------------------------------------------------------------------------------------------------------------
+		## Profile -- CU Execution profile
+
+		## ------------------------------------------------------------------------------------------------------------------------
