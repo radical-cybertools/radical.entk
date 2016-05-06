@@ -77,11 +77,17 @@ if __name__ == "__main__":
 
         # We set both the the simulation and the analysis step 'instances' to 16.
         # If they
-        mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
+        mssa = MSSA(iterations=1, simulation_instances=16, analysis_instances=1)
+        #mssa_2 = MSSA(iterations=2, simulation_instances=32, analysis_instances = 2)
 
+        #print mssa_1
+        #print mssa_2
+
+        #print mssa_1 == mssa_2
         cluster.run(mssa)
 
         cluster.deallocate()
+        cluster.profile(mssa)
 
     except EnsemblemdError, er:
 
