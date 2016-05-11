@@ -49,8 +49,11 @@ if __name__ == "__main__":
 		resource = sys.argv[1]
 	else: 
 		resource = 'local.localhost'
-	
+
 	try:
+
+		with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
+			config = json.load(data_file)
 
 		# Create a new static execution context with one resource and a fixed
 		# number of cores and runtime.
@@ -66,7 +69,7 @@ if __name__ == "__main__":
 
 				database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
 				#database_name='myexps',
-				)
+			)
 
 		# Allocate the resources. 
 		cluster.allocate()

@@ -4,7 +4,7 @@
 User Guide
 *****************
 
-This chapter will guide the reader through the most common usage patterns of Ensemble MD. We will start with Getting Started with the most basic Ensemble MD example, and then add features to that example leading to a complete, more meaningful application.
+This chapter will guide the reader through the most common usage patterns of Ensemble Toolkit. We will start with Getting Started with the most basic Ensemble Toolkit example, and then add features to that example leading to a complete, more meaningful application.
 
 
 .. toctree::

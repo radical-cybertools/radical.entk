@@ -15,10 +15,10 @@ of tasks, to a Pipeline of tasks.
 You can download the complete code discussed in this section :download:`here <scripts/get_started.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
-Importing components from the Ensemble MD Module
+Importing components from the Ensemble Toolkit Module
 ===========================================================
 
-To create any application using EnsembleMD, you need to import three modules: Kernel, Pattern, Execution Context. The Pattern imported depends on the application requirement. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
+To create any application using Ensemble Toolkit, you need to import three modules: Kernel, Pattern, Execution Context. The Pattern imported depends on the application requirement. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
 
 .. code-block:: python
     

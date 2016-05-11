@@ -4,11 +4,10 @@
 Installation
 *****************
 
-Installing Ensemble MD Toolkit
+Installing Ensemble Toolkit
 ================================
 
-To install the Ensemble MD Toolkit Python modules in a virtual environment,
-open a terminal and run:
+To install the Ensemble Toolkit in a virtual environment, open a terminal and run:
 
 .. code-block:: bash
 
@@ -21,7 +20,7 @@ You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` c
 .. code-block:: bash
 
     ensemblemd-version
-    0.3
+    0.3.14
 
 
 .. note::
@@ -34,7 +33,7 @@ You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` c
 Preparing the Environment
 ===================================
 
-Ensemble MD Toolkit which is a client-side library and relies on a set of external software packages. One of these packages is `radical.pilot <http://radicalpilot.readthedocs.org>`_, an HPC cluster resource access and management library. It can access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up SSH environment.
+Ensemble Toolkit which is a client-side library and relies on a set of external software packages. One of these packages is `radical.pilot <http://radicalpilot.readthedocs.org>`_, an HPC cluster resource access and management library. It can access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up SSH environment.
 
 .. figure:: images/hosts_and_ports.png
    :width: 360pt
@@ -48,7 +47,7 @@ MongoDB Server
 The MongoDB server is used to store and retrieve operational data during the
 execution of an application using RADICAL-Pilot. The MongoDB server must
 be reachable on **port 27017** from **both**, the host that runs the
-Ensemble MD Toolkit application and the host that executes the MD tasks, i.e.,
+Ensemble Toolkit application and the host that executes the MD tasks, i.e.,
 the HPC cluster (see blue arrows in the figure above). In our experience,
 a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 
