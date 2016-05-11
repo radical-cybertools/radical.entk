@@ -68,8 +68,8 @@ class SingleClusterEnvironment(ExecutionContext):
         #shared data
         self._shared_data = None
 
-        self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
-        self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
+        self._logger  = ru.get_logger('radical.entk.SingleClusterEnvironment')
+        self._reporter = ru.LogReporter(name='radical.entk.SingleClusterEnvironment')
 
         super(SingleClusterEnvironment, self).__init__()
 

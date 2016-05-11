@@ -436,8 +436,8 @@ class Plugin(PluginBase):
 					enmd_overhead_dict['iter_{0}'.format(iteration)] = od()
 					cu_dict['iter_{0}'.format(iteration)] = od()
 
-				if isinstance(pattern.simulation_step(iteration=iteration, instance=1),list):
-					num_sim_kerns = len(pattern.simulation_step(iteration=iteration, instance=1))
+				if isinstance(pattern.simulation_stage(iteration=iteration, instance=1),list):
+					num_sim_kerns = len(pattern.simulation_stage(iteration=iteration, instance=1))
 				else:
 					num_sim_kerns = 1
 				#print num_sim_kerns
@@ -458,10 +458,10 @@ class Plugin(PluginBase):
 					s_units = []
 					for s_instance in range(1, pattern._simulation_instances+1):
 
-						if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
-							sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
+						if isinstance(pattern.simulation_stage(iteration=iteration, instance=s_instance),list):
+							sim_step = pattern.simulation_stage(iteration=iteration, instance=s_instance)[kern_step]
 						else:
-							sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
+							sim_step = pattern.simulation_stage(iteration=iteration, instance=s_instance)
 
 						sim_step._bind_to_resource(resource._resource_key)
 
@@ -548,8 +548,8 @@ class Plugin(PluginBase):
 				################################################################
 				# EXECUTE ANALYSIS STEPS
 
-				if isinstance(pattern.analysis_step(iteration=iteration, instance=1),list):
-					num_ana_kerns = len(pattern.analysis_step(iteration=iteration, instance=1))
+				if isinstance(pattern.analysis_stage(iteration=iteration, instance=1),list):
+					num_ana_kerns = len(pattern.analysis_stage(iteration=iteration, instance=1))
 				else:
 					num_ana_kerns = 1
 				#print num_ana_kerns
@@ -569,10 +569,10 @@ class Plugin(PluginBase):
 					a_units = []
 					for a_instance in range(1, pattern._analysis_instances+1):
 
-						if isinstance(pattern.analysis_step(iteration=iteration, instance=a_instance),list):
-							ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)[kern_step]
+						if isinstance(pattern.analysis_stage(iteration=iteration, instance=a_instance),list):
+							ana_step = pattern.analysis_stage(iteration=iteration, instance=a_instance)[kern_step]
 						else:
-							ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
+							ana_step = pattern.analysis_stage(iteration=iteration, instance=a_instance)
 
 						ana_step._bind_to_resource(resource._resource_key)
 

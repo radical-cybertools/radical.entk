@@ -6,8 +6,8 @@ Simulation Analysis Loop Example
 
 This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern to execute 16 iterations of a simulation analysis loop. In the
-``pre_loop`` step, a reference random ASCII file is uploaded. Each
-``simulation_step`` generates 16 new random ASCII files.  Each ``analysis_step``
+``pre_loop`` stage, a reference random ASCII file is uploaded. Each
+``simulation_stage`` generates 16 new random ASCII files.  Each ``analysis_stage``
 checks calculates the Levenshtein distance between  the newly generated files
 and the reference file.
 
@@ -40,7 +40,7 @@ directory you launched the script in.
 Run Remotely
 ============
 
-By default, simulation and analysis steps run on one core your local machine::
+By default, simulation and analysis stages run on one core your local machine::
 
     SingleClusterEnvironment(
         resource="localhost",

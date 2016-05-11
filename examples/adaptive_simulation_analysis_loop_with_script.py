@@ -7,7 +7,7 @@ the number of simulations is the same as that set while pattern creation ('simul
 NOTE: There is an extra parameter during pattern creation, "adaptive_simulation=True". If this is
 not set, every iteration will have the same number of simulations.
 
-The analysis step (or the last kernel of the analysis step, if there are multiple kernels) is expected
+The analysis stage (or the last kernel of the analysis stage, if there are multiple kernels) is expected
 to produce the number of simulations for the next iteration. There are two methods of extracting this 
 value:
 
@@ -48,16 +48,16 @@ class MSSA(SimulationAnalysisLoop):
 		SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation, sim_extraction_script)
 
 
-	def simulation_step(self, iteration, instance):
-		"""In the simulation step we simply create files with 1000 characters.
+	def simulation_stage(self, iteration, instance):
+		"""In the simulation stage we simply create files with 1000 characters.
 		"""
 		k = Kernel(name="misc.mkfile")
 		k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(instance)]
 		k.download_output_data = ['asciifile-{0}.dat > iter{1}/asciifile-{0}.dat'.format(instance,iteration)]
 		return [k]
 
-	def analysis_step(self, iteration, instance):
-		""" In the analysis step, we use the 'randval' kernel to output a random number within 
+	def analysis_stage(self, iteration, instance):
+		""" In the analysis stage, we use the 'randval' kernel to output a random number within 
 		the upperlimit. The output is simply a number (and no other messages). Hence, we do not mention
 		and extraction scripts. The pattern automatically picks up the number.
 		"""

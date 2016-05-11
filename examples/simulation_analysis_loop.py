@@ -30,24 +30,24 @@ class RandomSA(SimulationAnalysisLoop):
 	def pre_loop(self):
 		"""pre_loop is executed before the main simulation-analysis loop is
 		   started. In this example we create an initial 1 kB random ASCII file
-		   that we use as the reference for all analysis steps.
+		   that we use as the reference for all analysis stages.
 		"""
 		k = Kernel(name="misc.mkfile")
 		k.arguments = ["--size=1000", "--filename=reference.dat"]
 		k.upload_input_data = ['levenshtein.py']
 		return k
 
-	def simulation_step(self, iteration, instance):
-		"""The simulation step generates a 1 kB file containing random ASCII
+	def simulation_stage(self, iteration, instance):
+		"""The simulation stage generates a 1 kB file containing random ASCII
 		   characters that is compared against the 'reference' file in the
-		   subsequent analysis step.
+		   subsequent analysis stage.
 		"""
 		k = Kernel(name="misc.mkfile")
 		k.arguments = ["--size=1000", "--filename=simulation-{0}-{1}.dat".format(iteration, instance)]
 		return k
 
-	def analysis_step(self, iteration, instance):
-		"""In the analysis step, we take the previously generated simulation
+	def analysis_stage(self, iteration, instance):
+		"""In the analysis stage, we take the previously generated simulation
 		   output and perform a Levenshtein distance calculation between it
 		   and the 'reference' file.
 
@@ -55,10 +55,10 @@ class RandomSA(SimulationAnalysisLoop):
 					a reference to the working directory of pre_loop.
 					The placeholder ``$PREV_SIMULATION`` used in ``link_input_data``
 					is a reference to the working directory of the previous
-					simulation step.
+					simulation stage.
 
 					It is also possible to reference a specific
-					simulation step using ``$SIMULATION_N`` or all simulations
+					simulation stage using ``$SIMULATION_N`` or all simulations
 					via ``$SIMULATIONS``. Analogous placeholders exist for
 					``ANALYSIS``.
 		"""
@@ -116,9 +116,9 @@ if __name__ == "__main__":
 		# Allocate the resources. 
 		cluster.allocate()
 
-		# We set both the the simulation and the analysis step 'instances' to 16.
-		# This means that 16 instances of the simulation step and 16 instances of
-		# the analysis step are executed every iteration.
+		# We set both the the simulation and the analysis stage 'instances' to 16.
+		# This means that 16 instances of the simulation stage and 16 instances of
+		# the analysis stage are executed every iteration.
 		randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=16)
 
 		cluster.run(randomsa)

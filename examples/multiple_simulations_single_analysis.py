@@ -27,16 +27,16 @@ class MSSA(SimulationAnalysisLoop):
 		SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances)
 
 
-	def simulation_step(self, iteration, instance):
-		"""In the simulation step we
+	def simulation_stage(self, iteration, instance):
+		"""In the simulation stage we
 		"""
 		k = Kernel(name="misc.mkfile")
 		k.arguments = ["--size=1000", "--filename=asciifile.dat"]
 		k.exists_remote = ['asciifile.dat']
 		return [k]
 
-	def analysis_step(self, iteration, instance):
-		"""In the analysis step we use the ``$PREV_SIMULATION`` data reference
+	def analysis_stage(self, iteration, instance):
+		"""In the analysis stage we use the ``$PREV_SIMULATION`` data reference
 		   to refer to the previous simulation. The same
 		   instance is picked implicitly, i.e., if this is instance 5, the
 		   previous simulation with instance 5 is referenced.
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 		# Allocate the resources. 
 		cluster.allocate()
 
-		# We set both the the simulation and the analysis step 'instances' to 16.
+		# We set both the the simulation and the analysis stage 'instances' to 16.
 		# If they
 		mssa = MSSA(iterations=4, simulation_instances=16, analysis_instances=1)
 

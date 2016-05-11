@@ -7,8 +7,8 @@ Multiple Simulations Instances, Single Analysis Instance Example
 This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern to execute 4 iterations of a simulation analysis loop with multiple
 simulation instances and a single analysis instance. We skip the ``pre_loop``
-step in this example. Each ``simulation_step`` generates 16 new random ASCII
-files. One ASCII file in each of its instances. In the ``analysis_step``, the
+stage in this example. Each ``simulation_stage`` generates 16 new random ASCII
+files. One ASCII file in each of its instances. In the ``analysis_stage``, the
 ASCII files from each of the simulation instances are analyzed and character
 count is performed on each of the files using one analysis instance. The output
 is downloaded to the user machine.
@@ -54,7 +54,7 @@ for all the files generated in the simulation stage every iteration.
 Run Remotely
 ============
 
-By default, simulation and analysis steps run on one core your local machine::
+By default, simulation and analysis stages run on one core your local machine::
 
     SingleClusterEnvironment(
         resource="localhost",
