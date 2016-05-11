@@ -3,7 +3,7 @@ import os
 import json
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import Pipeline
+from radical.ensemblemd import BagofTasks
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SingleClusterEnvironment
 
