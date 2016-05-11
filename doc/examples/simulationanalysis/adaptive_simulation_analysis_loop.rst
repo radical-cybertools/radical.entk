@@ -9,8 +9,7 @@ this example, we use the ``SimulationAnalysisLoop`` pattern in which the number 
 simulations changes every iteration. We discuss two examples, 
 
 * analysis produces the number of simulations for the next iteration 
-* analysis produces a bunch of output and a script is used to extract the number of simulations for the next
-iteration.
+* analysis produces a bunch of output and a script is used to extract the number of simulations for the next iteration.
 
 .. figure:: ../../images/simulation_analysis_pattern.*
    :width: 300pt
