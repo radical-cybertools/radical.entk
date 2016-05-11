@@ -2,10 +2,6 @@
 RADICAL Ensemble Toolkit v0.3 Documentation
 #######################################
 
-.. figure:: images/oxytocin.*
-   :width: 160pt
-   :align: right
-
 The Ensemble Toolkit is a Python library for developing and executing
 large-scale ensemble-based workflows.
 It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_
