@@ -5,7 +5,7 @@ Simulation Analysis Loop Example
 *************************************
 
 This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
-pattern to execute 32 iterations of a simulation analysis loop. In the
+pattern to execute 16 iterations of a simulation analysis loop. In the
 ``pre_loop`` step, a reference random ASCII file is uploaded. Each
 ``simulation_step`` generates 16 new random ASCII files.  Each ``analysis_step``
 checks calculates the Levenshtein distance between  the newly generated files

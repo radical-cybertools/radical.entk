@@ -109,7 +109,7 @@ if __name__ == "__main__":
 		print "\nResulting checksums:"
 		import glob
 		for result in glob.glob("cfreqs-*.sha1"):
-		print "  * {0}".format(open(result, "r").readline().strip())
+			print "  * {0}".format(open(result, "r").readline().strip())
 
 		cluster.deallocate()
 
