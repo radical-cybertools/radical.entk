@@ -40,64 +40,74 @@ from radical.ensemblemd import SingleClusterEnvironment
 # ------------------------------------------------------------------------------
 #
 class MSSA(SimulationAnalysisLoop):
-    """MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)
-       scheme can be implemented with the SimulationAnalysisLoop pattern.
-    """
-    def __init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation):
-        SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation)
+	"""MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)
+	   scheme can be implemented with the SimulationAnalysisLoop pattern.
+	"""
+	def __init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation):
+		SimulationAnalysisLoop.__init__(self, iterations, simulation_instances, analysis_instances, adaptive_simulation)
 
 
-    def simulation_step(self, iteration, instance):
-        """In the simulation step we simply create files with 1000 characters.
-        """
-        k = Kernel(name="misc.mkfile")
-        k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(instance)]
-        k.download_output_data = ['asciifile-{0}.dat > iter{1}/asciifile-{0}.dat'.format(instance,iteration)]
-        return [k]
+	def simulation_step(self, iteration, instance):
+		"""In the simulation step we simply create files with 1000 characters.
+		"""
+		k = Kernel(name="misc.mkfile")
+		k.arguments = ["--size=1000", "--filename=asciifile-{0}.dat".format(instance)]
+		k.download_output_data = ['asciifile-{0}.dat > iter{1}/asciifile-{0}.dat'.format(instance,iteration)]
+		return [k]
 
-    def analysis_step(self, iteration, instance):
-        """ In the analysis step, we use the 'randval' kernel to output a random number within 
-        the upperlimit. The output is simply a number (and no other messages). Hence, we do not mention
-        and extraction scripts. The pattern automatically picks up the number.
-        """
-        k = Kernel(name="misc.randval")
-        k.arguments = ["--upperlimit=16"]
-        return [k]
+	def analysis_step(self, iteration, instance):
+		""" In the analysis step, we use the 'randval' kernel to output a random number within 
+		the upperlimit. The output is simply a number (and no other messages). Hence, we do not mention
+		and extraction scripts. The pattern automatically picks up the number.
+		"""
+		k = Kernel(name="misc.randval")
+		k.arguments = ["--upperlimit=16"]
+		return [k]
 
 
 # ------------------------------------------------------------------------------
 #
 if __name__ == "__main__":
 
-    try:
+	# use the resource specified as argument, fall back to localhost
+	if   len(sys.argv)  > 2: 
+		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+		sys.exit(1)
+	elif len(sys.argv) == 2: 
+		resource = sys.argv[1]
+	else: 
+		resource = 'local.localhost'
+	
+	try:
 
-        # Create a new static execution context with one resource and a fixed
-        # number of cores and runtime.
-        cluster = SingleClusterEnvironment(
-            resource="local.localhost",
-            cores=16,
-            walltime=5,
-            #username='username',
+		# Create a new static execution context with one resource and a fixed
+		# number of cores and runtime.
+		cluster = SingleClusterEnvironment(
+				resource=resource,
+				cores=1,
+				walltime=15,
+				#username=None,
 
-            #project = None,
-            #queue = None,
+				project=config[resource]['project'],
+				access_schema = config[resource]['schema'],
+				queue = config[resource]['queue'],
 
-            #database_url=None,
-            #database_name='myexps',
-        )
+				database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
+				#database_name='myexps',
+				)
 
-        # Allocate the resources.
-        cluster.allocate()
+		# Allocate the resources. 
+		cluster.allocate()
 
-        # We set the simulation 'instances' to 16 and analysis 'instances' to 1. We set the adaptive
-        # simulation to True.
-        mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
+		# We set the simulation 'instances' to 16 and analysis 'instances' to 1. We set the adaptive
+		# simulation to True.
+		mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
 
-        cluster.run(mssa)
+		cluster.run(mssa)
 
-        cluster.deallocate()
+		cluster.deallocate()
 
-    except EnsemblemdError, er:
+	except EnsemblemdError, er:
 
-        print "Ensemble MD Toolkit Error: {0}".format(str(er))
-        raise # Just raise the execption again to get the backtrace
+		print "Ensemble MD Toolkit Error: {0}".format(str(er))
+		raise # Just raise the execption again to get the backtrace
