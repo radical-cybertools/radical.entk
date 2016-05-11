@@ -4,7 +4,7 @@
 Multiple Simulations Instances, Single Analysis Instance Example
 ****************************************************************
 
-This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern to execute 4 iterations of a simulation analysis loop with multiple
 simulation instances and a single analysis instance. We skip the ``pre_loop``
 step in this example. Each ``simulation_step`` generates 16 new random ASCII

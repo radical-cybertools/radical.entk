@@ -4,7 +4,7 @@
 Use-Case: ExTASY (Gromacs-LSDMap)
 *********************************
 
-This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern for the Gromacs-LSDMap usecase which has multiple Gromacs based Simulation
 instances and a single LSDMap Analysis stage. Although the user is free to use
 any method to mention the inputs, this usecase example uses two configuration

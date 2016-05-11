@@ -4,9 +4,9 @@
 Bag of Tasks Example
 ********************
 
-This example shows how to use the Ensemble MD Toolkit :class:`.Pipeline` pattern
+This example shows how to use the Ensemble Toolkit :class:`.BagofTasks` pattern
 to execute a single "Bag of Tasks". A Bag of Tasks is modeled as a
-:class:`.Pipeline` with just one step. The "instances" of the  :class:`.Pipeline`
+:class:`.BagofTasks` with just one stage. The "instances" of the  :class:`.BagofTasks`
 corresponds to the number of tasks in the bag.
 
 .. figure:: ../../images/bag_of_tasks.*
@@ -14,7 +14,7 @@ corresponds to the number of tasks in the bag.
    :align: center
    :alt: Bag of Tasks
 
-   Fig.: `A Bag of Tasks modelled as 1-step Pipeline.`
+   Fig.: `A Bag of Tasks pattern with 1 stage.`
 
 Run Locally
 ===========

@@ -4,7 +4,7 @@
 Synchronous Replica Exchange Example with 'local' Exchange
 ********************************************************************
  
-This example shows how to use the Ensemble MD Toolkit ``ReplicaExchange`` pattern.
+This example shows how to use the Ensemble Toolkit ``ReplicaExchange`` pattern.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
 Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
 Firstly, for each replica is generated dummy ``md_input_x_y.md``

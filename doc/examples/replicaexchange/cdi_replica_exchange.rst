@@ -4,7 +4,7 @@
 Use-Case: Synchronous Temperature Exchange with NAMD
 ****************************************************
 
-This script is an example of simple application using the Ensemble MD Toolkit ``ReplicaExchange``
+This script is an example of simple application using the Ensemble Toolkit ``ReplicaExchange``
 pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 
 replicas and performs a total of 5 synchronous simulation cycles. Here exchange step is performed 
 on target resource, which corresponds to ``static_pattern_2`` execution plugin. As MD application 

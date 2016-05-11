@@ -5,7 +5,7 @@
 Use-Case: ExTASY (Amber-CoCo)
 *****************************
 
-This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern for the Amber-CoCo usecase which has multiple Amber based Simulation
 instances and a single CoCo Analysis stage. Although the user is free to use
 any method to mention the inputs, this usecase example uses two configuration
