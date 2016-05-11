@@ -8,8 +8,8 @@ In the previous examples, the number of simulations is constant in every iterati
 this example, we use the ``SimulationAnalysisLoop`` pattern in which the number of
 simulations changes every iteration. We discuss two examples, 
 
-* 1) the analysis produces the number of simulations for the next iteration 
-* 2) the analysis produces a bunch of output and a script is used to extract the number of simulations for the next
+* analysis produces the number of simulations for the next iteration 
+* analysis produces a bunch of output and a script is used to extract the number of simulations for the next
 iteration.
 
 .. figure:: ../../images/simulation_analysis_pattern.*

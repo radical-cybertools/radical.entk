@@ -130,10 +130,11 @@ To run the script, simply execute the following from command line:
 
 ::
 
-     RADICAL_ENMD_VERBOSE=REPORT python get_started.py
+     RADICAL_ENTK_VERBOSE=REPORT python get_started.py
 
 
-And that's it ! That's all the steps of the pattern. Let's take a look at the complete code in the example.
+And that's it ! That's all the steps of the pattern. Let's take a look at the complete code in the example. You can generate
+a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 
 .. literalinclude:: scripts/get_started.py

@@ -26,14 +26,15 @@ Run Locally
 
 **Step 1:** View and download the example sources :ref:`below <example_source_bag_of_tasks>`.
 
-**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about simulation progress::
+**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.::
 
-    RADICAL_ENMD_VERBOSE=info python bag_of_tasks.py
+    RADICAL_ENTK_VERBOSE=REPORT python bag_of_tasks.py
 
 Once the script has finished running, you should see the SHA1 checksums
 genereated by the individual tasks  (``checksumXX.sha1``) in the in the same
 directory you launched the script in.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run on a Remote Cluster
 =======================

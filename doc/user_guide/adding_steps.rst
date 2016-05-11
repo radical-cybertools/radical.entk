@@ -38,7 +38,9 @@ To run the script, simply execute the following from command line:
 
 ::
 
-     RADICAL_ENMD_VERBOSE=REPORT python add_steps.py
+     RADICAL_ENTK_VERBOSE=REPORT python add_steps.py
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Complete script:
 

@@ -29,14 +29,15 @@ Run Locally
 
 **Step 1:** View and download the example sources :ref:`below <example_source_pipeline>`.
 
-**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
-see log messages about simulation progress::
+**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENMD_VERBOSE=info python pipeline.py
+    RADICAL_ENTK_VERBOSE=REPORT python pipeline.py
 
 Once the script has finished running, you should see the raw data of the
 character analysis step (``cfreqs-XX.dat``) and the corresponding SHA1 checksums
 (``cfreqs-XX.dat.sha1``) in the same directory you launched the script in.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run Remotely
 ============

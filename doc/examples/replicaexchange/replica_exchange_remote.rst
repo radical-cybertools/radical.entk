@@ -40,9 +40,9 @@ Run Locally
 
 **Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`.
 
-**Step 3:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to see log messages about simulation progress::
+**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``info`` if you want to see log messages about simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python replica_exchange_b.py
+    RADICAL_ENTK_VERBOSE=info python replica_exchange_b.py
 
 TODO Antons: describe how to check the output.
 
