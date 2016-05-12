@@ -24,7 +24,8 @@ Run Locally
              The format is ``mongodb://hostname:port``. Read more about it
              MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_bag_of_tasks>`.
+**Step 1:** View and download the example sources :ref:`below <example_source_bag_of_tasks>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/bag_of_tasks.py``.
 
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.::
 

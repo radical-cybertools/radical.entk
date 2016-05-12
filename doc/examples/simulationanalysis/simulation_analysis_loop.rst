@@ -26,7 +26,8 @@ Run Locally
              The format is ``mongodb://hostname:port``. Read more about it
              MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_simulation_analysis_loop>`.
+**Step 1:** View and download the example sources :ref:`below <example_source_simulation_analysis_loop>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/simulation_analysis_loop.py``.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``REPORT``::
 
