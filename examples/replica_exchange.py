@@ -246,12 +246,6 @@ if __name__ == "__main__":
 
 		cluster.deallocate()
 		
-		print "RE simulation finished!"
-		print "Simulation performed {0} cycles for {1} replicas. In your working directory you should".format(re_pattern.nr_cycles, re_pattern.replicas)
-		print "have {0} md_input_x_y.md files and {0} md_input_x_y.out files where x in {{0,1,2,...{1}}} and y in {{0,1,...{2}}}.".format( (re_pattern.nr_cycles*re_pattern.replicas), (re_pattern.replicas-1), (re_pattern.nr_cycles-1) )
-		print ".md file is replica input file and .out is output file providing number of occurrences of each character."
-
-
 
 	except EnsemblemdError, er:
 
