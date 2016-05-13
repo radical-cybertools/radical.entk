@@ -5,7 +5,7 @@ Pipeline Example
 ****************
 
 This example shows how to use the Ensemble Toolkit ``Pipeline`` pattern
-to execute 16 concurrent pipeline of sequential tasks. In the first step of
+to execute 16 concurrent pipelines of sequential tasks. In the first step of
 each pipeline ``stage_1``, a 10 MB input file is generated and filled with
 ASCII charaters. In the second step ``stage_2``, a character frequency analysis
 if performed on this file. In the last step ``stage_3``, an SHA1 checksum is
