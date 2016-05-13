@@ -41,7 +41,7 @@ Run Remotely
 By default, the exchange steps run on one core your local machine::
 
     SingleClusterEnvironment(
-        resource="localhost",
+        resource="local.localhost",
         cores=1,
         walltime=30,
         username=None,
@@ -53,7 +53,7 @@ of cores to see how this affects the runtime of the script as the individual
 pipeline instances can run in parallel::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
         username=None,  # add your username here
