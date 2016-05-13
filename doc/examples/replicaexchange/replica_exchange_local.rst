@@ -5,7 +5,7 @@ Synchronous Replica Exchange Example with 'local' Exchange
 ********************************************************************
  
 This example shows how to use the Ensemble Toolkit ``ReplicaExchange`` pattern with artificial workload.
-Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
+Demonstrated RE simulation involves 8 replicas and performs a total of 3 synchronous simulation cycles.
 In this example exchange step is performed locally.
 Firstly, for each replica is generated dummy ``md_input_x_y.md``
 input file. Each of these files contains 500 randomly generated numbers. As MD kernel in this example
