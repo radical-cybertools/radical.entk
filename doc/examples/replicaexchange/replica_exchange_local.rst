@@ -4,16 +4,16 @@
 Synchronous Replica Exchange Example with 'local' Exchange
 ********************************************************************
  
-This example shows how to use the Ensemble Toolkit ``ReplicaExchange`` pattern.
+This example shows how to use the Ensemble Toolkit ``ReplicaExchange`` pattern with artificial workload.
 Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation cycles.
-Here exchange step is performed locally, which corresponds to ``static_pattern_1`` execution plugin.
+In this example exchange step is performed locally.
 Firstly, for each replica is generated dummy ``md_input_x_y.md``
 input file. Each of these files contains 500 randomly generated numbers. As MD kernel in this example
 is used ``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
 As input file for this kernel is supplied previously generated ``md_input_x_y.md`` file. ``misc.ccount``
-kernel produces ``md_input_x_y.out`` file, which is transferred to current working directory.
+kernel produces ``md_input_x_y.out`` file, which is transferred back to localhost.
 Dummy replica parameter named ``parameter`` is exchanged during the exchange step. Exchanges
-of ``parameter`` do not affect next simulation cycle. Replica to perform an exchange with is
+of ``parameter`` have no effect on the next simulation cycle. A pair of replica for exchange is
 chosen randomly.
 
 .. figure:: ../../images/replica_exchange_pattern.*
@@ -25,11 +25,6 @@ chosen randomly.
 
 Run Locally
 ===========
-
-.. warning:: In order to run this example, you need access to a MongoDB server and
-             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
 
 **Step 1:** View and download the example sources :ref:`below <example_replica_exchange>`.
 
