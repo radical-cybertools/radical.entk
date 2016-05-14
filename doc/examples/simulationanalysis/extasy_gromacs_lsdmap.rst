@@ -77,7 +77,7 @@ simulations instances can run in parallel. You can try more variations
 by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
         username=None,  # add your username here

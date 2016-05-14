@@ -66,7 +66,7 @@ By default, this use-case runs on your local machine::
 You can change the script to use a remote HPC cluster::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
         username=None,  # add your username here
