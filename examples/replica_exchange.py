@@ -205,6 +205,8 @@ if __name__ == "__main__":
 
 	try:
 
+		workdir_local = os.getcwd()
+
 		with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
 			config = json.load(data_file)
 

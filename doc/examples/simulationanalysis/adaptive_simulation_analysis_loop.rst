@@ -37,7 +37,8 @@ simulations and no other message, it is sufficient to specify that the pattern i
 Example Source
 -------------------------------
 
-:download:`Download adaptive_simulation_analysis_loop.py <../../../examples/adaptive_simulation_analysis_loop.py>`
+:download:`Download adaptive_simulation_analysis_loop.py <../../../examples/adaptive_simulation_analysis_loop.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop.py``.
 
 .. literalinclude:: ../../../examples/adaptive_simulation_analysis_loop.py
     :language: python
@@ -63,7 +64,8 @@ parameter during pattern object creation.
 Example Source
 -------------------------------
 
-:download:`Download adaptive_simulation_analysis_loop_with_script.py <../../../examples/adaptive_simulation_analysis_loop_with_script.py>`
+:download:`Download adaptive_simulation_analysis_loop_with_script.py <../../../examples/adaptive_simulation_analysis_loop_with_script.py>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop_with_script.py``.
 
 .. literalinclude:: ../../../examples/adaptive_simulation_analysis_loop_with_script.py
     :language: python

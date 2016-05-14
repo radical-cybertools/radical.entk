@@ -19,7 +19,15 @@ corresponds to the number of tasks in the bag.
 Run Locally
 ===========
 
-**Step 1:** View and download the example sources :ref:`below <example_source_bag_of_tasks>`.
+
+.. warning:: In order to run this example, you need access to a MongoDB server and
+             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+             The format is ``mongodb://hostname:port``. Read more about it
+             MongoDB in chapter :ref:`envpreparation`.
+
+**Step 1:** View and download the example sources :ref:`below <example_source_bag_of_tasks>` or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/bag_of_tasks.py``.
+
 
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.::
 

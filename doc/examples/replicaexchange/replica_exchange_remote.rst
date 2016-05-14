@@ -30,9 +30,11 @@ Run Locally
 ===========
 
 
-**Step 1:** Download matrix calculator from :ref:`here <example_matrix_calculator>`.
+**Step 1:** Download matrix calculator from :ref:`here <example_matrix_calculator>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/matrix_calculator.py``.
 
-**Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`.
+**Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/replica_exchange_b.py``.
 
 **Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``info`` if you want to see log messages about simulation progress::
 
