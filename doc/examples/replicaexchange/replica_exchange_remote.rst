@@ -36,11 +36,13 @@ your virtualenv under ``share/radical.ensemblemd/examples/matrix_calculator.py``
 **Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`  or find it in 
 your virtualenv under ``share/radical.ensemblemd/examples/replica_exchange_b.py``.
 
-**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``info`` if you want to see log messages about simulation progress::
+**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=info python replica_exchange_b.py
+    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_b.py
 
 After execution is done, in working directory you should have 24 md_input_x_y.md files and 24 md_input_x_y.out files where x in {0,1,2} and y in {0,1,...7}. File with extension .md is replica input file and with extension .out is output file providing number of occurrences of each character.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run Remotely
 ============

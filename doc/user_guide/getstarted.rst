@@ -18,7 +18,7 @@ your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 Importing components from the Ensemble Toolkit Module
 ===========================================================
 
-To create any application using Ensemble Toolkit, you need to import three modules: Kernel, Pattern and Execution Context. The Pattern module depends on the application requirements. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
+To create any application using Ensemble Toolkit, you need to import three modules: Kernel, Pattern and Resource Handle. The Pattern module depends on the application requirements. We have already discussed these components in the earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
 
 .. code-block:: python
     
@@ -30,12 +30,12 @@ To create any application using Ensemble Toolkit, you need to import three modul
 
 
 
-Creating an Execution Context
+Creating a Resource Handle
 ================================
 
-We create an execution context in order to get access to a machine and acquire resources on that machine. In the 
+We create a resource handle in order to get access to a machine and acquire resources on that machine. In the 
 following snippet of code, we create an execution context of ``SingleClusterEnvironment`` type which gives access to 
-a single machine. The execution context targets the local machine, requesting 1 core for a period of 15 mins. The 'username' parameter must be specified if username on a target machine differs from one on a submission host. The
+a single machine. The resource handle targets the local machine, requesting 1 core for a period of 15 mins. The 'username' parameter must be specified if username on a target machine differs from one on a submission host. The
  'project' parameter must be specified if for a standard submission script this parameter is mandatory. 'project' parameter corresponds to an allocation number on a target system. The 
 'database_url' parameter specifies the mongodb instance to be used.
 
@@ -115,7 +115,7 @@ needs to execute. We use the kernels to define ``what to do`` in the first step.
 We use the kernel ``misc.hello`` already predefined in EnsembleMD. This kernel creates a file (if it does not exist already) with the name as defined in the argument and prints a **Hello World** within it. 
 
 
-By now we have seen how to create an execution context, define a pattern and add a kernel to the pattern. We specify the pattern to be executed on the resources by:
+By now we have seen how to create an resource handle, define a pattern and add a kernel to the pattern. We specify the pattern to be executed on the resources by:
 
 .. code-block:: python
     

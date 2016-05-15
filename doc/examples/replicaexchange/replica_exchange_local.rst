@@ -37,12 +37,13 @@ Run Locally
 your virtualenv under ``share/radical.ensemblemd/examples/replica_exchange.py``.
 
 
-**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``INFO`` if you want to
-see log messages about simulation progress::
+**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=INFO python replica_exchange.py
+    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange.py
 
 After execution is done, in working directory you should have 24 md_input_x_y.md files and 24 md_input_x_y.out files where x in {0,1,2} and y in {0,1,...7}. File with extension .md is replica input file and with extension .out is output file providing number of occurrences of each character.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run Remotely
 ============

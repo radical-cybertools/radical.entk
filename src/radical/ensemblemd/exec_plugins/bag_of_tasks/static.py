@@ -46,6 +46,10 @@ def resolve_placeholder_vars(working_dirs, instance, total_stages, path):
 		else:
 			placeholder = path.split('>')[1].strip().split('/')[0]
 
+	# SHARED
+	if placeholder == "$SHARED":
+		return path.replace(placeholder, 'staging://')
+
 	stage_number = int(placeholder.split('_')[1])
 
 	if ((stage_number < 1)or(stage_number > total_stages)):

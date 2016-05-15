@@ -15,7 +15,7 @@ your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 So now we will have 16 instances of step_1 executed. Two things to note:
 
-* In the execution context, we have acquired only 1 core. So these 16 instances will execute one at a time. If we had 2 cores, there will be 2 instances executed concurrently. With 16 cores, all instances execute concurrently. Play around with the number of cores and see how the runtime of the script varies!
+* In the resource handle, we have acquired only 1 core. So these 16 instances will execute one at a time. If we had 2 cores, there will be 2 instances executed concurrently. With 16 cores, all instances execute concurrently. Play around with the number of cores and see how the runtime of the script varies!
 
 * The output files of all instances are called ``output.txt``, they will overwrite existing files. To differentiate each of the output files, we can simply use the instance as an index in the filename.
 

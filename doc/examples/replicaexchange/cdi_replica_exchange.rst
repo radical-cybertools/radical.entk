@@ -42,13 +42,15 @@ Run Locally
 In principle it is suggested to set a ratio of compute cores to replicas as 1:2.
 
 
-**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``INFO``::
+**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=INFO python replica_exchange_mode_1.py
+    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_mode_1.py
 
 
 **Step 4:** Verify presence of generated input files alanin_base_x_y.namd and alanin_base_x_y.history
 output files where x is replica id and y is cycle number.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run Remotely
 ============
