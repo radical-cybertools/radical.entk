@@ -1,5 +1,5 @@
 #######################################
-RADICAL Ensemble Toolkit v0.3 Documentation
+RADICAL Ensemble Toolkit v0.4 Documentation
 #######################################
 
 The Ensemble Toolkit is a Python library for developing and executing
