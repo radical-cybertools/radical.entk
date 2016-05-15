@@ -73,7 +73,7 @@ of cores to see how this affects the runtime of the script as the individual
 simulations instances can run in parallel::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
             username="",  #Username is entered as a string. Used when running on remote machine
