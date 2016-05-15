@@ -48,7 +48,7 @@ Complete script:
 .. literalinclude:: scripts/add_stages.py
 
 
-**And that's pretty much all there is to EnsembleMD Toolkit.** The rest is
+**And that's pretty much all there is to Ensemble Toolkit.** The rest is
 really all about defining your application logic with the different patterns
 and Kernels. We will go through some examples throughout the rest of this
 User guide.
