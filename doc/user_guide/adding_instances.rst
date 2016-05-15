@@ -4,16 +4,16 @@
 Adding Instances
 ****************
 
-So far in our example, we had only 1 instance of the step, i.e. a Bag of Tasks with a bag size of 1. Let's now increase the bag size to 16, keeping the workload the same as in the previous examples. This change is trivial: we simply specify the bag size as the number of instances during pattern object creation:
+So far in our example, we had only 1 instance of the stage, i.e. a Bag of Tasks with a bag size of 1. Let's now increase the bag size to 16, keeping the workload the same as in the previous examples. This change is trivial: we simply specify the bag size as the number of instances during pattern object creation:
 
 .. code-block:: python
 
-	app = MyApp(steps=1,instances=16)
+	app = MyApp(stages=1,instances=16)
 
 You can download the entire script for this section :download:`here <scripts/add_instances.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
-So now we will have 16 instances of step_1 executed. Two things to note:
+So now we will have 16 instances of stage_1 executed. Two things to note:
 
 * In the resource handle, we have acquired only 1 core. So these 16 instances will execute one at a time. If we had 2 cores, there will be 2 instances executed concurrently. With 16 cores, all instances execute concurrently. Play around with the number of cores and see how the runtime of the script varies!
 

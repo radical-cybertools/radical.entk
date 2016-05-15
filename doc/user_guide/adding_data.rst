@@ -4,7 +4,7 @@
 Adding Data
 ****************
 
-Now that we have a basic example running, let's try to add some data to this application! Our kernel in the first step, 
+Now that we have a basic example running, let's try to add some data to this application! Our kernel in the first stage, 
 creates a file if it does not already exist and adds `Hello World` to the file. In this section, we'll try to first transfer an 
 input file ("input_file.txt") from localhost, add `Hello World` to this file and transfer it back to the localhost.
 

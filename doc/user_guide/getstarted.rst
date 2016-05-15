@@ -5,8 +5,8 @@ Getting Started
 ***************
 
 In this section we will run you through the basic building blocks of the  API.
-We will develop an example application, starting from a singe task, to a bag
-of tasks, to a Pipeline of tasks.
+We will develop an example application, starting from a singe task, to a Bag
+of Tasks.
 
 .. note:: The reader is assumed to be familiar with the general Ensemble MD concepts as described in :ref:`introduction` and :ref:`overview`.
 
@@ -24,7 +24,7 @@ To create any application using Ensemble Toolkit, you need to import three modul
     
 
     from radical.ensemblemd import Kernel
-    from radical.ensemblemd import Pipeline
+    from radical.ensemblemd import BagofTasks
     from radical.ensemblemd import EnsemblemdError
     from radical.ensemblemd import SingleClusterEnvironment
 
@@ -61,49 +61,49 @@ Once created, you can now perform the following operations:
 Creating the Execution Pattern class
 ========================================
 
-Next, we create an execution pattern class. The pattern class needs to import the specific pattern the application requires. In this case, we import the Pipeline class. We simply create our own class ``MyApp`` that is of the Pipeline pattern type.
+Next, we create an execution pattern class. The pattern class needs to import the specific pattern the application requires. In this case, we import the BagofTasks class. We simply create our own class ``MyApp`` that is of the BagofTasks pattern type.
 
 .. code-block:: python
     
 
-      class MyApp(Pipeline):
-       def __init__(self, steps, instances):
-           Pipeline.__init__(self, steps, instances)
+      class MyApp(BagofTasks):
+       def __init__(self, stages, instances):
+           BagofTasks.__init__(self, stages, instances)
 
 
-Once the class type is defined, we can now define ``steps`` to this pattern. Each step of the pattern can have different workloads. We now instantiate this class,
+Once the class type is defined, we can now define ``stages`` to this pattern. Each stage of the pattern can have different workloads. We now instantiate this class,
 
 .. code-block:: python
     
     
-    app = MyApp(steps=1, instances=1)
+    app = MyApp(stages=1, instances=1)
 
-We have created an instance of the class with 1 step and 1 instance. The instance here refers to the number of 
-instances of the step to be executed (in other words the number of tasks with the same kernel as in a particular step).
+We have created an instance of the class with 1 stage and 1 instance. The instance here refers to the number of 
+instances of the stage to be executed (in other words the number of tasks with the same kernel as in a particular stage).
 
 A complete look at our  pattern class,
 
 .. code-block:: python
     
 
-      class MyApp(Pipeline):
-            def __init__(self, steps, instances):
-                    Pipeline.__init__(self, instances)
+      class MyApp(BagofTasks):
+            def __init__(self, stages, instances):
+                    BagofTasks.__init__(self, stages, instances)
 
 
-            def step_1(self,instance):
+            def stage_1(self,instance):
                     <define what to do> 
 
 
-      app = MyApp(steps=1, instances=1)
+      app = MyApp(stages=1, instances=1)
 
 
 
 Using the Kernel Plugin 
 ===========================
 
-We have now designed the application class completely. We can define what the first step of the application 
-needs to execute. We use the kernels to define ``what to do`` in the first step.
+We have now designed the application class completely. We can define what the first stage of the application 
+needs to execute. We use the kernels to define ``what to do`` in the first stage.
 
 .. code-block:: python
     
@@ -138,13 +138,6 @@ a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 
 .. literalinclude:: scripts/get_started.py
-
-
-
-.. note::
-
-      You can use the Pipeline pattern to create a Bag of Tasks by having only one step. In this case, this is an example of a Bag of Tasks with a bag size of 1.
-
 
 
 
