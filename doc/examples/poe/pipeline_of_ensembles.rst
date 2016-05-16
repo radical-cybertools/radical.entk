@@ -1,4 +1,4 @@
-.. _bag_of_tasks_example:
+.. _pipeline_of_ensembles_example:
 
 ***********************************
 Pipeline of Ensembles (PoE) Example

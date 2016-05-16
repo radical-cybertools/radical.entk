@@ -1,4 +1,4 @@
-.. _pipeline:
+.. _ensemble_of_pipelines_example:
 
 ***********************************
 Ensemble of Pipelines (EoP) Example
