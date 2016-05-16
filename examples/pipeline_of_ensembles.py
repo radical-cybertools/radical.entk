@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-
-
-__author__       = "Ole Weider <ole.weidner@rutgers.edu>"
-__copyright__    = "Copyright 2014, http://radical.rutgers.edu"
+__author__       = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
+__copyright__    = "Copyright 2016, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Bag of Tasks Example (generic)"
+__example_name__ = "Pipeline of Ensembles Example (generic)"
 
 import sys
 import os
