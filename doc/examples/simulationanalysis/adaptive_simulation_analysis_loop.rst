@@ -22,7 +22,7 @@ Run adaptive simulation analysis loop
 =====================================
 
 The main difference from the previous cases is during the pattern object creation. In many cases, the analysis stage
-produces the number of simulations for the next iteration. If the analysis prints out the **ONLY** the number of 
+produces the number of simulations for the next iteration. If the analysis prints out **ONLY** the number of 
 simulations and no other message, it is sufficient to specify that the pattern is adaptive by adding the parameter 
 ``adaptive_simulation=True``.
 
