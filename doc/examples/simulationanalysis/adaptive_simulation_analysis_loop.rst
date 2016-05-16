@@ -31,6 +31,17 @@ simulations and no other message, it is sufficient to specify that the pattern i
     mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
 
 
+**Step 1:** View and download the example sources :ref:`below <example_adaptive_simulation_analysis_loop>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop.py``.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``REPORT``::
+
+    RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop.py
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
+
+
+
 .. _example_adaptive_simulation_analysis_loop:
 
 
@@ -57,6 +68,15 @@ parameter during pattern object creation.
 
     mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True, sim_extraction_script='extract.py')
 
+
+**Step 1:** View and download the example sources :ref:`below <example_adaptive_simulation_analysis_loop_with_script>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop_with_script.py``.
+
+**Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``REPORT``::
+
+    RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop_with_script.py
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 .. _example_adaptive_simulation_analysis_loop_with_script:
 
