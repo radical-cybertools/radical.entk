@@ -47,7 +47,8 @@ To run the script, simply execute the following from the command line:
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-The complete code is as follows:
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` are have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
+The complete code is as follows:
 
 .. literalinclude:: scripts/add_data.py
