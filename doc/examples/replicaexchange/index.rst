@@ -1,6 +1,6 @@
 .. _pattern_replicaexchange:
 
-Replica Exchange
+Ensemble Exchange
 ================
 
 .. toctree::
