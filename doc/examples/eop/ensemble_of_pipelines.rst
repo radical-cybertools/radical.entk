@@ -67,6 +67,7 @@ pipeline instances can run in parallel::
 
 .. _example_source_ensemble_of_pipelines:
 
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 Example Source
 ==============

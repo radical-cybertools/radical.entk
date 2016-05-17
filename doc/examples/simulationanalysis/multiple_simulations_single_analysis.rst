@@ -80,6 +80,7 @@ simulations instances can run in parallel::
             project=""    #Project ID is entered as a string. Used when running on remote machine
     )
 
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 .. _multiple_simulations_single_analysis:
 

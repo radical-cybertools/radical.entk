@@ -136,7 +136,7 @@ To run the script, simply execute the following from the command line:
 And that's it! That's all the steps of the pattern. Let's take a look at the complete code in the example. You can generate
 a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` are have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 .. literalinclude:: scripts/get_started.py
 

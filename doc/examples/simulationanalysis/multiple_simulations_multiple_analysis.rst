@@ -77,7 +77,7 @@ pipeline instances can run in parallel::
         project=None # add your allocation or project id here if required
     )
 
-
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 .. _multiple_simulations_multiple_analysis:
 

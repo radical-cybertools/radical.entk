@@ -64,8 +64,9 @@ pipeline instances can run in parallel::
         project=None # add your allocation or project id here if required
     )
 
-.. _example_source_simulation_analysis_loop:
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
+.. _example_source_simulation_analysis_loop:
 
 Example Source
 ==============

@@ -65,6 +65,7 @@ tasks in the each stage of the pipeline can run in parallel::
 
 .. _example_source_pipeline_of_ensembles:
 
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 Example Source
 ==============
