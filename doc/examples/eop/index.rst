@@ -7,4 +7,4 @@ Ensemble of Pipelines
 .. toctree::
 
 	:numbered:
-	ensembles_of_pipelines
+	ensemble_of_pipelines
