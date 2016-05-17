@@ -66,7 +66,7 @@ pipeline instances can run in parallel::
 Example Source
 ==============
 
-:download: `Download: ensemble_exchange.py <../../../examples/ensemble_exchange.py>`
+:download:`Download: ensemble_exchange.py <../../../examples/ensemble_exchange.py>`
 
 .. literalinclude:: ../../../examples/ensemble_exchange.py
     :language: python
