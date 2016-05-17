@@ -1,8 +1,8 @@
 .. _usecase_cdi_replica_exchange:
 
-****************************************************
-Use-Case: Synchronous Temperature Exchange with NAMD
-****************************************************
+*****************************************************************************************
+Use-Case: Synchronous Temperature Exchange with NAMD using Ensemble Exchange pattern
+*****************************************************************************************
 
 This script is an example of simple application using the Ensemble Toolkit ``ReplicaExchange``
 pattern for synchronous termerature-exchange RE simulation. Demonstrated RE simulation involves 32 
@@ -35,7 +35,7 @@ Run Locally
              In addition you need to have a local NAMD installation and NAMD should be
              invocable by calling ``namd2`` from terminal.
 
-**Step 1:** View and download the example sources :ref:`below <example_cdi_usecase>`.
+**Step 1:** View and download the example sources :ref:`below <example_repex_usecase>`.
 
 
 **Step 2:** Change number of replicas to 4 at line 94 of ``replica_exchange_mode_1.py``.
@@ -78,7 +78,7 @@ You can change the script to use a remote HPC cluster::
 Number of replicas and number of simulation cycles are defined in constructor of RePattern class.
 Please change the number of cores and the number of replicas according to suggested ratio of 1:2.
 
-.. _example_cdi_usecase:
+.. _example_repex_usecase:
 
 Example Source
 ==============

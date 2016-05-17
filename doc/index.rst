@@ -3,7 +3,7 @@ RADICAL Ensemble Toolkit v0.4 Documentation
 #######################################
 
 The Ensemble Toolkit is a Python library for developing and executing large-scale ensemble-based workflows. It is being developed by the `RADICAL Research Group <http://radical.rutgers.edu/>`_ at Rutgers University. Ensemble Toolkit is released under the `MIT License
-<http://opensource.org/licenses/MIT>`_. More details and the reference to cite EnTK can be found at http://arxiv.org/abs/1602.00678 (accepted in ICPP 2016).
+<http://opensource.org/licenses/MIT>`_. More details and the reference to cite Ensemble Toolkit can be found at http://arxiv.org/abs/1602.00678 (accepted in ICPP 2016).
 
 **Project Github Page**
 
