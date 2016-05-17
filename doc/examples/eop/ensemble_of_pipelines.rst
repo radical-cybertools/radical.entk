@@ -32,7 +32,7 @@ your virtualenv under ``share/radical.ensemblemd/examples/ensemble_of_pipelines.
 
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python ensemble_of_pipeline.py
+    RADICAL_ENTK_VERBOSE=REPORT python ensemble_of_pipelines.py
 
 Once the script has finished running, you should see the raw data of the
 character analysis step (``cfreqs-XX.dat``) and the corresponding SHA1 checksums
