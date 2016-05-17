@@ -1,5 +1,9 @@
 .. _pipeline_of_ensembles_example:
 
+***********************************
+Pipeline of Ensembles (PoE) Example
+***********************************
+
 This example shows how to use the Ensemble Toolkit :class:`.BagofTasks` pattern
 to execute a single stage "Pipeline of Ensembles". The "instances" of the  :class:`.BagofTasks`
 corresponds to the number of ensemble members.
