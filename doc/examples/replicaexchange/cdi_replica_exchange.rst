@@ -63,7 +63,7 @@ By default, this use-case runs on your local machine::
         cores=1,
         walltime=30,
         username=None,
-        allocation=None
+        project=None
     )
 
 You can change the script to use a remote HPC cluster::
@@ -73,7 +73,7 @@ You can change the script to use a remote HPC cluster::
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 Number of replicas and number of simulation cycles are defined in constructor of RePattern class.

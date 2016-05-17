@@ -48,7 +48,7 @@ By default, this Pipeline of Ensembles runs on one core on your local machine::
         cores=1,
         walltime=15,
         username=None,
-        allocation=None
+        project=None
     )
 
 You can change the script to use a remote HPC cluster and increase the number
@@ -60,7 +60,7 @@ tasks in the each stage of the pipeline can run in parallel::
         cores=16,
         walltime=30,
         username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
+        project=None # add your allocation or project id here if required
     )
 
 .. _example_source_pipeline_of_ensembles:
