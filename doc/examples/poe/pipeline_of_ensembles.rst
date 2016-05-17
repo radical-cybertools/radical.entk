@@ -46,7 +46,7 @@ By default, this Pipeline of Ensembles runs on one core on your local machine::
     SingleClusterEnvironment(
         resource="localhost",
         cores=1,
-        walltime=30,
+        walltime=15,
         username=None,
         allocation=None
     )
