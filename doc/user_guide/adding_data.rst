@@ -15,7 +15,6 @@ To do this, we just have to add the ``upload_input_data`` and ``download_output_
 
 .. code-block:: python
 
-
 	k = Kernel(name="misc.hello")
 	k.upload_input_data = ['./input_file.txt']
     	k.arguments = ["--file=input_file.txt"]
@@ -47,8 +46,6 @@ To run the script, simply execute the following from the command line:
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
-
-The complete code is as follows:
+A look at the complete code in this section:
 
 .. literalinclude:: scripts/add_data.py

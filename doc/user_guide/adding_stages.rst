@@ -42,9 +42,7 @@ To run the script, simply execute the following from command line:
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
-
-Complete script:
+A look at the complete code in this section:
 
 .. literalinclude:: scripts/add_stages.py
 
