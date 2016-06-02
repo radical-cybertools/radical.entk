@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 	try:
 
-		# Create a new static execution context with one resource and a fixed
+		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
 		cluster = SingleClusterEnvironment(
 			resource="localhost",

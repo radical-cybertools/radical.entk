@@ -18,9 +18,9 @@ Run Locally
 
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
-             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
+			 set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+			 The format is ``mongodb://hostname:port``. Read more about it
+			 MongoDB in chapter :ref:`envpreparation`.
 
 
 **Step 1:** View and download the example sources :ref:`below <example_ensemble_exchange>`  or find it in 
@@ -29,7 +29,7 @@ your virtualenv under ``share/radical.ensemblemd/examples/ensemble_exchange.py``
 
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python ensemble_exchange.py
+	RADICAL_ENTK_VERBOSE=REPORT python ensemble_exchange.py
 
 After execution is done, in working directory you should have 24 md_input_x_y.md files and 24 md_input_x_y.out files where x in {0,1,2} and y in {0,1,...7}. File with extension .md is input file for the ensemble member and with extension .out is output file providing number of occurrences of each character.
 
@@ -38,31 +38,28 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 Run Remotely
 ============
 
-By default, the exchange steps run on one core your local machine::
+By default, the exchange steps run on one core your local machine
 
-    SingleClusterEnvironment(
-        resource="local.localhost",
-        cores=1,
-        walltime=30,
-        username=None,
-        project=None
-    )
+.. literalinclude:: ../../../examples/ensemble_exchange.py
+	:lines: 202-209
+	:language: python
+	:dedent: 2
+
 
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
 pipeline instances can run in parallel::
 
-    SingleClusterEnvironment(
-        resource="xsede.stampede",
-        cores=16,
-        walltime=30,
-        username=None,  # add your username here
-        project=None # add your allocation or project id here if required
-    )
+	cluster = SingleClusterEnvironment(
+		resource="xsede.stampede",
+		cores=16,
+		walltime=30,
+		username=None,  # add your username here
+		project=None # add your allocation or project id here if required
+		database_url=None # add your mongodb url
+	)
 
 .. _example_ensemble_exchange:
-
-.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 Example Source
 ==============
@@ -70,5 +67,5 @@ Example Source
 :download:`Download: ensemble_exchange.py <../../../examples/ensemble_exchange.py>`
 
 .. literalinclude:: ../../../examples/ensemble_exchange.py
-    :language: python
+	:language: python
 

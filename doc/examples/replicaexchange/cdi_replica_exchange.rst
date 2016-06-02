@@ -30,11 +30,11 @@ Run Locally
 ===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
-             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
-             In addition you need to have a local NAMD installation and NAMD should be
-             invocable by calling ``namd2`` from terminal.
+			 set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+			 The format is ``mongodb://hostname:port``. Read more about it
+			 MongoDB in chapter :ref:`envpreparation`.
+			 In addition you need to have a local NAMD installation and NAMD should be
+			 invocable by calling ``namd2`` from terminal.
 
 **Step 1:** View and download the example sources :ref:`below <example_repex_usecase>`.
 
@@ -45,7 +45,7 @@ In principle it is suggested to set a ratio of compute cores to replicas as 1:2.
 
 **Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_mode_1.py
+	RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_mode_1.py
 
 
 **Step 4:** Verify presence of generated input files alanin_base_x_y.namd and alanin_base_x_y.history
@@ -56,25 +56,23 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 Run Remotely
 ============
 
-By default, this use-case runs on your local machine::
+By default, this use-case runs on your local machine
 
-    SingleClusterEnvironment(
-        resource="localhost",
-        cores=1,
-        walltime=30,
-        username=None,
-        project=None
-    )
+.. literalinclude:: ../../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py
+	:language: python
+	:lines: 418-425
+	:dedent: 2
 
 You can change the script to use a remote HPC cluster::
 
-    SingleClusterEnvironment(
-        resource="xsede.stampede",
-        cores=16,
-        walltime=30,
-        username=None,  # add your username here
-        project=None # add your allocation or project id here if required
-    )
+	cluster = SingleClusterEnvironment(
+		resource="xsede.stampede",
+		cores=16,
+		walltime=30,
+		username=None,  # add your username here
+		project=None # add your allocation or project id here if required
+		database_url=None # add your mongodb url
+	)
 
 Number of replicas and number of simulation cycles are defined in constructor of RePattern class.
 Please change the number of cores and the number of replicas according to suggested ratio of 1:2.
@@ -91,7 +89,7 @@ Example Source
 :download:`Download NAMD input files: namd_inp.tar.gz <../../../usecases/cdi_replica_exchange/namd_inp.tar.gz>`
 
 .. warning:: Before running this example you must uncompress the ``namd_inp.tar.gz`` 
-             archive in your working directory.
+			 archive in your working directory.
 
 .. literalinclude:: ../../../usecases/cdi_replica_exchange/replica_exchange_mode_1.py
    :language: python

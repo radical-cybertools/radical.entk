@@ -22,46 +22,46 @@ machine under a folder called "backup".
 
 .. code-block:: none
 
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |
-     \-----------------------------------------/
-                          |
-                         [A]
-                          |
-     /-----------------------------------------\
-     |      |      |      |      |      |      |
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |
-     \-----------------------------------------/
-                          |
-                         [A]
-                          :
+	[S]    [S]    [S]    [S]    [S]    [S]    [S]
+	 |      |      |      |      |      |      |
+	 \-----------------------------------------/
+						  |
+						 [A]
+						  |
+	 /-----------------------------------------\
+	 |      |      |      |      |      |      |
+	[S]    [S]    [S]    [S]    [S]    [S]    [S]
+	 |      |      |      |      |      |      |
+	 \-----------------------------------------/
+						  |
+						 [A]
+						  :
 
 Run Locally
 ===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
-             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
+			 set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+			 The format is ``mongodb://hostname:port``. Read more about it
+			 MongoDB in chapter :ref:`envpreparation`.
 
 .. warning:: Running locally would require you that have Gromacs and LSDMap installed on
-             your machine. Please go through Gromacs, LSDMap documentation to see how this
-             can be done.
+			 your machine. Please go through Gromacs, LSDMap documentation to see how this
+			 can be done.
 
 
 By default, this example is setup to run on Stampede. You can also run it on your local
 machine by setting the following parameters in your RPconfig file::
 
-    REMOTE_HOST = 'localhost'
-    UNAME       = ''
-    ALLOCATION  = ''
-    QUEUE       = ''
-    WALLTIME    = 60
-    PILOTSIZE   = 16
-    WORKDIR     = None
+	REMOTE_HOST = 'localhost'
+	UNAME       = ''
+	ALLOCATION  = ''
+	QUEUE       = ''
+	WALLTIME    = 60
+	PILOTSIZE   = 16
+	WORKDIR     = None
 
-    DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
+	DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
 
 
 
@@ -76,20 +76,21 @@ of cores to see how this affects the runtime of the script as the individual
 simulations instances can run in parallel. You can try more variations
 by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
-    SingleClusterEnvironment(
-        resource="xsede.stampede",
-        cores=16,
-        walltime=30,
-        username=None,  # add your username here
-        allocation=None # add your allocation or project id here if required
-    )
+	cluster = SingleClusterEnvironment(
+		resource="xsede.stampede",
+		cores=16,
+		walltime=30,
+		username=None,  # add your username here
+		project=None # add your allocation or project id here if required
+		database_url=None # add your mongodb url
+	)
 
 **Step 1:** View and download the example sources :ref:`below <01_static_gromacs_lsdmap_loop>`.
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to
 see log messages about simulation progress::
 
-    RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py --RPconfig stampede.rcfg --Kconfig gromacslsdmap.wcfg
+	RADICAL_ENMD_VERBOSE=info python 01_static_gromacs_lsdmap_loop.py --RPconfig stampede.rcfg --Kconfig gromacslsdmap.wcfg
 
 
 Once the default script has finished running, you should see a folder called "iter2" inside backup/
