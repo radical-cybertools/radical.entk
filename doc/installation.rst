@@ -20,7 +20,7 @@ You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` c
 .. code-block:: bash
 
 		ensemblemd-version
-		0.4
+		0.4.3
 
 
 .. note::
