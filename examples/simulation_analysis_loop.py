@@ -112,6 +112,8 @@ if __name__ == "__main__":
 
         cluster.deallocate()
 
+        cluster.profile(randomsa)
+
 
         # After execution has finished, we print some statistical information
         # extracted from the analysis results that were transferred back.

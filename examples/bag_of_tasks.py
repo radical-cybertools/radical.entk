@@ -87,6 +87,8 @@ if __name__ == "__main__":
 
         cluster.deallocate()
 
+        cluster.profile(ccount)
+
     except EnsemblemdError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))
