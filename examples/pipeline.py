@@ -24,8 +24,8 @@ class CharCount(Pipeline):
         radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
     """
 
-    def __init__(self, steps,instances):
-        Pipeline.__init__(self, steps,instances)
+    def __init__(self, stages,instances):
+        Pipeline.__init__(self, stages,instances)
 
     def stage_1(self, instance):
         """The first step of the pipeline creates a 1 MB ASCI file.

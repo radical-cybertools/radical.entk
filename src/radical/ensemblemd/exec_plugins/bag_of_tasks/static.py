@@ -82,6 +82,182 @@ class Plugin(PluginBase):
 				self.get_logger().error("Pattern execution FAILED.")
 				sys.exit(1)
 
+		#-----------------------------------------------------------------------
+		# Get input data for the kernel
+		def get_input_data(kernel,stage,task):
+			# INPUT DATA:
+
+			ip_list = []
+			#------------------------------------------------------------------------------------------------------------------
+			# upload_input_data
+			data_in = []
+			if kernel._kernel._upload_input_data is not None:
+				if isinstance(kernel._kernel._upload_input_data,list):
+					pass
+				else:
+					kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
+				for i in range(0,len(kernel._kernel._upload_input_data)):
+					var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._upload_input_data[i])
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip()
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip())
+							}
+					data_in.append(temp)
+
+			if ip_list is None:
+				ip_list = data_in
+			else:
+				ip_list += data_in
+			#-----------------------------------------------------------------------
+
+			#------------------------------------------------------------------------------------------------------------------
+			# link_input_data
+			data_in = []
+			if kernel._kernel._link_input_data is not None:
+				if isinstance(kernel._kernel._link_input_data,list):
+					pass
+				else:
+					kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
+				for i in range(0,len(kernel._kernel._link_input_data)):
+					var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._link_input_data[i])
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': radical.pilot.LINK
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': radical.pilot.LINK
+							}
+					data_in.append(temp)
+
+			if ip_list is None:
+				ip_list = data_in
+			else:
+				ip_list += data_in
+			#------------------------------------------------------------------------------------------------------------------
+
+			#------------------------------------------------------------------------------------------------------------------
+			# copy_input_data
+			data_in = []
+			if kernel._kernel._copy_input_data is not None:
+				if isinstance(kernel._kernel._copy_input_data,list):
+					pass
+				else:
+					kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
+				for i in range(0,len(kernel._kernel._copy_input_data)):
+					var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_input_data[i])
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': radical.pilot.COPY
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': radical.pilot.COPY
+							}
+					data_in.append(temp)
+
+			if ip_list is None:
+				ip_list = data_in
+			else:
+				ip_list += data_in
+			#------------------------------------------------------------------------------------------------------------------
+
+			#------------------------------------------------------------------------------------------------------------------
+			# download input data
+			if kernel.download_input_data is not None:
+				data_in  = kernel.download_input_data
+				if ip_list is None:
+					ip_list = data_in
+				else:
+					ip_list += data_in
+			#------------------------------------------------------------------------------------------------------------------
+
+
+			return ip_list
+		#-----------------------------------------------------------------------
+
+		#-----------------------------------------------------------------------
+		# Get output data for the kernel
+		def get_output_data(kernel,stage,task):
+
+			# OUTPUT DATA:
+			#------------------------------------------------------------------------------------------------------------------
+			# copy_output_data
+			op_list = []
+			data_out = []
+			if kernel._kernel._copy_output_data is not None:
+				if isinstance(kernel._kernel._copy_output_data,list):
+					pass
+				else:
+					kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
+				for i in range(0,len(kernel._kernel._copy_output_data)):
+					var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._copy_output_data[i])
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': radical.pilot.COPY
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': radical.pilot.COPY
+							}
+					data_out.append(temp)
+
+			if op_list is None:
+				op_list = data_out
+			else:
+				op_list += data_out
+			#------------------------------------------------------------------------------------------------------------------
+
+			#------------------------------------------------------------------------------------------------------------------
+			# download_output_data
+			data_out = []
+			if kernel._kernel._download_output_data is not None:
+				if isinstance(kernel._kernel._download_output_data,list):
+					pass
+				else:
+					kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
+				for i in range(0,len(kernel._kernel._download_output_data)):
+					var=resolve_placeholder_vars(self.working_dirs, stage, task, kernel._kernel._download_output_data[i])
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip()
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip())
+							}
+					data_out.append(temp)
+
+			if op_list is None:
+				op_list = data_out
+			else:
+				op_list += data_out
+			#------------------------------------------------------------------------------------------------------------------
+
+			return op_list
+			
+		#-----------------------------------------------------------------------
+
 		self._reporter.ok('>>ok')
 		pipeline_instances = pattern.instances
 
@@ -151,168 +327,9 @@ class Plugin(PluginBase):
 					cud.executable     = kernel._cu_def_executable
 					cud.arguments      = kernel.arguments
 					cud.mpi            = kernel.uses_mpi
-					cud.input_staging  = None
-					cud.output_staging = None
-
-					# INPUT DATA:
-					#------------------------------------------------------------------------------------------------------------------
-					# upload_input_data
-					data_in = []
-					if kernel._kernel._upload_input_data is not None:
-						if isinstance(kernel._kernel._upload_input_data,list):
-							pass
-						else:
-							kernel._kernel._upload_input_data = [kernel._kernel._upload_input_data]
-						for i in range(0,len(kernel._kernel._upload_input_data)):
-							var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps,kernel._kernel._upload_input_data[i])
-							if len(var.split('>')) > 1:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': var.split('>')[1].strip()
-									}
-							else:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': os.path.basename(var.split('>')[0].strip())
-									}
-							data_in.append(temp)
-
-					if cud.input_staging is None:
-						cud.input_staging = data_in
-					else:
-						cud.input_staging += data_in
-					#------------------------------------------------------------------------------------------------------------------
-
-					#------------------------------------------------------------------------------------------------------------------
-					# link_input_data
-					data_in = []
-					if kernel._kernel._link_input_data is not None:
-						if isinstance(kernel._kernel._link_input_data,list):
-							pass
-						else:
-							kernel._kernel._link_input_data = [kernel._kernel._link_input_data]
-						for i in range(0,len(kernel._kernel._link_input_data)):
-							var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._link_input_data[i])
-							if len(var.split('>')) > 1:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': var.split('>')[1].strip(),
-										'action': radical.pilot.LINK
-									}
-							else:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': os.path.basename(var.split('>')[0].strip()),
-										'action': radical.pilot.LINK
-									}
-							data_in.append(temp)
-
-					if cud.input_staging is None:
-						cud.input_staging = data_in
-					else:
-						cud.input_staging += data_in
-					#------------------------------------------------------------------------------------------------------------------
-
-					#------------------------------------------------------------------------------------------------------------------
-					# copy_input_data
-					data_in = []
-					if kernel._kernel._copy_input_data is not None:
-						if isinstance(kernel._kernel._copy_input_data,list):
-							pass
-						else:
-							kernel._kernel._copy_input_data = [kernel._kernel._copy_input_data]
-						for i in range(0,len(kernel._kernel._copy_input_data)):
-							var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_input_data[i])
-							if len(var.split('>')) > 1:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': var.split('>')[1].strip(),
-										'action': radical.pilot.COPY
-									}
-							else:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': os.path.basename(var.split('>')[0].strip()),
-										'action': radical.pilot.COPY
-									}
-							data_in.append(temp)
-
-					if cud.input_staging is None:
-						cud.input_staging = data_in
-					else:
-						cud.input_staging += data_in
-					#------------------------------------------------------------------------------------------------------------------
-
-					#------------------------------------------------------------------------------------------------------------------
-					# download input data
-					if kernel.download_input_data is not None:
-						data_in  = kernel.download_input_data
-						if cud.input_staging is None:
-							cud.input_staging = data_in
-						else:
-							cud.input_staging += data_in
-					#------------------------------------------------------------------------------------------------------------------
-
-					# OUTPUT DATA:
-					#------------------------------------------------------------------------------------------------------------------
-					# copy_output_data
-					data_out = []
-					if kernel._kernel._copy_output_data is not None:
-						if isinstance(kernel._kernel._copy_output_data,list):
-							pass
-						else:
-							kernel._kernel._copy_output_data = [kernel._kernel._copy_output_data]
-						for i in range(0,len(kernel._kernel._copy_output_data)):
-							var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._copy_output_data[i])
-							if len(var.split('>')) > 1:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': var.split('>')[1].strip(),
-										'action': radical.pilot.COPY
-									}
-							else:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': os.path.basename(var.split('>')[0].strip()),
-										'action': radical.pilot.COPY
-									}
-							data_out.append(temp)
-
-					if cud.output_staging is None:
-						cud.output_staging = data_out
-					else:
-						cud.output_staging += data_out
-					#------------------------------------------------------------------------------------------------------------------
-
-					#------------------------------------------------------------------------------------------------------------------
-					# download_output_data
-					data_out = []
-					if kernel._kernel._download_output_data is not None:
-						if isinstance(kernel._kernel._download_output_data,list):
-							pass
-						else:
-							kernel._kernel._download_output_data = [kernel._kernel._download_output_data]
-						for i in range(0,len(kernel._kernel._download_output_data)):
-							var=resolve_placeholder_vars(working_dirs, instance, pipeline_steps, kernel._kernel._download_output_data[i])
-							if len(var.split('>')) > 1:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': var.split('>')[1].strip()
-										}
-							else:
-								temp = {
-										'source': var.split('>')[0].strip(),
-										'target': os.path.basename(var.split('>')[0].strip())
-									}
-							data_out.append(temp)
-
-					if cud.output_staging is None:
-						cud.output_staging = data_out
-					else:
-						cud.output_staging += data_out
-					#------------------------------------------------------------------------------------------------------------------
-
-
+					cud.input_staging  = get_input_data(kernel,step,instance)
+					cud.output_staging = get_output_data(kernel,step,instance)
+					
 					if kernel.cores is not None:
 						cud.cores = kernel.cores
 

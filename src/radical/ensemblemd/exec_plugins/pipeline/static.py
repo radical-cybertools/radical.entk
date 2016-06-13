@@ -18,7 +18,7 @@ import radical.pilot
 
 from radical.ensemblemd.exceptions import NotImplementedError, EnsemblemdError
 from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
-
+from collections import OrderedDict as od
 
 # ------------------------------------------------------------------------------
 #
@@ -66,6 +66,10 @@ class Plugin(PluginBase):
 		super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
 		self.tot_fin_tasks= [0]
 		self.working_dirs = {}
+		self.profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+		if self.profiling == 1:
+			self.cu_dict = od()
+			self.enmd_overhead_dict = od()
 
 	# --------------------------------------------------------------------------
 	#
@@ -282,6 +286,8 @@ class Plugin(PluginBase):
 							self._reporter.info('\nAll tasks in stage {0} have finished'.format(cur_stage))
 							self._reporter.ok('>> done')
 							self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
+							if self.profiling == 1:
+								self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['done_time'] = datetime.datetime.now()
 					#-----------------------------------------------------------------------
 					# Log unit working directories for placeholders
 					if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
@@ -301,7 +307,7 @@ class Plugin(PluginBase):
 		self.get_logger().info("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
 			resource._cores, resource._resource_key))
 
-		self._reporter.header("Executing {0} pipes of {1} steps on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
+		self._reporter.header("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
 			resource._cores, resource._resource_key))
 		#-----------------------------------------------------------------------
 		# Wait for Pilot to go Active
@@ -318,16 +324,15 @@ class Plugin(PluginBase):
 		#-----------------------------------------------------------------------
 
 
-		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-
-		if profiling == 1:
-			from collections import OrderedDict as od
-			pattern._execution_profile = []
-			enmd_overhead_dict = od()
-			cu_dict = od()
-
 		#-----------------------------------------------------------------------
 		# Launch first stage of all tasks
+
+		if self.profiling == 1:
+			probe_start_time = datetime.datetime.now()
+			self.enmd_overhead_dict['stage_1'] = od()
+			self.cu_dict['stage_1'] = list()
+
+			self.enmd_overhead_dict['stage_1']['start_time'] = probe_start_time
 
 		task_method = getattr(pattern, 'stage_1')
 		task_units_desc = []
@@ -350,10 +355,16 @@ class Plugin(PluginBase):
 
 			task_units_desc.append(cud)
 
+		if self.profiling == 1:
+			self.enmd_overhead_dict['stage_1']['wait_time'] = datetime.datetime.now()
+
 		task_units = resource._umgr.submit_units(task_units_desc)
 		self.get_logger().info('Submitted all tasks of stage 1')
 		self._reporter.info('Submitted all tasks of stage 1')
 		self._reporter.ok('>> ok')
+
+		if self.profiling == 1:
+			self.cu_dict['stage_1'] = task_units
 		#-----------------------------------------------------------------------
 
 		#-----------------------------------------------------------------------
@@ -401,7 +412,12 @@ class Plugin(PluginBase):
 			cur_stage = int(cud.name.split('-')[1])
 			cur_task = int(cud.name.split('-')[3])
 			self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
-			resource._umgr.submit_units(cud)    
+			task = resource._umgr.submit_units(cud)
+			if 'stage_{0}'.format(cur_stage) not in self.cu_dict:
+				self.cu_dict['stage_{0}'.format(cur_stage)] = [task]
+			else:
+				self.cu_dict['stage_{0}'.format(cur_stage)].append(task)
+
 		#-----------------------------------------------------------------------
 
 		#-----------------------------------------------------------------------
@@ -409,4 +425,9 @@ class Plugin(PluginBase):
 		while(sum(self.tot_fin_tasks)!=(num_stages*num_tasks)):
 			resource._umgr.wait_units()    
 
+
+		if profiling == 1:
+			return enmd_overhead_dict, cu_dict
+		else:
+			return None
 		#-----------------------------------------------------------------------
