@@ -18,7 +18,7 @@ To do this, we just have to add the ``upload_input_data`` and ``download_output_
 	k = Kernel(name="misc.hello")
 	k.upload_input_data = ['./input_file.txt']
     	k.arguments = ["--file=input_file.txt"]
-    	k.download_output_data = [./input_file.txt]
+    	k.download_output_data = ['./input_file.txt']
 
 It is also possible to rename the files while staging them! Let's rename "input_file.txt" to "temp.txt". The local file still is named "input_file.txt", but the same file on remote will be called "temp.txt". We will also name the downloaded file to "output_file.txt". Let's look at how we can do that:
 
