@@ -147,22 +147,24 @@ def isgood(name):
 
 #-----------------------------------------------------------------------------
 #
-srcroot = os.path.dirname(os.path.realpath(__file__))
-check_version()
-short_version, long_version = get_version()
+#srcroot = os.path.dirname(os.path.realpath(__file__))
+#check_version()
+#short_version, long_version = get_version()
+
+short_version = 0.5
 
 setup_args = {
-	'name'             : 'radical.ensemblemd',
+	'name'             : 'radical.entk',
 	'version'          : short_version,
-	'description'      : "Radical Ensemble Molecular Dynamics (MD) Toolkit.",
-	'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
+	'description'      : "Radical Ensemble Toolkit.",
+	#'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
 	'author'           : 'RADICAL Group at Rutgers University',
 	'author_email'     : 'vivek.balasubramanian@rutgers.edu',
 	'maintainer'       : "Vivek Balasubramanian",
 	'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
 	'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
 	'license'          : 'MIT',
-	'keywords'         : "molecular dynamics toolkit python",
+	'keywords'         : "ensemble execution",
 	'classifiers'      :  [
 		'Development Status :: 4 - Beta',
 		'Intended Audience :: Developers',
@@ -193,23 +195,19 @@ setup_args = {
 
 	'package_dir'       : {'': 'src'},
 
-	'scripts'           : ['bin/ensemblemd-version'],
+	#'scripts'           : ['bin/ensemblemd-version'],
 						   
 
 	'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
 
-	'install_requires'  :  ['radical.utils','radical.pilot', 'setuptools>=1'],
+	#'install_requires'  :  ['radical.utils','radical.pilot', 'setuptools>=1'],
+	'install_requires'  :  ['setuptools>=1'],
 	#'test_suite'        : 'radical.ensemblemd.tests',
 
 	'zip_safe'          : False,
 	# This copies the contents of the examples/ dir under
 	# sys.prefix/share/radical.pilot.
 	# It needs the MANIFEST.in entries to work.
-	'data_files'        : [
-									makeDataFiles('share/radical.ensemblemd/examples/', 'examples'),
-									makeDataFiles('share/radical.ensemblemd/examples/amber_input', 'examples/amber_input'),
-									makeDataFiles('share/radical.ensemblemd/user_guide/scripts', 'doc/user_guide/scripts')
-						  ],
 }
 
 setup (**setup_args)

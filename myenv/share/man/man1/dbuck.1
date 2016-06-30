@@ -1,0 +1,89 @@
+.TH dbuck 1 "Version 1.16"
+
+.SH NAME
+dbuck \- format output from pdsh command or similar
+
+.SH SYNOPSIS
+.B dbuck
+.RI [ OPTION "]... "
+
+.SH DESCRIPTION
+Reads data from stdin and outputs a human readable report on stdout.
+
+dbuck is similar to dshbak but is targeted at numerical data such as temperatures, power consumption, loadavg etc. Output is a bucket sorted table, a sort of histogram.
+
+Data is assumed to be N lines of data one for each host/entity. By default dbuck will autodetect the column to use (looking at the last three lines) and sort everything into five (linear) buckets. Any line missing numerical data at the targeted column will be ignored.
+
+.SH OPTIONS
+.TP
+.B -h, --help
+Print help message
+.TP
+.BI "-r" LOW-HI ", --range=" LOW-HI
+Explicitly specify a range from minimum value of lowest bucket to maximum value of highest bucket (default: minimum value to maximum value seen in input data)
+.TP
+.BI "-k " KEY ", --key=" KEY
+Use data at position KEY (default: auto)
+.TP
+.B -o, --show-overflow
+Include two extra buckets for overflow and underflow. This option is only valid with a custom range (-r, --range). Default behavior is to count the over- and underflows and present them in the statistical summary.
+.TP
+.BI "-n " NBUCKETS ", --nbuckets=" NBUCKETS
+Number of buckets to use (default: 5)
+.TP
+.B -s, --statistics
+Output a statistical summary (min, max, mean, sum, ...)
+.TP
+.B -S, --chop-long-lines
+Chop too long lines / enforce one output line per bucket
+.TP
+.BI "-t " FIELD_SEPARATORS ", --field-separators=" FIELD_SEPARATORS
+Additional field separators, space not optional (default: "")
+.TP
+.B -v, --verbose
+Be verbose
+.TP
+.B --debug
+Output debugging information
+
+.SH EXAMPLE
+$ cat test/dbuck.testdata
+ n1: 139 W
+ n11: 128 W
+ n13: 127 W
+ n9: 127 W
+ ...
+.TP
+$ cat test/dbuck.testdata | ./dbuck -s -n 4 --verbose
+ Info: auto-detect unanimously selected key: 1
+ Info: Creating simple linear bucket set
+ Statistical summary
+ --------------------------------------
+ Number of values         : 30
+ Number of rejected lines : 0
+ Min value                : 115.000000
+ Max value                : 209.000000
+ Mean                     : 135.466667
+ Median                   : 127.005617
+ Standard deviation       : 25.807956
+ Sum                      : 4064.000000
+
+    LOW-    HI: CNT  HOSTLIST
+ --------------------------------------
+ 115.00-138.50:  24  n[7-30]
+ 138.50-162.00:   2  n[1,3]
+ 162.00-185.50:   1  n6
+ 185.50-209.00:   3  n[2,4-5]
+
+.SH AUTHOR
+Written by Peter Kjellström <cap@nsc.liu.se>.
+
+The program is published part of python-hostlist at http://www.nsc.liu.se/~kent/python-hostlist/
+
+.SH SEE ALSO
+.I hostlist
+(1)
+.I pdsh
+(1)
+.I dshbak
+(1)

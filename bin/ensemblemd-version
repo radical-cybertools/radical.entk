@@ -1,4 +1,0 @@
-#!/bin/bash
-
-python -c "import radical.ensemblemd; print radical.ensemblemd.__version__"
-

@@ -1,6 +1,0 @@
-step,probe,timestamp
-
-step_1,start_time,2016-05-06 18:06:34.353509
-step_1,wait_time,2016-05-06 18:06:34.447662
-step_1,res_time,2016-05-06 18:06:54.742601
-step_1,stop_time,2016-05-06 18:06:54.744546
