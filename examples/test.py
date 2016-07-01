@@ -33,6 +33,10 @@ if __name__ == '__main__':
 	app.register_kernels(hello_kernel)
 	app.add_workload(pipe)
 	
+
+	
+	
+	'''
 	res = ResourceHandle(resource="xsede.stampede",
 				cores=1,
 				username='vivek91',
@@ -45,3 +49,4 @@ if __name__ == '__main__':
 	res.run(app)
 
 	res.deallocate()
+	'''

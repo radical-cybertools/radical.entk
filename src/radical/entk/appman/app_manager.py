@@ -120,6 +120,8 @@ class AppManager():
 				if user_kernel.download_output_data != None:
 					new_kernel.download_output_data = user_kernel.download_output_data
 
+				new_kernel.validate_arguments()
+
 				return new_kernel
 
 			else:

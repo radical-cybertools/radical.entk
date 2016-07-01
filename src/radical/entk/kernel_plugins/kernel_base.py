@@ -52,8 +52,8 @@ class KernelBase(object):
 		if 'description' in kernel_info:
 			self._kernel_description  = kernel_info['description']
 
-		self._args     = []
-		self._raw_args = []
+		self._raw_args = kernel_info["arguments"]
+		self._args = []
 
 		# Parameters required for any Kernel irrespective of RP
 		self._pre_exec               	= None
@@ -110,6 +110,17 @@ class KernelBase(object):
 		"""Returns all arguments as they were passed to the kernel.
 		"""
 		return self._raw_args
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+	def validate_arguments(self):
+
+		arg_details = dict()
+
+		for arg_name, arg_info in self._raw_args.iteritems():
+
+			arg_details[arg_name]
+		pass
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 
 	def _bind_to_resource(self, resource_key, pattern_name=None):
 		"""Binds the kernel to a specific resource.
@@ -307,3 +318,4 @@ class KernelBase(object):
 
 		self._copy_output_data = data_directives
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+	
