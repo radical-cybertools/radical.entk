@@ -89,7 +89,7 @@ class KernelBase(object):
 		return self._kernel_name
 	
 	def get_name():
-		return self._name
+		return self._kernel_name
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 
 	@property
@@ -117,9 +117,32 @@ class KernelBase(object):
 		arg_details = dict()
 
 		for arg_name, arg_info in self._raw_args.iteritems():
+			self._raw_args[arg_name]["_is_set"] = False
+			self._raw_args[arg_name]["_value"] = None
 
-			arg_details[arg_name]
-		pass
+		for arg in self._arguments:
+			arg_found = False
+			for arg_name, arg_info in self._raw_args.iteritems():
+				if arg.startswith(arg_name):
+					arg_found = True
+					self._raw_args[arg_name]["_is_set"] = True
+					self._raw_args[arg_name]["_value"] = arg.replace(arg_name,'')
+
+			if arg_found == False:
+				raise ArgumentError(
+                    				kernel_name=self.get_name(),
+                    				message="Unknown / malformed argument '{0}'".format(arg),
+                    				valid_arguments_set=self._raw_args)
+
+		for arg_name, arg_info in self._raw_args.iteritems():
+			if ((arg_info["mandatory"]) and (self._raw_args[arg_name]["_is_set"] == False)):
+				raise ArgumentError(
+                    				kernel_name=self.get_name(),
+                    				message="Mandatory argument '{0}' missing".format(arg_name),
+                    				valid_arguments_set=self._raw_args)
+
+		self._args = self._raw_args
+
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 
 	def _bind_to_resource(self, resource_key, pattern_name=None):
