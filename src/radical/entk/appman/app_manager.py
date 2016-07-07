@@ -129,18 +129,26 @@ class AppManager():
 				raise Exception("Kernel {0} does not exist".format(user_kernel.name))
 
 
-
 	def add_workload(self, pattern):
 		self._pattern = pattern
 
-	def run(self):
+	def run(self, resource, task_manager):
 
 		# Create dictionary for logging
 		self._pattern.create_record()
 
 		if self._pattern.__class__.__base__ == PoE:
 	
-			from radical.entk.execution_plugin.executor import execute_poe as execute
+			# Based on the execution pattern, the app manager should choose the execution plugin
+			from radical.entk.execution_plugin.poe import PluginPoE
+
+			print 'app-1'
+			plugin = PluginPoE()
+			print 'app-2'
+			plugin.register_resource(resource = resource)
+			print 'app-3'
+			plugin.add_manager(task_manager)
+			print 'app-4'
 
 			# Submit kernels stage by stage to execution plugin
 			while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
@@ -152,6 +160,8 @@ class AppManager():
 					stage = self._pattern.get_stage(stage=self._pattern.next_stage)
 					list_kernels_stage = list()
 
+					print 'app-5'
+
 					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 					# Create instance key/vals for each stage
 					if type(self._pattern.ensemble_size) == int:
@@ -159,11 +169,19 @@ class AppManager():
 					elif type(self._pattern.ensemble_size) == list:
 						instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
+					print 'app-6'
+
 					for inst in range(1, instances+1):
 						list_kernels_stage.append(self.validate_kernel(stage(inst)))
 
+					print 'app-7'
+
 					# Pass resource-unbound kernels to execution plugin
-					execute(list_kernels_stage)
+					#print len(list_kernels_stage)
+					plugin.set_workload(kernels=list_kernels_stage)
+					print 'app-8'
+					plugin.execute()
+					print 'app-9'
 
 					# Execute branch if it exists
 					if (self._pattern.get_record()["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):

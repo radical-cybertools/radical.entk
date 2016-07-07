@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-"""TODO: Docstring.
-"""
-
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
-__copyright__ = "Copyright 2014, http://radical.rutgers.edu"
+__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
+__copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import os
@@ -17,6 +14,7 @@ import radical.utils as ru
 from radical.entk import version
 from radical.entk.exceptions import EnTKError, TypeError
 #from radical.ensemblemd.execution_pattern import ExecutionPattern
+from radical.entk.execution_plugin.poe import PluginPoE
 
 CONTEXT_NAME = "Static"
 
@@ -255,17 +253,6 @@ class ResourceHandle(object):
 				self._session.close()
 			raise
 
-		'''
-		finally:
-			if profiling == 1:
-				title = 'step,probe,timestamp'
-				f1 = open('enmd_core_overhead.csv','w')
-				f1.write(title+'\n\n')
-				f1.write('allocate,start_time,{0}\n'.format(start_time))
-				f1.write('allocate,stop_time,{0}\n'.format(stop_time))
-				f1.close()
-		'''
-
 	#---------------------------------------------------------------------------
 	#
 	def run(self, appManager):
@@ -277,6 +264,6 @@ class ResourceHandle(object):
 				msg="Resource(s) not allocated. Call allocate() first.")
 
 		try:
-			appManager.run()
+			appManager.run(resource = self._resource_key, task_manager = self._umgr)
 		except:
 			pass

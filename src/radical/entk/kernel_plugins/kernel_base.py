@@ -56,18 +56,18 @@ class KernelBase(object):
 		self._args = []
 
 		# Parameters required for any Kernel irrespective of RP
-		self._pre_exec               	= None
+		self._pre_exec               	= list()
 		self._executable 	= None
-		self._arguments       	= None
+		self._arguments       	= list()
 		self._uses_mpi               = None
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
 
-		self._upload_input_data      	= None
-		self._link_input_data        	= None
-		self._download_input_data    	= None
-		self._download_output_data   	= None
-		self._copy_input_data        	= None
-		self._copy_output_data       	= None
+		self._upload_input_data      	= []
+		self._link_input_data        	= []
+		self._download_input_data    	= []
+		self._download_output_data   	= []
+		self._copy_input_data        	= []
+		self._copy_output_data       	= []
 	#  ------------------------------------------------------------- ------------------------------------------------------------------------------
 	
 	def as_dict(self):
@@ -88,7 +88,7 @@ class KernelBase(object):
 	def name(self):
 		return self._kernel_name
 	
-	def get_name():
+	def get_name(self):
 		return self._kernel_name
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 
@@ -120,6 +120,8 @@ class KernelBase(object):
 			self._raw_args[arg_name]["_is_set"] = False
 			self._raw_args[arg_name]["_value"] = None
 
+		print 'check-1'
+
 		for arg in self._arguments:
 			arg_found = False
 			for arg_name, arg_info in self._raw_args.iteritems():
@@ -130,17 +132,22 @@ class KernelBase(object):
 
 			if arg_found == False:
 				raise ArgumentError(
-                    				kernel_name=self.get_name(),
+                    				kernel_name=self._kernel_name,
                     				message="Unknown / malformed argument '{0}'".format(arg),
                     				valid_arguments_set=self._raw_args)
 
+		print 'check-2'
+		raise Exception("Raise me")
+		print 'check-3'
+
 		for arg_name, arg_info in self._raw_args.iteritems():
-			if ((arg_info["mandatory"]) and (self._raw_args[arg_name]["_is_set"] == False)):
+			if ((arg_info["mandatory"] == True) and (arg_info["_is_set"] == False)):
 				raise ArgumentError(
-                    				kernel_name=self.get_name(),
+                    				kernel_name=self._kernel_name,
                     				message="Mandatory argument '{0}' missing".format(arg_name),
                     				valid_arguments_set=self._raw_args)
 
+		print 'validated'
 		self._args = self._raw_args
 
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------

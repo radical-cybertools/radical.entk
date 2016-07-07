@@ -68,5 +68,5 @@ class hello_kernel(KernelBase):
 		self._arguments   = arguments
 		self._environment = cfg["environment"]
 		self._uses_mpi    = cfg["uses_mpi"]
-		self._pre_exec    = None 
+		self._pre_exec    = cfg["pre_exec"]
 
