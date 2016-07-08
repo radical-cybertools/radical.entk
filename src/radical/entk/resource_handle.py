@@ -13,7 +13,6 @@ import radical.utils as ru
 
 from radical.entk import version
 from radical.entk.exceptions import EnTKError, TypeError
-#from radical.ensemblemd.execution_pattern import ExecutionPattern
 from radical.entk.execution_plugin.poe import PluginPoE
 
 CONTEXT_NAME = "Static"
@@ -67,7 +66,7 @@ class ResourceHandle(object):
 
 		# Logging parameters
 		self._logger  		= ru.get_logger('radical.entk.ResourceHandle')
-		#self._reporter 		= ru.LogReporter(name='radical.entk.ResourceHandle')
+		self._reporter 		= self._logger.report
 
 	# --------------------------------------------------------------------------
 	
@@ -94,10 +93,6 @@ class ResourceHandle(object):
 		"""Deallocates the resources.
 		"""
 		
-		#self._reporter.info('\nStarting Deallocation..\n')
-		#if profiling == 1:
-		#	start_time = datetime.datetime.now()
-
 		self.get_logger().info("Deallocating Cluster")
 
 		if self._exctype != None:
@@ -108,42 +103,6 @@ class ResourceHandle(object):
 		self._session.close(cleanup=self._cleanup)
 		#self._reporter.ok('>>done \n')    
 
-		'''
-		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
-		if profiling == 1:
-			stop_time = datetime.datetime.now()
-			f1 = open('enmd_core_overhead.csv','a')
-			f1.write('deallocate,start_time,{0}\n'.format(start_time))
-			f1.write('deallocate,stop_time,{0}\n'.format(stop_time))
-			f1.close()
-
-			f1 = open('pilot_profile_{mysession}.csv'.format(mysession=self._session.uid),'w')
-			title = "uid, New, PendingLaunch, Launching, PendingActive, Active, Canceled, Done"
-			f1.write(title + "\n\n")
-			st_data = {}
-			for st in self._pilot.state_history:
-				st_dict = st.as_dict()
-				st_data["{0}".format( st_dict["state"] )] = {}
-				st_data["{0}".format( st_dict["state"] )] = st_dict["timestamp"]
-
-			states = ['New','PendingLaunch','Launching','PendingActive','Active','Canceled','Done']
-
-			for state in states:
-				if (state in st_data) is False:
-					st_data[state] = None
-
-			line = "{uid}, {New}, {PendingLaunch}, {Launching}, {PendingActive}, {Active}, {Canceled}, {Done}".format(
-							uid=self._pilot.uid,
-							New=st_data['New'],
-							PendingLaunch=st_data['PendingLaunch'],
-							Launching=(st_data['Launching']),
-							PendingActive=(st_data['PendingActive']),
-							Active=(st_data['Active']),
-							Canceled=(st_data['Canceled']),
-							Done=(st_data['Done']),
-						)
-			f1.write(line + '\n')
-		'''
 	#---------------------------------------------------------------------------
 	
 	def allocate(self, wait=False):
@@ -166,13 +125,12 @@ class ResourceHandle(object):
 				#self._reporter.info('Resource allocation cancelled.')
 
 
-
 		self._allocate_called = True
+		self.get_logger().info("Allocation process on resource:{0} started".format(self._resource_key))
 
 		# Here we start the pilot(s).
-		#self._reporter.title('EnsembleMD (%s)' % version)
-
-		#self._reporter.info('Starting Allocation')
+		self.get_logger().info('EnsembleMD (%s)' % version)
+		#self.get_logger().report('Starting Allocation')
 
 		# Give priority to mongo url via env variable
 		self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
@@ -196,6 +154,7 @@ class ResourceHandle(object):
 				self._session.add_context(c)
 
 			pmgr = radical.pilot.PilotManager(session=self._session)
+			self.get_logger().info('Created radical pilot manager')
 			pmgr.register_callback(pilot_state_cb)
 			self._pmgr = pmgr
 
@@ -237,18 +196,20 @@ class ResourceHandle(object):
 
 			# Wait for pilot to go Active
 			if wait is True:
+				self.get_logger().info('Waiting for Pilot to go Active')
+				#self.get_logger().report('Waiting for Pilot to go Active')
 				self._pilot.wait(radical.pilot.ACTIVE)
 
 
 			# Create unit manager to submit CUs
 			self._umgr = radical.pilot.UnitManager( session=self._session, scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
 			self._umgr.add_pilots(self._pilot)
+			self.get_logger().info("Radical pilot unit manager created")
 
 			#self._reporter.ok('>> ok')
 
 		except Exception, ex:
-			self.get_logger().exception("Fatal error during resource allocation: {0}.".format(str(ex)))
-			#self._reporter.error('Allocation failed: {0}'.format(str(ex)))
+			self.get_logger().error("Fatal error during resource allocation: {0}.".format(str(ex)))
 			if self._session:
 				self._session.close()
 			raise
@@ -260,10 +221,10 @@ class ResourceHandle(object):
 
 		# Make sure resources were allocated.
 		if self._allocate_called is False:
-			raise EnTKError(
-				msg="Resource(s) not allocated. Call allocate() first.")
+			raise EnTKError(msg="Resource(s) not allocated. Call allocate() first.")
 
 		try:
 			appManager.run(resource = self._resource_key, task_manager = self._umgr)
-		except:
-			pass
+
+		except Exception, ex:
+			self.get_logger().error('Application Manager failed: {0}'.format(ex))

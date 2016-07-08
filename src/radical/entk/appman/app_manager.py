@@ -7,6 +7,7 @@ from radical.entk.kernel_plugins.kernel_base import KernelBase
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
 
+import radical.utils as ru
 import sys
 
 class AppManager():
@@ -18,6 +19,10 @@ class AppManager():
 		self._pattern = None
 		self._loaded_kernels = list()
 		self._loaded_plugins = list() 
+
+		self._logger = ru.get_logger("radical.entk.appman")
+		self._logger.info("Application Manager created")
+		self._reporter = self._logger.report
 
 		# Uncomment once ExecutionPattern class is available
 		#self.sanity_check()
@@ -38,27 +43,34 @@ class AppManager():
 	def register_kernels(self, kernel_class):
 
 		#print kernel_class.__base__
-		if type(kernel_class) == list:
-			for item in kernel_class:
-				if not hasattr(item, '__base__'):
-					raise TypeError(expected_type="KernelBase", actual_type = type(item))					
-				elif item.__base__ != Kernel:
-					raise TypeError(expected_type="KernelBase", actual_type = type(item()))		
+		try:
+			if type(kernel_class) == list:
+				for item in kernel_class:
+					if not hasattr(item, '__base__'):
+						raise TypeError(expected_type="KernelBase", actual_type = type(item))					
+					elif item.__base__ != Kernel:
+						raise TypeError(expected_type="KernelBase", actual_type = type(item()))		
 
-				if item in self._loaded_kernels:
-					raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
+					if item in self._loaded_kernels:
+						raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
 
-				self._loaded_kernels.append(item)
+					self._loaded_kernels.append(item)
+					self._logger.info("Kernel {0} registered with application manager".format(item().name))
 
-		elif not hasattr(kernel_class,'__base__'):
-			raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
+			elif not hasattr(kernel_class,'__base__'):
+				raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
 
-		elif kernel_class.__base__ != KernelBase:
-			raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
+			elif kernel_class.__base__ != KernelBase:
+				raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
 
-		else:
-			self._loaded_kernels.append(kernel_class)
+			else:
+				self._loaded_kernels.append(kernel_class)
+				self._logger.info("Kernel {0} registered with application manager".format(kernel_class().name))
 		
+		except Exception, ex:
+
+				self._logger.error("Kernel registration failed: {0}".format(ex))
+				raise
 
 
 	def list_kernels(self):
@@ -84,49 +96,57 @@ class AppManager():
 
 	def validate_kernel(self, user_kernel):
 
-		for kernel in self._loaded_kernels:
+		try:
+			for kernel in self._loaded_kernels:
 
-			if kernel().name == user_kernel.name:
+				if kernel().name == user_kernel.name:
 
-				new_kernel = kernel()
+					new_kernel = kernel()
 
-				if user_kernel.pre_exec != None:
-					new_kernel.pre_exec = user_kernel.pre_exec
+					if user_kernel.pre_exec != None:
+						new_kernel.pre_exec = user_kernel.pre_exec
 
-				if user_kernel.executable != None:
-					new_kernel.executable = user_kernel.executable
+					if user_kernel.executable != None:
+						new_kernel.executable = user_kernel.executable
 
-				if user_kernel.arguments != None:
-					new_kernel.arguments = user_kernel.arguments
+					if user_kernel.arguments != None:
+						new_kernel.arguments = user_kernel.arguments
 
-				if user_kernel.uses_mpi != None:	
-					new_kernel.uses_mpi = user_kernel.uses_mpi
+					if user_kernel.uses_mpi != None:	
+						new_kernel.uses_mpi = user_kernel.uses_mpi
 
-				if user_kernel.cores != None:
-					new_kernel.cores = user_kernel.cores
+					if user_kernel.cores != None:
+						new_kernel.cores = user_kernel.cores
 
-				if user_kernel.upload_input_data != None:
-					new_kernel.upload_input_data = user_kernel.upload_input_data
+					if user_kernel.upload_input_data != None:
+						new_kernel.upload_input_data = user_kernel.upload_input_data
 
-				if user_kernel.copy_input_data != None:
-					new_kernel.copy_input_data = user_kernel.copy_input_data
+					if user_kernel.copy_input_data != None:
+						new_kernel.copy_input_data = user_kernel.copy_input_data
 
-				if user_kernel.link_input_data != None:
-					new_kernel.link_input_data = user_kernel.link_input_data
+					if user_kernel.link_input_data != None:
+						new_kernel.link_input_data = user_kernel.link_input_data
 
-				if user_kernel.copy_output_data != None:
-					new_kernel.copy_output_data = user_kernel.copy_output_data
+					if user_kernel.copy_output_data != None:
+						new_kernel.copy_output_data = user_kernel.copy_output_data
 
-				if user_kernel.download_output_data != None:
-					new_kernel.download_output_data = user_kernel.download_output_data
+					if user_kernel.download_output_data != None:
+						new_kernel.download_output_data = user_kernel.download_output_data
 
-				new_kernel.validate_arguments()
+					new_kernel.validate_arguments()
 
-				return new_kernel
+					self._logger.debug("Kernel {0} validated".format(new_kernel.name))
 
-			else:
+					return new_kernel
 
-				raise Exception("Kernel {0} does not exist".format(user_kernel.name))
+				else:
+					self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+					raise 
+
+		except Exception, ex:
+
+			self._logger.error('Kernel validation failed: {0}'.format(ex))
+			raise
 
 
 	def add_workload(self, pattern):
@@ -142,13 +162,9 @@ class AppManager():
 			# Based on the execution pattern, the app manager should choose the execution plugin
 			from radical.entk.execution_plugin.poe import PluginPoE
 
-			print 'app-1'
 			plugin = PluginPoE()
-			print 'app-2'
 			plugin.register_resource(resource = resource)
-			print 'app-3'
 			plugin.add_manager(task_manager)
-			print 'app-4'
 
 			# Submit kernels stage by stage to execution plugin
 			while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
@@ -160,8 +176,6 @@ class AppManager():
 					stage = self._pattern.get_stage(stage=self._pattern.next_stage)
 					list_kernels_stage = list()
 
-					print 'app-5'
-
 					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 					# Create instance key/vals for each stage
 					if type(self._pattern.ensemble_size) == int:
@@ -169,26 +183,22 @@ class AppManager():
 					elif type(self._pattern.ensemble_size) == list:
 						instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
-					print 'app-6'
-
 					for inst in range(1, instances+1):
 						list_kernels_stage.append(self.validate_kernel(stage(inst)))
-
-					print 'app-7'
 
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage)
-					print 'app-8'
 					plugin.execute()
-					print 'app-9'
 
 					# Execute branch if it exists
 					if (self._pattern.get_record()["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
+						self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
 						self._pattern.get_branch(stage=self._pattern.next_stage)()
 
 					# Terminate execution
 					if self._pattern.next_stage == 0:
+						self._logger.info("Branching function has set termination condition -- terminating")
 						break
 
 				# Terminate execution

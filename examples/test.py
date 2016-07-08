@@ -17,17 +17,20 @@ class Test(PoE):
 		k1.cores = 3
 		return k1
 
-
 	def branch_1(self):
-		print self.cur_iteration
-		#self.next_stage = 0
-		
+		self.next_stage = 0
+
+	def stage_2(self, instance):
+		k1 = Kernel(name="hello_module")
+		k1.arguments = ["--file=test.txt"]
+		k1.cores = 3
+		return k1
 	
 
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=16, pipeline_size=1, iterations=1)
+	pipe = Test(ensemble_size=16, pipeline_size=2, iterations=1)
 
 	app = AppManager(name='firstapp')
 
@@ -35,7 +38,7 @@ if __name__ == '__main__':
 	app.add_workload(pipe)
 	
 	res = ResourceHandle(resource="xsede.stampede",
-				cores=1,
+				cores=16,
 				username='vivek91',
 				project = 'TG-MCB090174',
 				queue='development',

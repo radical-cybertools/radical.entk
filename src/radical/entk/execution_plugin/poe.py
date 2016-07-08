@@ -5,7 +5,7 @@ __license__   = "MIT"
 
 from plugin_base import PluginBase
 import radical.pilot as rp
-
+import radical.utils as ru
 _plugin_info = {
 			'name': 'poe',
 			'type': 'static'
@@ -19,9 +19,15 @@ class PluginPoE(object):
 		self._resource = None
 		self._manager = None
 
+		self._logger = ru.get_logger("radical.entk.plugin.poe")
+		self._reporter = self._logger.report
+
+		self._logger.info("Plugin PoE created")
+
 
 	def register_resource(self, resource):
 		self._resource = resource
+		self._logger.info("Registered resource {0} with execution plugin".format(resource))
 
 	def get_resources(self):
 		return self._resource
@@ -34,6 +40,8 @@ class PluginPoE(object):
 		else:
 			self._executable_workload = kernels
 
+		self._logger.info("New workload assigned to plugin for execution")
+
 	def add_workload(self, kernels):
 
 		if type(kernels) != list:
@@ -41,48 +49,57 @@ class PluginPoE(object):
 		else:
 			self._executable_workload.extend(kernels)
 
+		self._logger.info("New workload added to plugin for execution")
+
 	def add_manager(self, manager):
 		self._manager = manager
-		print 'added managervi'
+		self._logger.info("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 	def execute(self):
 
 		def unit_state_cb (unit, state) :
 
-			if state == radical.pilot.FAILED:
-				self.get_logger().error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-				self.get_logger().error("Pattern execution FAILED.")
+			if state == rp.FAILED:
+				self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+				self._logger.error("Pattern execution FAILED.")
 				sys.exit(1)
 		
-		self._manager.register_callback(unit_state_cb)
+		try:
+			self._manager.register_callback(unit_state_cb)
 
-		print 'entered executer'
+			cus = []
 
-		submit_cus = []
+			for kernel in self._executable_workload:
 
-		for kernel in self._executable_workload:
+				kernel._bind_to_resource(self._resource)
+				rbound_kernel = kernel
+				cud = rp.ComputeUnitDescription()
+				cud.name = "stage_{0}".format(kernel.name)
 
-			rbound_kernel = kernel._bind_to_resource(self._resource)
-			cud = rp.ComputeUnitDescription()
-			cud.name = "stage_{0}".format(kernel.name)
+				cud.pre_exec       	= rbound_kernel.pre_exec
+				cud.executable     	= rbound_kernel.executable
+				cud.arguments      	= rbound_kernel.arguments
+				cud.mpi            		= rbound_kernel.uses_mpi
+				cud.cores 		= rbound_kernel.cores
+				cud.input_staging  	= None
+				cud.output_staging 	= None
 
-			cud.pre_exec       	= rbound_kernel.pre_exec
-			cud.executable     	= rbound_kernel.executable
-			cud.arguments      	= rbound_kernel.arguments
-			cud.mpi            		= rbound_kernel.uses_mpi
-			cud.input_staging  	= None
-			cud.output_staging 	= None
+				cus.append(cud)
+				self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
-			submit_cus.append(cud)
+			exec_cus = self._manager.submit_units(cus)
+			self._logger.info("Workload submitted for execution on resource")
 
-		exec_cus = self._manager.submit_units(submit_cus)
+			exec_uids = [cu.uid for cu in exec_cus]
+			self._logger.info("Waiting for completion of workload execution")
+			self._manager.wait_units(exec_uids)
 
-		exec_uids = [cu.uid for cu in exec_cus]
-		self._manager.wait_units(exec_uids)
+			for unit in exec_cus:
+				if unit.state != rp.DONE:
+					self._logger.error("task {1} failed with an error: {0}\n".format(unit.stderr, unit.uid))
 
-		for unit in exec_cus:
-			if unit.state != rp.DONE:
-				print " * task failed with an error: {0}\n".format(unit.stderr)
-			elif unit.state == rp.DONE:
-				print " task {0} done".format(unit.uid)
+			self._logger.info("Workload execution successful")
 
+		except Exception, ex:
+
+			self._logger.error('Execution plugin failed: {0}'.format(ex))
