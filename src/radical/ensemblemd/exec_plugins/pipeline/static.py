@@ -270,40 +270,53 @@ class Plugin(PluginBase):
 		def unit_state_cb (unit, state):
 
 			if state == radical.pilot.DONE:
+				c = ''
 				try:
 					cur_stage = int(unit.name.split('-')[1])
 					cur_task = int(unit.name.split('-')[3])
 			
 					self.get_logger().info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
 
+					c+='check-1'
 					#-----------------------------------------------------------------------
 					# Increment tasks list accordingly
 					if self.tot_fin_tasks[0] == 0:
 						self.tot_fin_tasks[0] = 1
+						c+= 'check-2'
 					else:
+						c+= 'check-3'
 						self.tot_fin_tasks[cur_stage-1]+=1
 						# Check if this is the last task of the stage
 						if self.tot_fin_tasks[cur_stage-1] == num_tasks:
+							c+= 'check-4'
 							self._reporter.info('\nAll tasks in stage {0} have finished'.format(cur_stage))
 							self._reporter.ok('>> done')
 							self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
-
+							c+= 'check-5'
 							if self.profiling == 1:
+								#self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['res_time'] = datetime.datetime.now()
 								self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['done_time'] = datetime.datetime.now()
-
+							c+= 'check-6'
 					#-----------------------------------------------------------------------
 					# Log unit working directories for placeholders
+					c+= 'check-7'
 					if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
 						self.working_dirs['stage_{0}'.format(cur_stage)] = {}
+					c+= 'check-8'
 
 					self.working_dirs['stage_{0}'.format(cur_stage)]['task_{0}'.format(cur_task)] = unit.working_directory
 					#-----------------------------------------------------------------------
+					c+= 'check-9'
 					cud = create_next_stage_cud(unit)
+					c+= 'check-10'
 					if cud is not None:
 						launch_next_stage(cud)
-
-				except:
-					raise Exception("Trigger failed. Next stage not invoked")
+					c+='check-11'
+				except Exception, ex:
+					print cur_stage, cur_task
+					print c
+					print ex
+					raise Exception("Trigger failed. Next stage not invoked: ")
 
 		#-----------------------------------------------------------------------
 
@@ -312,6 +325,7 @@ class Plugin(PluginBase):
 
 
 		self._reporter.header("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
+			resource._cores, resource._resource_key))
 
 		#-----------------------------------------------------------------------
 		# Wait for Pilot to go Active
@@ -385,6 +399,9 @@ class Plugin(PluginBase):
 					self.tot_fin_tasks.append(0)
 					self._reporter.info('\nStarting submission of tasks in stage {0}'.format(cur_stage))
 					self._reporter.ok('>> ok')
+					if self.profiling == 1:
+						self.enmd_overhead_dict['stage_{0}'.format(cur_stage)] = od()
+						self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['start_time'] = datetime.datetime.now()
 					
 				self.get_logger().debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
@@ -418,6 +435,8 @@ class Plugin(PluginBase):
 			cur_task = int(cud.name.split('-')[3])
 			self.get_logger().info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
 			task = resource._umgr.submit_units(cud)
+			if self.profiling == 1:
+				self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['wait_time'] = datetime.datetime.now()
 			if 'stage_{0}'.format(cur_stage) not in self.cu_dict:
 				self.cu_dict['stage_{0}'.format(cur_stage)] = [task]
 			else:
@@ -431,7 +450,7 @@ class Plugin(PluginBase):
 			resource._umgr.wait_units()    
 
 
-		if profiling == 1:
-			return enmd_overhead_dict, cu_dict
+		if self.profiling == 1:
+			return self.enmd_overhead_dict, self.cu_dict
 		else:
 			return None

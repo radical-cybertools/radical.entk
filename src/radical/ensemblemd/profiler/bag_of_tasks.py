@@ -1,10 +1,10 @@
-def pattern_profiler(pattern_overhead_dict, pat_name, pat_num):
+def pattern_profiler(pattern_overhead_dict, pat_name, pat_num, pat_steps):
 
 	title = "step,probe,timestamp"
-	f1 = open('enmd_pat_{0}_{1}_overhead.csv'.format(pattern.name,pat_num),'w')
+	f1 = open('enmd_pat_{0}_{1}_overhead.csv'.format(pat_name,pat_num),'w')
 	f1.write(title + "\n\n")
 			
-	bot_steps = pattern.steps
+	bot_steps = pat_steps
 
 	for i in range(1,bot_steps+1):
 		step = 'step_{0}'.format(i)

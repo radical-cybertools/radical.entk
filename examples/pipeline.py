@@ -101,6 +101,8 @@ if __name__ == "__main__":
 
         cluster.deallocate()
 
+        cluster.profile(ccount)
+
         #df = ccount.execution_profile_dict
         #df.to_pickle('exp.pkl')
 

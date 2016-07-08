@@ -282,7 +282,7 @@ class Plugin(PluginBase):
 		resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
 		self._reporter.ok("\nJob is now running !".format(resource._resource_key))
 
-		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+		profiling = int(os.environ.get('RADICAL_ENTK_PROFILING',0))
 
 		if profiling == 1:
 			from collections import OrderedDict as od

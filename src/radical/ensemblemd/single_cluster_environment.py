@@ -368,16 +368,21 @@ class SingleClusterEnvironment(ExecutionContext):
 			from profiler.pipeline import exec_profiler
 
 			pattern_overhead_dict, cu_dict, pat_num = self._profile_entities[pattern]
+			pat_name 	= pattern.name
+			pat_stages 	= pattern.stages
+			pat_tasks 	= pattern.tasks
 
 			## ------------------------------------------------------------------------------------------------------------------------
 
 			## ------------------------------------------------------------------------------------------------------------------------
 			## Profile -- EnTK Pattern Overhead
+			pattern_profiler(pattern_overhead_dict, pat_name, pat_num, pat_stages)
 
 			## ------------------------------------------------------------------------------------------------------------------------
 
 			## ------------------------------------------------------------------------------------------------------------------------
 			## Profile -- CU Execution profile -- Pipeline -- RP profiler
+			exec_profiler(self._session.uid, cu_dict, pat_stages)
 
 			## ------------------------------------------------------------------------------------------------------------------------
 
@@ -394,7 +399,7 @@ class SingleClusterEnvironment(ExecutionContext):
 			pat_steps = pattern.steps
 			
 			## Profile -- EnTK Pattern Overhead 
-			pattern_profiler(pattern_overhead_dict, pat_name, pat_num)
+			pattern_profiler(pattern_overhead_dict, pat_name, pat_num, pat_steps)
 
 			## Profile -- EnTK exec profiler
 			exec_profiler(self._session.uid, cu_dict, pat_steps)
