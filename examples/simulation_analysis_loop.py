@@ -95,9 +95,9 @@ if __name__ == "__main__":
 						#username=None,
 						#project=None,
 						#queue = None,
-						#database_url='',
+						database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 						#database_name='',
-		)
+				)
 
 		# Allocate the resources.
 		cluster.allocate()

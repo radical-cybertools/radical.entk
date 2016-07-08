@@ -194,35 +194,24 @@ class RePattern(ReplicaExchange):
 #
 if __name__ == "__main__":
 
-	# use the resource specified as argument, fall back to localhost
-	if   len(sys.argv)  > 2: 
-		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
-		sys.exit(1)
-	elif len(sys.argv) == 2: 
-		resource = sys.argv[1]
-	else: 
-		resource = 'local.localhost'
 
 	try:
 
 		workdir_local = os.getcwd()
 
-		with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
-			config = json.load(data_file)
-
 		# Create a new static execution context with one resource and a fixed
 		# number of cores and runtime.
 		cluster = SingleClusterEnvironment(
-				resource=resource,
+				resource='local.localhost',
 				cores=1,
 				walltime=15,
 				#username=None,
 
-				project=config[resource]['project'],
-				access_schema = config[resource]['schema'],
-				queue = config[resource]['queue'],
+				#project=None,
+				#access_schema = None,
+				#queue = None,
 
-				database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
+				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 				#database_name='myexps',
 			)
 		

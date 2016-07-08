@@ -58,7 +58,7 @@ if __name__ == "__main__":
 			#access_schema = None,
 			#queue = None,
 
-			database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
+			database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 			#database_name='myexps',
 			)
 
