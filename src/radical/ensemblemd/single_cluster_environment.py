@@ -396,13 +396,13 @@ class SingleClusterEnvironment(ExecutionContext):
 
 			pattern_overhead_dict, cu_dict, pat_num = self._profile_entities[pattern]
 			pat_name = pattern.name
-			pat_steps = pattern.steps
+			pat_stages = pattern.stages
 			
 			## Profile -- EnTK Pattern Overhead 
-			pattern_profiler(pattern_overhead_dict, pat_name, pat_num, pat_steps)
+			pattern_profiler(pattern_overhead_dict, pat_name, pat_num, pat_stages)
 
 			## Profile -- EnTK exec profiler
-			exec_profiler(self._session.uid, cu_dict, pat_steps)
+			exec_profiler(self._session.uid, cu_dict, pat_stages)
 			## ------------------------------------------------------------------------------------------------------------------------
 
 

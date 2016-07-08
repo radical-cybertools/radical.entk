@@ -68,6 +68,8 @@ class Plugin(PluginBase):
 	def __init__(self):
 		super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
 
+		self.working_dirs = {}
+
 	# --------------------------------------------------------------------------
 	#
 	def verify_pattern(self, pattern, resource):
@@ -267,16 +269,14 @@ class Plugin(PluginBase):
 		self._reporter.ok('>>ok')
 		pipeline_instances = pattern.instances
 
-		pipeline_steps = pattern.steps
-		self.get_logger().info("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
-			pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
+		pipeline_stages = pattern.stages
+		self.get_logger().info("Executing {0} pipeline instances of {1} stages on {2} allocated core(s) on '{3}'".format(
+			pipeline_instances, pipeline_stages,resource._cores, resource._resource_key))
 
-		self._reporter.header("Executing {0} pipeline instances of {1} steps on {2} allocated core(s) on '{3}'".format(
-			pipeline_instances, pipeline_steps,resource._cores, resource._resource_key))
+		self._reporter.header("Executing {0} pipeline instances of {1} stages on {2} allocated core(s) on '{3}'".format(
+			pipeline_instances, pipeline_stages,resource._cores, resource._resource_key))
 
 		
-		working_dirs = {}
-
 		self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
 		self._reporter.info("Job waiting on queue...".format(resource._resource_key))
 		resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
@@ -296,30 +296,30 @@ class Plugin(PluginBase):
 
 			enmd_overhead_list = []
 			rp_overhead_list = []
-			# Iterate over the different steps.
-			for step in range(1, pipeline_steps+1):
+			# Iterate over the different stages.
+			for stage in range(1, pipeline_stages+1):
 
 				if profiling == 1:
 					probe_start_time = datetime.datetime.now()
-					enmd_overhead_dict['step_{0}'.format(step)] = od()
-					cu_dict['step_{0}'.format(step)] = list()
+					enmd_overhead_dict['stage_{0}'.format(stage)] = od()
+					cu_dict['stage_{0}'.format(stage)] = list()
 
-					enmd_overhead_dict['step_{0}'.format(step)]['start_time'] = probe_start_time
+					enmd_overhead_dict['stage_{0}'.format(stage)]['start_time'] = probe_start_time
 
-				working_dirs['step_{0}'.format(step)] = {}
+				self.working_dirs['stage_{0}'.format(stage)] = {}
 				check_instance_files = []
 
 				# Get the method names
-				s_meth = getattr(pattern, 'step_{0}'.format(step))
+				s_meth = getattr(pattern, 'stage_{0}'.format(stage))
 
 				try:
 					kernel = s_meth(0)
 				except NotImplementedError, ex:
-					# Not implemented means there are no further steps.
+					# Not implemented means there are no further stages.
 					break
 
 				p_units=[]
-				all_step_cus = []
+				all_stage_cus = []
 
 				for instance in range(1, pipeline_instances+1):
 
@@ -327,57 +327,57 @@ class Plugin(PluginBase):
 					kernel._bind_to_resource(resource._resource_key)
 
 					cud = radical.pilot.ComputeUnitDescription()
-					cud.name = "step_{0}".format(step)
+					cud.name = "stage_{0}".format(stage)
 
 					cud.pre_exec       = kernel._cu_def_pre_exec
 					cud.executable     = kernel._cu_def_executable
 					cud.arguments      = kernel.arguments
 					cud.mpi            = kernel.uses_mpi
-					cud.input_staging  = get_input_data(kernel,step,instance)
-					cud.output_staging = get_output_data(kernel,step,instance)
+					cud.input_staging  = get_input_data(kernel,stage,instance)
+					cud.output_staging = get_output_data(kernel,stage,instance)
 					
 					if kernel.cores is not None:
 						cud.cores = kernel.cores
 
 					p_units.append(cud)
 
-				self.get_logger().debug("Created step_{0} CU: {1}.".format(step,cud.as_dict()))
+				self.get_logger().debug("Created stage_{0} CU: {1}.".format(stage,cud.as_dict()))
 				
 
-				self.get_logger().info("Submitted tasks for step_{0}.".format(step))
-				self._reporter.info("\nWaiting for step_{0} to complete.".format(step))
+				self.get_logger().info("Submitted tasks for stage_{0}.".format(stage))
+				self._reporter.info("\nWaiting for stage_{0} to complete.".format(stage))
 
 				if profiling == 1:
-					enmd_overhead_dict['step_{0}'.format(step)]['wait_time'] = datetime.datetime.now()
+					enmd_overhead_dict['stage_{0}'.format(stage)]['wait_time'] = datetime.datetime.now()
 
 
 				p_cus = resource._umgr.submit_units(p_units)
-				all_step_cus.extend(p_cus)
+				all_stage_cus.extend(p_cus)
 
 				uids = [cu.uid for cu in p_cus]
 				resource._umgr.wait_units(uids)
 				
 
-				self.get_logger().info("step_{0}/kernel {1}: completed.".format(step,kernel.name))
+				self.get_logger().info("stage_{0}/kernel {1}: completed.".format(stage,kernel.name))
 
 				if profiling == 1:
-					enmd_overhead_dict['step_{0}'.format(step)]['res_time'] = datetime.datetime.now()
+					enmd_overhead_dict['stage_{0}'.format(stage)]['res_time'] = datetime.datetime.now()
 
 
 				# TODO: ensure working_dir <-> instance mapping
 				i = 0
 				for cu in p_cus:
 					i += 1
-					working_dirs['step_{0}'.format(step)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
+					self.working_dirs['stage_{0}'.format(stage)]['instance_{0}'.format(i)] = saga.Url(cu.working_directory).path
 
 				failed_units = ""
 				for unit in p_cus:
 					if unit.state != radical.pilot.DONE:
-						failed_units += " * step_{0} failed with an error: {1}\n".format(step, unit.stderr)
+						failed_units += " * stage_{0} failed with an error: {1}\n".format(stage, unit.stderr)
 
 				if profiling == 1:
-					enmd_overhead_dict['step_{0}'.format(step)]['stop_time'] = datetime.datetime.now()
-					cu_dict['step_{0}'.format(step)] = p_cus
+					enmd_overhead_dict['stage_{0}'.format(stage)]['stop_time'] = datetime.datetime.now()
+					cu_dict['stage_{0}'.format(stage)] = p_cus
 
 				self._reporter.ok('>> done')
 
