@@ -66,10 +66,11 @@ class Plugin(PluginBase):
 		super(Plugin, self).__init__(_PLUGIN_INFO, _PLUGIN_OPTIONS)
 		self.tot_fin_tasks= [0]
 		self.working_dirs = {}
-		self.profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+		self.profiling = int(os.environ.get('RADICAL_ENTK_PROFILING',0))
 		if self.profiling == 1:
 			self.cu_dict = od()
 			self.enmd_overhead_dict = od()
+
 
 	# --------------------------------------------------------------------------
 	#
@@ -286,8 +287,10 @@ class Plugin(PluginBase):
 							self._reporter.info('\nAll tasks in stage {0} have finished'.format(cur_stage))
 							self._reporter.ok('>> done')
 							self.get_logger().info('All tasks in stage {0} has finished'.format(cur_stage))
+
 							if self.profiling == 1:
 								self.enmd_overhead_dict['stage_{0}'.format(cur_stage)]['done_time'] = datetime.datetime.now()
+
 					#-----------------------------------------------------------------------
 					# Log unit working directories for placeholders
 					if 'stage_{0}'.format(cur_stage) not in self.working_dirs:
@@ -307,8 +310,9 @@ class Plugin(PluginBase):
 		self.get_logger().info("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
 			resource._cores, resource._resource_key))
 
+
 		self._reporter.header("Executing {0} pipes of {1} stages on {2} allocated core(s) on '{3}'".format(num_tasks, num_stages,
-			resource._cores, resource._resource_key))
+
 		#-----------------------------------------------------------------------
 		# Wait for Pilot to go Active
 		self.get_logger().info("Waiting for pilot on {0} to go Active".format(resource._resource_key))
@@ -333,6 +337,7 @@ class Plugin(PluginBase):
 			self.cu_dict['stage_1'] = list()
 
 			self.enmd_overhead_dict['stage_1']['start_time'] = probe_start_time
+
 
 		task_method = getattr(pattern, 'stage_1')
 		task_units_desc = []
@@ -430,4 +435,3 @@ class Plugin(PluginBase):
 			return enmd_overhead_dict, cu_dict
 		else:
 			return None
-		#-----------------------------------------------------------------------

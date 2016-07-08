@@ -21,9 +21,9 @@ from radical.ensemblemd.exec_plugins.plugin_base import PluginBase
 # ------------------------------------------------------------------------------
 #
 _PLUGIN_INFO = {
-    "name":         "simulation_analysis_loop.static.default",
-    "pattern":      "SimulationAnalysisLoop",
-    "context_type": "Static"
+	"name":         "simulation_analysis_loop.static.default",
+	"pattern":      "SimulationAnalysisLoop",
+	"context_type": "Static"
 }
 
 _PLUGIN_OPTIONS = []
@@ -66,7 +66,7 @@ def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, 
 			return path.replace(placeholder, working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(y)])
 		else:
 			raise Exception("$PREV_SIMULATION_INSTANCE_Y used in invalid context.")
-	
+
 	# $PREV_ANALYSIS_INSTANCE_Y
 	elif placeholder.startswith("$PREV_ANALYSIS_INSTANCE_"):
 		y = placeholder.split("$PREV_ANALYSIS_INSTANCE_")[1]
@@ -97,7 +97,6 @@ def resolve_placeholder_vars(working_dirs, path, instance=None, iteration=None, 
 	else:
 		return path
 
-
 # ------------------------------------------------------------------------------
 #
 class Plugin(PluginBase):
@@ -116,6 +115,7 @@ class Plugin(PluginBase):
 	# --------------------------------------------------------------------------
 	#
 	def execute_pattern(self, pattern, resource):
+
 		pattern_start_time = datetime.datetime.now()
 
 		def get_input_data(kernel,instance=None,iteration=None,ktype=None):
@@ -164,7 +164,6 @@ class Plugin(PluginBase):
 			#------------------------------------------------------------------------------------------------------------------
 			# link_input_data
 			data_in = []
-
 			if kernel._kernel._link_input_data is not None:
 				if isinstance(kernel._kernel._link_input_data,list):
 					pass
@@ -231,6 +230,7 @@ class Plugin(PluginBase):
 							'target': os.path.basename(var.split('>')[0].strip()),
 							'action': radical.pilot.COPY
 							}						
+
 					data_in.append(temp)
 
 				if ip_list is None:
@@ -252,12 +252,9 @@ class Plugin(PluginBase):
 			return ip_list
 			#------------------------------------------------------------------------------------------------------------------
 
-
 		def get_output_data(kernel,instance=None,iteration=None,ktype=None):
-
 			# OUTPUT DATA:
 			op_list = []
-
 			#------------------------------------------------------------------------------------------------------------------
 			# copy_output_data
 			data_out = []
@@ -270,25 +267,23 @@ class Plugin(PluginBase):
 
 				for i in range(0,len(kernel._kernel._copy_output_data)):
 					if (ktype=='simulation' or ktype=='analysis'):
-						var=resolve_placeholder_vars(working_dirs=self.working_dirs, 
-							path=kernel._kernel._copy_output_data[i], 
-							instance=instance, iteration=iteration, type=ktype)
+						var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_output_data[i], 
+						instance=instance, iteration=iteration, type=ktype)
 					else:
-						var=resolve_placeholder_vars(working_dirs=self.working_dirs, 
-							path=kernel._kernel._copy_output_data[i])
-
+						var=resolve_placeholder_vars(working_dirs=self.working_dirs, path=kernel._kernel._copy_output_data[i])
 					if len(var.split('>')) > 1:
 						temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip(),
-							'action': radical.pilot.COPY
-							}
+									'source': var.split('>')[0].strip(),
+									'target': var.split('>')[1].strip(),
+									'action': radical.pilot.COPY
+								}
 					else:
 						temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip()),
-							'action': radical.pilot.COPY
-							}
+									'source': var.split('>')[0].strip(),
+									'target': os.path.basename(var.split('>')[0].strip()),
+									'action': radical.pilot.COPY
+								}
+
 					data_out.append(temp)
 
 				if op_list is None:
@@ -327,6 +322,7 @@ class Plugin(PluginBase):
 							'target': os.path.basename(var.split('>')[0].strip())
 							}
 			
+
 					data_out.append(temp)
 
 				if op_list is None:
@@ -347,14 +343,17 @@ class Plugin(PluginBase):
 				self.get_logger().error("ComputeUnit error: STDERR: {0}, STDOUT: {0}".format(unit.stderr, unit.stdout))
 				self.get_logger().error("Pattern execution FAILED.")
 				sys.exit(1)
-		#-----------------------------------------------------------------------
 
+
+		#-----------------------------------------------------------------------
+		#
 		def create_filecheck_command(files_list):
-			
+
 			command_list = []
 			for f in files_list:
 				command = 'if [ -f "{0}" ]; then exit 0; else echo "File {0} does not exist" >&2; exit 1; fi;'.format(f)
 				command_list.append(command)
+
 			return command_list
 
             		#-----------------------------------------------------------------------
@@ -378,14 +377,13 @@ class Plugin(PluginBase):
 		resource._pmgr.wait_pilots(resource._pilot.uid,'Active')
 		self._reporter.ok("\nJob is now running !".format(resource._resource_key))
 
-		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
+		profiling = int(os.environ.get('RADICAL_ENTK_PROFILING',0))
 
 		if profiling == 1:
 			from collections import OrderedDict as od
 			pattern._execution_profile = []
 			enmd_overhead_dict = od()
 			cu_dict = od()
-
 
 		try:
 			start_now = datetime.datetime.now()
@@ -518,6 +516,7 @@ class Plugin(PluginBase):
 						cud.output_staging = get_output_data(kernel=sim_step,instance=s_instance, 
 							iteration=iteration,ktype='simulation')
                      
+
 						if sim_step.cores is not None:
 							cud.cores = sim_step.cores
 
@@ -551,6 +550,7 @@ class Plugin(PluginBase):
 					self._reporter.info("\nIteration {0}: Waiting for {2} simulation tasks: {1} to complete".format(
 						iteration,sim_step.name, pattern._simulation_instances))
 
+
 					# Wait for the above CUs to finish
 					uids = [cu.uid for cu in s_cus]
 					resource._umgr.wait_units(uids)
@@ -568,6 +568,7 @@ class Plugin(PluginBase):
 					failed_units = ""
 					for unit in s_cus:
 						if unit.state != radical.pilot.DONE:
+
 							failed_units += " * Simulation task {0} failed with an error: {1}\n".format(
 								unit.uid, unit.stderr)
 
@@ -582,11 +583,12 @@ class Plugin(PluginBase):
 					enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post'] = od()
 					enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post']['start_time'] = probe_post_sim_start
 
+				# TODO: ensure working_dir <-> instance mapping
 				i = 0
 				for cu in s_cus:
 					i += 1
 					self.working_dirs['iteration_{0}'.format(iteration)]['simulation_{0}'.format(i)] = saga.Url(cu.working_directory).path
-                
+
 				if profiling == 1:
 					probe_post_sim_end = datetime.datetime.now()
 					enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['post']['stop_time'] = probe_post_sim_end
@@ -643,6 +645,7 @@ class Plugin(PluginBase):
 						cud.output_staging 	= get_output_data(kernel=ana_step,instance=a_instance, 
 							iteration=iteration,ktype='analysis')
 
+
 						if ana_step.cores is not None:
 							cud.cores = ana_step.cores
 
@@ -657,9 +660,11 @@ class Plugin(PluginBase):
 						self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
                     
 					self.get_logger().info("Submitting tasks for analysis iteration {0}.".format(iteration))
+
 					if profiling == 1:
 						probe_ana_wait = datetime.datetime.now()
 						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_ana_wait
+
 
 					a_cus = resource._umgr.submit_units(a_units)
 				
@@ -680,7 +685,7 @@ class Plugin(PluginBase):
 					if profiling == 1:
 						probe_ana_res = datetime.datetime.now()
 						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['res_time'] = probe_ana_res
-                        
+
 					self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(
 						iteration,kern_step+1,ana_step.name))
 
@@ -728,6 +733,7 @@ class Plugin(PluginBase):
 				return None
 
 		except KeyboardInterrupt:
+
 			self._reporter.error('Execution interupted')
 			traceback.print_exc()
 

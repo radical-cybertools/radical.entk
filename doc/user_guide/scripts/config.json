@@ -6,26 +6,21 @@
         			},
 
         	"epsrc.archer" : {
-            				"project"  : "y14-CECAM",
-            				"queue"    : "R3211460",	
+            				"project"  : "y14-ExTASY",
+            				"queue"    : "course1",	
             				"schema"   : null
         			},
 
-        	"epsrc.archer_orte" : {
-            				"project"  : "y14-CECAM",
-            				"queue"    : "R3211460",
-            				"schema"   : null
-        			},
 
         	"xsede.stampede" : {
-            				"project"  : "TG-MCB150124",
+            				"project"  : "TG-TRA100001S",
             				"queue"    : "development",
             				"schema"   : "gsissh"
         			},
 
         	"xsede.comet"  : {
-			            "project"  : "unc104",
-            				"queue"    : "",
+			            "project"  : "TG-TRA100001S",
+            				"queue"    : "compute",
             				"schema"   : "gsissh"
         			}
 }

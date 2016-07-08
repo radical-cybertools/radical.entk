@@ -14,7 +14,18 @@ class MyApp(BagofTasks):
 
 	def stage_1(self, instance):
 		k = Kernel(name="misc.hello")
-		k.arguments = ["--file=output.txt"]
+		k.upload_input_data = ['./input_file.txt > temp.txt']
+		k.arguments = ["--file=temp.txt"]
+		k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
+		return k
+
+	def stage_2(self, instances):
+
+		k = Kernel(name="misc.cat")
+		k.upload_input_data = ['./output_file_2.txt > file2.txt']
+		k.copy_input_data = ['$STAGE_1/temp.txt > file1.txt']
+		k.arguments = ["--file1=file1.txt","--file2=file2.txt"]
+		k.download_output_data = ['./file1.txt > output_file.txt']
 		return k
 
 if __name__ == "__main__":
@@ -50,13 +61,14 @@ if __name__ == "__main__":
 			#database_name='myexps',
 			)
 
+		os.system('/bin/echo Welcome! > input_file.txt')
 
 		# Allocate the resources.
 		cluster.allocate()
 
-		# Set the 'instances' of the BagofTasks to 1. This means that 1 instance
-		# of each BagofTasks step is executed.
-		app = MyApp(stages=1,instances=1)
+		# Set the 'instances' of the BagofTasks to 16. This means that 16 instances
+		# of each BagofTasks step are executed.
+		app = MyApp(stages=2,instances=16)
 
 		cluster.run(app)
 

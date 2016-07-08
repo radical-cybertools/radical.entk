@@ -1,0 +1,26 @@
+{
+	"local.localhost" : {
+				"project"  : null,
+				"queue"    : null,
+				"schema"   : "local"
+			},
+
+	"epsrc.archer" : {
+				"project"  : "y14-ExTASY",
+				"queue"    : "course1", 
+				"schema"   : null
+			},
+
+
+	"xsede.stampede" : {
+				"project"  : "TG-TRA100001S",
+				"queue"    : "development",
+				"schema"   : "gsissh"
+			},
+
+	"xsede.comet"  : {
+				"project"  : "TG-TRA100001S",
+				"queue"    : "compute",
+				"schema"   : "gsissh"
+			}
+}

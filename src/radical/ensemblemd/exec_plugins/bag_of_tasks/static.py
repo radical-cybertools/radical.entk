@@ -31,7 +31,7 @@ _PLUGIN_INFO = {
 _PLUGIN_OPTIONS = []
 
 
-def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
+def resolve_placeholder_vars(working_dirs, instance, total_stages, path):
 
 	# If replacement not require, return the path as is
 	if '$' not in path:
@@ -46,12 +46,18 @@ def resolve_placeholder_vars(working_dirs, instance, total_steps, path):
 		else:
 			placeholder = path.split('>')[1].strip().split('/')[0]
 
-	step_number = int(placeholder.split('_')[1])
 
-	if ((step_number < 1)or(step_number > total_steps)):
-		raise Exception("$STEP_{0} used in invalid context.".format(step_number))
+	# SHARED
+	if placeholder == "$SHARED":
+		return path.replace(placeholder, 'staging://')
+
+	stage_number = int(placeholder.split('_')[1])
+
+	if ((stage_number < 1)or(stage_number > total_stages)):
+		raise Exception("$STAGE_{0} used in invalid context.".format(stage_number))
 	else:
-		return path.replace(placeholder, working_dirs['step_{0}'.format(step_number)]['instance_{0}'.format(instance)])
+		return path.replace(placeholder, working_dirs['stage_{0}'.format(stage_number)]['instance_{0}'.format(instance)])
+
 		 
 # ------------------------------------------------------------------------------
 #

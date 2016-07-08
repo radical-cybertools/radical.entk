@@ -4,7 +4,7 @@
 Use-Case: ExTASY (Gromacs-LSDMap)
 *********************************
 
-This example shows how to use the Ensemble MD Toolkit ``SimulationAnalysis``
+This example shows how to use the Ensemble Toolkit ``SimulationAnalysis``
 pattern for the Gromacs-LSDMap usecase which has multiple Gromacs based Simulation
 instances and a single LSDMap Analysis stage. Although the user is free to use
 any method to mention the inputs, this usecase example uses two configuration
@@ -77,7 +77,7 @@ simulations instances can run in parallel. You can try more variations
 by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
         username=None,  # add your username here

@@ -13,22 +13,46 @@ Pipeline Pattern
 The following placeholders can be used to reference the data during staging of files
 generated in previous steps and same instance:
 
-* ``$STEP_X`` - References the step X with the same instance number as the current instance.
+* ``$STAGE_X`` - References the step X with the same instance number as the current instance.
 
 Example:
 
 .. code-block:: python
 
-	def step_3(self, instance):
+	def stage_3(self, instance):
 
 		k1 = Kernel("misc.cat")
-		k1.copy_input_data = ["$STEP_1/file.txt > file1.txt"]
-		k1.link_input_data = ["$STEP_2/file.txt > file2.txt"]
+		k1.copy_input_data = ["$STAGE_1/file.txt > file1.txt"]
+		k1.link_input_data = ["$STAGE_2/file.txt > file2.txt"]
 
 		..
 		..
 
-This creates a copy of file.txt created in step_1 as file1.txt and links file.txt created in step_2 as file2.txt.
+This creates a copy of file.txt created in stage_1 as file1.txt and links file.txt created in stage_2 as file2.txt.
+
+
+Bag of Tasks Pattern
+-------------------------------
+
+The following placeholders can be used to reference the data during staging of files
+generated in previous steps and same instance:
+
+* ``$STAGE_X`` - References the step X with the same instance number as the current instance.
+
+Example:
+
+.. code-block:: python
+
+	def stage_3(self, instance):
+
+		k1 = Kernel("misc.cat")
+		k1.copy_input_data = ["$STAGE_1/file.txt > file1.txt"]
+		k1.link_input_data = ["$STAGE_2/file.txt > file2.txt"]
+
+		..
+		..
+
+This creates a copy of file.txt created in stage_1 as file1.txt and links file.txt created in stage_2 as file2.txt.
 
 
 Simulation Analysis Loop Pattern

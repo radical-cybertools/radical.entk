@@ -16,52 +16,52 @@ PATTERN_NAME = "BagofTasks"
 # ------------------------------------------------------------------------------
 #
 class BagofTasks(ExecutionPattern):
-    """ The pipeline pattern.
+	""" The pipeline pattern.
 
-            .. image:: ../../images/pipeline_pattern.*
-               :width: 300pt
+			.. image:: ../../images/pipeline_pattern.*
+			   :width: 300pt
 
-        The following placeholders can be used to reference the data during staging of files
-        generated in previous steps and same instance:
+		The following placeholders can be used to reference the data during staging of files
+		generated in previous steps and same instance:
 
-        * ``$STEP_X`` - References the step X with the same instance number as the current instance.
-
-
-    """
-
-    #---------------------------------------------------------------------------
-    #
-    def __init__(self, steps=1,instances=1):
-        """Creates a new BagofTasks instance.
-        """
-        self._instances = instances
-        self._steps = steps
-
-        super(BagofTasks, self).__init__()
+		* ``$STEP_X`` - References the step X with the same instance number as the current instance.
 
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def instances(self):
-        """Returns the number of tasks.
-        """
-        return self._instances
+	"""
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def steps(self):
-        """Returns the instances of the pipeline.
-        """
-        return self._steps
+	#---------------------------------------------------------------------------
+	#
+	def __init__(self, stages=1,instances=1):
+		"""Creates a new BagofTasks instance.
+		"""
+		self._instances = instances
+		self._stages = stages
 
-    #---------------------------------------------------------------------------
-    #
-    @property
-    def name(self):
-        """Returns the name of the pattern.
-        """
-        return PATTERN_NAME
+		super(BagofTasks, self).__init__()
 
-    
+
+	#---------------------------------------------------------------------------
+	#
+	@property
+	def instances(self):
+		"""Returns the number of tasks.
+		"""
+		return self._instances
+
+	#---------------------------------------------------------------------------
+	#
+	@property
+	def stages(self):
+		"""Returns the instances of the pipeline.
+		"""
+		return self._stages
+
+	#---------------------------------------------------------------------------
+	#
+	@property
+	def name(self):
+		"""Returns the name of the pattern.
+		"""
+		return PATTERN_NAME
+
+	

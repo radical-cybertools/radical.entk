@@ -4,21 +4,19 @@
 Synchronous Replica Exchange Example with 'remote' Exchange
 *********************************************************************
 
-This example shows how to use the Ensemble MD Toolkit ``ReplicaExchange`` pattern.
-Demonstrated RE simulation involves 16 replicas and performs a total of 3 synchronous simulation
-cycles. Here exchange step is performed on target resource, which corresponds to ``static_pattern_2`` execution
-plugin. Firstly, for each replica is generated dummy ``md_input_x_y.md`` input file and ``shared_md_input.dat``
+This example shows how to use the Ensemble Toolkit ``ReplicaExchange`` pattern with artificial workload.
+Demonstrated RE simulation involves 8 replicas and performs a total of 3 synchronous simulation
+cycles. Here exchange step is performed on target resource. Firstly, for each replica is generated dummy ``md_input_x_y.md`` input file and ``shared_md_input.dat``
 shared file. Each of ``md_input_x_y.md`` files contains 500 randomly generated numbers, but ``shared_md_input.dat``
 contains 500 characters which are both numbers and letters. As MD kernel in this example is used
 ``misc.ccount`` kernel which counts the number of occurrences of all characters in a given file.
 As input file for this kernel is supplied previously generated ``md_input_x_y.md`` file. ``misc.ccount``
-kernel produces ``md_input_x_y.out`` file, which is transferred to current working directory.
+kernel produces ``md_input_x_y.out`` file, which is transferred back to localhost.
 For exchange step is used ``md.re_exchange`` kernel which is supplied with ``matrix_calculator.py``
 python script. This script is executed on target resource and simulates collection of output
 parameters produced by MD step, which are required for exchange step. In this example ``matrix_calculator.py``
 returns dummy parameter, which is a randomly generated number. This number does not affect the exchange
-probability nor does it affect the choice of replica to perform an exchange with. Replica to perform an
-exchange with is chosen randomly. Dummy replica parameter named ``parameter`` is exchanged during the
+probability nor does it affect the choice of a replica to perform an exchange with. Pairs of replicas for exchanges are chosen randomly. Dummy replica parameter named ``parameter`` is exchanged during the
 exchange step. Exchanges of ``parameter`` do not affect next simulation cycle.
 
 .. figure:: ../../images/replica_exchange_pattern.*
@@ -31,20 +29,20 @@ exchange step. Exchanges of ``parameter`` do not affect next simulation cycle.
 Run Locally
 ===========
 
-.. warning:: In order to run this example, you need access to a MongoDB server 
-             and set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** Download matrix calculator from :ref:`here <example_matrix_calculator>`.
+**Step 1:** Download matrix calculator from :ref:`here <example_matrix_calculator>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/matrix_calculator.py``.
 
-**Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`.
+**Step 2:** View and download the example :ref:`below <example_replica_exchange_b>`  or find it in 
+your virtualenv under ``share/radical.ensemblemd/examples/replica_exchange_b.py``.
 
-**Step 3:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``info`` if you want to see log messages about simulation progress::
+**Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENMD_VERBOSE=info python replica_exchange_b.py
+    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_b.py
 
-TODO Antons: describe how to check the output.
+After execution is done, in working directory you should have 24 md_input_x_y.md files and 24 md_input_x_y.out files where x in {0,1,2} and y in {0,1,...7}. File with extension .md is replica input file and with extension .out is output file providing number of occurrences of each character.
+
+You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 Run Remotely
 ============
@@ -52,7 +50,7 @@ Run Remotely
 By default, the exchange steps and the analysis run on one core your local machine::
 
     SingleClusterEnvironment(
-        resource="localhost",
+        resource="local.localhost",
         cores=1,
         walltime=30,
         username=None,
@@ -63,7 +61,7 @@ You can change the script to use a remote HPC cluster and increase the number of
 pipeline instances can run in parallel::
 
     SingleClusterEnvironment(
-        resource="stampede.tacc.utexas.edu",
+        resource="xsede.stampede",
         cores=16,
         walltime=30,
         username=None,  # add your username here

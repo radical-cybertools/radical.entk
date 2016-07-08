@@ -1,42 +1,54 @@
+#!/usr/bin/env python
+
+__author__       = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
+__copyright__    = "Copyright 2014, http://radical.rutgers.edu"
+__license__      = "MIT"
+__example_name__ = "Pipeline Example (generic)"
+
 import sys
 import os
 import json
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import BagofTasks
+from radical.ensemblemd import Pipeline
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SingleClusterEnvironment
 
 
 # ------------------------------------------------------------------------------
 #
-class CharCount(BagofTasks):
-	"""The CharCount class implements a three-stage BagofTasks. It inherits from
-		radical.ensemblemd.BagofTasks, the abstract base class for all BagofTaskss.
+class CharCount(Pipeline):
+	"""The CharCount class implements a three-stage pipeline. It inherits from
+		radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
 	"""
 
-	def __init__(self, stages, instances):
-		BagofTasks.__init__(self, stages, instances)
+	def __init__(self, stages,instances):
+		Pipeline.__init__(self, stages,instances)
 
 	def stage_1(self, instance):
-		"""The first stage of the BagofTasks creates a 1 MB ASCI file.
+		"""The first stage of the pipeline creates a 1 MB ASCI file.
 		"""
 		k = Kernel(name="misc.mkfile")
 		k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
 		return k
 
 	def stage_2(self, instance):
-		"""The second stage of the BagofTasks does a character frequency analysis
-		   on the file generated the first stage. 
-		"""
+		"""The second stage of the pipeline does a character frequency analysis
+		   on the file generated the first stage. The result is transferred back
+		   to the host running this script.
 
+		   ..note:: The placeholder ``$STAGE_1`` used in ``link_input_data`` is
+					a reference to the working directory of stage 1. ``$STAGE_``
+					can be used analogous to refernce other stages.
+		"""
 		k = Kernel(name="misc.ccount")
 		k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
 		k.link_input_data      = "$STAGE_1/asciifile-{0}.dat".format(instance)
+		k.download_output_data = "cfreqs-{0}.dat".format(instance)
 		return k
 
 	def stage_3(self, instance):
-		"""The third stage of the BagofTasks creates a checksum of the output file
+		"""The third stage of the pipeline creates a checksum of the output file
 		   of the second stage. The result is transferred back to the host
 		   running this script.
 		"""
@@ -50,9 +62,8 @@ class CharCount(BagofTasks):
 #
 if __name__ == "__main__":
 
-
 	# use the resource specified as argument, fall back to localhost
-	if  len(sys.argv)  > 2: 
+	if   len(sys.argv)  > 2: 
 		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
 		sys.exit(1)
 	elif len(sys.argv) == 2: 
@@ -84,25 +95,23 @@ if __name__ == "__main__":
 		# Allocate the resources. 
 		cluster.allocate()
 
-		# Set the 'instances' of the BagofTasks to 16. This means that 16 instances
-		# of each BagofTasks stage are executed.
+		# Set the 'instances' of the pipeline to 16. This means that 16 instances
+		# of each pipeline stage are executed.
 		#
-		# Execution of the 16 BagofTasks instances can happen concurrently or
+		# Execution of the 16 pipeline instances can happen concurrently or
 		# sequentially, depending on the resources (cores) available in the
 		# SingleClusterEnvironment.
 		ccount = CharCount(stages=3,instances=16)
 
 		cluster.run(ccount)
 
-
-		# Deallocate the resources. 
-		cluster.deallocate()
-
 		# Print the checksums
 		print "\nResulting checksums:"
 		import glob
 		for result in glob.glob("cfreqs-*.sha1"):
 			print "  * {0}".format(open(result, "r").readline().strip())
+
+		cluster.deallocate()
 
 	except EnsemblemdError, er:
 

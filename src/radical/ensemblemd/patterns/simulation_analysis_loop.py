@@ -40,7 +40,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         .. code-block:: python
 
-            def simulation_step(self, iteration, instance):
+            def  simulation_stage(self, iteration, instance):
                 k = Kernel(name="kernelname")
                 k.link_input_data = ["$PREV_ANALYSIS/output.dat]
                 # Alternatively: k.copy_input_data to copy the data instead of just linking it
@@ -62,11 +62,11 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
             * **simulation_instances** [`int`]
               The simulation_instances parameter determines the number of independent
-              simulation instances launched for each `simulation_step`.
+              simulation instances launched for each ` simulation_stage`.
 
             * **analysis_instances** [`int`]
               The analysis_instances parameter determines the number of independent
-              analysis instances launched for each `analysis_step`.
+              analysis instances launched for each ` analysis_stage`.
 
         """
         self._iterations = iterations
@@ -147,9 +147,9 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
     #---------------------------------------------------------------------------
     #
-    def simulation_step(self, iteration, instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `simulation_step`
-        is executed once per loop iteration before `analysis_step`.
+    def simulation_stage(self, iteration, instance):
+        """The :class:`radical.ensemblemd.Kernel` returned by ` simulation_stage`
+        is executed once per loop iteration before ` analysis_stage`.
 
         **Arguments:**
 
@@ -169,14 +169,14 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         """
         raise NotImplementedError(
-            method_name="simulation_step",
+            method_name=" simulation_stage",
             class_name=type(self))
 
     #---------------------------------------------------------------------------
     #
-    def analysis_step(self, iteration,instance):
-        """The :class:`radical.ensemblemd.Kernel` returned by `analysis_step`
-        is executed once per loop iteration after `simulation_step`.
+    def analysis_stage(self, iteration,instance):
+        """The :class:`radical.ensemblemd.Kernel` returned by ` analysis_stage`
+        is executed once per loop iteration after `simulation_stage`.
 
         **Arguments:**
 
@@ -196,7 +196,7 @@ class SimulationAnalysisLoop(ExecutionPattern):
 
         """
         raise NotImplementedError(
-          method_name="analysis_step",
+          method_name=" analysis_stage",
           class_name=type(self))
 
     #---------------------------------------------------------------------------

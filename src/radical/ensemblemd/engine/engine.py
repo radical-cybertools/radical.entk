@@ -3,7 +3,7 @@
 """TODO: Docstring.
 """
 
-__author__    = "Ole Weider <ole.weidner@rutgers.edu>"
+__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
@@ -37,7 +37,8 @@ class Engine(object):
 		"""
 
 		# Initialize the logging
-		self._logger = ru.get_logger('radical.enmd.Engine')
+
+		self._logger = ru.get_logger('radical.entk.Engine')
 
 		# Load execution plug-ins
 		self._execution_plugins = list()

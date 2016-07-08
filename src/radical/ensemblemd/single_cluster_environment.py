@@ -68,11 +68,11 @@ class SingleClusterEnvironment(ExecutionContext):
 		#shared data
 		self._shared_data = None
 
-		self._logger  = ru.get_logger('radical.enmd.SingleClusterEnvironment')
-		self._reporter = ru.LogReporter(name='radical.enmd.SingleClusterEnvironment')
+		self._logger  = ru.get_logger('radical.entk.SingleClusterEnvironment')
+		self._reporter = ru.LogReporter(name='radical.entk.SingleClusterEnvironment')
 
 		# Profiling
-		self._profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))		
+		self._profiling = int(os.environ.get('RADICAL_ENTK_PROFILING',0))		
 		self._profile_entities = {}
 		self._num_patterns = 0
 		self._core_ov_dict = {}
@@ -110,7 +110,6 @@ class SingleClusterEnvironment(ExecutionContext):
 	def deallocate(self):
 		"""Deallocates the resources.
 		"""
-		
 		self._reporter.info('\nStarting Deallocation..\n')
 
 		if self._profiling == 1:
@@ -162,7 +161,6 @@ class SingleClusterEnvironment(ExecutionContext):
 
 		self._reporter.info('Starting Allocation')
 
-		profiling = int(os.environ.get('RADICAL_ENMD_PROFILING',0))
 
 		if self._profiling == 1:
 			self._core_ov_dict["alloc_start"] = datetime.datetime.now()
@@ -249,6 +247,7 @@ class SingleClusterEnvironment(ExecutionContext):
 			raise
 
 		finally:
+
 			if self._profiling == 1:
 				self._core_ov_dict["alloc_stop"] = datetime.datetime.now()
 
@@ -294,6 +293,7 @@ class SingleClusterEnvironment(ExecutionContext):
 			self._exctype,self._excvalue,self._traceback = sys.exc_info()
 			self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
 			self._reporter.error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+
 
 	def profile(self, pattern):
 

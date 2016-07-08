@@ -86,6 +86,7 @@ if __name__ == "__main__":
             print "  * {0}".format(open(result, "r").readline().strip())
 
         cluster.deallocate()
+        cluster.profile(ccount)
 
         cluster.profile(ccount)
 
