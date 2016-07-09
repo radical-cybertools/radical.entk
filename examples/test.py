@@ -14,19 +14,20 @@ class Test(PoE):
 	def stage_1(self, instance):
 		k1 = Kernel(name="hello_module")
 		k1.arguments = ["--file=test.txt"]
-		k1.cores = 3
+		k1.copy_input_data = ["test"]
+		k1.cores = 1
 		return k1
 
+	'''
 	def branch_1(self):
 		self.next_stage = 0
-
+	'''
 	def stage_2(self, instance):
 		k1 = Kernel(name="hello_module")
 		k1.arguments = ["--file=test.txt"]
-		k1.cores = 3
+		k1.cores = 1
 		return k1
 	
-
 
 if __name__ == '__main__':
 
@@ -37,11 +38,11 @@ if __name__ == '__main__':
 	app.register_kernels(hello_kernel)
 	app.add_workload(pipe)
 	
-	res = ResourceHandle(resource="xsede.stampede",
-				cores=16,
-				username='vivek91',
-				project = 'TG-MCB090174',
-				queue='development',
+	res = ResourceHandle(resource="local.localhost",
+				cores=1,
+	#			username='vivek91',
+	#			project = 'TG-MCB090174',
+	#			queue='development',
 				walltime=5,
 				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
 	res.allocate(wait=True)

@@ -152,10 +152,26 @@ class AppManager():
 	def add_workload(self, pattern):
 		self._pattern = pattern
 
+
+	def add_to_record(self, record, cus, iteration, stage):
+
+		inst=1
+		for cu in cus:
+
+			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] 	= cu.stdout
+			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] 	= cu.uid
+			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] 	= cu.working_directory
+
+			inst+=1
+
+		return record
+
+
 	def run(self, resource, task_manager):
 
 		# Create dictionary for logging
 		self._pattern.create_record()
+		record = self._pattern.get_record()
 
 		if self._pattern.__class__.__base__ == PoE:
 	
@@ -186,10 +202,15 @@ class AppManager():
 					for inst in range(1, instances+1):
 						list_kernels_stage.append(self.validate_kernel(stage(inst)))
 
+
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage)
-					plugin.execute()
+					cus = plugin.execute(record=record, stage=self._pattern.next_stage)
+
+					record = self.add_to_record(record=record, cus=cus, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+
+					print record
 
 					# Execute branch if it exists
 					if (self._pattern.get_record()["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
