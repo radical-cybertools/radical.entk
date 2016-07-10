@@ -14,7 +14,7 @@ class Test(PoE):
 	def stage_1(self, instance):
 		k1 = Kernel(name="hello_module")
 		k1.arguments = ["--file=test.txt"]
-		k1.copy_input_data = ["test"]
+		k1.upload_input_data = ["hello.py"]
 		k1.cores = 1
 		return k1
 

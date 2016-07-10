@@ -206,7 +206,7 @@ class AppManager():
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage)
-					cus = plugin.execute(record=record, stage=self._pattern.next_stage)
+					cus = plugin.execute(record=record, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
 					record = self.add_to_record(record=record, cus=cus, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 

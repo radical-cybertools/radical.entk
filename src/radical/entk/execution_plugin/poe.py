@@ -55,7 +55,7 @@ class PluginPoE(object):
 		self._manager = manager
 		self._logger.info("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
-	def execute(self, record, stage):
+	def execute(self, record, iteration, stage):
 
 		def unit_state_cb (unit, state) :
 
@@ -68,6 +68,7 @@ class PluginPoE(object):
 			self._manager.register_callback(unit_state_cb)
 
 			from staging.input_data import get_input_data
+			from staging.input_data import get_output_data
 
 			cus = []
 
@@ -85,8 +86,8 @@ class PluginPoE(object):
 				cud.arguments      	= rbound_kernel.arguments
 				cud.mpi            		= rbound_kernel.uses_mpi
 				cud.cores 		= rbound_kernel.cores
-				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_stage = stage, cur_task=inst)
-				cud.output_staging 	= None
+				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 
 				inst+=1
 
