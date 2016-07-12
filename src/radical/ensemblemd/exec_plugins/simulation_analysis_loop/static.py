@@ -395,7 +395,7 @@ class Plugin(PluginBase):
 			pre_loop = pattern.pre_loop()
 
 			if pre_loop is not None:
-				# Pre-loop step exists in the pattern
+				# Pre-loop stage exists in the pattern
 
 				if profiling == 1:
 					probe_preloop_start = datetime.datetime.now()
@@ -419,8 +419,8 @@ class Plugin(PluginBase):
                            
 
 				self.get_logger().debug("Created pre_loop CU: {0}.".format(cud.as_dict()))
-				self.get_logger().info("Submitted ComputeUnit(s) for pre_loop step.")
-				self._reporter.info("\nWaiting for pre_loop step to complete.")
+				self.get_logger().info("Submitted ComputeUnit(s) for pre_loop stage.")
+				self._reporter.info("\nWaiting for pre_loop stage to complete.")
 
 				if profiling == 1:
 					probe_preloop_wait = datetime.datetime.now()
@@ -467,9 +467,9 @@ class Plugin(PluginBase):
 					enmd_overhead_dict['iter_{0}'.format(iteration)] = od()
 					cu_dict['iter_{0}'.format(iteration)] = od()
 
-				# Get number of kernels in the simulation step
-				if isinstance(pattern.simulation_step(iteration=iteration, instance=1),list):
-					num_sim_kerns = len(pattern.simulation_step(iteration=iteration, instance=1))
+				# Get number of kernels in the simulation stage
+				if isinstance(pattern.simulation_stage(iteration=iteration, instance=1),list):
+					num_sim_kerns = len(pattern.simulation_stage(iteration=iteration, instance=1))
 				else:
 					num_sim_kerns = 1
 
@@ -479,53 +479,53 @@ class Plugin(PluginBase):
 					enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']= od()
 					cu_dict['iter_{0}'.format(iteration)]['sim']= list()
 
-				# Iterate through each kernel in the simulation step
-				for kern_step in range(0,num_sim_kerns):
+				# Iterate through each kernel in the simulation stage
+				for kern_stage in range(0,num_sim_kerns):
 
 					if profiling == 1:
 						probe_sim_start = datetime.datetime.now()
 						#Log details of each kernel
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]= od()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['start_time'] = probe_sim_start
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_stage)]= od()
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_stage)]['start_time'] = probe_sim_start
 
-					# List of CUs for kernels[kernel_step]
+					# List of CUs for kernels[kernel_stage]
 					s_units = []
 
-					#Create CUs for each kernel of the simulation step
+					#Create CUs for each kernel of the simulation stage
 					for s_instance in range(1, pattern._simulation_instances+1):
 
-						# Get details of kernels[kernel_step]
-						if isinstance(pattern.simulation_step(iteration=iteration, instance=s_instance),list):
-							sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)[kern_step]
+						# Get details of kernels[kernel_stage]
+						if isinstance(pattern.simulation_stage(iteration=iteration, instance=s_instance),list):
+							sim_stage = pattern.simulation_stage(iteration=iteration, instance=s_instance)[kern_stage]
 						else:
-							sim_step = pattern.simulation_step(iteration=iteration, instance=s_instance)
+							sim_stage = pattern.simulation_stage(iteration=iteration, instance=s_instance)
 
-						sim_step._bind_to_resource(resource._resource_key)
+						sim_stage._bind_to_resource(resource._resource_key)
 
 						cud = radical.pilot.ComputeUnitDescription()
 						cud.name = "sim ;{iteration} ;{instance}".format(iteration=iteration, instance=s_instance)
 
-						cud.pre_exec 	= sim_step._cu_def_pre_exec
-						cud.executable 	= sim_step._cu_def_executable
-						cud.arguments 	= sim_step.arguments
-						cud.mpi          	= sim_step.uses_mpi
+						cud.pre_exec 	= sim_stage._cu_def_pre_exec
+						cud.executable 	= sim_stage._cu_def_executable
+						cud.arguments 	= sim_stage.arguments
+						cud.mpi          	= sim_stage.uses_mpi
 
-						cud.input_staging  = get_input_data(kernel=sim_step,instance=s_instance, 
+						cud.input_staging  = get_input_data(kernel=sim_stage,instance=s_instance, 
                         						iteration=iteration,ktype='simulation')
 
-						cud.output_staging = get_output_data(kernel=sim_step,instance=s_instance, 
+						cud.output_staging = get_output_data(kernel=sim_stage,instance=s_instance, 
 							iteration=iteration,ktype='simulation')
                      
 
-						if sim_step.cores is not None:
-							cud.cores = sim_step.cores
+						if sim_stage.cores is not None:
+							cud.cores = sim_stage.cores
 
-						if sim_step.exists_remote is not None:
-							cud.post_exec = create_filecheck_command(sim_step.exists_remote)
+						if sim_stage.exists_remote is not None:
+							cud.post_exec = create_filecheck_command(sim_stage.exists_remote)
 
 						s_units.append(cud)
 
-						if sim_step.get_instance_type == 'single':
+						if sim_stage.get_instance_type == 'single':
 							break
                         
 						self.get_logger().debug("Created simulation CU: {0}.".format(cud.as_dict()))
@@ -534,7 +534,7 @@ class Plugin(PluginBase):
 	
 					if profiling == 1:
 						probe_sim_wait = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_sim_wait
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_stage)]['wait_time'] = probe_sim_wait
 
 					s_cus = resource._umgr.submit_units(s_units)
 
@@ -546,9 +546,9 @@ class Plugin(PluginBase):
 					all_sim_cus.extend(s_cus)
 
 					self.get_logger().info("Waiting for {3} simulations in iteration {0}/ kernel {1}: {2} to complete.".format(
-						iteration,kern_step+1,sim_step.name,pattern._simulation_instances))
+						iteration,kern_stage+1,sim_stage.name,pattern._simulation_instances))
 					self._reporter.info("\nIteration {0}: Waiting for {2} simulation tasks: {1} to complete".format(
-						iteration,sim_step.name, pattern._simulation_instances))
+						iteration,sim_stage.name, pattern._simulation_instances))
 
 
 					# Wait for the above CUs to finish
@@ -558,11 +558,11 @@ class Plugin(PluginBase):
 
 					if profiling == 1:
 						probe_sim_res = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['res_time'] = probe_sim_res
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_stage)]['res_time'] = probe_sim_res
 
 
 					self.get_logger().info("Simulations in iteration {0}/ kernel {1}: {2} completed.".format(
-						iteration,kern_step+1,sim_step.name))
+						iteration,kern_stage+1,sim_stage.name))
 
 
 					failed_units = ""
@@ -574,7 +574,7 @@ class Plugin(PluginBase):
 
 					if profiling == 1:
 						probe_sim_done = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_sim_done
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['sim']['kernel_{0}'.format(kern_stage)]['stop_time'] = probe_sim_done
 
 					self._reporter.ok('>> done')
 
@@ -598,9 +598,9 @@ class Plugin(PluginBase):
 				##############################################################
 				# EXECUTE ANALYSIS STEPS
 
-				# Get number of kernels in the analysis step
-				if isinstance(pattern.analysis_step(iteration=iteration, instance=1),list):
-					num_ana_kerns = len(pattern.analysis_step(iteration=iteration, instance=1))
+				# Get number of kernels in the analysis stage
+				if isinstance(pattern.analysis_stage(iteration=iteration, instance=1),list):
+					num_ana_kerns = len(pattern.analysis_stage(iteration=iteration, instance=1))
 				else:
 					num_ana_kerns = 1
 
@@ -610,51 +610,51 @@ class Plugin(PluginBase):
 					enmd_overhead_dict['iter_{0}'.format(iteration)]['ana'] = od()
 					cu_dict['iter_{0}'.format(iteration)]['ana']= list()
 
-				# Iterate through each kernel in the analysis step
-				for kern_step in range(0,num_ana_kerns):
+				# Iterate through each kernel in the analysis stage
+				for kern_stage in range(0,num_ana_kerns):
 
 					if profiling == 1:
 						probe_ana_start = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]= od()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['start_time'] = probe_ana_start
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_stage)]= od()
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_stage)]['start_time'] = probe_ana_start
 
-					# List of CUs for analysis kernels[kernel_step]
+					# List of CUs for analysis kernels[kernel_stage]
 					a_units = []
 
-					#Create CUs for each kernel of the analysis step
+					#Create CUs for each kernel of the analysis stage
 					for a_instance in range(1, pattern._analysis_instances+1):
 
-						if isinstance(pattern.analysis_step(iteration=iteration, instance=a_instance),list):
-							ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)[kern_step]
+						if isinstance(pattern.analysis_stage(iteration=iteration, instance=a_instance),list):
+							ana_stage = pattern.analysis_stage(iteration=iteration, instance=a_instance)[kern_stage]
 						else:
-							ana_step = pattern.analysis_step(iteration=iteration, instance=a_instance)
+							ana_stage = pattern.analysis_stage(iteration=iteration, instance=a_instance)
 
-						ana_step._bind_to_resource(resource._resource_key)
+						ana_stage._bind_to_resource(resource._resource_key)
 
                        
 						cud = radical.pilot.ComputeUnitDescription()
 						cud.name = "ana ; {iteration}; {instance}".format(iteration=iteration, instance=a_instance)
 
-						cud.pre_exec       	= ana_step._cu_def_pre_exec
-						cud.executable     	= ana_step._cu_def_executable
-						cud.arguments      	= ana_step.arguments
-						cud.mpi            		= ana_step.uses_mpi
+						cud.pre_exec       	= ana_stage._cu_def_pre_exec
+						cud.executable     	= ana_stage._cu_def_executable
+						cud.arguments      	= ana_stage.arguments
+						cud.mpi            		= ana_stage.uses_mpi
                         
-						cud.input_staging 	= get_input_data(kernel=ana_step,instance=a_instance, 
+						cud.input_staging 	= get_input_data(kernel=ana_stage,instance=a_instance, 
 							iteration=iteration,ktype='analysis')
-						cud.output_staging 	= get_output_data(kernel=ana_step,instance=a_instance, 
+						cud.output_staging 	= get_output_data(kernel=ana_stage,instance=a_instance, 
 							iteration=iteration,ktype='analysis')
 
 
-						if ana_step.cores is not None:
-							cud.cores = ana_step.cores
+						if ana_stage.cores is not None:
+							cud.cores = ana_stage.cores
 
-						if ana_step.exists_remote is not None:
-							cud.post_exec = create_filecheck_command(ana_step.exists_remote)
+						if ana_stage.exists_remote is not None:
+							cud.post_exec = create_filecheck_command(ana_stage.exists_remote)
 
 						a_units.append(cud)
 
-						if ana_step.get_instance_type == 'single':
+						if ana_stage.get_instance_type == 'single':
 							break
 
 						self.get_logger().debug("Created analysis CU: {0}.".format(cud.as_dict()))
@@ -663,7 +663,7 @@ class Plugin(PluginBase):
 
 					if profiling == 1:
 						probe_ana_wait = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['wait_time'] = probe_ana_wait
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_stage)]['wait_time'] = probe_ana_wait
 
 
 					a_cus = resource._umgr.submit_units(a_units)
@@ -674,9 +674,9 @@ class Plugin(PluginBase):
 					all_ana_cus.extend(a_cus)
 
 					self.get_logger().info("Waiting for analysis tasks in iteration {0}/kernel {1}: {2} to complete.".format(
-						iteration,kern_step+1,ana_step.name))
+						iteration,kern_stage+1,ana_stage.name))
 					self._reporter.info("\nIteration {0}: Waiting for analysis tasks: {1} to complete".format(
-						iteration,ana_step.name))
+						iteration,ana_stage.name))
                     
                     				# Wait for the above CUs to finish
 					uids = [cu.uid for cu in a_cus]
@@ -684,10 +684,10 @@ class Plugin(PluginBase):
 
 					if profiling == 1:
 						probe_ana_res = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['res_time'] = probe_ana_res
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_stage)]['res_time'] = probe_ana_res
 
 					self.get_logger().info("Analysis in iteration {0}/kernel {1}: {2} completed.".format(
-						iteration,kern_step+1,ana_step.name))
+						iteration,kern_stage+1,ana_stage.name))
 
 
 					failed_units = ""
@@ -697,7 +697,7 @@ class Plugin(PluginBase):
 
 					if profiling == 1:
 						probe_ana_done = datetime.datetime.now()
-						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_step)]['stop_time'] = probe_ana_done
+						enmd_overhead_dict['iter_{0}'.format(iteration)]['ana']['kernel_{0}'.format(kern_stage)]['stop_time'] = probe_ana_done
 
 					self._reporter.ok('>> done')
 
