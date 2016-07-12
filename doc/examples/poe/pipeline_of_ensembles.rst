@@ -51,10 +51,9 @@ By default, this Pipeline of Ensembles runs on one core on your local machine.
 
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
-tasks in the each stage of the pipeline can run in parallel::
+tasks in the each stage of the pipeline can run in parallel.
 
-.. code-block::
-	:language: python
+.. code-block:: python
 
 	cluster = ResourceHandle(
 		resource="xsede.stampede",
