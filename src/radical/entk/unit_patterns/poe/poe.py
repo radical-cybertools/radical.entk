@@ -21,6 +21,7 @@ class PoE(ExecutionPattern):
 		self._cur_iteration = 1
 		self.kill_instances = None
 		self._pattern_status = 'New'
+		self._state_change = False
 
 		# Perform sanity check -- perform before proceeding
 		self.sanity_check()
@@ -31,12 +32,10 @@ class PoE(ExecutionPattern):
 
 		# Check type errors
 		if type(self._pipeline_size) != int:
-			raise TypeError(expected_type=int, actual_type=type(self._ensemble_size))
-
-		if type(self._ensemble_size) != int:
 			raise TypeError(expected_type=int, actual_type=type(self._pipeline_size))
-		elif ((type(self._ensemble_size) != list) and (type(self._ensemble_size) != int)):
-			raise TypeError(expected_type=list, actual_type=type(self._pipeline_size))
+
+		if ((type(self._ensemble_size) != list) and (type(self._ensemble_size) != int)):
+			raise TypeError(expected_type=list, actual_type=type(self._ensemble_size))
 
 		if type(self._type) != str:
 			raise TypeError(expected_type=str, actual_type=type(self._type))		
@@ -90,6 +89,24 @@ class PoE(ExecutionPattern):
 		return self._iterative
 	
 	
+	def set_next_stage(self, stage):
+
+		if stage <= self._pipeline_size:
+			self._next_stage = stage
+			self._state_change = True
+		else:
+			print 'Check next stage value'
+			raise
+
+	@property
+	def state_change(self):
+		return self._state_change
+
+	@state_change.setter
+	def state_change(self, value):
+		self._state_change = value
+	
+
 	def create_record(self):
 
 		for iter in range(1, self._total_iterations+1):
@@ -169,3 +186,7 @@ class PoE(ExecutionPattern):
 			raise Exception("Pattern does not have branch_{0}".format(stage))
 
 		return branch
+
+	def get_output(self, iteration, stage, instance):
+
+		return self._kernel_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]

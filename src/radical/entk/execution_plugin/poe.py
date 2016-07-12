@@ -53,7 +53,7 @@ class PluginPoE(object):
 
 	def add_manager(self, manager):
 		self._manager = manager
-		self._logger.info("Task execution manager (RP-Unit Manager) assigned to execution plugin")
+		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 	def execute(self, record, iteration, stage):
 
@@ -68,7 +68,7 @@ class PluginPoE(object):
 			self._manager.register_callback(unit_state_cb)
 
 			from staging.input_data import get_input_data
-			from staging.input_data import get_output_data
+			from staging.output_data import get_output_data
 
 			cus = []
 
@@ -95,10 +95,10 @@ class PluginPoE(object):
 				self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
 			exec_cus = self._manager.submit_units(cus)
-			self._logger.info("Workload submitted for execution on resource")
+			self._logger.info("Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage))
 
 			exec_uids = [cu.uid for cu in exec_cus]
-			self._logger.info("Waiting for completion of workload execution")
+			self._logger.info("Waiting for completion of workload")
 			self._manager.wait_units(exec_uids)
 
 			for unit in exec_cus:

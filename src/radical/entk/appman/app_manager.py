@@ -97,9 +97,12 @@ class AppManager():
 	def validate_kernel(self, user_kernel):
 
 		try:
+			found=False
 			for kernel in self._loaded_kernels:
 
 				if kernel().name == user_kernel.name:
+
+					found=True
 
 					new_kernel = kernel()
 
@@ -139,9 +142,9 @@ class AppManager():
 
 					return new_kernel
 
-				else:
-					self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
-					raise 
+			if found==False:
+				self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+				raise 
 
 		except Exception, ex:
 
@@ -185,8 +188,8 @@ class AppManager():
 			# Submit kernels stage by stage to execution plugin
 			while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
 			
-				for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
-
+				#for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
+				while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
 
 					# Get kernel from execution pattern
 					stage = self._pattern.get_stage(stage=self._pattern.next_stage)
@@ -206,21 +209,34 @@ class AppManager():
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage)
-					cus = plugin.execute(record=record, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+					cus = plugin.execute(record=record, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
 					record = self.add_to_record(record=record, cus=cus, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
-					print record
+					#print record
+					branch_function = None
 
 					# Execute branch if it exists
 					if (self._pattern.get_record()["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
 						self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
-						self._pattern.get_branch(stage=self._pattern.next_stage)()
+						branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
+						branch_function()
+
+					#print self._pattern.state_change
+
+					if (self._pattern.state_change==True):
+						pass
+					else:
+						self._pattern.next_stage+=1
+
+					self._pattern.state_change = False
 
 					# Terminate execution
 					if self._pattern.next_stage == 0:
 						self._logger.info("Branching function has set termination condition -- terminating")
 						break
+
+					
 
 				# Terminate execution
 				if self._pattern.next_stage == 0:

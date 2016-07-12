@@ -18,10 +18,6 @@ class Test(PoE):
 		k1.cores = 1
 		return k1
 
-	'''
-	def branch_1(self):
-		self.next_stage = 0
-	'''
 	def stage_2(self, instance):
 		k1 = Kernel(name="hello_module")
 		k1.arguments = ["--file=test.txt"]

@@ -1,5 +1,7 @@
 from placeholders import resolve_placeholder_vars
 
+import os
+
 def get_output_data(kernel, record, cur_iter, cur_stage, cur_task):
 
 	# OUTPUT DATA:
