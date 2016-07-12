@@ -63,7 +63,9 @@ By default, this use-case runs on your local machine
 	:lines: 418-425
 	:dedent: 2
 
-You can change the script to use a remote HPC cluster::
+You can change the script to use a remote HPC cluster.
+
+.. code-block:: python
 
 	cluster = ResourceHandle(
 		resource="xsede.stampede",

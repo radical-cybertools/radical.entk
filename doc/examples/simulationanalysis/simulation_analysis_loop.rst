@@ -45,13 +45,15 @@ Run Remotely
 By default, simulation and analysis stages run on one core your local machine
 
 .. literalinclude:: ../../../examples/simulation_analysis_loop.py
-	:lines: 90-97
+	:lines: 102-112
 	:language: python
 	:dedent: 2
 
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
-pipeline instances can run in parallel::
+pipeline instances can run in parallel.
+
+.. code-block:: python
 
 	cluster = ResourceHandle(
 		resource="xsede.stampede",

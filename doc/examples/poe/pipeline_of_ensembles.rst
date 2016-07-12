@@ -30,7 +30,7 @@ your virtualenv under ``share/radical.ensemblemd/examples/pipeline_of_ensembles.
 
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.::
 
-		RADICAL_ENTK_VERBOSE=REPORT python pipeline_of_ensembles.py
+	RADICAL_ENTK_VERBOSE=REPORT python pipeline_of_ensembles.py
 
 Once the script has finished running, you should see the SHA1 checksums
 genereated by the individual tasks  (``checksumXX.sha1``) in the in the same

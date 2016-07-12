@@ -41,7 +41,7 @@ Run Remotely
 By default, the exchange steps run on one core your local machine
 
 .. literalinclude:: ../../../examples/ensemble_exchange.py
-	:lines: 202-209
+	:lines: 213-223
 	:language: python
 	:dedent: 2
 
