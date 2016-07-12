@@ -61,7 +61,6 @@ machine by setting the following parameters in your RPconfig file::
 	PILOTSIZE   = 16
 	WORKDIR     = None
 
-	DBURL       = 'mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot'
 
 
 
@@ -76,7 +75,7 @@ of cores to see how this affects the runtime of the script as the individual
 simulations instances can run in parallel. You can try more variations
 by modifying num_iterations(Kconfig), num_CUs (Kconfig), nsave (Kconfig), etc. ::
 
-	cluster = SingleClusterEnvironment(
+	cluster = ResourceHandle(
 		resource="xsede.stampede",
 		cores=16,
 		walltime=30,

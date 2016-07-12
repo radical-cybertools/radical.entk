@@ -49,7 +49,7 @@ Run Remotely
 
 By default, the exchange steps and the analysis run on one core your local machine::
 
-    SingleClusterEnvironment(
+    ResourceHandle(
         resource="local.localhost",
         cores=1,
         walltime=30,
@@ -60,7 +60,7 @@ By default, the exchange steps and the analysis run on one core your local machi
 You can change the script to use a remote HPC cluster and increase the number of cores to see how this affects the runtime of the script as the individual
 pipeline instances can run in parallel::
 
-    SingleClusterEnvironment(
+    ResourceHandle(
         resource="xsede.stampede",
         cores=16,
         walltime=30,

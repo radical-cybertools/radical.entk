@@ -16,12 +16,11 @@ from radical.ensemblemd.file import File
 from radical.ensemblemd.kernel import Kernel
 
 # Execution Patterns
-from radical.ensemblemd.patterns.all_pairs_pattern import AllPairs
-from radical.ensemblemd.patterns.pipeline import Pipeline
-from radical.ensemblemd.patterns.bag_of_tasks import BagofTasks
-from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
+from radical.ensemblemd.patterns.pipeline import Pipeline as EoP
+from radical.ensemblemd.patterns.bag_of_tasks import BagofTasks as PoE
+from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange as EnsembleExchange
 from radical.ensemblemd.patterns.simulation_analysis_loop import SimulationAnalysisLoop
+from radical.ensemblemd.patterns.replica_exchange import Replica
 
 # Execution Contexts
-from radical.ensemblemd.multi_cluster_environment import MultiClusterEnvironment
-from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
+from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment as ResourceHandle

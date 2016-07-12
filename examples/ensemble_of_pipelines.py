@@ -10,20 +10,20 @@ import os
 import json
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import Pipeline
+from radical.ensemblemd import EoP
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd import ResourceHandle
 
 
 # ------------------------------------------------------------------------------
 #
-class CharCount(Pipeline):
+class CharCount(EoP):
 	"""The CharCount class implements a three-stage pipeline. It inherits from
 		radical.ensemblemd.Pipeline, the abstract base class for all pipelines.
 	"""
 
 	def __init__(self, stages,instances):
-		Pipeline.__init__(self, stages,instances)
+		EoP.__init__(self, stages,instances)
 
 	def stage_1(self, instance):
 		"""The first stage of the pipeline creates a 1 MB ASCI file.
@@ -62,17 +62,29 @@ class CharCount(Pipeline):
 #
 if __name__ == "__main__":
 
+	# use the resource specified as argument, fall back to localhost
+	if   len(sys.argv)  > 2: 
+		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+		sys.exit(1)
+	elif len(sys.argv) == 2: 
+		resource = sys.argv[1]
+	else: 
+		resource = 'local.localhost'
+
 	try:
 
 		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
-			resource="localhost",
-			cores=1,
-			walltime=15,
-			username=None,
-			project=None,
-			database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
+		cluster = ResourceHandle(
+				resource=resource,
+				cores=1,
+				walltime=15,
+				#username=None,
+
+				project=config[resource]['project'],
+				access_schema = config[resource]['schema'],
+				queue = config[resource]['queue'],
+				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 			)
 
 		# Allocate the resources. 

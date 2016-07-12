@@ -10,21 +10,21 @@ import os
 import json
 
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import BagofTasks
+from radical.ensemblemd import PoE
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd import ResourceHandle
 
 
 # ------------------------------------------------------------------------------
 #
-class CalculateChecksums(BagofTasks):
+class CalculateChecksums(PoE):
 	"""The CalculateChecksums class implements a Bag of Tasks. Since there
 		is no explicit "Bag of Tasks" pattern template, we inherit from the
 		radical.ensemblemd.Pipeline pattern and define just one stage.
 	"""
 
 	def __init__(self, stages, instances):
-		BagofTasks.__init__(self, stages, instances)
+		PoE.__init__(self, stages, instances)
 
 	def stage_1(self, instance):
 		"""This stage downloads a sample UTF-8 file from a remote websever and
@@ -45,17 +45,29 @@ class CalculateChecksums(BagofTasks):
 if __name__ == "__main__":
 
 
+	# use the resource specified as argument, fall back to localhost
+	if   len(sys.argv)  > 2: 
+		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+		sys.exit(1)
+	elif len(sys.argv) == 2: 
+		resource = sys.argv[1]
+	else: 
+		resource = 'local.localhost'
+
 	try:
 
 		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
-			resource="localhost",
-			cores=1,
-			walltime=15,
-			username=None,
-			project=None,
-			database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
+		cluster = ResourceHandle(
+				resource=resource,
+				cores=1,
+				walltime=15,
+				#username=None,
+
+				project=config[resource]['project'],
+				access_schema = config[resource]['schema'],
+				queue = config[resource]['queue'],
+				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 			)
 
 		# Allocate the resources.

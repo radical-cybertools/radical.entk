@@ -3,8 +3,7 @@
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Synchronous Replica Exchange Example with 'remote' \
-					exchange (generic)."
+__example_name__ = "Synchronous Replica Exchange Example with 'remote' \	exchange (generic)."
 
 
 import os
@@ -21,9 +20,9 @@ from os import path
 import radical.pilot
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
-from radical.ensemblemd.patterns.replica_exchange import Replica
-from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
+from radical.ensemblemd import ResourceHandle
+from radical.ensemblemd import Replica
+from radical.ensemblemd import EnsembleExchange
 
 #-------------------------------------------------------------------------------
 #
@@ -48,7 +47,7 @@ class ReplicaP(Replica):
 
 		super(ReplicaP, self).__init__(my_id)
 
-class RePattern(ReplicaExchange):
+class RePattern(EnsembleExchange):
 	"""In this class are specified details of RE simulation:
 		- initialization of replicas
 		- generation of input files
@@ -319,7 +318,7 @@ if __name__ == "__main__":
 
 		# Create a new static execution context with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
+		cluster = ResourceHandle(
 				resource=resource,
 				cores=1,
 				walltime=15,
@@ -329,7 +328,7 @@ if __name__ == "__main__":
 				access_schema = config[resource]['schema'],
 				queue = config[resource]['queue'],
 
-				database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
+				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
 				#database_name='myexps',
 			)
 		

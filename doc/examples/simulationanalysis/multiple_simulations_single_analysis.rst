@@ -18,17 +18,17 @@ is downloaded to the user machine.
 	[S]    [S]    [S]    [S]    [S]    [S]    [S]
 	 |      |      |      |      |      |      |
 	 \-----------------------------------------/
-						  |
-						 [A]
-						  |
+			|
+			[A]
+			|
 	 /-----------------------------------------\
 	 |      |      |      |      |      |      |
 	[S]    [S]    [S]    [S]    [S]    [S]    [S]
 	 |      |      |      |      |      |      |
 	 \-----------------------------------------/
-						  |
-						 [A]
-						  :
+			|
+			[A]
+			
 
 Run Locally
 ===========
@@ -65,7 +65,7 @@ By default, simulation and analysis stages run on one core your local machine.
 	:language: python
 	:dedent: 2
 
-	SingleClusterEnvironment(
+	ResourceHandle(
 		resource="localhost",
 		cores=1,
 		walltime=30,
@@ -77,7 +77,7 @@ You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
 simulations instances can run in parallel::
 
-	cluster = SingleClusterEnvironment(
+	cluster = ResourceHandle(
 		resource="xsede.stampede",
 		cores=16,
 		walltime=30,

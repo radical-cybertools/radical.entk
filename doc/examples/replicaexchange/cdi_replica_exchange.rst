@@ -65,7 +65,7 @@ By default, this use-case runs on your local machine
 
 You can change the script to use a remote HPC cluster::
 
-	cluster = SingleClusterEnvironment(
+	cluster = ResourceHandle(
 		resource="xsede.stampede",
 		cores=16,
 		walltime=30,

@@ -63,9 +63,9 @@ A complete look at our  pattern class,
 
 .. code-block:: python
 
-	class MyApp(BagofTasks):
+	class MyApp(PoE):
 		def __init__(self, stages, instances):
-			BagofTasks.__init__(self, stages, instances)
+			PoE.__init__(self, stages, instances)
 
 
 		def stage_1(self,instance):

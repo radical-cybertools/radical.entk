@@ -53,7 +53,7 @@ You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
 tasks in the each stage of the pipeline can run in parallel::
 
-	cluster = SingleClusterEnvironment(
+	cluster = ResourceHandle(
 		resource="xsede.stampede",
 		cores=16,
 		walltime=30,
