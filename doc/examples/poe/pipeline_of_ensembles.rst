@@ -20,9 +20,9 @@ Run Locally
 
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
-						 set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-						 The format is ``mongodb://hostname:port``. Read more about it
-						 MongoDB in chapter :ref:`envpreparation`.
+		set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+		The format is ``mongodb://hostname:port``. Read more about it
+		MongoDB in chapter :ref:`envpreparation`.
 
 **Step 1:** View and download the example sources :ref:`below <example_source_pipeline_of_ensembles>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/examples/pipeline_of_ensembles.py``.
@@ -44,7 +44,7 @@ Run on a Remote Cluster
 By default, this Pipeline of Ensembles runs on one core on your local machine.
 
 .. literalinclude:: ../../../examples/pipeline_of_ensembles.py
-	:lines: 52-59
+	:lines: 64-74
 	:language: python
 	:dedent: 2
 
@@ -52,6 +52,9 @@ By default, this Pipeline of Ensembles runs on one core on your local machine.
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
 tasks in the each stage of the pipeline can run in parallel::
+
+.. code-block::
+	:language: python
 
 	cluster = ResourceHandle(
 		resource="xsede.stampede",

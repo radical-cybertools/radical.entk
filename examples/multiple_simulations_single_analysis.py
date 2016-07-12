@@ -67,6 +67,9 @@ if __name__ == "__main__":
 
 	try:
 
+		with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
+			config = json.load(data_file)
+
 		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
 		cluster = ResourceHandle(
