@@ -21,9 +21,9 @@ import radical.pilot
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
-from radical.ensemblemd.patterns.replica_exchange import Replica
-from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
+from radical.ensemblemd import ResourceHandle
+from radical.ensemblemd import Replica
+from radical.ensemblemd import EnsembleExchange
 
 #-------------------------------------------------------------------------------
 #
@@ -48,7 +48,7 @@ class ReplicaP(Replica):
 
 		super(ReplicaP, self).__init__(my_id)
 
-class RePattern(ReplicaExchange):
+class RePattern(EnsembleExchange):
 	"""In this class are specified details of RE simulation:
 		- initialization of replicas
 		- generation of input files
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
 		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
+		cluster = ResourceHandle(
 				resource=resource,
 				cores=1,
 				walltime=15,
