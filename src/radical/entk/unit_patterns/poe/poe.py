@@ -8,13 +8,18 @@ import pprint
 
 class PoE(ExecutionPattern):
 
-	def __init__(self, ensemble_size, pipeline_size, iterations = 1, type='unit', iterative = False):
+	def __init__(self, ensemble_size, pipeline_size, iterations = 1, type='unit', iterative = False, name=None):
 
 		self._ensemble_size = ensemble_size
 		self._pipeline_size = pipeline_size
 		self._type = type
 		self._total_iterations = iterations
 		self._iterative = iterative
+
+		if name!=None:
+			self._name = name
+		else:
+			self._name = "None"
 
 		# Internal parameters
 		self._next_stage = 1
@@ -106,46 +111,6 @@ class PoE(ExecutionPattern):
 	def state_change(self, value):
 		self._state_change = value
 	
-
-	def create_record(self):
-
-		for iter in range(1, self._total_iterations+1):
-			self._kernel_dict["iter_{0}".format(iter)] = dict()
-
-			for stage in range(1, self._pipeline_size+1):
-				self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
-
-				# Set kernel default status
-				self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
-
-				# Set available branches
-				if getattr(self,'branch_{0}'.format(stage), False):
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
-				else:
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
-		
-
-				# Create instance key/vals for each stage
-				if type(self._ensemble_size) == int:
-					instances = self._ensemble_size
-				elif type(self._ensemble_size) == list:
-					instances = self._ensemble_size[stage-1]
-
-				for inst in range(1, instances+1):
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-					#self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["status"] = None
-					self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
-
-
-
-		# Print empty dict to check structure					
-		#pprint.pprint(self._kernel_dict)
-
-
-	def get_record(self):
-		return self._kernel_dict
 
 	def get_stage(self, stage):
 

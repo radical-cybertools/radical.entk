@@ -24,6 +24,8 @@ class AppManager():
 		self._logger.info("Application Manager created")
 		self._reporter = self._logger.report
 
+		self._kernel_dict = dict()
+
 		# Uncomment once ExecutionPattern class is available
 		#self.sanity_check()
 
@@ -154,6 +156,7 @@ class AppManager():
 
 	def add_workload(self, pattern):
 		self._pattern = pattern
+		self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
 
 
 	def add_to_record(self, record, cus, iteration, stage):
@@ -170,11 +173,47 @@ class AppManager():
 		return record
 
 
+	def create_record(self, pattern_name, total_iterations, pipeline_size, ensemble_size):
+
+		pat_key = "pat_{0}".format(pattern_name)
+		self._kernel_dict[pat_key] = dict()
+		for iter in range(1, total_iterations+1):
+			self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
+
+			for stage in range(1, self._pipeline_size+1):
+				self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
+
+				# Set kernel default status
+				self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+
+				# Set available branches
+				if getattr(self,'branch_{0}'.format(stage), False):
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
+				else:
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
+		
+
+				# Create instance key/vals for each stage
+				if type(self._ensemble_size) == int:
+					instances = self._ensemble_size
+				elif type(self._ensemble_size) == list:
+					instances = self._ensemble_size[stage-1]
+
+				for inst in range(1, instances+1):
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
+					#self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["status"] = None
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
+
+	def get_record(self):
+		return self._kernel_dict[self._pattern]
+
 	def run(self, resource, task_manager):
 
 		# Create dictionary for logging
 		self._pattern.create_record()
-		record = self._pattern.get_record()
+		record = self.get_record(self._pattern)
 
 		if self._pattern.__class__.__base__ == PoE:
 	
