@@ -33,7 +33,7 @@ We create a resource handle in order to get access to a machine and acquire reso
 .. literalinclude:: scripts/get_started.py
 	:language: python
 	:dedent: 2
-	:lines: 36-46
+	:lines: 40-50
 
 Once created, you can now perform the following operations:
 

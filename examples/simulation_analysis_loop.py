@@ -15,7 +15,7 @@ from radical.ensemblemd import Kernel
 from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd import ResourceHandle
 
 # ------------------------------------------------------------------------------
 #
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
 		# Create a new resource handle with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
+		cluster = ResourceHandle(
 				resource=resource,
 				cores=1,
 				walltime=15,
