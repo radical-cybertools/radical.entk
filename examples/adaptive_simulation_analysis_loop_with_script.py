@@ -96,7 +96,7 @@ if __name__ == "__main__":
 				project=config[resource]['project'],
 				access_schema = config[resource]['schema'],
 				queue = config[resource]['queue'],
-				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc',
+				database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
 			)
 
 		# Allocate the resources. 
