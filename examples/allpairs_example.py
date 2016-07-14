@@ -23,9 +23,9 @@ class RandomAP(AllPairs):
        inherits from radical.ensemblemd.AllPairPattern, the abstract
        base class for all All Pairs applications.
     """
-    def __init__(self,set1elements, windowsize1, set2elements=None, windowsize2=None):
-        AllPairs.__init__(self, set1elements=set1elements,windowsize1=windowsize1,
-            set2elements=set2elements,windowsize2=windowsize2)
+    def __init__(self,set1elements, windowsize1, set1init, set2elements=None, windowsize2=None, set2init=False):
+        AllPairs.__init__(self, set1elements=set1elements,windowsize1=windowsize1, set1init=set1init
+            set2elements=set2elements,windowsize2=windowsize2, set2init=set2init)
 
 
     def set1element_initialization(self,element):
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
         # For example the set has 5 elements.
         ElementsSet1 = range(1,6)
-        randAP = RandomAP(set1elements=ElementsSet1,windowsize1=1)
+        randAP = RandomAP(set1elements=ElementsSet1,windowsize1=1,set1init=True)
 
         cluster.run(randAP)
 
