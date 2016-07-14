@@ -55,7 +55,7 @@ class PluginPoE(object):
 		self._manager = manager
 		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
-	def execute(self, record, iteration, stage):
+	def execute(self, record, pattern_name, iteration, stage):
 
 		def unit_state_cb (unit, state) :
 
@@ -86,8 +86,8 @@ class PluginPoE(object):
 				cud.arguments      	= rbound_kernel.arguments
 				cud.mpi            		= rbound_kernel.uses_mpi
 				cud.cores 		= rbound_kernel.cores
-				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_iter= iteration, cur_stage = stage, cur_task=inst)
-				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 
 				inst+=1
 
@@ -95,7 +95,10 @@ class PluginPoE(object):
 				self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
 			exec_cus = self._manager.submit_units(cus)
-			self._logger.info("Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage))
+			if pattern_name == "None":
+				self._logger.info("Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage))
+			else:
+				self._logger.info("Pattern {4}: Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage, pattern_name))
 
 			exec_uids = [cu.uid for cu in exec_cus]
 			self._logger.info("Waiting for completion of workload")

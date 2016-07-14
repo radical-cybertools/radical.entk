@@ -1,8 +1,9 @@
 from placeholders import resolve_placeholder_vars
 
 import os
+import radical.pilot as rp
 
-def get_input_data(kernel, record, cur_iter, cur_stage, cur_task):
+def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 
 	ip_list = []
 
@@ -18,7 +19,7 @@ def get_input_data(kernel, record, cur_iter, cur_stage, cur_task):
 
 		for i in range(0,len(kernel.upload_input_data)):
 			
-			var=resolve_placeholder_vars(record, cur_iter, cur_stage, cur_task, kernel.upload_input_data[i])
+			var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.upload_input_data[i])
 			
 			if len(var.split('>')) > 1:
 				temp = {
@@ -51,19 +52,19 @@ def get_input_data(kernel, record, cur_iter, cur_stage, cur_task):
 
 		for i in range(0,len(kernel.link_input_data)):
 			
-			var=resolve_placeholder_vars(record, cur_iter, cur_stage, cur_task, kernel.link_input_data[i])
+			var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.link_input_data[i])
 			
 			if len(var.split('>')) > 1:
 				temp = {
 						'source': var.split('>')[0].strip(),
 						'target': var.split('>')[1].strip(),
-						'action': radical.pilot.LINK
+						'action': rp.LINK
 					}
 			else:
 				temp = {
 						'source': var.split('>')[0].strip(),
 						'target': os.path.basename(var.split('>')[0].strip()),
-						'action': radical.pilot.LINK
+						'action': rp.LINK
 					}
 			data_in.append(temp)
 
@@ -86,19 +87,19 @@ def get_input_data(kernel, record, cur_iter, cur_stage, cur_task):
 		
 		for i in range(0,len(kernel.copy_input_data)):
 
-			var=resolve_placeholder_vars(record, cur_iter, cur_stage, cur_task, kernel.copy_input_data[i])
+			var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_input_data[i])
 
 			if len(var.split('>')) > 1:
 				temp = {
 						'source': var.split('>')[0].strip(),
 						'target': var.split('>')[1].strip(),
-						'action': radical.pilot.COPY
+						'action': rp.COPY
 					}
 			else:
 				temp = {
 						'source': var.split('>')[0].strip(),
 						'target': os.path.basename(var.split('>')[0].strip()),
-						'action': radical.pilot.COPY
+						'action': rp.COPY
 					}
 			data_in.append(temp)
 

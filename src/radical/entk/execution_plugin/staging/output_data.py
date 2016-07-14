@@ -2,7 +2,7 @@ from placeholders import resolve_placeholder_vars
 
 import os
 
-def get_output_data(kernel, record, cur_iter, cur_stage, cur_task):
+def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 
 	# OUTPUT DATA:
 	#------------------------------------------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ def get_output_data(kernel, record, cur_iter, cur_stage, cur_task):
 		else:
 			kernel.copy_output_data = [kernel.copy_output_data]
 		for i in range(0,len(kernel.copy_output_data)):
-			var=resolve_placeholder_vars(record, cur_iter, cur_stage, cur_task, kernel.copy_output_data[i])
+			var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_output_data[i])
 			if len(var.split('>')) > 1:
 				temp = {
 						'source': var.split('>')[0].strip(),
@@ -48,7 +48,7 @@ def get_output_data(kernel, record, cur_iter, cur_stage, cur_task):
 			kernel.download_output_data = [kernel.download_output_data]
 
 		for i in range(0,len(kernel.download_output_data)):
-			var=resolve_placeholder_vars(record, cur_iter, cur_stage, cur_task, kernel.download_output_data[i])
+			var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.download_output_data[i])
 			
 			if len(var.split('>')) > 1:
 				temp = {

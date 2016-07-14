@@ -159,14 +159,15 @@ class AppManager():
 		self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
 
 
-	def add_to_record(self, record, cus, iteration, stage):
+	def add_to_record(self, pattern_name, record, cus, iteration, stage):
 
 		inst=1
+		pat_key = "pat_{0}".format(pattern_name)
 		for cu in cus:
 
-			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] 	= cu.stdout
-			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] 	= cu.uid
-			record["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] 	= cu.working_directory
+			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
+			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
+			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
 
 			inst+=1
 
@@ -177,10 +178,11 @@ class AppManager():
 
 		pat_key = "pat_{0}".format(pattern_name)
 		self._kernel_dict[pat_key] = dict()
+
 		for iter in range(1, total_iterations+1):
 			self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
 
-			for stage in range(1, self._pipeline_size+1):
+			for stage in range(1, pipeline_size+1):
 				self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
 
 				# Set kernel default status
@@ -194,26 +196,24 @@ class AppManager():
 		
 
 				# Create instance key/vals for each stage
-				if type(self._ensemble_size) == int:
-					instances = self._ensemble_size
-				elif type(self._ensemble_size) == list:
-					instances = self._ensemble_size[stage-1]
+				if type(ensemble_size) == int:
+					instances = ensemble_size
+				elif type( ensemble_size) == list:
+					instances = ensemble_size[stage-1]
 
 				for inst in range(1, instances+1):
 					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
 					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
 					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-					#self._kernel_dict["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["status"] = None
 					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
 
 	def get_record(self):
-		return self._kernel_dict[self._pattern]
+		return self._kernel_dict
 
 	def run(self, resource, task_manager):
 
 		# Create dictionary for logging
-		self._pattern.create_record()
-		record = self.get_record(self._pattern)
+		record = self.get_record()
 
 		if self._pattern.__class__.__base__ == PoE:
 	
@@ -248,15 +248,15 @@ class AppManager():
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage)
-					cus = plugin.execute(record=record, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
+					cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
-					record = self.add_to_record(record=record, cus=cus, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+					record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
 					#print record
 					branch_function = None
 
 					# Execute branch if it exists
-					if (self._pattern.get_record()["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
+					if (self.get_record()["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
 						self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
 						branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
 						branch_function()

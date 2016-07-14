@@ -31,8 +31,6 @@ class PoE(ExecutionPattern):
 		# Perform sanity check -- perform before proceeding
 		self.sanity_check()
 
-		self._kernel_dict = dict()
-
 	def sanity_check(self):
 
 		# Check type errors
@@ -118,27 +116,6 @@ class PoE(ExecutionPattern):
 
 		if stage_kernel == None:
 			raise Exception("Pattern does not have stage_{0}".format(stage))
-
-		'''
-		if instance == None:
-
-			kernel_list = list()
-
-			# Create instance key/vals for each stage
-			if type(self._ensemble_size) == int:
-				instances = self._ensemble_size
-			elif type(self._ensemble_size) == list:
-				instances = self._ensemble_size[stage-1]
-
-
-			for inst in range(1, instances):
-
-				kernel_list.append(stage_kernel(inst))
-
-		else:
-
-			return stage_kernel(instance)
-		'''
 
 		return stage_kernel
 
