@@ -22,7 +22,7 @@ class AllPairs(ExecutionPattern):
     """
     #---------------------------------------------------------------------------
     #
-    def __init__(self, set1elements, windowsize1=1, set2elements=None, windowsize2=None):
+    def __init__(self, set1elements, windowsize1=1, set1init=False, set2elements=None, windowsize2=None, set2init=False):
         """Creates a new AllPairs object.
 
         **Arguments:**
@@ -53,6 +53,9 @@ class AllPairs(ExecutionPattern):
         self._set2elements = set2elements
         self._windowsize1  = windowsize1
         self._windowsize2  = windowsize2
+        self._set1init     = set1init
+        self._set2init     = set2init
+        
         if set2elements == None :
             self._permutations = len(self._set1elements)*(len(self._set1elements)-1)/2
         else:

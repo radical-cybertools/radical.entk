@@ -53,8 +53,6 @@ class Plugin(PluginBase):
         def unit_state_cb(unit, state):
             # Callback function for the messages printed when
             # RADICAL_ENMD_VERBOSE = info
-            if state == radical.pilot.DONE:
-                self.get_logger().info("Task {0} state has finished succefully.".format(unit.uid))
 
             if state==radical.pilot.FAILED:
                 # In Case the pilot fails report Error messsage
@@ -91,7 +89,7 @@ class Plugin(PluginBase):
         else:
             NumElementsSet2 = len(pattern.set2_elements())
             self.get_logger().info("Number of Elements of the First Set {0}".format(NumElementsSet1))
-            self.get_logger().info("Number of Elements of the First Set {0}".format(NumElementsSet2))
+            self.get_logger().info("Number of Elements of the Second Set {0}".format(NumElementsSet2))
             self.get_logger().info("Executing All Pairs Pattern on the sets {0}-{1} with {2} cores on {3}"
             .format(pattern.set1_elements(),pattern.set2_elements(),resource._cores,resource._resource_key))
 
@@ -109,31 +107,32 @@ class Plugin(PluginBase):
         try:
             
             resource._umgr.register_callback(unit_state_cb)
-            CUDesc_list = list()
-            self.get_logger().info("Creating the Elements of Set 1")
+            if pattern._set1init:
+                CUDesc_list = list()
+                self.get_logger().info("Creating the Elements of Set 1")
             
-            for i in range(1,NumElementsSet1+1):
-                kernel = pattern.set1element_initialization(element=i)
-                link_out_data=kernel.get_arg("--filename=")
-                kernel._bind_to_resource(resource._resource_key)
-                self.get_logger().debug("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
-            #     #Output File Staging. The file after it is created in the folder of each CU, is moved to the folder defined in
-            #     #the start of the script
-                OUTPUT_FILE           = {'source':link_out_data,
-                                         'target':os.path.join(STAGING_AREA,link_out_data),
-                                         'action':radical.pilot.LINK}
-                cudesc                = radical.pilot.ComputeUnitDescription()
-                cudesc.pre_exec       = kernel._cu_def_pre_exec
-                cudesc.executable     = kernel._cu_def_executable
-                cudesc.arguments      = kernel.arguments
-                cudesc.mpi            = kernel.uses_mpi
-                cudesc.output_staging = [OUTPUT_FILE]
-                #self.get_logger().info("Target {0} to : {0}".format(kernel._cu_def_output_data))
-                self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Output: {4}".format(cudesc.pre_exec,
-                    kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.output_staging))
-                CUDesc_list.append(cudesc)
+                for i in range(1,NumElementsSet1+1):
+                    kernel = pattern.set1element_initialization(element=i)
+                    link_out_data=kernel.get_arg("--filename=")
+                    kernel._bind_to_resource(resource._resource_key)
+                    self.get_logger().debug("Kernels : {0}, Name: {1}".format(kernel,dir(kernel)))
+                #     #Output File Staging. The file after it is created in the folder of each CU, is moved to the folder defined in
+                #     #the start of the script
+                    OUTPUT_FILE           = {'source':link_out_data,
+                                             'target':os.path.join(STAGING_AREA,link_out_data),
+                                             'action':radical.pilot.LINK}
+                    cudesc                = radical.pilot.ComputeUnitDescription()
+                    cudesc.pre_exec       = kernel._cu_def_pre_exec
+                    cudesc.executable     = kernel._cu_def_executable
+                    cudesc.arguments      = kernel.arguments
+                    cudesc.mpi            = kernel.uses_mpi
+                    cudesc.output_staging = [OUTPUT_FILE]
+                    #self.get_logger().info("Target {0} to : {0}".format(kernel._cu_def_output_data))
+                    self.get_logger().debug("Pre Exec: {0} Executable: {1} Arguments: {2} MPI: {3} Output: {4}".format(cudesc.pre_exec,
+                        kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.output_staging))
+                    CUDesc_list.append(cudesc)
             
-            if pattern.set2_elements() is not None:
+            if pattern.set2_elements() is not None and pattern._set2init:
                 self.get_logger().info("Creating the Elements of Set 2")
             
                 for i in range(1,NumElementsSet2+1):
@@ -157,12 +156,14 @@ class Plugin(PluginBase):
                         kernel._cu_def_executable,cudesc.arguments,cudesc.mpi,cudesc.output_staging))
                     CUDesc_list.append(cudesc)
             
-            Units = resource._umgr.submit_units(CUDesc_list)
+
+            if len(CUDesc_list):
+                Units = resource._umgr.submit_units(CUDesc_list)
+                self._reporter.info("\nWaiting to create the elements of set 2 ")
+                uids = [cu.uid for cu in Units]
+                resource._umgr.wait_units(uids)
+                self._reporter.ok('>> done')
             
-            self._reporter.info("\nWaiting to create the elements of set 2 ")
-            uids = [cu.uid for cu in Units]
-            resource._umgr.wait_units(uids)
-            self._reporter.ok('>> done')
             CUDesc_list = list()
             all_cus = []
             
