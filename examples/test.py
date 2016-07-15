@@ -18,6 +18,10 @@ class Test(PoE):
 		k1.cores = 1
 		return k1
 
+	def monitor_1(self):
+
+		pass
+
 	def stage_2(self, instance):
 		k1 = Kernel(name="hello_module")
 		k1.arguments = ["--file=test.txt"]

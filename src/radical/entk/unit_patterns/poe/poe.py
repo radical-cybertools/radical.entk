@@ -4,6 +4,7 @@ __license__   = "MIT"
 
 from radical.entk.exceptions import *
 from radical.entk.execution_pattern import ExecutionPattern
+import radical.utils as ru
 import pprint
 
 class PoE(ExecutionPattern):
@@ -27,6 +28,12 @@ class PoE(ExecutionPattern):
 		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._state_change = False
+
+		# Pattern specific dict
+		self._pattern_dict = None
+
+		self._logger = ru.get_logger("radical.entk.pattern.poe")
+		self._reporter = self._logger.report
 
 		# Perform sanity check -- perform before proceeding
 		self.sanity_check()
@@ -90,15 +97,26 @@ class PoE(ExecutionPattern):
 	@property
 	def iterative(self):
 		return self._iterative
+
+	@property
+	def pattern_dict(self):
+		return self._pattern_dict
+
+	@pattern_dict.setter
+	def pattern_dict(self, record):
+		self._pattern_dict = record
+	
 	
 	
 	def set_next_stage(self, stage):
 
-		if stage <= self._pipeline_size:
-			self._next_stage = stage
-			self._state_change = True
-		else:
-			print 'Check next stage value'
+		try:
+			if stage <= self._pipeline_size:
+				self._next_stage = stage
+				self._state_change = True
+		
+		except Exception, ex:
+			self._logger.error("Could not set next stage, error: {0}".format(ex))
 			raise
 
 	@property
@@ -112,23 +130,58 @@ class PoE(ExecutionPattern):
 
 	def get_stage(self, stage):
 
-		stage_kernel = getattr(self, "stage_{0}".format(stage), None)
+		try:
+			stage_kernel = getattr(self, "stage_{0}".format(stage), None)
 
-		if stage_kernel == None:
-			raise Exception("Pattern does not have stage_{0}".format(stage))
+			if stage_kernel == None:
+				self._logger.error("Pattern does not have stage_{0}".format(stage))
+				raise
 
-		return stage_kernel
+			return stage_kernel
+
+		except Exception, ex:
+			self._logger.error("Could not get stage, error: {0}".format(ex))
+			raise
 
 
 	def get_branch(self, stage):
 
-		branch = getattr(self, "branch_{0}".format(stage), None)
+		try:
+			branch = getattr(self, "branch_{0}".format(stage), None)
 
-		if branch == None:
-			raise Exception("Pattern does not have branch_{0}".format(stage))
+			if branch == None:
+				self._logger.error("Pattern does not have branch_{0}".format(stage))
+				raise
+			
+			return branch
 
-		return branch
+		except Exception, ex:
+
+			self._logger.error("Could not get branch, error: {0}".format(ex))
+			raise
+
+
+	def get_monitor(self, stage):
+
+		try:
+			monitor = getattr(self, "monitor_{0}".format(stage), None)
+
+			if monitor == None:
+				self._logger.error("Pattern does not have monitor_{0}".format(stage))
+				raise			
+			return monitor
+
+		except Exception, ex:
+
+			self._logger.error("Could not get monitor, error: {0}".format(ex))
+			raise
+
 
 	def get_output(self, iteration, stage, instance):
+		return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
 
-		return self._kernel_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+	def get_file(self, iteration, stage, instance, filename):
+		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+		file_url = directory + '/' + filename
+
+		return file_url

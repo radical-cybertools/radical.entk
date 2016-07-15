@@ -77,11 +77,17 @@ class AppManager():
 
 	def list_kernels(self):
 
-		registered_kernels = list()
-		for item in self._loaded_kernels:
-			registered_kernels.append(item().name)
+		try:
+			registered_kernels = list()
+			for item in self._loaded_kernels:
+				registered_kernels.append(item().name)
 
-		return registered_kernels
+			return registered_kernels
+
+		except Exception, ex:
+
+			self._logger.error("Could not list kernels: {0}".format(ex))
+			raise
 
 
 	def save(self, pattern):
@@ -156,129 +162,162 @@ class AppManager():
 
 	def add_workload(self, pattern):
 		self._pattern = pattern
-		self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
+		try:
+			self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
+		except Exception, ex:
+			self._logger.error("Create new record function call for added pattern failed, error : {0}".format(ex))
+			raise
 
 
 	def add_to_record(self, pattern_name, record, cus, iteration, stage):
 
-		inst=1
-		pat_key = "pat_{0}".format(pattern_name)
-		for cu in cus:
+		try:
+			inst=1
+			pat_key = "pat_{0}".format(pattern_name)
+			for cu in cus:
 
-			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
-			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
-			record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
 
-			inst+=1
+				inst+=1
 
-		return record
+			return record
+
+		except Exception, ex:
+			self._logger.error("Could not add new CU data to record, error: {0}".format(ex))
+			raise
 
 
 	def create_record(self, pattern_name, total_iterations, pipeline_size, ensemble_size):
 
-		pat_key = "pat_{0}".format(pattern_name)
-		self._kernel_dict[pat_key] = dict()
 
-		for iter in range(1, total_iterations+1):
-			self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
+		try:
+			pat_key = "pat_{0}".format(pattern_name)
+			self._kernel_dict[pat_key] = dict()
 
-			for stage in range(1, pipeline_size+1):
-				self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
+			for iter in range(1, total_iterations+1):
+				self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
 
-				# Set kernel default status
-				self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+				for stage in range(1, pipeline_size+1):
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
 
-				# Set available branches
-				if getattr(self,'branch_{0}'.format(stage), False):
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
-				else:
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
+					# Set kernel default status
+					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+
+					# Set available branches
+					if getattr(self,'branch_{0}'.format(stage), False):
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
+					else:
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
 		
+					# Create instance key/vals for each stage
+					if type(ensemble_size) == int:
+						instances = ensemble_size
+					elif type( ensemble_size) == list:
+						instances = ensemble_size[stage-1]
 
-				# Create instance key/vals for each stage
-				if type(ensemble_size) == int:
-					instances = ensemble_size
-				elif type( ensemble_size) == list:
-					instances = ensemble_size[stage-1]
+					for inst in range(1, instances+1):
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
+						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
 
-				for inst in range(1, instances+1):
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
+		except Exception, ex:
+
+			self._logger.error("New record creation failed, error: {0}".format(ex))
+			raise
+
 
 	def get_record(self):
 		return self._kernel_dict
 
 	def run(self, resource, task_manager):
 
-		# Create dictionary for logging
-		record = self.get_record()
+		try:
+			# Create dictionary for logging
+			record = self.get_record()
 
-		if self._pattern.__class__.__base__ == PoE:
+			if self._pattern.__class__.__base__ == PoE:
 	
-			# Based on the execution pattern, the app manager should choose the execution plugin
-			from radical.entk.execution_plugin.poe import PluginPoE
+				# Based on the execution pattern, the app manager should choose the execution plugin
+				try:
+					from radical.entk.execution_plugin.poe import PluginPoE
 
-			plugin = PluginPoE()
-			plugin.register_resource(resource = resource)
-			plugin.add_manager(task_manager)
+					plugin = PluginPoE()				
+					plugin.register_resource(resource = resource)
+					plugin.add_manager(task_manager)
 
-			# Submit kernels stage by stage to execution plugin
-			while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
+				except Exception, ex:
+					self._logger.error("Plugin setup failed, error: {0}".format(ex))
+
+
+				try:
+					# Submit kernels stage by stage to execution plugin
+					while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
 			
-				#for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
-				while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
+						#for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
+						while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
 
-					# Get kernel from execution pattern
-					stage = self._pattern.get_stage(stage=self._pattern.next_stage)
-					list_kernels_stage = list()
+							# Get kernel from execution pattern
+							stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
+							list_kernels_stage = list()
 
-					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-					# Create instance key/vals for each stage
-					if type(self._pattern.ensemble_size) == int:
-						instances = self._pattern.ensemble_size
-					elif type(self._pattern.ensemble_size) == list:
-						instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
+							# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
+							# Create instance key/vals for each stage
+							if type(self._pattern.ensemble_size) == int:
+								instances = self._pattern.ensemble_size
+							elif type(self._pattern.ensemble_size) == list:
+								instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
-					for inst in range(1, instances+1):
-						list_kernels_stage.append(self.validate_kernel(stage(inst)))
+							for inst in range(1, instances+1):
+								list_kernels_stage.append(self.validate_kernel(stage(inst)))
 
 
-					# Pass resource-unbound kernels to execution plugin
-					#print len(list_kernels_stage)
-					plugin.set_workload(kernels=list_kernels_stage)
-					cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
+							# Pass resource-unbound kernels to execution plugin
+							#print len(list_kernels_stage)
+							plugin.set_workload(kernels=list_kernels_stage)
+							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
-					record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+							# Update record
+							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
-					#print record
-					branch_function = None
+							# Update pattern specific dict
+							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]							
 
-					# Execute branch if it exists
-					if (self.get_record()["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
-						self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
-						branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
-						branch_function()
+							#print record
+							branch_function = None
 
-					#print self._pattern.state_change
+							# Execute branch if it exists
+							if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
+								self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
+								branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
+								branch_function()
 
-					if (self._pattern.state_change==True):
-						pass
-					else:
-						self._pattern.next_stage+=1
+							#print self._pattern.state_change
+							if (self._pattern.state_change==True):
+								pass
+							else:
+								self._pattern.next_stage+=1
 
-					self._pattern.state_change = False
+							self._pattern.state_change = False
 
-					# Terminate execution
-					if self._pattern.next_stage == 0:
-						self._logger.info("Branching function has set termination condition -- terminating")
-						break
-
+							# Terminate execution
+							if self._pattern.next_stage == 0:
+								self._logger.info("Branching function has set termination condition -- terminating")
+								break
 					
 
-				# Terminate execution
-				if self._pattern.next_stage == 0:
-					break
+						# Terminate execution
+						if self._pattern.next_stage == 0:
+							break
 
-				self._pattern.cur_iteration+=1
+						self._pattern.cur_iteration+=1
+
+				except Exception, ex:
+					self._logger.error("Workload submission failed, error: {0}".format(ex))
+					raise
+
+		except Exception, ex:
+			self._logger.error("Pattern PoE execution failed, error: {0}".format(ex))
+			raise
