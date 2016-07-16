@@ -242,11 +242,12 @@ if __name__ == "__main__":
 		# run RE simulation
 		cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_1")
 
-		cluster.deallocate()
-		
-
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
 
+	try:
+		cluster.deallocate()
+	except:
+		pass

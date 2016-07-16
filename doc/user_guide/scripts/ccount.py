@@ -92,17 +92,21 @@ if __name__ == "__main__":
 
 		cluster.run(ccount)
 
-
-		# Deallocate the resources. 
-		cluster.deallocate()
-
-		# Print the checksums
-		print "\nResulting checksums:"
-		import glob
-		for result in glob.glob("cfreqs-*.sha1"):
-			print "  * {0}".format(open(result, "r").readline().strip())
-
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
+
+	try:
+
+		# Deallocate the resources. 
+		cluster.deallocate()
+
+	except:
+		pass
+
+	# Print the checksums
+	print "\nResulting checksums:"
+	import glob
+	for result in glob.glob("cfreqs-*.sha1"):
+		print "  * {0}".format(open(result, "r").readline().strip())

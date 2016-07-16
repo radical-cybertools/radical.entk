@@ -85,7 +85,7 @@ needs to execute. We use the kernels to define ``what to do`` in the first stage
 .. code-block:: python
 		
 	k = Kernel(name="misc.hello")
-	k.arguments = ["--file=output_{0}.txt".format(instance)]
+	k.arguments = ["--file=output.txt"]
 
 
 We use the kernel ``misc.hello`` already predefined in EnsembleMD. This kernel creates a file (if it does not exist already) with the name as defined in the argument and prints a **Hello World** within it. 

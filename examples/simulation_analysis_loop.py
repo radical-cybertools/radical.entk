@@ -120,22 +120,24 @@ if __name__ == "__main__":
 		randomsa = RandomSA(maxiterations=1, simulation_instances=16, analysis_instances=16)
 
 		cluster.run(randomsa)
-		
-
-		cluster.deallocate()
-
-
-		# After execution has finished, we print some statistical information
-		# extracted from the analysis results that were transferred back.
-		for it in range(1, randomsa.iterations+1):
-			print "\nIteration {0}".format(it)
-			ldists = []
-			for an in range(1, randomsa.analysis_instances+1):
-				ldists.append(int(open("analysis-{0}-{1}.dat".format(it, an), "r").readline()))
-			print "   * Levenshtein Distances: {0}".format(ldists)
-			print "   * Mean Levenshtein Distance: {0}".format(sum(ldists) / len(ldists))
-
+	
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
+
+	try:
+		cluster.deallocate()
+	except:
+		pass
+
+
+	# After execution has finished, we print some statistical information
+	# extracted from the analysis results that were transferred back.
+	for it in range(1, randomsa.iterations+1):
+		print "\nIteration {0}".format(it)
+		ldists = []
+		for an in range(1, randomsa.analysis_instances+1):
+			ldists.append(int(open("analysis-{0}-{1}.dat".format(it, an), "r").readline()))
+		print "   * Levenshtein Distances: {0}".format(ldists)
+		print "   * Mean Levenshtein Distance: {0}".format(sum(ldists) / len(ldists))

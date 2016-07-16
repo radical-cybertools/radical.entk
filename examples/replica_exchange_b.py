@@ -215,16 +215,14 @@ class RePattern(EnsembleExchange):
 
 		# checking if matrix columns has enough rows
 		if (len(matrix_columns) < dim):
-			print "Ensemble MD Toolkit Error: matrix_columns does not have \
-			enough rows."
+			print "Ensemble MD Toolkit Error: matrix_columns does not have enough rows."
 			sys.exit()
 
 		# checking if matrix columns rows have enough elements
 		index = 0
 		for row in matrix_columns:
 			if (len(row) < dim):
-				print "Ensemble MD Toolkit Error: matrix_columns row {0} does \
-				not have enough elements.".format(index)
+				print "Ensemble MD Toolkit Error: matrix_columns row {0} does not have enough elements.".format(index)
 				sys.exit()
 			index += 1
 
@@ -235,8 +233,7 @@ class RePattern(EnsembleExchange):
 				if (matrix_columns[r.id][i][pos].isdigit()):
 					swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
 				else:
-					print "Ensemble MD Toolkit Error: matrix_columns element \
-					({0},{1}) is not a number.".format(r.id, i)
+					print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
 					sys.exit()
 
 		return swap_matrix
@@ -354,11 +351,12 @@ if __name__ == "__main__":
 		# run RE simulation
 		cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-		cluster.deallocate()
-	
-		#-----------------------------------------------------------------------
-
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
+
+	try:
+		cluster.deallocate()
+	except:
+		pass

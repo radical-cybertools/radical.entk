@@ -88,9 +88,12 @@ if __name__ == "__main__":
 		for result in glob.glob("checksum*.sha1"):
 			print "  * {0}".format(open(result, "r").readline().strip())
 
-		cluster.deallocate()
-
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
+
+	try:
+		cluster.deallocate()
+	except:
+		pass
