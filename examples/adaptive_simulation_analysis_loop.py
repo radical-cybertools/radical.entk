@@ -38,6 +38,12 @@ from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import ResourceHandle
 
 # ------------------------------------------------------------------------------
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+	os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+
+# ------------------------------------------------------------------------------
 #
 class MSSA(SimulationAnalysisLoop):
 	"""MSMA exemplifies how the MSMA (Multiple-Simulations / Multiple-Analsysis)

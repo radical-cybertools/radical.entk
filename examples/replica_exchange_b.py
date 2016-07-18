@@ -24,6 +24,13 @@ from radical.ensemblemd import ResourceHandle
 from radical.ensemblemd import Replica
 from radical.ensemblemd import EnsembleExchange
 
+# ------------------------------------------------------------------------------
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+	os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+
+
 #-------------------------------------------------------------------------------
 #
 

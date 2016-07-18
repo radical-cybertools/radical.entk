@@ -7,9 +7,13 @@ from radical.ensemblemd import PoE
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import ResourceHandle
 
-
 # ------------------------------------------------------------------------------
-#
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+	os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+	
+
 class CharCount(PoE):
 	"""The CharCount class implements a three-stage BagofTasks. It inherits from
 		radical.ensemblemd.BagofTasks, the abstract base class for all BagofTaskss.

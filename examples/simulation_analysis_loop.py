@@ -18,6 +18,13 @@ from radical.ensemblemd import SimulationAnalysisLoop
 from radical.ensemblemd import ResourceHandle
 
 # ------------------------------------------------------------------------------
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+	os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+
+
+# ------------------------------------------------------------------------------
 #
 class RandomSA(SimulationAnalysisLoop):
 	"""RandomSA implements the simulation-analysis loop described above. It
