@@ -7,14 +7,14 @@
 			},
 
 	"xsede.stampede" : {
-				"project"  : "XSEDE_2016_1",
+				"project"  : "TG-TRA100001S",
 				"queue"    : "development",
 				"schema"   : "gsissh",
 				"cores": 16
 			},
 
 	"xsede.comet"  : {
-				"project"  : "XSEDE16Mats",
+				"project"  : "uic157",
 				"queue"    : "compute",
 				"schema"   : "gsissh",
 				"cores": 16
