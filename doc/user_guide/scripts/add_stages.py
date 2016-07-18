@@ -49,7 +49,7 @@ if __name__ == "__main__":
 		# number of cores and runtime.
 		cluster = ResourceHandle(
 				resource=resource,
-				cores=1,
+				cores=config[resource]["cores"],
 				walltime=15,
 				#username=None,
 

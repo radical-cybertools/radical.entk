@@ -2,18 +2,21 @@
 	"local.localhost" : {
 				"project"  : null,
 				"queue"    : null,
-				"schema"   : "local"
+				"schema"   : "local",
+				"cores": 2
 			},
 
 	"xsede.stampede" : {
 				"project"  : "TG-MCB090174",
 				"queue"    : "development",
-				"schema"   : "gsissh"
+				"schema"   : "gsissh",
+				"cores": 16
 			},
 
 	"xsede.comet"  : {
 				"project"  : "unc101",
 				"queue"    : "compute",
-				"schema"   : "gsissh"
+				"schema"   : "gsissh",
+				"cores": 16
 			}
 }

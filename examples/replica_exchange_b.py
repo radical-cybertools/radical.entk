@@ -96,8 +96,7 @@ class RePattern(EnsembleExchange):
 		try:
 			self.replicas+1
 		except:
-			print "Ensemble MD Toolkit Error:  Number of replicas must be \
-				   defined for pattern ReplicaExchange!"
+			print "Ensemble MD Toolkit Error:  Number of replicas must be defined for pattern ReplicaExchange!"
 			raise      
 
 		replicas = []
@@ -317,7 +316,7 @@ if __name__ == "__main__":
 		# number of cores and runtime.
 		cluster = ResourceHandle(
 				resource=resource,
-				cores=1,
+				cores=config[resource]["cores"],
 				walltime=15,
 				#username=None,
 
