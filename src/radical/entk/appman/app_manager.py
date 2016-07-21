@@ -4,6 +4,8 @@ __license__   = "MIT"
 
 from radical.entk.exceptions import *
 from radical.entk.kernel_plugins.kernel_base import KernelBase
+from radical.entk.kernel_plugins.kernel import Kernel
+from radical.entk.monitors.monitor import Monitor
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
 
@@ -261,6 +263,7 @@ class AppManager():
 
 							# Get kernel from execution pattern
 							stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
+
 							list_kernels_stage = list()
 
 							# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
@@ -270,13 +273,31 @@ class AppManager():
 							elif type(self._pattern.ensemble_size) == list:
 								instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
+							# Initialization
+							stage_monitor = None
+
 							for inst in range(1, instances+1):
-								list_kernels_stage.append(self.validate_kernel(stage(inst)))
+
+								stage_instance_return = stage(inst)
+
+								if type(stage_instance_return) == list:
+									if len(stage_instance_return) == 2:
+										for item in stage_instance_return:
+											if type(item) == Kernel:
+												stage_kernel = item
+											elif ((type(item) == Monitor) and stage_monitor == None):
+												stage_monitor = item
+									else:
+										stage_kernel = stage_instance_return[0]
+								else:
+									stage_kernel = stage_instance_return
+									
+								list_kernels_stage.append(self.validate_kernel(stage_kernel))
 
 
 							# Pass resource-unbound kernels to execution plugin
 							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=list_kernels_stage)
+							plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
 							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
 							# Update record

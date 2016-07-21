@@ -49,7 +49,11 @@ class Test(PoE):
 		#k1.link_input_data = []
 		#k1.copy_output_data = []
 		#k1.download_output_data = []
-		return k1
+
+		m1 = Monitor(name="yada", timeout=10)
+		m1.get_output = ['$INSTANCE_1/temp.txt','$INSTANCE_5/temp.txt']
+
+		return [k1,m1]
 
 	def stage_4(self, instance):
 		k1 = Kernel(name="echo")

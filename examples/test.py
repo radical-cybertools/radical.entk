@@ -2,31 +2,25 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.entk import PoE, AppManager, Kernel, ResourceHandle
+from radical.entk import PoE, AppManager, Kernel, ResourceHandle, Monitor
 
-from hello import hello_kernel
-
+#from hello import hello_kernel
+from sleep import sleep_kernel
 class Test(PoE):
 
 	def __init__(self, ensemble_size, pipeline_size, iterations):
 		super(Test,self).__init__(ensemble_size, pipeline_size, iterations)
 
 	def stage_1(self, instance):
-		k1 = Kernel(name="hello_module")
-		k1.arguments = ["--file=test.txt"]
+		k1 = Kernel(name="sleep_module")
+		k1.arguments = ["--duration=100"]
 		k1.upload_input_data = ["hello.py"]
 		k1.cores = 1
-		return k1
 
-	def monitor_1(self):
+		m1 = Monitor(name="ping_output", timeout=30)
+		m1.executable = "script"
+		return [k1,m1]
 
-		pass
-
-	def stage_2(self, instance):
-		k1 = Kernel(name="hello_module")
-		k1.arguments = ["--file=test.txt"]
-		k1.cores = 1
-		return k1
 	
 
 if __name__ == '__main__':
@@ -35,7 +29,7 @@ if __name__ == '__main__':
 
 	app = AppManager(name='firstapp')
 
-	app.register_kernels(hello_kernel)
+	app.register_kernels(sleep_kernel)
 	app.add_workload(pipe)
 	
 	res = ResourceHandle(resource="local.localhost",

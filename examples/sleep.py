@@ -15,17 +15,12 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-			"name":         "tryme",
+			"name":         "sleep_module",
 			"description":  "Writes Hello World to a file",
-			"arguments":   {"--file=":     
+			"arguments":   {"--duration=":     
 						{
 							"mandatory": True,
 							"description": "The input file."
-						},
-					"--text=":
-						{
-							"mandatory": True,
-							"description": "Prints 'this is ' + text"
 						},
 					},
 			"machine_configs": 
@@ -33,7 +28,7 @@ _KERNEL_INFO = {
 				"*": {
 					"environment"   : None,
 					"pre_exec"      : None,
-					"executable"    : "/bin/bash",
+					"executable"    : "/bin/sleep",
 					"uses_mpi"      : False
 				}
 			}
@@ -42,14 +37,14 @@ _KERNEL_INFO = {
 
 # ------------------------------------------------------------------------------
 # 
-class tryme_kernel(KernelBase):
+class sleep_kernel(KernelBase):
 
 	# --------------------------------------------------------------------------
 	#
 	def __init__(self):
 		"""Le constructor.
 		"""
-		super(tryme_kernel, self).__init__(_KERNEL_INFO)
+		super(sleep_kernel, self).__init__(_KERNEL_INFO)
 
 
 	# --------------------------------------------------------------------------
@@ -67,7 +62,7 @@ class tryme_kernel(KernelBase):
 		cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
 		executable = cfg['executable']
-		arguments  = ['-l', '-c', "/bin/echo 'This is {1}' >> {0}".format(self.get_arg("--file="), self.get_arg("--text="))]
+		arguments  = ['{0}'.format(self.get_arg("--duration="))]
 
 		self._executable  = executable
 		self._arguments   = arguments

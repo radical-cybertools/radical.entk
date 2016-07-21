@@ -18,6 +18,7 @@ class PluginPoE(object):
 		self._executable_workload = list()
 		self._resource = None
 		self._manager = None
+		self._monitor = None
 
 		self._logger = ru.get_logger("radical.entk.plugin.poe")
 		self._reporter = self._logger.report
@@ -33,7 +34,7 @@ class PluginPoE(object):
 		return self._resource
 
 
-	def set_workload(self, kernels):
+	def set_workload(self, kernels, monitor=None):
 
 		if type(kernels) != list:
 			self._executable_workload = [kernels]
@@ -41,6 +42,10 @@ class PluginPoE(object):
 			self._executable_workload = kernels
 
 		self._logger.info("New workload assigned to plugin for execution")
+
+		self._monitor = monitor
+		if monitor is not None:
+			self._logger.info("Monitor for workload assigned")
 
 	def add_workload(self, kernels):
 
@@ -54,6 +59,10 @@ class PluginPoE(object):
 	def add_manager(self, manager):
 		self._manager = manager
 		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
+
+
+	def execute_monitor(self):
+		self._logger.info("Executing monitor...")
 
 	def execute(self, record, pattern_name, iteration, stage):
 
@@ -95,14 +104,33 @@ class PluginPoE(object):
 				self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
 			exec_cus = self._manager.submit_units(cus)
+			copy_exec_cus_A = exec_cus
+			copy_exec_cus_B = exec_cus
+
 			if pattern_name == "None":
 				self._logger.info("Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage))
 			else:
 				self._logger.info("Pattern {4}: Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage, pattern_name))
 
-			exec_uids = [cu.uid for cu in exec_cus]
+			
 			self._logger.info("Waiting for completion of workload")
-			self._manager.wait_units(exec_uids)
+
+			if self._monitor is not None:
+				while len(copy_exec_cus_A) > 0 :
+					print len(copy_exec_cus_A)
+					exec_uids = [cu.uid for cu in copy_exec_cus_A]
+					self._manager.wait_units(exec_uids, timeout=self._monitor.timeout)
+					for unit in copy_exec_cus_A:
+						if (unit.state == rp.DONE)or(unit.state == rp.FAILED)or(unit.state == rp.CANCELED):
+							copy_exec_cus_B.remove(unit)
+					copy_exec_cus_A = copy_exec_cus_B
+
+					if len(copy_exec_cus_A) > 0:
+						cancel_units = self.execute_monitor()
+					
+			else:
+				exec_uids = [cu.uid for cu in exec_cus]
+				self._manager.wait_units(exec_uids)
 
 			for unit in exec_cus:
 				if unit.state != rp.DONE:
