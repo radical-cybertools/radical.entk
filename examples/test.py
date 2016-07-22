@@ -25,7 +25,7 @@ class Test(PoE):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=16, pipeline_size=2, iterations=1)
+	pipe = Test(ensemble_size=2, pipeline_size=1, iterations=1)
 
 	app = AppManager(name='firstapp')
 
