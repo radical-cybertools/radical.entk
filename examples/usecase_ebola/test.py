@@ -2,15 +2,15 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.entk import PoE, AppManager, Kernel, ResourceHandle
+from radical.entk import EoP, AppManager, Kernel, ResourceHandle, Monitor
 
 from echo import echo_kernel
 from randval import rand_kernel
 
-class Test(PoE):
+class Test(EoP):
 
-	def __init__(self, ensemble_size, pipeline_size, iterations):
-		super(Test,self).__init__(ensemble_size, pipeline_size, iterations)
+	def __init__(self, ensemble_size, pipeline_size):
+		super(Test,self).__init__(ensemble_size, pipeline_size)
 
 	def stage_1(self, instance):
 		k1 = Kernel(name="echo")
@@ -117,25 +117,24 @@ class Test(PoE):
 		else:
 			pass
 
+	
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=[1,1,1,16,1,1], pipeline_size=6, iterations=1)
+	pipe = Test(ensemble_size=1, pipeline_size=6)
 
 	app = AppManager(name='firstapp')
 
 	app.register_kernels(echo_kernel)
 	app.register_kernels(rand_kernel)
-
-	#print app.list_kernels()
 	app.add_workload(pipe)
 	
 	res = ResourceHandle(resource="local.localhost",
 				cores=1,
-	#			username='vivek91',
-	#			project = 'TG-MCB090174',
-	#			queue='development',
-				walltime=5,
+				#username='vivek91',
+				#project = 'TG-MCB090174',
+				#queue='development',
+				walltime=10,
 				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
 	res.allocate(wait=True)
 

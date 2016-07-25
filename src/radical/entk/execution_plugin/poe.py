@@ -6,6 +6,9 @@ __license__   = "MIT"
 from plugin_base import PluginBase
 import radical.pilot as rp
 import radical.utils as ru
+
+import saga
+
 _plugin_info = {
 			'name': 'poe',
 			'type': 'static'
@@ -61,8 +64,14 @@ class PluginPoE(object):
 		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
-	def execute_monitor(self):
+	def execute_monitor(self,record, cur_pat, cur_iter, cur_stage, cur_task):
 		self._logger.info("Executing monitor...")
+		if self._monitor.download_input_data is not None:
+			input_data_list = get_input_data(self._monitor, record=record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=cur_task)
+
+			remote_dir = saga.filesystem.Directory()
+
+
 
 	def execute(self, record, pattern_name, iteration, stage):
 
@@ -126,7 +135,7 @@ class PluginPoE(object):
 					copy_exec_cus_A = copy_exec_cus_B
 
 					if len(copy_exec_cus_A) > 0:
-						cancel_units = self.execute_monitor()
+						cancel_units = self.execute_monitor(record=record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 					
 			else:
 				exec_uids = [cu.uid for cu in exec_cus]

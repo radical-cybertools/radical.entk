@@ -8,6 +8,7 @@ from radical.entk.kernel_plugins.kernel import Kernel
 from radical.entk.monitors.monitor import Monitor
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
+from radical.entk.unit_patterns.eop.eop import EoP
 
 import radical.utils as ru
 import sys
@@ -302,6 +303,7 @@ class AppManager():
 
 							# Update record
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+							print record
 
 							# Update pattern specific dict
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]							
@@ -338,6 +340,35 @@ class AppManager():
 				except Exception, ex:
 					self._logger.error("Workload submission failed, error: {0}".format(ex))
 					raise
+
+
+			# App Manager actions for EoP pattern
+			if self._pattern.__class__.__base__ == EoP:
+	
+				# Based on the execution pattern, the app manager should choose the execution plugin
+				try:
+					from radical.entk.execution_plugin.eop import PluginEoP
+
+					plugin = PluginEoP()				
+					plugin.register_resource(resource = resource)
+					plugin.add_manager(task_manager)
+
+				except Exception, ex:
+					self._logger.error("Plugin setup failed, error: {0}".format(ex))
+
+
+				try:
+
+					break_flag = False
+					while (not break_flag):
+
+						plugin.set_workload(pattern=self._pattern)
+						break_flag = plugin.execute(record=record)
+
+				except Exception, ex:
+					self._logger.error("Pattern execution failed, error: {0}".format(ex))
+					raise
+
 
 		except Exception, ex:
 			self._logger.error("Pattern PoE execution failed, error: {0}".format(ex))

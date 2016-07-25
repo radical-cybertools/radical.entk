@@ -5,17 +5,40 @@ __license__   = "MIT"
 from radical.entk.exceptions import *
 from radical.entk.execution_pattern import ExecutionPattern
 
+import radical.utils as ru
+
 class EoP(ExecutionPattern):
 
-	def __init__(self, ensemble_size, pipeline_size, type='unit', iteration = False):
+	def __init__(self, ensemble_size, pipeline_size, type='unit', iterations = False, name=None):
 
 		self._ensemble_size = ensemble_size
 		self._pipeline_size = pipeline_size
-		self._type = type
-		self._iteration = iteration
+		self._type = 'unit'
+		self._iterations = iterations
+		self._total_iterations = 1
+
+
+		if name!=None:
+			self._name = name
+		else:
+			self._name = "None"
+
+		# Internal parameters
+		self._next_stage = 1
+		self._cur_iteration = 1
+		self.kill_instances = None
+		self._pattern_status = 'New'
+		self._state_change = False
+
+		# Pattern specific dict
+		self._pattern_dict = None
+
+		self._logger = ru.get_logger("radical.entk.pattern.eop")
+		self._reporter = self._logger.report
 
 		# Perform sanity check -- perform before proceeding
 		self.sanity_check()
+
 
 
 	def sanity_check(self):
@@ -32,8 +55,8 @@ class EoP(ExecutionPattern):
 		if type(self._type) != str:
 			raise TypeError(expected_type=str, actual_type=type(self._type))		
 
-		if type(self._iteration) != bool:
-			raise TypeError(expected_type=bool, actual_type=type(self._iteration))
+		if type(self._iterations) != bool:
+			raise TypeError(expected_type=bool, actual_type=type(self._iterations))
 
 
 		# Check value errors
@@ -52,10 +75,122 @@ class EoP(ExecutionPattern):
 		return self._pipeline_size
 
 	@property
-	def iteration(self):
-		return self._iteration
+	def cur_iteration(self):
+		return self._cur_iteration
+
+	@property
+	def total_iterations(self):
+		return self._total_iterations
+	
 	
 	@property
 	def type(self):
 		return self._type
 	
+	@property
+	def name(self):
+		return self._name
+	
+
+	@property
+	def next_stage(self):
+		return self._next_stage
+	
+	@next_stage.setter
+	def next_stage(self, next_stage):
+		self._next_stage = next_stage
+	
+	@property
+	def type(self):
+		return self._type
+
+	#@property
+	#def iterative(self):
+	#	return self._iterative
+
+	@property
+	def pattern_dict(self):
+		return self._pattern_dict
+
+	@pattern_dict.setter
+	def pattern_dict(self, record):
+		self._pattern_dict = record
+	
+	
+	def set_next_stage(self, stage):
+
+		try:
+			if stage <= self._pipeline_size:
+				self._next_stage = stage
+				self._state_change = True
+		
+		except Exception, ex:
+			self._logger.error("Could not set next stage, error: {0}".format(ex))
+			raise
+
+	@property
+	def state_change(self):
+		return self._state_change
+
+	@state_change.setter
+	def state_change(self, value):
+		self._state_change = value
+	
+
+	def get_stage(self, stage):
+
+		try:
+			stage_kernel = getattr(self, "stage_{0}".format(stage), None)
+
+			if stage_kernel == None:
+				self._logger.error("Pattern does not have stage_{0}".format(stage))
+				raise
+
+			return stage_kernel
+
+		except Exception, ex:
+			self._logger.error("Could not get stage, error: {0}".format(ex))
+			raise
+
+
+	def get_branch(self, stage):
+
+		try:
+			branch = getattr(self, "branch_{0}".format(stage), None)
+
+			if branch == None:
+				self._logger.error("Pattern does not have branch_{0}".format(stage))
+				raise
+			
+			return branch
+
+		except Exception, ex:
+
+			self._logger.error("Could not get branch, error: {0}".format(ex))
+			raise
+
+
+	def get_monitor(self, stage):
+
+		try:
+			monitor = getattr(self, "monitor_{0}".format(stage), None)
+
+			if monitor == None:
+				self._logger.error("Pattern does not have monitor_{0}".format(stage))
+				raise			
+			return monitor
+
+		except Exception, ex:
+
+			self._logger.error("Could not get monitor, error: {0}".format(ex))
+			raise
+
+
+	def get_output(self, iteration, stage, instance):
+		return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+
+	def get_file(self, iteration, stage, instance, filename):
+		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+		file_url = directory + '/' + filename
+
+		return file_url

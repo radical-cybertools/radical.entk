@@ -6,6 +6,7 @@ from radical.entk import PoE, AppManager, Kernel, ResourceHandle, Monitor
 
 #from hello import hello_kernel
 from sleep import sleep_kernel
+
 class Test(PoE):
 
 	def __init__(self, ensemble_size, pipeline_size, iterations):
@@ -13,13 +14,16 @@ class Test(PoE):
 
 	def stage_1(self, instance):
 		k1 = Kernel(name="sleep_module")
-		k1.arguments = ["--duration=100"]
+		k1.arguments = ["--duration=10"]
 		k1.upload_input_data = ["hello.py"]
+		k1.download_output_data = ['hello.py > op.py']
 		k1.cores = 1
 
-		m1 = Monitor(name="ping_output", timeout=30)
-		m1.executable = "script"
-		return [k1,m1]
+		#m1 = Monitor(name="ping_output", timeout=30)
+		#m1.download_input_data = []
+		##m1.cancel_units = []
+		#return [k1,m1]
+		return k1
 
 	
 
@@ -32,11 +36,11 @@ if __name__ == '__main__':
 	app.register_kernels(sleep_kernel)
 	app.add_workload(pipe)
 	
-	res = ResourceHandle(resource="local.localhost",
+	res = ResourceHandle(resource="xsede.stampede",
 				cores=1,
-	#			username='vivek91',
-	#			project = 'TG-MCB090174',
-	#			queue='development',
+				username='vivek91',
+				project = 'TG-MCB090174',
+				queue='development',
 				walltime=5,
 				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
 	res.allocate(wait=True)

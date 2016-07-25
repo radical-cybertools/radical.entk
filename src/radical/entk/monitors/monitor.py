@@ -22,6 +22,7 @@ class Monitor(object):
 		
 		self._cancel_units = None
 		self._output_units = None
+		self._download_input_data = None
 
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 	@property
@@ -77,4 +78,13 @@ class Monitor(object):
 	def arguments(self, args):
 		self._arguments = args
 
+
+	@property
+	def download_input_data(self):
+		return self._download_input_data
+	
+
+	@download_input_data.setter
+	def download_input_data(self, data):
+		self._download_input_data = data
 
