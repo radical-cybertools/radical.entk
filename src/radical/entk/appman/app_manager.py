@@ -11,6 +11,7 @@ from radical.entk.unit_patterns.poe.poe import PoE
 from radical.entk.unit_patterns.eop.eop import EoP
 
 import radical.utils as ru
+import radical.pilot as rp
 import sys
 
 class AppManager():
@@ -235,6 +236,7 @@ class AppManager():
 	def get_record(self):
 		return self._kernel_dict
 
+
 	def run(self, resource, task_manager):
 
 		try:
@@ -252,7 +254,7 @@ class AppManager():
 					plugin.add_manager(task_manager)
 
 				except Exception, ex:
-					self._logger.error("Plugin setup failed, error: {0}".format(ex))
+					self._logger.error("PoE Plugin setup failed, error: {0}".format(ex))
 
 
 				try:
@@ -338,7 +340,7 @@ class AppManager():
 						self._pattern.cur_iteration+=1
 
 				except Exception, ex:
-					self._logger.error("Workload submission failed, error: {0}".format(ex))
+					self._logger.error("PoE Workload submission failed, error: {0}".format(ex))
 					raise
 
 
@@ -352,6 +354,8 @@ class AppManager():
 					plugin = PluginEoP()				
 					plugin.register_resource(resource = resource)
 					plugin.add_manager(task_manager)
+					num_stages = self._pattern.pipeline_size
+					num_tasks = self._pattern.ensemble_size
 
 				except Exception, ex:
 					self._logger.error("Plugin setup failed, error: {0}".format(ex))
@@ -359,17 +363,117 @@ class AppManager():
 
 				try:
 
-					break_flag = False
-					while (not break_flag):
+					def unit_state_cb (unit, state) :
 
-						plugin.set_workload(pattern=self._pattern)
-						break_flag = plugin.execute(record=record)
+						if state == rp.FAILED:
+							self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+							self._logger.error("Pattern execution FAILED.")
+							sys.exit(1)
+
+						if state == rp.DONE:
+
+							try:
+								print unit.name
+								cur_stage = int(unit.name.split('-')[1])
+								cur_task = int(unit.name.split('-')[3])
+								self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
+
+								#-----------------------------------------------------------------------
+								# Increment tasks list accordingly
+								if plugin.tot_fin_tasks[0] == 0:
+									plugin.tot_fin_tasks[0] = 1
+								else:
+									plugin.tot_fin_tasks[cur_stage-1]+=1
+
+									# Check if this is the last task of the stage
+									if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.pipeline_size:
+										self._logger.info('All tasks in stage {0} has finished'.format(cur_stage))
+
+
+								#cud = create_next_stage_cud(unit)
+								new_stage = cur_stage+1
+								new_task = cur_task
+
+								stage =	 self._pattern.get_stage(stage=new_stage)
+								stage_instance_return = stage(new_task)
+
+								stage_monitor = None
+
+								if type(stage_instance_return) == list:
+									if len(stage_instance_return) == 2:
+										for item in stage_instance_return:
+											if type(item) == Kernel:
+												stage_kernel = item
+											elif ((type(item) == Monitor) and stage_monitor == None):
+												stage_monitor = item
+									else:
+										stage_kernel = stage_instance_return[0]
+								else:
+									stage_kernel = stage_instance_return
+									
+								validated_kernel = self.validate_kernel(stage_kernel)
+
+								plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
+
+								if new_stage <= self._pattern.pipeline_size:
+									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=new_stage, instance=new_task)				
+									cus = plugin.execute_tasks(tasks=cud)
+
+							except Exception, ex:
+								self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
+								raise
+
+					#register callbacks
+					task_manager.register_callback(unit_state_cb)
+
+					# Get kernel from execution pattern
+					stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
+
+					list_kernels_stage = list()
+
+					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
+					# Create instance key/vals for each stage
+					if type(self._pattern.ensemble_size) == int:
+						instances = self._pattern.ensemble_size
+					elif type(self._pattern.ensemble_size) == list:
+						instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
+
+					# Initialization
+					stage_monitor = None
+
+					for inst in range(1, instances+1):
+
+						stage_instance_return = stage(inst)
+
+						if type(stage_instance_return) == list:
+							if len(stage_instance_return) == 2:
+								for item in stage_instance_return:
+									if type(item) == Kernel:
+										stage_kernel = item
+									elif ((type(item) == Monitor) and stage_monitor == None):
+										stage_monitor = item
+							else:
+								stage_kernel = stage_instance_return[0]
+						else:
+							stage_kernel = stage_instance_return
+									
+						list_kernels_stage.append(self.validate_kernel(stage_kernel))
+
+					# Pass resource-unbound kernels to execution plugin
+					#print len(list_kernels_stage)
+					plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
+					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+					cus = plugin.execute_tasks(tasks=cus)
+					self._logger.info('Submitted tasks')
+
+					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size)):
+						task_manager.wait_units() 
 
 				except Exception, ex:
-					self._logger.error("Pattern execution failed, error: {0}".format(ex))
+					self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
 					raise
 
 
 		except Exception, ex:
-			self._logger.error("Pattern PoE execution failed, error: {0}".format(ex))
+			self._logger.error("App manager failed at workload execution, error: {0}".format(ex))
 			raise

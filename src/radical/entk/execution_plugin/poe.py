@@ -126,6 +126,7 @@ class PluginPoE(object):
 
 			if self._monitor is not None:
 				while len(copy_exec_cus_A) > 0 :
+					
 					print len(copy_exec_cus_A)
 					exec_uids = [cu.uid for cu in copy_exec_cus_A]
 					self._manager.wait_units(exec_uids, timeout=self._monitor.timeout)

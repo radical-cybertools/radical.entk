@@ -38,10 +38,21 @@ class PluginEoP(object):
 	def get_resources(self):
 		return self._resource
 
+	@property
+	def tot_fin_tasks(self):
+		return self._tot_fin_tasks
+	
+	@tot_fin_tasks.setter
+	def tot_fin_tasks(self, val):
+		self._tot_fin_tasks = val
 
-	def set_workload(self, pattern, monitor=None):
+	def set_workload(self, kernels, monitor=None):
 
-		self._executable_workload = pattern
+		if type(kernels) != list:
+			self._executable_workload = [kernels]
+		else:
+			self._executable_workload = kernels
+
 		self._logger.info("New workload assigned to plugin for execution")
 
 		self._monitor = monitor
@@ -53,166 +64,91 @@ class PluginEoP(object):
 		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
-	def execute(self, record):
+	def create_tasks(self, record, pattern_name, iteration, stage, instance=None):
 
-
-		def unit_state_cb (unit, state) :
-
-			if state == rp.FAILED:
-				self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-				self._logger.error("Pattern execution FAILED.")
-				sys.exit(1)
-
-			if state == rp.DONE:
-
-				try:
-
-					cur_stage = int(unit.name.split('-')[1])
-					cur_task = int(unit.name.split('-')[3])
-					self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
-
-
-					#-----------------------------------------------------------------------
-					# Increment tasks list accordingly
-					if self.tot_fin_tasks[0] == 0:
-						self.tot_fin_tasks[0] = 1
-
-					else:
-
-						self.tot_fin_tasks[cur_stage-1]+=1
-
-						# Check if this is the last task of the stage
-						if self.tot_fin_tasks[cur_stage-1] == self._executable_workload.pipeline_size:
-							self._logger.info('All tasks in stage {0} has finished'.format(cur_stage))
-
-
-					cud = create_next_stage_cud(unit)
-					if cud is not None:
-						launch_next_stage(cud)
-
-				except Exception, ex:
-					self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
-					raise
-
-
-		# Main code
 		try:
-
-			self._manager.register_callback(unit_state_cb)
 
 			from staging.input_data import get_input_data
 			from staging.output_data import get_output_data
 
-			task_method = self.get_stage(stage=1)
+			if len(self._executable_workload) > 1:
 
-			cus = []
-			for task_instance in range(1, self._executable_workload.ensemble_size+1):
+				cuds = []
 
-				kernel = task_method(task_instance)
-				kernel._bind_to_resource(self._resource)
-				rbound_kernel = kernel
+				inst=1
 
-				self._logger.debug('Creating task {0} of stage 1'.format(task_instance))
+				for kernel in self._executable_workload:
 
-				cud = radical.pilot.ComputeUnitDescription()
-				cud.name = "stage-1-task-{0}".format(task_instance)
-
-				cud.pre_exec       	= rbound_kernel.pre_exec
-				cud.executable     	= rbound_kernel.executable
-				cud.arguments      	= rbound_kernel.arguments
-				cud.mpi            		= rbound_kernel.uses_mpi
-				cud.cores 		= rbound_kernel.cores
-
-				'''
-				cud.input_staging  	= get_input_data(rbound_kernel, 
-									record, 
-									cur_pat = self._executable_workload.name, 
-									cur_iter = self._executable_workload.cur_iteration, 
-									cur_stage = 1, 
-									cur_task= task_instance)
-
-				cud.output_staging 	= get_output_data(rbound_kernel, 
-									record, 
-									cur_pat = self._executable_workload.name, 
-									cur_iter= self._executable_workload.cur_iteration, 
-									cur_stage = 1, 
-									cur_task= task_instance)
-				'''
-
-				cus.append(cud)
-
-			exec_cus = self._manager.submit_units(cus)
-			self._logger.info('Submitted all tasks of stage 1')
-
-
-			#-----------------------------------------------------------------------
-			# Create next CU at the end of each CU
-			def create_next_stage_cud(unit):
-						
-				cur_stage = int(unit.name.split('-')[1])+1
-				cur_task = int(unit.name.split('-')[3])
-
-				if cur_stage <= num_stages:
-
-					if len(self.tot_fin_tasks) < cur_stage:
-						self.tot_fin_tasks.append(0)
-						self._logger.info('\nStarting submission of tasks in stage {0}'.format(cur_stage))				
-					
-					self._logger.debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
-
-					task_method = self.get_stage(stage=cur_stage)
-
-					kernel = task_method(cur_task)
 					kernel._bind_to_resource(self._resource)
 					rbound_kernel = kernel
-
-					cud = radical.pilot.ComputeUnitDescription()
-					cud.name = "stage-{0}-task-{1}".format(cur_stage,cur_task)
+					cud = rp.ComputeUnitDescription()
+					cud.name = "stage-{0}-task-{1}".format(stage, inst)
+					self._logger.debug('Creating task {0} of stage {1}'.format(stage, inst))
 
 					cud.pre_exec       	= rbound_kernel.pre_exec
 					cud.executable     	= rbound_kernel.executable
 					cud.arguments      	= rbound_kernel.arguments
 					cud.mpi            		= rbound_kernel.uses_mpi
 					cud.cores 		= rbound_kernel.cores
+					cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+					cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 
-					'''
-					cud.input_staging  	= get_input_data(rbound_kernel, 
-									record, 
-									cur_pat = self._executable_workload.name, 
-									cur_iter = self._executable_workload.cur_iteration, 
-									cur_stage = cur_stage, 
-									cur_task= cur_task)
+					inst+=1
 
-					cud.output_staging 	= get_output_data(rbound_kernel, 
-									record, 
-									cur_pat = self._executable_workload.name, 
-									cur_iter= self._executable_workload.cur_iteration, 
-									cur_stage = cur_stage, 
-									cur_task= cur_task)
-					'''
+					cuds.append(cud)
+					self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
-					return cud
+				return cuds
 
-				else:
-					return None
+			else:
 
-			#-----------------------------------------------------------------------
+				kernel = self._executable_workload[0]
 
-			#-----------------------------------------------------------------------
-			# Launch the CU of the next stage
-			def launch_next_stage(cud):
+				cur_stage = stage
+				cur_task = instance
 
-				cur_stage = int(cud.name.split('-')[1])
-				cur_task = int(cud.name.split('-')[3])
-				self._logger.info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
-				task = self._manager.submit_units(cud)
-			#-----------------------------------------------------------------------
+				if len(self._tot_fin_tasks) < cur_stage:
+					self._tot_fin_tasks.append(0)
+					self._logger.info('\nStarting submission of tasks in stage {0}'.format(cur_stage))				
+					
+				self._logger.debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
-			#-----------------------------------------------------------------------
-			# Wait for all tasks to finish
-			while(sum(self.tot_fin_tasks)!=(self._executable_workload.pipeline_size*self._executable_workload.ensemble_size)):
-				self._manager.wait_units() 
+				kernel._bind_to_resource(self._resource)
+				rbound_kernel = kernel
+
+				cud = rp.ComputeUnitDescription()
+				cud.name = "stage-{0}-task-{1}".format(cur_stage,cur_task)
+
+				cud.pre_exec       	= rbound_kernel.pre_exec
+				cud.executable     	= rbound_kernel.executable
+				cud.arguments      	= rbound_kernel.arguments
+				cud.mpi            		= rbound_kernel.uses_mpi
+				cud.cores 		= rbound_kernel.cores
+				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = cur_stage, cur_task=cur_task)
+				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = cur_stage, cur_task=cur_task)
+
+				return cud
 
 		except Exception, ex:
-			self._logger("Execution failed at plugin, error: {0}".format(ex))
+			self._logger.error("Task creation failed, error: {0}".format(ex))
 			raise
+
+
+	def execute_tasks(self, tasks):
+
+		try:
+			if type(tasks) == list:
+				cur_stage = int(tasks[0].name.split('-')[1])
+				self._logger.info('Submitting all tasks of stage {0}'.format(cur_stage))
+				exec_cus = self._manager.submit_units(tasks)
+			else:
+				cur_stage = int(tasks.name.split('-')[1])
+				cur_task = int(tasks.name.split('-')[3])
+				self._logger.info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
+				task = self._manager.submit_units(tasks)
+
+		except Exception, ex:
+			self._logger.error("Could not execute tasks, error : {1}".format(ex))
+			raise
+
+

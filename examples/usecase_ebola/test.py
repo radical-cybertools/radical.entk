@@ -121,7 +121,7 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=1, pipeline_size=6)
+	pipe = Test(ensemble_size=2, pipeline_size=2)
 
 	app = AppManager(name='firstapp')
 
