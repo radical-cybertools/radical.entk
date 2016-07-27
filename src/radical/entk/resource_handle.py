@@ -129,7 +129,7 @@ class ResourceHandle(object):
 		self.get_logger().info("Allocation process on resource:{0} started".format(self._resource_key))
 
 		# Here we start the pilot(s).
-		self.get_logger().info('EnsembleMD (%s)' % version)
+		self.get_logger().info('Ensemble Toolkit (%s)' % version)
 		#self.get_logger().report('Starting Allocation')
 
 		# Give priority to mongo url via env variable

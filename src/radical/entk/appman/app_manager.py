@@ -373,49 +373,45 @@ class AppManager():
 						if state == rp.DONE:
 
 							try:
-								print unit.name
+
 								cur_stage = int(unit.name.split('-')[1])
 								cur_task = int(unit.name.split('-')[3])
+								new_stage = cur_stage+1
+								new_task = cur_task
+
 								self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
 
 								#-----------------------------------------------------------------------
 								# Increment tasks list accordingly
-								if plugin.tot_fin_tasks[0] == 0:
-									plugin.tot_fin_tasks[0] = 1
-								else:
-									plugin.tot_fin_tasks[cur_stage-1]+=1
+								plugin.tot_fin_tasks[cur_stage-1]+=1
 
-									# Check if this is the last task of the stage
-									if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.pipeline_size:
-										self._logger.info('All tasks in stage {0} has finished'.format(cur_stage))
+								# Check if this is the last task of the stage
+								if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
+									self._logger.info('All tasks in stage {0} have finished'.format(cur_stage))
 
-
-								#cud = create_next_stage_cud(unit)
-								new_stage = cur_stage+1
-								new_task = cur_task
-
-								stage =	 self._pattern.get_stage(stage=new_stage)
-								stage_instance_return = stage(new_task)
-
-								stage_monitor = None
-
-								if type(stage_instance_return) == list:
-									if len(stage_instance_return) == 2:
-										for item in stage_instance_return:
-											if type(item) == Kernel:
-												stage_kernel = item
-											elif ((type(item) == Monitor) and stage_monitor == None):
-												stage_monitor = item
-									else:
-										stage_kernel = stage_instance_return[0]
-								else:
-									stage_kernel = stage_instance_return
-									
-								validated_kernel = self.validate_kernel(stage_kernel)
-
-								plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
 
 								if new_stage <= self._pattern.pipeline_size:
+								
+									stage =	 self._pattern.get_stage(stage=new_stage)
+									stage_instance_return = stage(new_task)
+
+									stage_monitor = None
+
+									if type(stage_instance_return) == list:
+										if len(stage_instance_return) == 2:
+											for item in stage_instance_return:
+												if type(item) == Kernel:
+													stage_kernel = item
+												elif ((type(item) == Monitor) and stage_monitor == None):
+													stage_monitor = item
+										else:
+											stage_kernel = stage_instance_return[0]
+									else:
+										stage_kernel = stage_instance_return
+									
+									validated_kernel = self.validate_kernel(stage_kernel)
+
+									plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
 									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=new_stage, instance=new_task)				
 									cus = plugin.execute_tasks(tasks=cud)
 
@@ -464,7 +460,6 @@ class AppManager():
 					plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
 					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 					cus = plugin.execute_tasks(tasks=cus)
-					self._logger.info('Submitted tasks')
 
 					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size)):
 						task_manager.wait_units() 
