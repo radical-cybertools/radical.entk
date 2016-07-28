@@ -216,7 +216,7 @@ class AppManager():
 					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
 
 					# Set available branches
-					if getattr(self,'branch_{0}'.format(stage), False):
+					if getattr(self._pattern,'branch_{0}'.format(stage), False):
 						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
 					else:
 						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
@@ -313,8 +313,6 @@ class AppManager():
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 							print record
 
-							# Update pattern specific dict
-							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]							
 
 							#print record
 							branch_function = None
@@ -382,27 +380,52 @@ class AppManager():
 
 								cur_stage = int(unit.name.split('-')[1])
 								cur_task = int(unit.name.split('-')[3])
-								new_stage = cur_stage+1
-								new_task = cur_task
 
 								record=self.get_record()
 
 								self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
-								record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
-
 								#-----------------------------------------------------------------------
 								# Increment tasks list accordingly
 								plugin.tot_fin_tasks[cur_stage-1]+=1
+
+								record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
+
+								# Check for branch function for current stage
+								branch_function = None
+
+								# Execute branch if it exists
+								if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(cur_stage)]["branch"]):
+									self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
+									branch_function = self._pattern.get_branch(stage=cur_stage)
+									branch_function(instance=cur_task)								
+
+								# Check if next stage was changed by branching function
+								if (self._pattern.state_change==True):
+									if self._pattern.new_stage !=0:
+										self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
+									else:
+										self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+										
+									self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
+								else:
+									self._pattern.next_stage[cur_task-1] +=1
+
+								self._pattern.state_change = False
+								self._pattern.new_stage = None
+
+								# Terminate execution
+								if self._pattern.next_stage[cur_task-1] == 0:
+									self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
 
 								# Check if this is the last task of the stage
 								if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
 									self._logger.info('All tasks in stage {0} have finished'.format(cur_stage))
 
 
-								if new_stage <= self._pattern.pipeline_size:
+								if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
 								
-									stage =	 self._pattern.get_stage(stage=new_stage)
-									stage_instance_return = stage(new_task)
+									stage =	 self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+									stage_instance_return = stage(cur_task)
 
 									stage_monitor = None
 
@@ -421,7 +444,7 @@ class AppManager():
 									validated_kernel = self.validate_kernel(stage_kernel)
 
 									plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
-									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=new_stage, instance=new_task)				
+									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
 									cus = plugin.execute_tasks(tasks=cud)
 
 							except Exception, ex:
@@ -432,17 +455,15 @@ class AppManager():
 					task_manager.register_callback(unit_state_cb)
 
 					# Get kernel from execution pattern
-					stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
+					stage =	 self._pattern.get_stage(stage=1)
 
 					list_kernels_stage = list()
 
 					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 					# Create instance key/vals for each stage
-					if type(self._pattern.ensemble_size) == int:
-						instances = self._pattern.ensemble_size
-					elif type(self._pattern.ensemble_size) == list:
-						instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
-
+					
+					instances = self._pattern.ensemble_size
+					
 					# Initialization
 					stage_monitor = None
 
@@ -467,10 +488,10 @@ class AppManager():
 					# Pass resource-unbound kernels to execution plugin
 					#print len(list_kernels_stage)
 					plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
-					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 					cus = plugin.execute_tasks(tasks=cus)
 
-					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size)):
+					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
 						task_manager.wait_units() 
 
 				except Exception, ex:

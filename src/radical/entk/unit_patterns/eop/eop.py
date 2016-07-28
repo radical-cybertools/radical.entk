@@ -24,11 +24,20 @@ class EoP(ExecutionPattern):
 			self._name = "None"
 
 		# Internal parameters
-		self._next_stage = 1
+		self._next_stage = []
+		for i in range(1, ensemble_size+1):
+			self._next_stage.append(1)
+
+		self._incremented_tasks = []
+		for i in range(1, ensemble_size+1):
+			self._incremented_tasks.append(0)
+
 		self._cur_iteration = 1
 		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._state_change = False
+
+		self._new_stage = None
 
 		# Pattern specific dict
 		self._pattern_dict = None
@@ -121,12 +130,23 @@ class EoP(ExecutionPattern):
 
 		try:
 			if stage <= self._pipeline_size:
-				self._next_stage = stage
 				self._state_change = True
+				self._new_stage = stage
+			else:
+				self._logger.error("Assigned next stage greater than total pipeline size")
+				raise
 		
 		except Exception, ex:
 			self._logger.error("Could not set next stage, error: {0}".format(ex))
 			raise
+
+	@property
+	def new_stage(self):
+		return self._new_stage
+
+	@new_stage.setter
+	def new_stage(self, val):
+		self._new_stage = val
 
 	@property
 	def state_change(self):

@@ -25,6 +25,11 @@ class Test(EoP):
 		#k1.download_output_data = []
 		return k1
 
+	def branch_1(self, instance):
+		if instance == 1:
+			self.set_next_stage(0)
+
+
 	def stage_2(self, instance):
 		k1 = Kernel(name="echo")
 		k1.arguments = ["--file=output.txt","--text=build_systems"]
