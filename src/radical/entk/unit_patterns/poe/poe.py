@@ -28,6 +28,7 @@ class PoE(ExecutionPattern):
 		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._state_change = False
+		self._session_id = None
 
 		# Pattern specific dict
 		self._pattern_dict = None
@@ -73,6 +74,13 @@ class PoE(ExecutionPattern):
 	def total_iterations(self):
 		return self._total_iterations
 	
+	@property
+	def session_id(self):
+		return self._session_id
+	
+	@session_id.setter
+	def session_id(self, val):
+		self._session_id = val
 
 	@property
 	def cur_iteration(self):
@@ -178,10 +186,19 @@ class PoE(ExecutionPattern):
 
 
 	def get_output(self, iteration, stage, instance):
-		return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+		try:
+			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+		except Exception, ex:
+			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
+			raise
 
-	def get_file(self, iteration, stage, instance, filename):
+	def get_file(self, iteration, stage, instance, filename, new_name=None):
 		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
 		file_url = directory + '/' + filename
 
-		return file_url
+		import saga,os
+		remote_file = saga.filesystem.Directory(directory, session = self._session_id)
+		if new_name is None:
+			remote_file.copy(filename, os.getcwd())
+		else:
+			remote_file.copy(filename, os.getcwd() + '/' + new_name)

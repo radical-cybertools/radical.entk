@@ -315,7 +315,6 @@ class AppManager():
 
 							# Update record
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
-							print record
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 

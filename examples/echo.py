@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-'''Kernel that prints a random value'''
+"""A kernel that writes Hello World to a file.
+"""
 
 __author__    = "Vivek <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
@@ -14,38 +15,42 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-	"name":         "randval",
-	"description":  "Creates a new file containing a single ramdom integer value between 0 and 'upperlimit'.",
-	"arguments":   {	
-				"--upperlimit=":     
+			"name":         "echo",
+			"description":  "Writes Hello World to a file",
+			"arguments":   {"--file=":     
 						{
-						"mandatory": True,
-						"description": "The upper limit of the random value."
+							"mandatory": True,
+							"description": "The input file."
 						},
-					
-			},
-	"machine_configs": 
-	{
-		"*": {
-			"environment"   : None,
-			"pre_exec"      : None,
-			"executable"    : "/bin/bash",
-			"uses_mpi"      : False
-		}
+					"--text=":
+						{
+							"mandatory": True,
+							"description": "Prints 'this is ' + text"
+						},
+					},
+			"machine_configs": 
+			{
+				"*": {
+					"environment"   : None,
+					"pre_exec"      : None,
+					"executable"    : "/bin/bash",
+					"uses_mpi"      : False
+				}
+			}
 	}
-}
 
 
 # ------------------------------------------------------------------------------
 # 
-class rand_kernel(KernelBase):
+class echo_kernel(KernelBase):
 
 	# --------------------------------------------------------------------------
 	#
 	def __init__(self):
 		"""Le constructor.
 		"""
-		super(rand_kernel, self).__init__(_KERNEL_INFO)
+		super(echo_kernel, self).__init__(_KERNEL_INFO)
+
 
 	# --------------------------------------------------------------------------
 	#
@@ -61,10 +66,12 @@ class rand_kernel(KernelBase):
 
 		cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-		arguments  = ["-c","'echo $[ 1 + $[ RANDOM % {0} ]]'".format(self.get_arg("--upperlimit="))]
+		executable = cfg['executable']
+		arguments  = ['-l', '-c', "/bin/echo 'This is {1}' >> {0}".format(self.get_arg("--file="), self.get_arg("--text="))]
 
-		self._executable  = cfg["executable"]
+		self._executable  = executable
 		self._arguments   = arguments
 		self._environment = cfg["environment"]
 		self._uses_mpi    = cfg["uses_mpi"]
-		self._pre_exec    = None
+		self._pre_exec    = cfg["pre_exec"]
+
