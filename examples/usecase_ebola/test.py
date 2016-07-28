@@ -25,6 +25,11 @@ class Test(EoP):
 		#k1.download_output_data = []
 		return k1
 
+
+	def branch_1(self,instance):
+
+		self.get_file(iteration=1, stage=1, instance=instance, filename="output.txt", new_name="temp.txt")
+
 	def stage_2(self, instance):
 		k1 = Kernel(name="echo")
 		k1.arguments = ["--file=output.txt","--text=build_systems"]
@@ -122,7 +127,7 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=2, pipeline_size=6)
+	pipe = Test(ensemble_size=2, pipeline_size=2)
 
 	app = AppManager(name='firstapp')
 

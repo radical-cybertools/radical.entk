@@ -166,6 +166,7 @@ class AppManager():
 
 	def add_workload(self, pattern):
 		self._pattern = pattern
+
 		try:
 			self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
 		except Exception, ex:
@@ -243,11 +244,14 @@ class AppManager():
 		return self._kernel_dict
 
 
-	def run(self, resource, task_manager):
+	def run(self, resource, task_manager, rp_session):
 
 		try:
 			# Create dictionary for logging
 			record = self.get_record()
+
+			# For data transfer, inform pattern of the resource
+			self._pattern.session_id = rp_session
 
 			if self._pattern.__class__.__base__ == PoE:
 	

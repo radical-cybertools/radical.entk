@@ -48,6 +48,7 @@ class EoP(ExecutionPattern):
 		# Perform sanity check -- perform before proceeding
 		self.sanity_check()
 
+		self._session_id = None
 
 
 	def sanity_check(self):
@@ -82,6 +83,14 @@ class EoP(ExecutionPattern):
 	@property
 	def pipeline_size(self):
 		return self._pipeline_size
+
+	@property
+	def session_id(self):
+		return self._session_id
+	
+	@session_id.setter
+	def session_id(self, val):
+		self._session_id = val
 
 	@property
 	def cur_iteration(self):
@@ -213,8 +222,13 @@ class EoP(ExecutionPattern):
 			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
 			raise
 
-	def get_file(self, iteration, stage, instance, filename):
+	def get_file(self, iteration, stage, instance, filename, new_name=None):
 		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
 		file_url = directory + '/' + filename
 
-		return file_url
+		import saga,os
+		remote_file = saga.filesystem.Directory(directory, session = self._session_id)
+		if new_name is None:
+			remote_file.copy(filename, os.getcwd())
+		else:
+			remote_file.copy(filename, os.getcwd() + '/' + new_name)

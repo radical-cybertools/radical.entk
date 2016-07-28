@@ -224,7 +224,7 @@ class ResourceHandle(object):
 			raise EnTKError(msg="Resource(s) not allocated. Call allocate() first.")
 
 		try:
-			appManager.run(resource = self._resource_key, task_manager = self._umgr)
+			appManager.run(resource = self._resource_key, task_manager = self._umgr, rp_session=self._session)
 
 		except Exception, ex:
 			self.get_logger().error('Application Manager failed: {0}'.format(ex))
