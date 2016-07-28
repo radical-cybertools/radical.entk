@@ -6,7 +6,7 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 		return path
 
 	# Extract placeholder from path
-	if len(path.split('>') == 1):
+	if (len(path.split('>')) == 1):
 		placeholder = path.split('/')[0]
 	else:
 		if path.split('>')[0].strip().startswith('$'):
@@ -47,6 +47,7 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 		ref_task	= cur_task
 
 	try:
-		return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instace_{0}".format(ref_task)]["path"])
+		print placeholder
+		return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instance_{0}".format(ref_task)]["path"])
 	except Exception, ex:
 		print "Please check placeholders used, error: {0}".format(ex)

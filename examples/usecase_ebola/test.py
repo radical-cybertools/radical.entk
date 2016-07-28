@@ -28,6 +28,7 @@ class Test(EoP):
 	def stage_2(self, instance):
 		k1 = Kernel(name="echo")
 		k1.arguments = ["--file=output.txt","--text=build_systems"]
+		k1.copy_input_data=['$STAGE_1/output.txt > temp.txt']
 		k1.cores = 1
 
 		# File staging
@@ -121,7 +122,7 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=16, pipeline_size=2)
+	pipe = Test(ensemble_size=2, pipeline_size=2)
 
 	app = AppManager(name='firstapp')
 
@@ -129,11 +130,11 @@ if __name__ == '__main__':
 	app.register_kernels(rand_kernel)
 	app.add_workload(pipe)
 	
-	res = ResourceHandle(resource="xsede.stampede",
-				cores=16,
-				username='vivek91',
-				project = 'TG-MCB090174',
-				queue='development',
+	res = ResourceHandle(resource="local.localhost",
+				cores=4,
+				#username='vivek91',
+				#project = 'TG-MCB090174',
+				#queue='development',
 				walltime=10,
 				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
 	res.allocate(wait=True)

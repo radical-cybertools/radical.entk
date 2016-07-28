@@ -156,3 +156,5 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 			logger.error("Input staging failed for iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task))
 		else:
 			logger.error("Input staging failed for pat:{3}, iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task, cur_pat))
+
+		raise

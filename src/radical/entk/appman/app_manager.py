@@ -173,11 +173,17 @@ class AppManager():
 			raise
 
 
-	def add_to_record(self, pattern_name, record, cus, iteration, stage):
+	def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None):
 
 		try:
-			inst=1
+			if instance==None:
+				inst=1
+			else:
+				inst=instance
+				cus = [cus]
+
 			pat_key = "pat_{0}".format(pattern_name)
+
 			for cu in cus:
 
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
@@ -379,7 +385,10 @@ class AppManager():
 								new_stage = cur_stage+1
 								new_task = cur_task
 
+								record=self.get_record()
+
 								self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
+								record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
 
 								#-----------------------------------------------------------------------
 								# Increment tasks list accordingly
