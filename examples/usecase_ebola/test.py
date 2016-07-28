@@ -25,11 +25,6 @@ class Test(EoP):
 		#k1.download_output_data = []
 		return k1
 
-	def branch_1(self, instance):
-		if instance == 1:
-			self.set_next_stage(0)
-
-
 	def stage_2(self, instance):
 		k1 = Kernel(name="echo")
 		k1.arguments = ["--file=output.txt","--text=build_systems"]
@@ -88,9 +83,9 @@ class Test(EoP):
 		#k1.download_output_data = []
 		return k1
 
-	def branch_5(self):
+	def branch_5(self, instance):
 
-		branch_flag = self.get_output(iteration=1, stage=5, instance=1)
+		branch_flag = self.get_output(iteration=1, stage=5, instance=instance)
 		print branch_flag, type(branch_flag)
 		if int(branch_flag) >= 3:
 			self.set_next_stage(1)
@@ -113,9 +108,9 @@ class Test(EoP):
 		#k1.download_output_data = []
 		return k1
 
-	def branch_6(self):
+	def branch_6(self, instance):
 
-		branch_flag = self.get_output(iteration=1, stage=6, instance=1)
+		branch_flag = self.get_output(iteration=1, stage=6, instance=instance)
 		print branch_flag
 		if  int(branch_flag) > 4:
 			self.set_next_stage(1)
@@ -127,7 +122,7 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=2, pipeline_size=2)
+	pipe = Test(ensemble_size=2, pipeline_size=6)
 
 	app = AppManager(name='firstapp')
 

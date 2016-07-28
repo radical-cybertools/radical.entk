@@ -47,7 +47,6 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 		ref_task	= cur_task
 
 	try:
-		print placeholder
 		return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instance_{0}".format(ref_task)]["path"])
 	except Exception, ex:
 		print "Please check placeholders used, error: {0}".format(ex)

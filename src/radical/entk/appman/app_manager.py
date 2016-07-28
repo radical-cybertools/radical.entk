@@ -313,6 +313,7 @@ class AppManager():
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 							print record
 
+							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
 							#print record
 							branch_function = None
@@ -389,6 +390,7 @@ class AppManager():
 								plugin.tot_fin_tasks[cur_stage-1]+=1
 
 								record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
+								self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
 								# Check for branch function for current stage
 								branch_function = None
@@ -405,7 +407,7 @@ class AppManager():
 										self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
 									else:
 										self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-										
+
 									self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
 								else:
 									self._pattern.next_stage[cur_task-1] +=1
