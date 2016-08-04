@@ -215,12 +215,13 @@ class EoP(ExecutionPattern):
 			raise
 
 
-	def get_output(self, iteration, stage, instance):
+	def get_output(self, stage, instance):
 		try:
-			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+			return self._pattern_dict["iter_1"]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
 		except Exception, ex:
 			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
 			raise
+
 
 	def get_file(self, iteration, stage, instance, filename, new_name=None):
 		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]

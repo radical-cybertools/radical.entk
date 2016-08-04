@@ -386,7 +386,7 @@ class AppManager():
 
 								record=self.get_record()
 
-								self._logger.info('Task {0} of stage {1} has finished'.format(cur_task,cur_stage))
+								self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
 								#-----------------------------------------------------------------------
 								# Increment tasks list accordingly
 								plugin.tot_fin_tasks[cur_stage-1]+=1
@@ -423,7 +423,7 @@ class AppManager():
 
 								# Check if this is the last task of the stage
 								if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-									self._logger.info('All tasks in stage {0} have finished'.format(cur_stage))
+									self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
 
 
 								if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):

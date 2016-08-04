@@ -109,7 +109,7 @@ class PluginEoP(object):
 
 				if len(self._tot_fin_tasks) < cur_stage:
 					self._tot_fin_tasks.append(0)
-					self._logger.info('\nStarting submission of tasks in stage {0}'.format(cur_stage))				
+					self._logger.info('\nStarting submission of stage {0} of all pipelines'.format(cur_stage))				
 					
 				self._logger.debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
 
@@ -139,12 +139,12 @@ class PluginEoP(object):
 		try:
 			if type(tasks) == list:
 				cur_stage = int(tasks[0].name.split('-')[1])
-				self._logger.info('Submitting all tasks of stage {0}'.format(cur_stage))
+				self._logger.info('Submitting stage {0} of all pipelines'.format(cur_stage))
 				exec_cus = self._manager.submit_units(tasks)
 			else:
 				cur_stage = int(tasks.name.split('-')[1])
 				cur_task = int(tasks.name.split('-')[3])
-				self._logger.info('Submitting task {0} of stage {1}'.format(cur_task,cur_stage))
+				self._logger.info('Submitting stage {1} of pipeline {0}'.format(cur_task,cur_stage))
 				task = self._manager.submit_units(tasks)
 
 		except Exception, ex:

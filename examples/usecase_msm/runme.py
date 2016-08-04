@@ -41,8 +41,8 @@ class Test(PoE):
 
 	def branch_2(self):
 
-		flag = self.get_output(iteration=1, stage=2, instance=1)
-		print 'Output of stage 5 = {0}'.format(flag)
+		flag = self.get_output(stage=2, instance=1)
+		print 'Output of stage 2 = {0}'.format(flag)
 		if int(flag) >= 3:
 			self.set_next_stage(1)
 			print 'Restarting instance {0}'.format(instance)
