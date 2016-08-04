@@ -26,14 +26,9 @@ class Test(EoP):
 		return k1
 
 
-	def branch_1(self,instance):
-
-		self.get_file(iteration=1, stage=1, instance=instance, filename="output.txt", new_name="temp.txt")
-
 	def stage_2(self, instance):
 		k1 = Kernel(name="echo")
 		k1.arguments = ["--file=output.txt","--text=build_systems"]
-		k1.copy_input_data=['$STAGE_1/output.txt > temp.txt']
 		k1.cores = 1
 
 		# File staging
@@ -56,10 +51,7 @@ class Test(EoP):
 		#k1.copy_output_data = []
 		#k1.download_output_data = []
 
-		m1 = Monitor(name="yada", timeout=10)
-		m1.get_output = ['$INSTANCE_1/temp.txt','$INSTANCE_5/temp.txt']
-
-		return [k1,m1]
+		return k1
 
 	def stage_4(self, instance):
 		k1 = Kernel(name="echo")
@@ -90,11 +82,11 @@ class Test(EoP):
 
 	def branch_5(self, instance):
 
-		branch_flag = self.get_output(iteration=1, stage=5, instance=instance)
-		print branch_flag, type(branch_flag)
-		if int(branch_flag) >= 3:
+		flag = self.get_output(iteration=1, stage=5, instance=instance)
+		print 'Output of stage:5, instance:{0} = {1}'.format(instance,flag)
+		if int(flag) > 3:
 			self.set_next_stage(1)
-			#self.iteration+=1
+			print 'Restarting instance {0}'.format(instance)
 		else:
 			pass
 
@@ -115,11 +107,11 @@ class Test(EoP):
 
 	def branch_6(self, instance):
 
-		branch_flag = self.get_output(iteration=1, stage=6, instance=instance)
-		print branch_flag
-		if  int(branch_flag) > 4:
+		flag = self.get_output(iteration=1, stage=6, instance=instance)
+		print 'Output of stage:6, instance:{0} = {1}'.format(instance,flag)
+		if  int(flag) < 3:
 			self.set_next_stage(1)
-			#self.iteration+=1
+			print 'Restarting instance {0}'.format(instance)
 		else:
 			pass
 
@@ -127,14 +119,21 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-	pipe = Test(ensemble_size=2, pipeline_size=2)
+	# Create pattern object with desired ensemble size, pipeline size
+	pipe = Test(ensemble_size=2, pipeline_size=6)
 
-	app = AppManager(name='firstapp')
+	# Create an application manager
+	app = AppManager(name='Ebola')
 
+	# Register kernels to be used
 	app.register_kernels(echo_kernel)
 	app.register_kernels(rand_kernel)
+
+	# Add workload to the application manager
 	app.add_workload(pipe)
 	
+
+	# Create a resource handle for target machine
 	res = ResourceHandle(resource="local.localhost",
 				cores=4,
 				#username='vivek91',
@@ -142,9 +141,13 @@ if __name__ == '__main__':
 				#queue='development',
 				walltime=10,
 				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
+
+	# Submit request for resources + wait till job becomes Active
 	res.allocate(wait=True)
 
+	# Run the given workload
 	res.run(app)
 
+	# Deallocate the resource
 	res.deallocate()
 	

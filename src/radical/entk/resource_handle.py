@@ -132,12 +132,13 @@ class ResourceHandle(object):
 		self.get_logger().info('Ensemble Toolkit (%s)' % version)
 		#self.get_logger().report('Starting Allocation')
 
-		# Give priority to mongo url via env variable
-		self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
+		# Give priority to mongo url via resource handle
+		if  not self._database_url :
+			self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
 
 		# IF no database url mentioned via environment variable or resource handle, trigger error
 		if  not self._database_url :
-			raise PilotException ("no database URL (set RADICAL_PILOT_DBURL or via resource handle)")  
+			raise Exception ("no database URL (set RADICAL_PILOT_DBURL or via resource handle)")  
 
 		if self._database_name is None:
 			self._session = radical.pilot.Session(database_url=self._database_url)

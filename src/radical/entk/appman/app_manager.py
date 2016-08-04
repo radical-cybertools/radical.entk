@@ -340,7 +340,6 @@ class AppManager():
 								self._logger.info("Branching function has set termination condition -- terminating")
 								break
 					
-
 						# Terminate execution
 						if self._pattern.next_stage == 0:
 							break
