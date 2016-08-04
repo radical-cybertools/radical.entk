@@ -193,6 +193,15 @@ class AppManager():
 
 				inst+=1
 
+			stage_done=True
+			for key, val in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]:
+				if ((key == 'path') and (val==None):
+					stage_done=False
+					break
+
+			if stage_done:
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+				
 			return record
 
 		except Exception, ex:
@@ -314,7 +323,7 @@ class AppManager():
 							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
 							# Update record
-							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, status='Done')
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 

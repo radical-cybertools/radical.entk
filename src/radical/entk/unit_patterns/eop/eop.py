@@ -223,8 +223,8 @@ class EoP(ExecutionPattern):
 			raise
 
 
-	def get_file(self, iteration, stage, instance, filename, new_name=None):
-		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+	def get_file(self, stage, instance, filename, new_name=None):
+		directory = self._pattern_dict["iter_1"]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
 		file_url = directory + '/' + filename
 
 		import saga,os

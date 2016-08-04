@@ -82,7 +82,7 @@ class Test(EoP):
 
 	def branch_5(self, instance):
 
-		flag = self.get_output(iteration=1, stage=5, instance=instance)
+		flag = self.get_output(stage=5, instance=instance)
 		print 'Output of stage:5, instance:{0} = {1}'.format(instance,flag)
 		if int(flag) > 3:
 			self.set_next_stage(1)
@@ -107,7 +107,7 @@ class Test(EoP):
 
 	def branch_6(self, instance):
 
-		flag = self.get_output(iteration=1, stage=6, instance=instance)
+		flag = self.get_output(stage=6, instance=instance)
 		print 'Output of stage:6, instance:{0} = {1}'.format(instance,flag)
 		if  int(flag) < 3:
 			self.set_next_stage(1)
