@@ -45,7 +45,7 @@ class Test(PoE):
 		print 'Output of stage 2 = {0}'.format(flag)
 		if int(flag) >= 3:
 			self.set_next_stage(1)
-			print 'Restarting instance {0}'.format(instance)
+			print 'Restarting workflow'
 		else:
 			pass
 	

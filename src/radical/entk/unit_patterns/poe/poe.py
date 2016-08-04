@@ -185,15 +185,23 @@ class PoE(ExecutionPattern):
 			raise
 
 
-	def get_output(self, iteration, stage, instance):
+	def get_output(self, stage, instance, iteration=None):
+		
 		try:
+			if iteration == None:
+				iteration = self._cur_iteration
+
 			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
 
 		except Exception, ex:
 			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
 			raise
 
-	def get_file(self, iteration, stage, instance, filename, new_name=None):
+	def get_file(self, stage, instance, filename, new_name=None, iteration=None):
+
+		if iteration == None:
+			iteration = self._cur_iteration
+
 		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
 		file_url = directory + '/' + filename
 
