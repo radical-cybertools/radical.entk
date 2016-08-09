@@ -313,11 +313,9 @@ class AppManager():
 
 								if type(stage_instance_return) == list:
 									if len(stage_instance_return) == 2:
-										for item in stage_instance_return:
-											if type(item) == Kernel:
-												stage_kernel = item
-											elif ((type(item) == Monitor) and stage_monitor == None):
-												stage_monitor = item
+										stage_kernel = stage_instance_return[0]
+										stage_monitor = stage_instance_return[1]
+										validated_monitor = self.validate_kernel(stage_monitor)
 									else:
 										stage_kernel = stage_instance_return[0]
 								else:
@@ -328,7 +326,7 @@ class AppManager():
 
 							# Pass resource-unbound kernels to execution plugin
 							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
+							plugin.set_workload(kernels=list_kernels_stage, monitor=validated_monitor)
 							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
 
 							# Update record
