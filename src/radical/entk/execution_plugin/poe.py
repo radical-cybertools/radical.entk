@@ -32,6 +32,14 @@ class PluginPoE(object):
 		self._logger.info("Plugin PoE created")
 
 
+	@property
+	def monitor(self):
+		return self._monitor
+	
+	@monitor.setter
+	def monitor(self, val):
+		self._monitor = val
+
 	def register_resource(self, resource):
 		self._resource = resource
 		self._logger.info("Registered resource {0} with execution plugin".format(resource))
@@ -67,28 +75,54 @@ class PluginPoE(object):
 		self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
-	def execute_monitor(self,record, cur_pat, cur_iter, cur_stage, cur_task):
-		self._logger.info("Executing monitor...")
+	def execute_monitor(self, record, tasks, cur_pat, cur_iter, cur_stage):
+
+		try:
+
+			self._logger.info("Executing monitor...")
 		
-		self._monitor._bind_to_resource(self._resource)
-		rbound_kernel = self._monitor
-		cud = rp.ComputeUnitDescription()
-		cud.name = "monitor_{0}".format(kernel.name)
+			self._monitor._bind_to_resource(self._resource)
+			rbound_kernel = self._monitor
+			cud = rp.ComputeUnitDescription()
+			cud.name = "monitor_{0}".format(kernel.name)
 
-		cud.pre_exec       	= rbound_kernel.pre_exec
-		cud.executable     	= rbound_kernel.executable
-		cud.arguments      	= rbound_kernel.arguments
-		cud.mpi            	= rbound_kernel.uses_mpi
-		cud.cores 			= rbound_kernel.cores
-		cud.scheduler_hint 	= {'partition': 'monitor'}
-		cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
-		cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+			cud.pre_exec       	= rbound_kernel.pre_exec
+			cud.executable     	= rbound_kernel.executable
+			cud.arguments      	= rbound_kernel.arguments
+			cud.mpi            	= rbound_kernel.uses_mpi
+			cud.cores 			= rbound_kernel.cores
+			cud.scheduler_hint 	= {'partition': 'monitor'}
+			cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=-1*stage)
+			cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=-1*stage)
 
-		self._logger.debug("Monitor {0} converted into RP Compute Unit".format(cud.name))
+			self._logger.debug("Monitor {0} converted into RP Compute Unit".format(cud.name))
 
-		monitor_handle = self._manager.submit_units(cud)
+			monitor_handle = self._manager.submit_units(cud)
 
-		return exec_monitor_handle
+			task_list_A = tasks
+			task_list_B = tasks
+
+			while len(task_list_A) > 0 :
+					
+				task_uids = [cu.uid for cu in task_list_A]
+				self._manager.wait_units(task_uids, timeout=self._monitor.timeout)
+
+				if monitor_handle.state == rp.DONE:
+					monitor_handle = self._manager.submit_units(cud)
+
+				for unit in task_list_A:
+					if (unit.state == rp.DONE)or(unit.state == rp.FAILED)or(unit.state == rp.CANCELED):
+						task_list_B.remove(unit)
+				task_list_A = task_list_B
+
+			# Wait for pending monitor task to finish
+			self._manager.wait_units(monitor_handle)
+
+			#return monitor_handle
+
+		except Exception, ex:
+
+			self._logger.error("Monitor execution failed, error: {0}".format(ex))
 
 
 
@@ -118,8 +152,8 @@ class PluginPoE(object):
 				cud.pre_exec       	= rbound_kernel.pre_exec
 				cud.executable     	= rbound_kernel.executable
 				cud.arguments      	= rbound_kernel.arguments
-				cud.mpi            		= rbound_kernel.uses_mpi
-				cud.cores 		= rbound_kernel.cores
+				cud.mpi            	= rbound_kernel.uses_mpi
+				cud.cores 			= rbound_kernel.cores
 				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 
@@ -138,39 +172,16 @@ class PluginPoE(object):
 				self._logger.info("Pattern {4}: Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage, pattern_name))
 
 			
-			self._logger.info("Waiting for completion of workload")
-
-			# Initialize monitor handle to null
-			monitor_handle = None
-
+			# If there is no monitor, go ahead and wait for tasks to finish
 			if self._monitor is not None:
-				while len(copy_exec_cus_A) > 0 :
-					
-					print len(copy_exec_cus_A)
-					exec_uids = [cu.uid for cu in copy_exec_cus_A]
-					self._manager.wait_units(exec_uids, timeout=self._monitor.timeout)
-
-					if len(copy_exec_cus_A) > 0:
-						monitor_handle = self.execute_monitor(record=record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
-
-						for unit in copy_exec_cus_A:
-							if (unit.state == rp.DONE)or(unit.state == rp.FAILED)or(unit.state == rp.CANCELED):
-								copy_exec_cus_B.remove(unit)
-						copy_exec_cus_A = copy_exec_cus_B
-
-										
-			else:
 				exec_uids = [cu.uid for cu in exec_cus]
+
+				self._logger.info("Waiting for completion of workload")
 				self._manager.wait_units(exec_uids)
-
-			for unit in exec_cus:
-				if unit.state != rp.DONE:
-					self._logger.error("task {1} failed with an error: {0}\n".format(unit.stderr, unit.uid))
-
-			self._logger.info("Workload execution successful")
-
+				self._logger.info("Workload execution successful")
+			
 			return exec_cus
 
 		except Exception, ex:
 
-			self._logger.error('Execution plugin failed: {0}'.format(ex))
+			self._logger.error('Task execution failed, error: {0}'.format(ex))

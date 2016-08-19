@@ -295,7 +295,7 @@ class AppManager():
 							# Get kernel from execution pattern
 							stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
 
-							list_kernels_stage = list()
+							validated_kernels = list()
 
 							# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 							# Create instance key/vals for each stage
@@ -321,17 +321,20 @@ class AppManager():
 								else:
 									stage_kernel = stage_instance_return
 									
-								list_kernels_stage.append(self.validate_kernel(stage_kernel))
+								validated_kernels.append(self.validate_kernel(stage_kernel))
 
 
 							# Pass resource-unbound kernels to execution plugin
 							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=list_kernels_stage, monitor=validated_monitor)
-							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)				
+							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
+							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 
 							# Update record
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
+							# Check if montior exists
+							if plugin.montior != None:
+								plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 

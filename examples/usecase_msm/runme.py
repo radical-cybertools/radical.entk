@@ -23,31 +23,26 @@ class Test(PoE):
 		#k1.link_input_data = []
 		#k1.copy_output_data = []
 		#k1.download_output_data = []
-		return k1
 
+		# Define "async" monitor
+		m1 = Kernel(name="reader", type="monitor")
+		m1.timeout = 30
+		m1.copy_input_data = ['$STAGE_1/output.txt > temp.txt']
+		m1.arguments = ["--read=temp.txt","--out=fin.txt"]
 
-	def stage_2(self, instance):
-		k1 = Kernel(name="randval")
-		k1.arguments = ["--upperlimit=5"]
-		k1.cores = 1
+		return [k1,m1]
 
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
-		return k1
+	'''
+	def branch_1(self):
 
-	def branch_2(self):
-
-		flag = self.get_output(stage=2, instance=1)
-		print 'Output of stage 2 = {0}'.format(flag)
+		flag = self.get_output(stage=1, instance=1)
+		print 'Output of stage 1 = {0}'.format(flag)
 		if int(flag) >= 3:
 			self.set_next_stage(1)
 			print 'Restarting workflow'
 		else:
 			pass
+	'''
 	
 
 if __name__ == '__main__':
