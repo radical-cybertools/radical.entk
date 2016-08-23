@@ -63,6 +63,8 @@ class KernelBase(object):
 		self._uses_mpi               = None
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
 
+		self._timeout = None
+
 		self._upload_input_data      	= []
 		self._link_input_data        	= []
 		self._download_input_data    	= []
@@ -353,3 +355,16 @@ class KernelBase(object):
 		self._copy_output_data = data_directives
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 	
+
+
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+	@property
+	def timeout(self):
+		return self._timeout
+
+	@timeout.setter
+	def timeout(self, val):
+
+		self._timeout = val
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------

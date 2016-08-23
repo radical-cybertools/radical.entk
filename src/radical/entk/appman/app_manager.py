@@ -109,6 +109,10 @@ class AppManager():
 	def validate_kernel(self, user_kernel):
 
 		try:
+
+			self._logger.debug("Test1")
+			self._logger.debug("Test: {0}".format(user_kernel.timeout))
+			self._logger.debug("Test2")
 			found=False
 			for kernel in self._loaded_kernels:
 
@@ -147,6 +151,10 @@ class AppManager():
 
 					if user_kernel.download_output_data != None:
 						new_kernel.download_output_data = user_kernel.download_output_data
+
+					if user_kernel.timeout != None:
+						new_kernel.timeout = user_kernel.timeout
+
 
 					new_kernel.validate_arguments()
 
@@ -333,7 +341,7 @@ class AppManager():
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
 							# Check if montior exists
-							if plugin.montior != None:
+							if plugin.monitor != None:
 								plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 

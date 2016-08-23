@@ -17,10 +17,7 @@ class PoE(ExecutionPattern):
 		self._total_iterations = iterations
 		self._iterative = iterative
 
-		if name!=None:
-			self._name = name
-		else:
-			self._name = "None"
+		self._name = name
 
 		# Internal parameters
 		self._next_stage = 1

@@ -4,16 +4,19 @@ __license__   = "MIT"
 
 class Kernel(object):
 
-	def __init__(self, name=None):
+	def __init__(self, name=None, ktype=None):
 
 		self._name = name
 
 		# Parameters required for any Kernel irrespective of RP
 		self._pre_exec               	= None
-		self._executable 	= None
-		self._arguments       	= None
-		self._uses_mpi               = None
+		self._executable 				= None
+		self._arguments       			= None
+		self._uses_mpi               	= None
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
+		self._type						= ktype
+
+		self._timeout = None
 
 		self._upload_input_data      	= None
 		self._link_input_data        	= None
@@ -65,6 +68,8 @@ class Kernel(object):
 	# download_output_data
 	# copy_output_data
 	
+	#timeout
+
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
 	
 	@property
@@ -238,4 +243,16 @@ class Kernel(object):
 					actual_type=type(dd))
 
 		self._copy_output_data = data_directives
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+	@property
+	def timeout(self):
+		return self._timeout
+
+	@timeout.setter
+	def timeout(self, val):
+
+		self._timeout = val
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------

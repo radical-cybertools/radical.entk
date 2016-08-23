@@ -6,6 +6,7 @@ from radical.entk import PoE, AppManager, Kernel, ResourceHandle, Monitor
 
 from echo import echo_kernel
 from randval import rand_kernel
+from sleep import sleep_kernel
 
 class Test(PoE):
 
@@ -13,8 +14,8 @@ class Test(PoE):
 		super(Test,self).__init__(ensemble_size, pipeline_size)
 
 	def stage_1(self, instance):
-		k1 = Kernel(name="echo")
-		k1.arguments = ["--file=output.txt","--text=sequence_search"]
+		k1 = Kernel(name="sleep")
+		k1.arguments = ["--duration=20"]
 		k1.cores = 1
 
 		# File staging
@@ -25,10 +26,9 @@ class Test(PoE):
 		#k1.download_output_data = []
 
 		# Define "async" monitor
-		m1 = Kernel(name="reader", type="monitor")
-		m1.timeout = 30
-		m1.copy_input_data = ['$STAGE_1/output.txt > temp.txt']
-		m1.arguments = ["--read=temp.txt","--out=fin.txt"]
+		m1 = Kernel(name="echo", ktype="monitor")
+		m1.timeout = 10
+		m1.arguments = ["--file=output.txt","--text=sequence_search"]
 
 		return [k1,m1]
 
@@ -48,14 +48,14 @@ class Test(PoE):
 if __name__ == '__main__':
 
 	# Create pattern object with desired ensemble size, pipeline size
-	pipe = Test(ensemble_size=2, pipeline_size=2)
+	pipe = Test(ensemble_size=2, pipeline_size=1)
 
 	# Create an application manager
 	app = AppManager(name='MSM')
 
 	# Register kernels to be used
 	app.register_kernels(echo_kernel)
-	app.register_kernels(rand_kernel)
+	app.register_kernels(sleep_kernel)
 
 	# Add workload to the application manager
 	app.add_workload(pipe)
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 				#project = 'TG-MCB090174',
 				#queue='development',
 				walltime=10,
-				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
+				database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp')
 
 	# Submit request for resources + wait till job becomes Active
 	res.allocate(wait=True)
