@@ -166,45 +166,57 @@ class PoE(ExecutionPattern):
 			raise
 
 
-	def get_monitor(self, stage):
-
-		try:
-			monitor = getattr(self, "monitor_{0}".format(stage), None)
-
-			if monitor == None:
-				self._logger.error("Pattern does not have monitor_{0}".format(stage))
-				raise			
-			return monitor
-
-		except Exception, ex:
-
-			self._logger.error("Could not get monitor, error: {0}".format(ex))
-			raise
-
-
-	def get_output(self, stage, instance, iteration=None):
+	def get_output(self, stage, instance=None, monitor=None, iteration=None):
 		
 		try:
 			if iteration == None:
 				iteration = self._cur_iteration
 
+			if monitor!=None:
+				return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["output"]
+
 			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
 
 		except Exception, ex:
-			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
+
+			if monitor==None:
+				self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
+			else:
+				self._logger.error("Could not get output of stage: {0}, monitor".format(stage))
+
 			raise
 
-	def get_file(self, stage, instance, filename, new_name=None, iteration=None):
 
-		if iteration == None:
-			iteration = self._cur_iteration
+	def get_file(self, stage, filename, instance=None, monitor=None, new_name=None, iteration=None):
 
-		directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
-		file_url = directory + '/' + filename
+		try:
+			if iteration == None:
+				iteration = self._cur_iteration
 
-		import saga,os
-		remote_file = saga.filesystem.Directory(directory, session = self._session_id)
-		if new_name is None:
-			remote_file.copy(filename, os.getcwd())
-		else:
-			remote_file.copy(filename, os.getcwd() + '/' + new_name)
+			if monitor == None:
+				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+			else:
+				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["path"]
+
+			file_url = directory + '/' + filename
+
+			import saga,os
+			remote_file = saga.filesystem.Directory(directory, session = self._session_id)
+
+			if new_name is None:
+				remote_file.copy(filename, os.getcwd())
+			else:
+				remote_file.copy(filename, os.getcwd() + '/' + new_name)
+
+		except Exception, ex:
+
+			if monitor==None:
+				self._logger.error("Could not get file of stage: {0}, instance: {1}".format(stage, instance))
+			else:
+				self._logger.error("Could not get file of stage: {0}, monitor".format(stage))
+
+			raise
+
+
+	#def cancel_tasks(self, tasks=None):
+

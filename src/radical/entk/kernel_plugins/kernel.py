@@ -2,6 +2,9 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import radical.utils as ru
+from radical.entk.exceptions import *
+
 class Kernel(object):
 
 	def __init__(self, name=None, ktype=None):
@@ -16,7 +19,9 @@ class Kernel(object):
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
 		self._type						= ktype
 
+		# Parameters specific to Monitor
 		self._timeout = None
+		self._cancel_tasks = None
 
 		self._upload_input_data      	= None
 		self._link_input_data        	= None
@@ -24,6 +29,8 @@ class Kernel(object):
 		self._download_output_data   	= None
 		self._copy_input_data        	= None
 		self._copy_output_data       	= None
+
+		self._logger = ru.get_logger("radical.entk.Kernel")
 
 
 	#  ------------------------------------------------------------- ------------------------------------------------------------------------------
@@ -256,3 +263,19 @@ class Kernel(object):
 
 		self._timeout = val
 	# ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+
+	# ------------------------------------------------------------- --------------------------------
+
+	@property
+	def cancel_tasks(self):
+		return self._cancel_tasks
+
+	@cancel_tasks.setter
+	def cancel_tasks(self, val):
+
+		if type(val) == list:
+			self._cancel_tasks = val
+		else:
+			raise TypeError(expected_type=list, actual_type=type(val))
+	# ------------------------------------------------------------- --------------------------------

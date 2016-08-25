@@ -1,3 +1,7 @@
+import radical.utils as ru
+
+logger = ru.get_logger('radical.entk.resolve_placeholder')
+
 def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, path):
 
 

@@ -11,6 +11,5 @@ from radical.entk.appman.app_manager import AppManager
 # Kernel
 from radical.entk.kernel_plugins.kernel_base import KernelBase
 from radical.entk.kernel_plugins.kernel import Kernel
-from radical.entk.monitors.monitor import Monitor
 
 from radical.entk.resource_handle import ResourceHandle

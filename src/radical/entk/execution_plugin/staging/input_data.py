@@ -6,7 +6,7 @@ import radical.utils as ru
 
 
 
-def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
+def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfatal=False):
 
 	logger = ru.get_logger("radical.entk.input_staging")
 
@@ -67,12 +67,20 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 							'target': var.split('>')[1].strip(),
 							'action': rp.LINK
 						}
+
+					if nonfatal == True:
+						temp['flags'] = [rp.NON_FATAL]
+						
 				else:
 					temp = {
 							'source': var.split('>')[0].strip(),
 							'target': os.path.basename(var.split('>')[0].strip()),
 							'action': rp.LINK
 						}
+
+					if nonfatal == True:
+						temp['flags'] = [rp.NON_FATAL]
+
 				data_in.append(temp)
 
 			if ip_list is None:
@@ -102,12 +110,21 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 							'target': var.split('>')[1].strip(),
 							'action': rp.COPY
 						}
+
+					if nonfatal == True:
+						temp['flags'] = [rp.NON_FATAL]
+
 				else:
 					temp = {
 							'source': var.split('>')[0].strip(),
 							'target': os.path.basename(var.split('>')[0].strip()),
 							'action': rp.COPY
 						}
+
+					if nonfatal == True:
+						temp['flags'] = [rp.NON_FATAL]
+
+
 				data_in.append(temp)
 
 			if ip_list is None:

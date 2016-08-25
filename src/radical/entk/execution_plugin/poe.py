@@ -81,7 +81,7 @@ class PluginPoE(object):
 		try:
 
 			self._logger.info("Executing monitor...")
-		
+			self._logger.info(record)
 			self._monitor._bind_to_resource(self._resource)
 			rbound_kernel = self._monitor
 			cud = rp.ComputeUnitDescription()
@@ -93,7 +93,7 @@ class PluginPoE(object):
 			cud.mpi            	= rbound_kernel.uses_mpi
 			cud.cores 			= rbound_kernel.cores
 			cud.scheduler_hint 	= {'partition': 'monitor'}
-			cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=-1*cur_stage)
+			cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=-1*cur_stage, nonfatal=True)
 			cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=-1*cur_stage)
 
 			self._logger.debug("Monitor {0} converted into RP Compute Unit".format(cud.name))
@@ -111,7 +111,26 @@ class PluginPoE(object):
 				self._manager.wait_units(task_uids, timeout=self._monitor.timeout)
 				self._logger.debug("Timeout done...")
 
+
 				if monitor_handle.state == rp.DONE:
+
+					# Check if tasks need to be canceled
+					if self._monitor.cancel_tasks != None:
+
+						# Get uids of tasks to be canceled
+						c_tasks=[]
+						for ind in self._monitor.cancel_tasks:
+							c_task_uid = record["pat_{0}".format(cur_pat)]["iter_{0}".format(cur_iter)]["stage_{0}".format(cur_stage)]["instance_{0}".format(ind)]["uid"]
+
+							task_obj = self._manager.get_units(c_task_uid)
+							if (task_obj.state != rp.DONE)and(task_obj.state != rp.FAILED)and(task_obj.state != rp.CANCELED):
+								c_tasks.append(c_task_uid)
+
+						if len(c_tasks)>0:
+							self._logger.info("Canceling tasks: {0}".format(c_tasks))
+							self._manager.cancel_units(c_tasks)
+							self._logger.info("Task canceled: {0}, state: {1}".format(c_tasks,task_obj.state))
+
 					monitor_handle = self._manager.submit_units(cud)
 					self._logger.info("Monitor resubmitted")
 
@@ -128,7 +147,7 @@ class PluginPoE(object):
 
 			self._logger.debug("Stage {0} execution completed".format(cur_stage))
 
-			#return monitor_handle
+			return monitor_handle
 
 		except Exception, ex:
 
@@ -164,7 +183,6 @@ class PluginPoE(object):
 				cud.arguments      	= rbound_kernel.arguments
 				cud.mpi            	= rbound_kernel.uses_mpi
 				cud.cores 			= rbound_kernel.cores
-				cud.scheduler_hint 	= {'partition': 'bot'}
 				cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 				cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 
@@ -174,6 +192,7 @@ class PluginPoE(object):
 				self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
 
 			exec_cus = self._manager.submit_units(cus)
+
 			copy_exec_cus_A = exec_cus
 			copy_exec_cus_B = exec_cus
 
@@ -192,6 +211,16 @@ class PluginPoE(object):
 				self._logger.info("Workload execution successful")
 				self._logger.debug("Stage {0} execution completed".format(stage))
 			
+			else:
+
+				self._logger.debug("Waiting for unit directories to get created")
+				exec_uids = [cu.uid for cu in exec_cus]
+				self._manager.wait_units(exec_uids, state=rp.AGENT_STAGING_INPUT_PENDING)
+				self._logger.debug("Unit directories created")
+
+				for unit in exec_cus:
+					self._logger.debug('path from plugin: {0}'.format(unit.working_directory))
+
 			return exec_cus
 
 		except Exception, ex:

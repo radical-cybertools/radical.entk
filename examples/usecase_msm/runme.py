@@ -2,11 +2,14 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.entk import PoE, AppManager, Kernel, ResourceHandle, Monitor
+from radical.entk import PoE, AppManager, Kernel, ResourceHandle
 
 from echo import echo_kernel
 from randval import rand_kernel
 from sleep import sleep_kernel
+
+def find_tasks(filename):
+	pass
 
 class Test(PoE):
 
@@ -15,7 +18,7 @@ class Test(PoE):
 
 	def stage_1(self, instance):
 		k1 = Kernel(name="sleep")
-		k1.arguments = ["--duration=20"]
+		k1.arguments = ["--file=output.txt","--text=simulation","--duration=60"]
 		k1.cores = 1
 
 		# File staging
@@ -28,8 +31,11 @@ class Test(PoE):
 		# Define "async" monitor
 		m1 = Kernel(name="echo", ktype="monitor")
 		m1.timeout = 10
-		m1.arguments = ["--file=output.txt","--text=sequence_search"]
-
+		m1.arguments = ["--file=output.txt","--text=monitor"]
+		m1.copy_input_data = ['$STAGE_1_TASK_1/output.txt']
+		m1.download_output_data = ['output.txt']
+		m1.cancel_tasks = [1]
+		
 		return [k1,m1]
 
 	'''

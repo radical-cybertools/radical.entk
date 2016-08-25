@@ -5,7 +5,6 @@ __license__   = "MIT"
 from radical.entk.exceptions import *
 from radical.entk.kernel_plugins.kernel_base import KernelBase
 from radical.entk.kernel_plugins.kernel import Kernel
-from radical.entk.monitors.monitor import Monitor
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
 from radical.entk.unit_patterns.eop.eop import EoP
@@ -110,9 +109,6 @@ class AppManager():
 
 		try:
 
-			self._logger.debug("Test1")
-			self._logger.debug("Test: {0}".format(user_kernel.timeout))
-			self._logger.debug("Test2")
 			found=False
 			for kernel in self._loaded_kernels:
 
@@ -155,6 +151,9 @@ class AppManager():
 					if user_kernel.timeout != None:
 						new_kernel.timeout = user_kernel.timeout
 
+					if user_kernel.cancel_tasks != None:
+						new_kernel.cancel_tasks = user_kernel.cancel_tasks
+
 
 					new_kernel.validate_arguments()
 
@@ -182,22 +181,48 @@ class AppManager():
 			raise
 
 
-	def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None):
+	def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False):
 
 		try:
+
+			# Differences between EoP and PoE
 			if instance==None:
+				#PoE
 				inst=1
 			else:
+				#EoP
 				inst=instance
+
+			if type(cus) != list:
 				cus = [cus]
 
 			pat_key = "pat_{0}".format(pattern_name)
+
+			# Add monitor details to record for PoE pattern
+			if monitor == True:
+
+				self._logger.debug('Adding Monitor to record')
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"] = dict()
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["output"] = cus[0].stdout
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["uid"] = cus[0].uid
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["path"] = cus[0].working_directory				
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+
+				self._logger.debug(record)
+				return record
+
+			self._logger.debug('Adding Tasks to record')
 
 			for cu in cus:
 
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
+
+				self._logger.debug('path: {0}'.format(cu.working_directory))
 
 				inst+=1
 
@@ -216,7 +241,7 @@ class AppManager():
 					break
 
 			if stage_done:
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
 				
 			return record
 
@@ -342,7 +367,10 @@ class AppManager():
 
 							# Check if montior exists
 							if plugin.monitor != None:
-								plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
+								cu = plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
+								
+								# Update record
+								record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
@@ -462,18 +490,20 @@ class AppManager():
 									stage_monitor = None
 
 									if type(stage_instance_return) == list:
+
 										if len(stage_instance_return) == 2:
-											for item in stage_instance_return:
-												if type(item) == Kernel:
-													stage_kernel = item
-												elif ((type(item) == Monitor) and stage_monitor == None):
-													stage_monitor = item
+
+											stage_kernel = stage_instance_return[0]
+											stage_monitor = stage_instance_return[1]
+											validated_monitor = self.validate_kernel(stage_monitor)
+									
 										else:
 											stage_kernel = stage_instance_return[0]
 									else:
 										stage_kernel = stage_instance_return
 									
-									validated_kernel = self.validate_kernel(stage_kernel)
+									validated_kernels.append(self.validate_kernel(stage_kernel))
+
 
 									plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
 									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				

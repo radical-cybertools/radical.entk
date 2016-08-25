@@ -72,7 +72,7 @@ class KernelBase(object):
 		self._copy_input_data        	= []
 		self._copy_output_data       	= []
 
-		self._logger = ru.get_logger("radical.entk.kernel_plugin.{0}".format(self._kernel_name))
+		self._logger = ru.get_logger("radical.entk.kernel_base.{0}".format(self._kernel_name))
 		self._logger.debug("Kernel instantiated")
 	#  ------------------------------------------------------------- ------------------------------------------------------------------------------
 	
