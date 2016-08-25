@@ -9,20 +9,16 @@ import pprint
 
 class PoE(ExecutionPattern):
 
-	def __init__(self, ensemble_size, pipeline_size, iterations = 1, type='unit', iterative = False, name=None):
+	def __init__(self, ensemble_size, pipeline_size, iterations = 1, name=None):
 
 		self._ensemble_size = ensemble_size
 		self._pipeline_size = pipeline_size
-		self._type = type
 		self._total_iterations = iterations
-		self._iterative = iterative
-
 		self._name = name
 
 		# Internal parameters
 		self._next_stage = 1
 		self._cur_iteration = 1
-		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._state_change = False
 		self._session_id = None
@@ -45,19 +41,9 @@ class PoE(ExecutionPattern):
 		if ((type(self._ensemble_size) != list) and (type(self._ensemble_size) != int)):
 			raise TypeError(expected_type=list, actual_type=type(self._ensemble_size))
 
-		if type(self._type) != str:
-			raise TypeError(expected_type=str, actual_type=type(self._type))		
-
 		if type(self._total_iterations) != int:
 			raise TypeError(expected_type=int, actual_type=type(self._total_iterations))
 
-		if type(self._iterative) != bool:
-			raise TypeError(expected_type=bool, actual_type=type(self._iterative))
-
-
-		# Check value errors
-		if ((self._type != 'unit') and (self._type != 'complex')):
-			raise ValueError(expected_value=['unit','complex'], actual_value=self._type)
 
 	@property
 	def ensemble_size(self):
@@ -95,14 +81,6 @@ class PoE(ExecutionPattern):
 	def next_stage(self, next_stage):
 		self._next_stage = next_stage
 	
-	@property
-	def type(self):
-		return self._type
-
-	@property
-	def iterative(self):
-		return self._iterative
-
 	@property
 	def pattern_dict(self):
 		return self._pattern_dict
@@ -166,7 +144,7 @@ class PoE(ExecutionPattern):
 			raise
 
 
-	def get_output(self, stage, instance=None, monitor=None, iteration=None):
+	def get_output(self, stage, task=None, monitor=None, iteration=None):
 		
 		try:
 			if iteration == None:
@@ -175,26 +153,26 @@ class PoE(ExecutionPattern):
 			if monitor!=None:
 				return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["output"]
 
-			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["output"]
 
 		except Exception, ex:
 
 			if monitor==None:
-				self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
+				self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, task))
 			else:
 				self._logger.error("Could not get output of stage: {0}, monitor".format(stage))
 
 			raise
 
 
-	def get_file(self, stage, filename, instance=None, monitor=None, new_name=None, iteration=None):
+	def get_file(self, stage, filename, task=None, monitor=None, new_name=None, iteration=None):
 
 		try:
 			if iteration == None:
 				iteration = self._cur_iteration
 
 			if monitor == None:
-				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["path"]
 			else:
 				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["path"]
 
@@ -211,12 +189,8 @@ class PoE(ExecutionPattern):
 		except Exception, ex:
 
 			if monitor==None:
-				self._logger.error("Could not get file of stage: {0}, instance: {1}".format(stage, instance))
+				self._logger.error("Could not get file of stage: {0}, instance: {1}, error: {2}".format(stage, task, ex))
 			else:
-				self._logger.error("Could not get file of stage: {0}, monitor".format(stage))
+				self._logger.error("Could not get file of stage: {0}, monitor, error: {1}".format(stage, ex))
 
 			raise
-
-
-	#def cancel_tasks(self, tasks=None):
-

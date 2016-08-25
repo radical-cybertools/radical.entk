@@ -21,34 +21,48 @@ class Test(PoE):
 		k1.arguments = ["--file=output.txt","--text=simulation","--duration=60"]
 		k1.cores = 1
 
-		# File staging
+		# File staging can be added using the following
 		#k1.upload_input_data = []
 		#k1.copy_input_data = []
 		#k1.link_input_data = []
 		#k1.copy_output_data = []
 		#k1.download_output_data = []
 
-		# Define "async" monitor
+		# Define "async" monitor -- is executed every 20 seconds, cancels the first task if running
 		m1 = Kernel(name="echo", ktype="monitor")
-		m1.timeout = 10
+		m1.timeout = 20
 		m1.arguments = ["--file=output.txt","--text=monitor"]
-		m1.copy_input_data = ['$STAGE_1_TASK_1/output.txt']
+		m1.copy_input_data = ['$STAGE_1_TASK_2/output.txt']
 		m1.download_output_data = ['output.txt']
 		m1.cancel_tasks = [1]
 		
 		return [k1,m1]
 
-	'''
+
 	def branch_1(self):
 
-		flag = self.get_output(stage=1, instance=1)
+		# Get the output of the second task of the first stage
+		flag = self.get_output(stage=1, task=2)
 		print 'Output of stage 1 = {0}'.format(flag)
+
+		# Transfer "output.txt" file from second task of first stage and rename to "kern_data.txt"
+		self.get_file(stage=1, task=2, filename="output.txt", new_name="kern_data.txt")
+		f = open('kern_data.txt','r')
+		print f.read()
+
+		# Transfer "output.txt" file from monitor of first stage and rename to "monitor_data.txt"
+		self.get_file(stage=1, monitor=True, filename='output.txt', new_name='monitor_data.txt')
+		f = open('monitor_data.txt','r')
+		print f.read()
+
+		# Based on a value, one may set the next stage of the workflow. Restart by setting it to 1
+		''' 
 		if int(flag) >= 3:
 			self.set_next_stage(1)
 			print 'Restarting workflow'
 		else:
 			pass
-	'''
+		'''
 	
 
 if __name__ == '__main__':

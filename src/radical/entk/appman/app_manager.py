@@ -320,7 +320,7 @@ class AppManager():
 
 				try:
 					# Submit kernels stage by stage to execution plugin
-					while((self._pattern.iterative==True)or(self._pattern.cur_iteration <= self._pattern.total_iterations)):
+					while(self._pattern.cur_iteration <= self._pattern.total_iterations):
 			
 						#for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
 						while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
