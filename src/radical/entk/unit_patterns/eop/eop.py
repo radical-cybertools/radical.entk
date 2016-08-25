@@ -35,7 +35,7 @@ class EoP(ExecutionPattern):
 		self._cur_iteration = 1
 		self.kill_instances = None
 		self._pattern_status = 'New'
-		self._state_change = False
+		self._stage_change = False
 
 		self._new_stage = None
 
@@ -139,7 +139,7 @@ class EoP(ExecutionPattern):
 
 		try:
 			if stage <= self._pipeline_size:
-				self._state_change = True
+				self._stage_change = True
 				self._new_stage = stage
 			else:
 				self._logger.error("Assigned next stage greater than total pipeline size")
@@ -158,12 +158,12 @@ class EoP(ExecutionPattern):
 		self._new_stage = val
 
 	@property
-	def state_change(self):
-		return self._state_change
+	def stage_change(self):
+		return self._stage_change
 
-	@state_change.setter
-	def state_change(self, value):
-		self._state_change = value
+	@stage_change.setter
+	def stage_change(self, value):
+		self._stage_change = value
 	
 
 	def get_stage(self, stage):

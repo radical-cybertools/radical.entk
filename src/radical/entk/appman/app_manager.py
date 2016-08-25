@@ -383,13 +383,13 @@ class AppManager():
 								branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
 								branch_function()
 
-							#print self._pattern.state_change
-							if (self._pattern.state_change==True):
+							#print self._pattern.stage_change
+							if (self._pattern.stage_change==True):
 								pass
 							else:
 								self._pattern.next_stage+=1
 
-							self._pattern.state_change = False
+							self._pattern.stage_change = False
 
 							# Terminate execution
 							if self._pattern.next_stage == 0:
@@ -460,7 +460,7 @@ class AppManager():
 									branch_function(instance=cur_task)								
 
 								# Check if next stage was changed by branching function
-								if (self._pattern.state_change==True):
+								if (self._pattern.stage_change==True):
 									if self._pattern.new_stage !=0:
 										self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
 									else:
@@ -470,7 +470,7 @@ class AppManager():
 								else:
 									self._pattern.next_stage[cur_task-1] +=1
 
-								self._pattern.state_change = False
+								self._pattern.stage_change = False
 								self._pattern.new_stage = None
 
 								# Terminate execution

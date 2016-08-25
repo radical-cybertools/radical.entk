@@ -20,7 +20,7 @@ class PoE(ExecutionPattern):
 		self._next_stage = 1
 		self._cur_iteration = 1
 		self._pattern_status = 'New'
-		self._state_change = False
+		self._stage_change = False
 		self._session_id = None
 
 		# Pattern specific dict
@@ -96,19 +96,19 @@ class PoE(ExecutionPattern):
 		try:
 			if stage <= self._pipeline_size:
 				self._next_stage = stage
-				self._state_change = True
+				self._stage_change = True
 		
 		except Exception, ex:
 			self._logger.error("Could not set next stage, error: {0}".format(ex))
 			raise
 
 	@property
-	def state_change(self):
-		return self._state_change
+	def stage_change(self):
+		return self._stage_change
 
-	@state_change.setter
-	def state_change(self, value):
-		self._state_change = value
+	@stage_change.setter
+	def stage_change(self, value):
+		self._stage_change = value
 	
 
 	def get_stage(self, stage):
