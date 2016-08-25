@@ -15,20 +15,30 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-			"name":         "sleep_module",
+			"name":         "sleep",
 			"description":  "Writes Hello World to a file",
 			"arguments":   {"--duration=":     
 						{
 							"mandatory": True,
 							"description": "The input file."
 						},
+						"--file=":     
+						{
+							"mandatory": True,
+							"description": "The input file."
+						},
+						"--text=":
+						{
+							"mandatory": True,
+							"description": "Prints 'this is ' + text"
+						}
 					},
 			"machine_configs": 
 			{
 				"*": {
 					"environment"   : None,
 					"pre_exec"      : None,
-					"executable"    : "/bin/sleep",
+					"executable"    : "/bin/bash",
 					"uses_mpi"      : False
 				}
 			}
@@ -62,7 +72,7 @@ class sleep_kernel(KernelBase):
 		cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
 		executable = cfg['executable']
-		arguments  = ['{0}'.format(self.get_arg("--duration="))]
+		arguments  = ['-l', '-c', "/bin/sleep {2} | /bin/echo 'This is {1}' >> {0}".format(self.get_arg("--file="), self.get_arg("--text="), self.get_arg("--duration="))]
 
 		self._executable  = executable
 		self._arguments   = arguments

@@ -222,8 +222,6 @@ class AppManager():
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
 
-				self._logger.debug('path: {0}'.format(cu.working_directory))
-
 				inst+=1
 
 			stage_done=True
@@ -422,6 +420,7 @@ class AppManager():
 
 				except Exception, ex:
 					self._logger.error("Plugin setup failed, error: {0}".format(ex))
+					raise
 
 
 				try:
@@ -432,6 +431,31 @@ class AppManager():
 							self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
 							self._logger.error("Pattern execution FAILED.")
 							sys.exit(1)
+
+						if state == rp.AGENT_STAGING_INPUT_PENDING
+
+							try:
+								cur_stage = int(unit.name.split('-')[1])
+								cur_task = int(unit.name.split('-')[3])
+								self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
+								record=self.get_record()
+								self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
+
+								# Now that we have the unit diretories, we can start the monitor !
+								if plugin.monitor[cur_task-1] != None:
+									cu = plugin.execute_monitor(record=record, tasks=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task)
+
+									# Update record
+									record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
+
+								self._logger.info(record)
+
+
+							except Exception, ex:
+								self._logger.error("Monitor execution failed, error: {0}".format(ex))
+								raise
+
+
 
 						if state == rp.DONE:
 
@@ -463,7 +487,7 @@ class AppManager():
 								if (self._pattern.stage_change==True):
 									if self._pattern.new_stage !=0:
 										self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
-									else:
+									else:"Monitor execution failed, error: {0}".format(ex)
 										self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
 
 									self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
@@ -519,7 +543,8 @@ class AppManager():
 					# Get kernel from execution pattern
 					stage =	 self._pattern.get_stage(stage=1)
 
-					list_kernels_stage = list()
+					validated_kernels = list()
+					validated_monitors = list()
 
 					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 					# Create instance key/vals for each stage
@@ -535,21 +560,21 @@ class AppManager():
 
 						if type(stage_instance_return) == list:
 							if len(stage_instance_return) == 2:
-								for item in stage_instance_return:
-									if type(item) == Kernel:
-										stage_kernel = item
-									elif ((type(item) == Monitor) and stage_monitor == None):
-										stage_monitor = item
+								stage_kernel = stage_instance_return[0]
+								stage_monitor = stage_instance_return[1]
 							else:
 								stage_kernel = stage_instance_return[0]
+								stage_monitor = None
 						else:
 							stage_kernel = stage_instance_return
+							stage_monitor = None
 									
-						list_kernels_stage.append(self.validate_kernel(stage_kernel))
+						validated_kernels.append(self.validate_kernel(stage_kernel))
+						validated_monitor.append(self.validate_kernel(stage_monitor))
+
 
 					# Pass resource-unbound kernels to execution plugin
-					#print len(list_kernels_stage)
-					plugin.set_workload(kernels=list_kernels_stage, monitor=stage_monitor)
+					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
 					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 					cus = plugin.execute_tasks(tasks=cus)
 

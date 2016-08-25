@@ -13,8 +13,8 @@ class Test(EoP):
 		super(Test,self).__init__(ensemble_size, pipeline_size)
 
 	def stage_1(self, instance):
-		k1 = Kernel(name="echo")
-		k1.arguments = ["--file=output.txt","--text=sequence_search"]
+		k1 = Kernel(name="sleep")
+		k1.arguments = ["--file=output.txt","--text=simulation","--duration=60"]
 		k1.cores = 1
 
 		# File staging
@@ -23,7 +23,16 @@ class Test(EoP):
 		#k1.link_input_data = []
 		#k1.copy_output_data = []
 		#k1.download_output_data = []
-		return k1
+
+		# Define "async" monitor -- is executed every 20 seconds, cancels the first task if running
+		m1 = Kernel(name="echo", ktype="monitor")
+		m1.timeout = 20
+		m1.arguments = ["--file=output.txt","--text=monitor"]
+		m1.copy_input_data = ['$STAGE_1_TASK_2/output.txt']
+		m1.download_output_data = ['output.txt']
+		#m1.cancel_tasks = [1]
+
+		return [k1,m1]
 
 
 	def stage_2(self, instance):
@@ -120,7 +129,7 @@ class Test(EoP):
 if __name__ == '__main__':
 
 	# Create pattern object with desired ensemble size, pipeline size
-	pipe = Test(ensemble_size=2, pipeline_size=6)
+	pipe = Test(ensemble_size=2, pipeline_size=1)
 
 	# Create an application manager
 	app = AppManager(name='Ebola')

@@ -81,7 +81,6 @@ class PluginPoE(object):
 		try:
 
 			self._logger.info("Executing monitor...")
-			self._logger.info(record)
 			self._monitor._bind_to_resource(self._resource)
 			rbound_kernel = self._monitor
 			cud = rp.ComputeUnitDescription()
