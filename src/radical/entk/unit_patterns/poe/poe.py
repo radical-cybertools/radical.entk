@@ -151,7 +151,7 @@ class PoE(ExecutionPattern):
 				iteration = self._cur_iteration
 
 			if monitor!=None:
-				return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["output"]
+				return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"]
 
 			return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["output"]
 
@@ -174,7 +174,7 @@ class PoE(ExecutionPattern):
 			if monitor == None:
 				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["path"]
 			else:
-				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["path"]
+				directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"]
 
 			file_url = directory + '/' + filename
 

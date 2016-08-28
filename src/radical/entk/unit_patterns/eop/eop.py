@@ -32,6 +32,10 @@ class EoP(ExecutionPattern):
 		for i in range(1, ensemble_size+1):
 			self._incremented_tasks.append(0)
 
+		self._incremented_monitors = []
+		for i in range(1, ensemble_size+1):
+			self._incremented_monitors.append(0)
+
 		self._cur_iteration = 1
 		self.kill_instances = None
 		self._pattern_status = 'New'

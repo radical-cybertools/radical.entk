@@ -109,61 +109,60 @@ class AppManager():
 
 		try:
 
-			found=False
-			for kernel in self._loaded_kernels:
+			if user_kernel != None:
+				found=False
+				for kernel in self._loaded_kernels:
 
-				if kernel().name == user_kernel.name:
+					if kernel().name == user_kernel.name:
 
-					found=True
+						found=True
 
-					new_kernel = kernel()
+						new_kernel = kernel()
 
-					if user_kernel.pre_exec != None:
-						new_kernel.pre_exec = user_kernel.pre_exec
+						if user_kernel.pre_exec != None:
+							new_kernel.pre_exec = user_kernel.pre_exec
 
-					if user_kernel.executable != None:
-						new_kernel.executable = user_kernel.executable
+						if user_kernel.executable != None:
+							new_kernel.executable = user_kernel.executable
 
-					if user_kernel.arguments != None:
-						new_kernel.arguments = user_kernel.arguments
+						if user_kernel.arguments != None:
+							new_kernel.arguments = user_kernel.arguments
 
-					if user_kernel.uses_mpi != None:	
-						new_kernel.uses_mpi = user_kernel.uses_mpi
+						if user_kernel.uses_mpi != None:	
+							new_kernel.uses_mpi = user_kernel.uses_mpi
 
-					if user_kernel.cores != None:
-						new_kernel.cores = user_kernel.cores
+						if user_kernel.cores != None:
+							new_kernel.cores = user_kernel.cores
 
-					if user_kernel.upload_input_data != None:
-						new_kernel.upload_input_data = user_kernel.upload_input_data
+						if user_kernel.upload_input_data != None:
+							new_kernel.upload_input_data = user_kernel.upload_input_data
 
-					if user_kernel.copy_input_data != None:
-						new_kernel.copy_input_data = user_kernel.copy_input_data
+						if user_kernel.copy_input_data != None:
+							new_kernel.copy_input_data = user_kernel.copy_input_data
 
-					if user_kernel.link_input_data != None:
-						new_kernel.link_input_data = user_kernel.link_input_data
+						if user_kernel.link_input_data != None:
+							new_kernel.link_input_data = user_kernel.link_input_data
 
-					if user_kernel.copy_output_data != None:
-						new_kernel.copy_output_data = user_kernel.copy_output_data
+						if user_kernel.copy_output_data != None:
+							new_kernel.copy_output_data = user_kernel.copy_output_data
 
-					if user_kernel.download_output_data != None:
-						new_kernel.download_output_data = user_kernel.download_output_data
+						if user_kernel.download_output_data != None:
+							new_kernel.download_output_data = user_kernel.download_output_data
 
-					if user_kernel.timeout != None:
-						new_kernel.timeout = user_kernel.timeout
+						if user_kernel.timeout != None:
+							new_kernel.timeout = user_kernel.timeout
 
-					if user_kernel.cancel_tasks != None:
 						new_kernel.cancel_tasks = user_kernel.cancel_tasks
 
+						new_kernel.validate_arguments()
 
-					new_kernel.validate_arguments()
+						self._logger.debug("Kernel {0} validated".format(new_kernel.name))
 
-					self._logger.debug("Kernel {0} validated".format(new_kernel.name))
+						return new_kernel
 
-					return new_kernel
-
-			if found==False:
-				self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
-				raise 
+				if found==False:
+					self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+					raise 
 
 		except Exception, ex:
 
@@ -199,19 +198,38 @@ class AppManager():
 			pat_key = "pat_{0}".format(pattern_name)
 
 			# Add monitor details to record for PoE pattern
-			if monitor == True:
+			if ((monitor == True)and(instance==None)):
 
-				self._logger.debug('Adding Monitor to record')
+				self._logger.debug('PoE: Adding Monitor to record')
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"] = dict()
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"] = dict()
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["output"] = cus[0].stdout
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["uid"] = cus[0].uid
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor"]["path"] = cus[0].working_directory				
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"] = cus[0].stdout
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["uid"] = cus[0].uid
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"] = cus[0].working_directory				
 
 				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
 
-				self._logger.debug(record)
+				self._logger.debug('EoP: Added Monitor to record')
+
+				#self._logger.debug(record)
+				return record
+
+			# Add monitor details to record for EoP pattern
+			if ((monitor==True)and(instance!=None)):
+
+				self._logger.debug('EoP: Adding Monitor to record')
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)] = dict()
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["output"] = cus[0].stdout
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["uid"] = cus[0].uid
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["path"] = cus[0].working_directory				
+
+				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+
+				self._logger.debug('EoP: Added Monitor to record')
+
 				return record
 
 			self._logger.debug('Adding Tasks to record')
@@ -425,117 +443,143 @@ class AppManager():
 
 				try:
 
+
+					#def handle_monitor(record=record, plugin=plugin, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task):
+					def handle_monitor(record, plugin, task, cur_pat, cur_iter, cur_stage, cur_task):
+						cu = plugin.execute_monitor(record=record, task=task, cur_pat=cur_pat, cur_iter=cur_iter, cur_stage=cur_stage, cur_task=cur_task)
+						
+						# Update record
+						self.add_to_record(record=record, cus=cu, pattern_name = cur_pat, iteration=cur_iter, stage=cur_stage, instance=cur_task, monitor=True)
+
+						sys.exit()
+
+
 					def unit_state_cb (unit, state) :
 
-						if state == rp.FAILED:
-							self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-							self._logger.error("Pattern execution FAILED.")
-							sys.exit(1)
+						# Perform these operations only for tasks and not monitors
 
-						if state == rp.AGENT_STAGING_INPUT_PENDING
+						if unit.name.startswith('stage'):
 
-							try:
-								cur_stage = int(unit.name.split('-')[1])
-								cur_task = int(unit.name.split('-')[3])
-								self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
-								record=self.get_record()
-								self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
+							self._logger.debug('Callback initiated for {0}'.format(unit.name))
 
-								# Now that we have the unit diretories, we can start the monitor !
-								if plugin.monitor[cur_task-1] != None:
-									cu = plugin.execute_monitor(record=record, tasks=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task)
+							if state == rp.FAILED:
+								self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+								self._logger.error("Pattern execution FAILED.")
+								sys.exit(1)
 
-									# Update record
-									record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
+							if state == rp.AGENT_STAGING_INPUT_PENDING:
 
-								self._logger.info(record)
+								try:
+									cur_stage = int(unit.name.split('-')[1])
+									cur_task = int(unit.name.split('-')[3])
+									self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
+									record=self.get_record()
+									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
 
+									# Now that we have the unit diretories, we can start the monitor !
+									if plugin.monitor[cur_task-1] != None:
 
-							except Exception, ex:
-								self._logger.error("Monitor execution failed, error: {0}".format(ex))
-								raise
+										import threading
 
+										thread = threading.Thread(target=handle_monitor, name='monitor_{0}'.format(cur_task-1),args=(record, plugin, unit, self._pattern.name, self._pattern.cur_iteration, cur_stage, cur_task))
+										thread.start()
 
+										while thread.is_alive() != True:
+											self._logger.debug('Thread {0} alive'.format(thread.name))
+										#cu = plugin.execute_monitor(record=record, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task)
 
-						if state == rp.DONE:
-
-							try:
-
-								cur_stage = int(unit.name.split('-')[1])
-								cur_task = int(unit.name.split('-')[3])
-
-								record=self.get_record()
-
-								self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
-								#-----------------------------------------------------------------------
-								# Increment tasks list accordingly
-								plugin.tot_fin_tasks[cur_stage-1]+=1
-
-								record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
-								self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
-
-								# Check for branch function for current stage
-								branch_function = None
-
-								# Execute branch if it exists
-								if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(cur_stage)]["branch"]):
-									self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
-									branch_function = self._pattern.get_branch(stage=cur_stage)
-									branch_function(instance=cur_task)								
-
-								# Check if next stage was changed by branching function
-								if (self._pattern.stage_change==True):
-									if self._pattern.new_stage !=0:
-										self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
-									else:"Monitor execution failed, error: {0}".format(ex)
-										self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-
-									self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
-								else:
-									self._pattern.next_stage[cur_task-1] +=1
-
-								self._pattern.stage_change = False
-								self._pattern.new_stage = None
-
-								# Terminate execution
-								if self._pattern.next_stage[cur_task-1] == 0:
-									self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
-
-								# Check if this is the last task of the stage
-								if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-									self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
-
-
-								if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
-								
-									stage =	 self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-									stage_instance_return = stage(cur_task)
-
-									stage_monitor = None
-
-									if type(stage_instance_return) == list:
-
-										if len(stage_instance_return) == 2:
-
-											stage_kernel = stage_instance_return[0]
-											stage_monitor = stage_instance_return[1]
-											validated_monitor = self.validate_kernel(stage_monitor)
+										# Update record
+										#record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, instance=cur_task, monitor=True)
 									
+									#self._logger.info(record)
+
+								except Exception, ex:
+									self._logger.error("Monitor execution failed, error: {0}".format(ex))
+									raise
+
+
+							if state == rp.DONE:
+
+								try:
+
+									cur_stage = int(unit.name.split('-')[1])
+									cur_task = int(unit.name.split('-')[3])
+
+									record=self.get_record()
+
+									self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
+									#-----------------------------------------------------------------------
+									# Increment tasks list accordingly
+									plugin.tot_fin_tasks[cur_stage-1]+=1
+
+									record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
+									self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
+
+									# Check for branch function for current stage
+									branch_function = None
+
+									# Execute branch if it exists
+									if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(cur_stage)]["branch"]):
+										self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
+										branch_function = self._pattern.get_branch(stage=cur_stage)
+										branch_function(instance=cur_task)								
+
+									# Check if next stage was changed by branching function
+									if (self._pattern.stage_change==True):
+										if self._pattern.new_stage !=0:
+											self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
 										else:
-											stage_kernel = stage_instance_return[0]
+											self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+
+										self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
 									else:
-										stage_kernel = stage_instance_return
+										self._pattern.next_stage[cur_task-1] +=1
+
+									self._pattern.stage_change = False
+									self._pattern.new_stage = None
+
+									# Terminate execution
+									if self._pattern.next_stage[cur_task-1] == 0:
+										self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
+
+									# Check if this is the last task of the stage
+									if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
+										self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+
+
+									if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
+								
+										stage =	 self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+										stage_instance_return = stage(cur_task)
+
+										stage_monitor = None
+
+										if type(stage_instance_return) == list:
+
+											if len(stage_instance_return) == 2:
+
+												stage_kernel = stage_instance_return[0]
+												stage_monitor = stage_instance_return[1]
 									
-									validated_kernels.append(self.validate_kernel(stage_kernel))
+											else:
+												stage_kernel = stage_instance_return[0]
+												stage_monitor = None
+
+										else:
+											stage_kernel = stage_instance_return
+											stage_monitor = None
+									
+										validated_kernels = self.validate_kernel(stage_kernel)
+										validated_monitor = self.validate_kernel(stage_monitor)
 
 
-									plugin.set_workload(kernels=validated_kernel, monitor=stage_monitor)
-									cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
-									cus = plugin.execute_tasks(tasks=cud)
+										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor)
+										cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
+										cus = plugin.execute_tasks(tasks=cud)
 
-							except Exception, ex:
-								self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
-								raise
+								except Exception, ex:
+									self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
+									raise
 
 					#register callbacks
 					task_manager.register_callback(unit_state_cb)
@@ -551,9 +595,6 @@ class AppManager():
 					
 					instances = self._pattern.ensemble_size
 					
-					# Initialization
-					stage_monitor = None
-
 					for inst in range(1, instances+1):
 
 						stage_instance_return = stage(inst)
@@ -570,11 +611,11 @@ class AppManager():
 							stage_monitor = None
 									
 						validated_kernels.append(self.validate_kernel(stage_kernel))
-						validated_monitor.append(self.validate_kernel(stage_monitor))
+						validated_monitors.append(self.validate_kernel(stage_monitor))
 
 
 					# Pass resource-unbound kernels to execution plugin
-					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
+					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
 					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 					cus = plugin.execute_tasks(tasks=cus)
 

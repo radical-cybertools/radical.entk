@@ -25,32 +25,55 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 
 	elif len(placeholder.split('_'))==8:
 		ref_pat		= int(placeholder.split('_')[1])
-		ref_iter		= int(placeholder.split('_')[3])
+		ref_iter	= int(placeholder.split('_')[3])
 		ref_stage 	= int(placeholder.split('_')[5])
-		ref_task 	= int(placeholder.split('_')[7])
+
+		if placeholder.split('_')[6] == 'TASK':
+			ref_task 	= int(placeholder.split('_')[7])
+			ref_monitor = None
+		elif placeholder.split('_')[6] == 'MONITOR':
+			ref_task 	= None
+			ref_monitor = int(placeholder.split('_')[7])
 
 
 	elif len(placeholder.split('_'))==6:
 		ref_pat		= cur_pat
-		ref_iter		= int(placeholder.split('_')[1])
+		ref_iter	= int(placeholder.split('_')[1])
 		ref_stage 	= int(placeholder.split('_')[3])
-		ref_task 	= int(placeholder.split('_')[5])
+
+		if placeholder.split('_')[4] == 'TASK':
+			ref_task 	= int(placeholder.split('_')[5])
+			ref_monitor = None
+		elif placeholder.split('_')[4] == 'MONITOR':
+			ref_task 	= None
+			ref_monitor = int(placeholder.split('_')[5])
 
 	elif len(placeholder.split('_'))==4:
 
 		ref_pat		= cur_pat
-		ref_iter		= cur_iter
+		ref_iter	= cur_iter
 		ref_stage 	= int(placeholder.split('_')[1])
-		ref_task	= int(placeholder.split('_')[3])
+
+		if placeholder.split('_')[2] == 'TASK':
+			ref_task	= int(placeholder.split('_')[3])
+			ref_monitor = None
+		elif placeholder.split('_')[2] == 'MONITOR':
+			ref_task 	= None
+			ref_monitor = int(placeholder.split('_')[3])
+
 
 	elif len(placeholder.split('_'))==2:
 
 		ref_pat		= cur_pat
-		ref_iter		= cur_iter
+		ref_iter	= cur_iter
 		ref_stage	= int(placeholder.split('_')[1])
 		ref_task	= cur_task
 
 	try:
-		return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instance_{0}".format(ref_task)]["path"])
+		if ref_task != None:
+			return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instance_{0}".format(ref_task)]["path"])
+		elif ref_monitor != None:
+			return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["monitor_{0}".format(ref_task)]["path"])
+			
 	except Exception, ex:
 		print "Please check placeholders used, error: {0}".format(ex)

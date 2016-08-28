@@ -64,6 +64,7 @@ class KernelBase(object):
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
 
 		self._timeout = None
+		self._cancel_tasks = None
 
 		self._upload_input_data      	= []
 		self._link_input_data        	= []
