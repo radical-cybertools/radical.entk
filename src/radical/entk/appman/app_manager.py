@@ -111,6 +111,7 @@ class AppManager():
 
 			if user_kernel == None:
 				return None
+
 			found=False
 			for kernel in self._loaded_kernels:
 
@@ -374,12 +375,12 @@ class AppManager():
 									stage_monitor = None
 									
 								validated_kernels.append(self.validate_kernel(stage_kernel))
-								validated_monitors.append(self.validate_kernel(stage_monitor))
+							validated_monitor = self.validate_kernel(stage_monitor)
 
 
 							# Pass resource-unbound kernels to execution plugin
 							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
+							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
 							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 
 							# Update record
@@ -481,7 +482,7 @@ class AppManager():
 									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
 
 									# Now that we have the unit diretories, we can start the monitor !
-									if plugin.monitor[cur_task-1] != None:
+									if plugin.monitor[cur_task]-1] != None:
 
 										import threading
 
@@ -504,17 +505,13 @@ class AppManager():
 									cur_task = int(unit.name.split('-')[3])
 
 									# Close monitoring thread
+									plugin.monitor_thread[cur_task-1].join()									
 
-									while plugin.monitor_thread[cur_task-1].is_alive() == True:
-										self._logger.debug('Thread {0} alive'.format(plugin.monitor_thread[cur_task-1].name))
-
-									plugin.monitor_thread[cur_task-1].join()
-
-
-									while plugin.monitor_thread[cur_task-1].is_alive() == True:
-										self._logger.debug('Thread {0} alive'.format(plugin.monitor_thread[cur_task-1].name))
+									if plugin.monitor_thread[cur_task-1].is_alive() != True:
+										self._logger.debug('Closing thread {0}'.format(plugin.monitor_thread[cur_task-1].name))
 
 									plugin.monitor_thread[cur_task-1] = None
+
 
 									record=self.get_record()
 

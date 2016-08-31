@@ -68,7 +68,7 @@ class PluginEoP(object):
 		self._monitor_thread = val
 
 
-	def set_workload(self, kernels, monitor=None):
+	def set_workload(self, kernels, monitor=None, cur_task = None):
 
 		if type(kernels) != list:
 			self._executable_workload = [kernels]
@@ -77,15 +77,25 @@ class PluginEoP(object):
 
 		self._logger.info("New workload assigned to plugin for execution")
 
-		self._monitor = monitor
-		flag=0
-		for item in self._monitor:
-			if item != None:
-				flag=1
-			self._monitor_thread.append(None)
+		if type(monitor) == list:
+			self._monitor = monitor
+			self._monitor_thread = [None for item in self._monitor]
 
-		if flag==1:
-			self._logger.info("Monitor for workload assigned")
+			flag=0
+			for item in self._monitor:
+				if item != None:
+					flag=1
+
+			if flag==1:
+				self._logger.info("Monitor for workload assigned")
+
+		else:
+			self._monitor[cur_task-1] = monitor
+
+			if self._monitor[cur_task-1] != None:
+				self._logger.info("Monitor for workload assigned")
+
+
 
 	def add_manager(self, manager):
 		self._manager = manager

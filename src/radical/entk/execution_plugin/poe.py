@@ -23,7 +23,7 @@ class PluginPoE(object):
 	def __init__(self):
 
 		self._executable_workload = list()
-		self._resource = None
+		self._resource = None, sorry I should have sent to Mark earlier.
 		self._manager = None
 		self._monitor = None
 
@@ -32,7 +32,7 @@ class PluginPoE(object):
 
 		self._logger.info("Plugin PoE created")
 
-
+, sorry I should have sent to Mark earlier.
 	@property
 	def monitor(self):
 		return self._monitor
@@ -60,13 +60,7 @@ class PluginPoE(object):
 
 		self._monitor = monitor
 
-		flag=0
-		for item in self._monitor:
-			if item != None:
-				flag=1
-				break
-
-		if flag==1:
+		if self._monitor!=None:
 			self._logger.info("Monitor for workload assigned")
 
 	def add_workload(self, kernels):
