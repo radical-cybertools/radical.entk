@@ -109,60 +109,61 @@ class AppManager():
 
 		try:
 
-			if user_kernel != None:
-				found=False
-				for kernel in self._loaded_kernels:
+			if user_kernel == None:
+				return None
+			found=False
+			for kernel in self._loaded_kernels:
 
-					if kernel().name == user_kernel.name:
+				if kernel().name == user_kernel.name:
 
-						found=True
+					found=True
 
-						new_kernel = kernel()
+					new_kernel = kernel()
 
-						if user_kernel.pre_exec != None:
-							new_kernel.pre_exec = user_kernel.pre_exec
+					if user_kernel.pre_exec != None:
+						new_kernel.pre_exec = user_kernel.pre_exec
 
-						if user_kernel.executable != None:
-							new_kernel.executable = user_kernel.executable
+					if user_kernel.executable != None:
+						new_kernel.executable = user_kernel.executable
 
-						if user_kernel.arguments != None:
-							new_kernel.arguments = user_kernel.arguments
+					if user_kernel.arguments != None:
+						new_kernel.arguments = user_kernel.arguments
 
-						if user_kernel.uses_mpi != None:	
-							new_kernel.uses_mpi = user_kernel.uses_mpi
+					if user_kernel.uses_mpi != None:	
+						new_kernel.uses_mpi = user_kernel.uses_mpi
 
-						if user_kernel.cores != None:
-							new_kernel.cores = user_kernel.cores
+					if user_kernel.cores != None:
+						new_kernel.cores = user_kernel.cores
 
-						if user_kernel.upload_input_data != None:
-							new_kernel.upload_input_data = user_kernel.upload_input_data
+					if user_kernel.upload_input_data != None:
+						new_kernel.upload_input_data = user_kernel.upload_input_data
 
-						if user_kernel.copy_input_data != None:
-							new_kernel.copy_input_data = user_kernel.copy_input_data
+					if user_kernel.copy_input_data != None:
+						new_kernel.copy_input_data = user_kernel.copy_input_data
 
-						if user_kernel.link_input_data != None:
-							new_kernel.link_input_data = user_kernel.link_input_data
+					if user_kernel.link_input_data != None:
+						new_kernel.link_input_data = user_kernel.link_input_data
 
-						if user_kernel.copy_output_data != None:
-							new_kernel.copy_output_data = user_kernel.copy_output_data
+					if user_kernel.copy_output_data != None:
+						new_kernel.copy_output_data = user_kernel.copy_output_data
 
-						if user_kernel.download_output_data != None:
-							new_kernel.download_output_data = user_kernel.download_output_data
+					if user_kernel.download_output_data != None:
+						new_kernel.download_output_data = user_kernel.download_output_data
 
-						if user_kernel.timeout != None:
-							new_kernel.timeout = user_kernel.timeout
+					if user_kernel.timeout != None:
+						new_kernel.timeout = user_kernel.timeout
 
-						new_kernel.cancel_tasks = user_kernel.cancel_tasks
+					new_kernel.cancel_tasks = user_kernel.cancel_tasks
 
-						new_kernel.validate_arguments()
+					new_kernel.validate_arguments()
 
-						self._logger.debug("Kernel {0} validated".format(new_kernel.name))
+					self._logger.debug("Kernel {0} validated".format(new_kernel.name))
 
-						return new_kernel
+					return new_kernel
 
-				if found==False:
-					self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
-					raise 
+			if found==False:
+				self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+				raise 
 
 		except Exception, ex:
 
@@ -345,6 +346,7 @@ class AppManager():
 							stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
 
 							validated_kernels = list()
+							validated_monitors = list()
 
 							# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 							# Create instance key/vals for each stage
@@ -364,18 +366,20 @@ class AppManager():
 									if len(stage_instance_return) == 2:
 										stage_kernel = stage_instance_return[0]
 										stage_monitor = stage_instance_return[1]
-										validated_monitor = self.validate_kernel(stage_monitor)
 									else:
 										stage_kernel = stage_instance_return[0]
+										stage_monitor = None
 								else:
 									stage_kernel = stage_instance_return
+									stage_monitor = None
 									
 								validated_kernels.append(self.validate_kernel(stage_kernel))
+								validated_monitors.append(self.validate_kernel(stage_monitor))
 
 
 							# Pass resource-unbound kernels to execution plugin
 							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
+							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
 							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 
 							# Update record
@@ -451,7 +455,7 @@ class AppManager():
 						# Update record
 						self.add_to_record(record=record, cus=cu, pattern_name = cur_pat, iteration=cur_iter, stage=cur_stage, instance=cur_task, monitor=True)
 
-						sys.exit()
+						return
 
 
 					def unit_state_cb (unit, state) :
@@ -460,7 +464,7 @@ class AppManager():
 
 						if unit.name.startswith('stage'):
 
-							self._logger.debug('Callback initiated for {0}'.format(unit.name))
+							self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
 							if state == rp.FAILED:
 								self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
@@ -482,15 +486,9 @@ class AppManager():
 										import threading
 
 										thread = threading.Thread(target=handle_monitor, name='monitor_{0}'.format(cur_task-1),args=(record, plugin, unit, self._pattern.name, self._pattern.cur_iteration, cur_stage, cur_task))
-										thread.start()
-
-										while thread.is_alive() != True:
-											self._logger.debug('Thread {0} alive'.format(thread.name))
-										#cu = plugin.execute_monitor(record=record, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task)
-
-										# Update record
-										#record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, instance=cur_task, monitor=True)
-									
+										plugin.monitor_thread[cur_task-1] = thread
+										plugin.monitor_thread[cur_task-1].start()						
+								
 									#self._logger.info(record)
 
 								except Exception, ex:
@@ -498,12 +496,25 @@ class AppManager():
 									raise
 
 
-							if state == rp.DONE:
+							if ((state == rp.DONE)or(state==rp.CANCELED)):
 
 								try:
 
 									cur_stage = int(unit.name.split('-')[1])
 									cur_task = int(unit.name.split('-')[3])
+
+									# Close monitoring thread
+
+									while plugin.monitor_thread[cur_task-1].is_alive() == True:
+										self._logger.debug('Thread {0} alive'.format(plugin.monitor_thread[cur_task-1].name))
+
+									plugin.monitor_thread[cur_task-1].join()
+
+
+									while plugin.monitor_thread[cur_task-1].is_alive() == True:
+										self._logger.debug('Thread {0} alive'.format(plugin.monitor_thread[cur_task-1].name))
+
+									plugin.monitor_thread[cur_task-1] = None
 
 									record=self.get_record()
 

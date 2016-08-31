@@ -26,6 +26,7 @@ class PluginEoP(object):
 		self._resource = None
 		self._manager = None
 		self._monitor = list()
+		self._monitor_thread = list()
 
 		self._logger = ru.get_logger("radical.entk.plugin.eop")
 		self._reporter = self._logger.report
@@ -58,6 +59,15 @@ class PluginEoP(object):
 	def monitor(self, val):
 		self._monitor = val
 
+	@property
+	def monitor_thread(self):
+		return self._monitor_thread
+	
+	@monitor_thread.setter
+	def monitor_thread(self, val):
+		self._monitor_thread = val
+
+
 	def set_workload(self, kernels, monitor=None):
 
 		if type(kernels) != list:
@@ -72,7 +82,7 @@ class PluginEoP(object):
 		for item in self._monitor:
 			if item != None:
 				flag=1
-				break
+			self._monitor_thread.append(None)
 
 		if flag==1:
 			self._logger.info("Monitor for workload assigned")
@@ -195,7 +205,7 @@ class PluginEoP(object):
 			self._logger.debug("Timeout: {0}".format(self._monitor[cur_task-1].timeout))
 
 
-			while ((task.state!=rp.DONE)and(task.state!=rp.FAILED)and(task.state!=rp.CANCELED)):
+			while True:
 
 				monitor_handle = self._manager.submit_units(cud)
 				self._logger.info("Monitor submitted")
@@ -222,11 +232,12 @@ class PluginEoP(object):
 					#self._logger.info("Monitor resubmitted")
 
 				task = self._manager.get_units(task.uid)
+				break
 
 			# Wait for pending monitor task to finish
-			self._logger.debug("Waiting for residual monitor {0}, state {1}".format(monitor_handle.uid, monitor_handle.state))
-			if (monitor_handle.state != rp.DONE)and(monitor_handle.state != rp.FAILED)and(monitor_handle.state != rp.CANCELED):
-				self._manager.wait_units(monitor_handle.uid)
+			#self._logger.debug("Waiting for residual monitor {0}, state {1}".format(monitor_handle.uid, monitor_handle.state))
+			#if (monitor_handle.state != rp.DONE)and(monitor_handle.state != rp.FAILED)and(monitor_handle.state != rp.CANCELED):
+			#	self._manager.wait_units(monitor_handle.uid)
 
 			self._logger.debug("Stage {0} of pipeline {1} execution completed".format(cur_stage,cur_task))
 

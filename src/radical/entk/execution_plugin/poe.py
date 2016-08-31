@@ -59,7 +59,14 @@ class PluginPoE(object):
 		self._logger.info("New workload assigned to plugin for execution")
 
 		self._monitor = monitor
-		if self._monitor is not None:
+
+		flag=0
+		for item in self._monitor:
+			if item != None:
+				flag=1
+				break
+
+		if flag==1:
 			self._logger.info("Monitor for workload assigned")
 
 	def add_workload(self, kernels):

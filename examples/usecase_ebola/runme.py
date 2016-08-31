@@ -130,7 +130,7 @@ class Test(EoP):
 if __name__ == '__main__':
 
 	# Create pattern object with desired ensemble size, pipeline size
-	pipe = Test(ensemble_size=2, pipeline_size=1)
+	pipe = Test(ensemble_size=2, pipeline_size=3)
 
 	# Create an application manager
 	app = AppManager(name='Ebola')
