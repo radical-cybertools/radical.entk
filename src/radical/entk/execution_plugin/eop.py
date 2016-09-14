@@ -121,13 +121,13 @@ class PluginEoP(object):
 					rbound_kernel = kernel
 					cud = rp.ComputeUnitDescription()
 					cud.name = "stage-{0}-task-{1}".format(stage, inst)
-					self._logger.debug('Creating task {0} of stage {1}'.format(inst,stage))
+					self._logger.debug('Creating stage {1} of pipeline {0}'.format(inst,stage))
 
 					cud.pre_exec       	= rbound_kernel.pre_exec
 					cud.executable     	= rbound_kernel.executable
 					cud.arguments      	= rbound_kernel.arguments
-					cud.mpi            		= rbound_kernel.uses_mpi
-					cud.cores 		= rbound_kernel.cores
+					cud.mpi            	= rbound_kernel.uses_mpi
+					cud.cores 			= rbound_kernel.cores
 					cud.input_staging  	= get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 					cud.output_staging 	= get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
 

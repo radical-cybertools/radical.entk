@@ -164,7 +164,7 @@ class AppManager():
 
 			if found==False:
 				self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
-				raise 
+				raise Exception()
 
 		except Exception, ex:
 
@@ -468,7 +468,9 @@ class AppManager():
 							self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
 							if state == rp.FAILED:
-								self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+								cur_stage = int(unit.name.split('-')[1])
+								cur_pipe = int(unit.name.split('-')[3])
+								self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_pipe, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
 								self._logger.error("Pattern execution FAILED.")
 								sys.exit(1)
 
@@ -482,7 +484,7 @@ class AppManager():
 									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=cur_stage, instance=cur_task)
 
 									# Now that we have the unit diretories, we can start the monitor !
-									if plugin.monitor[cur_task]-1] != None:
+									if plugin.monitor[cur_task-1] != None:
 
 										import threading
 
@@ -505,12 +507,13 @@ class AppManager():
 									cur_task = int(unit.name.split('-')[3])
 
 									# Close monitoring thread
-									plugin.monitor_thread[cur_task-1].join()									
+									if plugin.monitor[cur_task-1] != None:
+										plugin.monitor_thread[cur_task-1].join()									
 
-									if plugin.monitor_thread[cur_task-1].is_alive() != True:
-										self._logger.debug('Closing thread {0}'.format(plugin.monitor_thread[cur_task-1].name))
+										if plugin.monitor_thread[cur_task-1].is_alive() != True:
+											self._logger.debug('Closing thread {0}'.format(plugin.monitor_thread[cur_task-1].name))
 
-									plugin.monitor_thread[cur_task-1] = None
+										plugin.monitor_thread[cur_task-1] = None
 
 
 									record=self.get_record()
@@ -577,11 +580,11 @@ class AppManager():
 											stage_kernel = stage_instance_return
 											stage_monitor = None
 									
-										validated_kernels = self.validate_kernel(stage_kernel)
+										validated_kernel = self.validate_kernel(stage_kernel)
 										validated_monitor = self.validate_kernel(stage_monitor)
 
 
-										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor)
+										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
 										cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
 										cus = plugin.execute_tasks(tasks=cud)
 

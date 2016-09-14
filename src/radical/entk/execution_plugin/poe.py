@@ -23,7 +23,7 @@ class PluginPoE(object):
 	def __init__(self):
 
 		self._executable_workload = list()
-		self._resource = None, sorry I should have sent to Mark earlier.
+		self._resource = None
 		self._manager = None
 		self._monitor = None
 
@@ -32,7 +32,7 @@ class PluginPoE(object):
 
 		self._logger.info("Plugin PoE created")
 
-, sorry I should have sent to Mark earlier.
+
 	@property
 	def monitor(self):
 		return self._monitor

@@ -130,14 +130,14 @@ class Test(EoP):
 if __name__ == '__main__':
 
 	# Create pattern object with desired ensemble size, pipeline size
-	pipe = Test(ensemble_size=2, pipeline_size=3)
+	pipe = Test(ensemble_size=2, pipeline_size=6)
 
 	# Create an application manager
 	app = AppManager(name='Ebola')
 
 	# Register kernels to be used
 	app.register_kernels(echo_kernel)
-	#app.register_kernels(rand_kernel)
+	app.register_kernels(rand_kernel)
 	app.register_kernels(sleep_kernel)
 
 	# Add workload to the application manager
