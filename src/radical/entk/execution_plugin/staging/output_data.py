@@ -23,20 +23,24 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 				kernel.copy_output_data = [kernel.copy_output_data]
 
 			for i in range(0,len(kernel.copy_output_data)):
+
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_output_data[i])
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip(),
-							'action': rp.COPY
-						}
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip()),
-							'action': rp.COPY
-						}
-				data_out.append(temp)
+
+				if var is not None:
+
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': rp.COPY
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': rp.COPY
+							}
+					data_out.append(temp)
 
 			if op_list is None:
 				op_list = data_out
@@ -55,19 +59,22 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 				kernel.download_output_data = [kernel.download_output_data]
 
 			for i in range(0,len(kernel.download_output_data)):
+
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.download_output_data[i])
+
+				if var is not None:
 			
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip()
-						}
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip())
-						}
-				data_out.append(temp)
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip()
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip())
+							}
+					data_out.append(temp)
 
 			if op_list is None:
 				op_list = data_out

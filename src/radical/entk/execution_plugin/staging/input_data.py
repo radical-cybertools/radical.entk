@@ -27,19 +27,22 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 			for i in range(0,len(kernel.upload_input_data)):
 			
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.upload_input_data[i])
-			
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip()
-						}
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip())
-						}
-				data_in.append(temp)
 
+				if var is not None:
+			
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip()
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip())
+							}
+					data_in.append(temp)
+
+			
 			if ip_list is None:
 				ip_list = data_in
 			else:
@@ -61,27 +64,29 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 			
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.link_input_data[i])
 			
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip(),
-							'action': rp.LINK
-						}
+				if var is not None:
 
-					if nonfatal == True:
-						temp['flags'] = [rp.NON_FATAL]
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': rp.LINK
+							}
+
+						if nonfatal == True:
+							temp['flags'] = [rp.NON_FATAL]
 						
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip()),
-							'action': rp.LINK
-						}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': rp.LINK
+							}
 
-					if nonfatal == True:
-						temp['flags'] = [rp.NON_FATAL]
+						if nonfatal == True:
+							temp['flags'] = [rp.NON_FATAL]
 
-				data_in.append(temp)
+					data_in.append(temp)
 
 			if ip_list is None:
 				ip_list = data_in
@@ -104,28 +109,29 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_input_data[i])
 
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip(),
-							'action': rp.COPY
-						}
+				if var is not None:
 
-					if nonfatal == True:
-						temp['flags'] = [rp.NON_FATAL]
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip(),
+								'action': rp.COPY
+							}	
 
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip()),
-							'action': rp.COPY
-						}
+						if nonfatal == True:
+							temp['flags'] = [rp.NON_FATAL]
 
-					if nonfatal == True:
-						temp['flags'] = [rp.NON_FATAL]
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip()),
+								'action': rp.COPY
+							}
 
+						if nonfatal == True:
+							temp['flags'] = [rp.NON_FATAL]
 
-				data_in.append(temp)
+					data_in.append(temp)
 
 			if ip_list is None:
 				ip_list = data_in
@@ -150,17 +156,19 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 			for i in range(0,len(kernel.download_input_data)):
 				var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.download_input_data[i])
 			
-				if len(var.split('>')) > 1:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': var.split('>')[1].strip()
-						}
-				else:
-					temp = {
-							'source': var.split('>')[0].strip(),
-							'target': os.path.basename(var.split('>')[0].strip())
-						}
-				data_in.append(temp)
+				if var is not None:
+
+					if len(var.split('>')) > 1:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': var.split('>')[1].strip()
+							}
+					else:
+						temp = {
+								'source': var.split('>')[0].strip(),
+								'target': os.path.basename(var.split('>')[0].strip())
+							}
+					data_in.append(temp)
 
 			if ip_list is None:
 				ip_list = data_in
