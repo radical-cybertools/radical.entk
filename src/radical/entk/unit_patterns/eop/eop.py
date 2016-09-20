@@ -36,7 +36,10 @@ class EoP(ExecutionPattern):
 		for i in range(1, ensemble_size+1):
 			self._incremented_monitors.append(0)
 
-		self._cur_iteration = 1
+		self._cur_iteration = []
+		for i in range(1, ensemble_size+1):
+			self._cur_iteration.append(1)
+
 		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._stage_change = False
@@ -100,11 +103,15 @@ class EoP(ExecutionPattern):
 	def cur_iteration(self):
 		return self._cur_iteration
 
+	@cur_iteration.setter
+	def cur_iteration(self, val):
+		self._cur_iteration = val
+
+
 	@property
 	def total_iterations(self):
 		return self._total_iterations
-	
-	
+
 	@property
 	def type(self):
 		return self._type
@@ -221,14 +228,14 @@ class EoP(ExecutionPattern):
 
 	def get_output(self, stage, instance):
 		try:
-			return self._pattern_dict["iter_1"]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+			return self._pattern_dict["iter_{0}".format(self._cur_iteration[instance-1])]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
 		except Exception, ex:
 			self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
 			raise
 
 
 	def get_file(self, stage, instance, filename, new_name=None):
-		directory = self._pattern_dict["iter_1"]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+		directory = self._pattern_dict["iter_{0}".format(self._cur_iteration[instance-1])]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
 		file_url = directory + '/' + filename
 
 		import saga,os

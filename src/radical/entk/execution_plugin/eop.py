@@ -179,12 +179,14 @@ class PluginEoP(object):
 				cur_stage = int(tasks[0].name.split('-')[1])
 				self._logger.info('Submitting stage {0} of all pipelines'.format(cur_stage))
 				exec_cus = self._manager.submit_units(tasks)
+				return exec_cus
 
 			else:
 				cur_stage = int(tasks.name.split('-')[1])
 				cur_task = int(tasks.name.split('-')[3])
 				self._logger.info('Submitting stage {1} of pipeline {0}'.format(cur_task,cur_stage))
 				task = self._manager.submit_units(tasks)
+				return task
 
 		except Exception, ex:
 			self._logger.error("Could not execute tasks, error : {1}".format(ex))
