@@ -668,12 +668,12 @@ class AppManager():
 						for unit in done_cus:
 							all_cus.remove(unit)
 
-						self._logger.debug('All: {0}, Pending: {1}'.format(len(all_cus), len(pending_cus)))
+						#self._logger.debug('All: {0}, Pending: {1}'.format(len(all_cus), len(pending_cus)))
 
-						if len(pending_cus)==0:
-							break
-						else:
-							task_manager.wait_units(pending_cus, timeout=60) 
+						#if len(pending_cus)==0:
+						#	break
+						#else:
+						task_manager.wait_units(pending_cus, timeout=60) 
 
 				except Exception, ex:
 					self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
