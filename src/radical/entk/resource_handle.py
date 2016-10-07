@@ -172,7 +172,7 @@ class ResourceHandle(object):
 			if self._project is not None:
 				pdesc.project = self._project
 
-			pdesc.access_schema = self._access_schema
+			pdesc.access_schema = self._access_schema 
 
 			self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
 
