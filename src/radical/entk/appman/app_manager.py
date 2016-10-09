@@ -508,7 +508,7 @@ class AppManager():
 								
 									#self._logger.info(record)
 
-								except Exception, ex:
+								except Exception, ex: 
 									self._logger.error("Monitor execution failed, error: {0}".format(ex))
 									raise
 
