@@ -75,6 +75,13 @@ class PluginEoP(object):
 		else:
 			self._executable_workload = kernels
 
+		temp=[]
+		for item in self._executable_workload:
+			if item != None:
+				temp.append(item)
+
+		self._executable_workload = temp
+
 		self._logger.info("New workload assigned to plugin for execution")
 
 		if type(monitor) == list:
@@ -105,6 +112,9 @@ class PluginEoP(object):
 	def create_tasks(self, record, pattern_name, iteration, stage, instance=None):
 
 		try:
+
+			if len(self._executable_workload) == 0:
+				return None
 
 			from staging.input_data import get_input_data
 			from staging.output_data import get_output_data
@@ -175,6 +185,10 @@ class PluginEoP(object):
 	def execute_tasks(self, tasks):
 
 		try:
+
+			if tasks == None:
+				return None
+
 			if type(tasks) == list:
 				cur_stage = int(tasks[0].name.split('-')[1])
 				self._logger.info('Submitting stage {0} of all pipelines'.format(cur_stage))

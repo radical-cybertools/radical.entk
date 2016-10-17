@@ -18,6 +18,8 @@ class EoP(ExecutionPattern):
 		self._total_iterations = 1
 
 
+		self._cancel_all_tasks = False
+
 		if name!=None:
 			self._name = name
 		else:
@@ -120,6 +122,15 @@ class EoP(ExecutionPattern):
 	def name(self):
 		return self._name
 	
+
+	@property
+	def cancel_all_tasks(self):
+		return self._cancel_all_tasks
+	
+
+	@cancel_all_tasks.setter
+	def cancel_all_tasks(self, val):
+		self._cancel_all_tasks = val
 
 	@property
 	def next_stage(self):

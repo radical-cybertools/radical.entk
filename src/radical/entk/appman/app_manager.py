@@ -549,6 +549,13 @@ class AppManager():
 										branch_function = self._pattern.get_branch(stage=cur_stage)
 										branch_function(instance=cur_task)								
 
+
+										# Check if tasks need to be canceled
+										if self._pattern.cancel_all_tasks==True:
+											units = plugin._manager.list_units()
+											plugin._manager.cancel_units(units)
+											self._pattern.cancel_all_tasks = False
+
 									# Check if next stage was changed by branching function
 									if (self._pattern.stage_change==True):
 										if self._pattern.new_stage !=0:
@@ -609,7 +616,9 @@ class AppManager():
 										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
 										cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
 										cu = plugin.execute_tasks(tasks=cud)
-										all_cus.append(cu)
+
+										if cu!= None:
+											all_cus.append(cu)
 
 								except Exception, ex:
 									self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
@@ -652,7 +661,8 @@ class AppManager():
 					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
 					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
 					cus = plugin.execute_tasks(tasks=cus)
-					all_cus.extend(cus)
+					if cus!=None:
+						all_cus.extend(cus)
 
 					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
 					#while True:
