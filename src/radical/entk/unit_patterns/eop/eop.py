@@ -262,6 +262,6 @@ class EoP(ExecutionPattern):
 			remote_file.copy(filename, os.getcwd() + '/' + new_name)
 
 
-	def get_status(self, stage, instance):
+	def get_status(self, instance):
 
-		return self._task_status
+		return self._task_status[instance-1]
