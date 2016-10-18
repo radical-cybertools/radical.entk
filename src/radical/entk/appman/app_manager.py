@@ -279,6 +279,19 @@ class AppManager():
 			raise
 
 
+	def remove_from_record(self, pattern_name, record, cus, iteration, stage, instance=None):
+		pat_key = "pat_{0}".format(pattern_name)
+
+		if instance==None:
+			instance=1
+
+		inst=instance
+
+		cancel_dict = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)].pop("instance_{0}".format(inst),None)
+		if cancel_dict != None:
+			self._logger.error('Task info removed from bookkeeper')
+
+
 	def create_record(self, pattern_name, total_iterations, pipeline_size, ensemble_size):
 
 
@@ -481,18 +494,20 @@ class AppManager():
 
 							self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
+							cur_stage = int(unit.name.split('-')[1])
+							cur_task = int(unit.name.split('-')[3])
+
 							if state == rp.FAILED:
-								cur_stage = int(unit.name.split('-')[1])
-								cur_pipe = int(unit.name.split('-')[3])
+							
 								self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_pipe, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
 								self._logger.error("Pattern execution FAILED.")
+								self._pattern._task_status[cur_task-1] = 1
 								sys.exit(1)
 
 							if state == rp.AGENT_STAGING_INPUT_PENDING:
 
 								try:
-									cur_stage = int(unit.name.split('-')[1])
-									cur_task = int(unit.name.split('-')[3])
+									
 									self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
 									record=self.get_record()
 									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
@@ -513,12 +528,14 @@ class AppManager():
 									raise
 
 
-							if ((state == rp.DONE)or(state==rp.CANCELED)):
+							if ((state == rp.DONE)or(state==rp.CANCELED)or(cur_stage==3)):
 
 								try:
 
-									cur_stage = int(unit.name.split('-')[1])
-									cur_task = int(unit.name.split('-')[3])
+									if state == rp.CANCELED:
+
+										self.remove_from_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+									
 
 									# Close monitoring thread
 									if plugin.monitor[cur_task-1] != None:
@@ -585,6 +602,10 @@ class AppManager():
 									# Check if this is the last task of the stage
 									if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
 										self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+
+
+									# Update task status
+									self._pattern._task_status[cur_task-1] = 0
 
 
 									if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):

@@ -42,6 +42,11 @@ class EoP(ExecutionPattern):
 		for i in range(1, ensemble_size+1):
 			self._cur_iteration.append(1)
 
+
+		self._task_status = []
+		for i in range(1, ensemble_size+1):
+			self._task_status.append(0)
+
 		self.kill_instances = None
 		self._pattern_status = 'New'
 		self._stage_change = False
@@ -255,3 +260,8 @@ class EoP(ExecutionPattern):
 			remote_file.copy(filename, os.getcwd())
 		else:
 			remote_file.copy(filename, os.getcwd() + '/' + new_name)
+
+
+	def get_status(self, stage, instance):
+
+		return self._task_status
