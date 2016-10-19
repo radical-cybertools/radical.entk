@@ -9,9 +9,7 @@ from randval import rand_kernel
 from sleep import sleep_kernel
 
 ENSEMBLE_SIZE=4
-
 ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
-ITER2 = []
 
 class Test(EoP):
 
@@ -19,6 +17,8 @@ class Test(EoP):
         super(Test,self).__init__(ensemble_size, pipeline_size)
 
     def stage_1(self, instance):
+        global ENSEMBLE_SIZE
+
         k1 = Kernel(name="sleep")
         print 'I am task {0}/{1}'.format(instance, ENSEMBLE_SIZE)
         k1.arguments = ["--file=output.txt","--text={0}".format(instance),"--duration=10"]
@@ -38,35 +38,26 @@ class Test(EoP):
     def branch_2(self, instance):
 
         global ITER        
-        global ITER2
+        global ENSEMBLE_SIZE
 
-        if (ITER[instance-1] != 2):
+        if ITER[instance-1] != 2:
             ITER[instance-1]+=1
             self.set_next_stage(stage=1)
-        elif (ITER[0] == 2):
-            self.set_ensemble_size(size=8)
-            ENSEMBLE_SIZE=8
-            ITER[0]+=1
-            ITER2 = [1 for x in range(1,ENSEMBLE_SIZE+1)]
-        else:
+        else:            
             pass
     
 
 if __name__ == '__main__':
 
-    # Create pattern object with desired ensemble size, pipeline size
-    pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2)
+    global ITER
+    global ENSEMBLE_SIZE
 
     # Create an application manager
     app = AppManager(name='MSM')
 
     # Register kernels to be used
     app.register_kernels(echo_kernel)
-    app.register_kernels(sleep_kernel)
-
-    # Add workload to the application manager
-    app.add_workload(pipe)
-    
+    app.register_kernels(sleep_kernel)    
 
     # Create a resource handle for target machine
     res = ResourceHandle(resource="local.localhost",
@@ -80,8 +71,20 @@ if __name__ == '__main__':
     # Submit request for resources + wait till job becomes Active
     res.allocate(wait=True)
 
-    # Run the given workload
-    res.run(app)
+
+    while (len(ITER)<8):
+
+        # Create pattern object with desired ensemble size, pipeline size
+        pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2)
+
+        # Add workload to the application manager
+        app.add_workload(pipe)
+
+        # Run the given workload
+        res.run(app)
+
+        ENSEMBLE_SIZE += 2 
+        ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
 
     # Deallocate the resource
     res.deallocate()

@@ -19,7 +19,6 @@ class EoP(ExecutionPattern):
 
 
 		self._cancel_all_tasks = False
-		self._ensemble_new_size = self._ensemble_size
 
 		if name!=None:
 			self._name = name
