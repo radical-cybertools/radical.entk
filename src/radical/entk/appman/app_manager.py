@@ -627,63 +627,66 @@ class AppManager():
 					#register callbacks
 					task_manager.register_callback(unit_state_cb)
 
-					# Get kernel from execution pattern
-					stage =	 self._pattern.get_stage(stage=1)
+					# Temporary flag
+					first_iter = True
 
-					validated_kernels = list()
-					validated_monitors = list()
+					while((self._pattern._ensemble_size_change!=False)or(first_iter)):
 
-					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-					# Create instance key/vals for each stage
+						# Reset iteration flag
+						self._pattern._ensemble_size_change = False
+						first_iter = False
+
+						# Get kernel from execution pattern
+						stage =	 self._pattern.get_stage(stage=1)
+
+						validated_kernels = list()
+						validated_monitors = list()
+
+						# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
+						# Create instance key/vals for each stage
 					
-					instances = self._pattern.ensemble_size
+						instances = self._pattern.ensemble_size
 					
-					for inst in range(1, instances+1):
+						for inst in range(1, instances+1):
 
-						stage_instance_return = stage(inst)
+							stage_instance_return = stage(inst)
 
-						if type(stage_instance_return) == list:
-							if len(stage_instance_return) == 2:
-								stage_kernel = stage_instance_return[0]
-								stage_monitor = stage_instance_return[1]
+							if type(stage_instance_return) == list:
+								if len(stage_instance_return) == 2:
+									stage_kernel = stage_instance_return[0]
+									stage_monitor = stage_instance_return[1]
+								else:
+									stage_kernel = stage_instance_return[0]
+									stage_monitor = None
 							else:
-								stage_kernel = stage_instance_return[0]
+								stage_kernel = stage_instance_return
 								stage_monitor = None
-						else:
-							stage_kernel = stage_instance_return
-							stage_monitor = None
 									
-						validated_kernels.append(self.validate_kernel(stage_kernel))
-						validated_monitors.append(self.validate_kernel(stage_monitor))
+							validated_kernels.append(self.validate_kernel(stage_kernel))
+							validated_monitors.append(self.validate_kernel(stage_monitor))
 
 
-					# Pass resource-unbound kernels to execution plugin
-					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
-					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
-					cus = plugin.execute_tasks(tasks=cus)
-					if cus!=None:
-						all_cus.extend(cus)
+						# Pass resource-unbound kernels to execution plugin
+						plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
+						cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
+						cus = plugin.execute_tasks(tasks=cus)
+						if cus!=None:
+							all_cus.extend(cus)
 
-					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
-					#while True:
+						while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+					
+							pending_cus = []
+							done_cus = []
+							for unit in all_cus:
+								if ((unit.state!=rp.DONE) and (unit.state!=rp.CANCELED)):
+									pending_cus.append(unit.uid)
+								else:
+									done_cus.append(unit)
 
-						pending_cus = []
-						done_cus = []
-						for unit in all_cus:
-							if ((unit.state!=rp.DONE) and (unit.state!=rp.CANCELED)):
-								pending_cus.append(unit.uid)
-							else:
-								done_cus.append(unit)
+							for unit in done_cus:
+								all_cus.remove(unit)
 
-						for unit in done_cus:
-							all_cus.remove(unit)
-
-						#self._logger.debug('All: {0}, Pending: {1}'.format(len(all_cus), len(pending_cus)))
-
-						#if len(pending_cus)==0:
-						#	break
-						#else:
-						task_manager.wait_units(pending_cus, timeout=60) 
+							task_manager.wait_units(pending_cus, timeout=60) 
 
 				except Exception, ex:
 					self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))

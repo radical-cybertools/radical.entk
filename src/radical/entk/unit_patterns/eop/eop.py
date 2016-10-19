@@ -44,7 +44,10 @@ class EoP(ExecutionPattern):
 
 		self.kill_instances = None
 		self._pattern_status = 'New'
+
+
 		self._stage_change = False
+		self._ensemble_size_change = False
 
 		self._new_stage = None
 
@@ -155,21 +158,6 @@ class EoP(ExecutionPattern):
 	@pattern_dict.setter
 	def pattern_dict(self, record):
 		self._pattern_dict = record
-	
-	
-	def set_next_stage(self, stage):
-
-		try:
-			if stage <= self._pipeline_size:
-				self._stage_change = True
-				self._new_stage = stage
-			else:
-				self._logger.error("Assigned next stage greater than total pipeline size")
-				raise
-		
-		except Exception, ex:
-			self._logger.error("Could not set next stage, error: {0}".format(ex))
-			raise
 
 	@property
 	def new_stage(self):
@@ -187,6 +175,35 @@ class EoP(ExecutionPattern):
 	def stage_change(self, value):
 		self._stage_change = value
 	
+
+	def set_next_stage(self, stage):
+
+		try:
+			if stage <= self._pipeline_size:
+				self._stage_change = True
+				self._new_stage = stage
+			else:
+				self._logger.error("Assigned next stage greater than total pipeline size")
+				raise
+		
+		except Exception, ex:
+			self._logger.error("Could not set next stage, error: {0}".format(ex))
+			raise
+
+
+	def set_ensemble_size(self, size):
+
+		try:
+
+			self._ensemble_size_change = True
+			self._ensemble_size_change = size
+
+		except Exception, ex:
+
+			self._logger.error("Could not set ensemble size, error: {0}".format(ex))
+			raise
+
+
 
 	def get_stage(self, stage):
 
