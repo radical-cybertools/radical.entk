@@ -19,6 +19,7 @@ class EoP(ExecutionPattern):
 
 
 		self._cancel_all_tasks = False
+		self._ensemble_new_size = self._ensemble_size
 
 		if name!=None:
 			self._name = name
@@ -196,7 +197,9 @@ class EoP(ExecutionPattern):
 		try:
 
 			self._ensemble_size_change = True
-			self._ensemble_size_change = size
+			self._ensemble_new_size = size
+
+			print 'Ensemble size: ', self._ensemble_size
 
 		except Exception, ex:
 

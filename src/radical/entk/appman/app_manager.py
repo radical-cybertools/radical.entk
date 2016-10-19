@@ -688,6 +688,8 @@ class AppManager():
 
 							task_manager.wait_units(pending_cus, timeout=60) 
 
+						self._pattern._ensemble_size = self._pattern._ensemble_new_size
+
 				except Exception, ex:
 					self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
 					raise
