@@ -23,7 +23,7 @@ class PipelinePatternTestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the pattern class.
         """
-        from radical.ensemblemd import Pipeline
+        from radical.ensemblemd.patterns.pipeline import Pipeline
 
 
     #-------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class PipelinePatternTestCases(unittest.TestCase):
     def test__pattern_name(self):
         """ Tests the pattern name.
         """
-        from radical.ensemblemd import Pipeline
+        from radical.ensemblemd.patterns.pipeline import Pipeline
 
         dp = Pipeline()
         assert dp.name == "Pipeline"

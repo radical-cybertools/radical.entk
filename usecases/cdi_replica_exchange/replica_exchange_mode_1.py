@@ -17,7 +17,7 @@ from os import path
 
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
 from radical.ensemblemd.patterns.replica_exchange import Replica
 from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
 

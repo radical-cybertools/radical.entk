@@ -23,7 +23,7 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the various pattern classes.
         """
-        from radical.ensemblemd import Pipeline
+        from radical.ensemblemd.patterns.pipeline import Pipeline
         from radical.ensemblemd import SimulationAnalysisLoop
 
 
@@ -33,7 +33,7 @@ class ExecutionPatternAPITestCases(unittest.TestCase):
         """ Tests the Pipeline pattern API.
         """
 
-        from radical.ensemblemd import Pipeline
+        from radical.ensemblemd.patterns.pipeline import Pipeline
 
         dp = Pipeline()
         assert dp.name == "Pipeline"

@@ -23,7 +23,7 @@ class AllPairsPatternTestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the pattern class.
         """
-        from radical.ensemblemd import AllPairs
+        from radical.ensemblemd.patterns.all_pairs_pattern import AllPairs
 
 
     #-------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class AllPairsPatternTestCases(unittest.TestCase):
     def test__pattern_name(self):
         """ Tests the pattern name.
         """
-        from radical.ensemblemd import AllPairs
+        from radical.ensemblemd.patterns.all_pairs_pattern import AllPairs
 
         ElementsSet = range(1,11)
 
