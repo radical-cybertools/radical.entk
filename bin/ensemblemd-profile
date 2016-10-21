@@ -93,7 +93,7 @@ def sa_profile(data):
         elif row[3] == 'post_loop':
             name = "Post-loop step "
         else:
-            raise Excpetion("Unknown step type %s" % row[3])
+            raise Exception("Unknown step type %s" % row[3])
 
 
         if name not in summary:
@@ -240,7 +240,7 @@ if __name__ == '__main__' :
     options, args = parser.parse_args ()
 
     if  args :
-        usage ("Too many arguments (%s)" % args)
+        parser.error ("Too many arguments (%s)" % args)
 
     if  not options.url :
         parser.error("No URL specified")
