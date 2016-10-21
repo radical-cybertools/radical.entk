@@ -49,9 +49,6 @@ class Test(EoP):
 
 if __name__ == '__main__':
 
-    global ITER
-    global ENSEMBLE_SIZE
-
     # Create an application manager
     app = AppManager(name='MSM')
 
@@ -72,19 +69,28 @@ if __name__ == '__main__':
     res.allocate(wait=True)
 
 
-    while (len(ITER)<8):
+    #while (len(ITER)<8):
 
-        # Create pattern object with desired ensemble size, pipeline size
-        pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2)
+    # Create pattern object with desired ensemble size, pipeline size
+    pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2, name='pat_{0}'.format(len(ITER)))
 
-        # Add workload to the application manager
-        app.add_workload(pipe)
+    # Add workload to the application manager
+    app.add_workload(pipe)
 
-        # Run the given workload
-        res.run(app)
+    # Run the given workload
+    res.run(app)
 
-        ENSEMBLE_SIZE += 2 
-        ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
+    ENSEMBLE_SIZE += 2 
+    ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
+
+    # Create pattern object with desired ensemble size, pipeline size
+    pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2, name='pat_{0}'.format(len(ITER)))
+
+    # Add workload to the application manager
+    app.add_workload(pipe)
+
+    # Run the given workload
+    res.run(app)
 
     # Deallocate the resource
     res.deallocate()
