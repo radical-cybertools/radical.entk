@@ -8,6 +8,7 @@ __author__    = "Ioannis Paraskevakos <i.paraskev@rutgers.edu>"
 __copyright__ = "Copyright 2014, http://radical.rutgers.edu"
 __license__   = "MIT"
 
+import sys
 import os
 import ast
 import traceback
