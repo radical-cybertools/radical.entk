@@ -198,7 +198,7 @@ class Kernel(KernelBase):
                     # Fall-back to generic resource key
                     resource_key = "*"
                 else:
-                    raise NoKernelConfigurationError(kernel_name=KERNEL_INFO["name"], \
+                    raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], \
                                                      resource_key=resource_key)
 
             cfg = _KERNEL_INFO["machine_configs"][resource_key]
