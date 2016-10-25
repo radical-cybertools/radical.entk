@@ -6,21 +6,21 @@ from radical.entk.exceptions import *
 
 class ExecutionPattern(object):
 
-	def __init__(self):
-		self._name = None
-		self._object_list = None
+    def __init__(self):
+        self._name = None
+        self._object_list = None
 
-	def name(self):
+    def name(self):
 
-		raise NotImplementedError(
-			method_name="name",
-			class_name=type(self)
-			)
+        raise NotImplementedError(
+            method_name="name",
+            class_name=type(self)
+            )
 
-	def object_list(self):
+    def object_list(self):
 
-		raise NotImplementedError(
-			method_name="object_list",
-			class_name=type(self)
-			)
+        raise NotImplementedError(
+            method_name="object_list",
+            class_name=type(self)
+            )
 

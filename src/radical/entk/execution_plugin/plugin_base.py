@@ -5,10 +5,10 @@ __license__   = "MIT"
 
 class PluginBase(object):
 
-	def __init__(self, plugin_info = None):
+    def __init__(self, plugin_info = None):
 
-		self._plugin_info = plugin_info
-		self._resources = list()
+        self._plugin_info = plugin_info
+        self._resources = list()
 
-	
-	
+    
+    
