@@ -499,6 +499,8 @@ class AppManager():
 									cur_stage = int(unit.name.split('-')[1])
 									cur_task = int(unit.name.split('-')[3])
 
+									print 'Stage: ',cur_stage, 'uid: ', unit.uid
+
 
 									record=self.get_record()
 

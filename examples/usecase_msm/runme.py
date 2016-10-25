@@ -13,8 +13,8 @@ ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
 
 class Test(EoP):
 
-    def __init__(self, ensemble_size, pipeline_size):
-        super(Test,self).__init__(ensemble_size, pipeline_size)
+    def __init__(self, ensemble_size, pipeline_size,name):
+        super(Test,self).__init__(ensemble_size, pipeline_size,name=name)
 
     def stage_1(self, instance):
         global ENSEMBLE_SIZE
