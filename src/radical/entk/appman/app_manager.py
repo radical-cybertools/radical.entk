@@ -398,11 +398,11 @@ class AppManager():
 							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
 							# Check if montior exists
-							if plugin.monitor != None:
-								cu = plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
+							#if plugin.monitor != None:
+							#	cu = plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
 								
-								# Update record
-								record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
+							#	# Update record
+							#	record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
 
 							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
@@ -463,16 +463,6 @@ class AppManager():
 				try:
 
 
-					#def handle_monitor(record=record, plugin=plugin, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task):
-					def handle_monitor(record, plugin, task, cur_pat, cur_iter, cur_stage, cur_task):
-						cu = plugin.execute_monitor(record=record, task=task, cur_pat=cur_pat, cur_iter=cur_iter, cur_stage=cur_stage, cur_task=cur_task)
-						
-						# Update record
-						self.add_to_record(record=record, cus=cu, pattern_name = cur_pat, iteration=cur_iter, stage=cur_stage, instance=cur_task, monitor=True)
-
-						return
-
-
 					def unit_state_cb (unit, state) :
 
 						# Perform these operations only for tasks and not monitors
@@ -497,17 +487,6 @@ class AppManager():
 									record=self.get_record()
 									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
-									# Now that we have the unit diretories, we can start the monitor !
-									if plugin.monitor[cur_task-1] != None:
-
-										import threading
-
-										thread = threading.Thread(target=handle_monitor, name='monitor_{0}'.format(cur_task-1),args=(record, plugin, unit, self._pattern.name, self._pattern.cur_iteration[cur_task-1], cur_stage, cur_task))
-										plugin.monitor_thread[cur_task-1] = thread
-										plugin.monitor_thread[cur_task-1].start()						
-								
-									#self._logger.info(record)
-
 								except Exception, ex: 
 									self._logger.error("Monitor execution failed, error: {0}".format(ex))
 									raise
@@ -519,15 +498,6 @@ class AppManager():
 
 									cur_stage = int(unit.name.split('-')[1])
 									cur_task = int(unit.name.split('-')[3])
-
-									# Close monitoring thread
-									if plugin.monitor[cur_task-1] != None:
-										plugin.monitor_thread[cur_task-1].join()									
-
-										if plugin.monitor_thread[cur_task-1].is_alive() != True:
-											self._logger.debug('Closing thread {0}'.format(plugin.monitor_thread[cur_task-1].name))
-
-										plugin.monitor_thread[cur_task-1] = None
 
 
 									record=self.get_record()
@@ -590,30 +560,11 @@ class AppManager():
 									if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
 								
 										stage =	 self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-										stage_instance_return = stage(cur_task)
-
-										stage_monitor = None
-
-										if type(stage_instance_return) == list:
-
-											if len(stage_instance_return) == 2:
-
-												stage_kernel = stage_instance_return[0]
-												stage_monitor = stage_instance_return[1]
-									
-											else:
-												stage_kernel = stage_instance_return[0]
-												stage_monitor = None
-
-										else:
-											stage_kernel = stage_instance_return
-											stage_monitor = None
+										stage_kernel = stage(cur_task)
 									
 										validated_kernel = self.validate_kernel(stage_kernel)
-										validated_monitor = self.validate_kernel(stage_monitor)
 
-
-										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
+										plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
 										cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
 										cu = plugin.execute_tasks(tasks=cud)
 
@@ -631,7 +582,6 @@ class AppManager():
 					stage =	 self._pattern.get_stage(stage=1)
 
 					validated_kernels = list()
-					validated_monitors = list()
 
 					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
 					# Create instance key/vals for each stage
@@ -640,25 +590,12 @@ class AppManager():
 					
 					for inst in range(1, instances+1):
 
-						stage_instance_return = stage(inst)
-
-						if type(stage_instance_return) == list:
-							if len(stage_instance_return) == 2:
-								stage_kernel = stage_instance_return[0]
-								stage_monitor = stage_instance_return[1]
-							else:
-								stage_kernel = stage_instance_return[0]
-								stage_monitor = None
-						else:
-							stage_kernel = stage_instance_return
-							stage_monitor = None
-									
+						stage_kernel = stage(inst)									
 						validated_kernels.append(self.validate_kernel(stage_kernel))
-						validated_monitors.append(self.validate_kernel(stage_monitor))
 
 
 					# Pass resource-unbound kernels to execution plugin
-					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
+					plugin.set_workload(kernels=validated_kernels)
 					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
 					cus = plugin.execute_tasks(tasks=cus)
 					if cus!=None:

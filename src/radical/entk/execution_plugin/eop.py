@@ -25,8 +25,6 @@ class PluginEoP(object):
 		self._executable_workload = None
 		self._resource = None
 		self._manager = None
-		self._monitor = list()
-		self._monitor_thread = list()
 
 		self._logger = ru.get_logger("radical.entk.plugin.eop")
 		self._reporter = self._logger.report
@@ -51,22 +49,6 @@ class PluginEoP(object):
 	def tot_fin_tasks(self, val):
 		self._tot_fin_tasks = val
 
-	@property
-	def monitor(self):
-		return self._monitor
-	
-	@monitor.setter
-	def monitor(self, val):
-		self._monitor = val
-
-	@property
-	def monitor_thread(self):
-		return self._monitor_thread
-	
-	@monitor_thread.setter
-	def monitor_thread(self, val):
-		self._monitor_thread = val
-
 
 	def set_workload(self, kernels, monitor=None, cur_task = None):
 
@@ -83,25 +65,6 @@ class PluginEoP(object):
 		self._executable_workload = temp
 
 		self._logger.info("New workload assigned to plugin for execution")
-
-		if type(monitor) == list:
-			self._monitor = monitor
-			self._monitor_thread = [None for item in self._monitor]
-
-			flag=0
-			for item in self._monitor:
-				if item != None:
-					flag=1
-
-			if flag==1:
-				self._logger.info("Monitor for workload assigned")
-
-		else:
-			self._monitor[cur_task-1] = monitor
-
-			if self._monitor[cur_task-1] != None:
-				self._logger.info("Monitor for workload assigned")
-
 
 
 	def add_manager(self, manager):
@@ -207,6 +170,7 @@ class PluginEoP(object):
 			raise
 
 
+	'''
 	def execute_monitor(self, record, task, cur_pat, cur_iter, cur_stage, cur_task):
 
 		try:
@@ -272,3 +236,4 @@ class PluginEoP(object):
 		except Exception, ex:
 
 			self._logger.error("Monitor execution failed, error: {0}".format(ex))
+	'''
