@@ -29,6 +29,8 @@ class AppManager():
 
         self._kernel_dict = dict()
 
+        self._callback_flag = False
+
         # Uncomment once ExecutionPattern class is available
         #self.sanity_check()
 
@@ -507,6 +509,7 @@ class AppManager():
                                     self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
                                     #-----------------------------------------------------------------------
                                     # Increment tasks list accordingly
+                                    print 'Stage: {0}, Task: {1}, Unit: {2}, tot_fin_tasks: {3}'.format(cur_stage, cur_task, unit.uid, plugin.tot_fin_tasks)
                                     plugin.tot_fin_tasks[cur_stage-1]+=1
 
                                     record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
@@ -577,8 +580,11 @@ class AppManager():
                                     self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
                                     raise
 
-                    #register callbacks
-                    task_manager.register_callback(unit_state_cb)
+                    #register callbacks if not done already
+
+                    if self._callback_flag != True:
+                        task_manager.register_callback(unit_state_cb)
+                        self._callback_flag = True
 
                     # Get kernel from execution pattern
                     stage =     self._pattern.get_stage(stage=1)
@@ -617,6 +623,9 @@ class AppManager():
                             all_cus.remove(unit)
 
                         task_manager.wait_units(pending_cus, timeout=60) 
+                        print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
+
+
 
                 except Exception, ex:
                     self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
