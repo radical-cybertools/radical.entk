@@ -13,7 +13,7 @@ import radical.utils as ru
 import radical.pilot as rp
 import sys
 
-from Queue import Queue
+import Queue
 import threading
 
 
@@ -41,8 +41,9 @@ class AppManager():
         # Load default exec plugins
         #self.load_plugins()
 
+        self._task_queue = Queue.Queue()
 
-        self._task_queue = Queue
+
 
 
     def sanity_pattern_check(self):
@@ -494,8 +495,8 @@ class AppManager():
                                         all_cus.append(cu)
 
                             except Exception, ex:
-
-                                self._logger.error('Failed to run next stage, current - Stage {0} of pipeline {1} failed: UID: {2}, error: {3}'.format(cur_stage, cur_pipe, unit.uid, ex))
+                                self._task_queue.put(unit)
+                                self._logger.error('Failed to run next stage, error: {0}'.format(ex))
                                 raise
 
 
@@ -533,7 +534,12 @@ class AppManager():
                             if ((state == rp.DONE)or(state==rp.CANCELED)):
 
                                 try:
+                                    cur_stage = int(unit.name.split('-')[1])
+                                    cur_task = int(unit.name.split('-')[3])
                                     self._task_queue.put(unit)
+
+                                    record=self.get_record()
+                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
                                     
                                 except Exception, ex:
                                     self._logger.error('Failed to push to task queue, error: {0}'.format(ex))
@@ -567,7 +573,7 @@ class AppManager():
                     cus = plugin.execute_tasks(tasks=cus)
 
                     # Start execute_thread
-                    t = threading.Thread(target=execute_thread, args=None)
+                    t = threading.Thread(target=execute_thread, args=())
                     t.daemon = True
                     t.start()
 
