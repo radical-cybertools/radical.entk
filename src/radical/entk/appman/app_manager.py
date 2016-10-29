@@ -13,6 +13,10 @@ import radical.utils as ru
 import radical.pilot as rp
 import sys
 
+from Queue import Queue
+import threading
+
+
 class AppManager():
 
     def __init__(self, name=None):
@@ -36,6 +40,9 @@ class AppManager():
 
         # Load default exec plugins
         #self.load_plugins()
+
+
+        self._task_queue = Queue
 
 
     def sanity_pattern_check(self):
@@ -93,18 +100,6 @@ class AppManager():
 
             self._logger.error("Could not list kernels: {0}".format(ex))
             raise
-
-
-    def save(self, pattern):
-        self._pattern = pattern
-        self.sanity_pattern_check()
-
-        # Convert pattern to JSON
-        self.pattern_to_json(pattern)
-
-
-    def pattern_to_json(self, pattern):
-        pass
 
 
     def validate_kernel(self, user_kernel):
@@ -184,7 +179,7 @@ class AppManager():
             raise
 
 
-    def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False):
+    def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None):
 
         try:
 
@@ -200,41 +195,6 @@ class AppManager():
                 cus = [cus]
 
             pat_key = "pat_{0}".format(pattern_name)
-
-            # Add monitor details to record for PoE pattern
-            if ((monitor == True)and(instance==None)):
-
-                self._logger.debug('PoE: Adding Monitor to record')
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"] = dict()
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"] = cus[0].stdout
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["uid"] = cus[0].uid
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"] = cus[0].working_directory                
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
-
-                self._logger.debug('EoP: Added Monitor to record')
-
-                #self._logger.debug(record)
-                return record
-
-            # Add monitor details to record for EoP pattern
-            if ((monitor==True)and(instance!=None)):
-
-                self._logger.debug('EoP: Adding Monitor to record')
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)] = dict()
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["output"] = cus[0].stdout
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["uid"] = cus[0].uid
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["path"] = cus[0].working_directory                
-
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
-
-                self._logger.debug('EoP: Added Monitor to record')
-
-                return record
 
             self._logger.debug('Adding Tasks to record')
 
@@ -465,6 +425,82 @@ class AppManager():
                 try:
 
 
+                    def execute_thread():
+
+                        while True:
+
+                            try:
+
+                                record=self.get_record()
+                                unit = self._task_queue.get()
+
+                                cur_stage = int(unit.name.split('-')[1])
+                                cur_pipe = int(unit.name.split('-')[3])
+
+                                self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_pipe,cur_stage))
+                                plugin.tot_fin_tasks[cur_stage-1]+=1
+
+                                # Execute branch if it exists
+                                if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_pipe-1])]["stage_{0}".format(cur_stage)]["branch"]):
+                                    self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
+                                    branch_function = self._pattern.get_branch(stage=cur_stage)
+                                    branch_function(instance=cur_task) 
+
+
+                                if (self._pattern.stage_change==True):
+                                    if self._pattern.new_stage !=0:
+                                        if cur_stage < self._pattern.new_stage:
+                                            self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
+                                        elif cur_stage >= self._pattern.new_stage:
+                                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+                                            self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
+                                            
+                                    else:
+                                        self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+
+                                    if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
+                                        self._pattern.cur_iteration[cur_task-1] += 1
+
+                                    self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
+                                else:
+                                    self._pattern.next_stage[cur_task-1] +=1
+
+
+                                self._pattern.stage_change = False
+                                self._pattern.new_stage = None
+
+                                # Terminate execution
+                                if self._pattern.next_stage[cur_task-1] == 0:
+                                    self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
+
+
+                                # Check if this is the last task of the stage
+                                if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
+                                    self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+
+
+                                if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
+                                
+                                    stage =     self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                    stage_kernel = stage(cur_task)
+                                    
+                                    validated_kernel = self.validate_kernel(stage_kernel)
+
+                                    plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
+                                    cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
+                                    cu = plugin.execute_tasks(tasks=cud)
+
+                                    if cu!= None:
+                                        all_cus.append(cu)
+
+                            except Exception, ex:
+
+                                self._logger.error('Failed to run next stage, current - Stage {0} of pipeline {1} failed: UID: {2}, error: {3}'.format(cur_stage, cur_pipe, unit.uid, ex))
+                                raise
+
+
+
+
                     def unit_state_cb (unit, state) :
 
                         # Perform these operations only for tasks and not monitors
@@ -490,94 +526,17 @@ class AppManager():
                                     self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
                                 except Exception, ex: 
-                                    self._logger.error("Monitor execution failed, error: {0}".format(ex))
+                                    self._logger.error("Failed to log unit path, error: {0}".format(ex))
                                     raise
 
 
                             if ((state == rp.DONE)or(state==rp.CANCELED)):
 
                                 try:
-
-                                    cur_stage = int(unit.name.split('-')[1])
-                                    cur_task = int(unit.name.split('-')[3])
-
-                                    print 'Stage: ',cur_stage, 'uid: ', unit.uid
-
-
-                                    record=self.get_record()
-
-                                    self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
-                                    #-----------------------------------------------------------------------
-                                    # Increment tasks list accordingly
-                                    print 'Stage: {0}, Task: {1}, Unit: {2}, tot_fin_tasks: {3}'.format(cur_stage, cur_task, unit.uid, plugin.tot_fin_tasks)
-                                    plugin.tot_fin_tasks[cur_stage-1]+=1
-
-                                    record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
-                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
-
-                                    # Check for branch function for current stage
-                                    branch_function = None
-
-                                    # Execute branch if it exists
-                                    if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_task-1])]["stage_{0}".format(cur_stage)]["branch"]):
-                                        self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
-                                        branch_function = self._pattern.get_branch(stage=cur_stage)
-                                        branch_function(instance=cur_task)                                
-
-
-                                        # Check if tasks need to be canceled
-                                        if self._pattern.cancel_all_tasks==True:
-                                            units = plugin._manager.list_units()
-                                            plugin._manager.cancel_units(units)
-                                            self._pattern.cancel_all_tasks = False
-
-                                    # Check if next stage was changed by branching function
-                                    if (self._pattern.stage_change==True):
-                                        if self._pattern.new_stage !=0:
-                                            if cur_stage < self._pattern.new_stage:
-                                                self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
-                                            elif cur_stage >= self._pattern.new_stage:
-                                                self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-                                                self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
-                                            #self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
-                                        else:
-                                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-
-                                        if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
-                                            self._pattern.cur_iteration[cur_task-1] += 1
-
-                                        self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
-                                    else:
-                                        self._pattern.next_stage[cur_task-1] +=1
-
-                                    self._pattern.stage_change = False
-                                    self._pattern.new_stage = None
-
-                                    # Terminate execution
-                                    if self._pattern.next_stage[cur_task-1] == 0:
-                                        self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
-
-                                    # Check if this is the last task of the stage
-                                    if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-                                        self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
-
-
-                                    if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
-                                
-                                        stage =     self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-                                        stage_kernel = stage(cur_task)
+                                    self._task_queue.put(unit)
                                     
-                                        validated_kernel = self.validate_kernel(stage_kernel)
-
-                                        plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
-                                        cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
-                                        cu = plugin.execute_tasks(tasks=cud)
-
-                                        if cu!= None:
-                                            all_cus.append(cu)
-
                                 except Exception, ex:
-                                    self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
+                                    self._logger.error('Failed to push to task queue, error: {0}'.format(ex))
                                     raise
 
                     #register callbacks if not done already
@@ -598,7 +557,7 @@ class AppManager():
                     
                     for inst in range(1, instances+1):
 
-                        stage_kernel = stage(inst)                                    
+                        stage_kernel = stage(inst)
                         validated_kernels.append(self.validate_kernel(stage_kernel))
 
 
@@ -606,6 +565,13 @@ class AppManager():
                     plugin.set_workload(kernels=validated_kernels)
                     cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
                     cus = plugin.execute_tasks(tasks=cus)
+
+                    # Start execute_thread
+                    t = threading.Thread(target=execute_thread, args=None)
+                    t.daemon = True
+                    t.start()
+
+
                     if cus!=None:
                         all_cus.extend(cus)
 
