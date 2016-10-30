@@ -428,7 +428,7 @@ class AppManager():
 
                     def execute_thread():
 
-                        while True:
+                        while (sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
 
                             try:
 
@@ -436,13 +436,14 @@ class AppManager():
                                 unit = self._task_queue.get()
 
                                 cur_stage = int(unit.name.split('-')[1])
-                                cur_pipe = int(unit.name.split('-')[3])
+                                cur_task = int(unit.name.split('-')[3])
 
-                                self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_pipe,cur_stage))
+                                self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
                                 plugin.tot_fin_tasks[cur_stage-1]+=1
+                                self._logger.info('Tot_fin_tasks from thread: {0}'.format(plugin.tot_fin_tasks))
 
                                 # Execute branch if it exists
-                                if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_pipe-1])]["stage_{0}".format(cur_stage)]["branch"]):
+                                if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_task-1])]["stage_{0}".format(cur_stage)]["branch"]):
                                     self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
                                     branch_function = self._pattern.get_branch(stage=cur_stage)
                                     branch_function(instance=cur_task) 
@@ -512,8 +513,8 @@ class AppManager():
 
                             if state == rp.FAILED:
                                 cur_stage = int(unit.name.split('-')[1])
-                                cur_pipe = int(unit.name.split('-')[3])
-                                self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_pipe, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                cur_task = int(unit.name.split('-')[3])
+                                self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
                                 self._logger.error("Pattern execution FAILED.")
                                 sys.exit(1)
 
@@ -596,6 +597,8 @@ class AppManager():
 
                         task_manager.wait_units(pending_cus, timeout=60) 
                         print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
+
+                    t.join()
 
 
 
