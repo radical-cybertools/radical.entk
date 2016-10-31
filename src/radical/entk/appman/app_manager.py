@@ -541,6 +541,7 @@ class AppManager():
 
                                     record=self.get_record()
                                     self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
                                     
                                 except Exception, ex:
                                     self._logger.error('Failed to push to task queue, error: {0}'.format(ex))

@@ -260,7 +260,7 @@ class EoP(ExecutionPattern):
         try:
             return self._pattern_dict["iter_{0}".format(self._cur_iteration[instance-1])]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
         except Exception, ex:
-            self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, instance))
+            self._logger.error("Could not get output of stage: {0}, instance: {1}. Error: {2}".format(stage, instance, ex))
             raise
 
 
