@@ -439,7 +439,6 @@ class AppManager():
                                 cur_task = int(unit.name.split('-')[3])
 
                                 self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
-                                plugin.tot_fin_tasks[cur_stage-1]+=1
                                 self._logger.info('Tot_fin_tasks from thread: {0}'.format(plugin.tot_fin_tasks))
 
                                 # Execute branch if it exists
@@ -540,6 +539,7 @@ class AppManager():
                                     self._task_queue.put(unit)
 
                                     record=self.get_record()
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
                                     self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
                                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
                                     
