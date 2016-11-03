@@ -15,702 +15,746 @@ import sys
 
 class AppManager():
 
-	def __init__(self, name=None):
+    def __init__(self, name=None, on_error=None):
 
-		self._name = name
+        self._name = name
 
-		self._pattern = None
-		self._loaded_kernels = list()
-		self._loaded_plugins = list() 
+        self._pattern = None
+        self._loaded_kernels = list()
+        self._loaded_plugins = list() 
 
-		self._logger = ru.get_logger("radical.entk.appman")
-		self._logger.info("Application Manager created")
-		self._reporter = self._logger.report
+        self._logger = ru.get_logger("radical.entk.appman")
+        self._logger.info("Application Manager created")
+        self._reporter = self._logger.report
 
-		self._kernel_dict = dict()
+        self._kernel_dict = dict()
 
-		# Uncomment once ExecutionPattern class is available
-		#self.sanity_check()
+        self._on_error = on_error   # 'exit' / 'terminate' / 'resubmit'
+        if self._on_error==None:
+            self._on_error = 'exit'
 
-		# Load default exec plugins
-		#self.load_plugins()
 
+    def sanity_pattern_check(self):
+        if self._pattern.__class__.__base__.__base__ != ExecutionPattern:
+            raise TypeError(expected_type="(derived from) ExecutionPattern", actual_type=type(self._pattern))
 
-	def sanity_pattern_check(self):
-		if self._pattern.__class__.__base__.__base__ != ExecutionPattern:
-			raise TypeError(expected_type="(derived from) ExecutionPattern", actual_type=type(self._pattern))
+    @property
+    def name(self):
+        return self._name
 
-	@property
-	def name(self):
-		return self._name
 
+    def register_kernels(self, kernel_class):
 
-	def register_kernels(self, kernel_class):
+        #print kernel_class.__base__
+        try:
+            if type(kernel_class) == list:
+                for item in kernel_class:
+                    if not hasattr(item, '__base__'):
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
+                    elif item.__base__ != Kernel:
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
 
-		#print kernel_class.__base__
-		try:
-			if type(kernel_class) == list:
-				for item in kernel_class:
-					if not hasattr(item, '__base__'):
-						raise TypeError(expected_type="KernelBase", actual_type = type(item))					
-					elif item.__base__ != Kernel:
-						raise TypeError(expected_type="KernelBase", actual_type = type(item()))		
+                    if item in self._loaded_kernels:
+                        raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
 
-					if item in self._loaded_kernels:
-						raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
+                    self._loaded_kernels.append(item)
+                    self._logger.info("Kernel {0} registered with application manager".format(item().name))
 
-					self._loaded_kernels.append(item)
-					self._logger.info("Kernel {0} registered with application manager".format(item().name))
+            elif not hasattr(kernel_class,'__base__'):
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
 
-			elif not hasattr(kernel_class,'__base__'):
-				raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
+            elif kernel_class.__base__ != KernelBase:
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
 
-			elif kernel_class.__base__ != KernelBase:
-				raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
+            else:
+                self._loaded_kernels.append(kernel_class)
+                self._logger.info("Kernel {0} registered with application manager".format(kernel_class().name))
+        
+        except Exception, ex:
 
-			else:
-				self._loaded_kernels.append(kernel_class)
-				self._logger.info("Kernel {0} registered with application manager".format(kernel_class().name))
-		
-		except Exception, ex:
+                self._logger.error("Kernel registration failed: {0}".format(ex))
+                raise
 
-				self._logger.error("Kernel registration failed: {0}".format(ex))
-				raise
 
+    def list_kernels(self):
 
-	def list_kernels(self):
+        try:
+            registered_kernels = list()
+            for item in self._loaded_kernels:
+                registered_kernels.append(item().name)
 
-		try:
-			registered_kernels = list()
-			for item in self._loaded_kernels:
-				registered_kernels.append(item().name)
+            return registered_kernels
 
-			return registered_kernels
+        except Exception, ex:
 
-		except Exception, ex:
+            self._logger.error("Could not list kernels: {0}".format(ex))
+            raise
 
-			self._logger.error("Could not list kernels: {0}".format(ex))
-			raise
 
+    def save(self, pattern):
+        self._pattern = pattern
+        self.sanity_pattern_check()
 
-	def save(self, pattern):
-		self._pattern = pattern
-		self.sanity_pattern_check()
+        # Convert pattern to JSON
+        self.pattern_to_json(pattern)
 
-		# Convert pattern to JSON
-		self.pattern_to_json(pattern)
 
+    def pattern_to_json(self, pattern):
+        pass
 
-	def pattern_to_json(self, pattern):
-		pass
 
+    def validate_kernel(self, user_kernel):
 
-	def validate_kernel(self, user_kernel):
+        try:
 
-		try:
+            if user_kernel == None:
+                return None
 
-			if user_kernel == None:
-				return None
+            found=False
+            for kernel in self._loaded_kernels:
 
-			found=False
-			for kernel in self._loaded_kernels:
+                if kernel().name == user_kernel.name:
 
-				if kernel().name == user_kernel.name:
+                    found=True
 
-					found=True
+                    new_kernel = kernel()
 
-					new_kernel = kernel()
+                    if user_kernel.pre_exec != None:
+                        new_kernel.pre_exec = user_kernel.pre_exec
 
-					if user_kernel.pre_exec != None:
-						new_kernel.pre_exec = user_kernel.pre_exec
+                    if user_kernel.executable != None:
+                        new_kernel.executable = user_kernel.executable
 
-					if user_kernel.executable != None:
-						new_kernel.executable = user_kernel.executable
+                    if user_kernel.arguments != None:
+                        new_kernel.arguments = user_kernel.arguments
 
-					if user_kernel.arguments != None:
-						new_kernel.arguments = user_kernel.arguments
+                    if user_kernel.uses_mpi != None:    
+                        new_kernel.uses_mpi = user_kernel.uses_mpi
 
-					if user_kernel.uses_mpi != None:	
-						new_kernel.uses_mpi = user_kernel.uses_mpi
+                    if user_kernel.cores != None:
+                        new_kernel.cores = user_kernel.cores
 
-					if user_kernel.cores != None:
-						new_kernel.cores = user_kernel.cores
+                    if user_kernel.upload_input_data != None:
+                        new_kernel.upload_input_data = user_kernel.upload_input_data
 
-					if user_kernel.upload_input_data != None:
-						new_kernel.upload_input_data = user_kernel.upload_input_data
+                    if user_kernel.copy_input_data != None:
+                        new_kernel.copy_input_data = user_kernel.copy_input_data
 
-					if user_kernel.copy_input_data != None:
-						new_kernel.copy_input_data = user_kernel.copy_input_data
+                    if user_kernel.link_input_data != None:
+                        new_kernel.link_input_data = user_kernel.link_input_data
 
-					if user_kernel.link_input_data != None:
-						new_kernel.link_input_data = user_kernel.link_input_data
+                    if user_kernel.copy_output_data != None:
+                        new_kernel.copy_output_data = user_kernel.copy_output_data
 
-					if user_kernel.copy_output_data != None:
-						new_kernel.copy_output_data = user_kernel.copy_output_data
+                    if user_kernel.download_output_data != None:
+                        new_kernel.download_output_data = user_kernel.download_output_data
 
-					if user_kernel.download_output_data != None:
-						new_kernel.download_output_data = user_kernel.download_output_data
+                    if user_kernel.timeout != None:
+                        new_kernel.timeout = user_kernel.timeout
 
-					if user_kernel.timeout != None:
-						new_kernel.timeout = user_kernel.timeout
+                    new_kernel.cancel_tasks = user_kernel.cancel_tasks
 
-					new_kernel.cancel_tasks = user_kernel.cancel_tasks
+                    new_kernel.validate_arguments()
 
-					new_kernel.validate_arguments()
+                    self._logger.debug("Kernel {0} validated".format(new_kernel.name))
 
-					self._logger.debug("Kernel {0} validated".format(new_kernel.name))
+                    return new_kernel
 
-					return new_kernel
+            if found==False:
+                self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+                raise Exception()
 
-			if found==False:
-				self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
-				raise Exception()
+        except Exception, ex:
 
-		except Exception, ex:
+            self._logger.error('Kernel validation failed: {0}'.format(ex))
+            raise
 
-			self._logger.error('Kernel validation failed: {0}'.format(ex))
-			raise
 
+    def add_workload(self, pattern):
+        self._pattern = pattern
 
-	def add_workload(self, pattern):
-		self._pattern = pattern
+        try:
+            self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
+        except Exception, ex:
+            self._logger.error("Create new record function call for added pattern failed, error : {0}".format(ex))
+            raise
 
-		try:
-			self.create_record(pattern.name, pattern.total_iterations, pattern.pipeline_size, pattern.ensemble_size)
-		except Exception, ex:
-			self._logger.error("Create new record function call for added pattern failed, error : {0}".format(ex))
-			raise
 
+    def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False):
 
-	def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False):
+        try:
 
-		try:
+            # Differences between EoP and PoE
+            if instance==None:
+                #PoE
+                inst=1
+            else:
+                #EoP
+                inst=instance
 
-			# Differences between EoP and PoE
-			if instance==None:
-				#PoE
-				inst=1
-			else:
-				#EoP
-				inst=instance
+            if type(cus) != list:
+                cus = [cus]
 
-			if type(cus) != list:
-				cus = [cus]
+            pat_key = "pat_{0}".format(pattern_name)
 
-			pat_key = "pat_{0}".format(pattern_name)
+            # Add monitor details to record for PoE pattern
+            if ((monitor == True)and(instance==None)):
 
-			# Add monitor details to record for PoE pattern
-			if ((monitor == True)and(instance==None)):
+                self._logger.debug('PoE: Adding Monitor to record')
 
-				self._logger.debug('PoE: Adding Monitor to record')
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"] = dict()
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"] = dict()
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"] = cus[0].stdout
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["uid"] = cus[0].uid
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"] = cus[0].working_directory                
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"] = cus[0].stdout
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["uid"] = cus[0].uid
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"] = cus[0].working_directory				
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+                self._logger.debug('EoP: Added Monitor to record')
 
-				self._logger.debug('EoP: Added Monitor to record')
+                #self._logger.debug(record)
+                return record
 
-				#self._logger.debug(record)
-				return record
+            # Add monitor details to record for EoP pattern
+            if ((monitor==True)and(instance!=None)):
 
-			# Add monitor details to record for EoP pattern
-			if ((monitor==True)and(instance!=None)):
+                self._logger.debug('EoP: Adding Monitor to record')
 
-				self._logger.debug('EoP: Adding Monitor to record')
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)] = dict()
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)] = dict()
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["output"] = cus[0].stdout
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["uid"] = cus[0].uid
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["path"] = cus[0].working_directory             
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["output"] = cus[0].stdout
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["uid"] = cus[0].uid
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_{0}".format(instance)]["path"] = cus[0].working_directory				
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Done'
+                self._logger.debug('EoP: Added Monitor to record')
 
-				self._logger.debug('EoP: Added Monitor to record')
+                return record
 
-				return record
+            self._logger.debug('Adding Tasks to record')
 
-			self._logger.debug('Adding Tasks to record')
+            for cu in cus:
 
-			for cu in cus:
+                if "iter_{0}".format(iteration) not in record[pat_key]:
+                    record[pat_key]["iter_{0}".format(iteration)] = dict()
 
-				if "iter_{0}".format(iteration) not in record[pat_key]:
-					record[pat_key]["iter_{0}".format(iteration)] = dict()
+                if "stage_{0}".format(stage) not in record[pat_key]["iter_{0}".format(iteration)]:
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)] = dict()
 
-				if "stage_{0}".format(stage) not in record[pat_key]["iter_{0}".format(iteration)]:
-					record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)] = dict()
+                if "instance_{0}".format(inst) not in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]:
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['branch'] = record[pat_key]["iter_1"]["stage_{0}".format(stage)]['branch']
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'New'
 
-				if "instance_{0}".format(inst) not in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]:
-					record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-					record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['branch'] = record[pat_key]["iter_1"]["stage_{0}".format(stage)]['branch']
-					record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'New'
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
 
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
+                inst+=1
 
-				inst+=1
+            stage_done=True
 
-			stage_done=True
+            if instance==None:
+                inst=1
+            else:
+                inst=instance
 
-			if instance==None:
-				inst=1
-			else:
-				inst=instance
+            for cu in cus:
+                val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
+                inst+=1
+                if (val==None):
+                    stage_done=False
+                    break
 
-			for cu in cus:
-				val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
-				inst+=1
-				if (val==None):
-					stage_done=False
-					break
+            if stage_done:
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
+                
+            return record
 
-			if stage_done:
-				record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
-				
-			return record
+        except Exception, ex:
+            self._logger.error("Could not add new CU data to record, error: {0}".format(ex))
+            raise
 
-		except Exception, ex:
-			self._logger.error("Could not add new CU data to record, error: {0}".format(ex))
-			raise
 
+    def remove_from_record(self, pattern_name, record, cus, iteration, stage, instance=None):
+        pat_key = "pat_{0}".format(pattern_name)
 
-	def remove_from_record(self, pattern_name, record, cus, iteration, stage, instance=None):
-		pat_key = "pat_{0}".format(pattern_name)
+        if instance==None:
+            instance=1
 
-		if instance==None:
-			instance=1
+        inst=instance
 
-		inst=instance
+        cancel_dict = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)].pop("instance_{0}".format(inst),None)
+        if cancel_dict != None:
+            self._logger.error('Task info removed from bookkeeper')
 
-		cancel_dict = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)].pop("instance_{0}".format(inst),None)
-		if cancel_dict != None:
-			self._logger.error('Task info removed from bookkeeper')
 
+    def create_record(self, pattern_name, total_iterations, pipeline_size, ensemble_size):
 
-	def create_record(self, pattern_name, total_iterations, pipeline_size, ensemble_size):
 
+        try:
+            pat_key = "pat_{0}".format(pattern_name)
+            self._kernel_dict[pat_key] = dict()
 
-		try:
-			pat_key = "pat_{0}".format(pattern_name)
-			self._kernel_dict[pat_key] = dict()
+            for iter in range(1, total_iterations+1):
+                self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
 
-			for iter in range(1, total_iterations+1):
-				self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
+                for stage in range(1, pipeline_size+1):
+                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
 
-				for stage in range(1, pipeline_size+1):
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
+                    # Set kernel default status
+                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
 
-					# Set kernel default status
-					self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+                    # Set available branches
+                    if getattr(self._pattern,'branch_{0}'.format(stage), False):
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
+                    else:
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
+        
+                    # Create instance key/vals for each stage
+                    if type(ensemble_size) == int:
+                        instances = ensemble_size
+                    elif type( ensemble_size) == list:
+                        instances = ensemble_size[stage-1]
 
-					# Set available branches
-					if getattr(self._pattern,'branch_{0}'.format(stage), False):
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
-					else:
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
-		
-					# Create instance key/vals for each stage
-					if type(ensemble_size) == int:
-						instances = ensemble_size
-					elif type( ensemble_size) == list:
-						instances = ensemble_size[stage-1]
+                    for inst in range(1, instances+1):
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
 
-					for inst in range(1, instances+1):
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-						self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
 
+        except Exception, ex:
 
-		except Exception, ex:
+            self._logger.error("New record creation failed, error: {0}".format(ex))
+            raise
 
-			self._logger.error("New record creation failed, error: {0}".format(ex))
-			raise
 
+    def get_record(self):
+        return self._kernel_dict
 
-	def get_record(self):
-		return self._kernel_dict
 
+    def run(self, resource, task_manager, rp_session):
 
-	def run(self, resource, task_manager, rp_session):
+        try:
+            # Create dictionary for logging
+            record = self.get_record()
 
-		try:
-			# Create dictionary for logging
-			record = self.get_record()
+            # For data transfer, inform pattern of the resource
+            self._pattern.session_id = rp_session
 
-			# For data transfer, inform pattern of the resource
-			self._pattern.session_id = rp_session
+            if self._pattern.__class__.__base__ == PoE:
+    
+                # Based on the execution pattern, the app manager should choose the execution plugin
+                try:
+                    from radical.entk.execution_plugin.poe import PluginPoE
 
-			if self._pattern.__class__.__base__ == PoE:
-	
-				# Based on the execution pattern, the app manager should choose the execution plugin
-				try:
-					from radical.entk.execution_plugin.poe import PluginPoE
+                    plugin = PluginPoE()                
+                    plugin.register_resource(resource = resource)
+                    plugin.add_manager(task_manager)
 
-					plugin = PluginPoE()				
-					plugin.register_resource(resource = resource)
-					plugin.add_manager(task_manager)
+                except Exception, ex:
+                    self._logger.error("PoE Plugin setup failed, error: {0}".format(ex))
 
-				except Exception, ex:
-					self._logger.error("PoE Plugin setup failed, error: {0}".format(ex))
 
+                try:
+                    # Submit kernels stage by stage to execution plugin
+                    while(self._pattern.cur_iteration <= self._pattern.total_iterations):
+            
+                        #for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
+                        while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
 
-				try:
-					# Submit kernels stage by stage to execution plugin
-					while(self._pattern.cur_iteration <= self._pattern.total_iterations):
-			
-						#for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
-						while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
+                            # Get kernel from execution pattern
+                            stage =  self._pattern.get_stage(stage=self._pattern.next_stage)
 
-							# Get kernel from execution pattern
-							stage =	 self._pattern.get_stage(stage=self._pattern.next_stage)
+                            validated_kernels = list()
+                            validated_monitors = list()
 
-							validated_kernels = list()
-							validated_monitors = list()
+                            # Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
+                            # Create instance key/vals for each stage
+                            if type(self._pattern.ensemble_size) == int:
+                                instances = self._pattern.ensemble_size
+                            elif type(self._pattern.ensemble_size) == list:
+                                instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
-							# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-							# Create instance key/vals for each stage
-							if type(self._pattern.ensemble_size) == int:
-								instances = self._pattern.ensemble_size
-							elif type(self._pattern.ensemble_size) == list:
-								instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
+                            # Initialization
+                            stage_monitor = None
 
-							# Initialization
-							stage_monitor = None
+                            for inst in range(1, instances+1):
 
-							for inst in range(1, instances+1):
+                                stage_instance_return = stage(inst)
 
-								stage_instance_return = stage(inst)
+                                if type(stage_instance_return) == list:
+                                    if len(stage_instance_return) == 2:
+                                        stage_kernel = stage_instance_return[0]
+                                        stage_monitor = stage_instance_return[1]
+                                    else:
+                                        stage_kernel = stage_instance_return[0]
+                                        stage_monitor = None
+                                else:
+                                    stage_kernel = stage_instance_return
+                                    stage_monitor = None
+                                    
+                                validated_kernels.append(self.validate_kernel(stage_kernel))
+                            validated_monitor = self.validate_kernel(stage_monitor)
 
-								if type(stage_instance_return) == list:
-									if len(stage_instance_return) == 2:
-										stage_kernel = stage_instance_return[0]
-										stage_monitor = stage_instance_return[1]
-									else:
-										stage_kernel = stage_instance_return[0]
-										stage_monitor = None
-								else:
-									stage_kernel = stage_instance_return
-									stage_monitor = None
-									
-								validated_kernels.append(self.validate_kernel(stage_kernel))
-							validated_monitor = self.validate_kernel(stage_monitor)
 
+                            # Pass resource-unbound kernels to execution plugin
+                            #print len(list_kernels_stage)
+                            plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
+                            cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
 
-							# Pass resource-unbound kernels to execution plugin
-							#print len(list_kernels_stage)
-							plugin.set_workload(kernels=validated_kernels, monitor=validated_monitor)
-							cus = plugin.execute(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration, stage=1)
+                            # Update record
+                            record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
 
-							# Update record
-							record = self.add_to_record(record=record, cus=cus, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage)
+                            # Check if montior exists
+                            if plugin.monitor != None:
+                                cu = plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
+                                
+                                # Update record
+                                record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
 
-							# Check if montior exists
-							if plugin.monitor != None:
-								cu = plugin.execute_monitor(record=record, tasks=cus, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=self._pattern.next_stage)
-								
-								# Update record
-								record = self.add_to_record(record=record, cus=cu, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration, stage=self._pattern.next_stage, monitor=True)
+                            self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
-							self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
+                            #print record
+                            branch_function = None
 
-							#print record
-							branch_function = None
+                            # Execute branch if it exists
+                            if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
+                                self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
+                                branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
+                                branch_function()
 
-							# Execute branch if it exists
-							if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration)]["stage_{0}".format(self._pattern.next_stage)]["branch"]):
-								self._logger.info('Executing branch function branch_{0}'.format(self._pattern.next_stage))
-								branch_function = self._pattern.get_branch(stage=self._pattern.next_stage)
-								branch_function()
+                            #print self._pattern.stage_change
+                            if (self._pattern.stage_change==True):
+                                pass
+                            else:
+                                self._pattern.next_stage+=1
 
-							#print self._pattern.stage_change
-							if (self._pattern.stage_change==True):
-								pass
-							else:
-								self._pattern.next_stage+=1
+                            self._pattern.stage_change = False
 
-							self._pattern.stage_change = False
+                            # Terminate execution
+                            if self._pattern.next_stage == 0:
+                                self._logger.info("Branching function has set termination condition -- terminating")
+                                break
+                    
+                        # Terminate execution
+                        if self._pattern.next_stage == 0:
+                            break
 
-							# Terminate execution
-							if self._pattern.next_stage == 0:
-								self._logger.info("Branching function has set termination condition -- terminating")
-								break
-					
-						# Terminate execution
-						if self._pattern.next_stage == 0:
-							break
+                        self._pattern.cur_iteration+=1
 
-						self._pattern.cur_iteration+=1
+                except Exception, ex:
+                    self._logger.error("PoE Workload submission failed, error: {0}".format(ex))
+                    raise
 
-				except Exception, ex:
-					self._logger.error("PoE Workload submission failed, error: {0}".format(ex))
-					raise
 
+            # App Manager actions for EoP pattern
+            if self._pattern.__class__.__base__ == EoP:
+    
+                # Based on the execution pattern, the app manager should choose the execution plugin
+                try:
+                    from radical.entk.execution_plugin.eop import PluginEoP
 
-			# App Manager actions for EoP pattern
-			if self._pattern.__class__.__base__ == EoP:
-	
-				# Based on the execution pattern, the app manager should choose the execution plugin
-				try:
-					from radical.entk.execution_plugin.eop import PluginEoP
+                    plugin = PluginEoP()                
+                    plugin.register_resource(resource = resource)
+                    plugin.add_manager(task_manager)
+                    num_stages = self._pattern.pipeline_size
+                    num_tasks = self._pattern.ensemble_size
 
-					plugin = PluginEoP()				
-					plugin.register_resource(resource = resource)
-					plugin.add_manager(task_manager)
-					num_stages = self._pattern.pipeline_size
-					num_tasks = self._pattern.ensemble_size
+                    # List of all CUs
+                    all_cus = []
 
-					# List of all CUs
-					all_cus = []
+                except Exception, ex:
+                    self._logger.error("Plugin setup failed, error: {0}".format(ex))
+                    raise
 
-				except Exception, ex:
-					self._logger.error("Plugin setup failed, error: {0}".format(ex))
-					raise
 
+                try:
 
-				try:
 
+                    #def handle_monitor(record=record, plugin=plugin, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task):
+                    def handle_monitor(record, plugin, task, cur_pat, cur_iter, cur_stage, cur_task):
+                        cu = plugin.execute_monitor(record=record, task=task, cur_pat=cur_pat, cur_iter=cur_iter, cur_stage=cur_stage, cur_task=cur_task)
+                        
+                        # Update record
+                        self.add_to_record(record=record, cus=cu, pattern_name = cur_pat, iteration=cur_iter, stage=cur_stage, instance=cur_task, monitor=True)
 
-					#def handle_monitor(record=record, plugin=plugin, task=unit, cur_pat=self._pattern.name, cur_iter=self._pattern.cur_iteration, cur_stage=cur_stage, cur_task=cur_task):
-					def handle_monitor(record, plugin, task, cur_pat, cur_iter, cur_stage, cur_task):
-						cu = plugin.execute_monitor(record=record, task=task, cur_pat=cur_pat, cur_iter=cur_iter, cur_stage=cur_stage, cur_task=cur_task)
-						
-						# Update record
-						self.add_to_record(record=record, cus=cu, pattern_name = cur_pat, iteration=cur_iter, stage=cur_stage, instance=cur_task, monitor=True)
+                        return
 
-						return
 
+                    def unit_state_cb (unit, state) :
 
-					def unit_state_cb (unit, state) :
+                        # Perform these operations only for tasks and not monitors
 
-						# Perform these operations only for tasks and not monitors
+                        if unit.name.startswith('stage'):
 
-						if unit.name.startswith('stage'):
+                            self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
-							self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
+                            cur_stage = int(unit.name.split('-')[1])
+                            cur_task = int(unit.name.split('-')[3])
 
-							cur_stage = int(unit.name.split('-')[1])
-							cur_task = int(unit.name.split('-')[3])
+                            if state == rp.FAILED:
+                            
 
-							if state == rp.FAILED:
-							
-								self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_pipe, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-								self._logger.error("Pattern execution FAILED.")
-								self._pattern._task_status[cur_task-1] = 1
-								sys.exit(1)
+                                if self._on_error == 'resubmit':
 
-							if state == rp.AGENT_STAGING_INPUT_PENDING:
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Resubmitting stage {0} of pipeline {1}...".format(cur_stage, cur_task))
+                                    all_cus.remove(unit)
+                                    new_unit = plugin.execute_tasks(unit.description)
+                                    all_cus.append(new_unit)
 
-								try:
-									
-									self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
-									record=self.get_record()
-									self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    #record=self.get_record()
+                                    #record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
-									# Now that we have the unit diretories, we can start the monitor !
-									if plugin.monitor[cur_task-1] != None:
+                                    return
 
-										import threading
+                                elif self._on_error == 'exit':
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Exiting ...")
 
-										thread = threading.Thread(target=handle_monitor, name='monitor_{0}'.format(cur_task-1),args=(record, plugin, unit, self._pattern.name, self._pattern.cur_iteration[cur_task-1], cur_stage, cur_task))
-										plugin.monitor_thread[cur_task-1] = thread
-										plugin.monitor_thread[cur_task-1].start()						
-								
-									#self._logger.info(record)
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    #record=self.get_record()
+                                    #record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
-								except Exception, ex: 
-									self._logger.error("Monitor execution failed, error: {0}".format(ex))
-									raise
+                                    sys.exit(1)
 
+                                elif self._on_error == 'terminate':
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Terminating pipeline ...")
 
-							if ((state == rp.DONE)or(state==rp.CANCELED)or(cur_stage==3)):
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    record=self.get_record()
+                                    record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
-								try:
+                                    return
 
-									if state == rp.CANCELED:
 
-										self.remove_from_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
-									
+                                elif self._on_error == 'recreate':
 
-									# Close monitoring thread
-									if plugin.monitor[cur_task-1] != None:
-										plugin.monitor_thread[cur_task-1].join()									
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Recreating stage {0} of pipeline {1}...".format(cur_stage, cur_task))
 
-										if plugin.monitor_thread[cur_task-1].is_alive() != True:
-											self._logger.debug('Closing thread {0}'.format(plugin.monitor_thread[cur_task-1].name))
+                                    record=self.get_record()
+                                    #plugin.tot_fin_tasks[cur_stage-1]+=1
 
-										plugin.monitor_thread[cur_task-1] = None
+                                    stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                    stage_instance_return = stage(cur_task)
 
+                                    stage_monitor = None
 
-									record=self.get_record()
+                                    if type(stage_instance_return) == list:
 
-									self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
-									#-----------------------------------------------------------------------
-									# Increment tasks list accordingly
-									plugin.tot_fin_tasks[cur_stage-1]+=1
+                                        if len(stage_instance_return) == 2:
 
-									record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
-									self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
+                                            stage_kernel = stage_instance_return[0]
+                                            stage_monitor = stage_instance_return[1]
+                                    
+                                        else:
+                                            stage_kernel = stage_instance_return[0]
+                                            stage_monitor = None
 
-									# Check for branch function for current stage
-									branch_function = None
+                                    else:
+                                        stage_kernel = stage_instance_return
+                                        stage_monitor = None
 
-									# Execute branch if it exists
-									if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_task-1])]["stage_{0}".format(cur_stage)]["branch"]):
-										self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
-										branch_function = self._pattern.get_branch(stage=cur_stage)
-										branch_function(instance=cur_task)								
+                                    validated_kernel = self.validate_kernel(stage_kernel)
+                                    validated_monitor = self.validate_kernel(stage_monitor)
 
 
-										# Check if tasks need to be canceled
-										if self._pattern.cancel_all_tasks==True:
-											units = plugin._manager.list_units()
-											plugin._manager.cancel_units(units)
-											self._pattern.cancel_all_tasks = False
+                                    plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
+                                    cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)             
+                                    cu = plugin.execute_tasks(tasks=cud)
 
-									# Check if next stage was changed by branching function
-									if (self._pattern.stage_change==True):
-										if self._pattern.new_stage !=0:
-											if cur_stage < self._pattern.new_stage:
-												self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
-											elif cur_stage >= self._pattern.new_stage:
-												self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-												self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
-											#self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
-										else:
-											self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+                                    if cu!= None:
+                                        all_cus.append(cu)
 
-										if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
-											self._pattern.cur_iteration[cur_task-1] += 1
 
-										self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
-									else:
-										self._pattern.next_stage[cur_task-1] +=1
 
-									self._pattern.stage_change = False
-									self._pattern.new_stage = None
 
-									# Terminate execution
-									if self._pattern.next_stage[cur_task-1] == 0:
-										self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
 
-									# Check if this is the last task of the stage
-									if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-										self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+                            #if state == rp.AGENT_STAGING_INPUT_PENDING:
 
+                            #   try:
+                                    
+                            #       self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
+                            #       record=self.get_record()
+                            #       self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)                       
+                                
+                                    #self._logger.info(record)
 
-									# Update task status
-									self._pattern._task_status[cur_task-1] = 0
+                            #   except Exception, ex: 
+                            #       self._logger.error("Monitor execution failed, error: {0}".format(ex))
+                            #       raise
 
 
-									if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
-								
-										stage =	 self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-										stage_instance_return = stage(cur_task)
+                            if ((state == rp.DONE)or(state==rp.CANCELED)):
 
-										stage_monitor = None
+                                try:
 
-										if type(stage_instance_return) == list:
+                                    record=self.get_record()
 
-											if len(stage_instance_return) == 2:
+                                    self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
+                                    #-----------------------------------------------------------------------
+                                    # Increment tasks list accordingly
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
 
-												stage_kernel = stage_instance_return[0]
-												stage_monitor = stage_instance_return[1]
-									
-											else:
-												stage_kernel = stage_instance_return[0]
-												stage_monitor = None
+                                    record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
-										else:
-											stage_kernel = stage_instance_return
-											stage_monitor = None
-									
-										validated_kernel = self.validate_kernel(stage_kernel)
-										validated_monitor = self.validate_kernel(stage_monitor)
+                                    # Check for branch function for current stage
+                                    branch_function = None
 
+                                    # Execute branch if it exists
+                                    if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_task-1])]["stage_{0}".format(cur_stage)]["branch"]):
+                                        self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
+                                        branch_function = self._pattern.get_branch(stage=cur_stage)
+                                        branch_function(instance=cur_task)                              
 
-										plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
-										cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)				
-										cu = plugin.execute_tasks(tasks=cud)
 
-										if cu!= None:
-											all_cus.append(cu)
+                                        # Check if tasks need to be canceled
+                                        if self._pattern.cancel_all_tasks==True:
+                                            units = plugin._manager.list_units()
+                                            plugin._manager.cancel_units(units)
+                                            self._pattern.cancel_all_tasks = False
 
-								except Exception, ex:
-									self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
-									raise
+                                    # Check if next stage was changed by branching function
+                                    if (self._pattern.stage_change==True):
+                                        if self._pattern.new_stage !=0:
+                                            if cur_stage < self._pattern.new_stage:
+                                                self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
+                                            elif cur_stage >= self._pattern.new_stage:
+                                                self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+                                                self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
+                                            #self._pattern._incremented_tasks[cur_task-1] += abs(cur_stage - self._pattern.new_stage) + 1
+                                        else:
+                                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
 
-					#register callbacks
-					task_manager.register_callback(unit_state_cb)
+                                        if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
+                                            self._pattern.cur_iteration[cur_task-1] += 1
 
-					# Get kernel from execution pattern
-					stage =	 self._pattern.get_stage(stage=1)
+                                        self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
+                                    else:
+                                        self._pattern.next_stage[cur_task-1] +=1
 
-					validated_kernels = list()
-					validated_monitors = list()
+                                    self._pattern.stage_change = False
+                                    self._pattern.new_stage = None
 
-					# Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-					# Create instance key/vals for each stage
-					
-					instances = self._pattern.ensemble_size
-					
-					for inst in range(1, instances+1):
+                                    # Terminate execution
+                                    if self._pattern.next_stage[cur_task-1] == 0:
+                                        self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
 
-						stage_instance_return = stage(inst)
+                                    # Check if this is the last task of the stage
+                                    if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
+                                        self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
 
-						if type(stage_instance_return) == list:
-							if len(stage_instance_return) == 2:
-								stage_kernel = stage_instance_return[0]
-								stage_monitor = stage_instance_return[1]
-							else:
-								stage_kernel = stage_instance_return[0]
-								stage_monitor = None
-						else:
-							stage_kernel = stage_instance_return
-							stage_monitor = None
-									
-						validated_kernels.append(self.validate_kernel(stage_kernel))
-						validated_monitors.append(self.validate_kernel(stage_monitor))
 
+                                    if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
+                                
+                                        stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                        stage_instance_return = stage(cur_task)
 
-					# Pass resource-unbound kernels to execution plugin
-					plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
-					cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
-					cus = plugin.execute_tasks(tasks=cus)
-					if cus!=None:
-						all_cus.extend(cus)
+                                        stage_monitor = None
 
-					while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
-					#while True:
+                                        if type(stage_instance_return) == list:
 
-						pending_cus = []
-						done_cus = []
-						for unit in all_cus:
-							if ((unit.state!=rp.DONE) and (unit.state!=rp.CANCELED)):
-								pending_cus.append(unit.uid)
-							else:
-								done_cus.append(unit)
+                                            if len(stage_instance_return) == 2:
 
-						for unit in done_cus:
-							all_cus.remove(unit)
+                                                stage_kernel = stage_instance_return[0]
+                                                stage_monitor = stage_instance_return[1]
+                                    
+                                            else:
+                                                stage_kernel = stage_instance_return[0]
+                                                stage_monitor = None
 
-						#self._logger.debug('All: {0}, Pending: {1}'.format(len(all_cus), len(pending_cus)))
+                                        else:
+                                            stage_kernel = stage_instance_return
+                                            stage_monitor = None
+                                    
+                                        validated_kernel = self.validate_kernel(stage_kernel)
+                                        validated_monitor = self.validate_kernel(stage_monitor)
 
-						#if len(pending_cus)==0:
-						#	break
-						#else:
-						task_manager.wait_units(pending_cus, timeout=60) 
 
-				except Exception, ex:
-					self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
-					raise
+                                        plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
+                                        cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)             
+                                        cu = plugin.execute_tasks(tasks=cud)
 
+                                        if cu!= None:
+                                            all_cus.append(cu)
 
-		except Exception, ex:
-			self._logger.error("App manager failed at workload execution, error: {0}".format(ex))
-			raise
+                                except Exception, ex:
+                                    self._logger.error('Failed to trigger next stage, error: {0}'.format(ex))
+                                    raise
+
+                    #register callbacks
+                    task_manager.register_callback(unit_state_cb)
+
+                    # Get kernel from execution pattern
+                    stage =  self._pattern.get_stage(stage=1)
+
+                    validated_kernels = list()
+                    validated_monitors = list()
+
+                    # Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
+                    # Create instance key/vals for each stage
+                    
+                    instances = self._pattern.ensemble_size
+                    
+                    for inst in range(1, instances+1):
+
+                        stage_instance_return = stage(inst)
+
+                        if type(stage_instance_return) == list:
+                            if len(stage_instance_return) == 2:
+                                stage_kernel = stage_instance_return[0]
+                                stage_monitor = stage_instance_return[1]
+                            else:
+                                stage_kernel = stage_instance_return[0]
+                                stage_monitor = None
+                        else:
+                            stage_kernel = stage_instance_return
+                            stage_monitor = None
+                                    
+                        validated_kernels.append(self.validate_kernel(stage_kernel))
+                        validated_monitors.append(self.validate_kernel(stage_monitor))
+
+
+                    # Pass resource-unbound kernels to execution plugin
+                    plugin.set_workload(kernels=validated_kernels, monitor=validated_monitors)
+                    cus = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=1, stage=1)
+                    cus = plugin.execute_tasks(tasks=cus)
+                    if cus!=None:
+                        all_cus.extend(cus)
+
+                    while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+                    #while True:
+
+                        pending_cus = []
+                        done_cus = []
+                        for unit in all_cus:
+                            if ((unit.state!=rp.DONE) and (unit.state!=rp.CANCELED)):
+                                pending_cus.append(unit.uid)
+                            else:
+                                done_cus.append(unit)
+
+                        for unit in done_cus:
+                            all_cus.remove(unit)
+
+                        #self._logger.debug('All: {0}, Pending: {1}'.format(len(all_cus), len(pending_cus)))
+
+                        #if len(pending_cus)==0:
+                        #   break
+                        #else:
+                        task_manager.wait_units(pending_cus, timeout=60) 
+
+                except Exception, ex:
+                    self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
+                    raise
+
+
+        except Exception, ex:
+            self._logger.error("App manager failed at workload execution, error: {0}".format(ex))
+            raise

@@ -2,13 +2,16 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.entk import EoP, AppManager, Kernel, ResourceHandle
+from radical.entk import PoE, AppManager, Kernel, ResourceHandle
 
 from echo import echo_kernel
 from randval import rand_kernel
 from sleep import sleep_kernel
 
-class Test(EoP):
+def find_tasks(filename):
+	pass
+
+class Test(PoE):
 
 	def __init__(self, ensemble_size, pipeline_size):
 		super(Test,self).__init__(ensemble_size, pipeline_size)
@@ -18,7 +21,7 @@ class Test(EoP):
 		k1.arguments = ["--file=output.txt","--text=simulation","--duration=60"]
 		k1.cores = 1
 
-		# File staging
+		# File staging can be added using the following
 		#k1.upload_input_data = []
 		#k1.copy_input_data = []
 		#k1.link_input_data = []
@@ -27,117 +30,51 @@ class Test(EoP):
 
 		# Define "async" monitor -- is executed every 20 seconds, cancels the first task if running
 		m1 = Kernel(name="echo", ktype="monitor")
-		m1.timeout = 30
-		m1.arguments = ["--file=test.txt","--text=monitor"]
+		m1.timeout = 20
+		m1.arguments = ["--file=output.txt","--text=monitor"]
 		m1.copy_input_data = ['$STAGE_1_TASK_2/output.txt']
-		m1.download_output_data = ['test.txt']
+		m1.download_output_data = ['output.txt']
 		m1.cancel_tasks = [1]
-
+		
 		return [k1,m1]
 
 
-	def stage_2(self, instance):
-		k1 = Kernel(name="echo")
-		k1.arguments = ["--file=output.txt","--text=build_systems"]
-		k1.cores = 1
+	def branch_1(self):
 
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
-		return k1
+		# Get the output of the second task of the first stage
+		flag = self.get_output(stage=1, task=2)
+		print 'Output of stage 1 = {0}'.format(flag)
 
-	def stage_3(self, instance):
-		k1 = Kernel(name="echo")
-		k1.arguments = ["--file=output.txt","--text=equilibrate"]
-		k1.cores = 1
+		# Transfer "output.txt" file from second task of first stage and rename to "kern_data.txt"
+		self.get_file(stage=1, task=2, filename="output.txt", new_name="kern_data.txt")
+		f = open('kern_data.txt','r')
+		print f.read()
 
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
+		# Transfer "output.txt" file from monitor of first stage and rename to "monitor_data.txt"
+		self.get_file(stage=1, monitor=True, filename='output.txt', new_name='monitor_data.txt')
+		f = open('monitor_data.txt','r')
+		print f.read()
 
-		return k1
-
-	def stage_4(self, instance):
-		k1 = Kernel(name="echo")
-		k1.arguments = ["--file=output.txt","--text=MD"]
-		k1.cores = 1
-
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
-		return k1
-
-
-	def stage_5(self, instance):
-		k1 = Kernel(name="randval")
-		k1.arguments = ["--upperlimit=5"]
-		k1.cores = 1
-
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
-		return k1
-
-	def branch_5(self, instance):
-
-		flag = self.get_output(stage=5, instance=instance)
-		print 'Output of stage:5, instance:{0} = {1}'.format(instance,flag)
-		if int(flag) > 3:
+		# Based on a value, one may set the next stage of the workflow. Restart by setting it to 1
+		''' 
+		if int(flag) >= 3:
 			self.set_next_stage(1)
-			print 'Restarting instance {0}'.format(instance)
+			print 'Restarting workflow'
 		else:
 			pass
-
-
-	def stage_6(self, instance):
-
-		k1 = Kernel(name="randval")
-		k1.arguments = ["--upperlimit=5"]
-		k1.cores = 1
-
-		# File staging
-		#k1.upload_input_data = []
-		#k1.copy_input_data = []
-		#k1.link_input_data = []
-		#k1.copy_output_data = []
-		#k1.download_output_data = []
-		return k1
-
-	def branch_6(self, instance):
-
-		flag = self.get_output(stage=6, instance=instance)
-		print 'Output of stage:6, instance:{0} = {1}'.format(instance,flag)
-		if  int(flag) < 3:
-			self.set_next_stage(1)
-			print 'Restarting instance {0}'.format(instance)
-		else:
-			pass
-
+		'''
 	
 
 if __name__ == '__main__':
 
 	# Create pattern object with desired ensemble size, pipeline size
-	pipe = Test(ensemble_size=2, pipeline_size=6)
+	pipe = Test(ensemble_size=2, pipeline_size=1)
 
 	# Create an application manager
-	app = AppManager(name='Ebola')
+	app = AppManager(name='MSM')
 
 	# Register kernels to be used
 	app.register_kernels(echo_kernel)
-	app.register_kernels(rand_kernel)
 	app.register_kernels(sleep_kernel)
 
 	# Add workload to the application manager
@@ -151,7 +88,7 @@ if __name__ == '__main__':
 				#project = 'TG-MCB090174',
 				#queue='development',
 				walltime=10,
-				database_url='mongodb://entk_user:entk_user@ds029224.mlab.com:29224/entk_doc')
+				database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp')
 
 	# Submit request for resources + wait till job becomes Active
 	res.allocate(wait=True)

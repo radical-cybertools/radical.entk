@@ -14,7 +14,7 @@ class Kernel(object):
 		# Parameters required for any Kernel irrespective of RP
 		self._pre_exec               	= None
 		self._executable 				= None
-		self._arguments       			= None
+		self._arguments       			= []
 		self._uses_mpi               	= None
 		self._cores                  	= 1 # If unspecified, number of cores is set to 1
 		self._type						= ktype
