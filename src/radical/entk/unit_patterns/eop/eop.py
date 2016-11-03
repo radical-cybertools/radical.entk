@@ -42,9 +42,8 @@ class EoP(ExecutionPattern):
         for i in range(1, ensemble_size+1):
             self._cur_iteration.append(1)
 
-        self.kill_instances = None
-        self._pattern_status = 'New'
-
+		self.kill_instances = None
+		self._pattern_status = 'New'
 
         self._stage_change = False
         self._ensemble_size_change = False
@@ -146,10 +145,6 @@ class EoP(ExecutionPattern):
     @property
     def type(self):
         return self._type
-
-    #@property
-    #def iterative(self):
-    #    return self._iterative
 
     @property
     def pattern_dict(self):
