@@ -15,63 +15,63 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-			"name":         "echo",
-			"description":  "Writes Hello World to a file",
-			"arguments":   {"--file=":     
-						{
-							"mandatory": True,
-							"description": "The input file."
-						},
-					"--text=":
-						{
-							"mandatory": True,
-							"description": "Prints 'this is ' + text"
-						},
-					},
-			"machine_configs": 
-			{
-				"*": {
-					"environment"   : None,
-					"pre_exec"      : None,
-					"executable"    : "/bin/bash",
-					"uses_mpi"      : False
-				}
-			}
-	}
+            "name":         "echo",
+            "description":  "Writes Hello World to a file",
+            "arguments":   {"--file=":     
+                        {
+                            "mandatory": True,
+                            "description": "The input file."
+                        },
+                    "--text=":
+                        {
+                            "mandatory": True,
+                            "description": "Prints 'this is ' + text"
+                        },
+                    },
+            "machine_configs": 
+            {
+                "*": {
+                    "environment"   : None,
+                    "pre_exec"      : None,
+                    "executable"    : "/bin/bash",
+                    "uses_mpi"      : False
+                }
+            }
+    }
 
 
 # ------------------------------------------------------------------------------
 # 
 class echo_kernel(KernelBase):
 
-	# --------------------------------------------------------------------------
-	#
-	def __init__(self):
-		"""Le constructor.
-		"""
-		super(echo_kernel, self).__init__(_KERNEL_INFO)
+    # --------------------------------------------------------------------------
+    #
+    def __init__(self):
+        """Le constructor.
+        """
+        super(echo_kernel, self).__init__(_KERNEL_INFO)
 
 
-	# --------------------------------------------------------------------------
-	#
-	def _bind_to_resource(self, resource_key):
-		"""(PRIVATE) Implements parent class method. 
-		"""
-		if resource_key not in _KERNEL_INFO["machine_configs"]:
-			if "*" in _KERNEL_INFO["machine_configs"]:
-				# Fall-back to generic resource key
-				resource_key = "*"
-			else:
-				raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
+    # --------------------------------------------------------------------------
+    #
+    def _bind_to_resource(self, resource_key):
+        """(PRIVATE) Implements parent class method. 
+        """
+        if resource_key not in _KERNEL_INFO["machine_configs"]:
+            if "*" in _KERNEL_INFO["machine_configs"]:
+                # Fall-back to generic resource key
+                resource_key = "*"
+            else:
+                raise NoKernelConfigurationError(kernel_name=_KERNEL_INFO["name"], resource_key=resource_key)
 
-		cfg = _KERNEL_INFO["machine_configs"][resource_key]
+        cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
-		executable = cfg['executable']
-		arguments  = ['-l', '-c', "/bin/echo 'This is {1}' >> {0}".format(self.get_arg("--file="), self.get_arg("--text="))]
+        executable = cfg['executable']
+        arguments  = ['-l', '-c', "/bin/echo 'This is {1}' >> {0}".format(self.get_arg("--file="), self.get_arg("--text="))]
 
-		self._executable  = executable
-		self._arguments   = arguments
-		self._environment = cfg["environment"]
-		self._uses_mpi    = cfg["uses_mpi"]
-		self._pre_exec    = cfg["pre_exec"]
+        self._executable  = executable
+        self._arguments   = arguments
+        self._environment = cfg["environment"]
+        self._uses_mpi    = cfg["uses_mpi"]
+        self._pre_exec    = cfg["pre_exec"]
 

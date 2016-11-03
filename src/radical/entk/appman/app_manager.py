@@ -187,40 +187,61 @@ class AppManager():
             
         try:
 
+            # Differences between EoP and PoE
+            if instance==None:
+                #PoE
+                inst=1
+            else:
+                #EoP
+                inst=instance
+
+            if type(cus) != list:
+                cus = [cus]
+
             pat_key = "pat_{0}".format(pattern_name)
-            self._kernel_dict[pat_key] = dict()
 
-            for iter in range(1, total_iterations+1):
-                self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
+            self._logger.debug('Adding Tasks to record')
 
-                for stage in range(1, pipeline_size+1):
-                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
+            for cu in cus:
 
-                    # Set kernel default status
-                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+                if "iter_{0}".format(iteration) not in record[pat_key]:
+                    record[pat_key]["iter_{0}".format(iteration)] = dict()
 
-                    # Set available branches
-                    if getattr(self._pattern,'branch_{0}'.format(stage), False):
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
-                    else:
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
-        
-                    # Create instance key/vals for each stage
-                    if type(ensemble_size) == int:
-                        instances = ensemble_size
-                    elif type( ensemble_size) == list:
-                        instances = ensemble_size[stage-1]
+                if "stage_{0}".format(stage) not in record[pat_key]["iter_{0}".format(iteration)]:
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)] = dict()
 
-                    for inst in range(1, instances+1):
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
+                if "instance_{0}".format(inst) not in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]:
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['branch'] = record[pat_key]["iter_1"]["stage_{0}".format(stage)]['branch']
+                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'New'
 
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
+
+                inst+=1
+
+            stage_done=True
+
+            if instance==None:
+                inst=1
+            else:
+                inst=instance
+
+            for cu in cus:
+                val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
+                inst+=1
+                if (val==None):
+                    stage_done=False
+                    break
+
+            if stage_done:
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
+                
+            return record
 
         except Exception, ex:
-
-            self._logger.error("New record creation failed, error: {0}".format(ex))
+            self._logger.error("Could not add new CU data to record, error: {0}".format(ex))
             raise
 
 
@@ -467,6 +488,26 @@ class AppManager():
                                     self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
 
 
+                                if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
+                                
+                                    stage =     self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                    stage_kernel = stage(cur_task)
+                                    
+                                    validated_kernel = self.validate_kernel(stage_kernel)
+
+                                    plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
+                                    cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
+                                    cu = plugin.execute_tasks(tasks=cud)
+
+                                    if cu!= None:
+                                        all_cus.append(cu)
+
+                            except Exception, ex:
+                                self._task_queue.put(unit)
+                                self._logger.error('Failed to run next stage, error: {0}'.format(ex))
+                                raise
+
+
                     def unit_state_cb (unit, state) :
 
                         # Perform these operations only for tasks and not monitors
@@ -508,6 +549,7 @@ class AppManager():
                                 elif self._on_error == 'terminate':
                                     self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
                                     self._logger.info("Terminating pipeline ...")
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
                                     return
 
 
