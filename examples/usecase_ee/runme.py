@@ -55,7 +55,7 @@ if __name__ == '__main__':
     pipe = Test(ensemble_size=2, pipeline_size=1)
 
     # Create an application manager
-    app = AppManager(name='MSM', on_error='terminate')
+    app = AppManager(name='MSM', on_error='resubmit')
 
     # Register kernels to be used
     app.register_kernels(fail_kernel)

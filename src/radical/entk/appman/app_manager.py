@@ -39,6 +39,7 @@ class AppManager():
 
         self._callback_flag = False
         self._task_queue = Queue.Queue()
+        self._fail_queue = Queue.Queue()
 
 
     def sanity_pattern_check(self):
@@ -450,6 +451,8 @@ class AppManager():
                                 cur_stage = int(unit.name.split('-')[1])
                                 cur_task = int(unit.name.split('-')[3])
 
+                                plugin.tot_fin_tasks[cur_stage-1]+=1
+
                                 self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
                                 self._logger.info('Tot_fin_tasks from thread: {0}'.format(plugin.tot_fin_tasks))
 
@@ -497,7 +500,8 @@ class AppManager():
                                     stage =     self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
                                     stage_kernel = stage(cur_task)
                                     
-                                    validated_kernel = self.validate_kernel(stage_kernel)
+                                    
+
 
                                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
                                     cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
@@ -507,10 +511,55 @@ class AppManager():
                                         all_cus.append(cu)
 
                             except Exception, ex:
-                                self._task_queue.put(unit)
                                 self._logger.error('Failed to run next stage, error: {0}'.format(ex))
                                 raise
 
+
+                    def fail_thread():
+
+                        while (sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+
+                                try:
+
+                                    record=self.get_record()
+                                    unit = self._fail_queue.get()
+
+                                    cur_stage = int(unit.name.split('-')[1])
+                                    cur_task = int(unit.name.split('-')[3])
+
+                                    if self._on_error == 'resubmit':                                        
+
+                                        all_cus.remove(unit)
+                                        new_unit = plugin.execute_tasks(unit.description)
+                                        all_cus.append(new_unit)
+
+                                    elif self._on_error == 'terminate':
+
+                                        record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                        plugin.tot_fin_tasks[cur_stage-1]+=1
+
+
+                                    elif self._on_error == 'recreate':
+
+                                        stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                        stage_kernel = stage(cur_task)
+
+                                        validated_kernel = self.validate_kernel(stage_kernel)
+
+                                        plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
+                                        cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
+                                        cu = plugin.execute_tasks(tasks=cud)
+
+                                        if cu!= None:
+                                            all_cus.append(cu)
+
+                                    else:
+
+                                        pass
+
+                                except Exception, ex:
+                                    self._logger.error('Failed to handle failed task, error: {0}'.format(ex))
+                                    raise
 
 
 
@@ -522,36 +571,50 @@ class AppManager():
 
                             self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
+                            cur_stage = int(unit.name.split('-')[1])
+                            cur_task = int(unit.name.split('-')[3])
+
                             if state == rp.FAILED:
-                                cur_stage = int(unit.name.split('-')[1])
-                                cur_task = int(unit.name.split('-')[3])
-                                self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                                self._logger.error("Pattern execution FAILED.")
-                                sys.exit(1)
 
-                            if state == rp.AGENT_STAGING_INPUT_PENDING:
+                                if self._on_error == 'resubmit':
 
-                                try:
-                                    cur_stage = int(unit.name.split('-')[1])
-                                    cur_task = int(unit.name.split('-')[3])
-                                    self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
-                                    record=self.get_record()
-                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Resubmitting stage {0} of pipeline {1}...".format(cur_stage, cur_task))
+                                    self._fail_queue.put(unit)
 
-                                except Exception, ex: 
-                                    self._logger.error("Failed to log unit path, error: {0}".format(ex))
-                                    raise
+                                elif self._on_error == 'exit':
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Exiting ...")
+
+                                    sys.exit(1)
+
+                                elif self._on_error == 'terminate':
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Terminating pipeline ...")
+
+                                    self._fail_queue.put(unit)
+
+                                    return
 
 
-                            if ((state == rp.DONE)or(state==rp.CANCELED)):
+                                elif self._on_error == 'recreate':
+
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Recreating stage {0} of pipeline {1}...".format(cur_stage, cur_task))
+
+                                    self._fail_queue.put(unit)
+
+                                    return
+                                    
+
+                            elif ((state == rp.DONE)or(state==rp.CANCELED)):
 
                                 try:
                                     cur_stage = int(unit.name.split('-')[1])
                                     cur_task = int(unit.name.split('-')[3])
                                     self._task_queue.put(unit)
 
-                                    record=self.get_record()
-                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    record=self.get_record()                                    
                                     self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
                                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
                                     
@@ -566,7 +629,7 @@ class AppManager():
                         self._callback_flag = True
 
                     # Get kernel from execution pattern
-                    stage =     self._pattern.get_stage(stage=1)
+                    stage = self._pattern.get_stage(stage=1)
 
                     validated_kernels = list()
 
@@ -587,10 +650,15 @@ class AppManager():
                     cus = plugin.execute_tasks(tasks=cus)
 
                     # Start execute_thread
-                    t = threading.Thread(target=execute_thread, args=())
-                    t.daemon = True
-                    t.start()
+                    t1 = threading.Thread(target=execute_thread, args=())
+                    t1.daemon = True
+                    t1.start()
 
+
+                    # Start thread to handle failure
+                    t2 = threading.Thread(target=fail_thread, args=())
+                    t2.daemon = True
+                    t2.start()
 
                     if cus!=None:
                         all_cus.extend(cus)
@@ -611,7 +679,8 @@ class AppManager():
                         task_manager.wait_units(pending_cus, timeout=60) 
                         print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
 
-                    t.join()
+                    #t1.join()
+                    #t2.join()
 
 
 
