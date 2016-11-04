@@ -512,6 +512,8 @@ class AppManager():
                                 raise
 
 
+
+
                     def unit_state_cb (unit, state) :
 
                         # Perform these operations only for tasks and not monitors
@@ -520,62 +522,25 @@ class AppManager():
 
                             self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
-                            cur_stage = int(unit.name.split('-')[1])
-                            cur_task = int(unit.name.split('-')[3])
-
                             if state == rp.FAILED:
-                            
+                                cur_stage = int(unit.name.split('-')[1])
+                                cur_task = int(unit.name.split('-')[3])
+                                self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                self._logger.error("Pattern execution FAILED.")
+                                sys.exit(1)
 
-                                if self._on_error == 'resubmit':
+                            if state == rp.AGENT_STAGING_INPUT_PENDING:
 
-                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                                    self._logger.info("Resubmitting stage {0} of pipeline {1}...".format(cur_stage, cur_task))
-                                    all_cus.remove(unit)
-                                    new_unit = plugin.execute_tasks(unit.description)
-                                    all_cus.append(new_unit)
-
-                                    plugin.tot_fin_tasks[cur_stage-1]+=1
-                                    #record=self.get_record()
-                                    #record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
-
-                                    return
-
-                                elif self._on_error == 'exit':
-                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                                    self._logger.info("Exiting ...")
-
-                                    plugin.tot_fin_tasks[cur_stage-1]+=1
-                                    #record=self.get_record()
-                                    #record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
-
-                                    sys.exit(1)
-
-                                elif self._on_error == 'terminate':
-                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                                    self._logger.info("Terminating pipeline ...")
-                                    plugin.tot_fin_tasks[cur_stage-1]+=1
-                                    return
-
-
-                                elif self._on_error == 'recreate':
-
-                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
-                                    self._logger.info("Recreating stage {0} of pipeline {1}...".format(cur_stage, cur_task))
-
+                                try:
+                                    cur_stage = int(unit.name.split('-')[1])
+                                    cur_task = int(unit.name.split('-')[3])
+                                    self._logger.debug("Unit directories created for pipe: {0}, stage: {1}".format(cur_task, cur_stage))
                                     record=self.get_record()
-                                    #plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
 
-                                    stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-                                    stage_instance_return = stage(cur_task)
-
-                                    validated_kernel = self.validate_kernel(stage_kernel)
-
-                                    plugin.set_workload(kernels=validated_kernel, monitor=validated_monitor, cur_task=cur_task)
-                                    cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)             
-                                    cu = plugin.execute_tasks(tasks=cud)
-
-                                    if cu!= None:
-                                        all_cus.append(cu)
+                                except Exception, ex: 
+                                    self._logger.error("Failed to log unit path, error: {0}".format(ex))
+                                    raise
 
 
                             if ((state == rp.DONE)or(state==rp.CANCELED)):
@@ -647,6 +612,8 @@ class AppManager():
                         print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
 
                     t.join()
+
+
 
                 except Exception, ex:
                     self._logger.error("EoP Pattern execution failed, error: {0}".format(ex))
