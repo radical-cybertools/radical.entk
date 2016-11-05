@@ -269,3 +269,30 @@ class EoP(ExecutionPattern):
             remote_file.copy(filename, os.getcwd())
         else:
             remote_file.copy(filename, os.getcwd() + '/' + new_name)
+
+
+
+    def get_status(self, iteration=None, stage=None, instance=None):
+
+
+        try:
+            if stage == None:
+                self._logger.error("Need to specify stage number")
+                raise
+
+            if instance==None:
+                self._logger.error("Need to specify instance number")
+                raise
+
+            if iteration == None:
+                iteration = self._cur_iteration[instance-1]
+
+            return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["status"]
+
+        except Exception,ex:
+            self._logger.error("Could not get status of stage: {0}, instance: {1}, iteration: {2}, Error: {2}".format(stage, instance, iteration, ex)
+            raise
+
+
+            
+

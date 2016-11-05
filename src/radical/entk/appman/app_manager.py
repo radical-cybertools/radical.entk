@@ -188,7 +188,7 @@ class AppManager():
             raise
 
 
-    def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False):
+    def add_to_record(self, pattern_name, record, cus, iteration, stage, instance=None, monitor=False, status=None):
             
         try:
 
@@ -202,6 +202,9 @@ class AppManager():
 
             if type(cus) != list:
                 cus = [cus]
+
+            if status==None:
+                status='Pending'
 
             pat_key = "pat_{0}".format(pattern_name)
 
@@ -223,6 +226,7 @@ class AppManager():
                 record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
                 record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
                 record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
+                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['status'] = status
 
                 inst+=1
 
@@ -233,15 +237,15 @@ class AppManager():
             else:
                 inst=instance
 
-            for cu in cus:
-                val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
-                inst+=1
-                if (val==None):
-                    stage_done=False
-                    break
+            #for cu in cus:
+            #    val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
+            #    inst+=1
+            #    if (val==None):
+            #        stage_done=False
+            #        break
 
-            if stage_done:
-                record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
+            #if stage_done:
+            #    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
                 
             return record
 
@@ -266,10 +270,7 @@ class AppManager():
                 self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
 
                 for stage in range(1, pipeline_size+1):
-                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()
-
-                    # Set kernel default status
-                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['status'] = 'New'
+                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()                    
 
                     # Set available branches
                     if getattr(self._pattern,'branch_{0}'.format(stage), False):
@@ -288,6 +289,8 @@ class AppManager():
                         self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
                         self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
                         self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
+                        # Set kernel default status
+                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['status'] = 'Pending'
 
         except Exception, ex:
 
@@ -323,6 +326,11 @@ class AppManager():
 
 
                 try:
+
+                    def execute_thread():
+
+
+                        
                     # Submit kernels stage by stage to execution plugin
                     while(self._pattern.cur_iteration <= self._pattern.total_iterations):
             
@@ -535,7 +543,8 @@ class AppManager():
 
                                     elif self._on_error == 'terminate':
 
-                                        record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                        record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                        self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
                                         plugin.tot_fin_tasks[cur_stage-1]+=1
 
 
@@ -552,6 +561,13 @@ class AppManager():
 
                                         if cu!= None:
                                             all_cus.append(cu)
+
+
+                                    elif self._on_error == 'continue':
+                                        
+                                        self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                        self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
+                                        self._task_queue.put(unit)
 
                                     else:
 
@@ -605,7 +621,15 @@ class AppManager():
                                     self._fail_queue.put(unit)
 
                                     return
-                                    
+
+                                elif self._on_error == 'continue':
+
+                                    self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                                    self._logger.info("Continuing ahead...".format(cur_stage, cur_task))
+
+                                    self._fail_queue.put(unit)
+
+                                    return
 
                             elif ((state == rp.DONE)or(state==rp.CANCELED)):
 
@@ -615,7 +639,7 @@ class AppManager():
                                     self._task_queue.put(unit)
 
                                     record=self.get_record()                                    
-                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task)
+                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Done')
                                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
                                     
                                 except Exception, ex:
