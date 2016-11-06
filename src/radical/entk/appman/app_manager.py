@@ -221,7 +221,6 @@ class AppManager():
                 if "instance_{0}".format(inst) not in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]:
                     record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
                     record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['branch'] = record[pat_key]["iter_1"]["stage_{0}".format(stage)]['branch']
-                    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'New'
 
                 record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
                 record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
@@ -230,12 +229,12 @@ class AppManager():
 
                 inst+=1
 
-            stage_done=True
+            #stage_done=True
 
-            if instance==None:
-                inst=1
-            else:
-                inst=instance
+            #if instance==None:
+            #    inst=1
+            #else:
+            #    inst=instance
 
             #for cu in cus:
             #    val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
@@ -326,11 +325,6 @@ class AppManager():
 
 
                 try:
-
-                    def execute_thread():
-
-
-                        
                     # Submit kernels stage by stage to execution plugin
                     while(self._pattern.cur_iteration <= self._pattern.total_iterations):
             
@@ -508,7 +502,7 @@ class AppManager():
                                     stage =     self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
                                     stage_kernel = stage(cur_task)
                                     
-                                    
+                                    validated_kernel = self.validate_kernel(stage_kernel)                                                                       
 
 
                                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
@@ -565,7 +559,7 @@ class AppManager():
 
                                     elif self._on_error == 'continue':
                                         
-                                        self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                        record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
                                         self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
                                         self._task_queue.put(unit)
 
@@ -635,12 +629,13 @@ class AppManager():
 
                                 try:
                                     cur_stage = int(unit.name.split('-')[1])
-                                    cur_task = int(unit.name.split('-')[3])
-                                    self._task_queue.put(unit)
+                                    cur_task = int(unit.name.split('-')[3])                                    
 
                                     record=self.get_record()                                    
-                                    self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Done')
+                                    record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Done')
                                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
+
+                                    self._task_queue.put(unit)
                                     
                                 except Exception, ex:
                                     self._logger.error('Failed to push to task queue, error: {0}'.format(ex))

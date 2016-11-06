@@ -48,6 +48,22 @@ class Test(EoP):
                 return k1
 
     
+    def branch_1(self, instance):
+
+        if instance == 2:
+
+            status = self.get_status(stage=1, instance=2)
+
+            if status == 'Failed':
+
+                self.set_next_stage(stage=1)
+
+            else:
+                pass
+
+        else:
+
+            pass
 
 if __name__ == '__main__':
 
@@ -55,7 +71,7 @@ if __name__ == '__main__':
     pipe = Test(ensemble_size=2, pipeline_size=1)
 
     # Create an application manager
-    app = AppManager(name='MSM', on_error='resubmit')
+    app = AppManager(name='EE', on_error='continue')
 
     # Register kernels to be used
     app.register_kernels(fail_kernel)
