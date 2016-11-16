@@ -16,6 +16,7 @@ import sys
 import Queue
 import threading
 
+
 class AppManager():
 
     def __init__(self, name=None, on_error=None):
@@ -40,6 +41,8 @@ class AppManager():
         self._callback_flag = False
         self._task_queue = Queue.Queue()
         self._fail_queue = Queue.Queue()
+        self._task_event = threading.Event()
+        self._fail_event = threading.Event()
 
 
     def sanity_pattern_check(self):
@@ -432,6 +435,7 @@ class AppManager():
 
                     # List of all CUs
                     all_cus = []
+                    lock_all_cus = threading.Lock()
 
                 except Exception, ex:
                     self._logger.error("Plugin setup failed, error: {0}".format(ex))
@@ -440,24 +444,28 @@ class AppManager():
 
                 try:
 
-
                     def execute_thread():
 
-                        while (sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+                        #while self._task_event.isSet()==False:
+                        while True:
 
                             try:
 
                                 record=self.get_record()
                                 unit = self._task_queue.get()
 
+                                if unit == 'quit':
+                                    return
+
                                 cur_stage = int(unit.name.split('-')[1])
                                 cur_task = int(unit.name.split('-')[3])
 
-                                plugin.tot_fin_tasks[cur_stage-1]+=1
+                                with lock_all_cus:
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    self._logger.info('Tot_fin_tasks from thread: {0}'.format(plugin.tot_fin_tasks))
 
                                 self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,cur_stage))
-                                self._logger.info('Tot_fin_tasks from thread: {0}'.format(plugin.tot_fin_tasks))
-
+                                                                
                                 # Execute branch if it exists
                                 if (record["pat_{0}".format(self._pattern.name)]["iter_{0}".format(self._pattern.cur_iteration[cur_task-1])]["stage_{0}".format(cur_stage)]["branch"]):
                                     self._logger.info('Executing branch function branch_{0}'.format(cur_stage))
@@ -465,23 +473,25 @@ class AppManager():
                                     branch_function(instance=cur_task) 
 
 
-                                if (self._pattern.stage_change==True):
-                                    if self._pattern.new_stage !=0:
-                                        if cur_stage < self._pattern.new_stage:
-                                            self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
-                                        elif cur_stage >= self._pattern.new_stage:
-                                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-                                            self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
+                                with lock_all_cus:
+
+                                    if (self._pattern.stage_change==True):
+                                        if self._pattern.new_stage !=0:
+                                            if cur_stage < self._pattern.new_stage:
+                                                self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
+                                            elif cur_stage >= self._pattern.new_stage:
+                                                self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+                                                self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
                                             
+                                        else:
+                                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+
+                                        if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
+                                            self._pattern.cur_iteration[cur_task-1] += 1
+
+                                        self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
                                     else:
-                                        self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-
-                                    if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
-                                        self._pattern.cur_iteration[cur_task-1] += 1
-
-                                    self._pattern.next_stage[cur_task-1] = self._pattern.new_stage
-                                else:
-                                    self._pattern.next_stage[cur_task-1] +=1
+                                        self._pattern.next_stage[cur_task-1] +=1
 
 
                                 self._pattern.stage_change = False
@@ -493,8 +503,9 @@ class AppManager():
 
 
                                 # Check if this is the last task of the stage
-                                if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-                                    self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+                                with lock_all_cus:
+                                    if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
+                                        self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
 
 
                                 if ((self._pattern.next_stage[cur_task-1]<= self._pattern.pipeline_size)and(self._pattern.next_stage[cur_task-1] !=0)):
@@ -509,8 +520,16 @@ class AppManager():
                                     cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
                                     cu = plugin.execute_tasks(tasks=cud)
 
-                                    if cu!= None:
-                                        all_cus.append(cu)
+                                    with lock_all_cus:
+
+                                        if cu!= None:
+                                            all_cus.append(cu)
+
+                                with lock_all_cus:
+                                    self._logger.info('All cus from thread: {0}'.format(len(all_cus)))
+
+
+                                #self._task_queue.task_done()
 
                             except Exception, ex:
                                 self._logger.error('Failed to run next stage, error: {0}'.format(ex))
@@ -519,57 +538,76 @@ class AppManager():
 
                     def fail_thread():
 
-                        while (sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+                        #while self._fail_event.isSet() == False:
+                        while True:
 
-                                try:
+                            try:
 
-                                    record=self.get_record()
-                                    unit = self._fail_queue.get()
+                                record=self.get_record()
+                                unit = self._fail_queue.get()
 
-                                    cur_stage = int(unit.name.split('-')[1])
-                                    cur_task = int(unit.name.split('-')[3])
+                                if unit == 'quit':
+                                    return
 
-                                    if self._on_error == 'resubmit':                                        
+                                cur_stage = int(unit.name.split('-')[1])
+                                cur_task = int(unit.name.split('-')[3])
 
-                                        all_cus.remove(unit)
-                                        new_unit = plugin.execute_tasks(unit.description)
+                                if self._on_error == 'resubmit':                                        
+                                    
+                                    new_unit = plugin.execute_tasks(unit.description)
+
+                                    with lock_all_cus:
                                         all_cus.append(new_unit)
+                                        all_cus.remove(unit)
 
-                                    elif self._on_error == 'terminate':
+                                elif self._on_error == 'terminate':
 
-                                        record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
-                                        self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
-                                        plugin.tot_fin_tasks[cur_stage-1]+=1
+                                    record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
+                                    plugin.tot_fin_tasks[cur_stage-1]+=1
+
+                                    with lock_all_cus:
+                                        all_cus.remove(unit)
 
 
-                                    elif self._on_error == 'recreate':
+                                elif self._on_error == 'recreate':
 
-                                        stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
-                                        stage_kernel = stage(cur_task)
+                                    stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                                    stage_kernel = stage(cur_task)
 
-                                        validated_kernel = self.validate_kernel(stage_kernel)
+                                    validated_kernel = self.validate_kernel(stage_kernel)
 
-                                        plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
-                                        cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
-                                        cu = plugin.execute_tasks(tasks=cud)
+                                    plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
+                                    cud = plugin.create_tasks(record=record, pattern_name=self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=self._pattern.next_stage[cur_task-1], instance=cur_task)                
+                                    cu = plugin.execute_tasks(tasks=cud)
+
+                                    with lock_all_cus:
 
                                         if cu!= None:
                                             all_cus.append(cu)
 
+                                        all_cus.remove(unit)
 
-                                    elif self._on_error == 'continue':
+
+                                elif self._on_error == 'continue':
                                         
-                                        record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
-                                        self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
-                                        self._task_queue.put(unit)
+                                    record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
+                                    self._task_queue.put(unit)
 
-                                    else:
+                                    with lock_all_cus:
+                                        all_cus.remove(unit)
 
-                                        pass
+                                else:
 
-                                except Exception, ex:
-                                    self._logger.error('Failed to handle failed task, error: {0}'.format(ex))
-                                    raise
+                                    pass
+
+
+                                self._fail_queue.task_done()
+
+                            except Exception, ex:
+                                self._logger.error('Failed to handle failed task, error: {0}'.format(ex))
+                                raise
 
 
 
@@ -631,6 +669,9 @@ class AppManager():
                                     cur_stage = int(unit.name.split('-')[1])
                                     cur_task = int(unit.name.split('-')[3])                                    
 
+                                    with lock_all_cus:
+                                        all_cus.remove(unit)
+
                                     record=self.get_record()                                    
                                     record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Done')
                                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
@@ -670,36 +711,75 @@ class AppManager():
 
                     # Start execute_thread
                     t1 = threading.Thread(target=execute_thread, args=())
-                    t1.daemon = True
                     t1.start()
 
 
                     # Start thread to handle failure
                     t2 = threading.Thread(target=fail_thread, args=())
-                    t2.daemon = True
                     t2.start()
 
-                    if cus!=None:
-                        all_cus.extend(cus)
 
-                    while(sum(plugin.tot_fin_tasks)!=(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+                    with lock_all_cus:
+                        if cus!=None:
+                            all_cus.extend(cus)
+
+                    quit=False
+
+
+                    while not quit:
                     
-                        pending_cus = []
+                        pending_cus_1 = []
+                        pending_cus_2 = []
                         done_cus = []
-                        for unit in all_cus:
-                            if ((unit.state!=rp.DONE) and (unit.state!=rp.CANCELED)):
-                                pending_cus.append(unit.uid)
-                            else:
-                                done_cus.append(unit)
 
-                        for unit in done_cus:
-                            all_cus.remove(unit)
+                        print 'all cus beg: {0}'.format(len(all_cus))
 
-                        task_manager.wait_units(pending_cus, timeout=60) 
+                        with lock_all_cus:
+
+                            for unit in all_cus:
+                                if (unit.state == rp.DONE)or(unit.state == rp.CANCELED):
+                                    done_cus.append(unit)
+                                else:
+                                    pending_cus_1.append(unit.uid)
+
+
+                            all_cu_uids = task_manager.list_units()
+                            all_cus_2 = task_manager.get_units(all_cu_uids)
+
+                            for unit in all_cus_2:
+                                if (unit.state!=rp.DONE)and(unit.state!=rp.CANCELED):
+                                    pending_cus_2.append(unit.uid)
+
+                            for unit in done_cus:
+                                all_cus.remove(unit)
+
                         print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
+                        print 'all cus end: {0}'.format(len(all_cus))
+                        print 'pending cus 1: {0}'.format(len(pending_cus_1))
+                        print 'pending cus 2: {0}'.format(len(pending_cus_2))
+                        print 'done cus: {0}'.format(len(done_cus))
 
-                    #t1.join()
-                    #t2.join()
+                        task_manager.wait_units(pending_cus_2, timeout=60) 
+
+                        print sum(plugin.tot_fin_tasks)
+                        print (self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )
+
+                        with lock_all_cus:
+                            if (sum(plugin.tot_fin_tasks)==(self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )):
+                                quit=True
+
+
+
+                    if t2.isAlive() == True:
+                        #self._fail_event.set()                        
+                        self._fail_queue.put('quit')
+                    t2.join()
+
+                    if t1.isAlive() == True:
+                        #self._task_event.set()
+                        self._task_queue.put('quit')
+                    t1.join()
+                    
 
 
 

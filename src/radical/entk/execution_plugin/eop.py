@@ -166,7 +166,7 @@ class PluginEoP(object):
                 return task
 
         except Exception, ex:
-            self._logger.error("Could not execute tasks, error : {1}".format(ex))
+            self._logger.error("Could not execute tasks, error : {0}".format(ex))
             raise
 
 
