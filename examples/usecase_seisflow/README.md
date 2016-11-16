@@ -46,7 +46,7 @@ pip install .
 
 ```bash
 cd $HOME
-cd radical.ensemblemd/examples/usecase_adap_sampling
+cd radical.ensemblemd/examples/usecase_seisflow
 RADICAL_ENTK_VERBOSE=info python runme.py
 ```
 
