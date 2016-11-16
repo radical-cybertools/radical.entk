@@ -184,7 +184,10 @@ class ResourceHandle(object):
                 shared_list = []
                 for f in self._shared_data:
                     if f.startswith('.'):
-                        f = os.getcwd() + f.split('.')[1] + '.' + f.split('.')[2]
+                        if len(f.split('.'))==3:
+                            f = os.getcwd() + f.split('.')[1] + '.' + f.split('.')[2]
+                        elif len(f.split('.'))==2:
+                            f = os.getcwd() + f.split('.')[1]
                     shared_dict =   {
                                 'source': 'file://%s'%f,
                                 'target': 'staging:///%s' %os.path.basename(f),
