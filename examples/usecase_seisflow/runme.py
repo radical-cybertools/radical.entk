@@ -20,7 +20,11 @@ class Test(EoP):
         k1.arguments = []
         k1.copy_input_data = [  '$SHARED/CMTSOLUTION',
                                 '$SHARED/STATIONS',
-                                '$SHARED/specfem_mockup'
+                                '$SHARED/specfem_mockup',
+                                '$SHARED/Par_file',
+                                '$SHARED/addressing.txt',
+                                '$SHARED/values_from_mesher.h'
+
                             ]
         k1.cores = 2
         k1.mpi=True
@@ -48,7 +52,10 @@ if __name__ == '__main__':
 
     res.shared_data = [ './input_data/CMTSOLUTION',
                         './input_data/STATIONS',
-                        './input_data/specfem_mockup']
+                        './input_data/bin/specfem_mockup',
+                        './input_data/Par_file',
+                        './input_data/addressing.txt',
+                        './input_data/values_from_mesher.h']
 
     try:
 

@@ -6,7 +6,6 @@
 * python-pip
 * python-virtualenv
 * git
-* all dependencies of specfem_mockup are met
 
 ## Installation
 
@@ -40,6 +39,16 @@ git clone https://github.com/radical-cybertools/radical.ensemblemd.git
 cd radical.ensemblemd
 git checkout usecase/seisflow
 pip install .
+```
+
+Specfem installation:
+
+* Tested only on Ubuntu 16.04
+
+```bash
+cd $HOME
+cd radical.ensemblemd/examples/usecase_seisflow/input_data
+make
 ```
 
 ## Executing the example (local execution only now)
