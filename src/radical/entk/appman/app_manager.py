@@ -603,7 +603,7 @@ class AppManager():
                                     pass
 
 
-                                self._fail_queue.task_done()
+                                #self._fail_queue.task_done()
 
                             except Exception, ex:
                                 self._logger.error('Failed to handle failed task, error: {0}'.format(ex))
@@ -659,7 +659,14 @@ class AppManager():
                                     self._logger.error("Stage {0} of pipeline {1} failed: UID: {2}, STDERR: {3}, STDOUT: {4} LAST LOG: {5}".format(cur_stage, cur_task, unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
                                     self._logger.info("Continuing ahead...".format(cur_stage, cur_task))
 
-                                    self._fail_queue.put(unit)
+                                    #self._fail_queue.put(unit)
+
+                                    record = self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
+                                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
+                                    self._task_queue.put(unit)
+
+                                    with lock_all_cus:
+                                        all_cus.remove(unit)
 
                                     return
 
@@ -715,8 +722,8 @@ class AppManager():
 
 
                     # Start thread to handle failure
-                    t2 = threading.Thread(target=fail_thread, args=())
-                    t2.start()
+                    #t2 = threading.Thread(target=fail_thread, args=())
+                    #t2.start()
 
 
                     with lock_all_cus:
@@ -770,10 +777,10 @@ class AppManager():
 
 
 
-                    if t2.isAlive() == True:
+                    #if t2.isAlive() == True:
                         #self._fail_event.set()                        
-                        self._fail_queue.put('quit')
-                    t2.join()
+                    #    self._fail_queue.put('quit')
+                    #t2.join()
 
                     if t1.isAlive() == True:
                         #self._task_event.set()

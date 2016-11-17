@@ -9,7 +9,6 @@ from fail import fail_kernel
 
 ENSEMBLE_SIZE=5
 ITER = [1 for i in range(ENSEMBLE_SIZE)]
-FAIL = [1 for i in range(ENSEMBLE_SIZE)]
 
 def find_tasks(filename):
     pass
@@ -22,7 +21,7 @@ class Test(EoP):
     def stage_1(self, instance):
 
         k1 = Kernel(name="sleep")
-        k1.arguments = ["--file=output.txt","--text=simulation","--duration=5"]
+        k1.arguments = ["--file=output.txt","--text=simulation","--duration=10"]
         k1.cores = 1
             
         return k1
@@ -35,35 +34,16 @@ class Test(EoP):
         return k1
 
     def stage_3(self, instance):
-        if FAIL[instance-1] == 1:
-            FAIL[instance-1]+=1
-            k1 = Kernel(name="fail")
-            k1.arguments = []
-            k1.cores = 1
-            return k1
-
         k1 = Kernel(name="sleep")
-        k1.arguments = ["--file=output.txt","--text=simulation","--duration=15"]
+        k1.arguments = ["--file=output.txt","--text=simulation","--duration=10"]
         k1.cores = 1
             
         return k1
 
-    def branch_3(self, instance):
-
-        status = self.get_status(stage=3, instance=instance)
-        if status == 'Failed':
-            print 'Stage:3, Instance: {0}, status: {1}'.format(instance, status)
-            self.set_next_stage(stage=2)        
-        #if ITER[instance-1] == 2:
-        #    self.set_next_stage(stage=2)
-        #    ITER[instance-1]+=1
-        #else:
-        #    print 'Pipe {0} finished'.format(instance)
-
 
     def stage_4(self, instance):
         k1 = Kernel(name="sleep")
-        k1.arguments = ["--file=output.txt","--text=simulation","--duration=20"]
+        k1.arguments = ["--file=output.txt","--text=simulation","--duration=10"]
         k1.cores = 1
             
         return k1
@@ -71,7 +51,7 @@ class Test(EoP):
 
     def stage_5(self, instance):
         k1 = Kernel(name="sleep")
-        k1.arguments = ["--file=output.txt","--text=simulation","--duration=25"]
+        k1.arguments = ["--file=output.txt","--text=simulation","--duration=10"]
         k1.cores = 1
             
         return k1
@@ -79,7 +59,7 @@ class Test(EoP):
     
     def branch_5(self, instance):
         ITER[instance-1]+=1
-        if ITER[instance-1] != 5:
+        if ITER[instance-1] != 20:
             self.set_next_stage(stage=2)
         else:
             print 'Pipe {0} finished'.format(instance)
@@ -91,11 +71,10 @@ if __name__ == '__main__':
     pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=5)
 
     # Create an application manager
-    app = AppManager(name='EE', on_error='continue')
+    app = AppManager(name='EE')
 
     # Register kernels to be used
     app.register_kernels(sleep_kernel)
-    app.register_kernels(fail_kernel)
 
     # Add workload to the application manager
     app.add_workload(pipe)
