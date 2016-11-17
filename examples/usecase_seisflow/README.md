@@ -45,6 +45,16 @@ Specfem installation:
 
 * Tested only on Ubuntu 16.04
 
+Install dependencies of specfem:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y g++ python2.7 openmpi-bin openmpi-doc libopenmpi-dev
+sudo apt-get install -y libboost-all-dev make python-pip
+```
+
+Installing specfem:
+
 ```bash
 cd $HOME
 cd radical.ensemblemd/examples/usecase_seisflow/input_data
