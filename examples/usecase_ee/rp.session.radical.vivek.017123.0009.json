@@ -1,0 +1,2075 @@
+{
+    "pilot": [
+        {
+            "_id": "pilot.0000", 
+            "agent_config": {
+                "agent_launch_method": "FORK", 
+                "agent_layout": {
+                    "agent_0": {
+                        "bridges": [
+                            "agent_staging_input_queue", 
+                            "agent_scheduling_queue", 
+                            "agent_executing_queue", 
+                            "agent_staging_output_queue", 
+                            "agent_unschedule_pubsub", 
+                            "agent_reschedule_pubsub", 
+                            "agent_command_pubsub", 
+                            "agent_state_pubsub"
+                        ], 
+                        "components": {
+                            "AgentExecutingComponent": 1, 
+                            "AgentSchedulingComponent": 1, 
+                            "AgentStagingInputComponent": 1, 
+                            "AgentStagingOutputComponent": 1
+                        }, 
+                        "pull_units": true, 
+                        "sub_agents": [], 
+                        "target": "local"
+                    }
+                }, 
+                "bulk_collection_time": 1.0, 
+                "clone": {
+                    "AgentExecutingComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentSchedulingComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentStagingInputComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentStagingOutputComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentWorker": {
+                        "input": 1, 
+                        "output": 1
+                    }
+                }, 
+                "cores": 4, 
+                "cu_post_exec": null, 
+                "cu_pre_exec": null, 
+                "db_poll_sleeptime": 0.1, 
+                "debug": 40, 
+                "drop": {
+                    "AgentExecutingComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentSchedulingComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentStagingInputComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentStagingOutputComponent": {
+                        "input": 1, 
+                        "output": 1
+                    }, 
+                    "AgentWorker": {
+                        "input": 1, 
+                        "output": 1
+                    }
+                }, 
+                "export_to_cu": null, 
+                "heartbeat_interval": 10, 
+                "lrms": "FORK", 
+                "max_io_loglength": 1024, 
+                "mongodb_url": "mongodb://rp:rp@ds051960.mlab.com:51960/tests", 
+                "mpi_launch_method": "MPIEXEC", 
+                "pilot_id": "pilot.0000", 
+                "resource_cfg": {
+                    "agent_launch_method": "FORK", 
+                    "agent_scheduler": "CONTINUOUS", 
+                    "agent_spawner": "POPEN", 
+                    "agent_type": "multicore", 
+                    "default_remote_workdir": "$HOME", 
+                    "description": "Your local machine.", 
+                    "filesystem_endpoint": "file://localhost/", 
+                    "job_manager_endpoint": "fork://localhost/", 
+                    "label": "local.localhost", 
+                    "local": {
+                        "filesystem_endpoint": "file://localhost/", 
+                        "job_manager_endpoint": "fork://localhost/"
+                    }, 
+                    "lrms": "FORK", 
+                    "mpi_launch_method": "MPIEXEC", 
+                    "notes": "To use the ssh schema, make sure that ssh access to localhost is enabled.", 
+                    "python_dist": "default", 
+                    "rp_version": "debug", 
+                    "schemas": [
+                        "local", 
+                        "ssh"
+                    ], 
+                    "ssh": {
+                        "filesystem_endpoint": "sftp://localhost/", 
+                        "job_manager_endpoint": "ssh://localhost/"
+                    }, 
+                    "task_launch_method": "FORK", 
+                    "virtenv": "%(global_sandbox)s/ve_localhost", 
+                    "virtenv_mode": "create"
+                }, 
+                "runtime": 40, 
+                "scheduler": "CONTINUOUS", 
+                "session_id": "rp.session.radical.vivek.017123.0009", 
+                "spawner": "POPEN", 
+                "staging_area": "staging_area", 
+                "staging_scheme": "staging", 
+                "task_launch_method": "FORK"
+            }, 
+            "commands": [], 
+            "cores_per_node": null, 
+            "description": {
+                "_config": null, 
+                "access_schema": null, 
+                "candidate_hosts": null, 
+                "cleanup": false, 
+                "cores": 4, 
+                "exit_on_error": false, 
+                "memory": null, 
+                "project": null, 
+                "queue": null, 
+                "resource": "local.localhost", 
+                "runtime": 40, 
+                "sandbox": null
+            }, 
+            "finished": 1479497216.94451, 
+            "global_sandbox": "/home/vivek/radical.pilot.sandbox", 
+            "health_check_enabled": true, 
+            "heartbeat": null, 
+            "input_transfer_finished": null, 
+            "input_transfer_started": null, 
+            "lm_detail": null, 
+            "lm_info": {
+                "FORK": {
+                    "version": "0.42", 
+                    "version_detail": "There is no spoon"
+                }
+            }, 
+            "log": [
+                {
+                    "message": "Using bootstrapper /home/vivek/ves/test_lock/lib/python2.7/site-packages/radical/pilot/bootstrapper/bootstrap_1.sh", 
+                    "timestamp": 1479494801.189106
+                }, 
+                {
+                    "message": "Copying bootstrapper 'file://localhost/home/vivek/ves/test_lock/lib/python2.7/site-packages/radical/pilot/bootstrapper/bootstrap_1.sh' to agent sandbox (<saga.filesystem.directory.Directory object at 0x7efcbe80a410>).", 
+                    "timestamp": 1479494801.189238
+                }, 
+                {
+                    "message": "Copying sdist 'file://localhost/home/vivek/ves/test_lock/local/lib/python2.7/site-packages/radical/utils/radical.utils-0.44.tar.gz' to sandbox (file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/).", 
+                    "timestamp": 1479494801.293206
+                }, 
+                {
+                    "message": "Copying sdist 'file://localhost/home/vivek/ves/test_lock/local/lib/python2.7/site-packages/saga/saga-python-0.44.tar.gz' to sandbox (file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/).", 
+                    "timestamp": 1479494801.397387
+                }, 
+                {
+                    "message": "Copying sdist 'file://localhost/home/vivek/ves/test_lock/local/lib/python2.7/site-packages/radical/pilot/controller/..//radical.pilot-v0.44-detached-v0.44.tar.gz' to sandbox (file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/).", 
+                    "timestamp": 1479494801.502208
+                }, 
+                {
+                    "message": "Writing agent configuration to file '/tmp/rp_agent_cfg_dirI8pqyy/agent_0.cfg'.", 
+                    "timestamp": 1479494801.606926
+                }, 
+                {
+                    "message": "Copying agent configuration file 'file://localhost/tmp/rp_agent_cfg_dirI8pqyy/agent_0.cfg' to sandbox (file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/).", 
+                    "timestamp": 1479494801.608802
+                }, 
+                {
+                    "message": "Submitting SAGA job with description: {'Project': None, 'Executable': '/bin/bash', 'TotalPhysicalMemory': None, 'WorkingDirectory': '/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/', 'Queue': None, 'Environment': {}, 'WallTimeLimit': 40, 'Arguments': ['-l bootstrap_1.sh', \" -d 'radical.utils-0.44.tar.gz:saga-python-0.44.tar.gz:radical.pilot-v0.44-detached-v0.44.tar.gz' -m 'create' -p 'pilot.0000' -r 'debug' -s 'rp.session.radical.vivek.017123.0009' -v '/home/vivek/radical.pilot.sandbox/ve_localhost' -b 'default' -a 'multicore'\"], 'ProcessesPerHost': None, 'Error': 'bootstrap_1.err', 'Output': 'bootstrap_1.out', 'CandidateHosts': None, 'TotalCPUCount': 4}", 
+                    "timestamp": 1479494802.962647
+                }, 
+                {
+                    "message": "SAGA job submitted with job id [fork://localhost/]-[25767.0]", 
+                    "timestamp": 1479494803.186065
+                }, 
+                {
+                    "message": "pilot done", 
+                    "timestamp": 1479497216.94451
+                }, 
+                {
+                    "message": "real 1479497216.953588 sec | user 14.236 sec | system 2.480 sec | mem 48444.00 kB", 
+                    "timestamp": 1479497216.94451
+                }
+            ], 
+            "logfile": null, 
+            "nodes": null, 
+            "output_transfer_finished": null, 
+            "output_transfer_started": null, 
+            "pilotmanager": "pmgr.0000", 
+            "saga_job_id": "[fork://localhost/]-[25767.0]", 
+            "sagajobid": null, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "started": 1479494811.117216, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "PendingLaunch", 
+                    "timestamp": 1479494799.583481
+                }, 
+                {
+                    "state": "Launching", 
+                    "timestamp": 1479494800.659718
+                }, 
+                {
+                    "state": "PendingActive", 
+                    "timestamp": 1479494803.186094
+                }, 
+                {
+                    "state": "Active", 
+                    "timestamp": 1479494811.117216
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479497216.94451
+                }
+            ], 
+            "stderr": null, 
+            "stdout": null, 
+            "submitted": 1479494799.583481, 
+            "unit_ids": [
+                "unit.000013", 
+                "unit.000003", 
+                "unit.000002", 
+                "unit.000000", 
+                "unit.000004", 
+                "unit.000001", 
+                "unit.000010", 
+                "unit.000011", 
+                "unit.000012", 
+                "unit.000014", 
+                "unit.000006", 
+                "unit.000005", 
+                "unit.000008", 
+                "unit.000007", 
+                "unit.000009"
+            ], 
+            "unitmanager": "umgr.0000"
+        }
+    ], 
+    "pmgr": [
+        {
+            "_id": "pmgr.0000", 
+            "data": {}, 
+            "pilot_launcher_workers": 1
+        }
+    ], 
+    "session": {
+        "_id": "rp.session.radical.vivek.017123.0009", 
+        "connected": 1479494798.691235, 
+        "created": 1479494798.691235, 
+        "name": null
+    }, 
+    "umgr": [
+        {
+            "_id": "umgr.0000", 
+            "input_transfer_workers": 2, 
+            "output_transfer_workers": 2, 
+            "scheduler": "direct_submission"
+        }
+    ], 
+    "unit": [
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000013", 
+            "callbackhistory": [
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494845.71867
+                }
+            ], 
+            "control": "agent", 
+            "description": {
+                "arguments": [], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/sleep", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-3-task-1", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 1, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494842.910376
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494843.413497
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000013", 
+            "started": null, 
+            "state": "Failed", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494842.540399
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494843.320647
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494843.320647
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494843.745068
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494843.74539
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494843.746602
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494843.746932
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494843.748295
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494843.815875
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494843.816965
+                }, 
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494843.817236
+                }
+            ], 
+            "stderr": "/bin/sleep: missing operand\nTry '/bin/sleep --help' for more information.\n", 
+            "stdout": "", 
+            "submitted": 1479494842.540399, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000003", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494815.45181
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494821.640525
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.73688
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 5 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-1-task-4", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494812.808659
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494813.871768
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494824.306996
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000003", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494812.431525
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494813.778192
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494813.778192
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494817.551912
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494817.552303
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494817.554435
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494817.554772
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494817.5572
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494822.666814
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494822.668413
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494822.668691
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494824.215033
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.306996
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494812.431525, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000002", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494815.451833
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494821.641257
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.922973
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 5 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-1-task-3", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494812.900845
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494813.871215
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494824.446333
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000002", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494812.431148
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494813.778929
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494813.778929
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494817.553167
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494817.553435
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494817.555355
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494817.555559
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494817.564626
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494822.667594
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494822.670109
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494822.670356
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494824.353857
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.446333
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494812.431148, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000000", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494815.451857
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494821.642107
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494825.109395
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 5 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-1-task-1", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494812.993156
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494814.057001
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494824.491918
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000000", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494812.43038
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494813.963824
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494813.963824
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494817.55417
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494817.554436
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494817.556957
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494817.557245
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494817.569872
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494822.667286
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494822.669292
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494822.669474
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494824.39931
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.491918
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494812.43038, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000004", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494815.451869
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494821.642642
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494825.296769
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 5 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-1-task-5", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494813.085645
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494814.057443
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494824.631564
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000004", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494812.431943
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494813.964389
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494813.964389
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494817.55505
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494817.555153
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494817.558613
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494817.558911
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494817.575445
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494822.667911
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494822.671014
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494822.671265
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494824.538633
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494824.631564
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494812.431943, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000001", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494815.451846
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494821.641786
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494825.109041
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494828.669337
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 5 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-1-task-2", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494813.177944
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494814.242645
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494828.098746
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000001", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494812.430767
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494814.14944
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494814.14944
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494817.555951
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494817.556255
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494817.56018
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494822.67312
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494822.675145
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494827.778648
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494827.779492
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494827.779755
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494828.006262
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494828.098746
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494812.430767, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000010", 
+            "callbackhistory": [
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494842.346018
+                }
+            ], 
+            "control": "agent", 
+            "description": {
+                "arguments": [], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/sleep", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-3-task-3", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 1, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494838.885834
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494839.947949
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000010", 
+            "started": null, 
+            "state": "Failed", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494838.515906
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494839.854809
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494839.854809
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494840.385364
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494840.385681
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494840.38666
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494840.386891
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494840.387951
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494840.40783
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494840.409107
+                }, 
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494840.409449
+                }
+            ], 
+            "stderr": "/bin/sleep: missing operand\nTry '/bin/sleep --help' for more information.\n", 
+            "stdout": "", 
+            "submitted": 1479494838.515906, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000011", 
+            "callbackhistory": [
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494842.438193
+                }
+            ], 
+            "control": "agent", 
+            "description": {
+                "arguments": [], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/sleep", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-3-task-4", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 1, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494839.35074
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494839.947403
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000011", 
+            "started": null, 
+            "state": "Failed", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494838.980736
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494839.854452
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494839.854452
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494840.386692
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494840.386986
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494840.388114
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494840.38831
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494840.39473
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494840.408497
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494840.410366
+                }, 
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494840.410714
+                }
+            ], 
+            "stderr": "/bin/sleep: missing operand\nTry '/bin/sleep --help' for more information.\n", 
+            "stdout": "", 
+            "submitted": 1479494838.980736, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000012", 
+            "callbackhistory": [
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494845.811053
+                }
+            ], 
+            "control": "agent", 
+            "description": {
+                "arguments": [], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/sleep", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-3-task-5", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 1, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494842.443977
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494843.413988
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000012", 
+            "started": null, 
+            "state": "Failed", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494842.073413
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494843.321019
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494843.321019
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494843.746436
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494843.746695
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494843.748157
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494843.748437
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494843.754342
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494843.816386
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494843.818059
+                }, 
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494843.818281
+                }
+            ], 
+            "stderr": "/bin/sleep: missing operand\nTry '/bin/sleep --help' for more information.\n", 
+            "stdout": "", 
+            "submitted": 1479494842.073413, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000014", 
+            "callbackhistory": [
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494852.463623
+                }
+            ], 
+            "control": "agent", 
+            "description": {
+                "arguments": [], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/sleep", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-3-task-2", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 1, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494849.561151
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494850.162396
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000014", 
+            "started": null, 
+            "state": "Failed", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494849.190169
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494850.069669
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494850.069669
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494850.471635
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494850.472
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494850.473189
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494850.473414
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494850.474488
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494850.529628
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494850.530715
+                }, 
+                {
+                    "state": "Failed", 
+                    "timestamp": 1479494850.53101
+                }
+            ], 
+            "stderr": "/bin/sleep: missing operand\nTry '/bin/sleep --help' for more information.\n", 
+            "stdout": "", 
+            "submitted": 1479494849.190169, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000006", 
+            "callbackhistory": [
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494828.855097
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494838.414969
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 10 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-2-task-3", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494825.674779
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494826.270844
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494837.21507
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000006", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494825.304776
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494826.178328
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494826.178328
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494826.563084
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494826.563456
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494826.564612
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494826.564915
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494826.566183
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494836.59828
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494836.599729
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494836.600166
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494837.122521
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494837.21507
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494825.304776, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000005", 
+            "callbackhistory": [
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494828.855112
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494838.600552
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 10 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-2-task-4", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494825.207021
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494825.36263
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494837.030135
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000005", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494824.836174
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494825.26986
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494825.26986
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494825.709034
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494825.709455
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494825.710916
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494825.711156
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494825.71239
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494835.795652
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494835.797083
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494835.797404
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494836.937348
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494837.030135
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494824.836174, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000008", 
+            "callbackhistory": [
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494828.669285
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494832.042487
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494841.973778
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 10 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-2-task-5", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494826.612765
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494827.734744
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494839.772399
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000008", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494826.242262
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494827.641656
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494827.641656
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494828.18137
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494828.18162
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494828.182789
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494828.183019
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494828.184078
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494838.202784
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494838.203996
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494838.204339
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494839.679653
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494839.772399
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494826.242262, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000007", 
+            "callbackhistory": [
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494828.855072
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494838.414611
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494842.160452
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 10 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-2-task-1", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494826.145902
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494826.456151
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494838.49353
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000007", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494825.772558
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494826.36365
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494826.36365
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494826.848672
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494826.849039
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494826.850218
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494826.850535
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494826.851875
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494836.899681
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494836.900813
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494836.901171
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494838.40082
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494838.49353
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494825.772558, 
+            "unitmanager": "umgr.0000"
+        }, 
+        {
+            "Agent_Input_Directives": [], 
+            "Agent_Input_Status": null, 
+            "Agent_Output_Directives": [], 
+            "Agent_Output_Status": null, 
+            "FTW_Input_Directives": [], 
+            "FTW_Input_Status": null, 
+            "FTW_Output_Directives": [], 
+            "FTW_Output_Status": null, 
+            "_id": "unit.000009", 
+            "callbackhistory": [
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494832.042457
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494838.414184
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494849.090964
+                }
+            ], 
+            "control": "umgr", 
+            "description": {
+                "arguments": [
+                    "-l", 
+                    "-c", 
+                    "/bin/sleep 10 | /bin/echo 'This is simulation' >> output.txt"
+                ], 
+                "cleanup": false, 
+                "cores": 1, 
+                "environment": null, 
+                "executable": "/bin/bash", 
+                "input_staging": [], 
+                "kernel": null, 
+                "mpi": false, 
+                "name": "stage-2-task-2", 
+                "output_staging": [], 
+                "post_exec": null, 
+                "pre_exec": null, 
+                "restartable": false, 
+                "stderr": null, 
+                "stdout": null
+            }, 
+            "exec_locs": null, 
+            "exit_code": 0, 
+            "finished": null, 
+            "log": [
+                {
+                    "message": "Scheduled for data transfer to ComputePilot pilot.0000.", 
+                    "timestamp": 1479494829.138522
+                }, 
+                {
+                    "message": "push unit to agent after ftw staging", 
+                    "timestamp": 1479494829.922299
+                }, 
+                {
+                    "message": "Output transfer completed.", 
+                    "timestamp": 1479494847.610915
+                }
+            ], 
+            "pilot": "pilot.0000", 
+            "pilot_sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000/", 
+            "restartable": false, 
+            "sandbox": "file://localhost/home/vivek/radical.pilot.sandbox/rp.session.radical.vivek.017123.0009-pilot.0000//unit.000009", 
+            "started": null, 
+            "state": "Done", 
+            "statehistory": [
+                {
+                    "state": "Scheduling", 
+                    "timestamp": 1479494828.768261
+                }, 
+                {
+                    "state": "StagingInput", 
+                    "timestamp": 1479494829.82972
+                }, 
+                {
+                    "state": "AgentStagingInputPending", 
+                    "timestamp": 1479494829.82972
+                }, 
+                {
+                    "state": "AgentStagingInput", 
+                    "timestamp": 1479494830.385386
+                }, 
+                {
+                    "state": "AllocatingPending", 
+                    "timestamp": 1479494830.385666
+                }, 
+                {
+                    "state": "Allocating", 
+                    "timestamp": 1479494830.386816
+                }, 
+                {
+                    "state": "ExecutingPending", 
+                    "timestamp": 1479494835.803527
+                }, 
+                {
+                    "state": "Executing", 
+                    "timestamp": 1479494835.898111
+                }, 
+                {
+                    "state": "AgentStagingOutputPending", 
+                    "timestamp": 1479494845.920965
+                }, 
+                {
+                    "state": "AgentStagingOutput", 
+                    "timestamp": 1479494846.021427
+                }, 
+                {
+                    "state": "PendingOutputStaging", 
+                    "timestamp": 1479494846.021965
+                }, 
+                {
+                    "state": "StagingOutput", 
+                    "timestamp": 1479494847.517258
+                }, 
+                {
+                    "state": "Done", 
+                    "timestamp": 1479494847.610915
+                }
+            ], 
+            "stderr": "", 
+            "stdout": "", 
+            "submitted": 1479494828.768261, 
+            "unitmanager": "umgr.0000"
+        }
+    ]
+}
