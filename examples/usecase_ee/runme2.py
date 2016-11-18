@@ -54,11 +54,7 @@ class Test(EoP):
         if status == 'Failed':
             print 'Stage:3, Instance: {0}, status: {1}'.format(instance, status)
             self.set_next_stage(stage=2)        
-        #if ITER[instance-1] == 2:
-        #    self.set_next_stage(stage=2)
-        #    ITER[instance-1]+=1
-        #else:
-        #    print 'Pipe {0} finished'.format(instance)
+
 
 
     def stage_4(self, instance):

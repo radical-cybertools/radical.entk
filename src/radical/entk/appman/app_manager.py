@@ -525,6 +525,9 @@ class AppManager():
                                         if cu!= None:
                                             all_cus.append(cu)
 
+                                    if cur_stage==2:
+                                        print 'stage 3 submitted'
+
                                 with lock_all_cus:
                                     self._logger.info('All cus from thread: {0}'.format(len(all_cus)))
 
@@ -613,11 +616,11 @@ class AppManager():
 
                     def unit_state_cb (unit, state) :
 
+
+                        self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
+
                         # Perform these operations only for tasks and not monitors
-
-                        if unit.name.startswith('stage'):
-
-                            self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
+                        if unit.name.startswith('stage'):                            
 
                             cur_stage = int(unit.name.split('-')[1])
                             cur_task = int(unit.name.split('-')[3])
@@ -744,7 +747,7 @@ class AppManager():
                         with lock_all_cus:
 
                             for unit in all_cus:
-                                if (unit.state == rp.DONE)or(unit.state == rp.CANCELED):
+                                if (unit.state == rp.DONE)or(unit.state == rp.CANCELED)or(unit.state==rp.FAILED):
                                     done_cus.append(unit)
                                 else:
                                     pending_cus_1.append(unit.uid)
@@ -754,7 +757,7 @@ class AppManager():
                             all_cus_2 = task_manager.get_units(all_cu_uids)
 
                             for unit in all_cus_2:
-                                if (unit.state!=rp.DONE)and(unit.state!=rp.CANCELED):
+                                if (unit.state!=rp.DONE)and(unit.state!=rp.CANCELED)and(unit.state!=rp.FAILED):
                                     pending_cus_2.append(unit.uid)
 
                             for unit in done_cus:
@@ -762,11 +765,14 @@ class AppManager():
 
                         print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
                         print 'all cus end: {0}'.format(len(all_cus))
-                        print 'pending cus 1: {0}'.format(len(pending_cus_1))
-                        print 'pending cus 2: {0}'.format(len(pending_cus_2))
+                        print 'pending cus 1: {0}, {1}'.format(len(pending_cus_1), pending_cus_1)
+                        print 'pending cus 2: {0}, {1}'.format(len(pending_cus_2), pending_cus_2)
                         print 'done cus: {0}'.format(len(done_cus))
 
-                        task_manager.wait_units(pending_cus_2, timeout=60) 
+                        #task_manager.wait_units(pending_cus_2, timeout=60) 
+
+                        import time
+                        time.sleep(30)
 
                         print sum(plugin.tot_fin_tasks)
                         print (self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )
