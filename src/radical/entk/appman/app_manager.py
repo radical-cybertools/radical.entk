@@ -616,6 +616,7 @@ class AppManager():
 
                     def unit_state_cb (unit, state) :
 
+                        record = self.get_record()
 
                         self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
 
