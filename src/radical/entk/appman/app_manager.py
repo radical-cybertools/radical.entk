@@ -129,15 +129,8 @@ class AppManager():
     def list_kernels(self):
 
         try:
-            # AM: consider this version:
-            #
-            # return [item().name for item in self._loaded_kernels]
-            #
-            registered_kernels = list()
-            for item in self._loaded_kernels:
-                registered_kernels.append(item().name)
 
-            return registered_kernels
+            return [item().name for item in self._loaded_kernels]
 
         except Exception, ex:
 
@@ -168,12 +161,7 @@ class AppManager():
 
         try:
 
-            # AM: please use
-            #
-            # if not user_kernel:
-            #   return None
-            #
-            if user_kernel == None:
+            if not user_kernel:
                 return None
 
             found=False
@@ -183,7 +171,7 @@ class AppManager():
 
                     found=True
 
-                    new_kernel = kernel()
+                    new_kernel = user_kernel
 
                     # AM: why can't that just be
                     #
@@ -191,40 +179,8 @@ class AppManager():
                     #
                     # In the worst case that will set it to None, so changes
                     # nothing?
-                    if user_kernel.pre_exec != None:
-                        new_kernel.pre_exec = user_kernel.pre_exec
 
-                    if user_kernel.executable != None:
-                        new_kernel.executable = user_kernel.executable
-
-                    if user_kernel.arguments != None:
-                        new_kernel.arguments = user_kernel.arguments
-
-                    if user_kernel.uses_mpi != None:    
-                        new_kernel.uses_mpi = user_kernel.uses_mpi
-
-                    if user_kernel.cores != None:
-                        new_kernel.cores = user_kernel.cores
-
-                    if user_kernel.upload_input_data != None:
-                        new_kernel.upload_input_data = user_kernel.upload_input_data
-
-                    if user_kernel.copy_input_data != None:
-                        new_kernel.copy_input_data = user_kernel.copy_input_data
-
-                    if user_kernel.link_input_data != None:
-                        new_kernel.link_input_data = user_kernel.link_input_data
-
-                    if user_kernel.copy_output_data != None:
-                        new_kernel.copy_output_data = user_kernel.copy_output_data
-
-                    if user_kernel.download_output_data != None:
-                        new_kernel.download_output_data = user_kernel.download_output_data
-
-                    if user_kernel.timeout != None:
-                        new_kernel.timeout = user_kernel.timeout
-
-                    new_kernel.cancel_tasks = user_kernel.cancel_tasks
+                    # That's true. At some point, this was required. Not anymore.                    
 
                     new_kernel.validate_arguments()
 
@@ -241,7 +197,7 @@ class AppManager():
                 # or
                 # self._logger.error("Kernel %s does not exist" \
                 #                   % user_kernel.name)
-                self._logger.error("Kernel {0} does not exist".format(user_kernel.name))
+                self._logger.error("Kernel {0} does not exist" % user_kernel.name)
                 raise Exception()
 
         except Exception, ex:
@@ -291,65 +247,34 @@ class AppManager():
 
             for cu in cus:
 
-                itername     = "iter_%s"     % iteration
-                stagename    = "stage_%s"    % stage
-                instancename = "instance_%s" % inst
+                iter_name     = "iter_%s"     % iteration
+                stage_name    = "stage_%s"    % stage
+                instance_name = "instance_%s" % inst
 
-                if itername not in record[pat_key]:
-                    record[pat_key][itername] = dict()
+                if iter_name not in record[pat_key]:
+                    record[pat_key][iter_name] = dict()
 
-                if stagename not in record[pat_key][itername]:
-                    record[pat_key][itername][stagename] = dict()
+                if stage_name not in record[pat_key][iter_name]:
+                    record[pat_key][iter_name][stage_name] = dict()
 
-                if instancename not in record[pat_key][itername][stagename]:
-                    record[pat_key][itername][stagename]['branch'] = \
-                            record[pat_key]["iter_1"][stagename]['branch']
+                if instance_name not in record[pat_key][iter_name][stage_name]:
+                    record[pat_key][iter_name][stage_name]['branch'] = \
+                            record[pat_key]["iter_1"][stage_name]['branch']
 
-                record[pat_key][itername][stagename][instancename] = {
+                record[pat_key][iter_name][stage_name][instance_name] = {
                         "output" : cu.stdout,
                         "uid"    : cu.uid,
                         "path"   : cu.working_directory,
                         'status' : status 
-                        }
-
-              # if "iter_{0}".format(iteration) not in record[pat_key]:
-              #     record[pat_key]["iter_{0}".format(iteration)] = dict()
-              #
-              # if "stage_{0}".format(stage) not in record[pat_key]["iter_{0}".format(iteration)]:
-              #     record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)] = dict()
-              #
-              # if "instance_{0}".format(inst) not in record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]:
-              #     record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-              #     record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['branch'] = record[pat_key]["iter_1"]["stage_{0}".format(stage)]['branch']
-              #
-              # record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = cu.stdout
-              # record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = cu.uid
-              # record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = cu.working_directory
-              # record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['status'] = status
+                        }              
 
                 inst+=1
-
-            #stage_done=True
-
-            #if instance==None:
-            #    inst=1
-            #else:
-            #    inst=instance
-
-            #for cu in cus:
-            #    val = record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['path']
-            #    inst+=1
-            #    if (val==None):
-            #        stage_done=False
-            #        break
-
-            #if stage_done:
-            #    record[pat_key]["iter_{0}".format(iteration)]["stage_{0}".format(stage)]['status'] = 'Running'
                 
             return record
 
         except Exception, ex:
-            self._logger.exception("Could not add new CU data to record, error: {0}".format(ex))
+            self._logger.exception("Could not add new CU data to record, error: %s" \
+                %ex)
             raise
 
 
@@ -368,41 +293,44 @@ class AppManager():
         try:
 
             pat_key = "pat_{0}".format(pattern_name)
-            self._kernel_dict[pat_key] = dict()
-
-            # AM: define itername, stagename, instancename!
-            # The code below is very hard to read, and repeated string expansion
-            # is slow!  And lines are long :P
+            self._kernel_dict[pat_key] = dict()         
 
             for iter in range(1, total_iterations+1):
-                self._kernel_dict[pat_key]["iter_{0}".format(iter)] = dict()
+
+                iter_name     = "iter_%s"     % iteration
+                self._kernel_dict[pat_key][iter_name] = dict()
 
                 for stage in range(1, pipeline_size+1):
-                    self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]  = dict()                    
+
+                    stage_name    = "stage_%s"    % stage
+                    self._kernel_dict[pat_key][iter_name][stage_name]  = dict()                    
 
                     # Set available branches
-                    if getattr(self._pattern,'branch_{0}'.format(stage), False):
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = True
+                    branch_name = "branch_%s" % stage
+                    if getattr(self._pattern,branch_name, False):
+                        self._kernel_dict[pat_key][iter_name][stage_name]['branch'] = True
                     else:
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]['branch'] = False
+                        self._kernel_dict[pat_key][iter_name][stage_name]['branch'] = False
         
                     # Create instance key/vals for each stage
-                    if type(ensemble_size) == int:
+                    if isinstance(ensemble_size, int):
                         instances = ensemble_size
-                    elif type( ensemble_size) == list:
+                    else:
                         instances = ensemble_size[stage-1]
 
                     for inst in range(1, instances+1):
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)] = dict()
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["output"] = None
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["uid"] = None
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]["path"] = None
-                        # Set kernel default status
-                        self._kernel_dict[pat_key]["iter_{0}".format(iter)]["stage_{0}".format(stage)]["instance_{0}".format(inst)]['status'] = 'Pending'
+
+                        instance_name = "instance_%s" % inst 
+                        self._kernel_dict[pat_key][iter_name][stage_name][instance_name] = {
+                            "output": None,
+                            "uid": None,
+                            "path": None,
+                            "status": "Pending"
+                        }
 
         except Exception, ex:
 
-            self._logger.exception("New record creation failed, error: {0}".format(ex))
+            self._logger.exception("New record creation failed, error: %s" % ex)
             raise
 
 
@@ -425,7 +353,7 @@ class AppManager():
             plugin.add_manager(task_manager)
 
         except Exception, ex:
-            self._logger.exception("PoE Plugin setup failed, error: {0}".format(ex))
+            self._logger.exception("PoE Plugin setup failed, error: %s" % ex)
 
 
         try:
@@ -433,7 +361,8 @@ class AppManager():
             while(self._pattern.cur_iteration <= self._pattern.total_iterations):
         
                 #for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
-                while ((self._pattern.next_stage<=self._pattern.pipeline_size)and(self._pattern.next_stage!=0)):
+                while ((self._pattern.next_stage<=self._pattern.pipeline_size) \
+                    and(self._pattern.next_stage!=0)):
 
                     # Get kernel from execution pattern
                     stage =  self._pattern.get_stage(stage=self._pattern.next_stage)
@@ -441,11 +370,12 @@ class AppManager():
                     validated_kernels = list()
                     validated_monitors = list()
 
-                    # Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-                    # Create instance key/vals for each stage
-                    if type(self._pattern.ensemble_size) == int:
+                    # Validate user specified Kernel with KernelBase and return fully 
+                    # defined but resource-unbound kernel.
+
+                    if isinstance(self._pattern.ensemble_size, int):
                         instances = self._pattern.ensemble_size
-                    elif type(self._pattern.ensemble_size) == list:
+                    else:
                         instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
                     # Initialization
@@ -455,7 +385,7 @@ class AppManager():
 
                         stage_instance_return = stage(inst)
 
-                        if type(stage_instance_return) == list:
+                        if isinstance(stage_instance_return, list):
                             if len(stage_instance_return) == 2:
                                 stage_kernel = stage_instance_return[0]
                                 stage_monitor = stage_instance_return[1]
@@ -467,6 +397,7 @@ class AppManager():
                             stage_monitor = None
                             
                         validated_kernels.append(self.validate_kernel(stage_kernel))
+
                     validated_monitor = self.validate_kernel(stage_monitor)
 
 
@@ -555,8 +486,8 @@ class AppManager():
 
             validated_kernels = list()
 
-            # Validate user specified Kernel with KernelBase and return fully defined but resource-unbound kernel
-            # Create instance key/vals for each stage
+            # Validate user specified Kernel with KernelBase and return fully 
+            # defined but resource-unbound kernel
             
             instances = self._pattern.ensemble_size
             
@@ -572,18 +503,20 @@ class AppManager():
                                       pattern_name=self._pattern.name,
                                       iteration=1, 
                                       stage=1)
+
             cus = plugin.execute_tasks(tasks=cus)
 
             # Start _execute_thread
-            t1 = threading.Thread(target=self._execute_thread, args=[plugin])
+            t1 = threading.Thread(  target=self._execute_thread, 
+                                    args=[plugin])
             t1.daemon = True
             t1.start()
 
 
             # Start thread to handle failure
-            # t2 = threading.Thread(target=self._fail_thread, args=[plugin])
-            # t2.daemon = True
-            # t2.start()
+            t2 = threading.Thread(target=self._fail_thread, args=[plugin])
+            t2.daemon = True
+            t2.start()
 
             with self.all_cus_lock:
                 if cus!=None:
@@ -592,6 +525,7 @@ class AppManager():
             while True: 
                 # this loop will break when all tasks are done
                 # AM: correct?
+                # VB: yes, that's correct.
             
                 pending_cus_1 = []
                 pending_cus_2 = []
@@ -629,12 +563,14 @@ class AppManager():
                 print 'pending cus 2: {0}, {1}'.format(len(pending_cus_2), pending_cus_2)
                 print 'done cus: {0}'.format(len(done_cus))
 
-                #task_manager.wait_units(pending_cus_2, timeout=60) 
+                task_manager.wait_units(pending_cus_2, timeout=60) 
 
                 # AM: Uhm, what does that do here?  Are you sure you collected
                 #     all units in your callbacks at this point?
-                import time
-                time.sleep(30)
+                # VB: This was me testing out if there is any difference if I don't use 
+                # wait_units() to wait, but just sleep for a while.
+                #import time
+                #time.sleep(30)
 
                 print sum(plugin.tot_fin_tasks)
                 print (self._pattern.pipeline_size*self._pattern.ensemble_size + sum(self._pattern._incremented_tasks) )
@@ -723,15 +659,31 @@ class AppManager():
                     if self._pattern.stage_change:
 
                         if self._pattern.new_stage:
-                            if cur_stage < self._pattern.new_stage:
-                                self._pattern._incremented_tasks[cur_task-1] -= self._pattern.new_stage - cur_stage - 1
 
+                            # Skip ahead to a new stage
+                            if cur_stage < self._pattern.new_stage:                                
+
+                                tasks_skipped = self._pattern.new_stage - cur_stage - 1
+                                self._pattern._incremented_tasks[cur_task-1] -= tasks_skipped
+
+                            # Roll back to a new stage
                             elif cur_stage >= self._pattern.new_stage:
-                                self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
-                                self._pattern._incremented_tasks[cur_task-1] += abs(self._pattern.pipeline_size - self._pattern.new_stage) + 1
+
+                                tasks_cur_to_last_stage = abs(cur_stage - \
+                                                                self._pattern.pipeline_size)
+
+                                tasks_beg_to_new_stage = abs(self._pattern.pipeline_size - \
+                                                                self._pattern.new_stage) + 1
+
+                                self._pattern._incremented_tasks[cur_task-1] -= \
+                                                                tasks_cur_to_last_stage
+
+                                self._pattern._incremented_tasks[cur_task-1] += \
+                                                                tasks_beg_to_new_stage
                             
                         else:
-                            self._pattern._incremented_tasks[cur_task-1] -= abs(cur_stage - self._pattern.pipeline_size)
+                            self._pattern._incremented_tasks[cur_task-1] -= \
+                                                abs(cur_stage - self._pattern.pipeline_size)
 
                         if self._pattern.next_stage[cur_task-1] >= self._pattern.new_stage:
                             self._pattern.cur_iteration[cur_task-1] += 1
@@ -746,13 +698,15 @@ class AppManager():
 
                 # Terminate execution
                 if self._pattern.next_stage[cur_task-1] == 0:
-                    self._logger.info("Branching function has set termination condition -- terminating pipeline {0}".format(cur_task))
+                    self._logger.info("Branching function has set termination condition %s"\
+                                                                        % cur_task)
 
 
                 # Check if this is the last task of the stage
                 with self.all_cus_lock:
                     if plugin.tot_fin_tasks[cur_stage-1] == self._pattern.ensemble_size:
-                        self._logger.info('Stage {0} of all pipelines has finished'.format(cur_stage))
+                        self._logger.info('Stage %s of all pipelines has finished'\
+                                            %cur_stage)
 
 
                 # AM: make conditions parseable!
@@ -762,7 +716,8 @@ class AppManager():
 
                 if cond1 and cond2:
                 
-                    stage = self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
+                    next_stage = self._pattern.next_stage[cur_task-1]
+                    stage = self._pattern.get_stage(stage=next_stage)
                     stage_kernel = stage(cur_task)
                     
                     validated_kernel = self.validate_kernel(stage_kernel)                                                                       
@@ -780,14 +735,12 @@ class AppManager():
                         with self.all_cus_lock:
                             self.all_cus.append(cu)
 
-                    if cur_stage == 2:
-                        print 'stage 3 submitted'
-
                 with self.all_cus_lock:
-                    self._logger.info('All cus from thread: {0}'.format(len(self.all_cus)))
+                    self._logger.info('All cus from thread: %s' %len(self.all_cus))
 
                 # AM: why is this disabled?
-                # self._task_queue.task_done()
+                # VB: Residual of some testing.
+                self._task_queue.task_done()
 
             except Exception, ex:
                 self._logger.exception('Failed to run next stage, error: {0}'.format(ex))
@@ -821,7 +774,6 @@ class AppManager():
                     # AM: line length: 210 chars, *after* unindent from run().
                     #     In my editor, this wraps 3 times, impossible to
                     #     understand...
-                  # record=self.add_to_record(record=record, cus=unit, pattern_name = self._pattern.name, iteration=self._pattern.cur_iteration[cur_task-1], stage=cur_stage, instance=cur_task, status='Failed')
                     _iter  = self._pattern.cur_iteration[cur_task-1]
                     record = self.add_to_record(record       = record, 
                                                 cus          = unit, 
@@ -832,7 +784,9 @@ class AppManager():
                                                 status       = 'Failed')
 
                     # AM: define names!
-                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)]
+                    pattern_name = "pat_{0}".format(self._pattern.name)
+                    
+                    self._pattern.pattern_dict = record[pattern_name]
                     plugin.tot_fin_tasks[cur_stage-1]+=1
 
                     with self.all_cus_lock:
