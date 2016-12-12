@@ -20,7 +20,9 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : [
-                                        'tar xfz ipdata.tar'
+                                        'tar xfz ipdata.tar',
+                                        'mkdir DATABASE_MPI',
+                                        'mkdir OUTPUT_FILES'
 
                                         ],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",

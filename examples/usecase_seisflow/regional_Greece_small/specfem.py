@@ -23,26 +23,9 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : [
-                                        'mkdir DATA',
-                                            'mv Par_file DATA/',
-
+                                        'tar xfz ipdata.tar',
                                         'mkdir DATABASE_MPI',
-
-                                        'mkdir OUTPUT_FILES',
-                                            'mv addressing.txt OUTPUT_FILES/',
-                                            'mv values_from_mesher.h OUTPUT_FILES/',
-
-                                        'mkdir run0001',
-                                            'mkdir run0001/DATA',
-                                                'cp CMTSOLUTION STATIONS run0001/DATA/',
-                                            'cd run0001/',
-                                            'ln -s ../DATABASE_MPI DATABASE_MPI',
-                                            'cd ..',
-                                            'mkdir run0001/OUTPUT_FILES',
-
-                                        'mkdir bin',
-                                            'chmod +x specfem_mockup',
-                                            'cp specfem_mockup bin/'
+                                        'mkdir OUTPUT_FILES'
 
                                         ],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
