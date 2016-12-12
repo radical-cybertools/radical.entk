@@ -56,6 +56,7 @@ class KernelBase(object):
 
         # Parameters required for any Kernel irrespective of RP
         self._pre_exec                   = None
+        self._post_exec                 = None
         self._executable     = None
         self._arguments           = []
         self._uses_mpi               = None
@@ -209,6 +210,23 @@ class KernelBase(object):
 
         self._pre_exec = pre_exec
     # ------------------------------------------------------------- ------------------------------------------------------------------------------
+
+
+    @property
+    def post_exec(self):
+        return self._post_exec
+
+    @post_exec.setter
+    def post_exec(self, post_exec):
+
+        if type(post_exec) != list:
+            raise TypeError(
+                expected_type=bool,
+                actual_type=type(post_exec))
+
+        self._post_exec = post_exec
+    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+
 
     @property
     def uses_mpi(self):

@@ -6,7 +6,7 @@ from radical.entk import EoP, AppManager, Kernel, ResourceHandle
 
 from meshfem import meshfem_kernel
 from specfem import specfem_kernel
-ENSEMBLE_SIZE=1
+ENSEMBLE_SIZE=4
 
 
 class Test(EoP):
@@ -20,10 +20,21 @@ class Test(EoP):
         k1 = Kernel(name="meshfem")
         k1.arguments = []
         k1.copy_input_data = [  '$SHARED/ipdata.tar']
+        k1.copy_output_data = ['opdata.tar > $SHARED/opdata_%s.tar'%instance]
         k1.cores = 4
-        k1.mpi=True
+        k1.mpi = True
 
         return k1
+
+    def stage_2(self, instance):
+
+        k1 = Kernel(name="specfem")
+        k1.arguments = []
+        k1.copy_input_data = [  '$SHARED/ipdata.tar']
+        k1.cores = 4
+        k1.mpi = True
+
+        return k1        
 
    
 

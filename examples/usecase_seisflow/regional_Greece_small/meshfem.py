@@ -27,7 +27,8 @@ _KERNEL_INFO = {
                                         ],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
                                         './bin/xmeshfem3D',
-                    "uses_mpi"      : True
+                    "uses_mpi"      : True,
+                    "post_exec"     : ['tar cf opdata.tar *']
                 }
             }
     }
@@ -67,4 +68,5 @@ class meshfem_kernel(KernelBase):
         self._environment = cfg["environment"]
         self._uses_mpi    = cfg["uses_mpi"]
         self._pre_exec    = cfg["pre_exec"]
+        self._post_exec   = cfg["post_exec"]
 

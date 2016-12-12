@@ -130,6 +130,9 @@ class AppManager():
                     if user_kernel.pre_exec != None:
                         new_kernel.pre_exec = user_kernel.pre_exec
 
+                    if user_kernel.post_exec != None:
+                        new_kernel.post_exec = user_kernel.post_exec
+
                     if user_kernel.executable != None:
                         new_kernel.executable = user_kernel.executable
 

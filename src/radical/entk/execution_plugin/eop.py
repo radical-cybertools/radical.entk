@@ -97,6 +97,7 @@ class PluginEoP(object):
                     self._logger.debug('Creating stage {1} of pipeline {0}'.format(inst,stage))
 
                     cud.pre_exec           = rbound_kernel.pre_exec
+                    cud.post_exec          = rbound_kernel.post_exec
                     cud.executable         = rbound_kernel.executable
                     cud.arguments          = rbound_kernel.arguments
                     cud.mpi                = rbound_kernel.uses_mpi
@@ -131,6 +132,7 @@ class PluginEoP(object):
                 cud.name = "stage-{0}-task-{1}".format(cur_stage,cur_task)
 
                 cud.pre_exec           = rbound_kernel.pre_exec
+                cud.post_exec          = rbound_kernel.post_exec
                 cud.executable         = rbound_kernel.executable
                 cud.arguments          = rbound_kernel.arguments
                 cud.mpi                = rbound_kernel.uses_mpi
