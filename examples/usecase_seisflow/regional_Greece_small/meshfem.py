@@ -20,8 +20,8 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : [
-                                        'tar xfz ipdata.tar',
-                                        'mkdir DATABASE_MPI',
+                                        'tar fz ipdata.tar',
+                                        'mkdir DATABASES_MPI',
                                         'mkdir OUTPUT_FILES'
 
                                         ],
