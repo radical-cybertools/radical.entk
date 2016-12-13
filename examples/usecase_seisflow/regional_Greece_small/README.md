@@ -31,6 +31,12 @@ git checkout usecase/vivek
 pip install .
 ```
 
+Comment out **line 26** (specific RP paremeter):
+
+```bash
+vi $HOME/myenv/lib/python2.7/site-packages/radical/pilot/configs/agent_default.json
+```
+
 Ensemble toolkit installation:
 
 ```bash
@@ -43,29 +49,16 @@ pip install .
 
 Specfem installation:
 
-* Tested only on Ubuntu 16.04
+Installation was done according to ```http://specfem3d-globe.readthedocs.io/en/latest/```. 
 
-Install dependencies of specfem:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y g++ python2.7 openmpi-bin openmpi-doc libopenmpi-dev
-sudo apt-get install -y libboost-all-dev make python-pip
-```
-
-Installing specfem:
-
-```bash
-cd $HOME
-cd radical.ensemblemd/examples/usecase_seisflow/dummy_example/input_data
-make
-```
+Binaries are included within the example. Please first try the example without installation. 
+If that fails, please install as per the documentation in the above link.
 
 ## Executing the example (local execution only now)
 
 ```bash
 cd $HOME
-cd radical.ensemblemd/examples/usecase_seisflow/dummy_example
+cd radical.ensemblemd/examples/usecase_seisflow/regional_Greece_small
 RADICAL_ENTK_VERBOSE=info python runme.py
 ```
 

@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 #username='vivek91',
                 #project = 'TG-MCB090174',
                 #queue='development',
-                walltime=10,
+                walltime=40,
                 database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp')
 
     res.shared_data = [ './input_data/ipdata.tar']
