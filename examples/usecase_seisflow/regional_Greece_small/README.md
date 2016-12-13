@@ -60,7 +60,7 @@ Binaries are present under ```radical.ensemblemd/examples/usecase_seisflow/regio
 
 Once the above is done please run the ```prep_data.sh``` script.
 
-## Executing the example (local execution only now)
+## Executing the example (local execution)
 
 ```bash
 cd $HOME
@@ -72,3 +72,19 @@ RADICAL_ENTK_VERBOSE=info python runme.py
 
 The output is produced in ```$HOME/radical.pilot.sandbox```. Check the last folder created in this 
 directory starting with ```rp.session.*```. There exist folders named ```unit.00*``` representing each task. The folder contains the actual commands executed in a shell script, standard error, standard output and any input, intermediate and output data of the executed task.
+
+
+## Executing the example on Stampede 
+
+* You need to have gsissh-access to Stampede. Please see notes here: ```https://github.com/vivek-bala/docs/blob/master/gsissh_setup_stampede_ubuntu_xenial.sh```. This are notes to help in the procedure and not guaranteed to work as the specifics might be system dependent. Happy to help on this.
+
+You can verify passwordless access by running ```gsissh -p 2222 <username>@stampede.tacc.xsede.org``` at the end which should **not** prompt you for a password. 
+
+* Open ```runme.py``` under ```radical.ensemblemd/examples/usecase_seisflow/regional_Greece_small```. Add your stampede username and password in **line 62**.
+
+
+```bash
+cd $HOME
+cd radical.ensemblemd/examples/usecase_seisflow/regional_Greece_small
+RADICAL_ENTK_VERBOSE=info python runme.py --resource xsede.stampede
+```
