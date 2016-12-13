@@ -51,8 +51,9 @@ Specfem installation:
 
 Installation was done according to ```http://specfem3d-globe.readthedocs.io/en/latest/```. 
 
-Binaries are included within the example. Please first try the example without installation. 
-If that fails, please install as per the documentation in the above link.
+Binaries are present under ```radical.ensemblemd/examples/usecase_seisflow/regional_Greece_small/input_data/bin```. These might not work since they are compiled on another machine. Please compile  the four binaries (under the above path) according to the documentation in the above link and overwrite them over the ones in the bin/ folder. 
+
+Once the above is done please run the ```prep_data.sh``` script.
 
 ## Executing the example (local execution only now)
 
