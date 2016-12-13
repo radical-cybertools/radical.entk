@@ -31,11 +31,16 @@ git checkout usecase/vivek
 pip install .
 ```
 
-Comment out **line 26** (specific RP paremeter):
+Some modes:
+
+* Comment out **line 26** (specific RP paremeter):
 
 ```bash
 vi $HOME/myenv/lib/python2.7/site-packages/radical/pilot/configs/agent_default.json
 ```
+
+* Change "MPIRUN" to "MPIEXEC" in **line 24** of ```$HOME/myenv/lib/python2.7/site-packages/radical/pilot/configs/resource_local.json```
+
 
 Ensemble toolkit installation:
 
