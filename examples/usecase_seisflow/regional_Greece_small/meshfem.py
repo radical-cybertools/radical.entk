@@ -20,16 +20,30 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : [
-                                        'tar xfz ipdata.tar',
-                                        'mkdir DATABASE_MPI',
+                                        'tar xf ipdata.tar',
+                                        'mkdir DATABASES_MPI',
                                         'mkdir OUTPUT_FILES'
 
                                         ],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
                                         './bin/xmeshfem3D',
                     "uses_mpi"      : True,
-                    "post_exec"     : ['tar cf opdata.tar *']
-                }
+                    "post_exec"     : ['tar cf opdata.tar DATA/ DATABASES_MPI/ OUTPUT_FILES/ bin/']
+                },
+
+                "xsede.stampede": {
+                    "environment"   : None,
+                    "pre_exec"      : [
+                                        'tar xf ipdata.tar',
+                                        'mkdir DATABASES_MPI',
+                                        'mkdir OUTPUT_FILES',
+                                        'cp /work/02734/vivek91/specfem3d_globe/bin/* ./bin/ -f'
+                                        ],
+                    "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
+                                        './bin/xmeshfem3D',
+                    "uses_mpi"      : True,
+                    "post_exec"     : ['tar cf opdata.tar DATA/ DATABASES_MPI/ OUTPUT_FILES/ bin/']
+                },
             }
     }
 

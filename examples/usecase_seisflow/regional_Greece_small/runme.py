@@ -3,7 +3,7 @@ __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 from radical.entk import EoP, AppManager, Kernel, ResourceHandle
-
+import argparse
 from meshfem import meshfem_kernel
 from specfem import specfem_kernel
 ENSEMBLE_SIZE=4
@@ -30,7 +30,7 @@ class Test(EoP):
 
         k1 = Kernel(name="specfem")
         k1.arguments = []
-        k1.copy_input_data = [  '$SHARED/ipdata.tar']
+        k1.copy_input_data = ['$SHARED/opdata_%s.tar > opdata.tar'%instance]
         k1.cores = 4
         k1.mpi = True
 
@@ -47,14 +47,32 @@ if __name__ == '__main__':
     app.register_kernels(meshfem_kernel)
     app.register_kernels(specfem_kernel)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resource', help='target resource label')
+    args = parser.parse_args()
+    
+    if args.resource != None:
+        resource = args.resource
+    else:
+        resource = 'local.localhost'
+
+
+
+    res_dict = {
+                    'xsede.stampede': {'cores': '16', 'username': 'vivek91', 'project': 'TG-MCB090174','queue': 'development', 'walltime': '20', 'schema': 'gsissh'},
+                    'local.localhost': {'cores': '4', 'username': None, 'project': None, 'queue': None, 'walltime': 40, 'schema': None}
+            }
+
     # Create a resource handle for target machine
-    res = ResourceHandle(resource="local.localhost",
-                cores=4,
-                #username='vivek91',
-                #project = 'TG-MCB090174',
-                #queue='development',
-                walltime=10,
-                database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp')
+    res = ResourceHandle(resource=resource,
+                cores=res_dict[resource]['cores'],
+                username=res_dict[resource]['username'],
+                project =res_dict[resource]['project'] ,
+                queue=res_dict[resource]['queue'],
+                walltime=res_dict[resource]['walltime'],
+                database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
+                access_schema = res_dict[resource]['schema']                
+)
 
     res.shared_data = [ './input_data/ipdata.tar']
 
@@ -64,7 +82,7 @@ if __name__ == '__main__':
         res.allocate(wait=True)
 
         # Create pattern object with desired ensemble size, pipeline size
-        pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=1)
+        pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2)
 
         # Add workload to the application manager
         app.add_workload(pipe)
