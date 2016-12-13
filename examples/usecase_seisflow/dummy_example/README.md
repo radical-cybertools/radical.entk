@@ -57,7 +57,7 @@ Installing specfem:
 
 ```bash
 cd $HOME
-cd radical.ensemblemd/examples/usecase_seisflow/input_data
+cd radical.ensemblemd/examples/usecase_seisflow/dummy_example/input_data
 make
 ```
 
@@ -65,7 +65,7 @@ make
 
 ```bash
 cd $HOME
-cd radical.ensemblemd/examples/usecase_seisflow
+cd radical.ensemblemd/examples/usecase_seisflow/dummy_example
 RADICAL_ENTK_VERBOSE=info python runme.py
 ```
 
