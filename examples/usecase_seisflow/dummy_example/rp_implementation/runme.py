@@ -3,6 +3,7 @@ __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import radical.pilot as rp
+import os
 
 ENSEMBLE_SIZE = 4
 
@@ -53,8 +54,8 @@ if __name__ == '__main__':
         for file in data_src:
 
             data_directive = {
-                                'source': file,
-                                'target': os.path.basename(file),
+                                'source': file.replace('.', os.path.dirname(os.path.abspath(__file__))),
+                                'target': 'staging:///%s'%os.path.basename(file),
                                 'action': rp.TRANSFER
                             }
 
