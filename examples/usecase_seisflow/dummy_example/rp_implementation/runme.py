@@ -53,8 +53,10 @@ if __name__ == '__main__':
 
         for file in data_src:
 
+
+            abspath = os.path.dirname(os.path.abspath(__file__)) + file[1:]
             data_directive = {
-                                'source': file.replace('.', os.path.dirname(os.path.abspath(__file__))),
+                                'source': abspath,
                                 'target': 'staging:///%s'%os.path.basename(file),
                                 'action': rp.TRANSFER
                             }
@@ -97,9 +99,22 @@ if __name__ == '__main__':
 
                             ]
 
-            cud.executabe = './bin/specfem_mockup'
+            cud.executable = './bin/specfem_mockup'
             cud.mpi = True
             cud.cores = 2
+            
+            ip_data = []
+            for file in data_src:
+
+                data_directive = {
+                                'source': 'staging:///%s'%os.path.basename(file),
+                                'target': os.path.basename(file),
+                                'action': rp.COPY
+                            }
+
+                ip_data.append(data_directive)
+
+            cud.input_staging = ip_data
 
             cuds.append(cud)
 
