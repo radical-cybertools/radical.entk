@@ -351,7 +351,8 @@ class AppManager():
 
         try:
             # Submit kernels stage by stage to execution plugin
-            while(self._pattern.cur_iteration <= self._pattern.total_iterations):
+            while ((self._pattern.cur_iteration <= self._pattern.total_iterations) \
+                and(self._pattern.next_stage!=0)):
         
                 #for self._pattern.next_stage in range(1, self._pattern.pipeline_size+1):
                 while ((self._pattern.next_stage<=self._pattern.pipeline_size) \
@@ -361,7 +362,6 @@ class AppManager():
                     stage =  self._pattern.get_stage(stage=self._pattern.next_stage)
 
                     validated_kernels = list()
-                    validated_monitors = list()
 
                     # Validate user specified Kernel with KernelBase and return fully 
                     # defined but resource-unbound kernel.
@@ -371,33 +371,14 @@ class AppManager():
                     else:
                         instances = self._pattern.ensemble_size[self._pattern.next_stage-1]
 
-                    # Initialization
-                    stage_monitor = None
-
                     for inst in range(1, instances+1):
 
-                        stage_instance_return = stage(inst)
-
-                        if isinstance(stage_instance_return, list):
-                            if len(stage_instance_return) == 2:
-                                stage_kernel = stage_instance_return[0]
-                                stage_monitor = stage_instance_return[1]
-                            else:
-                                stage_kernel = stage_instance_return[0]
-                                stage_monitor = None
-                        else:
-                            stage_kernel = stage_instance_return
-                            stage_monitor = None
-                            
+                        stage_kernel = stage(inst)                                               
                         validated_kernels.append(self.validate_kernel(stage_kernel))
-
-                    validated_monitor = self.validate_kernel(stage_monitor)
-
 
                     # Pass resource-unbound kernels to execution plugin
                     #print len(list_kernels_stage)
-                    plugin.set_workload(kernels=validated_kernels, 
-                                        monitor=validated_monitor)
+                    plugin.set_workload(kernels=validated_kernels)
 
                     cus = plugin.execute(   record=record, 
                                             pattern_name=self._pattern.name, 
@@ -411,26 +392,7 @@ class AppManager():
                                                     pattern_name = self._pattern.name, 
                                                     iteration=self._pattern.cur_iteration, 
                                                     stage=self._pattern.next_stage
-                                                )
-
-
-                    # Check if montior exists
-                    if not plugin.montior:
-                        cu = plugin.execute_monitor(record=record, 
-                                                    tasks=cus, 
-                                                    cur_pat=self._pattern.name, 
-                                                    cur_iter=self._pattern.cur_iteration, 
-                                                    cur_stage=self._pattern.next_stage
-                                                )
-                        
-                        # Update record
-                        record = self.add_to_record(record=record, 
-                                                    cus=cu, 
-                                                    pattern_name = self._pattern.name, 
-                                                    iteration=self._pattern.cur_iteration, 
-                                                    stage=self._pattern.next_stage, 
-                                                    monitor=True
-                                                )
+                                                )                 
 
                     self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
 
@@ -459,7 +421,8 @@ class AppManager():
 
                     # Terminate execution
                     if self._pattern.next_stage == 0:
-                        self._logger.info("Branching function has set termination condition -- terminating")
+                        self._logger.info("Branching function has set termination "+
+                                            "condition -- terminating")
                         break
             
                 # Terminate execution

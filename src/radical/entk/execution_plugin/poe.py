@@ -25,21 +25,12 @@ class PluginPoE(object):
         self._executable_workload = list()
         self._resource = None
         self._manager = None
-        self._monitor = None
 
         self._logger = ru.get_logger("radical.entk.plugin.poe")
         self._reporter = self._logger.report
 
         self._logger.info("Plugin PoE created")
 
-
-    @property
-    def monitor(self):
-        return self._monitor
-    
-    @monitor.setter
-    def monitor(self, val):
-        self._monitor = val
 
     def register_resource(self, resource):
         self._resource = resource
@@ -49,7 +40,7 @@ class PluginPoE(object):
         return self._resource
 
 
-    def set_workload(self, kernels, monitor=None):
+    def set_workload(self, kernels):
 
         if type(kernels) != list:
             self._executable_workload = [kernels]
@@ -58,10 +49,6 @@ class PluginPoE(object):
 
         self._logger.info("New workload assigned to plugin for execution")
 
-        self._monitor = monitor
-
-        if self._monitor!=None:
-            self._logger.info("Monitor for workload assigned")
 
     def add_workload(self, kernels):
 
@@ -77,6 +64,7 @@ class PluginPoE(object):
         self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
+    '''
     def execute_monitor(self, record, tasks, cur_pat, cur_iter, cur_stage):
 
         try:
@@ -152,7 +140,7 @@ class PluginPoE(object):
         except Exception, ex:
 
             self._logger.error("Monitor execution failed, error: {0}".format(ex))
-
+    '''
 
 
     def execute(self, record, pattern_name, iteration, stage):
@@ -201,7 +189,15 @@ class PluginPoE(object):
             else:
                 self._logger.info("Pattern {4}: Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage, pattern_name))
 
-            
+
+            exec_uids = [cu.uid for cu in exec_cus]
+
+            self._logger.info("Waiting for completion of workload")
+            self._manager.wait_units(exec_uids)
+            self._logger.info("Workload execution successful")
+            self._logger.debug("Stage {0} execution completed".format(stage))
+
+            '''
             # If there is no monitor, go ahead and wait for tasks to finish
             if self._monitor == None:
                 exec_uids = [cu.uid for cu in exec_cus]
@@ -220,7 +216,7 @@ class PluginPoE(object):
 
                 for unit in exec_cus:
                     self._logger.debug('path from plugin: {0}'.format(unit.working_directory))
-
+            '''
             return exec_cus
 
         except Exception, ex:
