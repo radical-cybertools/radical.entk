@@ -51,19 +51,18 @@ class KernelBase(object):
         if 'description' in kernel_info:
             self._kernel_description  = kernel_info['description']
 
-        self._raw_args = kernel_info["arguments"]
-        self._args = []
+        self._raw_args          = kernel_info["arguments"]
+        self._args              = []
 
         # Parameters required for any Kernel irrespective of RP
-        self._pre_exec                   = None
-        self._post_exec                 = None
-        self._executable     = None
-        self._arguments           = []
-        self._uses_mpi               = None
-        self._cores                      = 1 # If unspecified, number of cores is set to 1
+        self._pre_exec          = None
+        self._executable        = None
+        self._arguments         = []
+        self._uses_mpi          = None
+        self._cores             = 1 # If unspecified, number of cores is set to 1
 
-        self._timeout = None
-        self._cancel_tasks = None
+        self._timeout           = None
+        self._cancel_tasks      = None
 
         self._upload_input_data          = []
         self._link_input_data            = []

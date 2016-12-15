@@ -30,6 +30,7 @@ class PluginEoP(object):
         self._reporter = self._logger.report
 
         self._tot_fin_tasks=[0]
+        self._tot_sub_tasks=[0]
 
         self._logger.info("Plugin EoP created")
 
@@ -168,74 +169,5 @@ class PluginEoP(object):
                 return task
 
         except Exception, ex:
-            self._logger.error("Could not execute tasks, error : {1}".format(ex))
+            self._logger.error("Could not execute tasks, error : {0}".format(ex))
             raise
-
-
-    '''
-    def execute_monitor(self, record, task, cur_pat, cur_iter, cur_stage, cur_task):
-
-        try:
-
-            self._logger.info("Executing monitor for stage {0} of pipe {1}".format(cur_stage, cur_task))
-            self._monitor[cur_task-1]._bind_to_resource(self._resource)
-            rbound_kernel = self._monitor[cur_task-1]
-            cud = rp.ComputeUnitDescription()
-            cud.name = "monitor_{0}_{1}_{2}".format(rbound_kernel.name, cur_stage, cur_task)
-
-            cud.pre_exec           = rbound_kernel.pre_exec
-            cud.executable         = rbound_kernel.executable
-            cud.arguments          = rbound_kernel.arguments
-            cud.mpi                = rbound_kernel.uses_mpi
-            cud.cores             = rbound_kernel.cores
-            cud.scheduler_hint     = {'partition': 'monitor'}
-            cud.input_staging      = get_input_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=cur_task, nonfatal=True)
-            cud.output_staging     = get_output_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=cur_task)
-
-            self._logger.debug("Monitor {0} converted into RP Compute Unit".format(cud.name))
-
-            self._logger.debug("Timeout: {0}".format(self._monitor[cur_task-1].timeout))
-
-
-            while True:
-
-                monitor_handle = self._manager.submit_units(cud)
-                self._logger.info("Monitor submitted")
-                self._logger.debug('monitor {1} state: {0}'.format(monitor_handle.state, monitor_handle.uid))
-
-                # Wait for timeout on current task
-                task.wait(timeout=self._monitor[cur_task-1].timeout)
-                self._logger.debug("Timeout done on task in pipeline {0}...".format(cur_task))
-                self._logger.debug('Task state: {0}'.format(task.state))
-                self._logger.debug('monitor {1} state: {0}'.format(monitor_handle.state, monitor_handle.uid))
-
-                if monitor_handle.state == rp.DONE:
-
-                    # Check if tasks need to be canceled
-                    if self._monitor[cur_task-1].cancel_tasks != None:
-
-                        # Cancel task if still running
-                        if (task.state != rp.DONE)and(task.state != rp.FAILED)and(task.state != rp.CANCELED):
-                            self._logger.info("Canceling tasks: {0}".format(task.uid))
-                            self._manager.cancel_units(task.uid)
-                            self._logger.info("Task canceled: {0}, state: {1}".format(task.uid,task.state))
-
-                    #monitor_handle = self._manager.submit_units(cud)
-                    #self._logger.info("Monitor resubmitted")
-
-                task = self._manager.get_units(task.uid)
-                break
-
-            # Wait for pending monitor task to finish
-            #self._logger.debug("Waiting for residual monitor {0}, state {1}".format(monitor_handle.uid, monitor_handle.state))
-            #if (monitor_handle.state != rp.DONE)and(monitor_handle.state != rp.FAILED)and(monitor_handle.state != rp.CANCELED):
-            #    self._manager.wait_units(monitor_handle.uid)
-
-            self._logger.debug("Stage {0} of pipeline {1} execution completed".format(cur_stage,cur_task))
-
-            return monitor_handle
-
-        except Exception, ex:
-
-            self._logger.error("Monitor execution failed, error: {0}".format(ex))
-    '''
