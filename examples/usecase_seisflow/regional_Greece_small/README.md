@@ -31,7 +31,7 @@ git checkout usecase/vivek
 pip install .
 ```
 
-Some modes:
+Some mods:
 
 * Comment out **line 26** (specific RP paremeter):
 
@@ -88,3 +88,5 @@ cd $HOME
 cd radical.ensemblemd/examples/usecase_seisflow/regional_Greece_small
 RADICAL_ENTK_VERBOSE=info python runme.py --resource xsede.stampede
 ```
+
+By default, you have acquired 16 cores in total (line 62) and you run 4 tasks (line 9) each using 4 cores (line 24, 34). So all tasks execute at the same time. To observe the dynamic capability of RADICAL Pilot to handle more tasks than can be executed at a given time, increase the ensemble size to 16 (line 9) or number of cores per task to 8 (line 24, 34; you might have to change some parameters input_data/DATA/Par_file). There is no extra effort required by the user in both these cases.
