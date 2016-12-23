@@ -167,6 +167,7 @@ class PluginPoE(object):
                 cud.name = "stage_{0}".format(kernel.name)
 
                 cud.pre_exec           = rbound_kernel.pre_exec
+                cud.post_exec          = rbound_kernel.post_exec
                 cud.executable         = rbound_kernel.executable
                 cud.arguments          = rbound_kernel.arguments
                 cud.mpi                = rbound_kernel.uses_mpi

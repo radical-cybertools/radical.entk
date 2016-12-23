@@ -56,6 +56,7 @@ class KernelBase(object):
 
         # Parameters required for any Kernel irrespective of RP
         self._pre_exec          = None
+        self._post_exec         = None
         self._executable        = None
         self._arguments         = []
         self._uses_mpi          = None
