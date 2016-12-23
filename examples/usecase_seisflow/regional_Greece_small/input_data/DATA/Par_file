@@ -273,7 +273,7 @@ SAVE_REGULAR_KL                 = .false.
 #
 # The option below implements 3/.
 #
-NUMBER_OF_SIMULTANEOUS_RUNS     = 1
+NUMBER_OF_SIMULTANEOUS_RUNS     = 2
 
 # if we perform simultaneous runs in parallel, if only the source and receivers vary between these runs
 # but not the mesh nor the model (velocity and density) then we can also read the mesh and model files
@@ -284,7 +284,7 @@ NUMBER_OF_SIMULTANEOUS_RUNS     = 1
 # In that case there is no need to duplicate the mesh and model file database (the content of the DATABASES_MPI
 # directories) in each of the run0001, run0002,... directories, it is sufficient to have one in run0001
 # and the code will broadcast it to the others)
-BROADCAST_SAME_MESH_AND_MODEL   = .false.
+BROADCAST_SAME_MESH_AND_MODEL   = .true.
 
 #-----------------------------------------------------------
 
