@@ -30,7 +30,7 @@ _KERNEL_INFO = {
 
                 "xsede.stampede": {
                     "environment"   : None,
-                    "pre_exec"      : ['tar xf opdata.tar'],
+                    "pre_exec"      : ['tar xf opdata.tar','cp OUTPUT_FILES/* run0001/OUTPUT_FILES/','cp OUTPUT_FILES/* run0002/OUTPUT_FILES/'],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
                                         './bin/xspecfem3D',
                     "uses_mpi"      : True

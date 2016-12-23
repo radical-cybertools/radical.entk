@@ -2,14 +2,14 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-from radical.entk import EoP, AppManager, Kernel, ResourceHandle
+from radical.entk import EoP, AppManager, Kernel, ResourceHandle, PoE
 import argparse
 from meshfem import meshfem_kernel
 from specfem import specfem_kernel
 ENSEMBLE_SIZE=4
 
 
-class Test(EoP):
+class Test(PoE):
 
     def __init__(self, ensemble_size, pipeline_size):
         super(Test,self).__init__(ensemble_size, pipeline_size)
@@ -20,8 +20,8 @@ class Test(EoP):
         k1 = Kernel(name="meshfem")
         k1.arguments = []
         k1.copy_input_data = [  '$SHARED/ipdata.tar']
-        k1.copy_output_data = ['opdata.tar > $SHARED/opdata_%s.tar'%instance]
-        k1.cores = 4
+        k1.copy_output_data = ['opdata.tar > $SHARED/opdata']
+        k1.cores = 8
         k1.mpi = True
 
         return k1
@@ -30,8 +30,8 @@ class Test(EoP):
 
         k1 = Kernel(name="specfem")
         k1.arguments = []
-        k1.copy_input_data = ['$SHARED/opdata_%s.tar > opdata.tar'%instance]
-        k1.cores = 4
+        k1.copy_input_data = ['$SHARED/opdata.tar > opdata.tar']
+        k1.cores = 8
         k1.mpi = True
 
         return k1        
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
 
     res_dict = {
-                    'xsede.stampede': {'cores': '16', 'username': 'vivek91', 'project': 'TG-MCB090174','queue': 'development', 'walltime': '20', 'schema': 'gsissh'},
+                    'xsede.stampede': {'cores': '16', 'username': 'vivek91', 'project': 'TG-CCR140028','queue': 'development', 'walltime': '20', 'schema': 'gsissh'},
                     'local.localhost': {'cores': '4', 'username': None, 'project': None, 'queue': None, 'walltime': 40, 'schema': None}
             }
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         res.allocate(wait=True)
 
         # Create pattern object with desired ensemble size, pipeline size
-        pipe = Test(ensemble_size=ENSEMBLE_SIZE, pipeline_size=2)
+        pipe = Test(ensemble_size=[1,4], pipeline_size=2)
 
         # Add workload to the application manager
         app.add_workload(pipe)

@@ -37,12 +37,29 @@ _KERNEL_INFO = {
                                         'tar xf ipdata.tar',
                                         'mkdir DATABASES_MPI',
                                         'mkdir OUTPUT_FILES',
-                                        'cp /work/02734/vivek91/specfem3d_globe/bin/* ./bin/ -f'
+                                        'cp /work/02734/vivek91/specfem3d_globe/bin . -fr',
+
+                                        'mkdir run0001',
+                                        'cp DATA/ run0001/DATA -rf',
+                                        'rm run0001/DATA/Par_*',
+                                        'cd run0001/',
+                                            'cp ../DATABASES_MPI DATABASES_MPI -r',
+                                            'cd ..',
+                                        'mkdir run0001/OUTPUT_FILES',
+
+
+                                        'mkdir run0002',
+                                        'cp run0001/DATA run0002/ -rf',
+                                        'cd run0002/',
+                                            'cp ../DATABASES_MPI DATABASES_MPI -r',
+                                            'cd ..',
+                                        'mkdir run0002/OUTPUT_FILES'
+
                                         ],
                     "executable"    : #"/home/vivek/Research/repos/simpy/examples/solver_mockup/test_work_dir/bin/specfem_mockup",
                                         './bin/xmeshfem3D',
                     "uses_mpi"      : True,
-                    "post_exec"     : ['tar cf opdata.tar DATA/ DATABASES_MPI/ OUTPUT_FILES/ bin/']
+                    "post_exec"     : ['tar cf opdata.tar DATA/ DATABASES_MPI/ OUTPUT_FILES/ bin/ run0001/ run0002/']
                 },
             }
     }

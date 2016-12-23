@@ -383,7 +383,7 @@ class AppManager():
                     cus = plugin.execute(   record=record, 
                                             pattern_name=self._pattern.name, 
                                             iteration=self._pattern.cur_iteration, 
-                                            stage=1
+                                            stage=self._pattern.next_stage
                                         )
 
                     # Update record
