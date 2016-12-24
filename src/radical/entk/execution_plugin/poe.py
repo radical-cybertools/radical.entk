@@ -229,14 +229,16 @@ class PluginPoE(object):
                                                                 stage
                                                             ))
             else:
-                self._logger.info("Pattern %s: Submitted %s tasks with kernel:%s of "+
-                                                        "iteration:%s, stage:%s"\
-                                                            %(  pattern_name,
-                                                                inst-1, 
-                                                                rbound_kernel.name, 
-                                                                iteration, 
-                                                                stage 
-                                                            ))
+                self._logger.info("Pattern %s: Submitted %s tasks with kernel:%s of "\
+                                                        %( pattern_name,
+                                                            inst-1, 
+                                                            rbound_kernel.name
+                                                        )+
+                                    "iteration:%s, stage:%s"\
+                                                        %(
+                                                            iteration, 
+                                                            stage 
+                                                        ))
 
 
             exec_uids = [cu.uid for cu in exec_cus]

@@ -300,7 +300,7 @@ class AppManager():
 
         try:
 
-            pat_key = "pat_%s".%s(pattern_name)
+            pat_key = "pat_%s"%(pattern_name)
             self._kernel_dict[pat_key] = dict()         
 
             for iter in range(1, total_iterations+1):
@@ -841,11 +841,11 @@ class AppManager():
 
                     # AM: too long
                     self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
-                                                                                cur_task)\
+                                                                                cur_task) +
 
                                         "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
                                                                             unit.stderr, 
-                                                                            unit.stdout)\
+                                                                            unit.stdout) +
 
                                         "LAST LOG: %s"%unit.log[-1])
 
@@ -858,11 +858,11 @@ class AppManager():
 
                     # AM: too long
                     self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
-                                                                                cur_task)\
+                                                                                cur_task)+
 
                                         "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
                                                                             unit.stderr, 
-                                                                            unit.stdout)\
+                                                                            unit.stdout)+
 
                                         "LAST LOG: %s"%unit.log[-1])
 
@@ -874,11 +874,11 @@ class AppManager():
 
                     # AM: too long
                     self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
-                                                                                cur_task)\
+                                                                                cur_task)+
 
                                         "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
                                                                             unit.stderr, 
-                                                                            unit.stdout)\
+                                                                            unit.stdout)+
 
                                         "LAST LOG: %s"%unit.log[-1])
 
@@ -893,11 +893,11 @@ class AppManager():
 
                     # AM: too long
                     self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
-                                                                                cur_task)\
+                                                                                cur_task)+
 
                                         "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
                                                                             unit.stderr, 
-                                                                            unit.stdout)\
+                                                                            unit.stdout)+
 
                                         "LAST LOG: %s"%unit.log[-1])
 
@@ -913,11 +913,11 @@ class AppManager():
 
                     # AM: too long
                     self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
-                                                                                cur_task)\
+                                                                                cur_task)+
 
                                         "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
                                                                             unit.stderr, 
-                                                                            unit.stdout)\
+                                                                            unit.stdout)+
 
                                         "LAST LOG: %s"%unit.log[-1])
 
