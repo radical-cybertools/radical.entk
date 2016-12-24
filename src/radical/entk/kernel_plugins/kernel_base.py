@@ -188,9 +188,9 @@ class KernelBase(object):
 
     @executable.setter
     def executable(self, executable):
-        if type(executable) != str:
+        if type(executable) != list:
             raise TypeError(
-                expected_type=bool,
+                expected_type=list,
                 actual_type=type(executable))
 
         self._executable = executable
@@ -205,7 +205,7 @@ class KernelBase(object):
 
         if type(pre_exec) != list:
             raise TypeError(
-                expected_type=bool,
+                expected_type=list,
                 actual_type=type(pre_exec))
 
         self._pre_exec = pre_exec
@@ -221,7 +221,7 @@ class KernelBase(object):
 
         if type(post_exec) != list:
             raise TypeError(
-                expected_type=bool,
+                expected_type=list,
                 actual_type=type(post_exec))
 
         self._post_exec = post_exec

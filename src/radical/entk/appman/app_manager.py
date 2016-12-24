@@ -95,22 +95,28 @@ class AppManager():
             # AM: using isinstance again
           # if type(kernel_class) == list:
 
-            if not isinstance(kernel_class, list):
-                kernel_class = [kernel_class]
+            if type(kernel_class) == list:
+                for item in kernel_class:
+                    if not hasattr(item, '__base__'):
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
+                    elif item.__base__ != Kernel:
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
 
-            for item in kernel_class:
+                    if item in self._loaded_kernels:
+                        raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
 
-                # AM: use isinstance ! :)  I am stopping those comments now.
-                if not hasattr(item, '__base__'):
-                    raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
-                elif item.__base__ != Kernel:
-                    raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
+                    self._loaded_kernels.append(item)
+                    self._logger.info("Kernel {0} registered with application manager".format(item().name))
 
-                if item in self._loaded_kernels:
-                    raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
+            elif not hasattr(kernel_class,'__base__'):
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
 
-                self._loaded_kernels.append(item)
-                self._logger.info("Kernel {0} registered with application manager".format(item().name))
+            elif kernel_class.__base__ != KernelBase:
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
+
+            else:
+                self._loaded_kernels.append(kernel_class)
+                self._logger.info("Kernel {0} registered with application manager".format(kernel_class().name))
             
         
         except Exception, ex:
@@ -290,7 +296,7 @@ class AppManager():
 
             for iter in range(1, total_iterations+1):
 
-                iter_name     = "iter_%s"     % iteration
+                iter_name     = "iter_%s"     % iter
                 self._kernel_dict[pat_key][iter_name] = dict()
 
                 for stage in range(1, pipeline_size+1):
