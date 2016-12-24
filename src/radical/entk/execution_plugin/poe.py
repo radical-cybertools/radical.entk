@@ -34,7 +34,7 @@ class PluginPoE(object):
 
     def register_resource(self, resource):
         self._resource = resource
-        self._logger.info("Registered resource {0} with execution plugin".format(resource))
+        self._logger.info("Registered resource %s with execution plugin"%(resource))
 
     def get_resources(self):
         return self._resource
@@ -81,12 +81,26 @@ class PluginPoE(object):
             cud.mpi                = rbound_kernel.uses_mpi
             cud.cores             = rbound_kernel.cores
             cud.scheduler_hint     = {'partition': 'monitor'}
-            cud.input_staging      = get_input_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=-1*cur_stage, nonfatal=True)
-            cud.output_staging     = get_output_data(rbound_kernel, record, cur_pat = cur_pat, cur_iter= cur_iter, cur_stage = cur_stage, cur_task=-1*cur_stage)
+            cud.input_staging      = get_input_data(    rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = cur_pat, 
+                                                        cur_iter= cur_iter, 
+                                                        cur_stage = cur_stage, 
+                                                        cur_task=-1*cur_stage, 
+                                                        nonfatal=True
+                                                    )
 
-            self._logger.debug("Monitor {0} converted into RP Compute Unit".format(cud.name))
+            cud.output_staging     = get_output_data(   rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = cur_pat, 
+                                                        cur_iter= cur_iter, 
+                                                        cur_stage = cur_stage, 
+                                                        cur_task=-1*cur_stage
+                                                    )
 
-            self._logger.debug("Timeout: {0}".format(self._monitor.timeout))
+            self._logger.debug("Monitor %s converted into RP Compute Unit"%(cud.name))
+
+            self._logger.debug("Timeout: %s"%(self._monitor.timeout))
 
             monitor_handle = self._manager.submit_units(cud)
 
@@ -108,38 +122,42 @@ class PluginPoE(object):
                         # Get uids of tasks to be canceled
                         c_tasks=[]
                         for ind in self._monitor.cancel_tasks:
-                            c_task_uid = record["pat_{0}".format(cur_pat)]["iter_{0}".format(cur_iter)]["stage_{0}".format(cur_stage)]["instance_{0}".format(ind)]["uid"]
+                            c_task_uid = record["pat_%s"%s(cur_pat)]["iter_%s"%(cur_iter)]["stage_%s"%(cur_stage)]["instance_%s"%(ind)]["uid"]
 
                             task_obj = self._manager.get_units(c_task_uid)
-                            if (task_obj.state != rp.DONE)and(task_obj.state != rp.FAILED)and(task_obj.state != rp.CANCELED):
+                            if (task_obj.state != rp.DONE)and(task_obj.state != rp.FAILED)and \
+                                                            (task_obj.state != rp.CANCELED):
                                 c_tasks.append(c_task_uid)
 
                         if len(c_tasks)>0:
-                            self._logger.info("Canceling tasks: {0}".format(c_tasks))
+                            self._logger.info("Canceling tasks: %s"%(c_tasks))
                             self._manager.cancel_units(c_tasks)
-                            self._logger.info("Task canceled: {0}, state: {1}".format(c_tasks,task_obj.state))
+                            self._logger.info("Task canceled: %s, state: %s"%(c_tasks,
+                                                                            task_obj.state))
 
                     monitor_handle = self._manager.submit_units(cud)
                     self._logger.info("Monitor resubmitted")
 
                 for unit in task_list_A:
-                    if (unit.state == rp.DONE)or(unit.state == rp.FAILED)or(unit.state == rp.CANCELED):
+                    if (unit.state == rp.DONE)or(unit.state == rp.FAILED)or \ 
+                                                                (unit.state == rp.CANCELED):
                         task_list_B.remove(unit)
                 task_list_A = task_list_B
-                self._logger.debug("Number of tasks executing: {0}".format(len(task_list_A)))
+                self._logger.debug("Number of tasks executing: %s"%(len(task_list_A)))
 
             # Wait for pending monitor task to finish
             self._logger.debug("Waiting for residual monitor")
-            if (monitor_handle.state != rp.DONE)or(monitor_handle.state != rp.FAILED)or(monitor_handle.state != rp.CANCELED):
+            if (monitor_handle.state != rp.DONE)or(monitor_handle.state != rp.FAILED)or \ 
+                                                        (monitor_handle.state != rp.CANCELED):
                 self._manager.wait_units(monitor_handle.uid)
 
-            self._logger.debug("Stage {0} execution completed".format(cur_stage))
+            self._logger.debug("Stage %s execution completed"%(cur_stage))
 
             return monitor_handle
 
         except Exception, ex:
 
-            self._logger.error("Monitor execution failed, error: {0}".format(ex))
+            self._logger.error("Monitor execution failed, error: %s"%(ex))
     '''
 
 
@@ -148,7 +166,12 @@ class PluginPoE(object):
         def unit_state_cb (unit, state) :
 
             if state == rp.FAILED:
-                self._logger.error("Task with ID {0} failed: STDERR: {1}, STDOUT: {2} LAST LOG: {3}".format(unit.uid, unit.stderr, unit.stdout, unit.log[-1]))
+                self._logger.error("Task with ID %s failed: STDERR: %s, STDOUT: %s, LAST LOG: %s"\
+                                                            %(  unit.uid, 
+                                                                unit.stderr, 
+                                                                unit.stdout, 
+                                                                unit.log[-1])
+                                                            )
                 self._logger.error("Pattern execution FAILED.")
                 sys.exit(1)
         
@@ -171,14 +194,27 @@ class PluginPoE(object):
                 cud.executable         = rbound_kernel.executable
                 cud.arguments          = rbound_kernel.arguments
                 cud.mpi                = rbound_kernel.uses_mpi
-                cud.cores             = rbound_kernel.cores
-                cud.input_staging      = get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
-                cud.output_staging     = get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+                cud.cores              = rbound_kernel.cores
+                cud.input_staging      = get_input_data(rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = pattern_name, 
+                                                        cur_iter= iteration, 
+                                                        cur_stage = stage, 
+                                                        cur_task=inst
+                                                    )
+                cud.output_staging     = get_output_data(
+                                                        rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = pattern_name, 
+                                                        cur_iter= iteration, 
+                                                        cur_stage = stage, 
+                                                        cur_task=inst
+                                                    )
 
                 inst+=1
 
                 cus.append(cud)
-                self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
+                self._logger.debug("Kernel %s converted into RP Compute Unit"%(kernel.name))
 
             exec_cus = self._manager.submit_units(cus)
 
@@ -186,9 +222,21 @@ class PluginPoE(object):
             copy_exec_cus_B = exec_cus
 
             if pattern_name == "None":
-                self._logger.info("Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage))
+                self._logger.info("Submitted %s tasks with kernel:%s of iteration:%s, stage:%s"\
+                                                            %(  inst-1, 
+                                                                rbound_kernel.name, 
+                                                                iteration, 
+                                                                stage
+                                                            ))
             else:
-                self._logger.info("Pattern {4}: Submitted {0} tasks with kernel:{1} of iteration:{2}, stage:{3}".format(inst-1, rbound_kernel.name, iteration, stage, pattern_name))
+                self._logger.info("Pattern %s: Submitted %s tasks with kernel:%s of "+
+                                                        "iteration:%s, stage:%s"\
+                                                            %(  pattern_name,
+                                                                inst-1, 
+                                                                rbound_kernel.name, 
+                                                                iteration, 
+                                                                stage 
+                                                            ))
 
 
             exec_uids = [cu.uid for cu in exec_cus]
@@ -196,7 +244,7 @@ class PluginPoE(object):
             self._logger.info("Waiting for completion of workload")
             self._manager.wait_units(exec_uids)
             self._logger.info("Workload execution successful")
-            self._logger.debug("Stage {0} execution completed".format(stage))
+            self._logger.debug("Stage %s execution completed"%(stage))
 
             '''
             # If there is no monitor, go ahead and wait for tasks to finish
@@ -222,4 +270,4 @@ class PluginPoE(object):
 
         except Exception, ex:
 
-            self._logger.error('Task execution failed, error: {0}'.format(ex))
+            self._logger.error('Task execution failed, error: %s'%(ex))

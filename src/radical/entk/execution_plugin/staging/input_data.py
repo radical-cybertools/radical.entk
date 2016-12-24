@@ -14,7 +14,7 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
         
         ip_list = []
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # upload_input_data
         data_in = []
 
@@ -26,7 +26,13 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 
             for i in range(0,len(kernel.upload_input_data)):
             
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.upload_input_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.upload_input_data[i]
+                                            )
 
                 if var is not None:
             
@@ -49,7 +55,7 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
                 ip_list += data_in
 
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # link_input_data
 
         data_in = []
@@ -62,7 +68,13 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
 
             for i in range(0,len(kernel.link_input_data)):
             
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.link_input_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.link_input_data[i]
+                                            )
             
                 if var is not None:
 
@@ -92,9 +104,9 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
                 ip_list = data_in
             else:
                 ip_list += data_in
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # copy_input_data
         data_in = []
 
@@ -107,7 +119,13 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
         
             for i in range(0,len(kernel.copy_input_data)):
 
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_input_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.copy_input_data[i]
+                                            )
 
                 if var is not None:
 
@@ -138,12 +156,12 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
             else:
                 ip_list += data_in
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
 
         return ip_list
 
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # download_output_data
         data_in = []
 
@@ -154,7 +172,13 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
                 kernel.download_input_data = [kernel.download_input_data]
 
             for i in range(0,len(kernel.download_input_data)):
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.download_input_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.download_input_data[i]
+                                            )
             
                 if var is not None:
 
@@ -178,8 +202,10 @@ def get_input_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task, nonfa
     except Exception, ex:
 
         if cur_pat != "None":
-            logger.error("Input staging failed for iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task))
+            logger.error("Input staging failed for iter:%s, stage:%s, instance: %s" \
+                                                                %(cur_iter, cur_stage, cur_task))
         else:
-            logger.error("Input staging failed for pat:{3}, iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task, cur_pat))
+            logger.error("Input staging failed for pat:%s, iter:%s, stage:%s, instance: %s"\
+                                                        %(cur_pat, cur_iter, cur_stage, cur_task))
 
         raise

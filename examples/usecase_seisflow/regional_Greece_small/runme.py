@@ -59,8 +59,21 @@ if __name__ == '__main__':
 
 
     res_dict = {
-                    'xsede.stampede': {'cores': '16', 'username': 'vivek91', 'project': 'TG-CCR140028','queue': 'development', 'walltime': '20', 'schema': 'gsissh'},
-                    'local.localhost': {'cores': '4', 'username': None, 'project': None, 'queue': None, 'walltime': 40, 'schema': None}
+                    'xsede.stampede': { 'cores': '16', 
+                                        'username': 'vivek91', 
+                                        'project': 'TG-CCR140028',
+                                        'queue': 'development', 
+                                        'walltime': '20', 
+                                        'schema': 'gsissh'
+                                    },
+
+                    'local.localhost': {'cores': '4', 
+                                        'username': None, 
+                                        'project': None, 
+                                        'queue': None, 
+                                        'walltime': 40, 
+                                        'schema': None
+                                    }
             }
 
     # Create a resource handle for target machine

@@ -9,7 +9,7 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
     if '$' not in path:
         return path
 
-    logger.debug('Resolving path: {0}'.format(path))
+    logger.debug('Resolving path: %s'%(path))
 
     # Extract placeholder from path
     if (len(path.split('>')) == 1):
@@ -73,12 +73,13 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 
     try:
 
-        logger.debug('Pat: {0}, Iter: {1}, stage: {2}, task: {3}, monitor: {4}, placeholder: {5}'.format(ref_pat, ref_iter, ref_stage, ref_task, ref_monitor, placeholder))
+        logger.debug('Pat: %s, Iter: %s, stage: %s, task: %s, monitor: %s, placeholder: %s' \
+                        %(ref_pat, ref_iter, ref_stage, ref_task, ref_monitor, placeholder))
 
         if ref_task != None:
-            return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["instance_{0}".format(ref_task)]["path"])
+            return path.replace(placeholder, record["pat_%s"%(ref_pat)]["iter_%s"%(ref_iter)]["stage_%s"%(ref_stage)]["instance_%s"%(ref_task)]["path"])
         elif ref_monitor != None:
-            return path.replace(placeholder, record["pat_{0}".format(ref_pat)]["iter_{0}".format(ref_iter)]["stage_{0}".format(ref_stage)]["monitor_{0}".format(ref_task)]["path"])
+            return path.replace(placeholder, record["pat_%s"%(ref_pat)]["iter_%s"%(ref_iter)]["stage_%s"%(ref_stage)]["monitor_%s"%(ref_task)]["path"])
             
     except Exception, ex:
-        print "Please check placeholders used, error: {0}".format(ex)
+        print "Please check placeholders used, error: %s"%(ex)

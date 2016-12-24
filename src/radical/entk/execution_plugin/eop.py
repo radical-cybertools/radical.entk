@@ -37,7 +37,7 @@ class PluginEoP(object):
 
     def register_resource(self, resource):
         self._resource = resource
-        self._logger.info("Registered resource {0} with execution plugin".format(resource))
+        self._logger.info("Registered resource %s with execution plugin"%(resource))
 
     def get_resource(self):
         return self._resource
@@ -95,21 +95,34 @@ class PluginEoP(object):
                     rbound_kernel = kernel
                     cud = rp.ComputeUnitDescription()
                     cud.name = "stage-{0}-task-{1}".format(stage, inst)
-                    self._logger.debug('Creating stage {1} of pipeline {0}'.format(inst,stage))
+                    self._logger.debug('Creating stage %s of pipeline %s'%(stage, inst))
 
                     cud.pre_exec           = rbound_kernel.pre_exec
                     cud.post_exec          = rbound_kernel.post_exec
                     cud.executable         = rbound_kernel.executable
                     cud.arguments          = rbound_kernel.arguments
                     cud.mpi                = rbound_kernel.uses_mpi
-                    cud.cores             = rbound_kernel.cores
-                    cud.input_staging      = get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
-                    cud.output_staging     = get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = stage, cur_task=inst)
+                    cud.cores              = rbound_kernel.cores
+                    cud.input_staging      = get_input_data(rbound_kernel, 
+                                                            record, 
+                                                            cur_pat = pattern_name, 
+                                                            cur_iter= iteration, 
+                                                            cur_stage = stage, 
+                                                            cur_task=inst
+                                                        )
+
+                    cud.output_staging     = get_output_data(rbound_kernel, 
+                                                            record, 
+                                                            cur_pat = pattern_name, 
+                                                            cur_iter= iteration, 
+                                                            cur_stage = stage, 
+                                                            cur_task=inst
+                                                        )
 
                     inst+=1
 
                     cuds.append(cud)
-                    self._logger.debug("Kernel {0} converted into RP Compute Unit".format(kernel.name))
+                    self._logger.debug("Kernel %s converted into RP Compute Unit"%(kernel.name))
 
                 return cuds
 
@@ -122,9 +135,9 @@ class PluginEoP(object):
 
                 if len(self._tot_fin_tasks) < cur_stage:
                     self._tot_fin_tasks.append(0)
-                    self._logger.info('\nStarting submission of stage {0} of all pipelines'.format(cur_stage))                
+                    self._logger.info('\nStarting submission of stage %s of all pipelines'%(cur_stage))                
                     
-                self._logger.debug('Creating task {0} of stage {1}'.format(cur_task,cur_stage))
+                self._logger.debug('Creating task %s of stage %s'%(cur_task,cur_stage))
 
                 kernel._bind_to_resource(self._resource)
                 rbound_kernel = kernel
@@ -137,14 +150,26 @@ class PluginEoP(object):
                 cud.executable         = rbound_kernel.executable
                 cud.arguments          = rbound_kernel.arguments
                 cud.mpi                = rbound_kernel.uses_mpi
-                cud.cores             = rbound_kernel.cores
-                cud.input_staging      = get_input_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = cur_stage, cur_task=cur_task)
-                cud.output_staging     = get_output_data(rbound_kernel, record, cur_pat = pattern_name, cur_iter= iteration, cur_stage = cur_stage, cur_task=cur_task)
+                cud.cores              = rbound_kernel.cores
+                cud.input_staging      = get_input_data(rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = pattern_name, 
+                                                        cur_iter= iteration, 
+                                                        cur_stage = cur_stage, 
+                                                        cur_task=cur_task
+                                                    )
+                cud.output_staging     = get_output_data(rbound_kernel, 
+                                                        record, 
+                                                        cur_pat = pattern_name, 
+                                                        cur_iter= iteration, 
+                                                        cur_stage = cur_stage, 
+                                                        cur_task=cur_task
+                                                    )
 
                 return cud
 
         except Exception, ex:
-            self._logger.error("Task creation failed, error: {0}".format(ex))
+            self._logger.error("Task creation failed, error: %s"%(ex))
             raise
 
 
@@ -157,17 +182,17 @@ class PluginEoP(object):
 
             if type(tasks) == list:
                 cur_stage = int(tasks[0].name.split('-')[1])
-                self._logger.info('Submitting stage {0} of all pipelines'.format(cur_stage))
+                self._logger.info('Submitting stage %s of all pipelines'%(cur_stage))
                 exec_cus = self._manager.submit_units(tasks)
                 return exec_cus
 
             else:
                 cur_stage = int(tasks.name.split('-')[1])
                 cur_task = int(tasks.name.split('-')[3])
-                self._logger.info('Submitting stage {1} of pipeline {0}'.format(cur_task,cur_stage))
+                self._logger.info('Submitting stage %s of pipeline %s'%(cur_stage,cur_task))
                 task = self._manager.submit_units(tasks)
                 return task
 
         except Exception, ex:
-            self._logger.error("Could not execute tasks, error : {0}".format(ex))
+            self._logger.error("Could not execute tasks, error : %s"%(ex))
             raise

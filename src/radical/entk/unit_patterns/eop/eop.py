@@ -182,7 +182,7 @@ class EoP(ExecutionPattern):
                 raise
         
         except Exception, ex:
-            self._logger.error("Could not set next stage, error: {0}".format(ex))
+            self._logger.error("Could not set next stage, error: %s"%(ex))
             raise
 
 
@@ -193,11 +193,9 @@ class EoP(ExecutionPattern):
             self._ensemble_size_change = True
             self._ensemble_new_size = size
 
-            print 'Ensemble size: ', self._ensemble_size
-
         except Exception, ex:
 
-            self._logger.error("Could not set ensemble size, error: {0}".format(ex))
+            self._logger.error("Could not set ensemble size, error: %s"%(ex))
             raise
 
 
@@ -205,62 +203,62 @@ class EoP(ExecutionPattern):
     def get_stage(self, stage):
 
         try:
-            stage_kernel = getattr(self, "stage_{0}".format(stage), None)
+            stage_kernel = getattr(self, "stage_%s"%(stage), None)
 
             if stage_kernel == None:
-                self._logger.error("Pattern does not have stage_{0}".format(stage))
+                self._logger.error("Pattern does not have stage_%s"%(stage))
                 raise
 
             return stage_kernel
 
         except Exception, ex:
-            self._logger.error("Could not get stage, error: {0}".format(ex))
+            self._logger.error("Could not get stage, error: %s"%(ex))
             raise
 
 
     def get_branch(self, stage):
 
         try:
-            branch = getattr(self, "branch_{0}".format(stage), None)
+            branch = getattr(self, "branch_%s"%(stage), None)
 
             if branch == None:
-                self._logger.error("Pattern does not have branch_{0}".format(stage))
+                self._logger.error("Pattern does not have branch_%s"%(stage))
                 raise
             
             return branch
 
         except Exception, ex:
 
-            self._logger.error("Could not get branch, error: {0}".format(ex))
+            self._logger.error("Could not get branch, error: %s"%(ex))
             raise
 
 
     def get_monitor(self, stage):
 
         try:
-            monitor = getattr(self, "monitor_{0}".format(stage), None)
+            monitor = getattr(self, "monitor_%s"%(stage), None)
 
             if monitor == None:
-                self._logger.error("Pattern does not have monitor_{0}".format(stage))
+                self._logger.error("Pattern does not have monitor_%s"%(stage))
                 raise            
             return monitor
 
         except Exception, ex:
 
-            self._logger.error("Could not get monitor, error: {0}".format(ex))
+            self._logger.error("Could not get monitor, error: %s"%(ex))
             raise
 
 
     def get_output(self, stage, instance):
         try:
-            return self._pattern_dict["iter_{0}".format(self._cur_iteration[instance-1])]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["output"]
+            return self._pattern_dict["iter_%s"%(self._cur_iteration[instance-1])]["stage_%s"%(stage)]["instance_%s"%(instance)]["output"]
         except Exception, ex:
-            self._logger.error("Could not get output of stage: {0}, instance: {1}. Error: {2}".format(stage, instance, ex))
+            self._logger.error("Could not get output of stage: %s, instance: %s. Error: %s"%(stage, instance, ex))
             raise
 
 
     def get_file(self, stage, instance, filename, new_name=None):
-        directory = self._pattern_dict["iter_{0}".format(self._cur_iteration[instance-1])]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["path"]
+        directory = self._pattern_dict["iter_%s"%(self._cur_iteration[instance-1])]["stage_%s"%(stage)]["instance_%s"%(instance)]["path"]
         file_url = directory + '/' + filename
 
         import saga,os
@@ -287,10 +285,10 @@ class EoP(ExecutionPattern):
             if iteration == None:
                 iteration = self._cur_iteration[instance-1]
 
-            return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(instance)]["status"]
+            return self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(instance)]["status"]
 
         except Exception,ex:
-            self._logger.error("Could not get status of stage: {0}, instance: {1}, iteration: {2}, Error: {2}".format(stage, instance, iteration, ex))
+            self._logger.error("Could not get status of stage: %s, instance: %s, iteration: %s, Error: %s"%(stage, instance, iteration, ex))
             raise
 
 

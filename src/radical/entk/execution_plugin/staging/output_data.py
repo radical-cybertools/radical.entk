@@ -11,7 +11,7 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
     try:
 
         # OUTPUT DATA:
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # copy_output_data
         op_list = []
     
@@ -24,7 +24,13 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 
             for i in range(0,len(kernel.copy_output_data)):
 
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.copy_output_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.copy_output_data[i]
+                                            )
 
                 if var is not None:
 
@@ -46,9 +52,9 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
                 op_list = data_out
             else:
                 op_list += data_out
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
 
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         # download_output_data
         data_out = []
 
@@ -60,7 +66,13 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
 
             for i in range(0,len(kernel.download_output_data)):
 
-                var=resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, kernel.download_output_data[i])
+                var=resolve_placeholder_vars(   record, 
+                                                cur_pat, 
+                                                cur_iter, 
+                                                cur_stage, 
+                                                cur_task, 
+                                                kernel.download_output_data[i]
+                                            )
 
                 if var is not None:
             
@@ -80,13 +92,15 @@ def get_output_data(kernel, record, cur_pat, cur_iter, cur_stage, cur_task):
                 op_list = data_out
             else:
                 op_list += data_out
-        #------------------------------------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
 
         return op_list
 
     except Exception, ex:
 
         if cur_pat != "None":
-            logger.error("Input staging failed for iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task))
+            logger.error("Input staging failed for iter:%s, stage:%s, instance: %s" \
+                                                                %(cur_iter, cur_stage, cur_task))
         else:
-            logger.error("Input staging failed for pat:{3}, iter:{0}, stage:{1}, instance: {2}".format(cur_iter, cur_stage, cur_task, cur_pat))
+            logger.error("Input staging failed for pat:%s, iter:%s, stage:%s, instance: %s" \
+                                                        %(cur_pat, cur_iter, cur_stage, cur_task))

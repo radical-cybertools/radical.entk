@@ -13,7 +13,7 @@ from radical.entk.exceptions import *
 import radical.utils as ru
 import gc
 
-# ------------------------------------------------------------------------------ --------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Kernel format
 """
 _KERNEL_INFO = {
@@ -36,9 +36,9 @@ _KERNEL_INFO = {
             }
     }
 """
-#  ------------------------------------------------------------- ------------------------------------------------------------------------------
+#  -------------------------------------------------------------
 
-#  ------------------------------------------------------------- ------------------------------------------------------------------------------
+#  -------------------------------------------------------------
 # plugin base class
 #
 class KernelBase(object):
@@ -72,9 +72,9 @@ class KernelBase(object):
         self._copy_input_data            = list()
         self._copy_output_data           = list()
 
-        self._logger = ru.get_logger("radical.entk.kernel_base.{0}".format(self._kernel_name))
+        self._logger = ru.get_logger("radical.entk.kernel_base.%s"%(self._kernel_name))
         self._logger.debug("Kernel instantiated")
-    #  ------------------------------------------------------------- ------------------------------------------------------------------------------
+    #  -------------------------------------------------------------
     
     def as_dict(self):
         """Returns a dictionary representation of the kernel"""
@@ -88,7 +88,7 @@ class KernelBase(object):
                  }
 
         return kernel_dict
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # ------------------------------------------------------------
     
     @property
     def name(self):
@@ -96,7 +96,7 @@ class KernelBase(object):
     
     def get_name(self):
         return self._kernel_name
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def kernel_info(self):
@@ -104,19 +104,19 @@ class KernelBase(object):
     
     def get_kernel_info (self) :
         return self._kernel_info
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
     
     def get_arg(self, arg_name):
         """Returns the value of the argument given by 'arg_name'.
         """
         return self._args[arg_name]["_value"]
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
     
     def get_raw_args(self):
         """Returns all arguments as they were passed to the kernel.
         """
         return self._raw_args
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     def validate_arguments(self):
 
@@ -139,24 +139,24 @@ class KernelBase(object):
                 if arg_found == False:
                     raise ArgumentError(
                                         kernel_name=self._kernel_name,
-                                        message="Unknown / malformed argument '{0}'".format(arg),
+                                        message="Unknown / malformed argument '%s'"%(arg),
                                         valid_arguments_set=self._raw_args)
 
             for arg_name, arg_info in self._raw_args.iteritems():
                 if ((arg_info["mandatory"] == True) and (arg_info["_is_set"] == False)):
                     raise ArgumentError(
                                         kernel_name=self._kernel_name,
-                                        message="Mandatory argument '{0}' missing".format(arg_name),
+                                        message="Mandatory argument '%s' missing"%(arg_name),
                                         valid_arguments_set=self._raw_args)
 
             self._args = self._raw_args
-            self._logger.debug("Arguments validated for kernel {0}".format(self._kernel_name))
+            self._logger.debug("Arguments validated for kernel %s"%(self._kernel_name))
 
         except Exception, ex:
-            self._logger.error('Kernel argument validation failed: {0}'.format(ex))
+            self._logger.error('Kernel argument validation failed: %s'%(ex))
             raise
 
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     def _bind_to_resource(self, resource_key, pattern_name=None):
         """Binds the kernel to a specific resource.
@@ -164,9 +164,9 @@ class KernelBase(object):
         raise NotImplementedError(
           method_name="_get_kernel_description",
           class_name=type(self))
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
     # Methods to set kernel parameters via API
 
     # executable
@@ -180,7 +180,7 @@ class KernelBase(object):
     # download_output_data
     # copy_output_data
     
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
     
     @property
     def executable(self):
@@ -194,7 +194,7 @@ class KernelBase(object):
                 actual_type=type(executable))
 
         self._executable = executable
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def pre_exec(self):
@@ -209,7 +209,7 @@ class KernelBase(object):
                 actual_type=type(pre_exec))
 
         self._pre_exec = pre_exec
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
 
     @property
@@ -225,7 +225,7 @@ class KernelBase(object):
                 actual_type=type(post_exec))
 
         self._post_exec = post_exec
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
 
     @property
@@ -242,7 +242,7 @@ class KernelBase(object):
 
         # Call the validate_args() method of the plug-in.
         self._uses_mpi = uses_mpi
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def arguments(self):
@@ -259,7 +259,7 @@ class KernelBase(object):
                 actual_type=type(args))
 
         self._arguments = args
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def cores(self):
@@ -276,7 +276,7 @@ class KernelBase(object):
                 actual_type=type(cores))
 
         self._cores = cores
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def upload_input_data(self):
@@ -294,7 +294,7 @@ class KernelBase(object):
                     actual_type=type(dd))
 
         self._upload_input_data = data_directives
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def link_input_data(self):
@@ -312,7 +312,7 @@ class KernelBase(object):
                     actual_type=type(dd))
 
         self._link_input_data = data_directives
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def copy_input_data(self):
@@ -332,7 +332,7 @@ class KernelBase(object):
                     actual_type=type(dd))
 
         self._copy_input_data = data_directives
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def download_output_data(self):
@@ -351,7 +351,7 @@ class KernelBase(object):
                     actual_type=type(dd))
 
         self._download_output_data = data_directives
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def copy_output_data(self):
@@ -370,11 +370,11 @@ class KernelBase(object):
                     actual_type=type(dd))
 
         self._copy_output_data = data_directives
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
     
 
 
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------
 
     @property
     def timeout(self):
@@ -384,4 +384,4 @@ class KernelBase(object):
     def timeout(self, val):
 
         self._timeout = val
-    # ------------------------------------------------------------- ------------------------------------------------------------------------------
+    # -------------------------------------------------------------

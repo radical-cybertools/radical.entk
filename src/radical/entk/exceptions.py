@@ -12,7 +12,7 @@ class TypeError(EnTKError):
     """TypeError is thrown if a parameter of a wrong type is passed to a method or function."""
 
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected (base) type {0}, but got {1}.".format(
+        msg = "Expected (base) type %s, but got %s."%(
             str(expected_type), 
             str(actual_type)
             )
@@ -23,7 +23,7 @@ class ValueError(EnTKError):
 
     def __init__(self, expected_value, actual_value):
         if type(expected_value) != list:
-            msg = "Expected value {0}, but got {1}.".format(
+            msg = "Expected value %s, but got %s."%(
                 str(expected_value), 
                 str(actual_value)
                 )
@@ -32,7 +32,7 @@ class ValueError(EnTKError):
             for item in expected_value:
                 text += str(item)
 
-            msg = "Expected values {0}, but got {1}.".format(
+            msg = "Expected values %s, but got %s."%(
                 str(text), 
                 str(actual_value)
                 )
@@ -43,7 +43,7 @@ class ExistsError(EnTKError):
     """TypeError is thrown if a parameter of a wrong type is passed to a method or function."""
 
     def __init__ (self, item, parent):
-        msg = "Object {0} already exists in {1} .".format(
+        msg = "Object %s already exists in %s."%(
             str(item), 
             str(parent)
             )
@@ -53,7 +53,7 @@ class MatchError(EnTKError):
     """MatchError is thrown if two parameters are not equal."""
 
     def __init__ (self, par1, par2):
-        msg = "{0} does not match {1}.".format(
+        msg = "%s does not match %s."%(
             str(par1), 
             str(par2)
             )
@@ -64,7 +64,7 @@ class ArgumentError(EnTKError):
     to a kernel.
     """
     def __init__ (self, kernel_name, message, valid_arguments_set):
-        msg = "Invalid argument(s) for kernel '{0}': {1}. Valid arguments are {2}.".format(
+        msg = "Invalid argument(s) for kernel '%s': %s. Valid arguments are %s."%(
             kernel_name,
             message,
             valid_arguments_set
@@ -77,7 +77,7 @@ class NotImplementedError(EnTKError):
     implemented."""
 
     def __init__ (self, method_name, class_name):
-        msg = "Method {0}() missing implementation in {1}.".format(
+        msg = "Method %s() missing implementation in %s."%(
             method_name, 
             class_name
             )
@@ -89,5 +89,5 @@ class NoKernelConfigurationError(EnTKError):
     be found for the provided resource key.
     """
     def __init__ (self, kernel_name, resource_key):
-        msg = "Kernel '{0}' doesn not have a configuration entry for resource key '{1}'.".format(kernel_name, resource_key)
+        msg = "Kernel '%s' doesn not have a configuration entry for resource key '%s'."%(kernel_name, resource_key)
         super(NoKernelConfigurationError, self).__init__ (msg)

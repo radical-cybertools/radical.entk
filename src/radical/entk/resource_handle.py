@@ -96,7 +96,7 @@ class ResourceHandle(object):
         self.get_logger().info("Deallocating Cluster")
 
         if self._exctype != None:
-            self.get_logger().error("Fatal error during execution: {0}.".format(str(self._excvalue)))
+            self.get_logger().error("Fatal error during execution: %s."%(str(self._excvalue)))
             traceback.print_tb(self._traceback)
         
 
@@ -109,7 +109,8 @@ class ResourceHandle(object):
         """Allocates the requested resources -- cannot run without allocating resources"""
 
         def pilot_state_cb (pilot, state) :
-            self.get_logger().info("Pilot {2} on resource {0} state has changed to {1}".format(self._resource_key, state, pilot.uid))
+            self.get_logger().info("Pilot %s on resource %s state has changed to %s"\
+                                                    %(pilot.uid, self._resource_key, state))
 
             if state == radical.pilot.FAILED:
                 self.get_logger().error("Resource error: ")
@@ -126,7 +127,7 @@ class ResourceHandle(object):
 
 
         self._allocate_called = True
-        self.get_logger().info("Allocation process on resource:{0} started".format(self._resource_key))
+        self.get_logger().info("Allocation process on resource:%s started"%(self._resource_key))
 
         # Here we start the pilot(s).
         self.get_logger().info('Ensemble Toolkit (%s)' % version)
@@ -174,13 +175,13 @@ class ResourceHandle(object):
 
             pdesc.access_schema = self._access_schema 
 
-            self.get_logger().info("Requesting resources on {0}".format(self._resource_key))
+            self.get_logger().info("Requesting resources on %s"%(self._resource_key))
 
             self._pilot = pmgr.submit_pilots(pdesc)
-            self.get_logger().info("Launched {0}-core pilot on {1}.".format(self._cores, self._resource_key))
+            self.get_logger().info("Launched %s-core pilot on %s."%(self._cores, self._resource_key))
 
             if self._shared_data is not None:
-                self.get_logger().info("Commencing transfer of shared data to {0}".format(self._resource_key))
+                self.get_logger().info("Commencing transfer of shared data to %s"%(self._resource_key))
                 shared_list = []
                 for f in self._shared_data:
                     if f.startswith('.'):
@@ -213,7 +214,7 @@ class ResourceHandle(object):
             #self._reporter.ok('>> ok')
 
         except Exception, ex:
-            self.get_logger().error("Fatal error during resource allocation: {0}.".format(str(ex)))
+            self.get_logger().error("Fatal error during resource allocation: %s."%(str(ex)))
             if self._session:
                 self._session.close()
             raise
@@ -231,4 +232,4 @@ class ResourceHandle(object):
             appManager.run(resource = self._resource_key, task_manager = self._umgr, rp_session=self._session)
 
         except Exception, ex:
-            self.get_logger().error('Application Manager failed: {0}'.format(ex))
+            self.get_logger().error('Application Manager failed: %s'%(ex))

@@ -95,7 +95,7 @@ class AppManager():
             # AM: using isinstance again
           # if type(kernel_class) == list:
 
-            if type(kernel_class) == list:
+            if isinstance(kernel_class, list):
                 for item in kernel_class:
                     if not hasattr(item, '__base__'):
                         raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
@@ -103,10 +103,11 @@ class AppManager():
                         raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
 
                     if item in self._loaded_kernels:
-                        raise ExistsError(item='{0}'.format(item().name), parent = 'loaded_kernels')
+                        raise ExistsError(item=item().name, parent = 'loaded_kernels')
 
                     self._loaded_kernels.append(item)
-                    self._logger.info("Kernel {0} registered with application manager".format(item().name))
+                    self._logger.info("Kernel {0} registered with application manager" \
+                                                                            %(item().name))
 
             elif not hasattr(kernel_class,'__base__'):
                 raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
@@ -116,12 +117,13 @@ class AppManager():
 
             else:
                 self._loaded_kernels.append(kernel_class)
-                self._logger.info("Kernel {0} registered with application manager".format(kernel_class().name))
+                self._logger.info("Kernel %s registered with application manager" \
+                                                                        %(kernel_class().name))
             
         
         except Exception, ex:
 
-                self._logger.exception("Kernel registration failed: {0}".format(ex))
+                self._logger.exception("Kernel registration failed: %s"%(ex))
                 raise
 
 
@@ -135,7 +137,7 @@ class AppManager():
 
         except Exception, ex:
 
-            self._logger.exception("Could not list kernels: {0}".format(ex))
+            self._logger.exception("Could not list kernels: %s"%(ex))
             raise
 
 
@@ -174,22 +176,22 @@ class AppManager():
 
                     new_kernel = kernel()
                     
-                    new_kernel.pre_exec = user_kernel.pre_exec
-                    new_kernel.post_exec = user_kernel.post_exec
-                    new_kernel.executable = user_kernel.executable
-                    new_kernel.arguments = user_kernel.arguments
-                    new_kernel.uses_mpi = user_kernel.uses_mpi          
-                    new_kernel.cores = user_kernel.cores
+                    new_kernel.pre_exec     = user_kernel.pre_exec
+                    new_kernel.post_exec    = user_kernel.post_exec
+                    new_kernel.executable   = user_kernel.executable
+                    new_kernel.arguments    = user_kernel.arguments
+                    new_kernel.uses_mpi     = user_kernel.uses_mpi          
+                    new_kernel.cores        = user_kernel.cores
 
-                    new_kernel.upload_input_data = user_kernel.upload_input_data
-                    new_kernel.copy_input_data = user_kernel.copy_input_data
-                    new_kernel.link_input_data = user_kernel.link_input_data
-                    new_kernel.copy_output_data = user_kernel.copy_output_data
+                    new_kernel.upload_input_data    = user_kernel.upload_input_data
+                    new_kernel.copy_input_data      = user_kernel.copy_input_data
+                    new_kernel.link_input_data      = user_kernel.link_input_data
+                    new_kernel.copy_output_data     = user_kernel.copy_output_data
                     new_kernel.download_output_data = user_kernel.download_output_data    
 
                     new_kernel.validate_arguments()
 
-                    self._logger.debug("Kernel {0} validated".format(new_kernel.name))
+                    self._logger.debug("Kernel %s validated"%(new_kernel.name))
 
                     return new_kernel
 
@@ -202,12 +204,12 @@ class AppManager():
                 # or
                 # self._logger.error("Kernel %s does not exist" \
                 #                   % user_kernel.name)
-                self._logger.error("Kernel {0} does not exist" % user_kernel.name)
+                self._logger.error("Kernel %s does not exist" % user_kernel.name)
                 raise Exception()
 
         except Exception, ex:
 
-            self._logger.exception('Kernel validation failed: {0}'.format(ex))
+            self._logger.exception('Kernel validation failed: %s'%(ex))
             raise
 
 
@@ -247,7 +249,7 @@ class AppManager():
             if not status:
                 status='Pending'
 
-            pat_key = "pat_{0}".format(pattern_name)
+            pat_key = "pat_%s"%(pattern_name)
 
             self._logger.debug('Adding Tasks to record')
 
@@ -298,7 +300,7 @@ class AppManager():
 
         try:
 
-            pat_key = "pat_{0}".format(pattern_name)
+            pat_key = "pat_%s".%s(pattern_name)
             self._kernel_dict[pat_key] = dict()         
 
             for iter in range(1, total_iterations+1):
@@ -408,7 +410,7 @@ class AppManager():
                                                     stage=self._pattern.next_stage
                                                 )                 
 
-                    self._pattern.pattern_dict = record["pat_{0}".format(self._pattern.name)] 
+                    self._pattern.pattern_dict = record["pat_%s"%(self._pattern.name)] 
 
                     #print record
                     branch_function = None
@@ -446,7 +448,7 @@ class AppManager():
                 self._pattern.cur_iteration+=1
 
         except Exception, ex:
-            self._logger.exception("PoE Workload submission failed, error: {0}".format(ex))
+            self._logger.exception("PoE Workload submission failed, error: %s"%(ex))
             raise
 
 
@@ -468,7 +470,7 @@ class AppManager():
             num_tasks = self._pattern.ensemble_size
 
         except Exception, ex:
-            self._logger.exception("Plugin setup failed, error: {0}".format(ex))
+            self._logger.exception("Plugin setup failed, error: %s"%(ex))
             raise
 
 
@@ -530,8 +532,6 @@ class AppManager():
                 pending_cus_2 = []
                 done_cus = []
 
-                print 'all cus beg: {0}'.format(len(self.all_cus))
-
                 with self.all_cus_lock:
 
                     for unit in self.all_cus:
@@ -557,13 +557,7 @@ class AppManager():
                     for unit in done_cus:
                         self.all_cus.remove(unit)
 
-                print 'tot_fin_tasks: {0}'.format(plugin.tot_fin_tasks)
-                print 'all cus end: {0}'.format(len(self.all_cus))
-                print 'pending cus 1: {0}, {1}'.format(len(pending_cus_1), pending_cus_1)
-                print 'pending cus 2: {0}, {1}'.format(len(pending_cus_2), pending_cus_2)
-                print 'done cus: {0}'.format(len(done_cus))
-
-                task_manager.wait_units(pending_cus_2, timeout=60) 
+                task_manager.wait_units(pending_cus_2, timeout=60)
 
                 # AM: Uhm, what does that do here?  Are you sure you collected
                 #     all units in your callbacks at this point?
@@ -610,8 +604,8 @@ class AppManager():
                     plugin.tot_fin_tasks[cur_stage-1]+=1
                     self._logger.info('Tot_fin_tasks from thread: %s'%plugin.tot_fin_tasks)
 
-                self._logger.info('Stage {1} of pipeline {0} has finished'.format(cur_task,
-                                    cur_stage))
+                self._logger.info('Stage %s of pipeline %s has finished'%(cur_stage,
+                                    cur_task))
                                                 
                 # Execute branch if it exists
                 # AM: *please* define the names - this line is impossible to
@@ -629,36 +623,7 @@ class AppManager():
 
                 with self.all_cus_lock:
 
-                    # AM: you can change 
-                    #   if (xyz == True):
-                    #   if (xyz == False):
-                    # to
-                    #   if xyz:
-                    #   if not xyz:
-                    #
-                    # and also:
-                    #   if abc == 0:
-                    #   if abc != 0:
-                    # to
-                    #   if abc:
-                    #   if not abc:
-                    #
 
-                    # AM: these lines end waaaay beyond the 80 char limit, and
-                    #     this is after moving the thread methods out of the
-                    #     run, reducing by 4 indents or so.  This is a sure sign
-                    #     your code is too deeply nested, and/or that you need
-                    #     to define more relevant variables.
-                    #
-                    # AM: while I am on it: your run() method had 500 lines of
-                    #     code *alone*.  A method should, unless its trivial
-                    #     repetition of stuff, rarely span 50 lines or more.
-                    #
-                    #     This is not to enforce that rule religeously.  I am
-                    #     breaking it more often than not myself.  But, your
-                    #     code really *is* very hard to parse, visually and
-                    #     semantically..
-                    #
                     if self._pattern.stage_change:
 
                         if self._pattern.new_stage:
@@ -746,7 +711,7 @@ class AppManager():
                 self._task_queue.task_done()
 
             except Exception, ex:
-                self._logger.exception('Failed to run next stage, error: {0}'.format(ex))
+                self._logger.exception('Failed to run next stage, error: %s'%(ex))
                 raise
 
 
@@ -787,7 +752,7 @@ class AppManager():
                                                 status       = 'Failed')
 
                     # AM: define names!
-                    pattern_name = "pat_{0}".format(self._pattern.name)
+                    pattern_name = "pat_%s"%(self._pattern.name)
                     
                     self._pattern.pattern_dict = record[pattern_name]
                     plugin.tot_fin_tasks[cur_stage-1]+=1
@@ -835,7 +800,7 @@ class AppManager():
                                                 status='Failed'
                                             )
 
-                    pattern_name = "pat_{0}".format(self._pattern.name)
+                    pattern_name = "pat_%s"%(self._pattern.name)
 
                     self._pattern.pattern_dict = record[pattern_name]
                     self._task_queue.put(unit)
@@ -852,7 +817,7 @@ class AppManager():
                 self._fail_queue.task_done()
 
             except Exception, ex:
-                self._logger.exception('Failed to handle failed task, error: {0}'.format(ex))
+                self._logger.exception('Failed to handle failed task, error: %s'%(ex))
                 raise
 
 
@@ -862,7 +827,7 @@ class AppManager():
 
         record = self.get_record()
 
-        self._logger.debug('Callback initiated for {0}, state: {1}'.format(unit.name, state))
+        self._logger.debug('Callback initiated for %s, state: %s'%(unit.name, state))
 
         # Perform these operations only for tasks and not monitors
         if unit.name.startswith('stage'):                            
@@ -969,7 +934,7 @@ class AppManager():
                                                 status='Failed'
                                             )
 
-                    pattern_name = "pat_{0}".format(self._pattern.name)
+                    pattern_name = "pat_%s"%(self._pattern.name)
                     self._pattern.pattern_dict = record[pattern_name]
                     self._task_queue.put(unit)
 
@@ -1003,13 +968,13 @@ class AppManager():
                                                 status='Done'
                                             )
 
-                    pattern_name = "pat_{0}".format(self._pattern.name)
+                    pattern_name = "pat_%s"%(self._pattern.name)
                     self._pattern.pattern_dict = record[pattern_name] 
 
                     self._task_queue.put(unit)
                     
                 except Exception, ex:
-                    self._logger.exception('Failed to push to task queue, error: {0}'.format(ex))
+                    self._logger.exception('Failed to push to task queue, error: %s'%(ex))
                     raise
 
 

@@ -99,7 +99,7 @@ class PoE(ExecutionPattern):
                 self._stage_change = True
         
         except Exception, ex:
-            self._logger.error("Could not set next stage, error: {0}".format(ex))
+            self._logger.error("Could not set next stage, error: %s"%(ex))
             raise
 
     @property
@@ -114,33 +114,33 @@ class PoE(ExecutionPattern):
     def get_stage(self, stage):
 
         try:
-            stage_kernel = getattr(self, "stage_{0}".format(stage), None)
+            stage_kernel = getattr(self, "stage_%s"%(stage), None)
 
             if stage_kernel == None:
-                self._logger.error("Pattern does not have stage_{0}".format(stage))
+                self._logger.error("Pattern does not have stage_%s"%(stage))
                 raise
 
             return stage_kernel
 
         except Exception, ex:
-            self._logger.error("Could not get stage, error: {0}".format(ex))
+            self._logger.error("Could not get stage, error: %s"%(ex))
             raise
 
 
     def get_branch(self, stage):
 
         try:
-            branch = getattr(self, "branch_{0}".format(stage), None)
+            branch = getattr(self, "branch_%s"%(stage), None)
 
             if branch == None:
-                self._logger.error("Pattern does not have branch_{0}".format(stage))
+                self._logger.error("Pattern does not have branch_%s"%(stage))
                 raise
             
             return branch
 
         except Exception, ex:
 
-            self._logger.error("Could not get branch, error: {0}".format(ex))
+            self._logger.error("Could not get branch, error: %s"%(ex))
             raise
 
 
@@ -151,16 +151,16 @@ class PoE(ExecutionPattern):
                 iteration = self._cur_iteration
 
             if monitor!=None:
-                return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["output"]
+                return self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["monitor_1"]["output"]
 
-            return self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["output"]
+            return self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(task)]["output"]
 
         except Exception, ex:
 
             if monitor==None:
-                self._logger.error("Could not get output of stage: {0}, instance: {1}".format(stage, task))
+                self._logger.error("Could not get output of stage: %s, instance: %s"%(stage, task))
             else:
-                self._logger.error("Could not get output of stage: {0}, monitor".format(stage))
+                self._logger.error("Could not get output of stage: %s, monitor"%(stage))
 
             raise
 
@@ -172,9 +172,9 @@ class PoE(ExecutionPattern):
                 iteration = self._cur_iteration
 
             if monitor == None:
-                directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["instance_{0}".format(task)]["path"]
+                directory = self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(task)]["path"]
             else:
-                directory = self._pattern_dict["iter_{0}".format(iteration)]["stage_{0}".format(stage)]["monitor_1"]["path"]
+                directory = self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["monitor_1"]["path"]
 
             file_url = directory + '/' + filename
 
@@ -189,8 +189,10 @@ class PoE(ExecutionPattern):
         except Exception, ex:
 
             if monitor==None:
-                self._logger.error("Could not get file of stage: {0}, instance: {1}, error: {2}".format(stage, task, ex))
+                self._logger.error("Could not get file of stage: %s, instance: %s, error: %s" \
+                                                                            %(stage, task, ex))
             else:
-                self._logger.error("Could not get file of stage: {0}, monitor, error: {1}".format(stage, ex))
+                self._logger.error("Could not get file of stage: %s, monitor, error: %s"\
+                                                                            %(stage, ex))
 
             raise
