@@ -12,20 +12,20 @@ class Kernel(object):
         self._name = name
 
         # Parameters required for any Kernel irrespective of RP
-        self._pre_exec                  = None
-        self._post_exec                 = None
-        self._executable                = None
-        self._arguments                 = []
-        self._uses_mpi                  = None
+        self._pre_exec                  = list()
+        self._post_exec                 = list()
+        self._executable                = str()
+        self._arguments                 = list()
+        self._uses_mpi                  = False
         self._cores                     = 1 # If unspecified, number of cores is set to 1
         self._type                      = ktype
 
-        self._upload_input_data          = None
-        self._link_input_data            = None
-        self._download_input_data        = None
-        self._download_output_data       = None
-        self._copy_input_data            = None
-        self._copy_output_data           = None
+        self._upload_input_data          = list()
+        self._link_input_data            = list()
+        self._download_input_data        = list()
+        self._download_output_data       = list()
+        self._copy_input_data            = list()
+        self._copy_output_data           = list()
 
         self._logger = ru.get_logger("radical.entk.Kernel")
 
@@ -84,7 +84,7 @@ class Kernel(object):
     def executable(self, executable):
         if type(executable) != str:
             raise TypeError(
-                expected_type=bool,
+                expected_type=str,
                 actual_type=type(executable))
 
         self._executable = executable
@@ -99,7 +99,7 @@ class Kernel(object):
 
         if type(pre_exec) != list:
             raise TypeError(
-                expected_type=bool,
+                expected_type=list,
                 actual_type=type(pre_exec))
 
         self._pre_exec = pre_exec
@@ -114,7 +114,7 @@ class Kernel(object):
 
         if type(post_exec) != list:
             raise TypeError(
-                expected_type=bool,
+                expected_type=list,
                 actual_type=type(post_exec))
 
         self._post_exec = post_exec

@@ -178,7 +178,14 @@ class AppManager():
                     new_kernel.post_exec = user_kernel.post_exec
                     new_kernel.executable = user_kernel.executable
                     new_kernel.arguments = user_kernel.arguments
-                    new_kernel.uses_mpi = user_kernel.uses_mpi              
+                    new_kernel.uses_mpi = user_kernel.uses_mpi          
+                    new_kernel.cores = user_kernel.cores
+
+                    new_kernel.upload_input_data = user_kernel.upload_input_data
+                    new_kernel.copy_input_data = user_kernel.copy_input_data
+                    new_kernel.link_input_data = user_kernel.link_input_data
+                    new_kernel.copy_output_data = user_kernel.copy_output_data
+                    new_kernel.download_output_data = user_kernel.download_output_data    
 
                     new_kernel.validate_arguments()
 
@@ -350,6 +357,7 @@ class AppManager():
             plugin = PluginPoE()                
             plugin.register_resource(resource = resource)
             plugin.add_manager(task_manager)
+            record = self.get_record()
 
         except Exception, ex:
             self._logger.exception("PoE Plugin setup failed, error: %s" % ex)

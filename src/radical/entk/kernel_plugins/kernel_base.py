@@ -55,22 +55,22 @@ class KernelBase(object):
         self._args              = []
 
         # Parameters required for any Kernel irrespective of RP
-        self._pre_exec          = None
-        self._post_exec         = None
-        self._executable        = None
-        self._arguments         = []
-        self._uses_mpi          = None
+        self._pre_exec          = list()
+        self._post_exec         = list()
+        self._executable        = str()
+        self._arguments         = list()
+        self._uses_mpi          = False
         self._cores             = 1 # If unspecified, number of cores is set to 1
 
         self._timeout           = None
         self._cancel_tasks      = None
 
-        self._upload_input_data          = []
-        self._link_input_data            = []
-        self._download_input_data        = []
-        self._download_output_data       = []
-        self._copy_input_data            = []
-        self._copy_output_data           = []
+        self._upload_input_data          = list()
+        self._link_input_data            = list()
+        self._download_input_data        = list()
+        self._download_output_data       = list()
+        self._copy_input_data            = list()
+        self._copy_output_data           = list()
 
         self._logger = ru.get_logger("radical.entk.kernel_base.{0}".format(self._kernel_name))
         self._logger.debug("Kernel instantiated")
@@ -188,9 +188,9 @@ class KernelBase(object):
 
     @executable.setter
     def executable(self, executable):
-        if type(executable) != list:
+        if type(executable) != str:
             raise TypeError(
-                expected_type=list,
+                expected_type=str,
                 actual_type=type(executable))
 
         self._executable = executable
