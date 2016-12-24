@@ -20,7 +20,7 @@ class Test(PoE):
         k1 = Kernel(name="meshfem")
         k1.arguments = []
         k1.copy_input_data = [  '$SHARED/ipdata.tar']
-        k1.copy_output_data = ['opdata.tar > $SHARED/opdata']
+        k1.copy_output_data = ['opdata.tar > $SHARED/opdata.tar']
         k1.cores = 8
         k1.mpi = True
 
