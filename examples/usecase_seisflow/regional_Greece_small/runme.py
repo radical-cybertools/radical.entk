@@ -63,7 +63,7 @@ if __name__ == '__main__':
                                         'username': 'vivek91', 
                                         'project': 'TG-CCR140028',
                                         'queue': 'development', 
-                                        'walltime': '20', 
+                                        'walltime': '40', 
                                         'schema': 'gsissh'
                                     },
 
