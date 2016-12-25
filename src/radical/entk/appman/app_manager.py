@@ -510,14 +510,13 @@ class AppManager():
             # Start _execute_thread
             t1 = threading.Thread(  target=self._execute_thread, 
                                     args=[plugin])
-            t1.daemon = True
             t1.start()
 
 
             # Start thread to handle failure
-            t2 = threading.Thread(target=self._fail_thread, args=[plugin])
-            t2.daemon = True
-            t2.start()
+            if self._on_error != 'exit':
+                t2 = threading.Thread(target=self._fail_thread, args=[plugin])
+                t2.start()
 
             with self.all_cus_lock:
                 if cus!=None:
@@ -574,8 +573,9 @@ class AppManager():
                     if sum1 == sum2:
                         break
 
-            self._fail_event.set()                        
-            t2.join()
+            if self._on_error != 'exit':
+                self._fail_event.set()                        
+                t2.join()
 
             self._task_event.set()
             t1.join()
