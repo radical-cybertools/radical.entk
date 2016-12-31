@@ -40,33 +40,36 @@ class ResourceHandle(object):
         """Creates a new ResourceHandle instance"""
 
         # User provided parameter assignments
-        self._resource_key     = resource
-        self._cores         = cores
-        self._walltime         = walltime
-        self._queue         = queue        
-        self._username     = username
-        self._project         = project
-        self._cleanup         = cleanup
-        self._database_url     = database_url
+        self._resource_key      = resource
+        self._cores             = cores
+        self._walltime          = walltime
+        self._queue             = queue        
+        self._username          = username
+        self._project           = project
+        self._cleanup           = cleanup
+        self._database_url      = database_url
         self._database_name     = database_name
         self._access_schema     = access_schema
 
         # Internal parameters
-        self._allocate_called     = False
-        self._umgr         = None
-        self._session         = None
-        self._pilot         = None
-        self._pmgr         = None
-        self._exctype         = None
-        self._excvalue         = None
+        self._allocate_called   = False
+        self._umgr              = None
+        self._session           = None
+        self._pilot             = None
+        self._pmgr              = None
+        self._exctype           = None
+        self._excvalue          = None
         self._traceback         = None
 
         # Shared data
-        self._shared_data = None
+        self._shared_data       = None
+
+        # Profiling variable
+        self._prof              = None
 
         # Logging parameters
-        self._logger          = ru.get_logger('radical.entk.ResourceHandle')
-        self._reporter         = self._logger.report
+        self._logger    = ru.get_logger('radical.entk.ResourceHandle')
+        self._reporter  = self._logger.report
 
     # --------------------------------------------------------------------------
     

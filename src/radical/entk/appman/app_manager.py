@@ -595,7 +595,7 @@ class AppManager():
             try:
 
                 record = self.get_record()
-                unit   = self._task_queue.get()
+                unit   = self._task_queue.get(timeout=10)
 
                 cur_stage = int(unit.name.split('-')[1])
                 cur_task  = int(unit.name.split('-')[3])
@@ -710,6 +710,10 @@ class AppManager():
                 # VB: Residual of some testing.
                 self._task_queue.task_done()
 
+
+            except Queue.Empty:
+                self._logger.debug('Task queue empty -- ending current iteration')
+
             except Exception, ex:
                 self._logger.exception('Failed to run next stage, error: %s'%(ex))
                 raise
@@ -724,7 +728,7 @@ class AppManager():
             try:
 
                 record = self.get_record()
-                unit   = self._fail_queue.get()
+                unit   = self._fail_queue.get(timeout=10)
 
                 cur_stage = int(unit.name.split('-')[1])
                 cur_task = int(unit.name.split('-')[3])
@@ -815,6 +819,10 @@ class AppManager():
 
                 # AM: why is this disabled?
                 self._fail_queue.task_done()
+
+
+            except Queue.Empty:
+                self._logger.debug('Fail queue empty -- ending current iteration')
 
             except Exception, ex:
                 self._logger.exception('Failed to handle failed task, error: %s'%(ex))
