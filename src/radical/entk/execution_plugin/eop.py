@@ -34,6 +34,10 @@ class PluginEoP(object):
 
         self._logger.info("Plugin EoP created")
 
+        self._uid               = ru.generate_id('entk.exec_plugin.eop')
+        self._prof              = ru.Profiler('%s' % self._uid)
+
+        self._prof.Prof('Instantiated', uid=self._uid)
 
     def register_resource(self, resource):
         self._resource = resource
@@ -65,11 +69,14 @@ class PluginEoP(object):
 
         self._executable_workload = temp
 
+        self._prof.Prof('Adding workload', uid=self._uid)
+
         self._logger.info("New workload assigned to plugin for execution")
 
 
     def add_manager(self, manager):
         self._manager = manager
+        self._prof.Prof('Adding manager', uid=self._uid)
         self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
@@ -82,6 +89,9 @@ class PluginEoP(object):
 
             from staging.input_data import get_input_data
             from staging.output_data import get_output_data
+
+
+            self._prof.Prof('Creating tasks', uid=self._uid)
 
             if len(self._executable_workload) > 1:
 
@@ -168,6 +178,8 @@ class PluginEoP(object):
 
                 return cud
 
+                self._prof.Prof('Tasks created', uid=self._uid)
+
         except Exception, ex:
             self._logger.error("Task creation failed, error: %s"%(ex))
             raise
@@ -179,6 +191,8 @@ class PluginEoP(object):
 
             if tasks == None:
                 return None
+
+            self._prof.Prof('Submitting tasks', uid=self._uid)
 
             if type(tasks) == list:
                 cur_stage = int(tasks[0].name.split('-')[1])
@@ -192,6 +206,8 @@ class PluginEoP(object):
                 self._logger.info('Submitting stage %s of pipeline %s'%(cur_stage,cur_task))
                 task = self._manager.submit_units(tasks)
                 return task
+
+            self._prof.Prof('Tasks submitted', uid=self._uid)
 
         except Exception, ex:
             self._logger.error("Could not execute tasks, error : %s"%(ex))

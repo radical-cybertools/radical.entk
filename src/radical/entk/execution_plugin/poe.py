@@ -161,19 +161,7 @@ class PluginPoE(object):
     '''
 
 
-    def execute(self, record, pattern_name, iteration, stage):
-
-        def unit_state_cb (unit, state) :
-
-            if state == rp.FAILED:
-                self._logger.error("Task with ID %s failed: STDERR: %s, STDOUT: %s, LAST LOG: %s"\
-                                                            %(  unit.uid, 
-                                                                unit.stderr, 
-                                                                unit.stdout, 
-                                                                unit.log[-1])
-                                                            )
-                self._logger.error("Pattern execution FAILED.")
-                sys.exit(1)
+    def create_tasks(self, record, pattern_name, iteration, stage):
         
         try:
             self._manager.register_callback(unit_state_cb)

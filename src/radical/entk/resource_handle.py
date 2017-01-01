@@ -65,7 +65,10 @@ class ResourceHandle(object):
         self._shared_data       = None
 
         # Profiling variable
-        self._prof              = None
+        self._uid               = ru.generate_id('entk.resource_handle')
+        self._prof              = ru.Profiler('%s' % self._uid)
+
+        self._prof.prof('resource handle instantiated', uid=self._uid)
 
         # Logging parameters
         self._logger    = ru.get_logger('radical.entk.ResourceHandle')
@@ -96,14 +99,15 @@ class ResourceHandle(object):
         """Deallocates the resources.
         """
         
+        self._prof.prof('deallocation started', uid=self._uid)
         self.get_logger().info("Deallocating Cluster")
 
         if self._exctype != None:
             self.get_logger().error("Fatal error during execution: %s."%(str(self._excvalue)))
             traceback.print_tb(self._traceback)
         
-
         self._session.close(cleanup=self._cleanup)
+        self._prof.prof('deallocation done', uid=self._uid)
         #self._reporter.ok('>>done \n')    
 
     #---------------------------------------------------------------------------
@@ -116,18 +120,25 @@ class ResourceHandle(object):
                                                     %(pilot.uid, self._resource_key, state))
 
             if state == radical.pilot.FAILED:
+                self._prof.prof('resource request failed', uid=self._uid)
                 self.get_logger().error("Resource error: ")
                 self.get_logger().error("Pattern execution FAILED.")
                 self.get_logger().info(pilot.stderr)
 
             if state == radical.pilot.DONE:
+                self._prof.prof('resource request done', uid=self._uid)
                 self.get_logger().info("Resource allocation time over.")
                 #self._reporter.info('Resource allocation time over.')
 
             if state == radical.pilot.CANCELED:
+                self._prof.prof('resource request canceled', uid=self._uid)
                 self.get_logger().info("Resource allocation cancelled.")
                 #self._reporter.info('Resource allocation cancelled.')
 
+            if state == radical.pilot.ACIVE:
+                self._prof.prof('resource request active', uid=self._uid)
+
+        self._prof.prof('allocation started', uid=self._uid)
 
         self._allocate_called = True
         self.get_logger().info("Allocation process on resource:%s started"%(self._resource_key))
@@ -180,7 +191,10 @@ class ResourceHandle(object):
 
             self.get_logger().info("Requesting resources on %s"%(self._resource_key))
 
+            self._prof.prof('pilot created', uid=self._uid)
             self._pilot = pmgr.submit_pilots(pdesc)
+            self._prof.prof('pilot submitted', uid=self._uid)
+
             self.get_logger().info("Launched %s-core pilot on %s."%(self._cores, self._resource_key))
 
             if self._shared_data is not None:
@@ -204,16 +218,20 @@ class ResourceHandle(object):
 
             # Wait for pilot to go Active
             if wait is True:
+                self._prof.prof('waiting for pilot active', uid=self._uid)
                 self.get_logger().info('Waiting for Pilot to go Active')
                 #self.get_logger().report('Waiting for Pilot to go Active')
                 self._pilot.wait(radical.pilot.ACTIVE)
+                self._prof.prof('pilot active', uid=self._uid)
 
+            self._prof.prof('resource handle instantiated', uid=self._uid)
 
             # Create unit manager to submit CUs
             self._umgr = radical.pilot.UnitManager( session=self._session, scheduler=radical.pilot.SCHED_DIRECT_SUBMISSION)
             self._umgr.add_pilots(self._pilot)
             self.get_logger().info("Radical pilot unit manager created")
 
+            self.prof.prof('allocation done')
             #self._reporter.ok('>> ok')
 
         except Exception, ex:
@@ -227,12 +245,16 @@ class ResourceHandle(object):
     def run(self, appManager):
         '''Runs the workload currently added in the appManager'''
 
+        self._prof.prof('run called', uid=self._uid)
+
         # Make sure resources were allocated.
         if self._allocate_called is False:
             raise EnTKError(msg="Resource(s) not allocated. Call allocate() first.")
 
         try:
+            self.prof.prof('calling appmanager')
             appManager.run(resource = self._resource_key, task_manager = self._umgr, rp_session=self._session)
+            self.prof.prof('returned from appmanager')
 
         except Exception, ex:
             self.get_logger().error('Application Manager failed: %s'%(ex))

@@ -55,6 +55,11 @@ class AppManager():
         self.all_cus = list()
         self.all_cus_lock = threading.Lock()
 
+        self._uid               = ru.generate_id('entk.appmanager')
+        self._prof              = ru.Profiler('%s' % self._uid)
+
+        self._prof.Prof('Instantiated', uid=self._uid)
+
     # --------------------------------------------------------------------------
     #
     def sanity_pattern_check(self):
@@ -95,6 +100,8 @@ class AppManager():
             # AM: using isinstance again
           # if type(kernel_class) == list:
 
+            self._prof.prof('registering kernels', uid=self._uid)
+
             if isinstance(kernel_class, list):
                 for item in kernel_class:
                     if not hasattr(item, '__base__'):
@@ -119,6 +126,10 @@ class AppManager():
                 self._loaded_kernels.append(kernel_class)
                 self._logger.info("Kernel %s registered with application manager" \
                                                                         %(kernel_class().name))
+
+            
+            self._prof.prof('kernels registered', uid=self._uid)            
+
             
         
         except Exception, ex:
@@ -220,8 +231,14 @@ class AppManager():
         self._pattern = pattern
 
         try:
+
+            self._prof.prof('creating record', uid=self._uid)
+
             self.create_record(pattern.name, pattern.total_iterations, 
                                pattern.pipeline_size, pattern.ensemble_size)
+
+            self._prof.prof('record created', uid=self._uid)
+
         except Exception, ex:
             self._logger.exception("Create new record function call for added"\
                             " pattern failed, error : %s"%ex)
@@ -356,16 +373,30 @@ class AppManager():
         try:
             from radical.entk.execution_plugin.poe import PluginPoE
 
+
+            self._prof.prof('poe setup started', uid=self._uid)
+
             plugin = PluginPoE()                
             plugin.register_resource(resource = resource)
             plugin.add_manager(task_manager)
             record = self.get_record()
+
+            self._prof.prof('poe setup done', uid=self._uid)
 
         except Exception, ex:
             self._logger.exception("PoE Plugin setup failed, error: %s" % ex)
 
 
         try:
+
+
+            self._prof.prof('poe task launch started', uid=self._uid)
+
+            # register callbacks if not done already
+            if not self._callback_flag:
+                task_manager.register_callback(self._unit_state_cb_poe)
+                self._callback_flag = True
+
             # Submit kernels stage by stage to execution plugin
             while ((self._pattern.cur_iteration <= self._pattern.total_iterations) \
                 and(self._pattern.next_stage!=0)):
@@ -375,6 +406,11 @@ class AppManager():
                     and(self._pattern.next_stage!=0)):
 
                     # Get kernel from execution pattern
+                    self._prof.prof('iteration: %s, stage:%s creation started' \ 
+                                                %(self._pattern.cur_iteration, 
+                                                    self._pattern.next_stage), uid=self._uid)
+
+
                     stage =  self._pattern.get_stage(stage=self._pattern.next_stage)
 
                     validated_kernels = list()
@@ -396,11 +432,19 @@ class AppManager():
                     #print len(list_kernels_stage)
                     plugin.set_workload(kernels=validated_kernels)
 
+                    self._prof.prof('iteration: %s, stage:%s submission started' \ 
+                                                %(self._pattern.cur_iteration, 
+                                                    self._pattern.next_stage), uid=self._uid)
+
                     cus = plugin.execute(   record=record, 
                                             pattern_name=self._pattern.name, 
                                             iteration=self._pattern.cur_iteration, 
                                             stage=self._pattern.next_stage
                                         )
+
+                    self._prof.prof('iteration: %s, stage:%s submission done' \ 
+                                                %(self._pattern.cur_iteration, 
+                                                    self._pattern.next_stage), uid=self._uid)
 
                     # Update record
                     record = self.add_to_record(    record=record, 
@@ -440,6 +484,10 @@ class AppManager():
                         self._logger.info("Branching function has set termination "+
                                             "condition -- terminating")
                         break
+
+                    self._prof.prof('iteration: %s, stage:%s creation done' \ 
+                                                %(self._pattern.cur_iteration, 
+                                                    self._pattern.next_stage), uid=self._uid)
             
                 # Terminate execution
                 if self._pattern.next_stage == 0:
@@ -447,10 +495,32 @@ class AppManager():
 
                 self._pattern.cur_iteration+=1
 
+            self._prof.prof('poe task launch done', uid=self._uid)
+
         except Exception, ex:
             self._logger.exception("PoE Workload submission failed, error: %s"%(ex))
             raise
 
+
+    def _unit_state_cb_poe (unit, state) :
+
+        cur_stage = int(unit.name.split('-')[1])
+        cur_task = int(unit.name.split('-')[3])
+        cur_iter = self._pattern.cur_iteration[cur_task-1]
+
+
+        if state == rp.FAILED:
+            self._logger.error("Stage %s of pipeline %s failed: "%(cur_stage, 
+                                                                    cur_task)+
+
+                                "UID: %s, STDERR: %s, STDOUT: %s "%(unit.uid, 
+                                                                    unit.stderr, 
+                                                                    unit.stdout)+
+
+                                "LAST LOG: %s"%unit.log[-1])
+
+            self._logger.info("Exiting ...")
+            sys.exit(1)
 
     # --------------------------------------------------------------------------
     #
@@ -463,11 +533,15 @@ class AppManager():
 
             from radical.entk.execution_plugin.eop import PluginEoP
 
+            self._prof.prof('eop setup started', uid=self._uid)
+
             plugin = PluginEoP()                
             plugin.register_resource(resource = resource)
             plugin.add_manager(task_manager)
             num_stages = self._pattern.pipeline_size
             num_tasks = self._pattern.ensemble_size
+
+            self._prof.prof('eop setup done', uid=self._uid)
 
         except Exception, ex:
             self._logger.exception("Plugin setup failed, error: %s"%(ex))
@@ -477,10 +551,11 @@ class AppManager():
         try:
 
             # register callbacks if not done already
-
             if not self._callback_flag:
-                task_manager.register_callback(self._unit_state_cb)
+                task_manager.register_callback(self._unit_state_cb_eop)
                 self._callback_flag = True
+
+            self._prof.prof('eop, iteration: 1, stage: 1, started', uid=self._uid)
 
             # Get kernel from execution pattern
             stage = self._pattern.get_stage(stage=1)
@@ -500,12 +575,21 @@ class AppManager():
 
             # Pass resource-unbound kernels to execution plugin
             plugin.set_workload(kernels=validated_kernels)
+
+            self._prof.prof('eop, iteration: 1, stage: 1, creating', uid=self._uid)
+
             cus = plugin.create_tasks(record=record, 
                                       pattern_name=self._pattern.name,
                                       iteration=1, 
                                       stage=1)
 
+            self._prof.prof('eop, iteration: 1, stage: 1, created', uid=self._uid)
+
             cus = plugin.execute_tasks(tasks=cus)
+
+            self._prof.prof('eop, iteration: 1, stage: 1, submitted', uid=self._uid)
+
+
 
             # Start _execute_thread
             t1 = threading.Thread(  target=self._execute_thread, 
@@ -533,6 +617,7 @@ class AppManager():
 
                 with self.all_cus_lock:
 
+                    '''
                     for unit in self.all_cus:
                         # AM: instead of multiple checks, you can use 'in'
                         #
@@ -543,7 +628,7 @@ class AppManager():
 
                         else:
                             pending_cus_1.append(unit.uid)
-
+                    '''
 
                     all_cu_uids = task_manager.list_units()
                     all_cus_2   = task_manager.get_units(all_cu_uids)
@@ -616,10 +701,30 @@ class AppManager():
                 stage_name      = "stage_%s" % cur_stage
 
                 if (record[pattern_name][iter_name][stage_name]["branch"]):
+                    cur_iter = self._pattern.cur_iteration[cur_task-1]                             
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, executing branch' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
+
                     self._logger.info('Executing branch function branch_%s' % cur_stage)
                     branch_function = self._pattern.get_branch(stage=cur_stage)
                     branch_function(instance=cur_task) 
 
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, executed branch' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
+
+
+                self._prof.prof('eop, iteration: %s, stage: %s, task: %s, determining next stage' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
 
                 with self.all_cus_lock:
 
@@ -669,6 +774,12 @@ class AppManager():
                     self._logger.info("Branching function has set termination condition %s"\
                                                                         % cur_task)
 
+                self._prof.prof('eop, iteration: %s, stage: %s, task: %s, determined next stage' \
+                                                        %(  cur_iter,
+                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_task), 
+                                                            uid=self._uid)
+
 
                 # Check if this is the last task of the stage
                 with self.all_cus_lock:
@@ -683,7 +794,15 @@ class AppManager():
                 cond2 = self._pattern.next_stage[cur_task-1] != 0
 
                 if cond1 and cond2:
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, starting' \
+                                                        %(  cur_iter,
+                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_task), 
+                                                            uid=self._uid)
                 
+
+
                     next_stage = self._pattern.next_stage[cur_task-1]
                     stage = self._pattern.get_stage(stage=next_stage)
                     stage_kernel = stage(cur_task)
@@ -692,12 +811,34 @@ class AppManager():
 
 
                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
+
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, creating' \
+                                                        %(  cur_iter,
+                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_task), 
+                                                            uid=self._uid)
+
                     cud = plugin.create_tasks(record=record, 
                                               pattern_name=self._pattern.name, 
                                               iteration=self._pattern.cur_iteration[cur_task-1], 
                                               stage=self._pattern.next_stage[cur_task-1], 
                                               instance=cur_task)                
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, created' \
+                                                        %(  cur_iter,
+                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_task), 
+                                                            uid=self._uid)
+
                     cu = plugin.execute_tasks(tasks=cud)
+
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, submitted' \
+                                                        %(  cur_iter,
+                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_task), 
+                                                            uid=self._uid)
 
                     if cu:
                         with self.all_cus_lock:
@@ -732,6 +873,8 @@ class AppManager():
 
                 cur_stage = int(unit.name.split('-')[1])
                 cur_task = int(unit.name.split('-')[3])
+
+
 
                 if self._on_error == 'resubmit':                                        
                     
@@ -831,7 +974,7 @@ class AppManager():
 
     # --------------------------------------------------------------------------
     #
-    def _unit_state_cb (self, unit, state) :
+    def _unit_state_cb_eop (self, unit, state) :
 
         record = self.get_record()
 
@@ -844,6 +987,14 @@ class AppManager():
             cur_task = int(unit.name.split('-')[3])
 
             if state == rp.FAILED:
+
+                cur_iter = self._pattern.cur_iteration[cur_task-1]
+
+                self._prof.prof('eop, iteration: %s, stage: %s, task: %s, failed' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
 
                 if self._on_error == 'resubmit':
 
@@ -960,10 +1111,23 @@ class AppManager():
 
                 try:
                     cur_stage = int(unit.name.split('-')[1])
-                    cur_task = int(unit.name.split('-')[3])                                    
+                    cur_task = int(unit.name.split('-')[3])       
+                    cur_iter = self._pattern.cur_iteration[cur_task-1]                             
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, done' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
 
                     with self.all_cus_lock:
                         self.all_cus.remove(unit)
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, recording' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
 
                     record = self.get_record()                                    
                     # AM: too long
@@ -978,6 +1142,12 @@ class AppManager():
 
                     pattern_name = "pat_%s"%(self._pattern.name)
                     self._pattern.pattern_dict = record[pattern_name] 
+
+                    self._prof.prof('eop, iteration: %s, stage: %s, task: %s, recorded' \
+                                                                        %(  cur_iter,
+                                                                            cur_stage,
+                                                                            cur_task), 
+                                                                        uid=self._uid)
 
                     self._task_queue.put(unit)
                     
@@ -1013,5 +1183,4 @@ class AppManager():
             raise
 
 
-# ------------------------------------------------------------------------------
-
+    # ------------------------------------------------------------------------------
