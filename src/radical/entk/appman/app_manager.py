@@ -58,7 +58,7 @@ class AppManager():
         self._uid               = ru.generate_id('entk.appmanager')
         self._prof              = ru.Profiler('%s' % self._uid)
 
-        self._prof.rof('Instantiated', uid=self._uid)
+        self._prof.prof('Instantiated', uid=self._uid)
 
     # --------------------------------------------------------------------------
     #
