@@ -135,7 +135,7 @@ class ResourceHandle(object):
                 self.get_logger().info("Resource allocation cancelled.")
                 #self._reporter.info('Resource allocation cancelled.')
 
-            if state == radical.pilot.ACIVE:
+            if state == radical.pilot.ACTIVE:
                 self._prof.prof('resource request active', uid=self._uid)
 
         self._prof.prof('allocation started', uid=self._uid)
@@ -231,7 +231,7 @@ class ResourceHandle(object):
             self._umgr.add_pilots(self._pilot)
             self.get_logger().info("Radical pilot unit manager created")
 
-            self.prof.prof('allocation done')
+            self._prof.prof('allocation done')
             #self._reporter.ok('>> ok')
 
         except Exception, ex:
@@ -252,9 +252,9 @@ class ResourceHandle(object):
             raise EnTKError(msg="Resource(s) not allocated. Call allocate() first.")
 
         try:
-            self.prof.prof('calling appmanager')
+            self._prof.prof('calling appmanager')
             appManager.run(resource = self._resource_key, task_manager = self._umgr, rp_session=self._session)
-            self.prof.prof('returned from appmanager')
+            self._prof.prof('returned from appmanager')
 
         except Exception, ex:
             self.get_logger().error('Application Manager failed: %s'%(ex))

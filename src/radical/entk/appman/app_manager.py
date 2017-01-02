@@ -58,7 +58,7 @@ class AppManager():
         self._uid               = ru.generate_id('entk.appmanager')
         self._prof              = ru.Profiler('%s' % self._uid)
 
-        self._prof.Prof('Instantiated', uid=self._uid)
+        self._prof.rof('Instantiated', uid=self._uid)
 
     # --------------------------------------------------------------------------
     #
@@ -406,7 +406,7 @@ class AppManager():
                     and(self._pattern.next_stage!=0)):
 
                     # Get kernel from execution pattern
-                    self._prof.prof('iteration: %s, stage:%s creation started' \ 
+                    self._prof.prof('iteration: %s, stage:%s creation started' \
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
@@ -432,7 +432,7 @@ class AppManager():
                     #print len(list_kernels_stage)
                     plugin.set_workload(kernels=validated_kernels)
 
-                    self._prof.prof('iteration: %s, stage:%s submission started' \ 
+                    self._prof.prof('iteration: %s, stage:%s submission started' \
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
@@ -442,7 +442,7 @@ class AppManager():
                                             stage=self._pattern.next_stage
                                         )
 
-                    self._prof.prof('iteration: %s, stage:%s submission done' \ 
+                    self._prof.prof('iteration: %s, stage:%s submission done' \
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
@@ -485,7 +485,7 @@ class AppManager():
                                             "condition -- terminating")
                         break
 
-                    self._prof.prof('iteration: %s, stage:%s creation done' \ 
+                    self._prof.prof('iteration: %s, stage:%s creation done' \
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
             
@@ -700,8 +700,9 @@ class AppManager():
                 iter_name       = "iter_%s" % self._pattern.cur_iteration[cur_task-1]
                 stage_name      = "stage_%s" % cur_stage
 
-                if (record[pattern_name][iter_name][stage_name]["branch"]):
-                    cur_iter = self._pattern.cur_iteration[cur_task-1]                             
+                cur_iter = self._pattern.cur_iteration[cur_task-1]
+
+                if (record[pattern_name][iter_name][stage_name]["branch"]):                    
 
                     self._prof.prof('eop, iteration: %s, stage: %s, task: %s, executing branch' \
                                                                         %(  cur_iter,

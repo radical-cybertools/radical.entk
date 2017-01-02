@@ -37,7 +37,7 @@ class PluginEoP(object):
         self._uid               = ru.generate_id('entk.exec_plugin.eop')
         self._prof              = ru.Profiler('%s' % self._uid)
 
-        self._prof.Prof('Instantiated', uid=self._uid)
+        self._prof.prof('Instantiated', uid=self._uid)
 
     def register_resource(self, resource):
         self._resource = resource
@@ -69,14 +69,14 @@ class PluginEoP(object):
 
         self._executable_workload = temp
 
-        self._prof.Prof('Adding workload', uid=self._uid)
+        self._prof.prof('Adding workload', uid=self._uid)
 
         self._logger.info("New workload assigned to plugin for execution")
 
 
     def add_manager(self, manager):
         self._manager = manager
-        self._prof.Prof('Adding manager', uid=self._uid)
+        self._prof.prof('Adding manager', uid=self._uid)
         self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
@@ -91,7 +91,7 @@ class PluginEoP(object):
             from staging.output_data import get_output_data
 
 
-            self._prof.Prof('Creating tasks', uid=self._uid)
+            self._prof.prof('Creating tasks', uid=self._uid)
 
             if len(self._executable_workload) > 1:
 
@@ -178,7 +178,7 @@ class PluginEoP(object):
 
                 return cud
 
-                self._prof.Prof('Tasks created', uid=self._uid)
+                self._prof.prof('Tasks created', uid=self._uid)
 
         except Exception, ex:
             self._logger.error("Task creation failed, error: %s"%(ex))
@@ -192,7 +192,7 @@ class PluginEoP(object):
             if tasks == None:
                 return None
 
-            self._prof.Prof('Submitting tasks', uid=self._uid)
+            self._prof.prof('Submitting tasks', uid=self._uid)
 
             if type(tasks) == list:
                 cur_stage = int(tasks[0].name.split('-')[1])
@@ -207,7 +207,7 @@ class PluginEoP(object):
                 task = self._manager.submit_units(tasks)
                 return task
 
-            self._prof.Prof('Tasks submitted', uid=self._uid)
+            self._prof.prof('Tasks submitted', uid=self._uid)
 
         except Exception, ex:
             self._logger.error("Could not execute tasks, error : %s"%(ex))
