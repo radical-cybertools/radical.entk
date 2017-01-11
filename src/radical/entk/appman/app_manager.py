@@ -48,8 +48,6 @@ class AppManager():
         self._callback_flag = False
         self._task_queue = Queue.Queue()
         self._fail_queue = Queue.Queue()
-        self._task_event = threading.Event()
-        self._fail_event = threading.Event()
 
         # List of all CUs
         self.all_cus = list()
@@ -527,6 +525,12 @@ class AppManager():
     def exec_eop(self, resource, task_manager, rp_session):
 
         record = self.get_record()
+
+        # Add threading event objects here so that upon another run() call event is not already
+        # over.
+        
+        self._task_event = threading.Event()
+        self._fail_event = threading.Event()
 
         # Based on the execution pattern, the app manager should choose the execution plugin
         try:
