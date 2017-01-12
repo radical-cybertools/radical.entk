@@ -178,7 +178,7 @@ class PluginEoP(object):
 
                 return cud
 
-                self._prof.prof('Tasks created', uid=self._uid)
+            self._prof.prof('Tasks created', uid=self._uid)
 
         except Exception, ex:
             self._logger.error("Task creation failed, error: %s"%(ex))
@@ -198,6 +198,9 @@ class PluginEoP(object):
                 cur_stage = int(tasks[0].name.split('-')[1])
                 self._logger.info('Submitting stage %s of all pipelines'%(cur_stage))
                 exec_cus = self._manager.submit_units(tasks)
+
+                self._prof.prof('Tasks submitted', uid=self._uid)
+
                 return exec_cus
 
             else:
@@ -205,9 +208,10 @@ class PluginEoP(object):
                 cur_task = int(tasks.name.split('-')[3])
                 self._logger.info('Submitting stage %s of pipeline %s'%(cur_stage,cur_task))
                 task = self._manager.submit_units(tasks)
-                return task
 
-            self._prof.prof('Tasks submitted', uid=self._uid)
+                self._prof.prof('Tasks submitted', uid=self._uid)
+
+                return task            
 
         except Exception, ex:
             self._logger.error("Could not execute tasks, error : %s"%(ex))

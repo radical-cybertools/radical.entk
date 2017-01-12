@@ -559,7 +559,7 @@ class AppManager():
                 task_manager.register_callback(self._unit_state_cb_eop)
                 self._callback_flag = True
 
-            self._prof.prof('eop, iteration: 1, stage: 1, started', uid=self._uid)
+            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, started', uid=self._uid)
 
             # Get kernel from execution pattern
             stage = self._pattern.get_stage(stage=1)
@@ -580,18 +580,18 @@ class AppManager():
             # Pass resource-unbound kernels to execution plugin
             plugin.set_workload(kernels=validated_kernels)
 
-            self._prof.prof('eop, iteration: 1, stage: 1, creating', uid=self._uid)
+            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, creating', uid=self._uid)
 
             cus = plugin.create_tasks(record=record, 
                                       pattern_name=self._pattern.name,
                                       iteration=1, 
                                       stage=1)
 
-            self._prof.prof('eop, iteration: 1, stage: 1, created', uid=self._uid)
+            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, created', uid=self._uid)
 
             cus = plugin.execute_tasks(tasks=cus)
 
-            self._prof.prof('eop, iteration: 1, stage: 1, submitted', uid=self._uid)
+            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, submitted', uid=self._uid)
 
 
 
