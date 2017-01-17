@@ -21,7 +21,7 @@ class Test(PoE):
         k1.arguments = []
         k1.copy_input_data = [  '$SHARED/ipdata.tar']
         k1.copy_output_data = ['opdata.tar > $SHARED/opdata.tar']
-        k1.cores = 8
+        k1.cores = 4
         k1.mpi = True
 
         return k1
@@ -60,8 +60,9 @@ if __name__ == '__main__':
 
     res_dict = {
                     'xsede.stampede': { 'cores': '16', 
-                                        'username': 'vivek91', 
-                                        'project': 'TG-CCR140028',
+                                        # 'username': 'vivek91', 
+                                        'username': 'tg838801', 
+                                        'project': 'TG-MCB090174',
                                         'queue': 'development', 
                                         'walltime': '40', 
                                         'schema': 'gsissh'
