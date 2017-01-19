@@ -68,9 +68,7 @@ class PluginEoP(object):
                 temp.append(item)
 
         self._executable_workload = temp
-
         self._prof.prof('Adding workload', uid=self._uid)
-
         self._logger.info("New workload assigned to plugin for execution")
 
 
@@ -134,6 +132,8 @@ class PluginEoP(object):
                     cuds.append(cud)
                     self._logger.debug("Kernel %s converted into RP Compute Unit"%(kernel.name))
 
+                self._prof.prof('Tasks created', uid=self._uid)
+
                 return cuds
 
             else:
@@ -176,9 +176,11 @@ class PluginEoP(object):
                                                         cur_task=cur_task
                                                     )
 
+                self._prof.prof('Tasks created', uid=self._uid)
+
                 return cud
 
-            self._prof.prof('Tasks created', uid=self._uid)
+            
 
         except Exception, ex:
             self._logger.error("Task creation failed, error: %s"%(ex))

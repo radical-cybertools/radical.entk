@@ -559,7 +559,7 @@ class AppManager():
                 task_manager.register_callback(self._unit_state_cb_eop)
                 self._callback_flag = True
 
-            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, started', uid=self._uid)
+            self._prof.prof('eop, iteration: 1, stage: 1, task: 1, starting', uid=self._uid)
 
             # Get kernel from execution pattern
             stage = self._pattern.get_stage(stage=1)
@@ -781,7 +781,7 @@ class AppManager():
 
                 self._prof.prof('eop, iteration: %s, stage: %s, task: %s, determined next stage' \
                                                         %(  cur_iter,
-                                                            self._pattern.next_stage[cur_task-1],
+                                                            cur_stage,
                                                             cur_task), 
                                                             uid=self._uid)
 
