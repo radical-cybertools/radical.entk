@@ -434,7 +434,7 @@ class AppManager():
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
-                    cus = plugin.execute(   record=record, 
+                    cus = plugin.execute_tasks(   record=record, 
                                             pattern_name=self._pattern.name, 
                                             iteration=self._pattern.cur_iteration, 
                                             stage=self._pattern.next_stage
@@ -500,11 +500,11 @@ class AppManager():
             raise
 
 
-    def _unit_state_cb_poe (unit, state) :
+    def _unit_state_cb_poe (self, unit, state) :
 
         cur_stage = int(unit.name.split('-')[1])
         cur_task = int(unit.name.split('-')[3])
-        cur_iter = self._pattern.cur_iteration[cur_task-1]
+        cur_iter = self._pattern.cur_iteration
 
 
         if state == rp.FAILED:
