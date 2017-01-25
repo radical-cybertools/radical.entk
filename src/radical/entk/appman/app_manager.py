@@ -404,7 +404,7 @@ class AppManager():
                     and(self._pattern.next_stage!=0)):
 
                     # Get kernel from execution pattern
-                    self._prof.prof('iteration: %s, stage:%s creation started' \
+                    self._prof.prof('iteration: %s, stage:%s creation starting' \
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
@@ -460,7 +460,7 @@ class AppManager():
                     # Execute branch if it exists
                     pattern_name    = "pat_%s" % self._pattern.name
                     iter_name       = "iter_%s" % self._pattern.cur_iteration
-                    stage_name      = "stage_%s" % self._pattern.next_stage   
+                    stage_name      = "stage_%s" % self._pattern.next_stage                      
 
                     if (record[pattern_name][iter_name][stage_name]["branch"]):
                         self._logger.info('Executing branch function branch_%s'\
