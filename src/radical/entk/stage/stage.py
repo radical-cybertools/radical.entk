@@ -1,6 +1,6 @@
 import radical.utils as ru
 from radical.entk.exceptions import *
-from radical.entk import Task
+from radical.entk.task.task import Task
 
 class Stage(object):
 

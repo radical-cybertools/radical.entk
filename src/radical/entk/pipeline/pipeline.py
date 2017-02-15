@@ -1,6 +1,6 @@
 import radical.utils as ru
 from radical.entk.exceptions import *
-from radical.entk import Stage
+from radical.entk.stage.stage import Stage
 
 class Pipeline(object):
 
