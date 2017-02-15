@@ -3,7 +3,7 @@ import time, sys
 import psutil
 from pympler import asizeof
 
-def create_task():
+def create_single_task():
 
     t1 = Task(name='simulation')
     t1.environment = ['module load gromacs']
@@ -14,22 +14,24 @@ def create_task():
 
     return t1
 
+def create_single_stage(tasks):
+
+    stage = frozenset([create_single_task() for _ in range(tasks)])
+    return stage
+
+def create_single_pipe(tasks, stages):
+
+    pipe = tuple([create_single_stage(tasks) for _ in range(stages)])
+    return pipe
 
 def create_workload(tasks, stages, pipelines):
-    
+
     start = time.time()
-
-    set_of_tasks = frozenset([create_task() for _ in range(tasks)]) # equivalent to one stage
-    list_stages = tuple([set_of_tasks for _ in range(stages)]) # equivalent to one pipe
-    set_of_pipelines = set([list_stages for _ in range(pipelines)]) # equivalent to one application
-
+    wl = set([create_single_pipe(tasks, stages) for _ in range(pipelines)])
     end = time.time()
 
-    #print 'pipes: %s, stages: %s, tasks: %s, time: %s\n'%(pipelines, stages, tasks, end-start)
-
-    return [set_of_pipelines, end - start]
-
-
+    return [wl, end - start]
+    
 if __name__ == '__main__':
 
 
@@ -38,9 +40,11 @@ if __name__ == '__main__':
     header = 'tasks, stages, pipelines, cpu, memory\n'
     f.write(header)
     task_list = [1,10,100,1000,10000,100000,1000000]
+    #task_list = [1,10,1000]
     stages=1
     pipelines=1
 
+    '''
     for tasks in task_list:
         [wl, t] = create_workload(tasks=tasks,stages=stages,pipelines=pipelines)
         mem = asizeof.asizeof(wl)
@@ -48,24 +52,26 @@ if __name__ == '__main__':
         del wl
 
     f.close()
-
+    '''
+    
     
     f = open('monitor_stage_variation.csv','w')
     header = 'tasks, stages, pipelines, cpu, memory\n'
     f.write(header)
-    tasks = 1000000
+    tasks = 10000
     stage_list = [1,10,100,1000,10000,100000,1000000]
     pipelines = 1
 
     for stages in stage_list:
         [wl, t] = create_workload(tasks=tasks,stages=stages,pipelines=pipelines)
         mem = asizeof.asizeof(wl)
+        print '%s, %s, %s, %s, %0.3f\n'%(tasks, stages, pipelines, t, float(mem)/(1024*1024))
         f.write('%s, %s, %s, %s, %0.3f\n'%(tasks, stages, pipelines, t, float(mem)/(1024*1024)))
         del wl
         
     f.close()
     
-
+    '''
     f = open('monitor_pipeline_variation.csv','w')
     header = 'tasks, stages, pipelines, cpu, memory\n'
     f.write(header)
@@ -81,3 +87,4 @@ if __name__ == '__main__':
         del wl
         
     f.close()
+    '''
