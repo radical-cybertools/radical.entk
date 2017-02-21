@@ -1,0 +1,115 @@
+; Run control
+integrator               = md-vv
+tinit                    = 0
+dt                       = 0.002
+nsteps                   = 5000  ; 10 ps to test
+comm-mode                = Linear
+nstcomm                  = 1
+
+; Output control
+nstlog                   = 100
+nstcalcenergy            = 1
+nstenergy                = 500
+nstxout-compressed       = 100
+; Neighborsearching and short-range nonbonded interactions
+nstlist                  = 10
+ns_type                  = grid
+pbc                      = xyz
+rlist                    = 1.0
+
+; Electrostatics
+cutoff-scheme            = group
+coulombtype              = PME
+coulomb-modifier         = Potential-Switch
+rcoulomb-switch          = 0.89
+rcoulomb                 = 0.9
+; van der Waals
+vdw-type                 = Cut-off
+vdw-modifier             = Potential-switch
+rvdw-switch              = 0.85
+rvdw                     = 0.9
+; Apply long range dispersion corrections for Energy and Pressure 
+DispCorr                 = AllEnerPres
+; Spacing for the PME/PPPM FFT grid
+fourierspacing           = 0.10
+; EWALD/PME/PPPM parameters
+fourier_nx               = 0
+fourier_ny               = 0
+fourier_nz               = 0
+pme_order                = 4
+ewald_rtol               = 1e-05
+ewald_geometry           = 3d
+epsilon_surface          = 0
+
+; Temperature coupling
+tcoupl                   = v-rescale
+nsttcouple               = 1
+tc_grps                  = System
+tau_t                    = 0.5
+ref_t                    = 300.0
+; Pressure coupling is on for NPT
+pcoupl                   = no
+
+; Free energy control stuff
+free_energy              = expanded
+calc-lambda-neighbors    = -1
+sc-alpha                 = 0.5
+couple-moltype           = PEPTIDE
+couple-lambda0           = vdw-q
+couple-lambda1           = none
+couple-intramol          = yes
+init-lambda-state        = REPLACELAMBDA; 0 to start; read from the log file to extend
+
+nstdhdl                  = 10
+dhdl-print-energy        = total
+
+; Seed for Monte Carlo in lambda space
+lmc-seed                 = 1000
+lmc-gibbsdelta           = -1
+lmc-forced-nstart        = 0
+symmetrized-transition-matrix = yes
+nst-transition-matrix    = 10000
+wl-scale                 = 0.8
+wl-ratio                 = 0.6 ; keep this low, because the generations are short
+init-wl-delta            = REPLACEINITWLDELTA ; '20' to start, read from the logfile for restarts.
+
+; expanded ensemble variables
+nstexpanded              = 10
+lmc-stats                = REPLACELMCSTATS; 'wang-landau' to start, 'no' when equilibration is finished.
+lmc-move                 = gibbs
+lmc-weights-equil        = wl-delta
+weight-equil-wl-delta    = 0.0001
+
+gen_vel                  = yes
+gen-temp                 = 300
+gen-seed                 = REPLACEGENSEED; need to randomize the seed each time.
+
+; options for bonds
+constraints              = h-bonds  ; we only have C-H bonds here
+; Type of constraint algorithm
+constraint-algorithm     = lincs
+; Highest order in the expansion of the constraint coupling matrix
+lincs-order              = 12
+
+; Pull code
+pull                     = yes
+pull-ngroups             = 2
+pull-group1-name         = Pull-Protein 
+pull-group2-name         = Pull-Peptide 
+pull-coord1-groups       = 1 2 
+pull-coord1-type         = umbrella
+pull-coord1-geometry     = distance
+pull-coord1-dim          = Y Y Y
+pull-coord1-origin       = 0.0 0.0 0.0
+pull-coord1-vec          = 0.0 0.0 0.0
+pull-coord1-start        = no
+pull-coord1-init         = 0
+pull-coord1-rate         = 0
+pull-coord1-k            = 0; kJ mol^-1 nm^-2
+pull-coord1-kB           = 250; kJ mol^-1 nm^-2
+
+fep-lambdas              = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+coul-lambdas             = 0.00 0.00 0.00 0.00 0.04 0.08 0.12 0.16 0.20 0.24 0.28 0.32 0.36 0.40 0.44 0.48 0.52 0.56 0.60 0.64 0.68 0.72 0.76 0.80 0.84 0.88 0.92 0.96 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 
+vdw-lambdas              = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.65 0.70 0.75 0.80 0.85 0.90 1.00 
+restraint-lambdas        = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.0001 0.0003 0.001 0.003 0.01 0.03 0.1 0.3 1.0  
+init-lambda-weights      = REPLACEINITLAMBDAWEIGHTS; all zeros at first, then update with the free energies for later iterations.
