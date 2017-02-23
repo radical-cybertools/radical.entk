@@ -65,6 +65,9 @@ class AppManager():
         # if not isinstance(self.__pattern, ExecutionPattern)
         # ?  Otherwise this will break on non-trivial inheritance, because the
         # inheritance tree is hardcoded here...
+        # VB: The method you suggested doesn't seem to traverse inside the self._pattern object
+        # so the inequality is always True
+
         if self._pattern.__class__.__base__.__base__ != ExecutionPattern:
             raise TypeError(expected_type="(derived from) ExecutionPattern", 
                             actual_type=type(self._pattern))
@@ -434,11 +437,13 @@ class AppManager():
                                                 %(self._pattern.cur_iteration, 
                                                     self._pattern.next_stage), uid=self._uid)
 
-                    cus = plugin.execute_tasks(   record=record, 
+                    cuds = plugin.create_tasks(   record=record, 
                                             pattern_name=self._pattern.name, 
                                             iteration=self._pattern.cur_iteration, 
                                             stage=self._pattern.next_stage
                                         )
+
+                    cus = plugin.execute_tasks(cuds)
 
                     self._prof.prof('iteration: %s, stage:%s submission done' \
                                                 %(self._pattern.cur_iteration, 
@@ -621,24 +626,10 @@ class AppManager():
 
                 with self.all_cus_lock:
 
-                    '''
-                    for unit in self.all_cus:
-                        # AM: instead of multiple checks, you can use 'in'
-                        #
-                        # if (unit.state == rp.DONE)or(unit.state == rp.CANCELED)
-                        # or(unit.state==rp.FAILED):
-                        if unit.state in [rp.DONE, rp.CANCELED, rp.FAILED]:
-                            done_cus.append(unit)
-
-                        else:
-                            pending_cus_1.append(unit.uid)
-                    '''
-
                     all_cu_uids = task_manager.list_units()
                     all_cus_2   = task_manager.get_units(all_cu_uids)
 
                     for unit in all_cus_2:
-                        # AM: same here with 'not in'
                         if unit.state not in [rp.DONE, rp.CANCELED, rp.FAILED]:
                             pending_cus_2.append(unit.uid)
 
@@ -646,13 +637,6 @@ class AppManager():
                         self.all_cus.remove(unit)
 
                 task_manager.wait_units(pending_cus_2, timeout=60)
-
-                # AM: Uhm, what does that do here?  Are you sure you collected
-                #     all units in your callbacks at this point?
-                # VB: This was me testing out if there is any difference if I don't use 
-                # wait_units() to wait, but just sleep for a while.
-                #import time
-                #time.sleep(30)
 
                 with self.all_cus_lock:
                     sum1 = sum(plugin.tot_fin_tasks)

@@ -64,12 +64,12 @@ class PluginPoE(object):
         self._logger.debug("Task execution manager (RP-Unit Manager) assigned to execution plugin")
 
 
-    def execute_tasks(self, record, pattern_name, iteration, stage):
+    def create_tasks(self, record, pattern_name, iteration, stage):
         
         try:
             self._manager.register_callback(unit_state_cb)
 
-            cus = []
+            cuds = []
 
             inst=1
 
@@ -104,13 +104,25 @@ class PluginPoE(object):
 
                 inst+=1
 
-                cus.append(cud)
+                cuds.append(cud)
                 self._logger.debug("Kernel %s converted into RP Compute Unit"%(kernel.name))
 
-            exec_cus = self._manager.submit_units(cus)
 
-            copy_exec_cus_A = exec_cus
-            copy_exec_cus_B = exec_cus
+            return cuds
+
+        except:
+
+            self._logger.error('Task created failed, error: %s'%(ex))
+            raise
+
+
+
+    def execute_tasks(self, task_descs):
+
+
+        try:
+
+            exec_cus = self._manager.submit_units(task_descs)
 
             if pattern_name == "None":
                 self._logger.info("Submitted %s tasks with kernel:%s of iteration:%s, stage:%s"\
@@ -144,3 +156,5 @@ class PluginPoE(object):
         except Exception, ex:
 
             self._logger.error('Task execution failed, error: %s'%(ex))
+
+           
