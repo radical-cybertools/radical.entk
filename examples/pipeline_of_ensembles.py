@@ -84,8 +84,6 @@ if __name__ == "__main__":
 
 		ccount = CalculateChecksums(stages=1,instances=16)
 
-		os.system('wget -q -o UTF-8-demo.txt http://gist.githubusercontent.com/oleweidner/6084b9d56b04389717b9/raw/611dd0c184be5f35d75f876b13604c86c470872f/gistfile1.txt')
-
 		cluster.run(ccount)
 
 		# Print the checksums
