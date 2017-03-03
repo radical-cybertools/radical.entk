@@ -36,18 +36,21 @@ if __name__ == '__main__':
 
 
     
-    f = open('monitor_all_variation.csv','w')
+    f = open('separate_data_objects/monitor_pipeline_variation.csv','w')
     header = 'tasks, stages, pipelines, cpu, memory\n'
     f.write(header)
-    task_list = [1,10,100,1000,10000,100000,1000000]
-    stage_list = [1,10,100,1000,10000,100000,1000000]
+    #task_list = [1,10,100,1000,10000,100000,1000000]
+    task_list = [1]
+    #stage_list = [1,10,100,1000,10000,100000,1000000]
+    stage_list = [1]
     pipe_list = [1,10,100,1000,10000,100000,1000000] 
+    #pipe_list = [1]
 
     for pipelines in pipe_list:
         for stages in stage_list:
             for tasks in task_list:
 
-                if pipelines*stages*tasks <= 1000000:
+                #if pipelines*stages*tasks <= 1000000:
 
                     [wl, t] = create_workload(tasks=tasks,stages=stages,pipelines=pipelines)
                     mem = asizeof.asizeof(wl)
