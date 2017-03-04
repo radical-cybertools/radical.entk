@@ -76,6 +76,10 @@ class Task(object):
     def name(self, value):
         self._name = value
 
+    @state.setter
+    def state(self, value):
+        self._state = value
+
     @environment.setter
     def environment(self, value):
         self._environment = value

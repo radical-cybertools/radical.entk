@@ -1,6 +1,7 @@
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.stage.stage import Stage
+import threading
 
 class Pipeline(object):
 
@@ -15,8 +16,15 @@ class Pipeline(object):
 
         self.validate_args()
 
-        # To change states
+        # To keep track of current state
         self._stage_count = len(self._stages)
+        self._current_stage = 1
+
+        # Lock around current stage
+        self._stage_lock = threading.Lock()
+
+        # To keep track of termination of pipeline
+        self._event = threading.Event()
 
 
     def validate_args(self):
@@ -46,6 +54,20 @@ class Pipeline(object):
     @property
     def resource(self):
         return self._resource
+
+    @property
+    def stage_lock(self):
+        return self._stage_lock
+    
+    @property
+    def event(self):
+        return self._event
+
+    @property
+    def current_stage(self):
+        return self._current_stage
+    
+    
     
     # -----------------------------------------------
 

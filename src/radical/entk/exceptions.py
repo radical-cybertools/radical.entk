@@ -12,7 +12,7 @@ class TypeError(EnTKError):
     """TypeError is thrown if a parameter of a wrong type is passed to a method or function."""
 
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected (base) type %s, but got %s."%(
+        msg = "Expected (base) type(s) %s, but got %s."%(
             str(expected_type), 
             str(actual_type)
             )

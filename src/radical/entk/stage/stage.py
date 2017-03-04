@@ -87,3 +87,16 @@ class Stage(object):
             task_names = copy_task_names
 
         self._tasks = copy_of_existing_tasks
+
+
+    def set_task_state(self, state):
+
+        try:
+
+            for task in self._tasks:
+                task.state = state
+
+        except Exception, ex:
+
+            print 'Task state assignment failed: %s' %ex
+            raise 
