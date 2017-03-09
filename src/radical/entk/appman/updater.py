@@ -18,13 +18,19 @@ class Updater(object):
         if not isinstance(executed_queue,Queue):
             raise TypeError(expected_type="Queue", actual_type=type(executed_queue))
 
-        self._executed_queue = executed_queue
-        self._workload = workload
+        self._executed_queue    = executed_queue
+        self._workload          = workload
+
+        self._terminate     = threading.Event()
+
+        self._logger.info('Created updater object: %s'%self._uid)
 
     def start_update(self):
 
         # This method starts the update function in a separate thread
+        self._logger.info('Starting updater thread')
         update_thread = threading.Thread(target=self.update_function)
+        self._logger.debug('Updater thread started')
 
     def update_function(self):
 
@@ -34,22 +40,32 @@ class Updater(object):
 
         try:
 
-            task = self._executed_queue.get()
+            while self._terminate.is_set():
 
-            for pipe in self._workload:
+                task = self._executed_queue.get()
+                self._logger.debug('Got finished task %s from queue'%(task.uid))
 
-                if task.parent_pipeline == pipe.uid:
+                for pipe in self._workload:
 
-                    with pipe.stage_lock:
+                    if task.parent_pipeline == pipe.uid:
 
-                        for stage in pipe:
+                        with pipe.stage_lock:
 
-                            if task.parent_stage == stage.uid:
-                                task.state = states.DONE
+                            for stage in pipe:
 
-                            if stage.check_tasks_status():
-                                stage.state == states.DONE
-                                pipe.increment_stage()
+                                if task.parent_stage == stage.uid:
+                                    self._logger.debug('Found parent stage: %s and pipeline: %s'%(
+                                                                                stage.uid,
+                                                                                pipe.uid))
+                                    task.state = states.DONE
+                                    self._logger.debug('Set task %s status to %s'%(task.uid,
+                                                                            states.DONE))
+
+
+                                if stage.check_tasks_status():
+                                    self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                    stage.state == states.DONE
+                                    pipe.increment_stage()
 
 
         except KeyboardInterrupt:
@@ -63,3 +79,7 @@ class Updater(object):
             raise UnknownError(text=ex)
 
         
+    def terminate(self):
+
+        if not self._terminate.is_set():
+            self._terminate.set()

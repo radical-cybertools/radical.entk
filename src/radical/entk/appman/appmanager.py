@@ -87,14 +87,10 @@ class AppManager(object):
             else:
 
                 populator = Populator(workload = self._workload)
-                self._logger.debug('Starting populator thread')
                 intermediate_q1 = populator.start_population()
-                self._logger.debug('Populator thread started')
 
                 updater = Updater(workload = self._workload, executed_queue = intermediate_q1)
-                self._logger.debug('Starting updater thread')
                 updater.start_update()
-                self._logger.debug('Updater thread started')
 
                 pipe_count = len(self._workload)
                 while pipe_count > 0:
@@ -105,6 +101,10 @@ class AppManager(object):
                         if pipe.completed:
                             self._logger.debug('1 pipe completed, decrementing')
                             pipe_count -= 1
+
+                # Terminate threads
+                populator.terminate()
+                updater.terminate()
 
 
         except Exception, ex:
