@@ -2,7 +2,7 @@ import radical.utils as ru
 
 class Task(object):
 
-    def __init__(self, name):
+    def __init__(self, name=None):
 
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = name

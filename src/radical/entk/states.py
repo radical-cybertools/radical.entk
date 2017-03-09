@@ -3,8 +3,6 @@ __author__      = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__     = "MIT"
 
 
-import os
-
 # -----------------------------------------------------------------------------
 # common states
 NEW      = 'NEW'

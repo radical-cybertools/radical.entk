@@ -6,7 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 from Queue import Queue
-import radical.entk.states as states
+from radical.entk import states
 
 class Updater(object):
 
@@ -40,23 +40,26 @@ class Updater(object):
 
                 if task.parent_pipeline == pipe.uid:
 
-                    for stage in pipe:
+                    with pipe.stage_lock:
 
-                        if task.parent_stage == stage.uid:
+                        for stage in pipe:
+
+                            if task.parent_stage == stage.uid:
                                 task.state = states.DONE
 
-                        if stage.check_tasks_status():
-                            stage.state == states.DONE
-                            pipe.increment_stage()
+                            if stage.check_tasks_status():
+                                stage.state == states.DONE
+                                pipe.increment_stage()
 
-
-
-        except Exception, ex:
-            self._logger.error('Unknown error in thread: %s'%ex)
-            raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
             sys.exit(1)
+
+        except Exception, ex:
+            self._logger.error('Unknown error in thread: %s'%ex)
+            raise UnknownError(text=ex)
+
+        

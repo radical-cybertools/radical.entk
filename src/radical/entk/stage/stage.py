@@ -4,15 +4,13 @@ from radical.entk.task.task import Task
 
 class Stage(object):
 
-    def __init__(self, tasks, name):
+    def __init__(self, name=None):
 
         self._uid       = ru.generate_id('radical.entk.stage')
-        self._tasks    = tasks
+        self._tasks    = set()
         self._name      = name
 
         self._state     = 'New'
-
-        self.validate_args()
 
         # To change states
         self._task_count = len(self._tasks)
@@ -21,15 +19,21 @@ class Stage(object):
         self._parent_pipeline = None
 
 
-    def validate_args(self):
+    def validate_tasks(self, tasks):
 
-        if not isinstance(self._tasks, list):
-            self._tasks = [self._tasks]
+        if not isinstance(tasks, set):
 
-        for val in self._tasks:
+            if not isinstance(tasks, list):
+                tasks = set([tasks])
+            else:
+                tasks = set(tasks)
+
+        for val in tasks:
 
             if not isinstance(val, Task):
                 raise TypeError(expected_type=Task, actual_type=type(val))
+
+        return tasks
 
     # -----------------------------------------------
     # Getter functions
@@ -59,11 +63,10 @@ class Stage(object):
     # -----------------------------------------------
 
     @tasks.setter
-    def tasks(self, values):
-
-        self._tasks = values
+    def tasks(self, tasks):
+        
+        self._tasks = self.validate_tasks(tasks)
         self.pass_uid()
-        self.validate_args()
 
     @parent_pipeline.setter
     def parent_pipeline(self, uid):
@@ -73,10 +76,9 @@ class Stage(object):
 
     def add_tasks(self, tasks):
 
-        if not isinstance(tasks, list):
-            tasks = [tasks]
+        tasks = self.validate_tasks(tasks)
+        self._tasks.update(tasks)
         self.pass_uid(tasks)
-        self._tasks.extend(tasks)
 
 
     def remove_tasks(self, task_names):

@@ -5,16 +5,14 @@ import threading
 
 class Pipeline(object):
 
-    def __init__(self, stages, name, resource=None):
+    def __init__(self, name, resource=None):
 
         self._uid       = ru.generate_id('radical.entk.pipeline')
-        self._stages    = stages
+        self._stages    = list()
         self._name      = name
         self._resource  = resource
 
         self._state     = 'New'
-
-        self.validate_args()
 
         # To keep track of current state
         self._stage_count = len(self._stages)
@@ -24,17 +22,19 @@ class Pipeline(object):
         self._stage_lock = threading.Lock()
 
         # To keep track of termination of pipeline
-        self._completed = threading.Event()
+        self._completed_flag = threading.Event()
 
 
-    def validate_args(self):
+    def validate_stages(self, stages):
 
-        if not isinstance(self._stages, list):
-            self._stages = [self._stages]
+        if not isinstance(stages, list):
+            stages = [stages]
 
-        for val in self._stages:
+        for val in stages:
             if not isinstance(val, Stage):
                 raise TypeError(expected_type=Stage, actual_type=type(val))
+
+        return stages
     # -----------------------------------------------
     # Getter functions
     # -----------------------------------------------
@@ -60,8 +60,8 @@ class Pipeline(object):
         return self._stage_lock
     
     @property
-    def _completed(self):
-        return self._completed
+    def completed(self):
+        return self._completed_flag.is_set()
 
     @property
     def current_stage(self):
@@ -76,11 +76,11 @@ class Pipeline(object):
     # -----------------------------------------------
 
     @stages.setter
-    def stages(self, values):
+    def stages(self, stages):
 
-        self._stages = values
+        self._stages = self.validate_stages(stages)
         self.pass_uid()
-        self.validate_args()
+        self._stage_count = len(self._stages)
     
 
     @resource.setter
@@ -91,11 +91,9 @@ class Pipeline(object):
 
     def add_stages(self, stages):
 
-        if not isinstance(stages, list):
-            stages = [stages]
-
-        self.pass_uid(stages)
+        stages = self.validate_stages(stages)
         self._stages.extend(stages)
+        self.pass_uid(stages)
         self._stage_count = len(self._stages)
 
 
@@ -136,4 +134,4 @@ class Pipeline(object):
         if self._current_stage < self._stage_count:
             self._current_stage+=1
         else:
-            self._completed.set()
+            self._completed_flag.set()

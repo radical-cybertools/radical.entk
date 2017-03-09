@@ -6,7 +6,8 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
 from populator import Populator
-import sys
+from updater import Updater
+import sys, time
 
 class AppManager(object):
 
@@ -46,16 +47,22 @@ class AppManager(object):
 
         try:
 
-            if isinstance(workload, Pipeline):
-                self._workload = set(workload)
 
-            if isinstance(workload, set):
-                for item in workload:
-                    if not isinstance(item, Pipeline):
-                        self._logger.info('Workload type incorrect')
-                        raise TypeError(expected_type=['pipeline', 'set of pipelines'], actual_type=type(workload))
+            if not isinstance(workload, set):
 
-                self._workload = workload
+                if not isinstance(workload, list):
+                    workload = set([workload])
+                else:
+                    workload = set(tasks)
+
+
+            for item in workload:
+                if not isinstance(item, Pipeline):
+                    self._logger.info('Workload type incorrect')
+                    raise TypeError(expected_type=['pipeline', 'set of pipelines'], actual_type=type(workload))
+
+            self._workload = workload
+            self._logger.info('Workload assigned to Application Manager')
 
         except Exception, ex:
 
@@ -80,11 +87,24 @@ class AppManager(object):
             else:
 
                 populator = Populator(workload = self._workload)
+                self._logger.debug('Starting populator thread')
                 intermediate_q1 = populator.start_population()
+                self._logger.debug('Populator thread started')
 
                 updater = Updater(workload = self._workload, executed_queue = intermediate_q1)
+                self._logger.debug('Starting updater thread')
                 updater.start_update()
+                self._logger.debug('Updater thread started')
 
+                pipe_count = len(self._workload)
+                while pipe_count > 0:
+                    self._logger.debug('No pipes finished, sleeping....')
+                    time.sleep(1)
+
+                    for pipe in self._workload:
+                        if pipe.completed:
+                            self._logger.debug('1 pipe completed, decrementing')
+                            pipe_count -= 1
 
 
         except Exception, ex:

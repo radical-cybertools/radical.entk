@@ -6,7 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 from Queue import Queue
-import radical.entk.states as states
+from radical.entk import states
 
 
 class Populator(object):
@@ -42,7 +42,7 @@ class Populator(object):
 
                     if pipe.stage_lock.acquire(blocking=False):
 
-                        if pipe.stages[pipe.current_stage].state is in states.INITAL:
+                        if pipe.stages[pipe.current_stage].state in states.INITAL:
 
                             executable_stage = pipe.stages[pipe.current_stage]
                             executable_tasks = executable_stage.tasks
@@ -58,8 +58,9 @@ class Populator(object):
 
                 workload_copy = self._workload
 
-                if pipe.completed.is_set() for pipe in self._workload:
-                    workload_copy.remove(pipe)
+                for pipe in self._workload:
+                    if pipe.completed.is_set():
+                        workload_copy.remove(pipe)
 
                 self._workload = workload_copy
 
