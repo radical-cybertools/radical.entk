@@ -24,7 +24,7 @@ class Pipeline(object):
         self._stage_lock = threading.Lock()
 
         # To keep track of termination of pipeline
-        self._event = threading.Event()
+        self._completed = threading.Event()
 
 
     def validate_args(self):
@@ -60,13 +60,12 @@ class Pipeline(object):
         return self._stage_lock
     
     @property
-    def event(self):
-        return self._event
+    def _completed(self):
+        return self._completed
 
     @property
     def current_stage(self):
         return self._current_stage
-    
     
     
     # -----------------------------------------------
@@ -80,6 +79,7 @@ class Pipeline(object):
     def stages(self, values):
 
         self._stages = values
+        self.pass_uid()
         self.validate_args()
     
 
@@ -87,11 +87,14 @@ class Pipeline(object):
     def resource(self, value):
         self._resource = value
 
+    # -----------------------------------------------
+
     def add_stages(self, stages):
 
         if not isinstance(stages, list):
             stages = [stages]
 
+        self.pass_uid(stages)
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
 
@@ -117,3 +120,20 @@ class Pipeline(object):
 
         self._stages = copy_of_existing_stages
         self._stage_count = len(self._stages)
+
+    def pass_uid(self, stages=None):
+
+        if stages is None:
+            for stage in self._stages:
+                stage.parent_pipeline = self._uid
+        else:
+            for stage in stages:
+                stage.parent_pipeline = self._uid
+
+
+    def increment_stage(self):
+
+        if self._current_stage < self._stage_count:
+            self._current_stage+=1
+        else:
+            self._completed.set()

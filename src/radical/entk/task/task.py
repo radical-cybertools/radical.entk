@@ -22,6 +22,13 @@ class Task(object):
         self._download_output_data  = None
 
 
+        ## The following help in updation
+        # Stage this task belongs to
+        self._parent_stage = None
+        # Pipeline this task belongs to
+        self._parent_pipeline = None
+
+
     # -----------------------------------------------
     # Getter functions
     # -----------------------------------------------
@@ -65,6 +72,15 @@ class Task(object):
     @property
     def download_output_data(self):
         return self._download_output_data
+
+    @property
+    def parent_stage(self):
+        return self._parent_stage
+    
+    @property
+    def parent_pipeline(self):
+        return self._parent_pipeline
+    
     # -----------------------------------------------
 
 
@@ -111,6 +127,14 @@ class Task(object):
     @download_output_data.setter
     def download_output_data(self, value):
         self._download_output_data = value
+
+    @parent_stage.setter
+    def parent_stage(self, uid):
+        self._parent_stage = uid
+
+    @parent_pipeline.setter
+    def parent_pipeline(self, uid):
+        self._parent_pipeline = uid
     # -----------------------------------------------
 
     

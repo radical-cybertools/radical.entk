@@ -17,6 +17,9 @@ class Stage(object):
         # To change states
         self._task_count = len(self._tasks)
 
+        # Pipeline this stage belongs to
+        self._parent_pipeline = None
+
 
     def validate_args(self):
 
@@ -44,6 +47,10 @@ class Stage(object):
     def state(self):
         return self._state
 
+    @property
+    def parent_pipeline(self):
+        return self._parent_pipeline
+    
     # -----------------------------------------------
 
 
@@ -55,7 +62,12 @@ class Stage(object):
     def tasks(self, values):
 
         self._tasks = values
+        self.pass_uid()
         self.validate_args()
+
+    @parent_pipeline.setter
+    def parent_pipeline(self, uid):
+        self._parent_pipeline = uid
     # -----------------------------------------------
 
 
@@ -63,7 +75,7 @@ class Stage(object):
 
         if not isinstance(tasks, list):
             tasks = [tasks]
-
+        self.pass_uid(tasks)
         self._tasks.extend(tasks)
 
 
@@ -88,6 +100,16 @@ class Stage(object):
 
         self._tasks = copy_of_existing_tasks
 
+    def pass_uid(self, tasks=None):
+
+        if tasks is None:
+            for task in self._tasks:
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._parent_pipeline
+        else:
+            for task in tasks:
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._parent_pipeline
 
     def set_task_state(self, state):
 

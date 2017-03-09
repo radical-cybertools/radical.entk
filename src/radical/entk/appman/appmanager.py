@@ -5,6 +5,7 @@ __license__     = "MIT"
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
+from populator import Populator
 import sys
 
 class AppManager(object):
@@ -46,13 +47,15 @@ class AppManager(object):
         try:
 
             if isinstance(workload, Pipeline):
-                self._workload = set(Pipeline)
+                self._workload = set(workload)
 
             if isinstance(workload, set):
                 for item in workload:
                     if not isinstance(item, Pipeline):
                         self._logger.info('Workload type incorrect')
                         raise TypeError(expected_type=['pipeline', 'set of pipelines'], actual_type=type(workload))
+
+                self._workload = workload
 
         except Exception, ex:
 
@@ -74,6 +77,13 @@ class AppManager(object):
                 self._logger.info('No workload assigned currently, please check your script')
                 pass
 
+            else:
+
+                populator = Populator(workload = self._workload)
+                intermediate_q1 = populator.start_population()
+
+                updater = Updater(workload = self._workload, executed_queue = intermediate_q1)
+                updater.start_update()
 
 
 
@@ -84,5 +94,6 @@ class AppManager(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), tring to exit gracefully...')
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                            'trying to exit gracefully...')
             sys.exit(1)

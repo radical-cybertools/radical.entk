@@ -22,32 +22,53 @@ class Populator(object):
 
     def start_population(self):
 
+        # This method starts the extractor function in a separate thread
+
         extract_thread = threading.Thread(target=self.extract_function)
         return self._executable_queue
 
 
     def extract_function(self):
 
-        if not pipe.is_set() for pipe in self._workload:
-            self._workload.remove(pipe)
+        # This function extracts currently executable tasks from the workload
+        # and pushes it to the 'executable_queue'. This function also updates the 
+        # state of the stage and task objects.
 
-        while any(self._workload):
+        try:
 
-            for pipe in self._workload:
+            while any(self._workload):
 
-                with pipe.stage_lock:
+                for pipe in self._workload:
 
-                    if pipe.stages[pipe.current_stage].state is in states.INITAL:
+                    if pipe.stage_lock.acquire(blocking=False):
 
-                        executable_stage = pipe.stages[pipe.current_stage]
-                        executable_tasks = executable_stage.tasks
+                        if pipe.stages[pipe.current_stage].state is in states.INITAL:
 
-                        self._executable_queue.put(executable_tasks)
+                            executable_stage = pipe.stages[pipe.current_stage]
+                            executable_tasks = executable_stage.tasks
 
-                        pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
-                        pipe.stages[pipe.current_stage].state == states.QUEUED
+                            self._executable_queue.put(executable_tasks)
 
+                            pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
+                            pipe.stages[pipe.current_stage].state = states.QUEUED
 
+                        pipe.stage_lock.release()
 
+                # Remove pipes that have finished
 
+                workload_copy = self._workload
 
+                if pipe.completed.is_set() for pipe in self._workload:
+                    workload_copy.remove(pipe)
+
+                self._workload = workload_copy
+
+        except Exception, ex:
+            self._logger.error('Unknown error in thread: %s'%ex)
+            raise UnknownError(text=ex)
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                            'trying to exit gracefully...')
+            sys.exit(1)

@@ -91,3 +91,10 @@ class NoKernelConfigurationError(EnTKError):
     def __init__ (self, kernel_name, resource_key):
         msg = "Kernel '%s' doesn not have a configuration entry for resource key '%s'."%(kernel_name, resource_key)
         super(NoKernelConfigurationError, self).__init__ (msg)
+
+
+class UnknownError(EnTKError):
+
+    def __init__(self, text):
+        msg='Unknown error: %s'%text
+        super(UnknownError, self).__init__(msg)
