@@ -48,46 +48,34 @@ class Populator(object):
 
                 for pipe in self._workload:
 
-                    if pipe.stage_lock.acquire(False):
+                    #if pipe.stage_lock.acquire(False):
+                    with pipe.stage_lock:
 
-                        self._logger.debug('Pipe lock acquired')
+                        if not pipe.completed:
 
-                        if pipe.stages[pipe.current_stage].state in states.INITIAL:
+                            self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
 
-                            self._logger.info('Pipe contains execution-ready stages')
+                            if pipe.stages[pipe.current_stage].state in states.INITIAL:
 
-                            executable_stage = pipe.stages[pipe.current_stage]
-                            executable_tasks = executable_stage.tasks
+                                executable_stage = pipe.stages[pipe.current_stage]
+                                executable_tasks = executable_stage.tasks
 
-                            self._logger.info('Pushing executable tasks to the queue')
-
-                            for executable_task in executable_tasks:
-                                self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
+                                for executable_task in executable_tasks:
+                                    self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
                                                                     executable_task.uid,
                                                                     executable_task.parent_stage,
                                                                     executable_task.parent_pipeline))
-                                self._executable_queue.put(executable_task)
+                                    self._executable_queue.put(executable_task)
 
-                            pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
+                                pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
+                                pipe.stages[pipe.current_stage].state = states.QUEUED
 
-                            self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
+                                self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
-                                                            states.QUEUED))
+                                                            pipe.stages[pipe.current_stage].state))
 
-                            pipe.stages[pipe.current_stage].state = states.QUEUED
-
-                            self._logger.info('Stage %s of Pipeline %s: %s'%(
-                                                            pipe.stages[pipe.current_stage].uid,
-                                                            pipe.uid,
-                                                            states.QUEUED))
-
-
-
-                        pipe.stage_lock.release()
-
-                self._logger.debug('No change in pipes -- sleeping')
-                time.sleep(5)
+                time.sleep(1)
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)

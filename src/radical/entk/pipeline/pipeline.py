@@ -18,7 +18,7 @@ class Pipeline(object):
 
         # To keep track of current state
         self._stage_count = len(self._stages)
-        self._current_stage = 1
+        self._current_stage = 0
 
         # Lock around current stage
         self._stage_lock = threading.Lock()
@@ -140,7 +140,7 @@ class Pipeline(object):
 
     def increment_stage(self):
 
-        if self._current_stage < self._stage_count:
+        if self._current_stage < self._stage_count-1:
             self._current_stage+=1
         else:
             self._completed_flag.set()

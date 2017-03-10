@@ -94,12 +94,10 @@ class AppManager(object):
 
                 pipe_count = len(self._workload)
                 while pipe_count > 0:
-                    self._logger.debug('No pipes finished, sleeping....')
                     time.sleep(1)
 
                     for pipe in self._workload:
                         if pipe.completed:
-                            self._logger.debug('1 pipe completed, decrementing')
                             pipe_count -= 1
 
                 # Terminate threads

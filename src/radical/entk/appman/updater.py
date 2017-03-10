@@ -51,29 +51,34 @@ class Updater(object):
 
                     for pipe in self._workload:
 
-                        if task.parent_pipeline == pipe.uid:
+                        with pipe.stage_lock:
 
-                            self._logger.debug('Found parent pipeline: %s'%pipe.uid)
+                            if not pipe.completed:
 
-                            with pipe.stage_lock:
+                                if task.parent_pipeline == pipe.uid:
 
-                                for stage in pipe.stages:
+                                    self._logger.debug('Found parent pipeline: %s'%pipe.uid)
+                            
+                                    for stage in pipe.stages:
 
-                                    if task.parent_stage == stage.uid:
-                                        self._logger.debug('Found parent stage: %s'%(stage.uid))
-                                        task.state = states.DONE
-                                        self._logger.debug('Set task %s status to %s'%(task.uid,
-                                                                            states.DONE))
+                                        if task.parent_stage == stage.uid:
+                                            self._logger.debug('Found parent stage: %s'%(stage.uid))
+                                            task.state = states.DONE
+                                            self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
+                                                            task.uid,
+                                                            pipe.stages[pipe.current_stage].uid,
+                                                            pipe.uid,
+                                                            task.state))
 
 
-                                    if stage.check_tasks_status():
-                                        self._logger.info('All tasks of stage %s finished' %(stage.uid))
-                                        stage.state == states.DONE
-                                        pipe.increment_stage()
+                                            if stage.check_tasks_status():
+                                                self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                                stage.state = states.DONE
+                                                pipe.increment_stage()
 
-                        if pipe.completed:
-                            #self._workload.remove(pipe)
-                            self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                if pipe.completed:
+                                    #self._workload.remove(pipe)
+                                    self._logger.info('Pipelines %s has completed'%(pipe.uid))
 
                 except Queue.Empty:
                     self._logger.debug('No tasks in queue.. timeout 5 secs')
