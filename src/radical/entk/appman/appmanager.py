@@ -103,17 +103,36 @@ class AppManager(object):
                             pipe_count -= 1
 
                 # Terminate threads
+                self._logger.info('Closing populator thread')
                 populator.terminate()
+                self._logger.info('Populator thread closed')
+                self._logger.info('Closing updater thread')
                 updater.terminate()
+                self._logger.info('Updater thread closed')
 
 
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workload to appmanager: %s'%ex)
+            # Terminate threads
+            self._logger.info('Closing populator thread')
+            populator.terminate()
+            self._logger.info('Populator thread closed')
+            self._logger.info('Closing updater thread')
+            updater.terminate()
+            self._logger.info('Updater thread closed')
             raise
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
+            # Terminate threads
+            self._logger.info('Closing populator thread')
+            populator.terminate()
+            self._logger.info('Populator thread closed')
+            self._logger.info('Closing updater thread')
+            updater.terminate()
+            self._logger.info('Updater thread closed')
+
             sys.exit(1)

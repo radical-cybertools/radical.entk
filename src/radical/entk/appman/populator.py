@@ -7,6 +7,7 @@ from radical.entk.exceptions import *
 import threading
 from Queue import Queue
 from radical.entk import states
+import time
 
 
 class Populator(object):
@@ -28,7 +29,8 @@ class Populator(object):
         # This method starts the extractor function in a separate thread
 
         self._logger.info('Starting populator thread')
-        extract_thread = threading.Thread(target=self.extract_function)
+        self._extract_thread = threading.Thread(target=self.extract_function, name='populator')
+        self._extract_thread.start()
         self._logger.debug('Populator thread started')
         return self._executable_queue
 
@@ -46,11 +48,11 @@ class Populator(object):
 
                 for pipe in self._workload:
 
-                    if pipe.stage_lock.acquire(blocking=False):
+                    if pipe.stage_lock.acquire(False):
 
                         self._logger.debug('Pipe lock acquired')
 
-                        if pipe.stages[pipe.current_stage].state in states.INITAL:
+                        if pipe.stages[pipe.current_stage].state in states.INITIAL:
 
                             self._logger.info('Pipe contains execution-ready stages')
 
@@ -58,7 +60,13 @@ class Populator(object):
                             executable_tasks = executable_stage.tasks
 
                             self._logger.info('Pushing executable tasks to the queue')
-                            self._executable_queue.put(executable_tasks)
+
+                            for executable_task in executable_tasks:
+                                self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
+                                                                    executable_task.uid,
+                                                                    executable_task.parent_stage,
+                                                                    executable_task.parent_pipeline))
+                                self._executable_queue.put(executable_task)
 
                             pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
 
@@ -78,16 +86,8 @@ class Populator(object):
 
                         pipe.stage_lock.release()
 
-                # Remove pipes that have finished
-
-                workload_copy = self._workload
-
-                for pipe in self._workload:
-                    if pipe.completed.is_set():
-                        workload_copy.remove(pipe)
-                        self._logger.info('Pipelines %s has completed'%(pipe.uid))
-
-                self._workload = workload_copy
+                self._logger.debug('No change in pipes -- sleeping')
+                time.sleep(5)
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)
@@ -105,3 +105,5 @@ class Populator(object):
         # Set terminattion flag
         if not self._terminate.is_set():
             self._terminate.set()
+
+        self._extract_thread.join()

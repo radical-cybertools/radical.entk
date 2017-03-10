@@ -1,6 +1,8 @@
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.task.task import Task
+from radical.entk import states
+
 
 class Stage(object):
 
@@ -10,7 +12,7 @@ class Stage(object):
         self._tasks    = set()
         self._name      = name
 
-        self._state     = 'New'
+        self._state     = states.NEW
 
         # To change states
         self._task_count = len(self._tasks)
@@ -54,6 +56,11 @@ class Stage(object):
     @property
     def parent_pipeline(self):
         return self._parent_pipeline
+
+    @property
+    def uid(self):
+        return self._uid
+    
     
     # -----------------------------------------------
 
@@ -66,11 +73,14 @@ class Stage(object):
     def tasks(self, tasks):
         
         self._tasks = self.validate_tasks(tasks)
-        self.pass_uid()
 
     @parent_pipeline.setter
     def parent_pipeline(self, uid):
         self._parent_pipeline = uid
+
+    @state.setter
+    def state(self, state):
+        self._state = state
     # -----------------------------------------------
 
 
@@ -78,7 +88,7 @@ class Stage(object):
 
         tasks = self.validate_tasks(tasks)
         self._tasks.update(tasks)
-        self.pass_uid(tasks)
+        
 
 
     def remove_tasks(self, task_names):
@@ -113,6 +123,8 @@ class Stage(object):
                 task.parent_stage = self._uid
                 task.parent_pipeline = self._parent_pipeline
 
+            return tasks
+
     def set_task_state(self, state):
 
         try:
@@ -124,3 +136,21 @@ class Stage(object):
 
             print 'Task state assignment failed: %s' %ex
             raise 
+
+
+    def check_tasks_status(self):
+
+        try:
+
+            for task in self._tasks:
+
+                if task.state is not states.DONE:
+
+                    return False
+
+            return True
+
+        except Exception, ex:
+
+            print 'Task state evaluation failed'
+            raise

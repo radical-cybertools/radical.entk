@@ -2,6 +2,8 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.stage.stage import Stage
 import threading
+from radical.entk import states
+
 
 class Pipeline(object):
 
@@ -12,7 +14,7 @@ class Pipeline(object):
         self._name      = name
         self._resource  = resource
 
-        self._state     = 'New'
+        self._state     = states.NEW
 
         # To keep track of current state
         self._stage_count = len(self._stages)
@@ -67,6 +69,9 @@ class Pipeline(object):
     def current_stage(self):
         return self._current_stage
     
+    @property
+    def uid(self):
+        return self._uid
     
     # -----------------------------------------------
 
@@ -92,8 +97,8 @@ class Pipeline(object):
     def add_stages(self, stages):
 
         stages = self.validate_stages(stages)
+        stages = self.pass_uid(stages)
         self._stages.extend(stages)
-        self.pass_uid(stages)
         self._stage_count = len(self._stages)
 
 
@@ -124,9 +129,13 @@ class Pipeline(object):
         if stages is None:
             for stage in self._stages:
                 stage.parent_pipeline = self._uid
+                stage.pass_uid()
         else:
             for stage in stages:
                 stage.parent_pipeline = self._uid
+                stage.pass_uid()
+
+            return stages
 
 
     def increment_stage(self):

@@ -5,7 +5,7 @@ __license__     = "MIT"
 import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
-from Queue import Queue
+import Queue
 from radical.entk import states
 
 class Updater(object):
@@ -15,7 +15,7 @@ class Updater(object):
         self._uid           = ru.generate_id('radical.entk.updater')
         self._logger        = ru.get_logger('radical.entk.updater')
 
-        if not isinstance(executed_queue,Queue):
+        if not isinstance(executed_queue,Queue.Queue):
             raise TypeError(expected_type="Queue", actual_type=type(executed_queue))
 
         self._executed_queue    = executed_queue
@@ -29,8 +29,10 @@ class Updater(object):
 
         # This method starts the update function in a separate thread
         self._logger.info('Starting updater thread')
-        update_thread = threading.Thread(target=self.update_function)
+        self._update_thread = threading.Thread(target=self.update_function, name='updater')
+        self._update_thread.start()
         self._logger.debug('Updater thread started')
+
 
     def update_function(self):
 
@@ -40,32 +42,41 @@ class Updater(object):
 
         try:
 
-            while self._terminate.is_set():
+            while not self._terminate.is_set():
 
-                task = self._executed_queue.get()
-                self._logger.debug('Got finished task %s from queue'%(task.uid))
+                try:
 
-                for pipe in self._workload:
+                    task = self._executed_queue.get(timeout=5)
+                    self._logger.debug('Got finished task %s from queue'%(task.uid))
 
-                    if task.parent_pipeline == pipe.uid:
+                    for pipe in self._workload:
 
-                        with pipe.stage_lock:
+                        if task.parent_pipeline == pipe.uid:
 
-                            for stage in pipe:
+                            self._logger.debug('Found parent pipeline: %s'%pipe.uid)
 
-                                if task.parent_stage == stage.uid:
-                                    self._logger.debug('Found parent stage: %s and pipeline: %s'%(
-                                                                                stage.uid,
-                                                                                pipe.uid))
-                                    task.state = states.DONE
-                                    self._logger.debug('Set task %s status to %s'%(task.uid,
+                            with pipe.stage_lock:
+
+                                for stage in pipe.stages:
+
+                                    if task.parent_stage == stage.uid:
+                                        self._logger.debug('Found parent stage: %s'%(stage.uid))
+                                        task.state = states.DONE
+                                        self._logger.debug('Set task %s status to %s'%(task.uid,
                                                                             states.DONE))
 
 
-                                if stage.check_tasks_status():
-                                    self._logger.info('All tasks of stage %s finished' %(stage.uid))
-                                    stage.state == states.DONE
-                                    pipe.increment_stage()
+                                    if stage.check_tasks_status():
+                                        self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                        stage.state == states.DONE
+                                        pipe.increment_stage()
+
+                        if pipe.completed:
+                            #self._workload.remove(pipe)
+                            self._logger.info('Pipelines %s has completed'%(pipe.uid))
+
+                except Queue.Empty:
+                    self._logger.debug('No tasks in queue.. timeout 5 secs')
 
 
         except KeyboardInterrupt:
@@ -83,3 +94,5 @@ class Updater(object):
 
         if not self._terminate.is_set():
             self._terminate.set()
+
+        self._update_thread.join()

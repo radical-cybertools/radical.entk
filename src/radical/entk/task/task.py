@@ -1,4 +1,6 @@
 import radical.utils as ru
+from radical.entk import states
+
 
 class Task(object):
 
@@ -7,7 +9,7 @@ class Task(object):
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = name
 
-        self._state     = 'New'
+        self._state     = states.NEW
 
         # Attributes necessary for execution
         self._environment   = None
@@ -80,6 +82,11 @@ class Task(object):
     @property
     def parent_pipeline(self):
         return self._parent_pipeline
+
+    @property
+    def uid(self):
+        return self._uid
+    
     
     # -----------------------------------------------
 
