@@ -7,7 +7,10 @@ from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
 from populator import Populator
 from updater import Updater
+from helper import Helper
 import sys, time
+import Queue
+
 
 class AppManager(object):
 
@@ -17,6 +20,11 @@ class AppManager(object):
         self._name      = name
 
         self._workload = None
+
+
+        # Queues
+        self._pending_queue = Queue.Queue()
+        self._executed_queue = Queue.Queue()
 
         # Logger
         self._logger = ru.get_logger('radical.entk.appmanager')
@@ -86,10 +94,13 @@ class AppManager(object):
 
             else:
 
-                populator = Populator(workload = self._workload)
-                intermediate_q1 = populator.start_population()
+                populator = Populator(workload = self._workload, pending_queue=self._pending_queue)
+                populator.start_population()
 
-                updater = Updater(workload = self._workload, executed_queue = intermediate_q1)
+                helper = Helper(pending_queue = self._pending_queue, executed_queue=self._executed_queue)
+                helper.start_helper()
+
+                updater = Updater(workload = self._workload, executed_queue = self._executed_queue)
                 updater.start_update()
 
                 pipe_count = len(self._workload)
@@ -100,6 +111,7 @@ class AppManager(object):
                         if pipe.completed:
                             pipe_count -= 1
 
+
                 # Terminate threads
                 self._logger.info('Closing populator thread')
                 populator.terminate()
@@ -107,6 +119,9 @@ class AppManager(object):
                 self._logger.info('Closing updater thread')
                 updater.terminate()
                 self._logger.info('Updater thread closed')
+                self._logger.info('Closing helper thread')
+                helper.terminate()
+                self._logger.info('Helper thread closed')
 
 
         except Exception, ex:
@@ -119,6 +134,9 @@ class AppManager(object):
             self._logger.info('Closing updater thread')
             updater.terminate()
             self._logger.info('Updater thread closed')
+            self._logger.info('Closing helper thread')
+            helper.terminate()
+            self._logger.info('Helper thread closed')
             raise
 
         except KeyboardInterrupt:
@@ -132,5 +150,8 @@ class AppManager(object):
             self._logger.info('Closing updater thread')
             updater.terminate()
             self._logger.info('Updater thread closed')
+            self._logger.info('Closing helper thread')
+            helper.terminate()
+            self._logger.info('Helper thread closed')
 
             sys.exit(1)

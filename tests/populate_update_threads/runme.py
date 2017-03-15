@@ -14,6 +14,8 @@ def create_single_task():
 if __name__ == '__main__':
 
     p1 = Pipeline(name='p1')
+    p2 = Pipeline(name='p2')
+
     stages=3
 
     for cnt in range(stages):
@@ -23,6 +25,13 @@ if __name__ == '__main__':
 
         p1.add_stages(s)
 
+    for cnt in range(stages):
+        s = Stage(name='s%s'%cnt)
+        s.tasks = create_single_task()
+        s.add_tasks(create_single_task())
+
+        p2.add_stages(s)
+
     appman = AppManager()
-    appman.assign_workload(p1)
+    appman.assign_workload(set([p1,p2]))
     appman.run()

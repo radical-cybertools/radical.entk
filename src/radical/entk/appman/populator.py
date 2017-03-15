@@ -12,30 +12,34 @@ import time
 
 class Populator(object):
 
-    def __init__(self, workload):
+    def __init__(self, workload, pending_queue):
 
         self._uid           = ru.generate_id('radical.entk.populator')
         self._workload      = workload
         self._logger        = ru.get_logger('radical.entk.populator')
 
-        self._executable_queue = Queue()
+        self._pending_queue = pending_queue
         self._terminate     = threading.Event()
 
-        self._logger.info('Created populator object: %s'%self._uid)
+        self._populate_thread = None
+        self._thread_alive = False
 
+        self._logger.info('Created populator object: %s'%self._uid)
+        
 
     def start_population(self):
 
         # This method starts the extractor function in a separate thread
 
         self._logger.info('Starting populator thread')
-        self._extract_thread = threading.Thread(target=self.extract_function, name='populator')
-        self._extract_thread.start()
+        self._populate_thread = threading.Thread(target=self.populate, name='populator')
+        self._populate_thread.start()
+        self._thread_alive = True
+
         self._logger.debug('Populator thread started')
-        return self._executable_queue
 
 
-    def extract_function(self):
+    def populate(self):
 
         # This function extracts currently executable tasks from the workload
         # and pushes it to the 'executable_queue'. This function also updates the 
@@ -65,7 +69,7 @@ class Populator(object):
                                                                     executable_task.uid,
                                                                     executable_task.parent_stage,
                                                                     executable_task.parent_pipeline))
-                                    self._executable_queue.put(executable_task)
+                                    self._pending_queue.put(executable_task)
 
                                 pipe.stages[pipe.current_stage].set_task_state(states.QUEUED)
                                 pipe.stages[pipe.current_stage].state = states.QUEUED
@@ -79,19 +83,34 @@ class Populator(object):
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)
+            self._thread_alive = False
             raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
-            sys.exit(1)
+            self._thread_alive = False
 
 
     def terminate(self):
 
         # Set terminattion flag
-        if not self._terminate.is_set():
-            self._terminate.set()
+        try:
+            if not self._terminate.is_set():
+                self._terminate.set()
 
-        self._extract_thread.join()
+            self._populate_thread.join()
+
+        except Exception, ex:
+            self._logger.error('Could not terminate populator thread')
+            pass
+
+    def check_alive(self):
+
+        return self._thread_alive
+
+    def reset(self):
+
+        # Reset terminate condition to restart the thread
+        self._terminate = threading.Event()

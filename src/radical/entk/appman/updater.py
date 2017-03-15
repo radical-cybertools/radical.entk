@@ -23,18 +23,22 @@ class Updater(object):
 
         self._terminate     = threading.Event()
 
+        self._update_thread = None
+        self._thread_alive = False
+
         self._logger.info('Created updater object: %s'%self._uid)
 
     def start_update(self):
 
         # This method starts the update function in a separate thread
         self._logger.info('Starting updater thread')
-        self._update_thread = threading.Thread(target=self.update_function, name='updater')
+        self._update_thread = threading.Thread(target=self.update, name='updater')
         self._update_thread.start()
+        self._thread_alive = True
         self._logger.debug('Updater thread started')
 
 
-    def update_function(self):
+    def update(self):
 
         # This function gets tasks from the 'executed_queue' that have finished 
         # executing. It then updates the various objects in the workload to their
@@ -81,17 +85,18 @@ class Updater(object):
                                     self._logger.info('Pipelines %s has completed'%(pipe.uid))
 
                 except Queue.Empty:
-                    self._logger.debug('No tasks in queue.. timeout 5 secs')
+                    self._logger.debug('No tasks in executed_queue.. timeout 5 secs')
 
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
-            sys.exit(1)
+            self._thread_alive = False
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)
+            self._thread_alive = False
             raise UnknownError(text=ex)
 
         
@@ -101,3 +106,7 @@ class Updater(object):
             self._terminate.set()
 
         self._update_thread.join()
+
+    def check_alive(self):
+
+        return self._thread_alive
