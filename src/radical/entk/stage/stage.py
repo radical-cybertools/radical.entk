@@ -1,32 +1,41 @@
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.task.task import Task
+from radical.entk import states
+
 
 class Stage(object):
 
-    def __init__(self, tasks, name):
+    def __init__(self, name=None):
 
         self._uid       = ru.generate_id('radical.entk.stage')
-        self._tasks    = tasks
+        self._tasks    = set()
         self._name      = name
 
-        self._state     = 'New'
-
-        self.validate_args()
+        self._state     = states.NEW
 
         # To change states
         self._task_count = len(self._tasks)
 
+        # Pipeline this stage belongs to
+        self._parent_pipeline = None
 
-    def validate_args(self):
 
-        if not isinstance(self._tasks, list):
-            self._tasks = [self._tasks]
+    def validate_tasks(self, tasks):
 
-        for val in self._tasks:
+        if not isinstance(tasks, set):
+
+            if not isinstance(tasks, list):
+                tasks = set([tasks])
+            else:
+                tasks = set(tasks)
+
+        for val in tasks:
 
             if not isinstance(val, Task):
                 raise TypeError(expected_type=Task, actual_type=type(val))
+
+        return tasks
 
     # -----------------------------------------------
     # Getter functions
@@ -44,6 +53,15 @@ class Stage(object):
     def state(self):
         return self._state
 
+    @property
+    def parent_pipeline(self):
+        return self._parent_pipeline
+
+    @property
+    def uid(self):
+        return self._uid
+    
+    
     # -----------------------------------------------
 
 
@@ -52,19 +70,25 @@ class Stage(object):
     # -----------------------------------------------
 
     @tasks.setter
-    def tasks(self, values):
+    def tasks(self, tasks):
+        
+        self._tasks = self.validate_tasks(tasks)
 
-        self._tasks = values
-        self.validate_args()
+    @parent_pipeline.setter
+    def parent_pipeline(self, uid):
+        self._parent_pipeline = uid
+
+    @state.setter
+    def state(self, state):
+        self._state = state
     # -----------------------------------------------
 
 
     def add_tasks(self, tasks):
 
-        if not isinstance(tasks, list):
-            tasks = [tasks]
-
-        self._tasks.extend(tasks)
+        tasks = self.validate_tasks(tasks)
+        self._tasks.update(tasks)
+        
 
 
     def remove_tasks(self, task_names):
@@ -87,3 +111,46 @@ class Stage(object):
             task_names = copy_task_names
 
         self._tasks = copy_of_existing_tasks
+
+    def pass_uid(self, tasks=None):
+
+        if tasks is None:
+            for task in self._tasks:
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._parent_pipeline
+        else:
+            for task in tasks:
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._parent_pipeline
+
+            return tasks
+
+    def set_task_state(self, state):
+
+        try:
+
+            for task in self._tasks:
+                task.state = state
+
+        except Exception, ex:
+
+            print 'Task state assignment failed: %s' %ex
+            raise 
+
+
+    def check_tasks_status(self):
+
+        try:
+
+            for task in self._tasks:
+
+                if task.state is not states.DONE:
+
+                    return False
+
+            return True
+
+        except Exception, ex:
+
+            print 'Task state evaluation failed'
+            raise

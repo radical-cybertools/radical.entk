@@ -1,13 +1,15 @@
 import radical.utils as ru
+from radical.entk import states
+
 
 class Task(object):
 
-    def __init__(self, name):
+    def __init__(self, name=None):
 
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = name
 
-        self._state     = 'New'
+        self._state     = states.NEW
 
         # Attributes necessary for execution
         self._environment   = None
@@ -20,6 +22,13 @@ class Task(object):
         self._link_input_data       = None
         self._copy_output_data      = None
         self._download_output_data  = None
+
+
+        ## The following help in updation
+        # Stage this task belongs to
+        self._parent_stage = None
+        # Pipeline this task belongs to
+        self._parent_pipeline = None
 
 
     # -----------------------------------------------
@@ -65,6 +74,20 @@ class Task(object):
     @property
     def download_output_data(self):
         return self._download_output_data
+
+    @property
+    def parent_stage(self):
+        return self._parent_stage
+    
+    @property
+    def parent_pipeline(self):
+        return self._parent_pipeline
+
+    @property
+    def uid(self):
+        return self._uid
+    
+    
     # -----------------------------------------------
 
 
@@ -75,6 +98,10 @@ class Task(object):
     @name.setter
     def name(self, value):
         self._name = value
+
+    @state.setter
+    def state(self, value):
+        self._state = value
 
     @environment.setter
     def environment(self, value):
@@ -107,6 +134,14 @@ class Task(object):
     @download_output_data.setter
     def download_output_data(self, value):
         self._download_output_data = value
+
+    @parent_stage.setter
+    def parent_stage(self, uid):
+        self._parent_stage = uid
+
+    @parent_pipeline.setter
+    def parent_pipeline(self, uid):
+        self._parent_pipeline = uid
     # -----------------------------------------------
 
     

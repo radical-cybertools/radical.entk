@@ -12,7 +12,7 @@ class TypeError(EnTKError):
     """TypeError is thrown if a parameter of a wrong type is passed to a method or function."""
 
     def __init__ (self, expected_type, actual_type):
-        msg = "Expected (base) type %s, but got %s."%(
+        msg = "Expected (base) type(s) %s, but got %s."%(
             str(expected_type), 
             str(actual_type)
             )
@@ -91,3 +91,10 @@ class NoKernelConfigurationError(EnTKError):
     def __init__ (self, kernel_name, resource_key):
         msg = "Kernel '%s' doesn not have a configuration entry for resource key '%s'."%(kernel_name, resource_key)
         super(NoKernelConfigurationError, self).__init__ (msg)
+
+
+class UnknownError(EnTKError):
+
+    def __init__(self, text):
+        msg='Unknown error: %s'%text
+        super(UnknownError, self).__init__(msg)
