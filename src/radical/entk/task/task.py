@@ -181,18 +181,18 @@ class Task(object):
             raise TypeError(expected_type=list, actual_type=type(value))
 
     @parent_stage.setter
-    def parent_stage(self, uid):
-        if isinstance(uid,str):
-            self._parent_stage = uid
+    def parent_stage(self, value):
+        if isinstance(value,str):
+            self._parent_stage = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(uid))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @parent_pipeline.setter
-    def parent_pipeline(self, uid):
-        if isinstance(uid,str):
-            self._parent_pipeline = uid
+    def parent_pipeline(self, value):
+        if isinstance(value,str):
+            self._parent_pipeline = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(uid))
+            raise TypeError(expected_type=str, actual_type=type(value))
     # -----------------------------------------------
 
     

@@ -80,11 +80,11 @@ class Stage(object):
         self._tasks = self.validate_tasks(tasks)
 
     @parent_pipeline.setter
-    def parent_pipeline(self, uid):
-        if isinstance(uid, int):
-            self._parent_pipeline = uid
+    def parent_pipeline(self, value):
+        if isinstance(value, str):
+            self._parent_pipeline = value
         else:
-            raise TypeError(expected_type=int, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @state.setter
     def state(self, value):
