@@ -6,11 +6,11 @@ from radical.entk import states
 
 class Stage(object):
 
-    def __init__(self, name=None):
+    def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.stage')
-        self._tasks    = set()
-        self._name      = name
+        self._tasks     = set()
+        self._name      = str()
 
         self._state     = states.NEW
 
@@ -59,9 +59,7 @@ class Stage(object):
 
     @property
     def uid(self):
-        return self._uid
-    
-    
+        return self._uid   
     # -----------------------------------------------
 
 
@@ -112,6 +110,7 @@ class Stage(object):
 
         self._tasks = copy_of_existing_tasks
 
+
     def pass_uid(self, tasks=None):
 
         if tasks is None:
@@ -122,6 +121,7 @@ class Stage(object):
             for task in tasks:
                 task.parent_stage = self._uid
                 task.parent_pipeline = self._parent_pipeline
+
 
             return tasks
 
