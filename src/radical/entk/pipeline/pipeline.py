@@ -7,12 +7,12 @@ from radical.entk import states
 
 class Pipeline(object):
 
-    def __init__(self, name, resource=None):
+    def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.pipeline')
         self._stages    = list()
-        self._name      = name
-        self._resource  = resource
+        self._name      = str()
+        self._resource  = str()
 
         self._state     = states.NEW
 
@@ -80,6 +80,13 @@ class Pipeline(object):
     # Setter functions
     # -----------------------------------------------
 
+    @name.setter
+    def name(self, value):
+        if isinstance(value,str):
+            self._name = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
+
     @stages.setter
     def stages(self, stages):
 
@@ -106,6 +113,10 @@ class Pipeline(object):
 
         if not isinstance(stage_names, list):
             stage_names = [stage_names]
+
+        for val in stage_names:
+            if not isinstance(val, str):
+                raise TypeError(expected_type=str, actual_type=type(val))
 
         copy_of_existing_stages = self._stages
         copy_stage_names = stage_names
