@@ -85,12 +85,22 @@ class Updater(object):
 
                                         if task.parent_stage == stage.uid:
                                             self._logger.debug('Found parent stage: %s'%(stage.uid))
-                                            task.state = states.DONE
-                                            self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
+                                            try:
+                                                task.state = states.DONE
+                                                self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
                                                             task.uid,
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
                                                             task.state))
+
+                                            except Exception,ex:
+
+                                                # Rollback queue and task status
+                                                self._logger.error('Error while updating task '+
+                                                    'state, rolling back')
+
+                                                self._executed_queue.put(task)
+                                                task.state = states.EXECUTING
 
 
                                             if stage.check_tasks_status():

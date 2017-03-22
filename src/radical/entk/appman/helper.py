@@ -53,13 +53,33 @@ class Helper(object):
                 try:
 
                     task = self._pending_queue.get(timeout=5)
-                    self._logger.debug('Got finished task %s from pending queue'%(task.uid))
+                    self._logger.debug('Got finished task %s from pending queue'%(task.uid))                    
 
-                    self._executed_queue.put(task)
-                    self._logger.debug('Pushed finished task %s to executed queue'%(task.uid))
+                    try:
+                        self._executed_queue.put(task)
+                        task.state = states.EXECUTING
+                        self._logger.debug('Pushed finished task %s to executed queue'%(task.uid))
+
+                    except: Exception, ex:
+
+                        # Rolling back queue and task status
+                        self._logger.error('Error while updating task '+
+                                                    'state, rolling back')
+                        temp_queue = Queue.Queue()
+
+                        for task_id in range(self._executed_queue.qsize()-1):
+                            task = self._executed_queue.get()
+                            temp_queue.put(task)
+                                        
+                        latest_task = self._executed_queue.get()
+                        latest_task.state = states.QUEUED
+
+                        self._executed_queue = temp_queue
+                        self._pending_queue.put(latest_task)
 
                 except Queue.Empty:
                     self._logger.debug('No tasks in pending_queue.. timeout 5 secs')
+
 
                 time.sleep(1)
 
