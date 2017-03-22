@@ -14,12 +14,12 @@ import Queue
 
 class AppManager(object):
 
-    def __init__(self, name=None):
+    def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
-        self._name      = name
+        self._name      = str()
 
-        self._workload = None
+        self._workload  = None
 
 
         # Queues
@@ -51,31 +51,38 @@ class AppManager(object):
     # Function to add workload to the application manager
     # ------------------------------------------------------
 
+    def validate_workload(self, workload):
+
+        if not isinstance(workload, set):
+
+            if not isinstance(workload, list):
+                workload = set([workload])
+            else:
+                workload = set(workload)
+
+
+        for item in workload:
+            if not isinstance(item, Pipeline):
+                self._logger.info('Workload type incorrect')
+                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], actual_type=type(item))
+
+        return workload
+
+
     def assign_workload(self, workload):
 
         try:
-
-
-            if not isinstance(workload, set):
-
-                if not isinstance(workload, list):
-                    workload = set([workload])
-                else:
-                    workload = set(tasks)
-
-
-            for item in workload:
-                if not isinstance(item, Pipeline):
-                    self._logger.info('Workload type incorrect')
-                    raise TypeError(expected_type=['pipeline', 'set of pipelines'], actual_type=type(workload))
-
-            self._workload = workload
+            
+            self._workload = self.validate_workload(workload)
             self._logger.info('Workload assigned to Application Manager')
+
+        except TypeError:
+            raise
 
         except Exception, ex:
 
-            self._logger.error('Fatal error while adding workload to appmanager: %s'%ex)
-            raise
+            self._logger.error('Fatal error while adding workload to appmanager')
+            raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
 
@@ -90,7 +97,7 @@ class AppManager(object):
             if self._workload is None:
                 print 'Assign workload before invoking run method - cannot proceed'
                 self._logger.info('No workload assigned currently, please check your script')
-                pass
+                raise ValueError(expected_value='set of pipelines', actual_value=None)
 
             else:
 
@@ -126,7 +133,7 @@ class AppManager(object):
 
         except Exception, ex:
 
-            self._logger.error('Fatal error while adding workload to appmanager: %s'%ex)
+            self._logger.error('Fatal error while running appmanager')
             # Terminate threads
             self._logger.info('Closing populator thread')
             populator.terminate()
@@ -137,7 +144,7 @@ class AppManager(object):
             self._logger.info('Closing helper thread')
             helper.terminate()
             self._logger.info('Helper thread closed')
-            raise
+            raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
 
