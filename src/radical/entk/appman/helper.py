@@ -60,7 +60,7 @@ class Helper(object):
                         task.state = states.EXECUTING
                         self._logger.debug('Pushed finished task %s to executed queue'%(task.uid))
 
-                    except: Exception, ex:
+                    except Exception, ex:
 
                         # Rolling back queue and task status
                         self._logger.error('Error while updating task '+
