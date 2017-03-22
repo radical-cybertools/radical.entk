@@ -120,10 +120,18 @@ class Updater(object):
         
     def terminate(self):
 
-        if not self._terminate.is_set():
-            self._terminate.set()
+        # Set terminattion flag
+        try:
+            if not self._terminate.is_set():
+                self._terminate.set()
+                self._thread_alive = False
 
-        self._update_thread.join()
+            self._update_thread.join()
+
+        except Exception, ex:
+            self._logger.error('Could not terminate populator thread')
+            pass
+
 
     def check_alive(self):
 

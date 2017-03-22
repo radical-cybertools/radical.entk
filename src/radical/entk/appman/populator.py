@@ -119,6 +119,7 @@ class Populator(object):
         try:
             if not self._terminate.is_set():
                 self._terminate.set()
+                self._thread_alive = False
 
             self._populate_thread.join()
 

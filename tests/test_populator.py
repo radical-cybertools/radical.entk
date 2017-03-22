@@ -44,3 +44,33 @@ def test_pending_queue_type():
 
         with pytest.raises(TypeError):
             p = Populator(p1,data)
+
+def test_thread_termination():
+
+    def create_single_task():
+
+        t1 = Task()
+        t1.environment = ['module load gromacs']
+        t1.executable = ['gmx mdrun']
+        t1.arguments = ['a','b','c']
+        t1.copy_input_data = []
+        t1.copy_output_data = []
+
+        return t1
+
+    q = Queue()
+    p1 = Pipeline()
+    stages=3
+
+    for cnt in range(stages):
+        s = Stage()
+        s.name = 's%s'%cnt
+        s.tasks = create_single_task()
+        s.add_tasks(create_single_task())
+
+        p1.add_stages(s)
+
+    p = Populator(p1,q)
+    p.start_population()
+    p.terminate()
+    assert p.check_alive() == False
