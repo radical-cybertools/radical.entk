@@ -99,7 +99,10 @@ class Updater(object):
                                                 self._logger.error('Error while updating task '+
                                                     'state, rolling back')
 
+                                                # Revert the state of the queue
                                                 self._executed_queue.put(task)
+
+                                                # Revert the state of the task
                                                 task.state = states.EXECUTING
 
 
