@@ -6,11 +6,11 @@ from radical.entk import states
 
 class Stage(object):
 
-    def __init__(self, name=None):
+    def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.stage')
-        self._tasks    = set()
-        self._name      = name
+        self._tasks     = set()
+        self._name      = str()
 
         self._state     = states.NEW
 
@@ -59,9 +59,7 @@ class Stage(object):
 
     @property
     def uid(self):
-        return self._uid
-    
-    
+        return self._uid   
     # -----------------------------------------------
 
 
@@ -69,23 +67,35 @@ class Stage(object):
     # Setter functions
     # -----------------------------------------------
 
-    @tasks.setter
-    def tasks(self, tasks):
+    @name.setter
+    def name(self, value):
+        if isinstance(value,str):
+            self._name = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
         
+
+    @tasks.setter
+    def tasks(self, tasks):        
         self._tasks = self.validate_tasks(tasks)
 
     @parent_pipeline.setter
-    def parent_pipeline(self, uid):
-        self._parent_pipeline = uid
+    def parent_pipeline(self, value):
+        if isinstance(value, str):
+            self._parent_pipeline = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @state.setter
-    def state(self, state):
-        self._state = state
+    def state(self, value):
+        if isinstance(value,str):
+            self._state = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))        
     # -----------------------------------------------
 
 
     def add_tasks(self, tasks):
-
         tasks = self.validate_tasks(tasks)
         self._tasks.update(tasks)
         
@@ -95,6 +105,11 @@ class Stage(object):
 
         if not isinstance(task_names, list):
             task_names = [task_names]
+
+        for val in task_names:
+            if not isinstance(val, str):
+                raise TypeError(expected_type=str, actual_type=type(val))
+
 
         copy_of_existing_tasks = self._tasks
         copy_task_names = task_names
@@ -112,6 +127,7 @@ class Stage(object):
 
         self._tasks = copy_of_existing_tasks
 
+
     def pass_uid(self, tasks=None):
 
         if tasks is None:
@@ -123,20 +139,17 @@ class Stage(object):
                 task.parent_stage = self._uid
                 task.parent_pipeline = self._parent_pipeline
 
+
             return tasks
 
-    def set_task_state(self, state):
+    def set_task_state(self, value):
 
-        try:
-
+        if isinstance(value, str):
             for task in self._tasks:
                 task.state = state
 
-        except Exception, ex:
-
-            print 'Task state assignment failed: %s' %ex
-            raise 
-
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     def check_tasks_status(self):
 
@@ -153,4 +166,4 @@ class Stage(object):
         except Exception, ex:
 
             print 'Task state evaluation failed'
-            raise
+            raise UnknownError(text=ex)

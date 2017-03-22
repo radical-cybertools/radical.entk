@@ -5,8 +5,8 @@ __license__     = "MIT"
 import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
-from Queue import Queue
-from radical.entk import states
+import Queue
+from radical.entk import states, Pipeline
 import time
 
 
@@ -14,9 +14,12 @@ class Populator(object):
 
     def __init__(self, workload, pending_queue):
 
-        self._uid           = ru.generate_id('radical.entk.populator')
-        self._workload      = workload
+        self._uid           = ru.generate_id('radical.entk.populator')        
         self._logger        = ru.get_logger('radical.entk.populator')
+        self._workload      = self.validate_workload(workload)
+
+        if not isinstance(pending_queue,Queue.Queue):
+            raise TypeError(expected_type="Queue", actual_type=type(pending_queue))
 
         self._pending_queue = pending_queue
         self._terminate     = threading.Event()
@@ -25,6 +28,23 @@ class Populator(object):
         self._thread_alive = False
 
         self._logger.info('Created populator object: %s'%self._uid)
+
+    def validate_workload(self, workload):
+
+        if not isinstance(workload, set):
+
+            if not isinstance(workload, list):
+                workload = set([workload])
+            else:
+                workload = set(workload)
+
+
+        for item in workload:
+            if not isinstance(item, Pipeline):
+                self._logger.info('Workload type incorrect')
+                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], actual_type=type(item))
+
+        return workload
         
 
     def start_population(self):
@@ -99,6 +119,7 @@ class Populator(object):
         try:
             if not self._terminate.is_set():
                 self._terminate.set()
+                self._thread_alive = False
 
             self._populate_thread.join()
 

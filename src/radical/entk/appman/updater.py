@@ -6,7 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 import Queue
-from radical.entk import states
+from radical.entk import states, Pipeline
 
 class Updater(object):
 
@@ -19,7 +19,7 @@ class Updater(object):
             raise TypeError(expected_type="Queue", actual_type=type(executed_queue))
 
         self._executed_queue    = executed_queue
-        self._workload          = workload
+        self._workload          = self.validate_workload(workload)
 
         self._terminate     = threading.Event()
 
@@ -27,6 +27,24 @@ class Updater(object):
         self._thread_alive = False
 
         self._logger.info('Created updater object: %s'%self._uid)
+
+
+    def validate_workload(self, workload):
+
+        if not isinstance(workload, set):
+
+            if not isinstance(workload, list):
+                workload = set([workload])
+            else:
+                workload = set(workload)
+
+
+        for item in workload:
+            if not isinstance(item, Pipeline):
+                self._logger.info('Workload type incorrect')
+                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], actual_type=type(item))
+
+        return workload
 
     def start_update(self):
 
@@ -102,10 +120,18 @@ class Updater(object):
         
     def terminate(self):
 
-        if not self._terminate.is_set():
-            self._terminate.set()
+        # Set terminattion flag
+        try:
+            if not self._terminate.is_set():
+                self._terminate.set()
+                self._thread_alive = False
 
-        self._update_thread.join()
+            self._update_thread.join()
+
+        except Exception, ex:
+            self._logger.error('Could not terminate populator thread')
+            pass
+
 
     def check_alive(self):
 
