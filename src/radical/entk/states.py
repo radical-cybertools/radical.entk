@@ -5,7 +5,7 @@ __license__     = "MIT"
 
 # -----------------------------------------------------------------------------
 # common states
-NEW      = 'NEW'
+NEW      = 'UNSCHEDULED'
 DONE     = 'DONE'
 FAILED   = 'FAILED'
 CANCELED = 'CANCELED'
@@ -15,4 +15,5 @@ INITIAL  = [NEW]
 FINAL = [DONE, FAILED, CANCELED]
 
 
-QUEUED = 'QUEUED_LOCALLY'
+QUEUED = 'SCHEDULED'
+EXECUTING = 'EXECUTING'

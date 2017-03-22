@@ -85,12 +85,25 @@ class Updater(object):
 
                                         if task.parent_stage == stage.uid:
                                             self._logger.debug('Found parent stage: %s'%(stage.uid))
-                                            task.state = states.DONE
-                                            self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
+                                            try:
+                                                task.state = states.DONE
+                                                self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
                                                             task.uid,
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
                                                             task.state))
+
+                                            except Exception,ex:
+
+                                                # Rollback queue and task status
+                                                self._logger.error('Error while updating task '+
+                                                    'state, rolling back')
+
+                                                # Revert the state of the queue
+                                                self._executed_queue.put(task)
+
+                                                # Revert the state of the task
+                                                task.state = states.EXECUTING
 
 
                                             if stage.check_tasks_status():
@@ -101,6 +114,7 @@ class Updater(object):
                                 if pipe.completed:
                                     #self._workload.remove(pipe)
                                     self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                    pipe.state = states.DONE
 
                 except Queue.Empty:
                     self._logger.debug('No tasks in executed_queue.. timeout 5 secs')
