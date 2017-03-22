@@ -111,6 +111,7 @@ class Updater(object):
                                 if pipe.completed:
                                     #self._workload.remove(pipe)
                                     self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                    pipe.state = states.DONE
 
                 except Queue.Empty:
                     self._logger.debug('No tasks in executed_queue.. timeout 5 secs')

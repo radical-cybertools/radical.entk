@@ -91,24 +91,38 @@ class Populator(object):
                                                                     executable_task.parent_pipeline))
 
                                     try:
+
+                                        # Add unscheduled task to pending_queue
                                         self._pending_queue.put(executable_task)
+
+                                        # Update specific task's state if put to pending_queue
                                         executable_task.state = states.QUEUED
+
                                     except Exception, ex:
 
                                         # Rolling back queue status
                                         self._logger.error('Error while updating task '+
                                                     'state, rolling back')
+
+                                        # Now pending_queue does not have the specific task
                                         temp_queue = Queue.Queue()
                                         for task_id in range(self._pending_queue.qsize()-1):
                                             task = self._pending_queue.get()
-                                            temp_queue.put(task)
-                                        
-                                        latest_task = self._pending_queue.get()
-                                        latest_task.state = states.NEW
-
+                                            if not task.uid == executable_task.uid:
+                                                temp_queue.put(task)                                        
                                         self._pending_queue = temp_queue
 
+                                        
+                                        # Revert task status
+                                        executable_task.state = states.QUEUED                                        
+
+                                # Update corresponding stage's state
                                 pipe.stages[pipe.current_stage].state = states.QUEUED
+                                
+                                # Update corresponding pipeline's state
+                                if not pipe.state == states.QUEUED:
+                                    pipe.state = states.QUEUED
+
 
                                 self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
                                                             pipe.stages[pipe.current_stage].uid,
