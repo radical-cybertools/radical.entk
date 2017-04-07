@@ -16,8 +16,8 @@ def dir_generator(size):
 if __name__ == '__main__':
 
 
+    '''
     
-
     pipe = 1
     stage = 1
     task_list = [1,10,100,1000,10000,100000,1000000,10000000]
@@ -31,10 +31,11 @@ if __name__ == '__main__':
         master_dict = dict()
         master_dict['pipe_%s'%pipe] = dict()
         master_dict['pipe_%s'%pipe]['stage_%s'%stage] = dict()
+        path = dir_generator(50)
 
         for t in range(task):
 
-            master_dict['pipe_%s'%pipe]['stage_%s'%stage]['task_%s'%t] = dir_generator(50)
+            master_dict['pipe_%s'%pipe]['stage_%s'%stage]['task_%s'%t] = path
 
         end = time.time()
 
@@ -51,7 +52,7 @@ if __name__ == '__main__':
 
 
     pipe = 1
-    stage_list = [1,10,100,1000,10000,100000,1000000,10000000]
+    stage_list = [1,10,100,1000,10000,100000,1000000]
     task = 1
 
     f = open('bookkeeper_stage_variation.csv','w')
@@ -62,11 +63,12 @@ if __name__ == '__main__':
         start = time.time()
         master_dict = dict()
         master_dict['pipe_%s'%pipe] = dict()
+        path = dir_generator(50)
 
         for s in range(stage):
 
-            master_dict['pipe_%s'%pipe]['stage_%s'%stage] = dict()
-            master_dict['pipe_%s'%pipe]['stage_%s'%stage]['task_%s'%task] = dir_generator(50)
+            master_dict['pipe_%s'%pipe]['stage_%s'%s] = dict()
+            master_dict['pipe_%s'%pipe]['stage_%s'%s]['task_%s'%task] = path
 
         end = time.time()
 
@@ -80,7 +82,6 @@ if __name__ == '__main__':
         f.write('%s, %s, %s, %s, %s\n'%(pipe,stage,task,mem,dur))
 
     f.close()
-
 
 
     pipe_list = [1,10,100,1000,10000,100000,1000000]
@@ -94,12 +95,13 @@ if __name__ == '__main__':
     
         start = time.time()
         master_dict = dict()
+        path = dir_generator(50)
 
         for p in range(pipe):
             
             master_dict['pipe_%s'%p] = dict()
             master_dict['pipe_%s'%p]['stage_%s'%stage] = dict()
-            master_dict['pipe_%s'%p]['stage_%s'%stage]['task_%s'%task] = dir_generator(50)
+            master_dict['pipe_%s'%p]['stage_%s'%stage]['task_%s'%task] = path
 
         end = time.time()
 
@@ -114,3 +116,43 @@ if __name__ == '__main__':
 
     f.close()
 
+    '''
+
+
+    pipe  = 100
+    stage = 100
+    task  = 100
+
+    char_list = [1,10,100,1000,10000,100000,1000000, 10000000]
+
+    f = open('bookkeeper_path_variation.csv','w')
+    f.write('Pipelines, Stages, Tasks, Chars, Memory(MB), Time(secs)\n')
+
+    for chars in char_list:
+    
+        start = time.time()
+        master_dict = dict()
+
+        path = dir_generator(chars)
+
+        for p in range(pipe):            
+            master_dict['pipe_%s'%p] = dict()
+            
+            for s in range(stage):
+                master_dict['pipe_%s'%p]['stage_%s'%stage] = dict()
+
+                for t in range(task):
+                    master_dict['pipe_%s'%p]['stage_%s'%stage]['task_%s'%task] = path
+
+        end = time.time()
+
+        mem = float(asizeof.asizeof(master_dict))/(1024*1024)
+        dur = end - start
+        
+        print 'Pipes: %s, Stages: %s, Tasks: %s, Char: %s'%(pipe, stage, task, chars)
+        print 'Size of dict: %s MB'%(mem)
+        print 'Time taken: %s'%(dur)
+
+        f.write('%s, %s, %s, %s, %s, %s\n'%(pipe,stage,task,chars,mem,dur))
+
+    f.close()
