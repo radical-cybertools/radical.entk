@@ -62,3 +62,6 @@ docs/_build/
 
 #editor specifics
 .idea/
+
+# Throughput files
+.txt
