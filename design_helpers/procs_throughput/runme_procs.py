@@ -10,9 +10,9 @@ kill = mp.Event()
 DATA = ''
 
 
-num_push_procs = 3
-num_pop_procs = 3
-num_queues = 3
+num_push_procs = 2
+num_pop_procs = 4
+num_queues = 1
 
 DATA = './push_%s_pop_%s_q_%s'%(num_push_procs, num_pop_procs, num_queues)
 
