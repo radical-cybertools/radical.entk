@@ -130,19 +130,21 @@ if __name__ == '__main__':
 
     for chars in char_list:
     
-        start = time.time()
+        
         master_dict = dict()
 
         path = dir_generator(chars)
+
+        start = time.time()
 
         for p in range(pipe):            
             master_dict['pipe_%s'%p] = dict()
             
             for s in range(stage):
-                master_dict['pipe_%s'%p]['stage_%s'%stage] = dict()
+                master_dict['pipe_%s'%p]['stage_%s'%s] = dict()
 
                 for t in range(task):
-                    master_dict['pipe_%s'%p]['stage_%s'%stage]['task_%s'%task] = path
+                    master_dict['pipe_%s'%p]['stage_%s'%s]['task_%s'%t] = path
 
         end = time.time()
 
@@ -156,3 +158,55 @@ if __name__ == '__main__':
         f.write('%s, %s, %s, %s, %s, %s\n'%(pipe,stage,task,chars,mem,dur))
 
     f.close()
+
+
+    '''
+
+    pipe  = 100
+    stage = 100
+    task  = 100
+
+    chars = 1000
+
+    N = [1,10,100,1000,10000,100000,1000000, 10000000]
+
+    master_dict = dict()
+
+    path = dir_generator(chars)
+
+    for p in range(pipe):            
+        master_dict['pipe_%s'%p] = dict()
+            
+        for s in range(stage):
+            master_dict['pipe_%s'%p]['stage_%s'%s] = dict()
+
+            for t in range(task):
+                master_dict['pipe_%s'%p]['stage_%s'%s]['task_%s'%t] = path
+
+    
+
+    f = open('bookkeeper_random_accesses.csv','w')
+    f.write('N, Time(secs)\n')
+
+
+    for n in N:
+       
+        p = random.randint(0,99)
+        s = random.randint(0,99)
+        t = random.randint(0,99)
+
+        
+        start = time.time()
+
+        for i in range(n):
+            temp = master_dict['pipe_%s'%p]['stage_%s'%s]['task_%s'%t]
+        
+        end = time.time()
+
+        dur = end - start
+        print 'Time taken: %s'%(dur)
+
+        f.write('%s, %s\n'%(n,dur))
+
+    f.close()
+    '''
