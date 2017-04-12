@@ -196,3 +196,22 @@ class PoE(ExecutionPattern):
                                                                             %(stage, ex))
 
             raise
+
+    def get_path(self, iteration, stage, task):
+
+        try:
+
+            if iteration == None:
+                iteration = self._cur_iteration
+
+            if stage == None:
+                self._logger.error('Parameter stage cannot be None')
+
+            if task == None:
+                self._logger.error('Parameter task cannot be None')
+
+            return self._pattern_dict['iter_%s'%iteration]['stage_%s'%stage]['instance_%s'%task]['path']
+
+        except Exception,ex:
+            self._logger.error("Could not get path of stage: %s, instance: %s, iteration: %s, Error: %s"%(stage, task, iteration, ex))
+            raise
