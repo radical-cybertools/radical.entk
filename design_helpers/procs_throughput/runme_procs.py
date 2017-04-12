@@ -6,7 +6,10 @@ import multiprocessing as mp
 import os
 import shutil
 from Queue import Empty
-kill = mp.Event()
+
+kill_pusher = mp.Event()
+kill_popper = mp.Event()
+
 DATA = ''
 
 
@@ -23,26 +26,30 @@ except:
 
 
 os.makedirs(DATA)
+tasks_pushed = 0
+tasks_popped = 0
 
 def push_function(q, name):
 
     try:
 
         start_time = time.time()
-        tasks_pushed = 0
+        
 
         push_times = []
+        q_sizes = []
 
-        while not kill.is_set():
+        while not kill_pusher.is_set():
 
-            #t = Task()
-            t = DATA
+            t = Task()
+            #t = DATA
             q.put(t)
 
             tasks_pushed +=1
             cur_time = time.time()
 
             push_times.append(cur_time)
+            q_sizes.append(q.size())
 
             #if tasks_pushed%100000 == 0:
             #    print '%s: Push average throughput: %s tasks/sec'%(name, 
@@ -51,7 +58,7 @@ def push_function(q, name):
 
         f = open(DATA + '/%s.txt'%name,'w')
         for val in push_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Push proc killed'
@@ -62,7 +69,7 @@ def push_function(q, name):
 
         f = open(DATA + '/%s.txt'%name,'w')
         for val in push_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Push proc killed'
@@ -70,7 +77,7 @@ def push_function(q, name):
     except Exception,ex:
         f = open(DATA + '/%s.txt'%name,'w')
         for val in push_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Unexpected error: %s'%ex
@@ -81,11 +88,10 @@ def pop_function(q, name):
     try:
 
         start_time = time.time()
-        tasks_popped = 0
 
         pop_times = []
-
-        while not kill.is_set():
+        q_sizes = []
+        while not kill_popper.is_set():
 
             try:
                 t = q.get()            
@@ -94,6 +100,7 @@ def pop_function(q, name):
                 cur_time = time.time()
 
                 pop_times.append(cur_time)
+                q_sizes.append(q.size())
 
                 #if tasks_popped%100000 == 0:
                 #    print '%s: Pop average throughput: %s tasks/sec'%(name, 
@@ -104,7 +111,7 @@ def pop_function(q, name):
 
         f = open(DATA + '/%s.txt'%name,'w')
         for val in pop_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Pop proc killed'
@@ -114,7 +121,7 @@ def pop_function(q, name):
 
         f = open(DATA + '/%s.txt'%name,'w')
         for val in pop_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Pop proc killed'
@@ -123,7 +130,7 @@ def pop_function(q, name):
 
         f = open(DATA + '/%s.txt'%name,'w')
         for val in pop_times:
-            f.write('%s\n'%val)
+            f.write('%s, %s\n'%(val,q_sizes[push_times.index(val)]))
         f.close()
 
         print 'Unexpected error: %s'%ex
@@ -173,21 +180,24 @@ if __name__ == '__main__':
         print 'Push procs created '
 
 
-        #time.sleep(10)
-        #print 'Exiting'
-        #kill.set()
-        #for t in pop_procs:
-        #    t.join()
-
-        #for t in push_procs:
-        #    t.join()
-
-        while True:
+        while (tasks_pushed<10000000):
             pass
+
+        kill_pusher.set()
+        for t in push_procs:
+            t.join()
+
+        while (tasks_popped<1000000):
+            pass
+
+        kill_popper.set()
+        for t in pop_procs:
+            t.join()
 
     except KeyboardInterrupt:
         print 'Main process killed'
-        kill.set()
+        kill_pusher.set()
+        kill_popper.set()
         for t in pop_procs:
             t.join()
 
@@ -196,7 +206,8 @@ if __name__ == '__main__':
 
     except Exception, ex:
         print 'Unknown error: %s' %ex
-        kill.set()
+        kill_pusher.set()
+        kill_popper.set()
         for t in pop_procs:
             t.join()
 
