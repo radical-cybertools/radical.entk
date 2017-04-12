@@ -6,12 +6,13 @@ import multiprocessing as mp
 import os
 import shutil
 from Queue import Empty
-kill = mp.Event()
-DATA = ''
+from pympler import asizeof
 
+kill_pusher = mp.Event()
+kill_popper = mp.Event()
 
-num_push_procs = 2
-num_pop_procs = 4
+num_push_procs = 1
+num_pop_procs = 1
 num_queues = 1
 
 DATA = './push_%s_pop_%s_q_%s'%(num_push_procs, num_pop_procs, num_queues)
@@ -29,11 +30,14 @@ def push_function(q, name):
     try:
 
         start_time = time.time()
+        
         tasks_pushed = 0
 
         push_times = []
+        q_len = []
+        q_sizes = []
 
-        while not kill.is_set():
+        while (tasks_pushed < 1000000)and(not kill_pusher.is_set()):
 
             #t = Task()
             t = DATA
@@ -43,15 +47,21 @@ def push_function(q, name):
             cur_time = time.time()
 
             push_times.append(cur_time)
+            q_len.append(q.qsize())
+            q_sizes.append(asizeof.asizeof(q))
 
-            #if tasks_pushed%100000 == 0:
+            if tasks_pushed%100000 == 0:
+                print tasks_pushed
             #    print '%s: Push average throughput: %s tasks/sec'%(name, 
             #        float(tasks_pushed/(cur_time - start_time)))
+
+        print len(push_times), len(q_len), len(q_sizes)
         
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in push_times:
-            f.write('%s\n'%val)
+        for ind in range(len(push_times)):
+            f.write('%s %s %s\n'%(push_times[ind],q_len[ind],q_sizes[ind]))
+            #f.write('%s\n'%(push_times[ind]))
         f.close()
 
         print 'Push proc killed'
@@ -60,17 +70,22 @@ def push_function(q, name):
 
     except KeyboardInterrupt:
 
+        print len(push_times), len(q_len), len(q_sizes)
+
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in push_times:
-            f.write('%s\n'%val)
+        for ind in range(min(len(push_times),len(q_len),len(q_sizes))):
+            f.write('%s %s %s\n'%(push_times[ind],q_len[ind],q_sizes[ind]))
         f.close()
 
         print 'Push proc killed'
 
     except Exception,ex:
+
+        print len(push_times), len(q_len), len(q_sizes)
+
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in push_times:
-            f.write('%s\n'%val)
+        for ind in range(min(len(push_times),len(q_len),len(q_sizes))):
+            f.write('%s %s %s\n'%(push_times[ind],q_len[ind],q_sizes[ind]))
         f.close()
 
         print 'Unexpected error: %s'%ex
@@ -81,11 +96,13 @@ def pop_function(q, name):
     try:
 
         start_time = time.time()
+
         tasks_popped = 0
 
         pop_times = []
-
-        while not kill.is_set():
+        q_len = []
+        q_sizes = []
+        while (tasks_popped < 1000000)and(not kill_popper.is_set()):
 
             try:
                 t = q.get()            
@@ -94,8 +111,11 @@ def pop_function(q, name):
                 cur_time = time.time()
 
                 pop_times.append(cur_time)
+                q_len.append(q.qsize())
+                q_sizes.append(asizeof.asizeof(q))
 
-                #if tasks_popped%100000 == 0:
+                if tasks_popped%100000 == 0:
+                    print tasks_popped
                 #    print '%s: Pop average throughput: %s tasks/sec'%(name, 
                 #        float(tasks_popped/(cur_time - start_time)))
             
@@ -103,8 +123,8 @@ def pop_function(q, name):
                 pass
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in pop_times:
-            f.write('%s\n'%val)
+        for ind in range(len(pop_times)):
+            f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind]))
         f.close()
 
         print 'Pop proc killed'
@@ -112,18 +132,22 @@ def pop_function(q, name):
 
     except KeyboardInterrupt:
 
+        print len(pop_times), len(q_len), len(q_sizes)
+
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in pop_times:
-            f.write('%s\n'%val)
+        for ind in range(min(len(pop_times),len(q_len),len(q_sizes))):
+            f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind]))
         f.close()
 
         print 'Pop proc killed'
 
     except Exception,ex:
 
+        print len(push_times), len(q_len), len(q_sizes)
+
         f = open(DATA + '/%s.txt'%name,'w')
-        for val in pop_times:
-            f.write('%s\n'%val)
+        for ind in range(min(len(pop_times),len(q_len),len(q_sizes))):
+            f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind]))
         f.close()
 
         print 'Unexpected error: %s'%ex
@@ -173,21 +197,16 @@ if __name__ == '__main__':
         print 'Push procs created '
 
 
-        #time.sleep(10)
-        #print 'Exiting'
-        #kill.set()
-        #for t in pop_procs:
-        #    t.join()
+        for t in push_procs:
+            t.join()
 
-        #for t in push_procs:
-        #    t.join()
-
-        while True:
-            pass
+        for t in pop_procs:
+            t.join()
 
     except KeyboardInterrupt:
         print 'Main process killed'
-        kill.set()
+        kill_pusher.set()
+        kill_popper.set()
         for t in pop_procs:
             t.join()
 
@@ -196,9 +215,10 @@ if __name__ == '__main__':
 
     except Exception, ex:
         print 'Unknown error: %s' %ex
-        kill.set()
+        kill_pusher.set()
+        kill_popper.set()
         for t in pop_procs:
             t.join()
 
         for t in push_procs:
-            t.join()    
+            t.join()
