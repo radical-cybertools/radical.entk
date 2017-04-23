@@ -182,30 +182,24 @@ class AppManager():
             found=False
             for kernel in self._loaded_kernels:
 
-                if kernel().name == user_kernel.name:
+                loaded_kernel = kernel()
+
+                if loaded_kernel.name == user_kernel.name:
 
                     found=True
 
-                    new_kernel = kernel()
+                    # user kernel should have argument definition
+                    if not user_kernel.arguments:
+                        raise MissingValueError(msg="arguments in kernel %s"%user_kernel.name)
                     
-                    new_kernel.pre_exec     = user_kernel.pre_exec
-                    new_kernel.post_exec    = user_kernel.post_exec
-                    new_kernel.executable   = user_kernel.executable
-                    new_kernel.arguments    = user_kernel.arguments
-                    new_kernel.uses_mpi     = user_kernel.uses_mpi          
-                    new_kernel.cores        = user_kernel.cores
-
-                    new_kernel.upload_input_data    = user_kernel.upload_input_data
-                    new_kernel.copy_input_data      = user_kernel.copy_input_data
-                    new_kernel.link_input_data      = user_kernel.link_input_data
-                    new_kernel.copy_output_data     = user_kernel.copy_output_data
-                    new_kernel.download_output_data = user_kernel.download_output_data    
-
-                    new_kernel.validate_arguments()
+                    user_kernel.raw_args        = loaded_kernel.raw_args
+                    user_kernel.machine_configs = loaded_kernel.machine_configs
+                    user_kernel.binding_function = loaded_kernel._bind_to_resource
+                    user_kernel.validate_arguments()                                    
 
                     self._logger.debug("Kernel %s validated"%(new_kernel.name))
 
-                    return new_kernel
+                    return user_kernel
 
             if found==False:
                 # your lines are too long.  For strings, you can consider to

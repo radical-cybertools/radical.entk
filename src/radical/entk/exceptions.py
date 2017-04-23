@@ -91,3 +91,12 @@ class NoKernelConfigurationError(EnTKError):
     def __init__ (self, kernel_name, resource_key):
         msg = "Kernel '%s' doesn not have a configuration entry for resource key '%s'."%(kernel_name, resource_key)
         super(NoKernelConfigurationError, self).__init__ (msg)
+
+
+class MissingValueError(EnTKError):
+    """A BadArgumentError is thrown if a wrong set of arguments were passed 
+    to a kernel.
+    """
+    def __init__ (self, message):
+        msg = "Missing value for %s"%(message)
+        super(MissingValueError, self).__init__ (msg)

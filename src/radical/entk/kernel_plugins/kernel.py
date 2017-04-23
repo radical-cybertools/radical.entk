@@ -7,7 +7,7 @@ from radical.entk.exceptions import *
 
 class Kernel(object):
 
-    def __init__(self, name=None, ktype=None):
+    def __init__(self, name=None):
 
         self._name = name
 
@@ -18,7 +18,6 @@ class Kernel(object):
         self._arguments                 = list()
         self._uses_mpi                  = False
         self._cores                     = 1 # If unspecified, number of cores is set to 1
-        self._type                      = ktype
 
         self._upload_input_data          = list()
         self._link_input_data            = list()
@@ -29,18 +28,26 @@ class Kernel(object):
 
         self._logger = ru.get_logger("radical.entk.Kernel")
 
+        # Variables to keep it compatible with existing scripts -- this will be removed in the 
+        # next version.
+        self._raw_args                  = None
+        self._machine_configs           = None
+        self._valid_args                = dict()
+        self._binding_function          = None
+
 
     #  ------------------------------------------------------------- 
     
     def as_dict(self):
         """Returns a dictionary representation of the kernel"""
     
-        kernel_dict = {    "pre_exec":     self._pre_exec,
-                 "executable":     self._executable,
-                 "arguments":     self._arguments,
-                 "uses_mpi":     self._uses_mpi,
-                 "cores":     self._cores
-                 }
+        kernel_dict =   {     
+                            "pre_exec":     self._pre_exec,
+                            "executable":   self._executable,
+                            "arguments":    self._arguments,
+                            "uses_mpi":     self._uses_mpi,
+                            "cores":        self._cores
+                        }
 
         return kernel_dict
 
@@ -263,31 +270,86 @@ class Kernel(object):
 
         self._copy_output_data = data_directives
     # -------------------------------------------------------------
-
-    # -------------------------------------------------------------
-
     @property
-    def timeout(self):
-        return self._timeout
+    def binding_function(self, resource):
+        task_desc = self._binding_function(resource)
+        self._executable = task_desc['executable']
+        self._arguments = task_desc['arguments']
+        self._pre_exec = task_desc['pre_exec']
 
-    @timeout.setter
-    def timeout(self, val):
-
-        self._timeout = val
+    @binding_function.setter
+    def binding_function(self, function):
+        self._binding_function = function
     # -------------------------------------------------------------
-
-
-    # -------------------------------------------------------------
-
     @property
-    def cancel_tasks(self):
-        return self._cancel_tasks
+    def raw_args(self):
+        return self._raw_args
 
-    @cancel_tasks.setter
-    def cancel_tasks(self, val):
-
-        if type(val) == list:
-            self._cancel_tasks = val
-        else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+    @raw_args.setter
+    def raw_args(self, args):
+        self._raw_args = args
     # -------------------------------------------------------------
+    
+    @property
+    def machine_configs(self):
+        return self._machine_configs
+    
+    @machine_configs.setter(self, config):
+        self._machine_configs = config
+    # -------------------------------------------------------------
+    
+    @property
+    def valid_args(self):
+        return self._valid_args
+    # -------------------------------------------------------------
+
+    def get_arg(self, arg):
+        return self._valid_args[arg]['_value']
+    # -------------------------------------------------------------
+
+    def validate_args(self, arguments):
+
+        arg_details = dict()
+
+        try:
+
+            for arg_name, arg_info in self._raw_args.iteritems():
+                self._valid_args[arg_name]["_is_set"] = False
+                self._valid_args[arg_name]["_value"] = None
+                self._valid_args[arg_name]["_is_mandatory"] = arg_info["mandatory"]
+
+            for arg in arguments:
+                arg_found = False
+                for arg_name, arg_info in self._raw_args.iteritems():
+                    if arg.startswith(arg_name):
+                        arg_found = True
+                        self._valid_args[arg_name]["_is_set"] = True
+                        self._valid_args[arg_name]["_value"] = arg.replace(arg_name,'')
+
+                if arg_found == False:
+                    raise ArgumentError(
+                                        kernel_name=self._kernel_name,
+                                        message="Unknown / malformed argument '%s'"%(arg),
+                                        valid_arguments_set=self._raw_args)
+
+            for arg_name, arg_info in self._valid_args.iteritems():
+                if ((arg_info["_is_mandatory"] == True) and (arg_info["_is_set"] == False)):
+                    raise ArgumentError(
+                                        kernel_name=self._kernel_name,
+                                        message="Mandatory argument '%s' missing"%(arg_name),
+                                        valid_arguments_set=self._raw_args)
+
+            #self._args = self._raw_args
+            self._logger.debug("Arguments validated for kernel %s"%(self._kernel_name))
+
+        except Exception, ex:
+            self._logger.error('Kernel argument validation failed: %s'%(ex))
+            raise
+
+    def _bind_to_resource(self, resource):
+
+        try:
+            self._binding_function(resource)
+        except Exception, ex:
+            self._logger.error('Kernel bind to resource failed, error: %s'%ex)
+            raise
