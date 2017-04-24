@@ -264,10 +264,12 @@ class Kernel(object):
     def _bind_to_resource(self, resource):
 
         try:
-            self._pre_exec = self._machine_config[resource]["pre_exec"]
-            self._executable = self._machine_config[resource]["pre_exec"]
-            self._post_exec = self._machine_config[resource]["pre_exec"]
 
+            if (not self._pre_exec)and(self._machine_config):
+                self._pre_exec = self._machine_config[resource]["pre_exec"]
+            if (not self._executable)and(self._machine_config):
+                self._executable = self._machine_config[resource]["executable"]
+            
         except Exception, ex:
             self._logger.error('Kernel bind to resource failed, error: %s'%ex)
             raise
@@ -290,20 +292,18 @@ class Kernel(object):
                        "mach1": {
                                     "pre_exec": None,
                                     "executable": None,
-                                    "post_exec": None
                                 },
 
                         "mach2": {
                                     "pre_exec": None,
                                     "executable": None,
-                                    "post_exec": None
                                 }
         
                 }
 
         '''
 
-        if not self._machine_config:
+        if self._machine_config:
         
             for mach_name, mach_config in self._machine_config.iteritems():
 
@@ -312,7 +312,3 @@ class Kernel(object):
 
                 if "executable" not in mach_config:
                     raise MissingValueError(msg="no executable in config for %s"%mach_name)
-
-                if "post_exec" not in mach_config:
-                    raise MissingValueError(msg="no post_exec in config for %s"%mach_name)
-
