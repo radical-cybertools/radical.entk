@@ -156,10 +156,10 @@ class ResourceHandle(object):
             raise Exception ("no database URL (set RADICAL_PILOT_DBURL or via resource handle)")  
 
         if self._database_name is None:
-            self._session = radical.pilot.Session(dburl=self._database_url)
+            self._session = radical.pilot.Session(database_url=self._database_url)
         else:
             db_url = self._database_url + '/' + self._database_name
-            self._session = radical.pilot.Session(dburl=db_url)
+            self._session = radical.pilot.Session(database_url=db_url)
 
         try:
 

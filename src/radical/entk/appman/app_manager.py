@@ -78,81 +78,6 @@ class AppManager():
     def name(self):
         return self._name
 
-
-    # --------------------------------------------------------------------------
-    #
-    def register_kernels(self, kernel_class):
-
-        # AM: For code which is supposed to handle lists and single items,
-        # please use the following:
-        #
-        # def method(things):
-        #   if not (isinstance(things, list):
-        #     things = [things]
-        #   for thing in things:
-        #     print thing
-        #
-        # that way you avoid code duplication for the two cases, and it is
-        # easier to (a) maintain the code, and (b) see what the method is
-        # supposed to do.
-
-        # print type(kernel_class)
-        try:
-            # AM: using isinstance again
-          # if type(kernel_class) == list:
-
-            self._prof.prof('registering kernels', uid=self._uid)
-
-            if isinstance(kernel_class, list):
-                for item in kernel_class:
-                    if not hasattr(item, '__base__'):
-                        raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
-                    elif item.__base__ != Kernel:
-                        raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
-
-                    if item in self._loaded_kernels:
-                        raise ExistsError(item=item().name, parent = 'loaded_kernels')
-
-                    self._loaded_kernels.append(item)
-                    self._logger.info("Kernel {0} registered with application manager" \
-                                                                            %(item().name))
-
-            elif not hasattr(kernel_class,'__base__'):
-                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
-
-            elif kernel_class.__base__ != KernelBase:
-                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
-
-            else:
-                self._loaded_kernels.append(kernel_class)
-                self._logger.info("Kernel %s registered with application manager" \
-                                                                        %(kernel_class().name))
-
-            
-            self._prof.prof('kernels registered', uid=self._uid)            
-
-            
-        
-        except Exception, ex:
-
-                self._logger.exception("Kernel registration failed: %s"%(ex))
-                raise
-
-
-    # --------------------------------------------------------------------------
-    #
-    def list_kernels(self):
-
-        try:
-
-            return [item().name for item in self._loaded_kernels]
-
-        except Exception, ex:
-
-            self._logger.exception("Could not list kernels: %s"%(ex))
-            raise
-
-
     # --------------------------------------------------------------------------
     #
     def save(self, pattern):
@@ -166,52 +91,13 @@ class AppManager():
 
     # --------------------------------------------------------------------------
     #
-    def pattern_to_json(self, pattern):
-        pass
-
-
-    # --------------------------------------------------------------------------
-    #
     def validate_kernel(self, user_kernel):
 
         try:
 
-            if not user_kernel:
-                return None
+            user_kernel.validate_config()
 
-            found=False
-            for kernel in self._loaded_kernels:
-
-                loaded_kernel = kernel()
-
-                if loaded_kernel.name == user_kernel.name:
-
-                    found=True
-
-                    # user kernel should have argument definition
-                    if not user_kernel.arguments:
-                        raise MissingValueError(msg="arguments in kernel %s"%user_kernel.name)
-                    
-                    user_kernel.raw_args        = loaded_kernel.raw_args
-                    user_kernel.machine_configs = loaded_kernel.machine_configs
-                    user_kernel.binding_function = loaded_kernel._bind_to_resource
-                    user_kernel.validate_arguments()                                    
-
-                    self._logger.debug("Kernel %s validated"%(new_kernel.name))
-
-                    return user_kernel
-
-            if found==False:
-                # your lines are too long.  For strings, you can consider to
-                # switch to the % notation, which is shorter and easier to break
-                # across lines:
-                #
-                # self._logger.error("Kernel %s does not exist" % user_kernel.name)
-                # or
-                # self._logger.error("Kernel %s does not exist" \
-                #                   % user_kernel.name)
-                self._logger.error("Kernel %s does not exist" % user_kernel.name)
-                raise Exception()
+            return user_kernel
 
         except Exception, ex:
 
