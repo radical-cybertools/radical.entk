@@ -3,7 +3,6 @@ __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 from radical.entk.exceptions import *
-from radical.entk.kernel_plugins.kernel_base import KernelBase
 from radical.entk.kernel_plugins.kernel import Kernel
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
@@ -96,6 +95,16 @@ class AppManager():
         try:
 
             user_kernel.validate_config()
+
+            if not user_kernel.pre_exec:
+                self._logger.warning('No pre_exec specified for Kernel %s'%user_kernel.name)
+
+            if not user_kernel.executable:
+                raise MissingValueError(msg="Kernel executable not specified for kernel %s"
+                                                                                %user_kernel.name)
+
+            if not user_kernel.arguments:
+                self._logger.warning('No arguments specified for Kernel %s'%user_kernel.name)
 
             return user_kernel
 

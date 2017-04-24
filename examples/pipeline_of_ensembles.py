@@ -36,6 +36,7 @@ class Test(PoE):
         This stage calculates the number of characters in a UTF file.
         """
         k = Kernel(name="ccount")
+        k.executable = ["/bin/bash"]
         k.arguments = ["--inputfile=UTF-8-demo.txt", "--outputfile=ccount-{0}.txt".format(instance)]
         k.upload_input_data  = "UTF-8-demo.txt"
 
@@ -49,6 +50,8 @@ class Test(PoE):
            script.
         """
         k = Kernel(name="chksum")
+        k.pre_exec = ["command -v sha1sum >/dev/null 2>&1 && export SHASUM=sha1sum  || export SHASUM=shasum"]
+        k.executable = ["$SHASUM"]
         k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
         k.upload_input_data  = "UTF-8-demo.txt"
         k.download_output_data = "checksum{0}.sha1".format(instance)

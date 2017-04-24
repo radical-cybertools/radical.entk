@@ -303,14 +303,16 @@ class Kernel(object):
 
         '''
 
-        for mach_name, mach_config in self._machine_config.iteritems():
+        if not self._machine_config:
+        
+            for mach_name, mach_config in self._machine_config.iteritems():
 
-            if "pre_exec" not in mach_config:
-                raise MissingValueError(msg="no pre_exec in config for %s"%mach_name)
+                if "pre_exec" not in mach_config:
+                    raise MissingValueError(msg="no pre_exec in config for %s"%mach_name)
 
-            if "executable" not in mach_config:
-                raise MissingValueError(msg="no executable in config for %s"%mach_name)
+                if "executable" not in mach_config:
+                    raise MissingValueError(msg="no executable in config for %s"%mach_name)
 
-            if "post_exec" not in mach_config:
-                raise MissingValueError(msg="no post_exec in config for %s"%mach_name)
+                if "post_exec" not in mach_config:
+                    raise MissingValueError(msg="no post_exec in config for %s"%mach_name)
 
