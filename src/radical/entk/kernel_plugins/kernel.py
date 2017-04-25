@@ -16,7 +16,7 @@ class Kernel(object):
         self._post_exec                 = list()
         self._executable                = str()
         self._arguments                 = list()
-        self._uses_mpi                  = False
+        self._mpi                  = False
         self._cores                     = 1 # If unspecified, number of cores is set to 1
 
         self._upload_input_data          = list()
@@ -38,7 +38,7 @@ class Kernel(object):
                             "pre_exec":     self._pre_exec,
                             "executable":   self._executable,
                             "arguments":    self._arguments,
-                            "uses_mpi":     self._uses_mpi,
+                            "mpi":          self._mpi,
                             "cores":        self._cores
                         }
 
@@ -61,7 +61,6 @@ class Kernel(object):
     # executable
     # pre_exec
     # post_exec
-    # uses_mpi
     # arguments
     # cores
     # upload_input_data
@@ -119,19 +118,19 @@ class Kernel(object):
     # -------------------------------------------------------------
 
     @property
-    def uses_mpi(self):
-        return self._uses_mpi
+    def mpi(self):
+        return self._mpi
 
-    @uses_mpi.setter
-    def uses_mpi(self, uses_mpi):
+    @mpi.setter
+    def mpi(self, mpi):
 
-        if type(uses_mpi) != bool:
+        if type(mpi) != bool:
             raise TypeError(
                 expected_type=bool,
-                actual_type=type(uses_mpi))
+                actual_type=type(mpi))
 
         # Call the validate_args() method of the plug-in.
-        self._uses_mpi = uses_mpi
+        self._mpi = mpi
     # -------------------------------------------------------------
 
     @property
