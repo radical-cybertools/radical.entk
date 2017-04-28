@@ -79,56 +79,69 @@ class Populator(object):
 
                             self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
 
+                            # Update corresponding pipeline's state
+                            if not pipe.state == states.SCHEDULED:
+                                pipe.state = states.SCHEDULED
+
                             if pipe.stages[pipe.current_stage].state in states.INITIAL:
 
                                 executable_stage = pipe.stages[pipe.current_stage]
                                 executable_tasks = executable_stage.tasks
 
-                                for executable_task in executable_tasks:
-                                    self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
+                                try:
+
+                                    for executable_task in executable_tasks:
+                                    
+                                        self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
                                                                     executable_task.uid,
                                                                     executable_task.parent_stage,
                                                                     executable_task.parent_pipeline))
 
-                                    try:
+                                        # Try-exception block for tasks
+                                        try:
 
-                                        # Add unscheduled task to pending_queue
-                                        self._pending_queue.put(executable_task)
+                                            # Add unscheduled task to pending_queue
+                                            self._pending_queue.put(executable_task)
 
-                                        # Update specific task's state if put to pending_queue
-                                        executable_task.state = states.QUEUED
+                                            # Update specific task's state if put to pending_queue
+                                            executable_task.state = states.QUEUED
 
-                                    except Exception, ex:
+                                            # Update corresponding stage's state
+                                            if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
+                                                pipe.stages[pipe.current_stage].state = states.SCHEDULED
 
-                                        # Rolling back queue status
-                                        self._logger.error('Error while updating task '+
-                                                    'state, rolling back')
+                                        except Exception, ex:
 
-                                        # Now pending_queue does not have the specific task
-                                        temp_queue = Queue.Queue()
-                                        for task_id in range(self._pending_queue.qsize()-1):
-                                            task = self._pending_queue.get()
-                                            if not task.uid == executable_task.uid:
-                                                temp_queue.put(task)                                        
-                                        self._pending_queue = temp_queue
+                                            # Rolling back queue status
+                                            self._logger.error('Error while updating task '+
+                                                'state, rolling back. Error: %s'%ex)
 
+                                            # Now pending_queue does not have the specific task
+                                            temp_queue = Queue.Queue()
+                                            for task_id in range(self._pending_queue.qsize()-1):
+                                                task = self._pending_queue.get()
+                                                if not task.uid == executable_task.uid:
+                                                    temp_queue.put(task)                                        
+                                            self._pending_queue = temp_queue
                                         
-                                        # Revert task status
-                                        executable_task.state = states.QUEUED                                        
+                                            # Revert task status
+                                            executable_task.state = states.NEW
+                                            raise # should go to the next exception
 
-                                # Update corresponding stage's state
-                                pipe.stages[pipe.current_stage].state = states.QUEUED
-                                
-                                # Update corresponding pipeline's state
-                                if not pipe.state == states.QUEUED:
-                                    pipe.state = states.QUEUED
-
-
-                                self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
+                                        self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
                                                             pipe.stages[pipe.current_stage].state))
+                                                                        
+                                except Exception, ex:
 
+                                    # Rolling back queue status
+                                    self._logger.error('Error while updating stage '+
+                                                        'state, rolling back. Error: %s'%ex)
+
+                                    # Revert stage state
+                                    pipe.stages[pipe.current_stage].state = states.NEW                                        
+                                
                 time.sleep(1)
 
         except Exception, ex:

@@ -6,7 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 import Queue
-from radical.entk import states, Pipeline
+from radical.entk import states, Pipeline, Task
 
 class Updater(object):
 
@@ -21,13 +21,27 @@ class Updater(object):
         self._executed_queue    = executed_queue
         self._workload          = self.validate_workload(workload)
 
-        self._terminate     = threading.Event()
+        self._terminate = threading.Event()
+        self._resubmit_failed = False
 
         self._update_thread = None
         self._thread_alive = False
 
         self._logger.info('Created updater object: %s'%self._uid)
 
+    # -----------------------------------------------
+    # Getter functions
+    # -----------------------------------------------
+    @property
+    def resubmit_failed(self):
+        return self._resubmit_failed
+    # -----------------------------------------------
+    # Setter functions
+    # -----------------------------------------------
+    @resubmit_failed.setter
+    def resubmit_failed(self, value):
+        self._resubmit_failed = value
+    # -----------------------------------------------
 
     def validate_workload(self, workload):
 
@@ -45,6 +59,7 @@ class Updater(object):
                 raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], actual_type=type(item))
 
         return workload
+    # -----------------------------------------------
 
     def start_update(self):
 
@@ -54,7 +69,7 @@ class Updater(object):
         self._update_thread.start()
         self._thread_alive = True
         self._logger.debug('Updater thread started')
-
+    # -----------------------------------------------
 
     def update(self):
 
@@ -85,36 +100,74 @@ class Updater(object):
 
                                         if task.parent_stage == stage.uid:
                                             self._logger.debug('Found parent stage: %s'%(stage.uid))
-                                            try:
-                                                task.state = states.DONE
-                                                self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
+
+                                            #task.state = states.DONE
+                                            self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
                                                             task.uid,
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
                                                             task.state))
 
-                                            except Exception,ex:
+                                            if task.state == states.DONE:
 
-                                                # Rollback queue and task status
-                                                self._logger.error('Error while updating task '+
-                                                    'state, rolling back')
+                                                if stage.check_tasks_status():
 
-                                                # Revert the state of the queue
-                                                self._executed_queue.put(task)
+                                                    try:
+                                                        self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                                        stage.state = states.DONE
+                                                        pipe.increment_stage()
 
-                                                # Revert the state of the task
-                                                task.state = states.EXECUTING
+                                                    except Exception, ex:
+                                                        # Rolling back stage status
+                                                        self._logger.error('Error while updating stage '+
+                                                            'state, rolling back. Error: %s'%ex)
+                                                        stage.state = stage.SCHEDULED
+                                                        pipe.decrement_stage()                                                    
 
+                                                    if pipe.completed:
+                                                        #self._workload.remove(pipe)
+                                                        self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                                        pipe.state = states.DONE
 
-                                            if stage.check_tasks_status():
-                                                self._logger.info('All tasks of stage %s finished' %(stage.uid))
-                                                stage.state = states.DONE
-                                                pipe.increment_stage()
+                                            elif task.state == states.FAILED:
 
-                                if pipe.completed:
-                                    #self._workload.remove(pipe)
-                                    self._logger.info('Pipelines %s has completed'%(pipe.uid))
-                                    pipe.state = states.DONE
+                                                if self._resubmit_failed:
+
+                                                    try:
+                                                        new_task = Task()
+                                                        new_task.replicate(task)
+
+                                                        pipe.stages[pipe.current_stage].add_tasks(new_task)
+
+                                                    except Exception, ex:
+                                                        self._logger.error("Resubmission of task %s failed, error: %s"%(task.uid,ex))
+
+                                                else:
+
+                                                    if stage.check_tasks_status(failed_ok=True):
+
+                                                        try:
+                                                            self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                                            stage.state = states.DONE
+                                                            pipe.increment_stage()
+
+                                                        except Exception, ex:
+                                                            # Rolling back stage status
+                                                            self._logger.error('Error while updating stage '+
+                                                                'state, rolling back. Error: %s'%ex)
+                                                            stage.state = stage.SCHEDULED
+                                                            pipe.decrement_stage()                                                    
+
+                                                        if pipe.completed:
+                                                            #self._workload.remove(pipe)
+                                                            self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                                            pipe.state = states.DONE
+
+                                            else:
+
+                                                # Task is canceled
+                                                pass
+
 
                 except Queue.Empty:
                     self._logger.debug('No tasks in executed_queue.. timeout 5 secs')
@@ -130,7 +183,7 @@ class Updater(object):
             self._logger.error('Unknown error in thread: %s'%ex)
             self._thread_alive = False
             raise UnknownError(text=ex)
-
+    # -----------------------------------------------
         
     def terminate(self):
 
@@ -145,8 +198,9 @@ class Updater(object):
         except Exception, ex:
             self._logger.error('Could not terminate populator thread')
             pass
-
+    # -----------------------------------------------
 
     def check_alive(self):
 
         return self._thread_alive
+    # -----------------------------------------------

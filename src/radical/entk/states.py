@@ -9,11 +9,12 @@ NEW      = 'UNSCHEDULED'
 DONE     = 'DONE'
 FAILED   = 'FAILED'
 CANCELED = 'CANCELED'
+SCHEDULED = 'SCHEDULED' # pipeline, states only
 
 # shortcut
 INITIAL  = [NEW]
 FINAL = [DONE, FAILED, CANCELED]
 
-
-QUEUED = 'SCHEDULED'
+# Task only states
+QUEUED = 'QUEUED'
 EXECUTING = 'EXECUTING'

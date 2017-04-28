@@ -13,7 +13,6 @@ class Task(object):
         self._state     = states.NEW
 
         # Attributes necessary for execution
-        self._environment   = list()
         self._pre_exec      = list()
         self._executable    = list()
         self._arguments     = list()
@@ -195,4 +194,31 @@ class Task(object):
             raise TypeError(expected_type=str, actual_type=type(value))
     # -----------------------------------------------
 
-    
+    def replicate(self, original_task):
+
+        self._uid       = ru.generate_id('radical.entk.task')
+        self._name      = original_task.name
+
+        self._state     = states.NEW
+
+        # Attributes necessary for execution
+        self._pre_exec      = original_task.pre_exec
+        self._executable    = original_task.executable
+        self._arguments     = original_task.arguments
+        self._post_exec     = original_task.post_exec
+
+        # Data staging attributes
+        self._upload_input_data     = original_task.upload_input_data
+        self._copy_input_data       = original_task.copy_input_data
+        self._link_input_data       = original_task.link_input_data
+        self._copy_output_data      = original_task.copy_output_data
+        self._download_output_data  = original_task.download_output_data
+
+
+        ## The following help in updation
+        # Stage this task belongs to
+        self._parent_stage = original_task.parent_stage
+        # Pipeline this task belongs to
+        self._parent_pipeline = original_task.parent_pipeline
+
+        

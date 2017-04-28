@@ -155,3 +155,10 @@ class Pipeline(object):
             self._current_stage+=1
         else:
             self._completed_flag.set()
+
+    def decrement_stage(self):
+
+        if self._current_stage > 1:
+            self._current_stage -= 1
+            self._completed_flag = threading.Event() # reset
+            

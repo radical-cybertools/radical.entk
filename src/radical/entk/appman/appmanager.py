@@ -20,6 +20,7 @@ class AppManager(object):
         self._name      = str()
 
         self._workload  = None
+        self._resubmit_failed = False
 
 
         # Queues
@@ -38,7 +39,10 @@ class AppManager(object):
     def name(self):
         return self._name
 
-
+    @property
+    def resubmit_failed(self):
+        return self._resubmit_failed
+    
     # -----------------------------------------------
     # Setter functions
     # -----------------------------------------------
@@ -46,6 +50,10 @@ class AppManager(object):
     @name.setter
     def name(self, value):
         self._name = value
+
+    @resubmit_failed.setter
+    def resubmit_failed(self, value):
+        self._resubmit_failed = value
 
 
     # Function to add workload to the application manager
@@ -108,15 +116,16 @@ class AppManager(object):
                 helper.start_helper()
 
                 updater = Updater(workload = self._workload, executed_queue = self._executed_queue)
+                updater.resubmit_failed = self._resubmit_failed
                 updater.start_update()
 
-                pipe_count = len(self._workload)
+                active_pipe_count = len(self._workload)
                 while pipe_count > 0:
                     time.sleep(1)
 
                     for pipe in self._workload:
                         if pipe.completed:
-                            pipe_count -= 1
+                            active_pipe_count -= 1
 
 
                 # Terminate threads
