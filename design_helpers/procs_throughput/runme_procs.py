@@ -15,6 +15,15 @@ num_push_procs = 1
 num_pop_procs = 1
 num_queues = 1
 
+try:
+    shutil.rmtree(DATA)
+except:
+    pass
+
+
+os.makedirs(DATA)
+tasks_pushed = 0
+tasks_popped = 0
 
 
 def push_function(q, name):
@@ -50,7 +59,6 @@ def push_function(q, name):
 
         while (tasks_pushed < 1000000)and(not kill_pusher.is_set()):
 
-            
             #t = DATA
             q.put(t)
 
@@ -107,7 +115,6 @@ def pop_function(q, name):
     try:
 
         start_time = time.time()
-
         tasks_popped = 0
 
         pop_times = []
@@ -116,7 +123,6 @@ def pop_function(q, name):
         proc_mem = []
 
         while (tasks_popped < 1000000)and(not kill_popper.is_set()):
-
             try:
                 t = q.get()            
 
@@ -136,6 +142,7 @@ def pop_function(q, name):
                 pass
 
         f = open(DATA + '/%s.txt'%name,'w')
+
         for ind in range(len(pop_times)):
             f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind], proc_mem[ind]))
         f.close()
@@ -225,12 +232,15 @@ if __name__ == '__main__':
 
             print 'Push procs created '
 
-
             for t in push_procs:
                 t.join()
 
             for t in pop_procs:
                 t.join()
+
+        kill_popper.set()
+        for t in pop_procs:
+            t.join()
 
     except KeyboardInterrupt:
         print 'Main process killed'
