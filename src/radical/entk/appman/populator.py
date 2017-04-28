@@ -83,10 +83,14 @@ class Populator(object):
                             if not pipe.state == states.SCHEDULED:
                                 pipe.state = states.SCHEDULED
 
+                            print 'check-1'
+
                             if pipe.stages[pipe.current_stage].state in states.INITIAL:
 
                                 executable_stage = pipe.stages[pipe.current_stage]
                                 executable_tasks = executable_stage.tasks
+
+                                print 'check-2'
 
                                 try:
 
@@ -103,12 +107,16 @@ class Populator(object):
                                             # Add unscheduled task to pending_queue
                                             self._pending_queue.put(executable_task)
 
+                                            print 'check-3'
+
                                             # Update specific task's state if put to pending_queue
                                             executable_task.state = states.QUEUED
 
                                             # Update corresponding stage's state
                                             if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
                                                 pipe.stages[pipe.current_stage].state = states.SCHEDULED
+
+                                            print 'check-4'
 
                                         except Exception, ex:
 

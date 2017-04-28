@@ -120,7 +120,7 @@ class AppManager(object):
                 updater.start_update()
 
                 active_pipe_count = len(self._workload)
-                while pipe_count > 0:
+                while active_pipe_count > 0:
                     time.sleep(1)
 
                     for pipe in self._workload:

@@ -57,7 +57,7 @@ class Helper(object):
 
                     try:
                         self._executed_queue.put(task)
-                        task.state = states.EXECUTING
+                        task.state = states.DONE
                         self._logger.debug('Pushed finished task %s to executed queue'%(task.uid))
 
                     except Exception, ex:

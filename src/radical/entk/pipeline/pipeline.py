@@ -99,6 +99,13 @@ class Pipeline(object):
     def resource(self, value):
         self._resource = value
 
+    @state.setter
+    def state(self, value):
+        if isinstance(value,str):
+            self._state = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value)) 
+
     # -----------------------------------------------
 
     def add_stages(self, stages):
