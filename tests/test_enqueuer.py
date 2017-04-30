@@ -1,4 +1,4 @@
-from radical.entk.appman.populator import Populator
+from radical.entk.appman.task_enqueuer import Task_enqueuer
 from radical.entk import Pipeline, Stage, Task
 import pytest
 from radical.entk.exceptions import *
@@ -12,7 +12,7 @@ def test_workload_type():
     for data in data_type:
 
         with pytest.raises(TypeError):
-            p = Populator(data,q)
+            p = Task_enqueuer(data,q)
 
 def test_pending_queue_type():
 
@@ -43,7 +43,7 @@ def test_pending_queue_type():
     for data in data_type:
 
         with pytest.raises(TypeError):
-            p = Populator(p1,data)
+            p = Task_enqueuer(p1,data)
 
 def test_thread_termination():
 
@@ -70,7 +70,7 @@ def test_thread_termination():
 
         p1.add_stages(s)
 
-    p = Populator(p1,q)
-    p.start_population()
+    p = Task_enqueuer(p1,q)
+    p.start_enqueuer()
     p.terminate()
     assert p.check_alive() == False

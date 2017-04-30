@@ -1,4 +1,4 @@
-from radical.entk.appman.updater import Updater
+from radical.entk.appman.task_dequeuer import Task_dequeuer
 from radical.entk import Pipeline, Stage, Task
 import pytest
 from radical.entk.exceptions import *
@@ -12,7 +12,7 @@ def test_workload_type():
     for data in data_type:
 
         with pytest.raises(TypeError):
-            u = Updater(data,q)
+            u = Task_dequeuer(data,q)
 
 def test_executed_queue_type():
 
@@ -43,7 +43,7 @@ def test_executed_queue_type():
     for data in data_type:
 
         with pytest.raises(TypeError):
-            u = Updater(p1,data)
+            u = Task_dequeuer(p1,data)
 
 
 def test_thread_termination():
@@ -71,8 +71,8 @@ def test_thread_termination():
 
         p1.add_stages(s)
 
-    u = Updater(p1,q)
-    u.start_update()
+    u = Task_dequeuer(p1,q)
+    u.start_dequeuer()
     u.terminate()
     assert u.check_alive() == False
 
