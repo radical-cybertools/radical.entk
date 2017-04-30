@@ -5,8 +5,8 @@ __license__     = "MIT"
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
-from populator import Populator
-from updater import Updater
+from task_enqueuer import Task_enqueuer
+from task_dequeuer import Task_dequeuer
 from helper import Helper
 import sys, time
 import Queue
@@ -109,15 +109,17 @@ class AppManager(object):
 
             else:
 
-                populator = Populator(workload = self._workload, pending_queue=self._pending_queue)
-                populator.start_population()
+                # Start in following order: dequeuer, helper, enqueuer
+
+                dequeuer = Task_dequeuer(workload = self._workload, executed_queue = self._executed_queue)
+                dequeuer.resubmit_failed = self._resubmit_failed
+                dequeuer.start_dequeuer()
 
                 helper = Helper(pending_queue = self._pending_queue, executed_queue=self._executed_queue)
                 helper.start_helper()
 
-                updater = Updater(workload = self._workload, executed_queue = self._executed_queue)
-                updater.resubmit_failed = self._resubmit_failed
-                updater.start_update()
+                enqueuer = Task_enqueuer(workload = self._workload, pending_queue=self._pending_queue)
+                enqueuer.start_enqueuer()
 
                 active_pipe_count = len(self._workload)
                 while active_pipe_count > 0:
@@ -127,47 +129,65 @@ class AppManager(object):
                         if pipe.completed:
                             active_pipe_count -= 1
 
+                    if not dequeuer.check_alive():
 
-                # Terminate threads
-                self._logger.info('Closing populator thread')
-                populator.terminate()
-                self._logger.info('Populator thread closed')
-                self._logger.info('Closing updater thread')
-                updater.terminate()
-                self._logger.info('Updater thread closed')
+                        dequeuer = Task_dequeuer(workload = self._workload, executed_queue = self._executed_queue)
+                        dequeuer.resubmit_failed = self._resubmit_failed
+                        dequeuer.start_dequeuer()
+
+                    if not helper.check_alive():
+                        helper = Helper(pending_queue = self._pending_queue, executed_queue=self._executed_queue)
+                        helper.start_helper()
+
+                    if not enqueuer.check_alive():
+                        enqueuer = Task_enqueuer(workload = self._workload, pending_queue=self._pending_queue)
+                        enqueuer.start_enqueuer()
+
+
+
+                # Terminate threads in following order: enqueuer, helper, dequeuer
+                self._logger.info('Closing enqueuer thread')
+                enqueuer.terminate()
+                self._logger.info('Enqueuer thread closed')                
                 self._logger.info('Closing helper thread')
                 helper.terminate()
                 self._logger.info('Helper thread closed')
+                self._logger.info('Closing dequeuer thread')
+                dequeuer.terminate()
+                self._logger.info('Dequeuer thread closed')
 
 
         except Exception, ex:
 
             self._logger.error('Fatal error while running appmanager')
-            # Terminate threads
-            self._logger.info('Closing populator thread')
-            populator.terminate()
-            self._logger.info('Populator thread closed')
-            self._logger.info('Closing updater thread')
-            updater.terminate()
-            self._logger.info('Updater thread closed')
+            
+            # Terminate threads in following order: enqueuer, helper, dequeuer
+            self._logger.info('Closing enqueuer thread')
+            enqueuer.terminate()
+            self._logger.info('Enqueuer thread closed')                
             self._logger.info('Closing helper thread')
             helper.terminate()
             self._logger.info('Helper thread closed')
+            self._logger.info('Closing dequeuer thread')
+            dequeuer.terminate()
+            self._logger.info('Dequeuer thread closed')
+
             raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
-            # Terminate threads
-            self._logger.info('Closing populator thread')
-            populator.terminate()
-            self._logger.info('Populator thread closed')
-            self._logger.info('Closing updater thread')
-            updater.terminate()
-            self._logger.info('Updater thread closed')
+
+            # Terminate threads in following order: enqueuer, helper, dequeuer
+            self._logger.info('Closing enqueuer thread')
+            enqueuer.terminate()
+            self._logger.info('Enqueuer thread closed')                
             self._logger.info('Closing helper thread')
             helper.terminate()
             self._logger.info('Helper thread closed')
+            self._logger.info('Closing dequeuer thread')
+            dequeuer.terminate()
+            self._logger.info('Dequeuer thread closed')
 
             sys.exit(1)

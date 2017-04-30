@@ -8,6 +8,7 @@ import threading
 import Queue
 from radical.entk import states
 import time
+from random import randint
 
 # TEMPORARY FILE TILL AN EXECUTION PLUGIN IS IN PLACE
 
@@ -26,18 +27,18 @@ class Helper(object):
         self._helper_thread = None
         self._thread_alive = False
 
-        self._logger.info('Created populator object: %s'%self._uid)
+        self._logger.info('Created helper object: %s'%self._uid)
 
 
     def start_helper(self):
 
         # This method starts the extractor function in a separate thread
 
-        self._logger.info('Starting populator thread')
+        self._logger.info('Starting helper thread')
         self._helper_thread = threading.Thread(target=self.helper, name='helper')
         self._helper_thread.start()
         self._thread_alive = True
-        self._logger.debug('Populator thread started')
+        self._logger.debug('Helper thread started')
 
 
     def helper(self):
@@ -53,12 +54,16 @@ class Helper(object):
                 try:
 
                     task = self._pending_queue.get(timeout=5)
-                    self._logger.debug('Got finished task %s from pending queue'%(task.uid))                    
+                    self._logger.debug('Got task %s from pending queue'%(task.uid))                    
 
                     try:
                         self._executed_queue.put(task)
-                        task.state = states.DONE
-                        self._logger.debug('Pushed finished task %s to executed queue'%(task.uid))
+                        roll = randint(1,10)
+                        if roll==1:
+                            task.state states.FAILED
+                        else:
+                            task.state = states.DONE
+                        self._logger.debug('Pushed task %s with state %s to executed queue'%(task.uid, task.state))
 
                     except Exception, ex:
 

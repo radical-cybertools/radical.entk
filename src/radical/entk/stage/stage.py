@@ -151,20 +151,14 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    def check_tasks_status(self, failed_ok=False):
+    def check_tasks_status(self):
 
         try:
 
-            if failed_ok:
-                for task in self._tasks:
-                    if task.state not in [states.DONE, states.FAILED]:
-                        return False
-
-            else:
-                for task in self._tasks:
-                    if task.state is not states.DONE:
-                        return False
-
+            for task in self._tasks:
+                if task.state not in [states.DONE, states.FAILED]:
+                    return False
+                    
             return True
 
         except Exception, ex:

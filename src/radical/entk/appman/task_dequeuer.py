@@ -8,12 +8,12 @@ import threading
 import Queue
 from radical.entk import states, Pipeline, Task
 
-class Updater(object):
+class Task_dequeuer(object):
 
     def __init__(self, workload, executed_queue):
 
-        self._uid           = ru.generate_id('radical.entk.updater')
-        self._logger        = ru.get_logger('radical.entk.updater')
+        self._uid           = ru.generate_id('radical.entk.task_dequeuer')
+        self._logger        = ru.get_logger('radical.entk.task_dequeuer')
 
         if not isinstance(executed_queue,Queue.Queue):
             raise TypeError(expected_type="Queue", actual_type=type(executed_queue))
@@ -24,10 +24,10 @@ class Updater(object):
         self._terminate = threading.Event()
         self._resubmit_failed = False
 
-        self._update_thread = None
+        self._dequeue_thread = None
         self._thread_alive = False
 
-        self._logger.info('Created updater object: %s'%self._uid)
+        self._logger.info('Created task_dequeuer object: %s'%self._uid)
 
     # -----------------------------------------------
     # Getter functions
@@ -61,17 +61,17 @@ class Updater(object):
         return workload
     # -----------------------------------------------
 
-    def start_update(self):
+    def start_dequeuer(self):
 
-        # This method starts the update function in a separate thread
-        self._logger.info('Starting updater thread')
-        self._update_thread = threading.Thread(target=self.update, name='updater')
-        self._update_thread.start()
+        # This method starts the dequeue function in a separate thread
+        self._logger.info('Starting dequeue thread')
+        self._dequeue_thread = threading.Thread(target=self.dequeue, name='dequeue')
+        self._dequeue_thread.start()
         self._thread_alive = True
-        self._logger.debug('Updater thread started')
+        self._logger.debug('Dequeue thread started')
     # -----------------------------------------------
 
-    def update(self):
+    def dequeue(self):
 
         # This function gets tasks from the 'executed_queue' that have finished 
         # executing. It then updates the various objects in the workload to their
@@ -144,7 +144,7 @@ class Updater(object):
 
                                                 else:
 
-                                                    if stage.check_tasks_status(failed_ok=True):
+                                                    if stage.check_tasks_status():
 
                                                         try:
                                                             self._logger.info('All tasks of stage %s finished' %(stage.uid))
@@ -193,7 +193,7 @@ class Updater(object):
                 self._terminate.set()
                 self._thread_alive = False
 
-            self._update_thread.join()
+            self._dequeue_thread.join()
 
         except Exception, ex:
             self._logger.error('Could not terminate populator thread')

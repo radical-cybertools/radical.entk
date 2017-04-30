@@ -8,14 +8,14 @@ import threading
 import Queue
 from radical.entk import states, Pipeline
 import time
+from random import randint
 
-
-class Populator(object):
+class Task_enqueuer(object):
 
     def __init__(self, workload, pending_queue):
 
-        self._uid           = ru.generate_id('radical.entk.populator')        
-        self._logger        = ru.get_logger('radical.entk.populator')
+        self._uid           = ru.generate_id('radical.entk.task_enqueuer')        
+        self._logger        = ru.get_logger('radical.entk.task_enqueuer')
         self._workload      = self.validate_workload(workload)
 
         if not isinstance(pending_queue,Queue.Queue):
@@ -24,10 +24,10 @@ class Populator(object):
         self._pending_queue = pending_queue
         self._terminate     = threading.Event()
 
-        self._populate_thread = None
+        self._enqueue_thread = None
         self._thread_alive = False
 
-        self._logger.info('Created populator object: %s'%self._uid)
+        self._logger.info('Created task_enqueuer object: %s'%self._uid)
 
     def validate_workload(self, workload):
 
@@ -47,22 +47,22 @@ class Populator(object):
         return workload
         
 
-    def start_population(self):
+    def start_enqueuer(self):
 
         # This method starts the extractor function in a separate thread
 
-        self._logger.info('Starting populator thread')
-        self._populate_thread = threading.Thread(target=self.populate, name='populator')
-        self._populate_thread.start()
+        self._logger.info('Starting enqueue thread')
+        self._enqueue_thread = threading.Thread(target=self.enqueue, name='enqueue')
+        self._enqueue_thread.start()
         self._thread_alive = True
 
-        self._logger.debug('Populator thread started')
+        self._logger.debug('Enqueue thread started')
 
 
-    def populate(self):
+    def enqueue(self):
 
         # This function extracts currently executable tasks from the workload
-        # and pushes it to the 'executable_queue'. This function also updates the 
+        # and pushes it to the 'pending_queue'. This function also updates the 
         # state of the stage and task objects.
 
         try:
@@ -83,63 +83,58 @@ class Populator(object):
                             if not pipe.state == states.SCHEDULED:
                                 pipe.state = states.SCHEDULED
 
-                            print 'check-1'
-
-                            if pipe.stages[pipe.current_stage].state in states.INITIAL:
+                            if pipe.stages[pipe.current_stage].state in [states.NEW, states.SCHEDULED]:
 
                                 executable_stage = pipe.stages[pipe.current_stage]
                                 executable_tasks = executable_stage.tasks
 
-                                print 'check-2'
-
                                 try:
 
                                     for executable_task in executable_tasks:
+
+                                        if executable_task.state == state.NEW:
                                     
-                                        self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
-                                                                    executable_task.uid,
-                                                                    executable_task.parent_stage,
-                                                                    executable_task.parent_pipeline))
+                                            self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
+                                                                        executable_task.uid,
+                                                                        executable_task.parent_stage,
+                                                                        executable_task.parent_pipeline))
 
-                                        # Try-exception block for tasks
-                                        try:
+                                            # Try-exception block for tasks
+                                            try:
 
-                                            # Add unscheduled task to pending_queue
-                                            self._pending_queue.put(executable_task)
+                                                # Add unscheduled task to pending_queue
+                                                self._pending_queue.put(executable_task)
 
-                                            print 'check-3'
+                                                # Update specific task's state if put to pending_queue
+                                                executable_task.state = states.QUEUED
 
-                                            # Update specific task's state if put to pending_queue
-                                            executable_task.state = states.QUEUED
+                                                # Update corresponding stage's state
+                                                if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
+                                                    pipe.stages[pipe.current_stage].state = states.SCHEDULED
 
-                                            # Update corresponding stage's state
-                                            if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
-                                                pipe.stages[pipe.current_stage].state = states.SCHEDULED
+                                            except Exception, ex:
 
-                                            print 'check-4'
+                                                # Rolling back queue status
+                                                self._logger.error('Error while updating task '+
+                                                    'state, rolling back. Error: %s'%ex)
 
-                                        except Exception, ex:
-
-                                            # Rolling back queue status
-                                            self._logger.error('Error while updating task '+
-                                                'state, rolling back. Error: %s'%ex)
-
-                                            # Now pending_queue does not have the specific task
-                                            temp_queue = Queue.Queue()
-                                            for task_id in range(self._pending_queue.qsize()-1):
-                                                task = self._pending_queue.get()
-                                                if not task.uid == executable_task.uid:
-                                                    temp_queue.put(task)                                        
-                                            self._pending_queue = temp_queue
+                                                # Now pending_queue does not have the specific task
+                                                temp_queue = Queue.Queue()
+                                                for task_id in range(self._pending_queue.qsize()-1):
+                                                    task = self._pending_queue.get()
+                                                    if not task.uid == executable_task.uid:
+                                                        temp_queue.put(task)                                        
+                                                self._pending_queue = temp_queue
                                         
-                                            # Revert task status
-                                            executable_task.state = states.NEW
-                                            raise # should go to the next exception
+                                                # Revert task status
+                                                executable_task.state = states.NEW
+                                                raise # should go to the next exception
 
-                                        self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
+                                    self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
                                                             pipe.stages[pipe.current_stage].uid,
                                                             pipe.uid,
                                                             pipe.stages[pipe.current_stage].state))
+
                                                                         
                                 except Exception, ex:
 
@@ -150,6 +145,10 @@ class Populator(object):
                                     # Revert stage state
                                     pipe.stages[pipe.current_stage].state = states.NEW                                        
                                 
+                                roll =  randint(1,10)
+                                if roll == 1:
+                                    self._logger.error('Intentionally triggering failure')
+                                    raise
                 time.sleep(1)
 
         except Exception, ex:
@@ -172,17 +171,12 @@ class Populator(object):
                 self._terminate.set()
                 self._thread_alive = False
 
-            self._populate_thread.join()
+            self._enqueue_thread.join()
 
         except Exception, ex:
-            self._logger.error('Could not terminate populator thread')
+            self._logger.error('Could not terminate enqueuer thread')
             pass
 
     def check_alive(self):
-
         return self._thread_alive
 
-    def reset(self):
-
-        # Reset terminate condition to restart the thread
-        self._terminate = threading.Event()
