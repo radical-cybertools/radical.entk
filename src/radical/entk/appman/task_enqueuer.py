@@ -145,10 +145,6 @@ class Task_enqueuer(object):
                                     # Revert stage state
                                     pipe.stages[pipe.current_stage].state = states.NEW                                        
                                 
-                                roll =  randint(1,10)
-                                if roll == 1:
-                                    self._logger.error('Intentionally triggering failure')
-                                    raise
                 time.sleep(1)
 
         except Exception, ex:

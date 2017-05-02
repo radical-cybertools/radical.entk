@@ -58,11 +58,7 @@ class Helper(object):
 
                     try:
                         self._executed_queue.put(task)
-                        roll = randint(1,10)
-                        if roll==1:
-                            task.state = states.FAILED
-                        else:
-                            task.state = states.DONE
+                        task.state = states.DONE
                         self._logger.debug('Pushed task %s with state %s to executed queue'%(task.uid, task.state))
 
                     except Exception, ex:
