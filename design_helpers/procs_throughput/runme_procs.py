@@ -7,6 +7,7 @@ import os
 import shutil
 from Queue import Empty
 from pympler import asizeof
+import psutil
 
 kill_pusher = mp.Event()
 kill_popper = mp.Event()
@@ -15,13 +16,6 @@ num_push_procs = 1
 num_pop_procs = 1
 num_queues = 1
 
-try:
-    shutil.rmtree(DATA)
-except:
-    pass
-
-
-os.makedirs(DATA)
 tasks_pushed = 0
 tasks_popped = 0
 
@@ -92,7 +86,7 @@ def push_function(q, name):
         print len(push_times), len(q_len), len(q_sizes)
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for ind in range(min(len(push_times),len(q_len),len(q_sizes), len(proc_mem[ind]))):
+        for ind in range(min(len(push_times),len(q_len),len(q_sizes), len(proc_mem))):
             f.write('%s %s %s\n'%(push_times[ind],q_len[ind],q_sizes[ind], proc_mem[ind]))
         f.close()
 
@@ -103,7 +97,7 @@ def push_function(q, name):
         print len(push_times), len(q_len), len(q_sizes)
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for ind in range(min(len(push_times),len(q_len),len(q_sizes), len(proc_mem[ind]))):
+        for ind in range(min(len(push_times),len(q_len),len(q_sizes), len(proc_mem))):
             f.write('%s %s %s\n'%(push_times[ind],q_len[ind],q_sizes[ind], proc_mem[ind]))
         f.close()
 
@@ -155,7 +149,7 @@ def pop_function(q, name):
         print len(pop_times), len(q_len), len(q_sizes)
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for ind in range(min(len(pop_times),len(q_len),len(q_sizes), len(proc_mem[ind]))):
+        for ind in range(min(len(pop_times),len(q_len),len(q_sizes), len(proc_mem))):
             f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind]), proc_mem[ind])
         f.close()
 
@@ -166,7 +160,7 @@ def pop_function(q, name):
         print len(push_times), len(q_len), len(q_sizes)
 
         f = open(DATA + '/%s.txt'%name,'w')
-        for ind in range(min(len(pop_times),len(q_len),len(q_sizes), len(proc_mem[ind]))):
+        for ind in range(min(len(pop_times),len(q_len),len(q_sizes), len(proc_mem))):
             f.write('%s %s %s\n'%(pop_times[ind],q_len[ind],q_sizes[ind]), proc_mem[ind])
         f.close()
 
