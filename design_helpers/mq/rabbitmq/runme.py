@@ -43,7 +43,7 @@ def worker(queue, ind):
 
         f = open(DATA + '/consumer_%s.txt'%ind,'w')
         f.write('Consumer %s start time: %s %s\n'%(ind, start, len(times)))
-        f.write('Consumer %s end time: %s %s\n'%s(ind, time.time(), len(times)))
+        f.write('Consumer %s end time: %s %s\n'%(ind, time.time(), len(times)))
         f.close()
         #f = open('%s/profile_proc%s.txt'%(DATA,ind),'w')
         #for val in times:
@@ -58,7 +58,7 @@ def worker(queue, ind):
 
 num_tasks = 1000000
 DATA = ''
-trials = [1]
+trials = [2,3]
 if __name__ == '__main__':
 
     for trial in trials:

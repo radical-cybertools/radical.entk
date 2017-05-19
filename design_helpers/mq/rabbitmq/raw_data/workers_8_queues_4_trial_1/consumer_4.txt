@@ -1,1 +1,2 @@
-Consumer 4 Time: 51.0944960117 125268
+Consumer 4 start time: 1495230360.69 194
+Consumer 4 end time: 1495230360.81 194

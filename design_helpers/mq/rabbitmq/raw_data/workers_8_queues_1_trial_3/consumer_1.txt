@@ -1,1 +1,2 @@
-Consumer 1 Time: 14.826086998 17631
+Consumer 1 start time: 1495232519.22 124181
+Consumer 1 end time: 1495232607.04 124181

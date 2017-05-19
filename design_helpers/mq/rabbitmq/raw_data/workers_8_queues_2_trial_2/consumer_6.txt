@@ -1,1 +1,2 @@
-Consumer 6 Time: 57.1591470242 125837
+Consumer 6 start time: 1495231675.38 124186
+Consumer 6 end time: 1495231734.56 124186

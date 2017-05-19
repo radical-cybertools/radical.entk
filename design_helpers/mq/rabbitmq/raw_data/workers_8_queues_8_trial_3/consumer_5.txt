@@ -1,1 +1,2 @@
-Consumer 5 Time: 47.1414830685 125000
+Consumer 5 start time: 1495233091.65 262
+Consumer 5 end time: 1495233091.76 262

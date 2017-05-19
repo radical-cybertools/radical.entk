@@ -1,1 +1,2 @@
-Consumer 3 Time: 84.33228302 125191
+Consumer 3 start time: 1495229830.95 166836
+Consumer 3 end time: 1495229931.07 166836

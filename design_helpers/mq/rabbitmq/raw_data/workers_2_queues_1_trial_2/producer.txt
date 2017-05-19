@@ -1,1 +1,2 @@
-Producer time: 32.3788089752
+Producer start time: 1495231039.09
+Producer end time: 1495231072.43
