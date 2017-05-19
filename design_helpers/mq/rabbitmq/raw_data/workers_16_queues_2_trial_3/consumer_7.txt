@@ -1,0 +1,2 @@
+Consumer 7 start time: 1495234948.23 1595
+Consumer 7 end time: 1495234949.1 1595

@@ -1,0 +1,2 @@
+Consumer 9 start time: 1495235304.18 442
+Consumer 9 end time: 1495235304.43 442

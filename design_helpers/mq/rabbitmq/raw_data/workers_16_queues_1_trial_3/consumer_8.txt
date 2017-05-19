@@ -1,0 +1,2 @@
+Consumer 8 start time: 1495234819.42 642
+Consumer 8 end time: 1495234819.78 642

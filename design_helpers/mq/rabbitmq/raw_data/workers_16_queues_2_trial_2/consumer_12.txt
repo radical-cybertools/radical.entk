@@ -1,0 +1,2 @@
+Consumer 12 start time: 1495234614.29 165761
+Consumer 12 end time: 1495234687.94 165761

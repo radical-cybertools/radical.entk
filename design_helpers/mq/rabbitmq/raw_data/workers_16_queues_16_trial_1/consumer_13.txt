@@ -1,0 +1,2 @@
+Consumer 13 start time: 1495235260.3 62500
+Consumer 13 end time: 1495235304.06 62500

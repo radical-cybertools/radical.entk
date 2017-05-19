@@ -1,0 +1,2 @@
+Consumer 3 start time: 1495234249.11 560
+Consumer 3 end time: 1495234249.4 560

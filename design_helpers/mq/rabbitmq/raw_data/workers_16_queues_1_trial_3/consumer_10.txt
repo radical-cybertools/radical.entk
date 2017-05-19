@@ -1,0 +1,2 @@
+Consumer 10 start time: 1495234819.42 640
+Consumer 10 end time: 1495234819.77 640
