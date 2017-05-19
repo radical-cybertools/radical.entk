@@ -17,6 +17,7 @@ class Task(object):
         self._executable    = list()
         self._arguments     = list()
         self._post_exec     = list()
+        self._cores  = 1
 
         # Data staging attributes
         self._upload_input_data     = list()
@@ -64,6 +65,10 @@ class Task(object):
     @property
     def post_exec(self):
         return self._post_exec
+
+    @property
+    def cores(self):
+        return self._cores
 
     @property
     def upload_input_data(self):
@@ -143,6 +148,13 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(value))
 
+    @cores.setter
+    def cores(self, val):
+        if isinstance(val, int):
+            self._cores = val
+        else:
+            raise TypeError(expected_type=int, actual_type=type(val))
+
 
     @upload_input_data.setter
     def upload_input_data(self, value):
@@ -221,4 +233,29 @@ class Task(object):
         # Pipeline this task belongs to
         self._parent_pipeline = original_task.parent_pipeline
 
+        
+    def to_dict(self):
+
+        task_desc_as_dict = {
+                                                'uid': self._uid,
+                                                'name': self._name,
+                                                'state': self._state,
+
+                                                'pre_exec': self._pre_exec,
+                                                'executable': self._executable,
+                                                'arguments': self._arguments,
+                                                'post_exec': self._post_exec,
+                                                'cores': self._cores,
+
+                                                'upload_input_data': self._upload_input_data,
+                                                'copy_input_data': self._copy_input_data,
+                                                'link_input_data': self._link_input_data,
+                                                'copy_output_data': self._copy_output_data,
+                                                'download_output_data': self._download_output_data,
+
+                                                'parent_stage': self._parent_stage,
+                                                'parent_pipeline': self._parent_pipeline,
+                                        }
+
+        return task_desc_as_dict
         
