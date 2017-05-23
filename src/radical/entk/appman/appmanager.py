@@ -10,7 +10,7 @@ from task_dequeuer import Task_dequeuer
 from helper import Helper
 import sys, time
 import Queue
-
+import pika
 
 class AppManager(object):
 
@@ -22,10 +22,20 @@ class AppManager(object):
         self._workload  = None
         self._resubmit_failed = False
 
+        # RabbitMQ Queues
+        self._pending_queue = list()
+        self._completed_queue = list()
+        # RabbitMQ inits
+        self._mq_connection = None
+        self._mq_channel = None
+        self._mq_hostname = mq_hostname
 
-        # Queues
-        self._pending_queue = Queue.Queue()
-        self._executed_queue = Queue.Queue()
+
+        # Threads and procs
+        self._num_push_threads = push_threads
+        self._num_pull_threads = pull_threads
+        self._num_push_procs = push_procs
+        self._num_pull_procs = pull_procs
 
         # Logger
         self._logger = ru.get_logger('radical.entk.appmanager')
