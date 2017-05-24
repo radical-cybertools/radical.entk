@@ -259,3 +259,25 @@ class Task(object):
 
         return task_desc_as_dict
         
+
+    def load_from_dict(self, d):
+
+        self._uid   = d['uid']
+        self._name = d['name']
+        self._state = d['state']
+
+        self._pre_exec = d['pre_exec']
+        self._executable = d['executable']
+        self._arguments = d['arguments']
+        self._post_exec = d['post_exec']
+        self._cores = d['cores']
+                                                
+        self._upload_input_data = d['upload_input_data']
+        self._copy_input_data = d['copy_input_data']
+        self._link_input_data = d['link_input_data']
+        self._copy_output_data = d['copy_output_data']
+        self._download_output_data = d['download_output_data']                                                
+
+        self._parent_stage = d['parent_stage']
+        self._parent_pipeline = d['parent_pipeline']
+                                                
