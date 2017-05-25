@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
         p1.add_stages(s)
 
+    '''
     for cnt in range(stages):
         s = Stage()
         s.name = 's-%s'%cnt
@@ -35,8 +36,9 @@ if __name__ == '__main__':
         s.add_tasks(create_single_task())
 
         p2.add_stages(s)
+    '''
+
 
     appman = AppManager()
-    appman.resubmit_failed = True
-    appman.assign_workload(set([p1,p2]))
+    appman.assign_workload(set([p1]))
     appman.run()

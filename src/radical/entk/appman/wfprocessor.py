@@ -7,8 +7,11 @@ from radical.entk.exceptions import *
 from multiprocessing import Process
 from radical.entk import states, Pipeline, Task
 import time
+from time import sleep
 import json
-
+import threading
+import pika
+import traceback
 
 class WFprocessor(object):
 
@@ -35,7 +38,7 @@ class WFprocessor(object):
 
         # This method starts the extractor function in a separate thread
 
-        self._logger.info('Starting wfprocessor')
+        
 
         if not self._wfp_process:
 
@@ -49,9 +52,8 @@ class WFprocessor(object):
                 self._dequeue_thread_terminate = threading.Event()
 
                 self._wfp_terminate = threading.Event()
-                self._wfp_process.start()
-
-                self._logger.info('WFprocessor started')
+                self._logger.info('Starting WFprocessor process')
+                self._wfp_process.start()                
 
                 return True
 
@@ -98,18 +100,25 @@ class WFprocessor(object):
         try:
 
             # Process should run till terminate condtion is encountered
-            while not self._wfp_terminate.is_set():
+            self._logger.info('WFprocessor started')
 
-                # Start enqueue thread
-                if (not self._enqueue_thread) or (self._enqueue_thread.is_alive()):
-                    self._enqueue_thread = threading.Thread(target=enqueue, name='enqueue-thread')
-                    self._enqueue_thread.start()
+            while not self._wfp_terminate.is_set():
 
 
                 # Start dequeue thread
-                if (not self._dequeue_thread) or (self._dequeue_thread.is_alive()):
-                    self._dequeue_thread = threading.Thread(target=enqueue, name='dequeue-thread')
+                if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
+                    self._dequeue_thread = threading.Thread(target=self.dequeue, name='dequeue-thread')
+
+                    self._logger.info('Starting dequeue thread')
                     self._dequeue_thread.start()
+
+                # Start enqueue thread
+                if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
+                    self._enqueue_thread = threading.Thread(target=self.enqueue, name='enqueue-thread')
+
+                    self._logger.info('Starting enqueue thread')
+                    self._enqueue_thread.start()
+              
 
             self._enqueue_thread_terminate.set()
             self._enqueue_thread.join()
@@ -121,6 +130,8 @@ class WFprocessor(object):
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel wfprocessor process gracefully...')
+
+            print traceback.format_exc()
 
             if not self._enqueue_thread_terminate.is_set():
                 self._enqueue_thread_terminate.set()
@@ -135,6 +146,7 @@ class WFprocessor(object):
 
         except Exception, ex:
             self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
+            print traceback.format_exc()
 
             if not self._enqueue_thread_terminate.is_set():
                 self._enqueue_thread_terminate.set()
@@ -151,6 +163,13 @@ class WFprocessor(object):
 
         try:
 
+            self._logger.info('Enqueue thread started')
+
+            mq_connection = pika.BlockingConnection(
+                                    pika.ConnectionParameters(host='localhost')
+                                    )
+            mq_channel = mq_connection.channel()
+
             while not self._enqueue_thread_terminate.is_set():
 
                 for pipe in self._workload:
@@ -165,16 +184,18 @@ class WFprocessor(object):
                             if not pipe.state == states.SCHEDULED:
                                 pipe.state = states.SCHEDULED
     
-                            if pipe.stages[pipe.current_stage].state in [states.NEW, states.SCHEDULED]:
+                            if pipe.stages[pipe.current_stage].state in [states.NEW]:
     
                                 executable_stage = pipe.stages[pipe.current_stage]
                                 executable_tasks = executable_stage.tasks
     
                                 try:
+
+                                    tasks_submitted=False
     
                                     for executable_task in executable_tasks:
     
-                                        if executable_task.state == state.NEW:
+                                        if executable_task.state == states.NEW:
                                             
                                             self._logger.debug('Task: %s, Stage: %s, Pipeline: %s'%(
                                                                 executable_task.uid,
@@ -187,20 +208,32 @@ class WFprocessor(object):
                                                 # Update specific task's state if put to pending_queue
                                                 executable_task.state = states.QUEUED
     
-                                                task_as_dist = json.dumps(executable_task.to_dict())
+                                                task_as_dict = json.dumps(executable_task.to_dict())
     
-                                                self._mq_channel.basic_publish( exchange='',
+                                                self._logger.debug('Publishing task %s to %s'
+                                                                            %(executable_task.uid,
+                                                                                self._pending_queue[0])
+                                                                        )
+
+                                                mq_channel.basic_publish( exchange='',
                                                                                 routing_key=self._pending_queue[0],
-                                                                                body=task_as_dict,
-                                                                                properties=pika.BasicProperties(
+                                                                                body=task_as_dict
+                                                                                #properties=pika.BasicProperties(
                                                                                 # make message persistent
-                                                                                delivery_mode = 2, 
-                                                                                )
+                                                                                #delivery_mode = 2, 
+                                                                                #)
                                                                             )
+
+                                                tasks_submitted = True
+                                                self._logger.debug('Task %s published to queue'% executable_task.uid)
                                                 
                                                 # Update corresponding stage's state
                                                 if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
                                                     pipe.stages[pipe.current_stage].state = states.SCHEDULED
+
+                                                    self._logger.debug('Stage %s state %s'%(pipe.stages[pipe.current_stage].uid,
+                                                                                            pipe.stages[pipe.current_stage].state)
+                                                                        )
     
                                             except Exception, ex:
     
@@ -211,11 +244,16 @@ class WFprocessor(object):
                                                 # Revert task status
                                                 executable_task.state = states.NEW
                                                 raise # should go to the next exception
-    
-                                    self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
-                                                        pipe.stages[pipe.current_stage].uid,
-                                                        pipe.uid,
-                                                        pipe.stages[pipe.current_stage].state))
+                                    
+                                    if tasks_submitted:
+                                        self._logger.info('Tasks in Stage %s of Pipeline %s: %s'%(
+                                                            pipe.stages[pipe.current_stage].uid,
+                                                            pipe.uid,
+                                                            pipe.stages[pipe.current_stage].state))
+
+                                        tasks_submitted = False
+
+                                    sleep(1)
     
                                                                                 
                                 except Exception, ex:
@@ -238,6 +276,7 @@ class WFprocessor(object):
         except Exception, ex:
 
             self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
+            print traceback.format_exc()
             raise UnknownError(text=ex) 
 
 
@@ -246,11 +285,18 @@ class WFprocessor(object):
 
         try:
 
+            self._logger.info('Dequeue thread started')
+
+            mq_connection = pika.BlockingConnection(
+                                    pika.ConnectionParameters(host='localhost')
+                                    )
+            mq_channel = mq_connection.channel()
+
             while not self._dequeue_thread_terminate.is_set():
 
                 try:
 
-                    method_frame, header_frame, body = channel.basic_get(queue=self._completed_queue[0])
+                    method_frame, header_frame, body = mq_channel.basic_get(queue=self._completed_queue[0])
 
                     if body:
 
@@ -258,110 +304,118 @@ class WFprocessor(object):
                         completed_task = Task()
                         completed_task.load_from_dict(json.loads(body))
 
-                        self._logger.debug('Got finished task %s from queue'%(task.uid))
+                        self._logger.debug('Got finished task %s from queue'%(completed_task.uid))
 
                         for pipe in self._workload:
 
-                            if not pipe.completed:
+                            with pipe.stage_lock:
 
-                                if completed_task.parent_pipeline == pipe.uid:
+                                if not pipe.completed:
 
-                                    self._logger.debug('Found parent pipeline: %s'%pipe.uid)
-                            
-                                    for stage in pipe.stages:
+                                    if completed_task.parent_pipeline == pipe.uid:
 
-                                        if completed_task.parent_stage == stage.uid:
-                                            self._logger.debug('Found parent stage: %s'%(stage.uid))
+                                        self._logger.debug('Found parent pipeline: %s'%pipe.uid)
+                                
+                                        for stage in pipe.stages:
 
-                                            #task.state = states.DONE
-                                            self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
-                                                            task.uid,
-                                                            pipe.stages[pipe.current_stage].uid,
-                                                            pipe.uid,
-                                                            task.state))
+                                            if completed_task.parent_stage == stage.uid:
+                                                self._logger.debug('Found parent stage: %s'%(stage.uid))
 
-                                            for task in stage:
+                                                #task.state = states.DONE
+                                                self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
+                                                                completed_task.uid,
+                                                                pipe.stages[pipe.current_stage].uid,
+                                                                pipe.uid,
+                                                                completed_task.state))
 
-                                                if task.uid == completed_task.uid:
-                                                    task = completed_task
+                                                for task in stage.tasks:
 
-                                                    if task.state == states.DONE:
+                                                    if task.uid == completed_task.uid:
+                                                        task = completed_task
 
-                                                        if stage.check_tasks_status():
-
-                                                            try:
-                                                                self._logger.info('All tasks of stage %s finished' %(stage.uid))
-                                                                stage.state = states.DONE
-                                                                pipe.increment_stage()
-
-                                                            except Exception, ex:
-                                                                # Rolling back stage status
-                                                                self._logger.error('Error while updating stage '+
-                                                                            'state, rolling back. Error: %s'%ex)
-                                                                stage.state = stage.SCHEDULED
-                                                                pipe.decrement_stage()
-
-                                                                raise
-
-                                                            if pipe.completed:
-                                                                #self._workload.remove(pipe)
-                                                                self._logger.info('Pipelines %s has completed'%(pipe.uid))
-                                                                pipe.state = states.DONE
-
-                                                    elif completed_task.state == states.FAILED:
-
-                                                        if self._resubmit_failed:
-
-                                                            try:
-                                                                new_task = Task()
-                                                                new_task.replicate(completed_task)
-
-                                                                pipe.stages[pipe.current_stage].add_tasks(new_task)
-
-                                                            except Exception, ex:
-                                                                self._logger.error("Resubmission of task %s failed, error: %s"%
-                                                                                                (completed_task.uid,ex))
-                                                                raise
-
-                                                        else:
+                                                        if task.state == states.DONE:
 
                                                             if stage.check_tasks_status():
 
-                                                            try:
-                                                                self._logger.info('All tasks of stage %s finished' %
-                                                                                                        (stage.uid))
-                                                                stage.state = states.DONE
-                                                                pipe.increment_stage()
+                                                                try:
+                                                                    self._logger.info('All tasks of stage %s finished' %(stage.uid))
+                                                                    stage.state = states.DONE
+                                                                    pipe.increment_stage()
 
-                                                            except Exception, ex:
-                                                                # Rolling back stage status
-                                                                self._logger.error('Error while updating stage '+
-                                                                                'state, rolling back. Error: %s'%ex)
-                                                                stage.state = stage.SCHEDULED
-                                                                pipe.decrement_stage()
+                                                                except Exception, ex:
+                                                                    # Rolling back stage status
+                                                                    self._logger.error('Error while updating stage '+
+                                                                            'state, rolling back. Error: %s'%ex)
+                                                                    stage.state = stage.SCHEDULED
+                                                                    pipe.decrement_stage()
 
-                                                                raise                                        
+                                                                    raise
 
-                                                            if pipe.completed:
-                                                                #self._workload.remove(pipe)
-                                                                self._logger.info('Pipelines %s has completed'%(pipe.uid))
-                                                                pipe.state = states.DONE
+                                                                if pipe.completed:
+                                                                    #self._workload.remove(pipe)
+                                                                    self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                                                    pipe.state = states.DONE
 
-                                                    else:
+                                                        elif completed_task.state == states.FAILED:
 
-                                                        # Task is canceled
-                                                        pass
+                                                            if self._resubmit_failed:
 
-                                                    # Found the task and processed it -- no more iterations needed
-                                                    break
+                                                                try:
+                                                                    new_task = Task()
+                                                                    new_task.replicate(completed_task)
 
-                                            # Found the stage and processed it -- no more iterations neeeded
-                                            break
+                                                                    pipe.stages[pipe.current_stage].add_tasks(new_task)
 
-                                    # Found the pipeline and processed it -- no more iterations neeeded
-                                    break
+                                                                except Exception, ex:
+                                                                    self._logger.error("Resubmission of task %s failed, error: %s"%
+                                                                                                    (completed_task.uid,ex))
+                                                                    raise
 
-                        self._mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                                            else:
+
+                                                                if stage.check_tasks_status():
+
+                                                                    try:
+                                                                        self._logger.info('All tasks of stage %s finished' %
+                                                                                                                (stage.uid))
+                                                                        stage.state = states.DONE
+                                                                        pipe.increment_stage()
+
+                                                                    except Exception, ex:
+                                                                        # Rolling back stage status
+                                                                        self._logger.error('Error while updating stage '+
+                                                                                        'state, rolling back. Error: %s'%ex)
+                                                                        stage.state = stage.SCHEDULED
+                                                                        pipe.decrement_stage()
+
+                                                                        raise                                        
+
+                                                                    if pipe.completed:
+                                                                        #self._workload.remove(pipe)
+                                                                        self._logger.info('Pipelines %s has completed'%(pipe.uid))
+                                                                        pipe.state = states.DONE
+
+                                                        else:
+
+                                                            # Task is canceled
+                                                            pass
+
+                                                        # Found the task and processed it -- no more iterations needed
+                                                        break
+
+                                                # Found the stage and processed it -- no more iterations neeeded
+                                                break
+
+                                        # Found the pipeline and processed it -- no more iterations neeeded
+                                        break
+
+                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+
+                        sleep(1)
+
+                except Exception, ex:
+                    self._logger.error('Unable to receive message from completed queue: %s'%ex)
+                    raise
 
 
         except KeyboardInterrupt:
@@ -371,6 +425,7 @@ class WFprocessor(object):
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)
+            print traceback.format_exc()
             raise UnknownError(text=ex)
 
 

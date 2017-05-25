@@ -2,6 +2,7 @@
 
 import time
 from multiprocessing import Process
+from threading import Thread
 import traceback
 import pika
 from radical.entk import Task
@@ -38,7 +39,7 @@ def worker(queue, ind):
             else:
                 #print 'Proc %s: '%ind,'Done'
                 pending_data = False
-                connection.close()
+                #connection.close()
 
         f = open(DATA + '/consumer_%s.txt'%ind,'w')
         f.write('Consumer %s start time: %s %s\n'%(ind, start, len(times)))
@@ -55,16 +56,16 @@ def worker(queue, ind):
         print traceback.format_exc()
     
 
-num_tasks = 1000000
+num_tasks = 10000
 DATA = ''
-trials = [2,3]
+trials = [1]
 if __name__ == '__main__':
 
     for trial in trials:
 
-        for num_queues in [1,2,4,8]:
+        for num_queues in [1]:
 
-            for num_workers in [1,2,4,8]:
+            for num_workers in [2]:
 
                 if num_workers>=num_queues:
 
@@ -90,7 +91,7 @@ if __name__ == '__main__':
                     workers = []
                     for i in range(num_workers):
         
-                        w = Process(target=worker, name='worker', args=(worker_queue[i%num_queues],i))
+                        w = Thread(target=worker, name='worker', args=(worker_queue[i%num_queues],i))                        
                         w.start()
                         workers.append(w)
         
@@ -124,6 +125,7 @@ if __name__ == '__main__':
                         channel.basic_publish(exchange='',
                                       routing_key=worker_queue[msg_num%num_queues],
                                       body=t)
+
 
                     #print(" [x] Sent %r" % message)
                     f = open(DATA +'/producer.txt','w')
