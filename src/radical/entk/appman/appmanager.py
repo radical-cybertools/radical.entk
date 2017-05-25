@@ -127,15 +127,20 @@ class AppManager(object):
         for i in range(1,self._num_pending_qs+1):
             queue_name = 'pendingq-%s'%i
             self._pending_queue.append(queue_name)
-            self._mq_channel.queue_declare(queue=queue_name)
+            self._mq_channel.queue_declare(queue=queue_name, durable=True) 
+                                                # Durable Qs will not be lost if rabbitmq server crashes
 
         for i in range(1,self._num_completed_qs+1):
             queue_name = 'completedq-%s'%i
             self._completed_queue.append(queue_name)
-            self._mq_channel.queue_declare(queue=queue_name)
+            self._mq_channel.queue_declare(queue=queue_name, durable=True)
             self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
+                                                # Durable Qs will not be lost if rabbitmq server crashes
 
-        self._mq_channel.queue_declare(queue='synchronizerq')
+        self._mq_channel.queue_declare(queue='synchronizerq', durable=True)
+                                                # Durable Qs will not be lost if rabbitmq server crashes
+
+
         self._mq_channel.queue_bind(exchange='fork', queue='synchronizerq')
 
 
@@ -276,7 +281,7 @@ class AppManager(object):
                                     completed_queue=self._completed_queue,
                                     channel=self._mq_channel)
 
-                wfp.resubmit_failed = self._resubmit_failed
+                #wfp.resubmit_failed = self._resubmit_failed
                 wfp.start_processor()
 
                 helper = Helper(    pending_queue = self._pending_queue, 

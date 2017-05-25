@@ -6,7 +6,6 @@ import traceback
 import pika
 from radical.entk import Task
 import json
-import psutil
 import os
 import shutil
 
