@@ -162,9 +162,9 @@ setup_args = {
     'author_email'     : 'vivek.balasubramanian@rutgers.edu',
     'maintainer'       : "Vivek Balasubramanian",
     'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
-    'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
+    'url'              : 'https://github.com/radical-cybertools/radical.entk',
     'license'          : 'MIT',
-    'keywords'         : "ensemble execution",
+    'keywords'         : "ensemble workflow execution",
     'classifiers'      :  [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -200,7 +200,7 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
 
-    'install_requires'  :  ['radical.utils', 'setuptools>=1'],
+    'install_requires'  :  ['radical.utils', 'setuptools>=1', 'pika'],
     #'test_suite'        : 'radical.ensemblemd.tests',
 
     'zip_safe'          : False,

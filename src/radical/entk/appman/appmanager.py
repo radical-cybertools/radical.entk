@@ -384,19 +384,21 @@ class AppManager(object):
                 
                 active_pipe_count = len(self._workload)                
 
-                while active_pipe_count > 0:
+                while (active_pipe_count > 0)or(self._wfp.workload_incomplete()):
 
                     if slow_run:
                         time.sleep(1)
 
-                    for pipe in self._workload:
+                    if active_pipe_count > 0:
 
-                        with pipe.stage_lock:
+                        for pipe in self._workload:
 
-                            if pipe.completed:
-                                self._logger.info('Pipe %s completed'%pipe.uid)
-                                active_pipe_count -= 1
-                                self._logger.info('Pending pipes: %s'%active_pipe_count)
+                            with pipe.stage_lock:
+
+                                if pipe.completed:
+                                    self._logger.info('Pipe %s completed'%pipe.uid)
+                                    active_pipe_count -= 1
+                                    self._logger.info('Pending pipes: %s'%active_pipe_count)
 
 
                     

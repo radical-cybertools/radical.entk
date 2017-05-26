@@ -28,17 +28,17 @@ if __name__ == '__main__':
 
         p1.add_stages(s)
 
-    '''
-    for cnt in range(stages):
+    
+    for cnt in range(stages-1):
         s = Stage()
         s.name = 's-%s'%cnt
         s.tasks = create_single_task()
         s.add_tasks(create_single_task())
 
         p2.add_stages(s)
-    '''
+    
 
 
     appman = AppManager()
-    appman.assign_workload(set([p1]))
+    appman.assign_workload(set([p1,p2]))
     appman.run()

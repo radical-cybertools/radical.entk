@@ -27,6 +27,12 @@ class WFprocessor(object):
         if not isinstance(pending_queue,list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
 
+        if not isinstance(completed_queue,list):
+            raise TypeError(expected_type=list, actual_type=type(completed_queue))
+
+        if not isinstance(mq_hostname,str):
+            raise TypeError(expected_type=str, actual_type=type(mq_hostname))
+
         # Mqs queue names and channel
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
@@ -115,7 +121,7 @@ class WFprocessor(object):
             # Process should run till terminate condtion is encountered
             self._logger.info('WFprocessor started')
 
-            while (not self._wfp_terminate.is_set())or(self.workload_incomplete()):
+            while (not self._wfp_terminate.is_set()):
 
                 try:
 
