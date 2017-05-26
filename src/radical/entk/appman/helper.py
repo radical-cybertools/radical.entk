@@ -12,19 +12,22 @@ import time
 import json
 import pika
 import traceback
+import os
+
+slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 # TEMPORARY FILE TILL AN EXECUTION PLUGIN IS IN PLACE
 
 class Helper(object):
 
-    def __init__(self, pending_queue, completed_queue, channel):
+    def __init__(self, pending_queue, completed_queue, mq_hostname):
 
         self._uid           = ru.generate_id('radical.entk.helper')
         self._logger        = ru.get_logger('radical.entk.helper')
 
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
-        self._channel = channel
+        self._mq_hostname = mq_hostname
 
         self._helper_process = None
 
@@ -67,6 +70,7 @@ class Helper(object):
                 self._helper_terminate.set()
 
             self._helper_process.join()
+            self._logger.info('Helper thread closed')
 
             return True
 
@@ -86,9 +90,7 @@ class Helper(object):
             self._logger.info('Helper process started')
 
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(
-                                    pika.ConnectionParameters(host='localhost')
-                                    )
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
             while not self._helper_terminate.is_set():
@@ -108,7 +110,7 @@ class Helper(object):
 
                             task_as_dict = json.dumps(task.to_dict())
 
-                            self._logger.debug('Got task %s from pending queue'%(task.uid))                    
+                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
 
                             mq_channel.basic_publish( exchange='fork',
                                                             routing_key='',
@@ -119,7 +121,11 @@ class Helper(object):
                                                             #)
                                                         )                    
                         
-                            self._logger.debug('Pushed task %s with state %s to completed queue'%(task.uid, task.state))
+                            self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
+                                                                                    task.uid, 
+                                                                                    task.state,
+                                                                                    self._completed_queue[0])
+                                                                                )
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -129,7 +135,8 @@ class Helper(object):
                             self._logger.error('Error while pushing task to completed queue, rolling back: %s'%ex)
                             raise UnknownError(text=ex)
                 
-                        time.sleep(1)
+                        if slow_run:
+                            time.sleep(1)
 
                 
 
@@ -154,3 +161,6 @@ class Helper(object):
             raise UnknownError(text=ex) 
 
 
+    def check_alive(self):
+
+        return self._helper_process.is_alive()

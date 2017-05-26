@@ -8,13 +8,16 @@ from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.task.task import Task
 from wfprocessor import WFprocessor
 from helper import Helper
-import sys, time
+import sys, time, os
 import Queue
 import pika
 import json
 from threading import Thread, Event
 import traceback
 from radical.entk import states
+
+slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
+
 
 class AppManager(object):
 
@@ -200,10 +203,10 @@ class AppManager(object):
 
                 if body:
 
-                    self._logger.debug('Got message from synchronizerq')
-
                     completed_task = Task()
                     completed_task.load_from_dict(json.loads(body))
+
+                    self._logger.debug('Got finished task %s from synchronizer queue'%(completed_task.uid))
 
                     for pipe in self._workload:
 
@@ -219,24 +222,32 @@ class AppManager(object):
                                         self._logger.debug('Found parent stage: %s'%(stage.uid))
 
                                         #task.state = states.DONE
-                                        self._logger.info('Task %s in Stage %s of Pipeline %s: %s'%(
-                                                                completed_task.uid,
-                                                                pipe.stages[pipe.current_stage].uid,
-                                                                pipe.uid,
-                                                                completed_task.state))
+                                        self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
+                                                                        completed_task.uid,
+                                                                        completed_task.state,
+                                                                        pipe.stages[pipe.current_stage].uid,
+                                                                        pipe.uid)
+                                                                    )
 
                                         for task in stage.tasks:
 
                                             if task.uid == completed_task.uid:
-                                                task = completed_task
+
+                                                task.state = str(completed_task.state)
 
                                                 if task.state == states.DONE:
 
                                                     if stage.check_tasks_status():
 
                                                         try:
-                                                            self._logger.info('All tasks of stage %s finished' %(stage.uid))
+
                                                             stage.state = states.DONE
+
+                                                            self._logger.info('Stage %s of Pipeline %s: %s'%(
+                                                                                stage.uid,
+                                                                                pipe.uid,
+                                                                                stage.state))
+
                                                             pipe.increment_stage()
 
                                                         except Exception, ex:
@@ -248,8 +259,12 @@ class AppManager(object):
 
                                                     if pipe.completed:
                                                         #self._workload.remove(pipe)
-                                                        self._logger.info('Pipelines %s has completed'%(pipe.uid))
                                                         pipe.state = states.DONE
+
+                                                        self._logger.info('Pipeline %s: %s'%(
+                                                                                            pipe.uid, 
+                                                                                            pipe.state)
+                                                                                        )
 
                                                 elif task.state == states.FAILED:
 
@@ -270,9 +285,14 @@ class AppManager(object):
                                                         if stage.check_tasks_status():
 
                                                             try:
-                                                                self._logger.info('All tasks of stage %s finished' %
-                                                                                                        (stage.uid))
                                                                 stage.state = states.DONE
+
+                                                                self._logger.info('Stage %s of Pipeline %s: %s'%(
+                                                                                stage.uid,
+                                                                                pipe.uid,
+                                                                                stage.state))
+
+
                                                                 pipe.increment_stage()
 
                                                             except Exception, ex:
@@ -284,8 +304,12 @@ class AppManager(object):
 
                                                             if pipe.completed:
                                                                 #self._workload.remove(pipe)
-                                                                self._logger.info('Pipelines %s has completed'%(pipe.uid))
                                                                 pipe.state = states.DONE
+
+                                                                self._logger.info('Pipeline %s: %s'%(
+                                                                                            pipe.uid, 
+                                                                                            pipe.state)
+                                                                                        )
 
                                                 else:
 
@@ -330,43 +354,40 @@ class AppManager(object):
 
                 # Setup rabbitmq stuff
                 self._logger.info('Setting up RabbitMQ system')
-                if self.setup_mqs():
-                    self._logger.info('RabbitMQ system setup')
+                setup = self.setup_mqs()
+
+                if not setup:
+                    raise
 
 
                 # Start synchronizer thread
                 self._logger.info('Starting synchronizer thread')
                 self._sync_thread = Thread(target=self.synchronizer, name='synchronizer-thread')
                 self._sync_thread.start()
-                self._logger.info('Synchronizer thread started')
-
 
                 # Create WFProcessor object
-
-                
                 self._wfp = WFprocessor(  workload = self._workload, 
                                     pending_queue = self._pending_queue, 
                                     completed_queue=self._completed_queue,
-                                    mq_channel=self._mq_channel)
-
+                                    mq_hostname=self._mq_hostname)
                 #wfp.resubmit_failed = self._resubmit_failed
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()                
 
-                self._logger.info('Starting helper process from AppManager')
+                
                 self._helper = Helper(    pending_queue = self._pending_queue, 
                                     completed_queue=self._completed_queue,
-                                    channel=self._mq_channel)
-
+                                    mq_hostname=self._mq_hostname)
+                self._logger.info('Starting helper process from AppManager')
                 self._helper.start_helper()
 
                 
-                active_pipe_count = len(self._workload)
-                self._logger.info('Active pipe count: %s'%active_pipe_count)
-
+                active_pipe_count = len(self._workload)                
 
                 while active_pipe_count > 0:
-                    time.sleep(1)
+
+                    if slow_run:
+                        time.sleep(1)
 
                     for pipe in self._workload:
 
@@ -375,37 +396,41 @@ class AppManager(object):
                             if pipe.completed:
                                 self._logger.info('Pipe %s completed'%pipe.uid)
                                 active_pipe_count -= 1
+                                self._logger.info('Pending pipes: %s'%active_pipe_count)
 
 
-                    '''
+                    
                     if not self._wfp.check_alive():
 
                         self._wfp = WFProcessor(  workload = self._workload, 
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
-                                            mq_channel=self._mq_channel)
+                                            mq_hostname=self._mq_hostname)
 
+                        self._logger.info('Restarting WFProcessor process from AppManager')
                         self._wfp.start_processor()
 
                     if not self._helper.check_alive():
                         self._helper = Helper(    pending_queue = self._pending_queue, 
-                                            executed_queue=self._executed_queue)
+                                            executed_queue=self._executed_queue,
+                                            mq_hostname=self._mq_hostname)
+                        self._logger.info('Restarting helper process from AppManager')
                         self._helper.start_helper()
 
-                    if not self._sync_thread.check_alive():
+                    if not self._sync_thread.is_alive():
                         self._sync_thread = Thread(   target=synchronizer, 
                                                 name='synchronizer-thread')
+                        self._logger.info('Restarting synchronizer thread')
                         self._sync_thread.start()
-                    '''
+                    
 
                 # Terminate threads in following order: wfp, helper, synchronizer
                 self._logger.info('Closing WFprocessor')
-                self._wfp.end_processor()
-                self._logger.info('WFprocessor closed')                
+                self._wfp.end_processor()                
                 
                 self._logger.info('Closing helper thread')
                 self._helper.end_helper()
-                self._logger.info('Helper thread closed')
+                
 
                 self._logger.info('Closing synchronizer thread')
                 self._end_sync.set()
