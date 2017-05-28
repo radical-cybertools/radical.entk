@@ -2,8 +2,14 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk import states
 
-
 class Task(object):
+
+
+    """
+    A Task is an abstraction of a computational unit. In this case, a Task consists of its
+    executable along with its required software environment, files to be staged as input 
+    and output.
+    """
 
     def __init__(self):
 
@@ -40,62 +46,189 @@ class Task(object):
 
     @property
     def uid(self):
+
+        """
+        Unique ID of the current task
+
+        :getter: Returns the unique id of the current task
+        :type: String
+        """
+
         return self._uid
 
     @property
     def name(self):
+
+        """
+        Name of the task
+
+        :getter: Returns the name of the current task
+        :setter: Assigns the name of the current task
+        :type: String
+        """
+
         return self._name
     
     @property
     def state(self):
+
+        """
+        Current state of the task
+
+        :getter: Returns the state of the current task
+        :type: String
+        """
+
         return self._state
     
     @property
     def pre_exec(self):
+
+        """
+        List of commands to be executed prior to the executable
+
+        :getter: return the list of commands
+        :setter: assign the list of commands
+        :arguments: list of strings
+        """
         return self._pre_exec
     
     @property
     def executable(self):
+
+        """
+        A unix-based kernel to be executed
+
+        :getter: returns the executable of the current task
+        :setter: assigns the executable for the current task    
+        :arguments: string
+        """
         return self._executable
     
     @property
     def arguments(self):
+
+        """
+        List of arguments to be supplied to the executable
+
+        :getter: returns the list of arguments of the current task
+        :setter: assigns a list of arguments to the current task
+        :arguments: list of strings
+        """
         return self._arguments
     
     @property
     def post_exec(self):
+
+        """
+        List of commands to be executed post executable
+
+        :getter: return the list of commands
+        :setter: assign the list of commands
+        :arguments: list of strings
+        """
+
         return self._post_exec
 
     @property
     def cores(self):
+
+        """
+        Number of cores to be used for the current task
+
+        :getter: return the number of cores
+        :setter: assign the number of cores
+        :arguments: integer
+        """
+
         return self._cores
 
     @property
     def upload_input_data(self):
+
+        """
+        List of files to be transferred from local machine to the location of the current task
+        on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
         return self._upload_input_data
     
     @property
     def copy_input_data(self):
+
+        """
+        List of files to be copied from a location on the remote machine to the location of 
+        current task on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
         return self._copy_input_data
     
     @property
     def link_input_data(self):
+
+        """
+        List of files to be linked from a location on the remote machine to the location of 
+        current task on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
         return self._link_input_data
     
     @property
     def copy_output_data(self):
+
+        """
+        List of files to be copied from the location of the current task to another location
+        on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
         return self._copy_output_data
     
     @property
     def download_output_data(self):
+
+        """
+        List of files to be downloaded from the location of the current task to a location
+        on the local machine.
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
         return self._download_output_data
 
     @property
-    def parent_stage(self):
+    def _parent_stage(self):
+
+        """
+        :getter: Returns the stage this task belongs to
+        :setter: Assigns the stage uid this task belongs to
+        """
         return self._parent_stage
     
     @property
-    def parent_pipeline(self):
+    def _parent_pipeline(self):
+
+        """
+        :getter: Returns the pipeline this task belongs to
+        :setter: Assigns the pipeline uid this task belongs to
+        """
+
         return self._parent_pipeline    
     # -----------------------------------------------
 
@@ -191,93 +324,103 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(value))
 
-    @parent_stage.setter
-    def parent_stage(self, value):
+    @_parent_stage.setter
+    def _parent_stage(self, value):
         if isinstance(value,str):
             self._parent_stage = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    @parent_pipeline.setter
-    def parent_pipeline(self, value):
+    @_parent_pipeline.setter
+    def _parent_pipeline(self, value):
         if isinstance(value,str):
             self._parent_pipeline = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
     # -----------------------------------------------
-
-    def replicate(self, original_task):
-
-        self._uid       = ru.generate_id('radical.entk.task')
-        self._name      = original_task.name
-
-        self._state     = states.NEW
-
-        # Attributes necessary for execution
-        self._pre_exec      = original_task.pre_exec
-        self._executable    = original_task.executable
-        self._arguments     = original_task.arguments
-        self._post_exec     = original_task.post_exec
-
-        # Data staging attributes
-        self._upload_input_data     = original_task.upload_input_data
-        self._copy_input_data       = original_task.copy_input_data
-        self._link_input_data       = original_task.link_input_data
-        self._copy_output_data      = original_task.copy_output_data
-        self._download_output_data  = original_task.download_output_data
-
-
-        ## The following help in updation
-        # Stage this task belongs to
-        self._parent_stage = original_task.parent_stage
-        # Pipeline this task belongs to
-        self._parent_pipeline = original_task.parent_pipeline
-
         
     def to_dict(self):
 
+        """
+        Convert current Task into a dictionary
+
+        :return: python dictionary
+        """
+
         task_desc_as_dict = {
-                                                'uid': self._uid,
-                                                'name': self._name,
-                                                'state': self._state,
+                        'uid': self._uid,
+                        'name': self._name,
+                        'state': self._state,
 
-                                                'pre_exec': self._pre_exec,
-                                                'executable': self._executable,
-                                                'arguments': self._arguments,
-                                                'post_exec': self._post_exec,
-                                                'cores': self._cores,
+                        'pre_exec': self._pre_exec,
+                        'executable': self._executable,
+                        'arguments': self._arguments,
+                        'post_exec': self._post_exec,
+                        'cores': self._cores,
 
-                                                'upload_input_data': self._upload_input_data,
-                                                'copy_input_data': self._copy_input_data,
-                                                'link_input_data': self._link_input_data,
-                                                'copy_output_data': self._copy_output_data,
-                                                'download_output_data': self._download_output_data,
+                        'upload_input_data': self._upload_input_data,
+                        'copy_input_data': self._copy_input_data,
+                        'link_input_data': self._link_input_data,
+                        'copy_output_data': self._copy_output_data,
+                        'download_output_data': self._download_output_data,
 
-                                                'parent_stage': self._parent_stage,
-                                                'parent_pipeline': self._parent_pipeline,
-                                        }
+                        'parent_stage': self._parent_stage,
+                        'parent_pipeline': self._parent_pipeline,
+                    }
 
         return task_desc_as_dict
         
 
     def load_from_dict(self, d):
 
-        self._uid   = d['uid']
-        self._name = d['name']
-        self._state = d['state']
+        """
+        Create a Task from a dictionary
 
-        self._pre_exec = d['pre_exec']
-        self._executable = d['executable']
-        self._arguments = d['arguments']
-        self._post_exec = d['post_exec']
-        self._cores = d['cores']
-                                                
-        self._upload_input_data = d['upload_input_data']
-        self._copy_input_data = d['copy_input_data']
-        self._link_input_data = d['link_input_data']
-        self._copy_output_data = d['copy_output_data']
-        self._download_output_data = d['download_output_data']                                                
+        :argument: python dictionary
+        """
 
-        self._parent_stage = d['parent_stage']
-        self._parent_pipeline = d['parent_pipeline']
+        if 'uid' in d:
+            self._uid   = d['uid']
+        
+        if 'name' in d:
+            self._name = d['name']
+
+        if 'state' in d:
+            self._state = d['state']
+
+        if 'pre_exec' in d:
+            self._pre_exec = d['pre_exec']
+
+        if 'executable' in d:
+            self._executable = d['executable']
+
+        if 'arguments' in d:
+            self._arguments = d['arguments']
+
+        if 'post_exec' in d:
+            self._post_exec = d['post_exec']
+
+        if 'cores' in d:
+            self._cores = d['cores']
+            
+        if 'upload_input_data' in d:                                    
+            self._upload_input_data = d['upload_input_data']
+
+        if 'copy_input_data' in d:
+            self._copy_input_data = d['copy_input_data']
+
+        if 'link_input_data' in d:
+            self._link_input_data = d['link_input_data']
+
+        if 'copy_output_data' in d:
+            self._copy_output_data = d['copy_output_data']
+
+        if 'download_output_data' in d:
+            self._download_output_data = d['download_output_data']                                                
+
+        if 'parent_stage' in d:
+            self._parent_stage = d['parent_stage']
+
+        if 'parent_pipeline' in d:
+            self._parent_pipeline = d['parent_pipeline']
                                                 

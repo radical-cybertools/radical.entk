@@ -21,13 +21,27 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class AppManager(object):
 
+    """
+
+    An application manager takes the responsibility of dispatching tasks from the various pipelines
+    according to their relative order to an underlying runtime system for execution.
+
+    :hostname: host rabbitmq server is running
+    :push_threads: number of threads to push tasks on the pending_qs
+    :pull_threads: number of threads to pull tasks from the completed_qs
+    :sync_threads: number of threads to pull task from the synchronizer_q
+    :pending_qs: number of queues to hold pending tasks to be pulled by the helper/execution manager
+    :completed_qs: number of queues to hold completed tasks pushed by the helper/execution manager
+    """
+
+
     def __init__(self, hostname = 'localhost', push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
         self._name      = str()
 
-        self._workload  = None
+        self._workflow  = None
         self._resubmit_failed = False
 
         # RabbitMQ Queues
@@ -63,10 +77,26 @@ class AppManager(object):
 
     @property
     def name(self):
+
+        """
+        Name for the application manager 
+
+        :getter: Returns the name of the application manager
+        :setter: Assigns the name of the application manager
+        :type: String
+        """
+
         return self._name
 
     @property
     def resubmit_failed(self):
+
+        """
+        Enable resubmission of failed tasks
+
+        :getter: Returns the value of the resubmission flag
+        :setter: Assigns a boolean value for the resubmission flag
+        """
         return self._resubmit_failed
     
     # -----------------------------------------------
@@ -82,41 +112,52 @@ class AppManager(object):
         self._resubmit_failed = value
 
 
-    # Function to add workload to the application manager
+    # Function to add workflow to the application manager
     # ------------------------------------------------------
 
-    def validate_workload(self, workload):
+    def _validate_workflow(self, workflow):
 
-        if not isinstance(workload, set):
+        """
+        Validate whether the workflow consists of a set of pipelines
+        """
 
-            if not isinstance(workload, list):
-                workload = set([workload])
+        if not isinstance(workflow, set):
+
+            if not isinstance(workflow, list):
+                workflow = set([workflow])
             else:
-                workload = set(workload)
+                workflow = set(workflow)
 
 
-        for item in workload:
+        for item in workflow:
             if not isinstance(item, Pipeline):
-                self._logger.info('Workload type incorrect')
+                self._logger.info('workflow type incorrect')
                 raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
                                 actual_type=type(item))
 
-        return workload
+        return workflow
 
 
-    def assign_workload(self, workload):
+    def assign_workflow(self, workflow):
+
+        """
+        Assign workflow to the application manager to be executed
+
+        :arguments: set of Pipelines
+        """
+
 
         try:
             
-            self._workload = self.validate_workload(workload)
-            self._logger.info('Workload assigned to Application Manager')
+            self._workflow = self.validate_workflow(workflow)
+            self._logger.info('Workflow assigned to Application Manager')
 
         except TypeError:
             raise
 
         except Exception, ex:
 
-            self._logger.error('Fatal error while adding workload to appmanager')
+            self._logger.error('Fatal error while adding workflow to appmanager')
             raise UnknownError(text=ex)
 
         except KeyboardInterrupt:
@@ -126,7 +167,11 @@ class AppManager(object):
             sys.exit(1)
 
 
-    def setup_mqs(self):
+    def _setup_mqs(self):
+
+        """
+        Setup RabbitMQ system
+        """
 
         try:
 
@@ -182,8 +227,11 @@ class AppManager(object):
             raise UnknownError(text=ex)
 
 
-    def synchronizer(self):
+    def _synchronizer(self):
 
+        """
+        Thread to keep the workflow data structure in appmanager up to date
+        """
 
         try:
 
@@ -208,7 +256,7 @@ class AppManager(object):
 
                     self._logger.debug('Got finished task %s from synchronizer queue'%(completed_task.uid))
 
-                    for pipe in self._workload:
+                    for pipe in self._workflow:
 
                         if not pipe.completed:
 
@@ -258,7 +306,7 @@ class AppManager(object):
                                                             pipe.decrement_stage()                                                    
 
                                                     if pipe.completed:
-                                                        #self._workload.remove(pipe)
+                                                        #self._workflow.remove(pipe)
                                                         pipe.state = states.DONE
 
                                                         self._logger.info('Pipeline %s: %s'%(
@@ -303,7 +351,7 @@ class AppManager(object):
                                                                 pipe.decrement_stage()                                                    
 
                                                             if pipe.completed:
-                                                                #self._workload.remove(pipe)
+                                                                #self._workflow.remove(pipe)
                                                                 pipe.state = states.DONE
 
                                                                 self._logger.info('Pipeline %s: %s'%(
@@ -343,18 +391,22 @@ class AppManager(object):
 
     def run(self):
 
+        """
+        Run the application manager
+        """
+
         try:
 
-            if self._workload is None:
-                print 'Assign workload before invoking run method - cannot proceed'
-                self._logger.info('No workload assigned currently, please check your script')
+            if self._workflow is None:
+                print 'Assign workflow before invoking run method - cannot proceed'
+                self._logger.info('No workflow assigned currently, please check your script')
                 raise ValueError(expected_value='set of pipelines', actual_value=None)
 
             else:
 
                 # Setup rabbitmq stuff
                 self._logger.info('Setting up RabbitMQ system')
-                setup = self.setup_mqs()
+                setup = self._setup_mqs()
 
                 if not setup:
                     raise
@@ -362,11 +414,11 @@ class AppManager(object):
 
                 # Start synchronizer thread
                 self._logger.info('Starting synchronizer thread')
-                self._sync_thread = Thread(target=self.synchronizer, name='synchronizer-thread')
+                self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
                 self._sync_thread.start()
 
                 # Create WFProcessor object
-                self._wfp = WFprocessor(  workload = self._workload, 
+                self._wfp = WFprocessor(  workflow = self._workflow, 
                                     pending_queue = self._pending_queue, 
                                     completed_queue=self._completed_queue,
                                     mq_hostname=self._mq_hostname)
@@ -382,16 +434,16 @@ class AppManager(object):
                 self._helper.start_helper()
 
                 
-                active_pipe_count = len(self._workload)                
+                active_pipe_count = len(self._workflow)                
 
-                while (active_pipe_count > 0)or(self._wfp.workload_incomplete()):
+                while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
 
                     if slow_run:
                         time.sleep(1)
 
                     if active_pipe_count > 0:
 
-                        for pipe in self._workload:
+                        for pipe in self._workflow:
 
                             with pipe.stage_lock:
 
@@ -404,7 +456,7 @@ class AppManager(object):
                     
                     if not self._wfp.check_alive():
 
-                        self._wfp = WFProcessor(  workload = self._workload, 
+                        self._wfp = WFProcessor(  workflow = self._workflow, 
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname)
@@ -483,7 +535,5 @@ class AppManager(object):
                 self._end_sync.set()
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread closed')
-
-
             
             sys.exit(1)

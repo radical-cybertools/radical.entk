@@ -151,7 +151,7 @@ def isgood(name):
 #check_version()
 #short_version, long_version = get_version()
 
-short_version = 0.5
+short_version = 0.6
 
 setup_args = {
     'name'             : 'radical.entk',
@@ -182,11 +182,7 @@ setup_args = {
         'Operating System :: Unix'
     ],
 
-    #'entry_points': {
-    #    'console_scripts':
-    #        ['htbac-fecalc = radical.ensemblemd.htbac.bin.fecalc:main',
-    #         'htbac-sim    = radical.ensemblemd.htbac.bin.sim:main']
-    #},
+    #'entry_points': {},
 
     #'dependency_links': ['https://github.com/saga-project/saga-pilot/tarball/master#egg=sagapilot'],
 

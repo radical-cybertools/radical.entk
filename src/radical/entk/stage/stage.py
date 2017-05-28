@@ -6,6 +6,11 @@ from radical.entk import states
 
 class Stage(object):
 
+    """
+    A stage represents a collection of objects that have no relative order of execution. In this case, a
+    stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
+    """
+
     def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.stage')
@@ -21,7 +26,11 @@ class Stage(object):
         self._parent_pipeline = None
 
 
-    def validate_tasks(self, tasks):
+    def _validate_tasks(self, tasks):
+
+        """
+        Validate whether the 'tasks' is of type set
+        """
 
         if not isinstance(tasks, set):
 
@@ -43,22 +52,59 @@ class Stage(object):
 
     @property
     def name(self):
+
+        """
+        Name of the stage 
+
+        :getter: Returns the name of the current stage
+        :setter: Assigns the name of the current stage
+        :type: String
+        """
         return self._name
     
     @property
     def tasks(self):
+
+        """
+        Tasks of the stage
+
+        :getter: Returns all the tasks of the current stage
+        :setter: Assigns tasks to the current stage
+        :type: set of Tasks
+        """
         return self._tasks
 
     @property
     def state(self):
+
+        """
+        Current state of the stage
+
+        :getter: Returns the state of the current stage
+        :type: String
+        """
+
         return self._state
 
     @property
-    def parent_pipeline(self):
+    def _parent_pipeline(self):
+
+        """
+        :getter: Returns the pipeline this stage belongs to
+        :setter: Assigns the pipeline uid this stage belongs to
+        """
         return self._parent_pipeline
 
     @property
     def uid(self):
+
+        """
+        Unique ID of the current stage
+
+        :getter: Returns the unique id of the current stage
+        :type: String
+        """
+
         return self._uid   
     # -----------------------------------------------
 
@@ -79,8 +125,8 @@ class Stage(object):
     def tasks(self, tasks):        
         self._tasks = self.validate_tasks(tasks)
 
-    @parent_pipeline.setter
-    def parent_pipeline(self, value):
+    @_parent_pipeline.setter
+    def _parent_pipeline(self, value):
         if isinstance(value, str):
             self._parent_pipeline = value
         else:
@@ -96,12 +142,26 @@ class Stage(object):
 
 
     def add_tasks(self, tasks):
+
+        """
+        Adds tasks to the existing set of tasks of the Stage
+
+        :argument: set of tasks
+        """
+
         tasks = self.validate_tasks(tasks)
         self._tasks.update(tasks)
         
 
 
     def remove_tasks(self, task_names):
+
+        """
+        Removes tasks from the current stage
+
+        :argument: list of task names as strings
+        """
+
 
         if not isinstance(task_names, list):
             task_names = [task_names]
@@ -128,7 +188,15 @@ class Stage(object):
         self._tasks = copy_of_existing_tasks
 
 
-    def pass_uid(self, tasks=None):
+    def _pass_uid(self, tasks=None):
+
+        """
+        Assign parent pipeline of current stage + pass the same as well as the stage uid 
+        to all tasks of the current stage
+
+        :arguments: set of Tasks (optional)
+        :return: list of updated Tasks
+        """
 
         if tasks is None:
             for task in self._tasks:
@@ -142,7 +210,13 @@ class Stage(object):
 
             return tasks
 
-    def set_task_state(self, value):
+    def _set_task_state(self, value):
+
+        """
+        Set state value to all tasks of the current stage
+
+        :arguments: String
+        """
 
         if isinstance(value, str):
             for task in self._tasks:
@@ -151,7 +225,13 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    def check_tasks_status(self):
+    def _check_tasks_status(self):
+
+        """
+        Check if all tasks of the current stage have completed, i.e.
+        are in either DONE or FAILED state.
+        """
+
 
         try:
 

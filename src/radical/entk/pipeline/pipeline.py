@@ -7,12 +7,18 @@ from radical.entk import states
 
 class Pipeline(object):
 
+    """
+    A pipeline represents a collection of objects that have a linear temporal execution order.
+    In this case, a pipeline consists of multiple 'Stage' objects. Each ```Stage_i``` can execute only
+    after all stages up to ```Stage_(i-1)``` have completed execution.
+
+    """
+
     def __init__(self):
 
         self._uid       = ru.generate_id('radical.entk.pipeline')
         self._stages    = list()
         self._name      = str()
-        self._resource  = str()
 
         self._state     = states.NEW
 
@@ -27,7 +33,7 @@ class Pipeline(object):
         self._completed_flag = threading.Event()
 
 
-    def validate_stages(self, stages):
+    def _validate_stages(self, stages):
 
         if not isinstance(stages, list):
             stages = [stages]
@@ -43,34 +49,81 @@ class Pipeline(object):
 
     @property
     def name(self):
+        """
+        Name of the pipeline 
+
+        :getter: Returns the name of the pipeline
+        :setter: Assigns the name of the pipeline
+        :type: String
+        """
         return self._name
     
     @property
     def stages(self):
+
+        """
+        Stages of the list
+
+        :getter: Returns the stages in the current Pipeline
+        :setter: Assigns the stages to the current Pipeline
+        :type: List
+        """
+
         return self._stages
 
     @property
     def state(self):
+
+        """
+        Current state of the pipeline
+
+        :getter: Returns the state of the current pipeline
+        :type: String
+        """
+
         return self._state
     
     @property
-    def resource(self):
-        return self._resource
+    def _stage_lock(self):
 
-    @property
-    def stage_lock(self):
+        """
+        Returns the lock over the current Pipeline
+
+        :return: Lock object
+        """
+
         return self._stage_lock
     
     @property
-    def completed(self):
+    def _completed(self):
+
+        """
+        Returns whether the Pipeline has completed
+
+        :return: Boolean
+        """
         return self._completed_flag.is_set()
 
     @property
-    def current_stage(self):
+    def _current_stage(self):
+
+        """
+        Returns the current stage being executed
+
+        :return: Integer
+        """
+
         return self._current_stage
     
     @property
     def uid(self):
+
+        """
+        Unique ID of the current pipeline
+
+        :getter: Returns the unique id of the current pipeline
+        :type: String
+        """
         return self._uid
     
     # -----------------------------------------------
@@ -93,11 +146,7 @@ class Pipeline(object):
         self._stages = self.validate_stages(stages)
         self.pass_uid()
         self._stage_count = len(self._stages)
-    
 
-    @resource.setter
-    def resource(self, value):
-        self._resource = value
 
     @state.setter
     def state(self, value):
@@ -110,6 +159,13 @@ class Pipeline(object):
 
     def add_stages(self, stages):
 
+        """
+        
+        Appends stages to the current Pipeline
+
+        :argument: List of Stage objects
+        """
+
         stages = self.validate_stages(stages)
         stages = self.pass_uid(stages)
         self._stages.extend(stages)
@@ -117,6 +173,14 @@ class Pipeline(object):
 
 
     def remove_stages(self, stage_names):
+
+        """
+
+        Remove stages from the current Pipeline
+
+        :argument: List of stage names as strings
+        """
+
 
         if not isinstance(stage_names, list):
             stage_names = [stage_names]
@@ -142,7 +206,15 @@ class Pipeline(object):
         self._stages = copy_of_existing_stages
         self._stage_count = len(self._stages)
 
-    def pass_uid(self, stages=None):
+    def _pass_uid(self, stages=None):
+
+
+        """
+        Pass current Pipeline's uid to all stages
+
+        :argument: List of Stage objects (optional)
+        :return: List of updated Stage objects
+        """
 
         if stages is None:
             for stage in self._stages:
@@ -156,14 +228,22 @@ class Pipeline(object):
             return stages
 
 
-    def increment_stage(self):
+    def _increment_stage(self):
+
+        """
+        Increment pointer to current stage, also check if Pipeline has completed
+        """
 
         if self._current_stage < self._stage_count-1:
             self._current_stage+=1
         else:
             self._completed_flag.set()
 
-    def decrement_stage(self):
+    def _decrement_stage(self):
+
+        """
+        Decrement pointer to current stage
+        """
 
         if self._current_stage > 1:
             self._current_stage -= 1
