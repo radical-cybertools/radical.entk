@@ -39,7 +39,7 @@ def test_assignment_exceptions():
 
 
             with pytest.raises(TypeError):
-                s.set_task_state(data)
+                s._set_task_state(data)
 
 def test_init_state():
     s = Stage()

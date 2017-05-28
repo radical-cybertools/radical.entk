@@ -48,6 +48,6 @@ def test_uid_assignment():
     s.tasks     = t
     p.stages    = s
 
-    assert t.parent_pipeline == p.uid
-    assert t.parent_stage == s.uid
-    assert s.parent_pipeline == p.uid
+    assert t._parent_pipeline == p.uid
+    assert t._parent_stage == s.uid
+    assert s._parent_pipeline == p.uid

@@ -15,4 +15,4 @@ def test_assign_workload_exception():
     for data in data_type:
 
         with pytest.raises(TypeError):
-            appman.assign_workload(data)
+            appman.assign_workflow(data)
