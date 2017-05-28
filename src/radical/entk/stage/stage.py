@@ -23,7 +23,7 @@ class Stage(object):
         self._task_count = len(self._tasks)
 
         # Pipeline this stage belongs to
-        self._parent_pipeline = None
+        self._p_pipeline = None
 
 
     def _validate_tasks(self, tasks):
@@ -93,7 +93,7 @@ class Stage(object):
         :getter: Returns the pipeline this stage belongs to
         :setter: Assigns the pipeline uid this stage belongs to
         """
-        return self._parent_pipeline
+        return self._p_pipeline
 
     @property
     def uid(self):
@@ -123,12 +123,12 @@ class Stage(object):
 
     @tasks.setter
     def tasks(self, tasks):        
-        self._tasks = self.validate_tasks(tasks)
+        self._tasks = self._validate_tasks(tasks)
 
     @_parent_pipeline.setter
     def _parent_pipeline(self, value):
         if isinstance(value, str):
-            self._parent_pipeline = value
+            self._p_pipeline = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
@@ -149,7 +149,7 @@ class Stage(object):
         :argument: set of tasks
         """
 
-        tasks = self.validate_tasks(tasks)
+        tasks = self._validate_tasks(tasks)
         self._tasks.update(tasks)
         
 
@@ -200,12 +200,12 @@ class Stage(object):
 
         if tasks is None:
             for task in self._tasks:
-                task.parent_stage = self._uid
-                task.parent_pipeline = self._parent_pipeline
+                task._parent_stage = self._uid
+                task._parent_pipeline = self._p_pipeline
         else:
             for task in tasks:
-                task.parent_stage = self._uid
-                task.parent_pipeline = self._parent_pipeline
+                task._parent_stage = self._uid
+                task._parent_pipeline = self._p_pipeline
 
 
             return tasks

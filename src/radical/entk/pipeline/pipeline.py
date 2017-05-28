@@ -24,10 +24,10 @@ class Pipeline(object):
 
         # To keep track of current state
         self._stage_count = len(self._stages)
-        self._current_stage = 0
+        self._cur_stage = 0
 
         # Lock around current stage
-        self._stage_lock = threading.Lock()
+        self._lock = threading.Lock()
 
         # To keep track of termination of pipeline
         self._completed_flag = threading.Event()
@@ -92,7 +92,7 @@ class Pipeline(object):
         :return: Lock object
         """
 
-        return self._stage_lock
+        return self._lock
     
     @property
     def _completed(self):
@@ -113,7 +113,7 @@ class Pipeline(object):
         :return: Integer
         """
 
-        return self._current_stage
+        return self._cur_stage
     
     @property
     def uid(self):
@@ -143,8 +143,8 @@ class Pipeline(object):
     @stages.setter
     def stages(self, stages):
 
-        self._stages = self.validate_stages(stages)
-        self.pass_uid()
+        self._stages = self._validate_stages(stages)
+        self._pass_uid()
         self._stage_count = len(self._stages)
 
 
@@ -166,8 +166,8 @@ class Pipeline(object):
         :argument: List of Stage objects
         """
 
-        stages = self.validate_stages(stages)
-        stages = self.pass_uid(stages)
+        stages = self._validate_stages(stages)
+        stages = self._pass_uid(stages)
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
 
@@ -218,12 +218,12 @@ class Pipeline(object):
 
         if stages is None:
             for stage in self._stages:
-                stage.parent_pipeline = self._uid
-                stage.pass_uid()
+                stage._parent_pipeline = self._uid
+                stage._pass_uid()
         else:
             for stage in stages:
-                stage.parent_pipeline = self._uid
-                stage.pass_uid()
+                stage._parent_pipeline = self._uid
+                stage._pass_uid()
 
             return stages
 
@@ -234,8 +234,8 @@ class Pipeline(object):
         Increment pointer to current stage, also check if Pipeline has completed
         """
 
-        if self._current_stage < self._stage_count-1:
-            self._current_stage+=1
+        if self._cur_stage < self._stage_count-1:
+            self._cur_stage+=1
         else:
             self._completed_flag.set()
 
@@ -245,7 +245,7 @@ class Pipeline(object):
         Decrement pointer to current stage
         """
 
-        if self._current_stage > 1:
-            self._current_stage -= 1
+        if self._cur_stage > 1:
+            self._cur_stage -= 1
             self._completed_flag = threading.Event() # reset
             

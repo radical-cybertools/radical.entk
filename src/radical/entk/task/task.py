@@ -35,9 +35,9 @@ class Task(object):
 
         ## The following help in updation
         # Stage this task belongs to
-        self._parent_stage = None
+        self._p_stage = None
         # Pipeline this task belongs to
-        self._parent_pipeline = None
+        self._p_pipeline = None
 
 
     # -----------------------------------------------
@@ -219,7 +219,7 @@ class Task(object):
         :getter: Returns the stage this task belongs to
         :setter: Assigns the stage uid this task belongs to
         """
-        return self._parent_stage
+        return self._p_stage
     
     @property
     def _parent_pipeline(self):
@@ -229,7 +229,7 @@ class Task(object):
         :setter: Assigns the pipeline uid this task belongs to
         """
 
-        return self._parent_pipeline    
+        return self._p_pipeline    
     # -----------------------------------------------
 
 
@@ -327,18 +327,51 @@ class Task(object):
     @_parent_stage.setter
     def _parent_stage(self, value):
         if isinstance(value,str):
-            self._parent_stage = value
+            self._p_stage = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @_parent_pipeline.setter
     def _parent_pipeline(self, value):
         if isinstance(value,str):
-            self._parent_pipeline = value
+            self._p_pipeline = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
     # -----------------------------------------------
         
+    def _replicate(self, original_task):
+
+        """
+        Replicate an existing task with a new uid and NEW state
+        """
+
+        self._uid       = ru.generate_id('radical.entk.task')
+        self._name      = original_task.name
+
+        self._state     = states.NEW
+
+        # Attributes necessary for execution
+        self._pre_exec      = original_task.pre_exec
+        self._executable    = original_task.executable
+        self._arguments     = original_task.arguments
+        self._post_exec     = original_task.post_exec
+
+        # Data staging attributes
+        self._upload_input_data     = original_task.upload_input_data
+        self._copy_input_data       = original_task.copy_input_data
+        self._link_input_data       = original_task.link_input_data
+        self._copy_output_data      = original_task.copy_output_data
+        self._download_output_data  = original_task.download_output_data
+
+
+        ## The following help in updation
+        # Stage this task belongs to
+        self._p_stage = original_task._parent_stage
+        # Pipeline this task belongs to
+        self._p_pipeline = original_task._parent_pipeline
+
+
+
     def to_dict(self):
 
         """
@@ -364,8 +397,8 @@ class Task(object):
                         'copy_output_data': self._copy_output_data,
                         'download_output_data': self._download_output_data,
 
-                        'parent_stage': self._parent_stage,
-                        'parent_pipeline': self._parent_pipeline,
+                        'parent_stage': self._p_stage,
+                        'parent_pipeline': self._p_pipeline,
                     }
 
         return task_desc_as_dict
@@ -419,8 +452,8 @@ class Task(object):
             self._download_output_data = d['download_output_data']                                                
 
         if 'parent_stage' in d:
-            self._parent_stage = d['parent_stage']
+            self._p_stage = d['parent_stage']
 
         if 'parent_pipeline' in d:
-            self._parent_pipeline = d['parent_pipeline']
+            self._p_pipeline = d['parent_pipeline']
                                                 

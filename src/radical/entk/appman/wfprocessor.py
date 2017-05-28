@@ -18,11 +18,11 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class WFprocessor(object):
 
-    def __init__(self, workload, pending_queue, completed_queue, mq_hostname):
+    def __init__(self, workflow, pending_queue, completed_queue, mq_hostname):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
         self._logger        = ru.get_logger('radical.entk.wfprocessor')
-        self._workload      = workload
+        self._workflow      = workflow
 
         if not isinstance(pending_queue,list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
@@ -95,12 +95,12 @@ class WFprocessor(object):
 
             raise
 
-    def workload_incomplete(self):
+    def workflow_incomplete(self):
         
         try:
-            for pipe in self._workload:
-                with pipe.stage_lock:
-                    if pipe.completed:                    
+            for pipe in self._workflow:
+                with pipe._stage_lock:
+                    if pipe._completed:                    
                         pass
                     else:
                         return True
@@ -110,7 +110,7 @@ class WFprocessor(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not check if workload is incomplete, error:%s'%ex)
+            self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
             raise
 
 
@@ -203,11 +203,11 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
-                for pipe in self._workload:
+                for pipe in self._workflow:
 
-                    with pipe.stage_lock:
+                    with pipe._stage_lock:
 
-                        if not pipe.completed:
+                        if not pipe._completed:
     
                             self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
     
@@ -215,9 +215,9 @@ class WFprocessor(object):
                             if not pipe.state == states.SCHEDULED:
                                 pipe.state = states.SCHEDULED
     
-                            if pipe.stages[pipe.current_stage].state in [states.NEW]:
+                            if pipe.stages[pipe._current_stage].state in [states.NEW]:
     
-                                executable_stage = pipe.stages[pipe.current_stage]
+                                executable_stage = pipe.stages[pipe._current_stage]
                                 executable_tasks = executable_stage.tasks
     
                                 try:
@@ -231,8 +231,8 @@ class WFprocessor(object):
                                             self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                 executable_task.uid,
                                                                 executable_task.state,
-                                                                executable_task.parent_stage,
-                                                                executable_task.parent_pipeline))
+                                                                executable_task._parent_stage,
+                                                                executable_task._parent_pipeline))
     
                                             # Try-exception block for tasks
                                             try:
@@ -260,8 +260,8 @@ class WFprocessor(object):
                                                 self._logger.debug('Task %s published to queue'% executable_task.uid)
                                                 
                                                 # Update corresponding stage's state
-                                                if not pipe.stages[pipe.current_stage].state == states.SCHEDULED:
-                                                    pipe.stages[pipe.current_stage].state = states.SCHEDULED
+                                                if not pipe.stages[pipe._current_stage].state == states.SCHEDULED:
+                                                    pipe.stages[pipe._current_stage].state = states.SCHEDULED
     
                                             except Exception, ex:
     
@@ -275,9 +275,9 @@ class WFprocessor(object):
                                     
                                     if tasks_submitted:
                                         self._logger.info('Stage %s of Pipeline %s: %s'%(
-                                                            pipe.stages[pipe.current_stage].uid,
+                                                            pipe.stages[pipe._current_stage].uid,
                                                             pipe.uid,
-                                                            pipe.stages[pipe.current_stage].state))
+                                                            pipe.stages[pipe._current_stage].state))
 
                                         tasks_submitted = False
 
@@ -292,7 +292,7 @@ class WFprocessor(object):
                                                         'state, rolling back. Error: %s'%ex)
     
                                     # Revert stage state
-                                    pipe.stages[pipe.current_stage].state = states.NEW   
+                                    pipe.stages[pipe._current_stage].state = states.NEW   
                                     raise   
 
                             if slow_run:
@@ -341,26 +341,26 @@ class WFprocessor(object):
 
                         self._logger.debug('Got finished task %s from queue'%(completed_task.uid))
 
-                        for pipe in self._workload:
+                        for pipe in self._workflow:
 
-                            with pipe.stage_lock:
+                            with pipe._stage_lock:
 
-                                if not pipe.completed:
+                                if not pipe._completed:
 
-                                    if completed_task.parent_pipeline == pipe.uid:
+                                    if completed_task._parent_pipeline == pipe.uid:
 
                                         self._logger.debug('Found parent pipeline: %s'%pipe.uid)
                                 
                                         for stage in pipe.stages:
 
-                                            if completed_task.parent_stage == stage.uid:
+                                            if completed_task._parent_stage == stage.uid:
                                                 self._logger.debug('Found parent stage: %s'%(stage.uid))
 
                                                 #task.state = states.DONE
                                                 self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                         completed_task.uid,
                                                                         completed_task.state,
-                                                                        pipe.stages[pipe.current_stage].uid,
+                                                                        pipe.stages[pipe._current_stage].uid,
                                                                         pipe.uid)
                                                                     )
 
@@ -371,7 +371,7 @@ class WFprocessor(object):
 
                                                         if task.state == states.DONE:
 
-                                                            if stage.check_tasks_status():
+                                                            if stage._check_tasks_status():
 
                                                                 try:
 
@@ -382,18 +382,18 @@ class WFprocessor(object):
                                                                                 pipe.uid,
                                                                                 stage.state))
 
-                                                                    pipe.increment_stage()
+                                                                    pipe._increment_stage()
 
                                                                 except Exception, ex:
                                                                     # Rolling back stage status
                                                                     self._logger.error('Error while updating stage '+
                                                                             'state, rolling back. Error: %s'%ex)
-                                                                    stage.state = stage.SCHEDULED
-                                                                    pipe.decrement_stage()
+                                                                    stage.state = states.SCHEDULED
+                                                                    pipe._decrement_stage()
 
                                                                     raise
 
-                                                                if pipe.completed:
+                                                                if pipe._completed:
                                                                     #self._workload.remove(pipe)                                                                    
                                                                     pipe.state = states.DONE
                                                                     self._logger.info('Pipeline %s: %s'%(
@@ -407,9 +407,9 @@ class WFprocessor(object):
 
                                                                 try:
                                                                     new_task = Task()
-                                                                    new_task.replicate(completed_task)
+                                                                    new_task._replicate(completed_task)
 
-                                                                    pipe.stages[pipe.current_stage].add_tasks(new_task)
+                                                                    pipe.stages[pipe._current_stage].add_tasks(new_task)
 
                                                                 except Exception, ex:
                                                                     self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -429,14 +429,14 @@ class WFprocessor(object):
                                                                                 pipe.uid,
                                                                                 stage.state))
 
-                                                                        pipe.increment_stage()
+                                                                        pipe._increment_stage()
 
                                                                     except Exception, ex:
                                                                         # Rolling back stage status
                                                                         self._logger.error('Error while updating stage '+
                                                                                         'state, rolling back. Error: %s'%ex)
-                                                                        stage.state = stage.SCHEDULED
-                                                                        pipe.decrement_stage()
+                                                                        stage.state = states.SCHEDULED
+                                                                        pipe._decrement_stage()
 
                                                                         raise                                        
 

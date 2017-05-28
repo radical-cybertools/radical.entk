@@ -149,7 +149,7 @@ class AppManager(object):
 
         try:
             
-            self._workflow = self.validate_workflow(workflow)
+            self._workflow = self._validate_workflow(workflow)
             self._logger.info('Workflow assigned to Application Manager')
 
         except TypeError:
@@ -258,22 +258,22 @@ class AppManager(object):
 
                     for pipe in self._workflow:
 
-                        if not pipe.completed:
+                        if not pipe._completed:
 
-                            if completed_task.parent_pipeline == pipe.uid:
+                            if completed_task._parent_pipeline == pipe.uid:
 
                                 self._logger.debug('Found parent pipeline: %s'%pipe.uid)
                             
                                 for stage in pipe.stages:
 
-                                    if completed_task.parent_stage == stage.uid:
+                                    if completed_task._parent_stage == stage.uid:
                                         self._logger.debug('Found parent stage: %s'%(stage.uid))
 
                                         #task.state = states.DONE
                                         self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                         completed_task.uid,
                                                                         completed_task.state,
-                                                                        pipe.stages[pipe.current_stage].uid,
+                                                                        pipe.stages[pipe._current_stage].uid,
                                                                         pipe.uid)
                                                                     )
 
@@ -285,7 +285,7 @@ class AppManager(object):
 
                                                 if task.state == states.DONE:
 
-                                                    if stage.check_tasks_status():
+                                                    if stage._check_tasks_status():
 
                                                         try:
 
@@ -296,16 +296,16 @@ class AppManager(object):
                                                                                 pipe.uid,
                                                                                 stage.state))
 
-                                                            pipe.increment_stage()
+                                                            pipe._increment_stage()
 
                                                         except Exception, ex:
                                                             # Rolling back stage status
                                                             self._logger.error('Error while updating stage '+
                                                                     'state, rolling back. Error: %s'%ex)
-                                                            stage.state = stage.SCHEDULED
-                                                            pipe.decrement_stage()                                                    
+                                                            stage.state = states.SCHEDULED
+                                                            pipe._decrement_stage()                                                    
 
-                                                    if pipe.completed:
+                                                    if pipe._completed:
                                                         #self._workflow.remove(pipe)
                                                         pipe.state = states.DONE
 
@@ -320,9 +320,9 @@ class AppManager(object):
 
                                                         try:
                                                             new_task = Task()
-                                                            new_task.replicate(completed_task)
+                                                            new_task._replicate(completed_task)
 
-                                                            pipe.stages[pipe.current_stage].add_tasks(new_task)
+                                                            pipe.stages[pipe._current_stage].add_tasks(new_task)
 
                                                         except Exception, ex:
                                                             self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -330,7 +330,7 @@ class AppManager(object):
 
                                                     else:
 
-                                                        if stage.check_tasks_status():
+                                                        if stage._check_tasks_status():
 
                                                             try:
                                                                 stage.state = states.DONE
@@ -341,16 +341,16 @@ class AppManager(object):
                                                                                 stage.state))
 
 
-                                                                pipe.increment_stage()
+                                                                pipe._increment_stage()
 
                                                             except Exception, ex:
                                                                 # Rolling back stage status
                                                                 self._logger.error('Error while updating stage '+
                                                                         'state, rolling back. Error: %s'%ex)
-                                                                stage.state = stage.SCHEDULED
-                                                                pipe.decrement_stage()                                                    
+                                                                stage.state = states.SCHEDULED
+                                                                pipe._decrement_stage()                                                    
 
-                                                            if pipe.completed:
+                                                            if pipe._completed:
                                                                 #self._workflow.remove(pipe)
                                                                 pipe.state = states.DONE
 
@@ -445,9 +445,9 @@ class AppManager(object):
 
                         for pipe in self._workflow:
 
-                            with pipe.stage_lock:
+                            with pipe._stage_lock:
 
-                                if pipe.completed:
+                                if pipe._completed:
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     active_pipe_count -= 1
                                     self._logger.info('Pending pipes: %s'%active_pipe_count)
@@ -472,7 +472,7 @@ class AppManager(object):
                         self._helper.start_helper()
 
                     if not self._sync_thread.is_alive():
-                        self._sync_thread = Thread(   target=synchronizer, 
+                        self._sync_thread = Thread(   target=self._synchronizer, 
                                                 name='synchronizer-thread')
                         self._logger.info('Restarting synchronizer thread')
                         self._sync_thread.start()

@@ -40,5 +40,5 @@ if __name__ == '__main__':
 
 
     appman = AppManager()
-    appman.assign_workload(set([p1,p2]))
+    appman.assign_workflow(set([p1,p2]))
     appman.run()
