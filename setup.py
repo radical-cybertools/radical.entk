@@ -23,7 +23,7 @@ def read(*rnames):
 #
 def check_version():
     if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-        raise RuntimeError("SETUP ERROR: radical.ensemblemd requires Python 2.6 or higher")
+        raise RuntimeError("SETUP ERROR: radical.entk requires Python 2.6 or higher")
 
 #-----------------------------------------------------------------------------
 #
@@ -63,7 +63,7 @@ def get_version():
 
         # make sure the version files exist for the runtime version inspection
         #open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
-        open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
+        open ('%s/src/radical/entk/VERSION' % srcroot, 'w').write (long_version+"\n")
 
 
     except Exception as e :
@@ -191,13 +191,13 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    #'scripts'           : ['bin/ensemblemd-version'],
+    'scripts'           : ['bin/entk-version'],
                            
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
 
     'install_requires'  :  ['radical.utils', 'setuptools>=1', 'pika'],
-    #'test_suite'        : 'radical.ensemblemd.tests',
+    #'test_suite'        : 'radical.entk.tests',
 
     'zip_safe'          : False,
     # This copies the contents of the examples/ dir under

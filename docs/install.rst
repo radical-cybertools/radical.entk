@@ -16,7 +16,7 @@ To install the Ensemble Toolkit in a virtual environment, open a terminal and ru
         cd $HOME
         git clone https://github.com/radical-cybertools/radical.ensemblemd.git
         cd radical.ensemblemd
-        git checkout new_design
+        git checkout arch/v0.6
         pip install .
 
 You can check the version of Ensemble MD Toolkit with the `entk-version` command-line tool. It should return 0.6.

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python -c "import radical.entk; print radical.entk.__version__"
