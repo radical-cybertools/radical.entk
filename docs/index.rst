@@ -10,7 +10,8 @@ Welcome to radical.entk's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   install
+   examples
    api
 
 Indices and tables
