@@ -6,6 +6,8 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.task.task import Task
+from radical.entk.execman.resource_manager import ResourceManager
+from radical.entk.execman.task_manager import TaskManager
 from wfprocessor import WFprocessor
 from helper import Helper
 import sys, time, os
@@ -66,6 +68,9 @@ class AppManager(object):
         self._sync_thread = None
         self._helper = None
 
+
+        # Resource Manager object
+        self._resource_manager = None
         
         # Logger
         self._logger = ru.get_logger('radical.entk.appmanager')
@@ -99,6 +104,16 @@ class AppManager(object):
         """
         return self._resubmit_failed
     
+
+    @property
+    def resource_manager(self):
+
+        """
+        :getter: Returns the resource manager object being used
+        :setter: Assigns a resource manager
+        """
+
+        return self._resource_manager
     # -----------------------------------------------
     # Setter functions
     # -----------------------------------------------
@@ -111,32 +126,12 @@ class AppManager(object):
     def resubmit_failed(self, value):
         self._resubmit_failed = value
 
+    @resource_manager.setter
+    def resource_manager(self, value):
+        self._resource_manager = value
 
     # Function to add workflow to the application manager
     # ------------------------------------------------------
-
-    def _validate_workflow(self, workflow):
-
-        """
-        Validate whether the workflow consists of a set of pipelines
-        """
-
-        if not isinstance(workflow, set):
-
-            if not isinstance(workflow, list):
-                workflow = set([workflow])
-            else:
-                workflow = set(workflow)
-
-
-        for item in workflow:
-            if not isinstance(item, Pipeline):
-                self._logger.info('workflow type incorrect')
-                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
-                                actual_type=type(item))
-
-        return workflow
-
 
     def assign_workflow(self, workflow):
 
@@ -165,6 +160,28 @@ class AppManager(object):
             self._logger.error('Execution interrupted by user ' + 
                         '(you probably hit Ctrl+C), tring to exit gracefully...')
             sys.exit(1)
+
+    def _validate_workflow(self, workflow):
+
+        """
+        Validate whether the workflow consists of a set of pipelines
+        """
+
+        if not isinstance(workflow, set):
+
+            if not isinstance(workflow, list):
+                workflow = set([workflow])
+            else:
+                workflow = set(workflow)
+
+
+        for item in workflow:
+            if not isinstance(item, Pipeline):
+                self._logger.info('workflow type incorrect')
+                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
+                                actual_type=type(item))
+
+        return workflow
 
 
     def _setup_mqs(self):
@@ -397,10 +414,15 @@ class AppManager(object):
 
         try:
 
-            if self._workflow is None:
+            if not self._workflow:
                 print 'Assign workflow before invoking run method - cannot proceed'
-                self._logger.info('No workflow assigned currently, please check your script')
+                self._logger.error('No workflow assigned currently, please check your script')
                 raise ValueError(expected_value='set of pipelines', actual_value=None)
+
+
+            if not self._resource_manager:
+                self._logger.error('No resource manager assigned currently, please create and add a valid resource manager')
+                raise ValueError(expected_value=ResourceManager, actual_value=None)
 
             else:
 
@@ -427,11 +449,19 @@ class AppManager(object):
                 self._wfp.start_processor()                
 
                 
-                self._helper = Helper(    pending_queue = self._pending_queue, 
-                                    completed_queue=self._completed_queue,
-                                    mq_hostname=self._mq_hostname)
-                self._logger.info('Starting helper process from AppManager')
-                self._helper.start_helper()
+                #self._helper = Helper(pending_queue = self._pending_queue, 
+                #                    completed_queue=self._completed_queue,
+                #                    mq_hostname=self._mq_hostname)
+                #self._logger.info('Starting helper process from AppManager')
+                #self._helper.start_helper()
+
+                self._task_manager = TaskManager(   pending_queue = self._pending_queue,
+                                                    completed_queue = self._completed_queue,
+                                                    mq_hostname = self._mq_hostname,
+                                                    rmgr = self._resource_manager
+                                                )
+                self._logger.info('Starting task manager process from AppManager')
+                self._task_manager.start_manager()
 
                 
                 active_pipe_count = len(self._workflow)                
@@ -464,12 +494,14 @@ class AppManager(object):
                         self._logger.info('Restarting WFProcessor process from AppManager')
                         self._wfp.start_processor()
 
-                    if not self._helper.check_alive():
-                        self._helper = Helper(    pending_queue = self._pending_queue, 
-                                            executed_queue=self._executed_queue,
-                                            mq_hostname=self._mq_hostname)
-                        self._logger.info('Restarting helper process from AppManager')
-                        self._helper.start_helper()
+                    if not self._task_manager.check_alive():
+                        self._task_manager = TaskManager(   pending_queue = self._pending_queue,
+                                                            completed_queue = self._completed_queue,
+                                                            mq_hostname = self._mq_hostname,
+                                                            rmgr = self._resource_manager
+                                                        )
+                        self._logger.info('Restarting task manager process from AppManager')
+                        self._task_manager.start_manager()
 
                     if not self._sync_thread.is_alive():
                         self._sync_thread = Thread(   target=self._synchronizer, 

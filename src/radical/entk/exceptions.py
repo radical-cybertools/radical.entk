@@ -98,3 +98,10 @@ class UnknownError(EnTKError):
     def __init__(self, text):
         msg='Unknown error: %s'%text
         super(UnknownError, self).__init__(msg)
+
+
+class Error(EnTKError):
+
+    def __init__(self, text):
+        msg = 'Error: %s'%text
+        super(Error, self).__init__(msg)

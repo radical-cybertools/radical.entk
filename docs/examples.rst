@@ -6,7 +6,7 @@ Examples
 ********
 
 Inside entk repository, find the examples folder. We will first work with the 
-`example1.py <>`_ .
+`example1.py <https://github.com/radical-cybertools/radical.ensemblemd/blob/arch/v0.6/examples/example1.py>`_ .
 
 Discussion of the script
 ------------------------

@@ -16,77 +16,67 @@ import os
 
 slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
-# TEMPORARY FILE TILL AN EXECUTION PLUGIN IS IN PLACE
+class TaskManager(object):
 
-class Helper(object):
+    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr):
 
-    def __init__(self, pending_queue, completed_queue, mq_hostname, resource_desc):
-
-        self._uid           = ru.generate_id('radical.entk.helper')
-        self._logger        = ru.get_logger('radical.entk.helper')
+        self._uid           = ru.generate_id('radical.entk.task_manager')
+        self._logger        = ru.get_logger('radical.entk.task_manager')
 
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
         self._mq_hostname = mq_hostname
+        self._rmgr = rmgr
 
-        self._helper_process = None
+        self._tmgr_process = None
 
-        self._resource_desc = resource_desc
-
-        self._logger.info('Created helper object: %s'%self._uid)
+        self._logger.info('Created task manager object: %s'%self._uid)
 
 
-    def start_helper(self):
+    def start_manager(self):
 
         # This method starts the extractor function in a separate thread        
         
-        if not self._helper_process:
+        if not self._tmgr_process:
 
             try:
-
-                # Attempt to start RP pilot on 
-
-
-            try:
-                self._helper_process = Process(target=self.helper, name='helper')
-                self._helper_terminate = Event()
-                self._logger.info('Starting helper process')
-                self._helper_process.start()                
+                self._tmgr_process = Process(target=self.tmgr, name='task-manager')
+                self._tmgr_terminate = Event()
+                self._logger.info('Starting task manager process')
+                self._tmgr_process.start()                
 
                 return True
 
             except Exception, ex:
 
-                self.end_helper()
-                self._logger.error('Helper process not started')
-                raise
-
-                
+                self.end_manager()
+                self._logger.error('Task manager not started')
+                raise                
 
         else:
             self._logger.info('Helper process already running')
             raise
 
 
-    def end_helper(self):
+    def end_manager(self):
 
         # Set termination flag
         try:
-            if not self._helper_terminate.is_set():
-                self._helper_terminate.set()
+            if not self._tmgr_terminate.is_set():
+                self._tmgr_terminate.set()
 
-            self._helper_process.join()
-            self._logger.info('Helper thread closed')
+            self._tmgr_process.join()
+            self._logger.info('Task manager process closed')
 
             return True
 
         except Exception, ex:
-            self._logger.error('Could not terminate helper process')
+            self._logger.error('Could not terminate task manager process')
             raise
 
 
 
-    def helper(self):
+    def tmgr(self):
 
         # This function extracts currently tasks from the pending_queue
         # and pushes it to the executed_queue. Thus mimicking an execution plugin
