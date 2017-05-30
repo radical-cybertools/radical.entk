@@ -24,6 +24,7 @@ class Task(object):
         self._arguments     = list()
         self._post_exec     = list()
         self._cores  = 1
+        self._mpi = False
 
         # Data staging attributes
         self._upload_input_data     = list()
@@ -142,6 +143,18 @@ class Task(object):
         """
 
         return self._cores
+
+    @property
+    def mpi(self):
+
+        """
+        Flag to enable MPI-based execution
+
+        :getter: return the mpi flag
+        :setter: assign the mpi flag
+        """
+
+        return self._mpi
 
     @property
     def upload_input_data(self):
@@ -287,6 +300,13 @@ class Task(object):
             self._cores = val
         else:
             raise TypeError(expected_type=int, actual_type=type(val))
+
+    @mpi.setter
+    def mpi(self, value):
+        if isinstance(val, bool):
+            self._mpi = val
+        else:
+            raise TypeError(expected_type=bool, actual_type=type(val))
 
 
     @upload_input_data.setter

@@ -13,12 +13,14 @@ import json
 import pika
 import traceback
 import os
+import radical.pilot as rp
+from task_processor import create_compute_unit, create_task
 
 slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class TaskManager(object):
 
-    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr):
+    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr, pilot):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
@@ -31,6 +33,13 @@ class TaskManager(object):
         self._tmgr_process = None
 
         self._logger.info('Created task manager object: %s'%self._uid)
+
+
+
+    def setup(self):
+
+        self._umgr = rp.UnitManager(session=self._rmgr._session)
+        self._umgr.add_pilots(self._rmgr.pilot)
 
 
     def start_manager(self):
@@ -75,6 +84,14 @@ class TaskManager(object):
             raise
 
 
+    def create_cu_from_task(self, task):
+
+        return create_compute_unit(task)
+
+    def create_task_from_cu(self, cu):
+
+        return create_task(cu)
+
 
     def tmgr(self):
 
@@ -83,13 +100,39 @@ class TaskManager(object):
 
         try:
 
-            self._logger.info('Helper process started')
+            self._logger.info('Task Manager process started') 
 
             # Thread should run till terminate condtion is encountered
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
-            while not self._helper_terminate.is_set():
+
+            def unit_state_cb(unit, state):
+
+                if unit.state == rp.DONE:
+
+                    task = create_task_from_cu(unit)
+                    task.state = states.DONE
+                    
+                    task_as_dict = json.dumps(task.to_dict())
+
+                    mq_channel.basic_publish(   exchange='fork',
+                                                routing_key='',
+                                                body=task_as_dict
+                                                #properties=pika.BasicProperties(
+                                                    # make message persistent
+                                                    #    delivery_mode = 2, 
+                                                #)
+                                            ) 
+
+                    self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
+                                                                                    task.uid, 
+                                                                                    task.state,
+                                                                                    self._completed_queue[0])
+                                                                                )
+
+
+            while not self._tmgr_terminate.is_set():
 
                 try:
 
@@ -99,29 +142,16 @@ class TaskManager(object):
 
 
                         try:
-                            task = Task()
-                            task.load_from_dict(json.loads(body))
-
-                            task.state = states.DONE
-
-                            task_as_dict = json.dumps(task.to_dict())
 
                             self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
 
-                            mq_channel.basic_publish( exchange='fork',
-                                                            routing_key='',
-                                                            body=task_as_dict
-                                                            #properties=pika.BasicProperties(
-                                                                # make message persistent
-                                                            #    delivery_mode = 2, 
-                                                            #)
-                                                        )                    
-                        
-                            self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
-                                                                                    task.uid, 
-                                                                                    task.state,
-                                                                                    self._completed_queue[0])
-                                                                                )
+                            task = Task()
+                            task.load_from_dict(json.loads(body))
+                            task.state = states.SCHEDULED
+
+                            self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
+
+                            self._umgr.submit_units(create_cu_from_task(task))
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 

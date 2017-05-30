@@ -9,7 +9,7 @@ NEW      = 'UNSCHEDULED'
 DONE     = 'DONE'
 FAILED   = 'FAILED'
 CANCELED = 'CANCELED'
-SCHEDULED = 'SCHEDULED' # pipeline, states only
+SCHEDULED = 'SCHEDULED'
 
 # shortcut
 INITIAL  = [NEW]
