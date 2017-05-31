@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager
+from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
 
 def create_single_task():
 
@@ -38,7 +38,19 @@ if __name__ == '__main__':
         p2.add_stages(s)
     
 
+    res_dict = {
+
+            'resource': 'local.localhost',
+            'walltime': 15,
+            'cores': 2,
+            'project': None
+
+    }
+
+    rman = ResourceManager(res_dict)
+
 
     appman = AppManager()
+    appman.resource_manager = rman
     appman.assign_workflow(set([p1,p2]))
     appman.run()

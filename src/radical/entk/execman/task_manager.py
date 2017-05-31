@@ -20,7 +20,7 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class TaskManager(object):
 
-    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr, pilot):
+    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
@@ -34,9 +34,10 @@ class TaskManager(object):
 
         self._logger.info('Created task manager object: %s'%self._uid)
 
+        self._setup()
 
 
-    def setup(self):
+    def _setup(self):
 
         self._umgr = rp.UnitManager(session=self._rmgr._session)
         self._umgr.add_pilots(self._rmgr.pilot)
@@ -111,7 +112,7 @@ class TaskManager(object):
 
                 if unit.state == rp.DONE:
 
-                    task = create_task_from_cu(unit)
+                    task = self.create_task_from_cu(unit)
                     task.state = states.DONE
                     
                     task_as_dict = json.dumps(task.to_dict())
@@ -143,15 +144,16 @@ class TaskManager(object):
 
                         try:
 
-                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
-
                             task = Task()
                             task.load_from_dict(json.loads(body))
+
+                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
+                            
                             task.state = states.SCHEDULED
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cu_from_task(task))
+                            self._umgr.submit_units(self.create_cu_from_task(task))
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -189,4 +191,4 @@ class TaskManager(object):
 
     def check_alive(self):
 
-        return self._helper_process.is_alive()
+        return self._tmgr_process.is_alive()

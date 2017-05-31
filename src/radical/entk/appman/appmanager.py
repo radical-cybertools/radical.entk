@@ -9,7 +9,6 @@ from radical.entk.task.task import Task
 from radical.entk.execman.resource_manager import ResourceManager
 from radical.entk.execman.task_manager import TaskManager
 from wfprocessor import WFprocessor
-from helper import Helper
 import sys, time, os
 import Queue
 import pika
@@ -432,6 +431,10 @@ class AppManager(object):
 
                 if not setup:
                     raise
+
+
+                # Submit resource request
+                self._resource_manager.submit_resource_request()
 
 
                 # Start synchronizer thread

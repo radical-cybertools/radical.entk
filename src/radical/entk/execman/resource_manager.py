@@ -92,7 +92,6 @@ class ResourceManager(object):
         """
 
         self._resource = resource_desc['resource']
-        self._username = resource_desc['username']
         self._walltime = resource_desc['walltime']
         self._cores = resource_desc['cores']
         self._project = resource_desc['project']
@@ -122,7 +121,7 @@ class ResourceManager(object):
                 self._logger.error('Pilot has failed')
                 raise
 
-        self._session = rp.Session(db_url=self._mlab_url)
+        self._session = rp.Session(database_url=self._mlab_url)
 
         self._pmgr = rp.PilotManager(session=self._session)
         self._pmgr.register_callback(_pilot_state_cb)
@@ -145,3 +144,6 @@ class ResourceManager(object):
 
         # Launch the pilot
         self._pilot = self._pmgr.submit_pilots(pdesc)
+
+        # Wait for pilot to go active
+        self._pilot.wait(rp.ACTIVE)
