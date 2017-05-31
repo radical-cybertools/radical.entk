@@ -21,10 +21,14 @@ class ResourceManager(object):
         self._resource_desc = None
 
         self._logger.debug('Validating resource description')
-        if self._valid_resource_desc(resource_desc):
+        if self._validate_resource_desc(resource_desc):
             self._resource_desc = resource_desc
             self._logger.info('Resource description validated')
+            self._logger.debug('Populating resource manager object')
             self._populate(resource_desc)
+        else:
+            self._logger.error('Could not validate resource description')
+            raise
 
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL',None)
@@ -63,27 +67,33 @@ class ResourceManager(object):
         return self._resource_desc
     #----------------------------------------------------------------------------------------------------
 
-    def _valid_resource_desc(self, resource_desc):
+    def _validate_resource_desc(self, resource_desc):
 
         """
         Validate the resource description that was provided to current class's constructor
         """
 
-        if not isinstance(resource_desc, dict):
-            raise TypeError(expected_type=dict, actual_type=type(resource_desc))
+        try:
+
+            if not isinstance(resource_desc, dict):
+                raise TypeError(expected_type=dict, actual_type=type(resource_desc))
 
 
-        expected_keys = [   'resource',
-                            'walltime',
-                            'cores',
-                            'project'
-                        ]
+            expected_keys = [   'resource',
+                                'walltime',
+                                'cores',
+                                'project'
+                            ]
 
-        for key in expected_keys:
-            if key not in resource_desc:
-                raise Error(text='Key %s does not exist in the resource description'%key)
+            for key in expected_keys:
+                if key not in resource_desc:
+                    raise Error(text='Key %s does not exist in the resource description'%key)
 
-        return True
+            return True
+
+        except Exception, ex:
+            self._logger.error('Failed to validate resource description')
+            raise
 
     def _populate(self, resource_desc):
 
@@ -91,20 +101,28 @@ class ResourceManager(object):
         Populate the class attributes with values provided in the resource description
         """
 
-        self._resource = resource_desc['resource']
-        self._walltime = resource_desc['walltime']
-        self._cores = resource_desc['cores']
-        self._project = resource_desc['project']
+        try:
 
-        if 'access_schema' in resource_desc:
-            self._access_schema = resource_desc['access_schema']
-        else:
-            self._access_schema = None
+            self._resource = resource_desc['resource']
+            self._walltime = resource_desc['walltime']
+            self._cores = resource_desc['cores']
+            self._project = resource_desc['project']
+
+            if 'access_schema' in resource_desc:
+                self._access_schema = resource_desc['access_schema']
+            else:
+                self._access_schema = None
         
-        if 'queue' in resource_desc:
-            self._queue = resource_desc['queue']
-        else:
-            self._queue = None
+            if 'queue' in resource_desc:
+                self._queue = resource_desc['queue']
+            else:
+                self._queue = None
+
+            self._logger.debug('Resource manager population successful')
+
+        except Exception, ex:
+            self._logger.error('Resource manager population unsuccessful')
+            raise
 
 
     def submit_resource_request(self):
@@ -114,36 +132,46 @@ class ResourceManager(object):
         Currently, submits a Pilot job using the RADICAL Pilot system
         """
 
-        def _pilot_state_cb(pilot, state):
-            self._logger.info('Pilot %s state: %s'%(pilot.uid, state))
+        try:
 
-            if state == rp.FAILED:
-                self._logger.error('Pilot has failed')
-                raise
+            def _pilot_state_cb(pilot, state):
+                self._logger.info('Pilot %s state: %s'%(pilot.uid, state))
 
-        self._session = rp.Session(database_url=self._mlab_url)
+                if state == rp.FAILED:
+                    self._logger.error('Pilot has failed')
+                    raise
 
-        self._pmgr = rp.PilotManager(session=self._session)
-        self._pmgr.register_callback(_pilot_state_cb)
+            self._session = rp.Session(database_url=self._mlab_url)
 
-        pd_init = {
-                'resource'  : self._resource,
-                'runtime'   : self._walltime,
-                'cores'     : self._cores,
-                'project'   : self._project,
-                }
+            self._pmgr = rp.PilotManager(session=self._session)
+            self._pmgr.register_callback(_pilot_state_cb)
 
-        if self._access_schema:
-            pd_init['access_schema'] = self._access_schema
+            pd_init = {
+                    'resource'  : self._resource,
+                    'runtime'   : self._walltime,
+                    'cores'     : self._cores,
+                    'project'   : self._project,
+                    }
+    
+            if self._access_schema:
+                pd_init['access_schema'] = self._access_schema
+    
+            if self._queue:
+                pd_init['queue'] = self._queue
+    
 
-        if self._queue:
-            pd_init['queue'] = self._queue
+            pdesc = rp.ComputePilotDescription(pd_init)
+    
+            # Launch the pilot
+            self._pilot = self._pmgr.submit_pilots(pdesc)
 
+            self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
+    
+            # Wait for pilot to go active
+            self._pilot.wait(rp.ACTIVE) 
 
-        pdesc = rp.ComputePilotDescription(pd_init)
+            self._logger.info('Pilot is now active')
 
-        # Launch the pilot
-        self._pilot = self._pmgr.submit_pilots(pdesc)
-
-        # Wait for pilot to go active
-        self._pilot.wait(rp.ACTIVE)
+        except Exception, ex:
+            self._logger.error('Resource request submission failed, error: %s'%ex)
+            raise

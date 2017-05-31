@@ -434,6 +434,7 @@ class AppManager(object):
 
 
                 # Submit resource request
+                self._logger.info('Starting resource request submission')
                 self._resource_manager.submit_resource_request()
 
 
@@ -451,12 +452,6 @@ class AppManager(object):
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()                
 
-                
-                #self._helper = Helper(pending_queue = self._pending_queue, 
-                #                    completed_queue=self._completed_queue,
-                #                    mq_hostname=self._mq_hostname)
-                #self._logger.info('Starting helper process from AppManager')
-                #self._helper.start_helper()
 
                 self._task_manager = TaskManager(   pending_queue = self._pending_queue,
                                                     completed_queue = self._completed_queue,
@@ -483,7 +478,7 @@ class AppManager(object):
                                 if pipe._completed:
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     active_pipe_count -= 1
-                                    self._logger.info('Pending pipes: %s'%active_pipe_count)
+                                    self._logger.info('Active pipes: %s'%active_pipe_count)
 
 
                     
@@ -517,8 +512,8 @@ class AppManager(object):
                 self._logger.info('Closing WFprocessor')
                 self._wfp.end_processor()                
                 
-                self._logger.info('Closing helper thread')
-                self._helper.end_helper()
+                self._logger.info('Closing task manager process')
+                self._task_manager.end_manager()
                 
 
                 self._logger.info('Closing synchronizer thread')
@@ -539,9 +534,9 @@ class AppManager(object):
                 self._logger.info('WFprocessor closed')
 
             if self._helper:
-                self._logger.info('Closing helper thread')
-                self._helper.end_helper()
-                self._logger.info('Helper thread closed')
+                self._logger.info('Closing task manager process')
+                self._helper.end_manager()
+                self._logger.info('Task manager closed')
 
             if self._sync_thread:
                 self._logger.info('Closing synchronizer thread')
@@ -561,9 +556,9 @@ class AppManager(object):
                 self._logger.info('WFprocessor closed')
 
             if self._helper:
-                self._logger.info('Closing helper thread')
-                self._helper.end_helper()
-                self._logger.info('Helper thread closed')
+                self._logger.info('Closing task manager process')
+                self._helper.end_manager()
+                self._logger.info('Task manager closed')
 
             if self._sync_thread:
                 self._logger.info('Closing synchronizer thread')
