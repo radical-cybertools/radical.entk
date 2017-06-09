@@ -39,8 +39,7 @@ class TaskManager(object):
 
     def _setup(self):
 
-        self._umgr = rp.UnitManager(session=self._rmgr._session)
-        self._umgr.add_pilots(self._rmgr.pilot)
+        pass
 
 
     def start_manager(self):
@@ -92,52 +91,7 @@ class TaskManager(object):
     def create_task_from_cu(self, cu):
 
         return create_task(cu)
-
-
-    def unit_state_cb(self, unit, state):
-
-
-        try:
-
-            # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
-            mq_channel = mq_connection.channel()
-
-            self._logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
-
-            if unit.state == rp.DONE:
-
-                task = self.create_task_from_cu(unit)
-                task.state = states.DONE
-                    
-                task_as_dict = json.dumps(task.to_dict())
-
-                mq_channel.basic_publish(   exchange='fork',
-                                                    routing_key='',
-                                                    body=task_as_dict
-                                                    #properties=pika.BasicProperties(
-                                                        # make message persistent
-                                                        #    delivery_mode = 2, 
-                                                    #)
-                                                ) 
-
-                self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
-                                                                                    task.uid, 
-                                                                                    task.state,
-                                                                                    self._completed_queue[0])
-                                                                                    )
-
-            mq_connection.close()
-
-        except KeyboardInterrupt:
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to exit callback thread gracefully...')
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-
-            self._logger.error('Callback failed with error: %s'%ex)
-            raise
+    
 
     def tmgr(self):
 
@@ -146,14 +100,60 @@ class TaskManager(object):
 
         try:
 
+            def unit_state_cb(unit, state):
+
+                try:
+
+
+                    # Thread should run till terminate condtion is encountered
+                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
+                    mq_channel = mq_connection.channel()
+
+                    self._logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
+
+                    if unit.state == rp.DONE:
+
+                        task = self.create_task_from_cu(unit)
+                        task.state = states.DONE
+                    
+                        task_as_dict = json.dumps(task.to_dict())
+
+                        mq_channel.basic_publish(   exchange='fork',
+                                                    routing_key='',
+                                                    body=task_as_dict
+                                                        #properties=pika.BasicProperties(
+                                                            # make message persistent
+                                                            #    delivery_mode = 2, 
+                                                        #)
+                                                ) 
+
+                        self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
+                                                                                    task.uid, 
+                                                                                    task.state,
+                                                                                    self._completed_queue[0])
+                                                                                    )
+
+                    mq_connection.close()
+
+                except KeyboardInterrupt:
+                    self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                            'trying to exit callback thread gracefully...')
+                    raise KeyboardInterrupt
+
+                except Exception, ex:
+
+                    self._logger.error('Callback failed with error: %s'%ex)
+                    raise
+
             self._logger.info('Task Manager process started') 
+
+            self._umgr = rp.UnitManager(session=self._rmgr._session)
+            self._umgr.add_pilots(self._rmgr.pilot)
+            self._umgr.register_callback(unit_state_cb)
 
             # Thread should run till terminate condtion is encountered
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
-
-            self._umgr.register_callback(self.unit_state_cb)
-
 
             while not self._tmgr_terminate.is_set():
 

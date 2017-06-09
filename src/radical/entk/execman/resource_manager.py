@@ -141,7 +141,7 @@ class ResourceManager(object):
                     self._logger.error('Pilot has failed')
                     raise
 
-            self._session = rp.Session(database_url=self._mlab_url)
+            self._session = rp.Session(dburl=self._mlab_url)
 
             self._pmgr = rp.PilotManager(session=self._session)
             self._pmgr.register_callback(_pilot_state_cb)

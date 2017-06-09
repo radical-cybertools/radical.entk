@@ -250,6 +250,13 @@ class Task(object):
     # Setter functions
     # -----------------------------------------------
 
+    @uid.setter
+    def uid(self, value):
+        if isinstance(value, str):
+            self._uid = value
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
+
     @name.setter
     def name(self, value):
         if isinstance(value,str):

@@ -1,6 +1,7 @@
 import radical.pilot as rp
 from radical.entk import Task
 import radical.utils as ru
+import traceback
 
 
 logger = ru.get_logger('radical.entk.task_processor')
@@ -118,7 +119,7 @@ def create_compute_unit(task):
 
         logger.debug('Creating CU from Task %s'%(task.uid))
         cud = rp.ComputeUnitDescription()
-        cud.name        = task.uid
+        cud.name        = '%s,%s,%s'%(task.uid, task._parent_stage, task._parent_pipeline)
         cud.pre_exec    = task.pre_exec
         cud.executable  = task.executable
         cud.arguments   = task.arguments
@@ -182,16 +183,18 @@ def create_task(cu):
         logger.debug('Create Task from CU %s'%cu.name)
 
         task = Task()
-        task.uid        = cu.name
-        task.pre_exec   = cu.pre_exec
-        task.executable = cu.executable
-        task.arguments  = cu.arguments
-        task.post_exec  = cu.post_exec
-        task.cores      = cu.cores
-        task.mpi        = cu.mpi
+        task.uid                = cu.name.split(',')[0].strip()
+        task._parent_stage       = cu.name.split(',')[1].strip()
+        task._parent_pipeline    = cu.name.split(',')[2].strip()
+        #task.pre_exec   = cu.pre_exec
+        #task.executable = cu.executable
+        #task.arguments  = cu.arguments
+        #task.post_exec  = cu.post_exec
+        #task.cores      = cu.cores
+        #task.mpi        = cu.mpi
 
-        task.link_input_data, task.copy_input_data, task.upload_input_data  = get_input_data_from_cu(cu)
-        task.copy_output_data, task.download_output_data                    = get_output_data_from_cu(cu)
+        #task.link_input_data, task.copy_input_data, task.upload_input_data  = get_input_data_from_cu(cu)
+        #task.copy_output_data, task.download_output_data                    = get_output_data_from_cu(cu)
 
         logger.debug('Task %s created from CU %s'%(task.uid, cu.name))
 
@@ -199,4 +202,5 @@ def create_task(cu):
 
     except Exception, ex:
         logger.error('Task creation from CU failed, error: %s'%ex)
+        print traceback.format_exc()
         raise

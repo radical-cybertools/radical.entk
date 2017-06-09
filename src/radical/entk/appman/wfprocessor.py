@@ -339,7 +339,7 @@ class WFprocessor(object):
                         completed_task = Task()
                         completed_task.load_from_dict(json.loads(body))
 
-                        self._logger.debug('Got finished task %s from queue'%(completed_task.uid))
+                        self._logger.info('Got finished task %s from queue'%(completed_task.uid))
 
                         for pipe in self._workflow:
 
