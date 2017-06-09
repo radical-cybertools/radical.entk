@@ -113,7 +113,7 @@ def get_output_list_from_task(task):
 
     return output_data
 
-def create_compute_unit(task):
+def create_cud_from_task(task):
 
     try:
 
@@ -139,44 +139,7 @@ def create_compute_unit(task):
         raise
 
 
-def get_input_data_from_cu(cu):
-
-    link_input_data = []
-    copy_input_data = []
-    link_input_data = []
-
-    for input_data in cu.input_staging:
-
-        if 'action' in input_data:
-
-            if input_data['action'] == rp.LINK:
-                link_input_data += '%s > %s'%(input_data['source'], input_data['target'])
-
-            else:
-                copy_input_data += '%s > %s'%(input_data['source'], input_data['target'])
-
-        else:
-            upload_input_data += '%s > %s'%(input_data['source'], input_data['target'])
-
-    return link_input_data, copy_input_data, upload_input_data
-
-
-def get_output_data_from_cu(cu):
-
-    copy_output_data = []
-    download_output_data = []
-
-    for output_data in cu.output_staging:
-
-        if 'action' in output_data:
-            copy_output_data += '%s > %s'%(output_data['source'], output_data['target'])
-
-        else:
-            download_output_data += '%s > %s'%(output_data['source'], output_data['target'])
-
-    return copy_output_data, download_output_data
-
-def create_task(cu):
+def create_task_from_cu(cu):
 
     try:
 

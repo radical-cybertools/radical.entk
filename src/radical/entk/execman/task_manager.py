@@ -14,7 +14,7 @@ import pika
 import traceback
 import os
 import radical.pilot as rp
-from task_processor import create_compute_unit, create_task
+from task_processor import create_cud_from_task, create_task_from_cu
 
 slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
@@ -83,16 +83,7 @@ class TaskManager(object):
             self._logger.error('Could not terminate task manager process')
             raise
 
-
-    def create_cu_from_task(self, task):
-
-        return create_compute_unit(task)
-
-    def create_task_from_cu(self, cu):
-
-        return create_task(cu)
-    
-
+  
     def tmgr(self):
 
         # This function extracts currently tasks from the pending_queue
@@ -175,7 +166,7 @@ class TaskManager(object):
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(self.create_cu_from_task(task))
+                            self._umgr.submit_units(self.create_cud_from_task(task))
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 

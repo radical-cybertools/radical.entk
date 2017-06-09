@@ -4,17 +4,23 @@ __license__     = "MIT"
 
 
 # -----------------------------------------------------------------------------
-# common states
-NEW      = 'UNSCHEDULED'
-DONE     = 'DONE'
-FAILED   = 'FAILED'
-CANCELED = 'CANCELED'
-SCHEDULED = 'SCHEDULED'
+# common states - Pipeline, Stage
+UNSCHEDULED     = 'UNSCHEDULED'
+SCHEDULING      = 'SCHEDULING'
+SCHEDULED       = 'SCHEDULED'
+EXECUTING       = 'EXECUTING'
+DONE            = 'DONE'            # 'DONE', 'FAILED', 'CANCELED' correspond to various forms of 'EXECUTED'
+FAILED          = 'FAILED'
+CANCELED        = 'CANCELED'
+
+# unique states - Tasks
+QUEUEING        = 'QUEUEING'
+QUEUED          = 'QUEUED'
+DEQUEUEING      = 'DEQUEUEING'
+DEQUEUED        = 'DEQUEUED'        # Dequeue thread will have this state
+SYNCHRONIZING   = 'SYNCHRONIZING'
+SYNCHRONIZED    = 'SYNCHRONIZED'    # Syncrhonizer thread will have this state
 
 # shortcut
-INITIAL  = [NEW]
+INITIAL  = [UNSCHEDULED]
 FINAL = [DONE, FAILED, CANCELED]
-
-# Task only states
-QUEUED = 'QUEUED'
-EXECUTING = 'EXECUTING'

@@ -93,13 +93,6 @@ class NoKernelConfigurationError(EnTKError):
         super(NoKernelConfigurationError, self).__init__ (msg)
 
 
-class UnknownError(EnTKError):
-
-    def __init__(self, text):
-        msg='Unknown error: %s'%text
-        super(UnknownError, self).__init__(msg)
-
-
 class Error(EnTKError):
 
     def __init__(self, text):

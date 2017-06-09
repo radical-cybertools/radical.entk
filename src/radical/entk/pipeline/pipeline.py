@@ -20,7 +20,7 @@ class Pipeline(object):
         self._stages    = list()
         self._name      = str()
 
-        self._state     = states.NEW
+        self._state     = states.UNSCHEDULED
 
         # To keep track of current state
         self._stage_count = len(self._stages)
@@ -50,7 +50,7 @@ class Pipeline(object):
     @property
     def name(self):
         """
-        Name of the pipeline 
+        Name of the pipeline useful for bookkeeping and to refer to this pipeline while data staging
 
         :getter: Returns the name of the pipeline
         :setter: Assigns the name of the pipeline
@@ -82,6 +82,19 @@ class Pipeline(object):
         """
 
         return self._state
+
+
+    @property
+    def uid(self):
+
+        """
+        Unique ID of the current pipeline
+
+        :getter: Returns the unique id of the current pipeline
+        :type: String
+        """
+        return self._uid
+
     
     @property
     def _stage_lock(self):
@@ -115,17 +128,6 @@ class Pipeline(object):
 
         return self._cur_stage
     
-    @property
-    def uid(self):
-
-        """
-        Unique ID of the current pipeline
-
-        :getter: Returns the unique id of the current pipeline
-        :type: String
-        """
-        return self._uid
-    
     # -----------------------------------------------
 
 
@@ -143,13 +145,19 @@ class Pipeline(object):
     @stages.setter
     def stages(self, stages):
 
-        self._stages = self._validate_stages(stages)
-        self._pass_uid()
-        self._stage_count = len(self._stages)
+        try:
+            self._stages = self._validate_stages(stages)
+            self._pass_uid()
+            self._stage_count = len(self._stages)
+            if self._cur_stage == 0:
+                self._cur_stage = 1
+
+        except Exception, ex:
+            raise Error(text=ex)
 
 
-    @state.setter
-    def state(self, value):
+    @_state.setter
+    def _state(self, value):
         if isinstance(value,str):
             self._state = value
         else:
@@ -166,11 +174,17 @@ class Pipeline(object):
         :argument: List of Stage objects
         """
 
-        stages = self._validate_stages(stages)
-        stages = self._pass_uid(stages)
-        self._stages.extend(stages)
-        self._stage_count = len(self._stages)
+        try:
 
+            stages = self._validate_stages(stages)
+            stages = self._pass_uid(stages)
+            self._stages.extend(stages)
+            self._stage_count = len(self._stages)
+            if self._cur_stage == 0:
+                self._cur_stage = 1
+
+        except Exception, ex:
+            raise Error(text=ex)
 
     def remove_stages(self, stage_names):
 
@@ -181,30 +195,39 @@ class Pipeline(object):
         :argument: List of stage names as strings
         """
 
+        try:
 
-        if not isinstance(stage_names, list):
-            stage_names = [stage_names]
+            if not isinstance(stage_names, list):
+                stage_names = [stage_names]
 
-        for val in stage_names:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
+            for val in stage_names:
+                if not isinstance(val, str):
+                    raise TypeError(expected_type=str, actual_type=type(val))
 
-        copy_of_existing_stages = self._stages
-        copy_stage_names = stage_names
+            copy_of_existing_stages = self._stages
+            copy_stage_names = stage_names
 
-        for stage in self._stages:
+            for stage in self._stages:
 
-            for stage_name in stage_names:
+                for stage_name in stage_names:
                 
-                if stage.name ==  stage_name:
+                    if stage.name ==  stage_name:
 
-                    copy_of_existing_stages.remove(stage)
-                    copy_stage_names.remove(stage)
+                        copy_of_existing_stages.remove(stage)
+                        copy_stage_names.remove(stage)
 
-            stage_names = copy_stage_names
+                stage_names = copy_stage_names
 
-        self._stages = copy_of_existing_stages
-        self._stage_count = len(self._stages)
+            if len(self._stages) != len(copy_of_existing_stages):
+
+                self._stages = copy_of_existing_stages
+                self._stage_count = len(self._stages)
+
+                # Current stage does not change or changes to the 'new' last stage
+                self._cur_stage = min(self._cur_stage, self._stage_count)
+
+        except Exception, ex:
+            raise Error(text=ex)
 
     def _pass_uid(self, stages=None):
 
@@ -216,16 +239,21 @@ class Pipeline(object):
         :return: List of updated Stage objects
         """
 
-        if stages is None:
-            for stage in self._stages:
-                stage._parent_pipeline = self._uid
-                stage._pass_uid()
-        else:
-            for stage in stages:
-                stage._parent_pipeline = self._uid
-                stage._pass_uid()
+        try:
 
-            return stages
+            if stages is None:
+                for stage in self._stages:
+                    stage._parent_pipeline = self._uid
+                    stage._pass_uid()
+            else:
+                for stage in stages:
+                    stage._parent_pipeline = self._uid
+                    stage._pass_uid()
+
+                return stages
+
+        except Exception, ex:
+            raise Error(text=ex)
 
 
     def _increment_stage(self):
@@ -234,10 +262,15 @@ class Pipeline(object):
         Increment pointer to current stage, also check if Pipeline has completed
         """
 
-        if self._cur_stage < self._stage_count-1:
-            self._cur_stage+=1
-        else:
-            self._completed_flag.set()
+        try:
+
+            if self._cur_stage < self._stage_count:
+                self._cur_stage+=1
+            else:
+                self._completed_flag.set()
+
+        except Exception, ex:
+            raise Error(text=ex)
 
     def _decrement_stage(self):
 
@@ -245,7 +278,11 @@ class Pipeline(object):
         Decrement pointer to current stage
         """
 
-        if self._cur_stage > 1:
-            self._cur_stage -= 1
-            self._completed_flag = threading.Event() # reset
+        try:
+
+            if self._cur_stage > 0:
+                self._cur_stage -= 1
+                self._completed_flag = threading.Event() # reset
             
+        except Exception, ex:
+            raise Error(text=ex)
