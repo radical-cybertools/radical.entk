@@ -16,7 +16,7 @@ class Task(object):
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = str()
 
-        self._state     = states.NEW
+        self._state     = states.UNSCHEDULED
 
         # Attributes necessary for execution
         self._pre_exec      = list()
@@ -369,13 +369,15 @@ class Task(object):
     def _replicate(self, original_task):
 
         """
-        Replicate an existing task with a new uid and NEW state
+        Replicate an existing task with a new uid and UNSCHEDULED state. The change is in inplace.
+
+        :return: None
         """
 
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = original_task.name
 
-        self._state     = states.NEW
+        self._state     = states.UNSCHEDULED
 
         # Attributes necessary for execution
         self._pre_exec      = original_task.pre_exec
@@ -430,13 +432,15 @@ class Task(object):
 
         return task_desc_as_dict
         
+        
 
     def load_from_dict(self, d):
 
         """
-        Create a Task from a dictionary
+        Create a Task from a dictionary. The change is in inplace.
 
         :argument: python dictionary
+        :return: None
         """
 
         if 'uid' in d:

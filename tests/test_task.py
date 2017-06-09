@@ -3,21 +3,27 @@ from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
 
-def test_attribute_types():
+def test_task_initialization():
 
     t = Task()
 
+    assert type(t._uid) == str
     assert type(t.name) == str
     assert type(t.state) == str
+    assert t.state == states.UNSCHEDULED
     assert type(t.pre_exec) == list
     assert type(t.executable) == list
     assert type(t.arguments) == list
     assert type(t.post_exec) == list
+    assert t.cores == 1
+    assert t.mpi == False
     assert type(t.upload_input_data) == list
     assert type(t.copy_input_data) == list
     assert type(t.link_input_data) == list
     assert type(t.copy_output_data) == list
     assert type(t.download_output_data) == list
+    assert t._parent_pipeline == None
+    assert t._parent_stage == None
 
 
 def test_assignment_exceptions():
@@ -62,7 +68,60 @@ def test_assignment_exceptions():
             with pytest.raises(TypeError):
                 t.download_output_data = data
 
+        if not isinstance(data, bool):
 
-def test_init_state():
-    t = Task()
-    assert t.state == states.NEW
+            with pytest.raises(TypeError):
+                t.mpi = data
+
+        if not isinstance(data, int):
+
+            with pytest.raises(TypeError):
+                t.cores = data
+
+
+def test_task_replicate():
+
+    t1 = Task()
+    t1.name = 'simulation'
+    t1.pre_exec = ['module load gromacs']
+    t1.executable = ['grompp']
+    t1.arguments = ['hello']
+    t1.cores = 4
+    t1.mpi = True
+    t1.post_exec = ['echo test']
+    
+    t1.upload_input_data    = ['upload_input.dat']
+    t1.copy_input_data      = ['copy_input.dat']
+    t1.link_input_data      = ['link_input.dat']
+    t1.copy_output_data     = ['copy_output.dat']
+    t1.download_output_data = ['download_output.dat']
+
+
+    t2 = Task()
+    t2._replicate(t1)
+
+    assert t2._uid != t1._uid
+    assert t2.name == t1.name
+    assert t2.pre_exec == t1.pre_exec
+    assert t2.executable == t1.executable
+    assert t2.arguments == t1.arguments
+    assert t2.cores == t1.cores
+    assert t2.mpi == t1.mpi
+    assert t2.post_exec == t1.post_exec
+    assert t2.upload_input_data == t1.upload_input_data
+    assert t2.copy_input_data == t1.copy_input_data
+    assert t2.link_input_data == t1.link_input_data
+    assert t2.copy_output_data == t1.copy_output_data
+    assert t2.download_output_data == t1.download_output_data
+
+    assert t2._parent_pipeline == t1._parent_pipeline
+    assert t2._parent_stage == t1._parent_stage
+
+def test_task_to_dict():
+
+
+def test_task_from_dict():
+
+    # valid task
+
+    # invalid task

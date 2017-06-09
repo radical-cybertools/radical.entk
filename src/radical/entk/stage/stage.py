@@ -17,7 +17,7 @@ class Stage(object):
         self._tasks     = set()
         self._name      = str()
 
-        self._state     = states.NEW
+        self._state     = states.UNSCHEDULED
 
         # To change states
         self._task_count = len(self._tasks)
@@ -132,8 +132,8 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    @state.setter
-    def state(self, value):
+    @_state.setter
+    def _state(self, value):
         if isinstance(value,str):
             self._state = value
         else:
@@ -185,7 +185,9 @@ class Stage(object):
 
             task_names = copy_task_names
 
-        self._tasks = copy_of_existing_tasks
+        if len(self._tasks) != len(copy_of_existing_tasks):
+            self._tasks = copy_of_existing_tasks
+            self._task_count = len(self._tasks)
 
 
     def _pass_uid(self, tasks=None):
@@ -210,7 +212,7 @@ class Stage(object):
 
             return tasks
 
-    def _set_task_state(self, value):
+    def _set_tasks_state(self, value):
 
         """
         Set state value to all tasks of the current stage
@@ -225,7 +227,7 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    def _check_tasks_status(self):
+    def _check_stage_complete(self):
 
         """
         Check if all tasks of the current stage have completed, i.e.

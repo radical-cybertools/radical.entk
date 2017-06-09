@@ -7,6 +7,7 @@ def test_pipeline_initialization():
 
     p = Pipeline()
 
+    assert type(p._uid) == str
     assert type(p.stages) == list
     assert type(p.name) == str
     assert type(p.state) == str
@@ -37,16 +38,7 @@ def test_assignment_exceptions():
         if not isinstance(data,str):
             with pytest.raises(TypeError):
                 p.remove_stages(data)
-
-def test_uid_assignment():
-
-    p = Pipeline()
-    s = Stage()
-    p.stages    = s
-
-    assert s._parent_pipeline == p.uid
-
-    
+   
 def test_stage_assignment_in_pipeline():
 
     p = Pipeline()
@@ -58,7 +50,7 @@ def test_stage_assignment_in_pipeline():
     assert p._cur_stage == 1
     assert p.stages[0] == s
     
-    
+
 def test_stage_addition_in_pipeline():
 
     p = Pipeline()
@@ -150,3 +142,11 @@ def test_pipeline_decrement():
     assert p._cur_stage == 0
     assert p._completed_flag.is_set() == False
 
+
+def test_uid_passing():
+
+    p = Pipeline()
+    s = Stage()
+    p.stages    = s
+
+    assert s._parent_pipeline == p.uid
