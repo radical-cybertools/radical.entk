@@ -144,9 +144,10 @@ class Pipeline(object):
 
     @stages.setter
     def stages(self, stages):
+            
+        self._stages = self._validate_stages(stages)
 
         try:
-            self._stages = self._validate_stages(stages)
             self._pass_uid()
             self._stage_count = len(self._stages)
             if self._cur_stage == 0:
@@ -156,8 +157,8 @@ class Pipeline(object):
             raise Error(text=ex)
 
 
-    @_state.setter
-    def _state(self, value):
+    @state.setter
+    def state(self, value):
         if isinstance(value,str):
             self._state = value
         else:
@@ -173,10 +174,9 @@ class Pipeline(object):
 
         :argument: List of Stage objects
         """
+        stages = self._validate_stages(stages)
 
         try:
-
-            stages = self._validate_stages(stages)
             stages = self._pass_uid(stages)
             self._stages.extend(stages)
             self._stage_count = len(self._stages)
@@ -195,17 +195,17 @@ class Pipeline(object):
         :argument: List of stage names as strings
         """
 
+        if not isinstance(stage_names, list):
+            stage_names = [stage_names]
+
+        for val in stage_names:
+            if not isinstance(val, str):
+                raise TypeError(expected_type=str, actual_type=type(val))
+
         try:
 
-            if not isinstance(stage_names, list):
-                stage_names = [stage_names]
-
-            for val in stage_names:
-                if not isinstance(val, str):
-                    raise TypeError(expected_type=str, actual_type=type(val))
-
-            copy_of_existing_stages = self._stages
-            copy_stage_names = stage_names
+            copy_of_existing_stages = list(self._stages)
+            copy_stage_names = list(stage_names)
 
             for stage in self._stages:
 
@@ -214,7 +214,7 @@ class Pipeline(object):
                     if stage.name ==  stage_name:
 
                         copy_of_existing_stages.remove(stage)
-                        copy_stage_names.remove(stage)
+                        copy_stage_names.remove(stage_name)
 
                 stage_names = copy_stage_names
 

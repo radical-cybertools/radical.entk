@@ -251,55 +251,55 @@ class Task(object):
     # -----------------------------------------------
 
     @uid.setter
-    def uid(self, value):
-        if isinstance(value, str):
-            self._uid = value
+    def uid(self, val):
+        if isinstance(val, str):
+            self._uid = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     @name.setter
-    def name(self, value):
-        if isinstance(value,str):
-            self._name = value
+    def name(self, val):
+        if isinstance(val,str):
+            self._name = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     @state.setter
-    def state(self, value):
-        if isinstance(value,str):
-            self._state = value
+    def state(self, val):
+        if isinstance(val,str):
+            self._state = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     @pre_exec.setter
-    def pre_exec(self, value):
-        if isinstance(value, list):
-            self._pre_exec = value
+    def pre_exec(self, val):
+        if isinstance(val, list):
+            self._pre_exec = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
 
     @executable.setter
-    def executable(self, value):
-        if isinstance(value, list):
-            self._executable = value
+    def executable(self, val):
+        if isinstance(val, list):
+            self._executable = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @arguments.setter
-    def arguments(self, value):
-        if isinstance(value, list):
-            self._arguments = value
+    def arguments(self, val):
+        if isinstance(val, list):
+            self._arguments = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
 
     @post_exec.setter
-    def post_exec(self, value):
-        if isinstance(value, list):
-            self._post_exec = value
+    def post_exec(self, val):
+        if isinstance(val, list):
+            self._post_exec = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @cores.setter
     def cores(self, val):
@@ -309,7 +309,7 @@ class Task(object):
             raise TypeError(expected_type=int, actual_type=type(val))
 
     @mpi.setter
-    def mpi(self, value):
+    def mpi(self, val):
         if isinstance(val, bool):
             self._mpi = val
         else:
@@ -317,53 +317,53 @@ class Task(object):
 
 
     @upload_input_data.setter
-    def upload_input_data(self, value):
-        if isinstance(value, list):
-            self._upload_input_data = value
+    def upload_input_data(self, val):
+        if isinstance(val, list):
+            self._upload_input_data = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @copy_input_data.setter
-    def copy_input_data(self, value):
-        if isinstance(value, list):
-            self._copy_input_data = value
+    def copy_input_data(self, val):
+        if isinstance(val, list):
+            self._copy_input_data = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @link_input_data.setter
-    def link_input_data(self, value):
-        if isinstance(value, list):
-            self._link_input_data = value
+    def link_input_data(self, val):
+        if isinstance(val, list):
+            self._link_input_data = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @copy_output_data.setter
-    def copy_output_data(self, value):
-        if isinstance(value, list):
-            self._copy_output_data = value
+    def copy_output_data(self, val):
+        if isinstance(val, list):
+            self._copy_output_data = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @download_output_data.setter
-    def download_output_data(self, value):
-        if isinstance(value, list):
-            self._download_output_data = value
+    def download_output_data(self, val):
+        if isinstance(val, list):
+            self._download_output_data = val
         else:
-            raise TypeError(expected_type=list, actual_type=type(value))
+            raise TypeError(expected_type=list, actual_type=type(val))
 
     @_parent_stage.setter
-    def _parent_stage(self, value):
-        if isinstance(value,str):
-            self._p_stage = value
+    def _parent_stage(self, val):
+        if isinstance(val,str):
+            self._p_stage = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     @_parent_pipeline.setter
-    def _parent_pipeline(self, value):
-        if isinstance(value,str):
-            self._p_pipeline = value
+    def _parent_pipeline(self, val):
+        if isinstance(val,str):
+            self._p_pipeline = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(val))
     # -----------------------------------------------
         
     def _replicate(self, original_task):
@@ -383,6 +383,8 @@ class Task(object):
         self._pre_exec      = original_task.pre_exec
         self._executable    = original_task.executable
         self._arguments     = original_task.arguments
+        self._cores         = original_task.cores
+        self._mpi           = original_task.mpi
         self._post_exec     = original_task.post_exec
 
         # Data staging attributes
@@ -419,6 +421,7 @@ class Task(object):
                         'arguments': self._arguments,
                         'post_exec': self._post_exec,
                         'cores': self._cores,
+                        'mpi': self._mpi,
 
                         'upload_input_data': self._upload_input_data,
                         'copy_input_data': self._copy_input_data,
@@ -432,9 +435,9 @@ class Task(object):
 
         return task_desc_as_dict
         
-        
 
-    def load_from_dict(self, d):
+
+    def from_dict(self, d):
 
         """
         Create a Task from a dictionary. The change is in inplace.
@@ -444,47 +447,101 @@ class Task(object):
         """
 
         if 'uid' in d:
-            self._uid   = d['uid']
-        
+            if isinstance(d['uid'], str):
+                self._uid   = d['uid']
+            else:
+                raise TypeError(expected_type=str, actual_type=type(d['uid']))
+
         if 'name' in d:
-            self._name = d['name']
+            if isinstance(d['name'], str):
+                self._name = d['name']
+            else:
+                raise TypeError(expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
-            self._state = d['state']
+            if isinstance(d['state'], str):
+                self._state = d['state']
+            else:
+                raise TypeError(expected_type=str, actual_type=type(d['state']))
+
+        else:
+            self._state = states.UNSCHEDULED
 
         if 'pre_exec' in d:
-            self._pre_exec = d['pre_exec']
+            if isinstance(d['pre_exec'], list):
+                self._pre_exec = d['pre_exec']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            self._executable = d['executable']
+            if isinstance(d['executable'], list):
+                self._executable = d['executable']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['executable']))
 
         if 'arguments' in d:
-            self._arguments = d['arguments']
+            if isinstance(d['arguments'], list):
+                self._arguments = d['arguments']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['arguments']))
 
         if 'post_exec' in d:
-            self._post_exec = d['post_exec']
+            if isinstance(d['post_exec'], list):
+                self._post_exec = d['post_exec']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['post_exec']))
 
         if 'cores' in d:
-            self._cores = d['cores']
+            if isinstance(d['cores'], int):
+                self._cores = d['cores']
+            else:
+                raise TypeError(expected_type=int, actual_type=type(d['cores']))
+
+        if 'mpi' in d:
+            if isinstance(d['mpi'], bool):
+                self._mpi = d['mpi']
+            else:
+                raise TypeError(expected_type=bool, actual_type=type(d['mpi']))
             
-        if 'upload_input_data' in d:                                    
-            self._upload_input_data = d['upload_input_data']
+        if 'upload_input_data' in d:
+            if isinstance(d['upload_input_data'], list):
+                self._upload_input_data = d['upload_input_data']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['upload_input_data']))
 
         if 'copy_input_data' in d:
-            self._copy_input_data = d['copy_input_data']
+            if isinstance(d['copy_input_data'], list):
+                self._copy_input_data = d['copy_input_data']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['copy_input_data']))
+            
 
         if 'link_input_data' in d:
-            self._link_input_data = d['link_input_data']
+            if isinstance(d['link_input_data'], list):
+                self._link_input_data = d['link_input_data']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['link_input_data']))
 
         if 'copy_output_data' in d:
-            self._copy_output_data = d['copy_output_data']
+            if isinstance(d['copy_output_data'], list):
+                self._copy_output_data = d['copy_output_data']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['copy_output_data']))
 
         if 'download_output_data' in d:
-            self._download_output_data = d['download_output_data']                                                
+            if isinstance(d['download_output_data'], list):
+                self._download_output_data = d['download_output_data']
+            else:
+                raise TypeError(expected_type=list, actual_type=type(d['download_output_data']))
 
         if 'parent_stage' in d:
-            self._p_stage = d['parent_stage']
+            if isinstance(d['parent_stage'], str):
+                self._p_stage = d['parent_stage']
+            else:
+                raise TypeError(expected_type=str, actual_type=type(d['parent_stage']))            
 
         if 'parent_pipeline' in d:
-            self._p_pipeline = d['parent_pipeline']
-                                                
+            if isinstance(d['parent_pipeline'], str):
+                self._p_pipeline = d['parent_pipeline']
+            else:
+                raise TypeError(expected_type=str, actual_type=type(d['parent_pipeline']))

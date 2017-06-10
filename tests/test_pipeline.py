@@ -14,7 +14,7 @@ def test_pipeline_initialization():
     assert p.state == states.UNSCHEDULED
     assert p._stage_count == 0
     assert p._cur_stage == 0
-    assert type(p._stage_lock) == threading.Lock
+    assert type(p._stage_lock) == type(threading.Lock())
     assert p._completed_flag.is_set() == False
 
 def test_assignment_exceptions():
@@ -56,7 +56,7 @@ def test_stage_addition_in_pipeline():
     p = Pipeline()
     s1 = Stage()
     s2 = Stage()
-    p.add_stages(s)
+    p.add_stages([s1,s2])
 
     assert type(p.stages) == list
     assert p._stage_count == 2
@@ -104,6 +104,7 @@ def test_pipeline_increment():
     p = Pipeline()
     s1 = Stage()
     s2 = Stage()
+    p.add_stages([s1,s2])
 
     assert p._stage_count == 2
     assert p._cur_stage == 1
@@ -125,6 +126,7 @@ def test_pipeline_decrement():
     p = Pipeline()
     s1 = Stage()
     s2 = Stage()
+    p.add_stages([s1,s2])
 
     p._increment_stage()
     p._increment_stage()

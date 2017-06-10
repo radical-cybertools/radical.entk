@@ -13,7 +13,7 @@ def test_stage_initialization():
     assert type(s.state) == str
     assert s.state == states.UNSCHEDULED
     assert s._task_count == 0
-    assert s.parent_pipeline == None
+    assert s._parent_pipeline == None
 
 def test_assignment_exceptions():
 
@@ -40,7 +40,7 @@ def test_assignment_exceptions():
 
 
             with pytest.raises(TypeError):
-                s._set_task_state(data)
+                s._set_tasks_state(data)
 
 
 def test_task_assignment_in_stage():
@@ -87,7 +87,7 @@ def test_task_removal_from_stage():
     t2.name = 't2'
     t3 = Task()
     t3.name = 't3'
-    p.add_tasks([t1,t2,t3])
+    s.add_tasks([t1,t2,t3])
 
     assert type(s.tasks) == set
     assert s._task_count == 3
@@ -98,8 +98,8 @@ def test_task_removal_from_stage():
     s.remove_tasks('t1')
     assert s._task_count == 1
 
-    s.remove_tasks('s1')
-    assert p._task_count == 1
+    s.remove_tasks('t1')
+    assert s._task_count == 1
     
 
 def test_uid_assignment():
@@ -131,9 +131,9 @@ def test_task_set_state():
     s.add_tasks([t1,t2])
 
     with pytest.raises(TypeError):
-        s._set_task_state(2)
+        s._set_tasks_state(2)
 
-    s._set_task_state(states.DONE)
+    s._set_tasks_state(states.DONE)
     assert t1.state == states.DONE
     assert t2.state == states.DONE
 
@@ -144,9 +144,6 @@ def test_check_stage_complete():
     t2 = Task()
     s.add_tasks([t1,t2])
 
-    with pytest.raises(TypeError):
-        s._set_task_state(2)
-
     assert s._check_stage_complete() == False
-    s._set_task_state(states.DONE)
+    s._set_tasks_state(states.DONE)
     assert s._check_stage_complete() == True

@@ -124,6 +124,7 @@ class Stage(object):
     @tasks.setter
     def tasks(self, tasks):        
         self._tasks = self._validate_tasks(tasks)
+        self._task_count = len(self._tasks)
 
     @_parent_pipeline.setter
     def _parent_pipeline(self, value):
@@ -132,8 +133,8 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    @_state.setter
-    def _state(self, value):
+    @state.setter
+    def state(self, value):
         if isinstance(value,str):
             self._state = value
         else:
@@ -151,6 +152,7 @@ class Stage(object):
 
         tasks = self._validate_tasks(tasks)
         self._tasks.update(tasks)
+        self._task_count = len(self._tasks)
         
 
 
@@ -171,23 +173,27 @@ class Stage(object):
                 raise TypeError(expected_type=str, actual_type=type(val))
 
 
-        copy_of_existing_tasks = self._tasks
-        copy_task_names = task_names
+        try:
+            copy_of_existing_tasks = list(self._tasks)
+            copy_task_names = list(task_names)
 
-        for task in self._tasks:
+            for task in self._tasks:
 
-            for task_name in task_names:
+                for task_name in task_names:
                 
-                if task.name ==  task_name:
+                    if task.name ==  task_name:
 
-                    copy_of_existing_tasks.remove(task)
-                    copy_task_names.remove(task)
+                        copy_of_existing_tasks.remove(task)
+                        copy_task_names.remove(task_name)
 
-            task_names = copy_task_names
+                task_names = copy_task_names
 
-        if len(self._tasks) != len(copy_of_existing_tasks):
-            self._tasks = copy_of_existing_tasks
-            self._task_count = len(self._tasks)
+            if len(self._tasks) != len(copy_of_existing_tasks):
+                self._tasks = copy_of_existing_tasks
+                self._task_count = len(self._tasks)
+
+        except Exception, ex:
+            raise Error(text=ex)
 
 
     def _pass_uid(self, tasks=None):
@@ -222,7 +228,7 @@ class Stage(object):
 
         if isinstance(value, str):
             for task in self._tasks:
-                task.state = state
+                task.state = value
 
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
