@@ -4,7 +4,9 @@ python: "2.7"
 # command to install dependencies
 install: 
   - pip install .
-  - pip install radical.pilot
+  - pip install git+https://github.com/vivek-bala/radical.utils.git@devel
+  - pip install git+https://github.com/vivek-bala/saga-python.git@devel
+  - pip install git+https://github.com/vivek-bala/radical.pilot.git@devel
 
 # command to run tests
 script: python -m pytest -v
