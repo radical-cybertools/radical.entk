@@ -15,14 +15,19 @@ class ResourceManager(object):
 
         self._logger.info('Resource Manager initialized')
 
-        self._session = None    
-        self._pmgr = None
-        self._pilot = None
-        self._resource_desc = None
+        self._session       = None    
+        self._pmgr          = None
+        self._pilot         = None
+        self._resource      = None
+        self._walltime      = None
+        self._cores         = None
+        self._project       = None
+        self._access_schema = None
+        self._queue         = None
+
 
         self._logger.debug('Validating resource description')
         if self._validate_resource_desc(resource_desc):
-            self._resource_desc = resource_desc
             self._logger.info('Resource description validated')
             self._logger.debug('Populating resource manager object')
             self._populate(resource_desc)
@@ -63,8 +68,53 @@ class ResourceManager(object):
         return self._pmgr
 
     @property
-    def resource_desc(self):
-        return self._resource_desc
+    def resource(self):
+
+        """
+        :getter: Return user specified resource name
+        """
+        return self._resource
+
+    @property
+    def walltime(self):
+
+        """
+        :getter: Return user specified walltime
+        """
+        return self._walltime
+
+    @property
+    def cores(self):
+
+        """
+        :getter: Return user specified number of cores
+        """
+        return self._cores
+
+    @property
+    def project(self):
+
+        """
+        :getter: Return user specified project ID
+        """
+        return self._project
+
+    @property
+    def access_schema(self):
+
+        """
+        :getter: Return user specified access schema -- 'ssh' or 'gsissh' or None
+        """
+        return self._access_schema
+
+    @property
+    def queue(self):
+
+        """
+        :getter: Return user specified resource queue to be used
+        """
+        return self._queue
+
     #----------------------------------------------------------------------------------------------------
 
     def _validate_resource_desc(self, resource_desc):
@@ -89,10 +139,30 @@ class ResourceManager(object):
                 if key not in resource_desc:
                     raise Error(text='Key %s does not exist in the resource description'%key)
 
+            if not isinstance(resource_desc['resource'],str):
+                raise TypeError(expected_type=str, actual_type=type(resource_desc['resource']))
+
+            if not isinstance(resource_desc['walltime'], int):
+                raise TypeError(expected_type=int, actual_type=type(resource_desc['walltime']))
+
+            if not isinstance(resource_desc['cores'], int):
+                raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
+
+            if not isinstance(resource_desc['project'],str):
+                raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
+
+            if 'access_schema' in resource_desc:
+                if not isinstance(resource_desc['access_schema'], str):
+                    raise TypeError(expected_type=str, actual_type=type(resource_desc['access_schema']))
+
+            if 'queue' in resource_desc:
+                if not isinstance(resource_desc['queue'], str):
+                    raise TypeError(expected_type=str, actual_type=type(resource_desc['queue']))
+
             return True
 
         except Exception, ex:
-            self._logger.error('Failed to validate resource description')
+            self._logger.error('Failed to validate resource description, error: %s'%ex)
             raise
 
     def _populate(self, resource_desc):
@@ -110,22 +180,18 @@ class ResourceManager(object):
 
             if 'access_schema' in resource_desc:
                 self._access_schema = resource_desc['access_schema']
-            else:
-                self._access_schema = None
-        
+
             if 'queue' in resource_desc:
                 self._queue = resource_desc['queue']
-            else:
-                self._queue = None
 
             self._logger.debug('Resource manager population successful')
 
         except Exception, ex:
             self._logger.error('Resource manager population unsuccessful')
-            raise
+            raise Error(text=ex)
 
 
-    def submit_resource_request(self):
+    def _submit_resource_request(self):
 
         """
         Function to initiate the resource request
@@ -172,6 +238,25 @@ class ResourceManager(object):
 
             self._logger.info('Pilot is now active')
 
+            return self._pilot
+
         except Exception, ex:
             self._logger.error('Resource request submission failed, error: %s'%ex)
+            raise
+
+
+    def _cancel_resource_request(self):
+
+        try:
+
+            self._session.close(cleanup=False)
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                            'trying to exit callback thread gracefully...')
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+            self._logger.error('Could not cancel resource request, error: %s'%ex)
             raise
