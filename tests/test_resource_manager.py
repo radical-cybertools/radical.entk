@@ -109,7 +109,7 @@ def test_resource_manager_populate():
                         'walltime': 40,
                         'cores': 20})
 
-'''
+
 def test_resource_request():
     
 
@@ -132,4 +132,3 @@ def test_resource_request():
     rm._cancel_resource_request()
 
     assert rm.pilot.state == rp.CANCELED
-'''
