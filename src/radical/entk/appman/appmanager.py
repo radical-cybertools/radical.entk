@@ -203,7 +203,7 @@ class AppManager(object):
             self._logger.debug('Setting up all exchanges and queues')
 
             self._mq_channel.exchange_delete(exchange='fork')
-            self._mq_channel.exchange_declare(exchange='fork', type='fanout')
+            self._mq_channel.exchange_declare(exchange='fork')
 
             for i in range(1,self._num_pending_qs+1):
                 queue_name = 'pendingq-%s'%i
@@ -224,8 +224,6 @@ class AppManager(object):
             self._mq_channel.queue_declare(queue='synchronizerq')
                                                     # Durable Qs will not be lost if rabbitmq server crashes
 
-
-            self._mq_channel.queue_bind(exchange='fork', queue='synchronizerq')
 
             self._logger.debug('All exchanges and queues are setup')
 

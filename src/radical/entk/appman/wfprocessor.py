@@ -464,6 +464,20 @@ class WFprocessor(object):
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
+                        try:
+
+                            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
+                            mq_channel = mq_connection.channel()
+
+                            mq_channel.basic_publish(   exchange='',
+                                                        routing_key='synchronizerq',
+                                                        body=body
+                                                        #properties=pika.BasicProperties(
+                                                            # make message persistent
+                                                            #delivery_mode = 2, 
+                                                            #)
+                                                    )
+
                         if slow_run:
                             sleep(1)
 
