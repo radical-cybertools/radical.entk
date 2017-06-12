@@ -2,11 +2,15 @@ import radical.pilot as rp
 from radical.entk import Task
 import radical.utils as ru
 import traceback
-
+from radical.entk.exceptions import *
+import os
 
 logger = ru.get_logger('radical.entk.task_processor')
 
 def get_input_list_from_task(task):
+
+    if not isinstance(task, Task):
+        raise TypeError(expected_type=Task, actual_type=type(task))
 
     input_data = []
 
@@ -70,6 +74,10 @@ def get_input_list_from_task(task):
 
 
 def get_output_list_from_task(task):
+
+    if not isinstance(task, Task):
+        raise TypeError(expected_type=Task, actual_type=type(task))
+
 
     output_data = []
 
@@ -149,15 +157,6 @@ def create_task_from_cu(cu):
         task.uid                = cu.name.split(',')[0].strip()
         task._parent_stage       = cu.name.split(',')[1].strip()
         task._parent_pipeline    = cu.name.split(',')[2].strip()
-        #task.pre_exec   = cu.pre_exec
-        #task.executable = cu.executable
-        #task.arguments  = cu.arguments
-        #task.post_exec  = cu.post_exec
-        #task.cores      = cu.cores
-        #task.mpi        = cu.mpi
-
-        #task.link_input_data, task.copy_input_data, task.upload_input_data  = get_input_data_from_cu(cu)
-        #task.copy_output_data, task.download_output_data                    = get_output_data_from_cu(cu)
 
         logger.debug('Task %s created from CU %s'%(task.uid, cu.name))
 
