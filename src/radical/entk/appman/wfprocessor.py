@@ -86,9 +86,9 @@ class WFprocessor(object):
 
             if self.check_alive():
                 self._wfp_process.join()
-                self._logger.debug('WFprocessor process closed')
+                self._logger.debug('WFprocessor process terminated')
             else:
-                self._logger.debug('WFprocessor process already closed')
+                self._logger.debug('WFprocessor process already terminated')
 
         except Exception, ex:
             self._logger.error('Could not terminate wfprocessor process')
@@ -310,7 +310,7 @@ class WFprocessor(object):
 
         except Exception, ex:
 
-            self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
+            self._logger.error('Unknown error in wfp process: %s. \n Terminating all threads'%ex)
             print traceback.format_exc()
             mq_connection.close()
 

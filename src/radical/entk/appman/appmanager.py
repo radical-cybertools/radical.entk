@@ -392,13 +392,13 @@ class AppManager(object):
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to cancel synchronizer thread gracefully...')
+                                'trying to terminate synchronizer thread gracefully...')
 
 
 
         except Exception, ex:
 
-            self._logger.error('Unknown error in synchronizer: %s. \n Closing thread'%ex)
+            self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread'%ex)
             print traceback.format_exc()
             raise UnknownError(text=ex)
 
@@ -509,17 +509,17 @@ class AppManager(object):
                     
 
                 # Terminate threads in following order: wfp, helper, synchronizer
-                self._logger.info('Closing WFprocessor')
+                self._logger.info('Terminating WFprocessor')
                 self._wfp.end_processor()                
                 
-                self._logger.info('Closing task manager process')
+                self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
                 
 
-                self._logger.info('Closing synchronizer thread')
+                self._logger.info('Terminating synchronizer thread')
                 self._end_sync.set()
                 self._sync_thread.join()
-                self._logger.info('Synchronizer thread closed')
+                self._logger.info('Synchronizer thread terminated')
 
 
         except KeyboardInterrupt:
@@ -529,20 +529,18 @@ class AppManager(object):
 
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
-                self._logger.info('Closing WFprocessor')
+                self._logger.info('Terminating WFprocessor')
                 self._wfp.end_processor()
-                self._logger.info('WFprocessor closed')
 
-            if self._helper:
-                self._logger.info('Closing task manager process')
-                self._helper.end_manager()
-                self._logger.info('Task manager closed')
-
+            if self._task_manager:
+                self._logger.info('Terminating task manager process')
+                self._task_manager.end_manager()
+                
             if self._sync_thread:
-                self._logger.info('Closing synchronizer thread')
+                self._logger.info('Terminating synchronizer thread')
                 self._end_sync.set()
                 self._sync_thread.join()
-                self._logger.info('Synchronizer thread closed')
+                self._logger.info('Synchronizer thread terminated')
 
         except Exception, ex:
 
@@ -551,19 +549,17 @@ class AppManager(object):
 
             ## Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
-                self._logger.info('Closing WFprocessor')
+                self._logger.info('Terminating WFprocessor')
                 self._wfp.end_processor()
-                self._logger.info('WFprocessor closed')
 
-            if self._helper:
-                self._logger.info('Closing task manager process')
-                self._helper.end_manager()
-                self._logger.info('Task manager closed')
+            if self._task_manager:
+                self._logger.info('Terminating task manager process')
+                self._task_manager.end_manager()
 
             if self._sync_thread:
-                self._logger.info('Closing synchronizer thread')
+                self._logger.info('Terminating synchronizer thread')
                 self._end_sync.set()
                 self._sync_thread.join()
-                self._logger.info('Synchronizer thread closed')
+                self._logger.info('Synchronizer thread terminated')
             
             sys.exit(1)
