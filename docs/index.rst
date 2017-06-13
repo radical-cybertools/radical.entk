@@ -13,6 +13,7 @@ Welcome to radical.entk's documentation!
    install
    examples
    api
+   tests
 
 Indices and tables
 ==================

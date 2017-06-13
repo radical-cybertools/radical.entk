@@ -447,22 +447,22 @@ class Task(object):
         """
 
         if 'uid' in d:
-            if isinstance(d['uid'], str):
+            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
                 self._uid   = d['uid']
             else:
-                raise TypeError(expected_type=str, actual_type=type(d['uid']))
+                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
 
         if 'name' in d:
-            if isinstance(d['name'], str):
+            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
                 self._name = d['name']
             else:
-                raise TypeError(expected_type=str, actual_type=type(d['name']))
+                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
-            if isinstance(d['state'], str):
+            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
                 self._state = d['state']
             else:
-                raise TypeError(expected_type=str, actual_type=type(d['state']))
+                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
             self._state = states.UNSCHEDULED
@@ -535,13 +535,13 @@ class Task(object):
                 raise TypeError(expected_type=list, actual_type=type(d['download_output_data']))
 
         if 'parent_stage' in d:
-            if isinstance(d['parent_stage'], str):
+            if isinstance(d['parent_stage'], str) or isinstance(d['parent_stage'], unicode):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(expected_type=str, actual_type=type(d['parent_stage']))            
+                raise TypeError(entity='parent_stage', expected_type=str, actual_type=type(d['parent_stage']))            
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str):
+            if isinstance(d['parent_pipeline'], str) or isinstance(d['parent_pipeline'], unicode):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(expected_type=str, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))

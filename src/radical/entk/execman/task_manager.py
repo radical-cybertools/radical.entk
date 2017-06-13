@@ -104,13 +104,13 @@ class TaskManager(object):
 
                     if unit.state == rp.DONE:
 
-                        task = self.create_task_from_cu(unit)
+                        task = create_task_from_cu(unit)
                         task.state = states.DONE
                     
                         task_as_dict = json.dumps(task.to_dict())
 
-                        mq_channel.basic_publish(   exchange='fork',
-                                                    routing_key='',
+                        mq_channel.basic_publish(   exchange='',
+                                                    routing_key='completedq-1',
                                                     body=task_as_dict
                                                         #properties=pika.BasicProperties(
                                                             # make message persistent
@@ -118,7 +118,7 @@ class TaskManager(object):
                                                         #)
                                                 ) 
 
-                        self._logger.debug('Pushed task %s with state %s to completed queue %s and synchronizerq'%(
+                        self._logger.debug('Pushed task %s with state %s to completed queue %s'%(
                                                                                     task.uid, 
                                                                                     task.state,
                                                                                     self._completed_queue[0])
@@ -158,7 +158,7 @@ class TaskManager(object):
                         try:
 
                             task = Task()
-                            task.load_from_dict(json.loads(body))
+                            task.from_dict(json.loads(body))
 
                             self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
                             
@@ -166,7 +166,7 @@ class TaskManager(object):
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(self.create_cud_from_task(task))
+                            self._umgr.submit_units(create_cud_from_task(task))
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -174,7 +174,7 @@ class TaskManager(object):
 
                             # Rolling back queue and task status
                             self._logger.error('Error while pushing task to completed queue, rolling back: %s'%ex)
-                            raise UnknownError(text=ex)
+                            raise Error(text=ex)
                 
                         if slow_run:
                             time.sleep(1)
@@ -185,7 +185,7 @@ class TaskManager(object):
                 except Exception, ex:
 
                     self._logger.error('Error getting messages from pending queue: %s'%ex)
-                    raise UnknownError(text=ex) 
+                    raise Error(text=ex) 
 
 
         except KeyboardInterrupt:
@@ -199,7 +199,7 @@ class TaskManager(object):
 
             self._logger.error('Unknown error in helper process: %s'%ex)
             print traceback.format_exc()
-            raise UnknownError(text=ex) 
+            raise Error(text=ex) 
 
 
     def check_alive(self):

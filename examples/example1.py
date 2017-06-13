@@ -43,7 +43,7 @@ if __name__ == '__main__':
             'resource': 'local.localhost',
             'walltime': 15,
             'cores': 2,
-            'project': None
+            'project': ''
 
     }
 

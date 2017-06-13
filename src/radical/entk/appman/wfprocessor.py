@@ -209,15 +209,15 @@ class WFprocessor(object):
 
                         if not pipe._completed:
     
-                            self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
+                            #self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
     
                             # Update corresponding pipeline's state
                             if not pipe.state == states.SCHEDULED:
                                 pipe.state = states.SCHEDULED
     
-                            if pipe.stages[pipe._current_stage].state in [states.NEW]:
+                            if pipe.stages[pipe._current_stage-1].state in [states.UNSCHEDULED]:
     
-                                executable_stage = pipe.stages[pipe._current_stage]
+                                executable_stage = pipe.stages[pipe._current_stage-1]
                                 executable_tasks = executable_stage.tasks
     
                                 try:
@@ -226,7 +226,7 @@ class WFprocessor(object):
     
                                     for executable_task in executable_tasks:
     
-                                        if executable_task.state == states.NEW:
+                                        if executable_task.state == states.UNSCHEDULED:
                                             
                                             self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                 executable_task.uid,
@@ -260,8 +260,8 @@ class WFprocessor(object):
                                                 self._logger.debug('Task %s published to queue'% executable_task.uid)
                                                 
                                                 # Update corresponding stage's state
-                                                if not pipe.stages[pipe._current_stage].state == states.SCHEDULED:
-                                                    pipe.stages[pipe._current_stage].state = states.SCHEDULED
+                                                if not pipe.stages[pipe._current_stage-1].state == states.SCHEDULED:
+                                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULED
     
                                             except Exception, ex:
     
@@ -270,14 +270,14 @@ class WFprocessor(object):
                                                                     'state, rolling back. Error: %s'%ex)
                                                
                                                 # Revert task status
-                                                executable_task.state = states.NEW
+                                                executable_task.state = states.UNSCHEDULED
                                                 raise # should go to the next exception
                                     
                                     if tasks_submitted:
                                         self._logger.info('Stage %s of Pipeline %s: %s'%(
-                                                            pipe.stages[pipe._current_stage].uid,
+                                                            pipe.stages[pipe._current_stage-1].uid,
                                                             pipe.uid,
-                                                            pipe.stages[pipe._current_stage].state))
+                                                            pipe.stages[pipe._current_stage-1].state))
 
                                         tasks_submitted = False
 
@@ -292,7 +292,7 @@ class WFprocessor(object):
                                                         'state, rolling back. Error: %s'%ex)
     
                                     # Revert stage state
-                                    pipe.stages[pipe._current_stage].state = states.NEW   
+                                    pipe.stages[pipe._current_stage-1].state = states.UNSCHEDULED   
                                     raise   
 
                             if slow_run:
@@ -337,7 +337,7 @@ class WFprocessor(object):
 
                         # Get task from the message
                         completed_task = Task()
-                        completed_task.load_from_dict(json.loads(body))
+                        completed_task.from_dict(json.loads(body))
 
                         self._logger.info('Got finished task %s from queue'%(completed_task.uid))
 
@@ -360,7 +360,7 @@ class WFprocessor(object):
                                                 self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                         completed_task.uid,
                                                                         completed_task.state,
-                                                                        pipe.stages[pipe._current_stage].uid,
+                                                                        pipe.stages[pipe._current_stage-1].uid,
                                                                         pipe.uid)
                                                                     )
 
@@ -371,7 +371,7 @@ class WFprocessor(object):
 
                                                         if task.state == states.DONE:
 
-                                                            if stage._check_tasks_status():
+                                                            if stage._check_stage_complete():
 
                                                                 try:
 
@@ -409,7 +409,7 @@ class WFprocessor(object):
                                                                     new_task = Task()
                                                                     new_task._replicate(completed_task)
 
-                                                                    pipe.stages[pipe._current_stage].add_tasks(new_task)
+                                                                    pipe.stages[pipe._current_stage-1].add_tasks(new_task)
 
                                                                 except Exception, ex:
                                                                     self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -418,7 +418,7 @@ class WFprocessor(object):
 
                                                             else:
 
-                                                                if stage.check_tasks_status():
+                                                                if stage._check_stage_complete():
 
                                                                     try:
                                                                     
@@ -477,6 +477,14 @@ class WFprocessor(object):
                                                             #delivery_mode = 2, 
                                                             #)
                                                     )
+
+                        except KeyboardInterrupt:
+                            raise KeyboardInterrupt
+
+                        except Exception, ex:
+
+                            self._logger.error('Error sending dequeued message to synchronizer: %s'%ex)
+                            raise
 
                         if slow_run:
                             sleep(1)

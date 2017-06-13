@@ -202,8 +202,8 @@ class AppManager(object):
 
             self._logger.debug('Setting up all exchanges and queues')
 
-            self._mq_channel.exchange_delete(exchange='fork')
-            self._mq_channel.exchange_declare(exchange='fork')
+            #self._mq_channel.exchange_delete(exchange='fork')
+            #self._mq_channel.exchange_declare(exchange='fork')
 
             for i in range(1,self._num_pending_qs+1):
                 queue_name = 'pendingq-%s'%i
@@ -217,7 +217,7 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 self._mq_channel.queue_delete(queue=queue_name)
                 self._mq_channel.queue_declare(queue=queue_name)
-                self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
+                #self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
                                                 # Durable Qs will not be lost if rabbitmq server crashes
 
             self._mq_channel.queue_delete(queue='synchronizerq')
@@ -266,7 +266,7 @@ class AppManager(object):
                 if body:
 
                     completed_task = Task()
-                    completed_task.load_from_dict(json.loads(body))
+                    completed_task.from_dict(json.loads(body))
 
                     self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
 
@@ -287,7 +287,7 @@ class AppManager(object):
                                         self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
                                                                         completed_task.uid,
                                                                         completed_task.state,
-                                                                        pipe.stages[pipe._current_stage].uid,
+                                                                        pipe.stages[pipe._current_stage-1].uid,
                                                                         pipe.uid)
                                                                     )
 
@@ -299,7 +299,7 @@ class AppManager(object):
 
                                                 if task.state == states.DONE:
 
-                                                    if stage._check_tasks_status():
+                                                    if stage._check_stage_complete():
 
                                                         try:
 
@@ -336,7 +336,7 @@ class AppManager(object):
                                                             new_task = Task()
                                                             new_task._replicate(completed_task)
 
-                                                            pipe.stages[pipe._current_stage].add_tasks(new_task)
+                                                            pipe.stages[pipe._current_stage-1].add_tasks(new_task)
 
                                                         except Exception, ex:
                                                             self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -344,7 +344,7 @@ class AppManager(object):
 
                                                     else:
 
-                                                        if stage._check_tasks_status():
+                                                        if stage._check_stage_complete():
 
                                                             try:
                                                                 stage.state = states.DONE
@@ -433,7 +433,7 @@ class AppManager(object):
 
                 # Submit resource request
                 self._logger.info('Starting resource request submission')
-                self._resource_manager.submit_resource_request()
+                self._resource_manager._submit_resource_request()
 
 
                 # Start synchronizer thread
@@ -460,7 +460,8 @@ class AppManager(object):
                 self._task_manager.start_manager()
 
                 
-                active_pipe_count = len(self._workflow)                
+                active_pipe_count = len(self._workflow)   
+                finished_pipe_uids = []             
 
                 while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
 
@@ -473,8 +474,9 @@ class AppManager(object):
 
                             with pipe._stage_lock:
 
-                                if pipe._completed:
+                                if (pipe._completed) and (pipe.uid not in finished_pipe_uids) :
                                     self._logger.info('Pipe %s completed'%pipe.uid)
+                                    finished_pipe_uids.append(pipe.uid)
                                     active_pipe_count -= 1
                                     self._logger.info('Active pipes: %s'%active_pipe_count)
 
