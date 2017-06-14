@@ -102,10 +102,15 @@ class TaskManager(object):
 
                     self._logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
 
-                    if unit.state == rp.DONE:
+                    if unit.state in [rp.DONE, rp.FAILED]:
 
                         task = create_task_from_cu(unit)
-                        task.state = states.DONE
+                        task.state = states.COMPLETED
+
+                        if unit.state == rp.DONE:
+                            task.exit_code = 0
+                        else:
+                            task.exit_code = 1
                     
                         task_as_dict = json.dumps(task.to_dict())
 
@@ -160,13 +165,15 @@ class TaskManager(object):
                             task = Task()
                             task.from_dict(json.loads(body))
 
-                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))
-                            
-                            task.state = states.SCHEDULED
+                            task.state = states.SUBMITTING
+
+                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))                            
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
                             self._umgr.submit_units(create_cud_from_task(task))
+
+                            task.state = states.SUBMITTED
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 

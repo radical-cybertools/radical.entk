@@ -16,7 +16,7 @@ class Task(object):
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = str()
 
-        self._state     = states.UNSCHEDULED
+        self._state     = states.INITIAL
 
         # Attributes necessary for execution
         self._pre_exec      = list()
@@ -33,6 +33,8 @@ class Task(object):
         self._copy_output_data      = list()
         self._download_output_data  = list()
 
+
+        self._exit_code = None
 
         ## The following help in updation
         # Stage this task belongs to
@@ -226,6 +228,16 @@ class Task(object):
         return self._download_output_data
 
     @property
+    def exit_code(self):
+
+        """
+        Get the exit code for DONE tasks. 0 for successful tasks, 1 for failed tasks.
+
+        :getter: return the exit code of the current task
+        """
+        return self._exit_code
+
+    @property
     def _parent_stage(self):
 
         """
@@ -351,6 +363,13 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
 
+    @exit_code.setter
+    def exit_code(self, val):
+        if isinstance(val, int):
+            self._exit_code = val
+        else:
+            raise TypeError(entity='exit_code', expected_type=int, actual_type=type(val))
+
     @_parent_stage.setter
     def _parent_stage(self, val):
         if isinstance(val,str):
@@ -395,6 +414,8 @@ class Task(object):
         self._download_output_data  = original_task.download_output_data
 
 
+        self._exit_code = original_task.exit_code
+
         ## The following help in updation
         # Stage this task belongs to
         self._p_stage = original_task._parent_stage
@@ -428,6 +449,8 @@ class Task(object):
                         'link_input_data': self._link_input_data,
                         'copy_output_data': self._copy_output_data,
                         'download_output_data': self._download_output_data,
+
+                        'exit_code': self._exit_code,
 
                         'parent_stage': self._p_stage,
                         'parent_pipeline': self._p_pipeline,
@@ -533,6 +556,13 @@ class Task(object):
                 self._download_output_data = d['download_output_data']
             else:
                 raise TypeError(expected_type=list, actual_type=type(d['download_output_data']))
+
+
+        if 'exit_code' in d:
+            if isinstance(d['exit_code'], int) or (d['exit_code']==None):
+                self._exit_code = d['exit_code']
+            else:
+                raise TypeError(expected_type=int, actual_type=type(d['exit_code']))
 
         if 'parent_stage' in d:
             if isinstance(d['parent_stage'], str) or isinstance(d['parent_stage'], unicode):

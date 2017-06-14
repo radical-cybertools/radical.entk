@@ -20,7 +20,7 @@ class Pipeline(object):
         self._stages    = list()
         self._name      = str()
 
-        self._state     = states.UNSCHEDULED
+        self._state     = states.INITIAL
 
         # To keep track of current state
         self._stage_count = len(self._stages)

@@ -267,8 +267,12 @@ class AppManager(object):
 
                     completed_task = Task()
                     completed_task.from_dict(json.loads(body))
-
                     self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
+
+                    completed_task.state = states.SYNCHRONIZING
+                    self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
+                                                                    completed_task.state)
+                                                                )
 
                     for pipe in self._workflow:
 
@@ -283,13 +287,18 @@ class AppManager(object):
                                     if completed_task._parent_stage == stage.uid:
                                         self._logger.debug('Found parent stage: %s'%(stage.uid))
 
-                                        #task.state = states.DONE
-                                        self._logger.debug('Task: %s,%s ; Stage: %s; Pipeline: %s'%(
-                                                                        completed_task.uid,
-                                                                        completed_task.state,
-                                                                        pipe.stages[pipe._current_stage-1].uid,
-                                                                        pipe.uid)
-                                                                    )
+                                        completed_task.state = states.SYNCHRONIZED
+                                        self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
+                                                                                    completed_task.state)
+                                                                                )
+                                        if completed_task.exit_code:
+                                            completed_task.state = states.FAILED
+                                        else:
+                                            completed_task.state = states.DONE
+
+                                        self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
+                                                            completed_task.state)
+                                                        )
 
                                         for task in stage.tasks:
 
@@ -304,35 +313,43 @@ class AppManager(object):
                                                         try:
 
                                                             stage.state = states.DONE
-
-                                                            self._logger.info('Stage %s of Pipeline %s: %s'%(
-                                                                                stage.uid,
-                                                                                pipe.uid,
-                                                                                stage.state))
-
-                                                            pipe._increment_stage()
+                                                            self._logger.info('Stage: %s, State: %s'%
+                                                                                            (stage.uid, 
+                                                                                            stage.state))
 
                                                         except Exception, ex:
                                                             # Rolling back stage status
                                                             self._logger.error('Error while updating stage '+
-                                                                    'state, rolling back. Error: %s'%ex)
+                                                                            'state, rolling back. Error: %s'%ex)
+
                                                             stage.state = states.SCHEDULED
-                                                            pipe._decrement_stage()                                                    
+                                                            self._logger.info('Stage: %s, State: %s'%
+                                                                                            (stage.uid, 
+                                                                                            stage.state))
 
-                                                    if pipe._completed:
-                                                        #self._workflow.remove(pipe)
-                                                        pipe.state = states.DONE
+                                                        try:
+                                                            pipe._increment_stage()
+                                                        except:
+                                                            pass
 
-                                                        self._logger.info('Pipeline %s: %s'%(
-                                                                                            pipe.uid, 
-                                                                                            pipe.state)
-                                                                                        )
+                                                        if pipe._completed:
+                                                            #self._workload.remove(pipe)                                                                    
+                                                            pipe.state = states.SCHEDULED
+                                                            self._logger.info('Pipe: %s, State: %s'%
+                                                                                            (pipe.uid, 
+                                                                                            pipe.state))
 
+                                                            pipe.state = states.DONE
+                                                            self._logger.info('Pipe: %s, State: %s'%
+                                                                                            (pipe.uid, 
+                                                                                            pipe.state))
+                                                                    
                                                 elif task.state == states.FAILED:
 
                                                     if self._resubmit_failed:
 
                                                         try:
+
                                                             new_task = Task()
                                                             new_task._replicate(completed_task)
 
@@ -341,37 +358,44 @@ class AppManager(object):
                                                         except Exception, ex:
                                                             self._logger.error("Resubmission of task %s failed, error: %s"%
                                                                                                 (completed_task.uid,ex))
+                                                            raise
 
                                                     else:
 
                                                         if stage._check_stage_complete():
 
                                                             try:
+                                                                    
                                                                 stage.state = states.DONE
-
-                                                                self._logger.info('Stage %s of Pipeline %s: %s'%(
-                                                                                stage.uid,
-                                                                                pipe.uid,
-                                                                                stage.state))
-
+                                                                self._logger.info('Stage: %s, State: %s'%
+                                                                                                (stage.uid, 
+                                                                                                stage.state))
 
                                                                 pipe._increment_stage()
 
                                                             except Exception, ex:
+                                                    
                                                                 # Rolling back stage status
                                                                 self._logger.error('Error while updating stage '+
-                                                                        'state, rolling back. Error: %s'%ex)
+                                                                                    'state, rolling back. Error: %s'%ex)
+
                                                                 stage.state = states.SCHEDULED
-                                                                pipe._decrement_stage()                                                    
+                                                                self._logger.info('Stage: %s, State: %s'%
+                                                                                                    (stage.uid, 
+                                                                                                    stage.state))
+                                                                pipe._decrement_stage()                                    
 
-                                                            if pipe._completed:
-                                                                #self._workflow.remove(pipe)
+                                                            if pipe.completed:
+
+                                                                #self._workload.remove(pipe)
+                                                                pipe.state = states.SCHEDULED
+                                                                self._logger.info('Pipe: %s, State: %s'%
+                                                                                                    (pipe.uid, 
+                                                                                                    pipe.state))
                                                                 pipe.state = states.DONE
-
-                                                                self._logger.info('Pipeline %s: %s'%(
-                                                                                            pipe.uid, 
-                                                                                            pipe.state)
-                                                                                        )
+                                                                self._logger.info('Pipe: %s, State: %s'%
+                                                                                                    (pipe.uid, 
+                                                                                                    pipe.state))
 
                                                 else:
 

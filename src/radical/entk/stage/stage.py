@@ -17,7 +17,7 @@ class Stage(object):
         self._tasks     = set()
         self._name      = str()
 
-        self._state     = states.UNSCHEDULED
+        self._state     = states.INITIAL
 
         # To change states
         self._task_count = len(self._tasks)
