@@ -10,7 +10,7 @@ def test_task_initialization():
     assert type(t._uid) == str
     assert type(t.name) == str
     assert type(t.state) == str
-    assert t.state == states.UNSCHEDULED
+    assert t.state == states.INITIAL
     assert type(t.pre_exec) == list
     assert type(t.executable) == list
     assert type(t.arguments) == list

@@ -11,7 +11,7 @@ def test_pipeline_initialization():
     assert type(p.stages) == list
     assert type(p.name) == str
     assert type(p.state) == str
-    assert p.state == states.UNSCHEDULED
+    assert p.state == states.INITIAL
     assert p._stage_count == 0
     assert p._cur_stage == 0
     assert type(p._stage_lock) == type(threading.Lock())

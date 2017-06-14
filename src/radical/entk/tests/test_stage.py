@@ -11,7 +11,7 @@ def test_stage_initialization():
     assert type(s.tasks) == set
     assert type(s.name) == str
     assert type(s.state) == str
-    assert s.state == states.UNSCHEDULED
+    assert s.state == states.INITIAL
     assert s._task_count == 0
     assert s._parent_pipeline == None
 

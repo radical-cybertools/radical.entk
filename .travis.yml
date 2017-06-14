@@ -13,4 +13,4 @@ env:
   - RP_ENABLE_OLD_DEFINES=True RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129010.mlab.com:29010/test_entk
 
 # command to run tests
-script: python -m pytest -v
+script: python -m pytest -v /home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/radical/entk/tests/

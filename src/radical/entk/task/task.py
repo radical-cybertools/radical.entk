@@ -388,7 +388,7 @@ class Task(object):
     def _replicate(self, original_task):
 
         """
-        Replicate an existing task with a new uid and UNSCHEDULED state. The change is in inplace.
+        Replicate an existing task with a new uid and INITIAL state. The change is in inplace.
 
         :return: None
         """
@@ -396,7 +396,7 @@ class Task(object):
         self._uid       = ru.generate_id('radical.entk.task')
         self._name      = original_task.name
 
-        self._state     = states.UNSCHEDULED
+        self._state     = states.INITIAL
 
         # Attributes necessary for execution
         self._pre_exec      = original_task.pre_exec
