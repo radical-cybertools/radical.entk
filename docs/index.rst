@@ -10,6 +10,8 @@ Welcome to radical.entk's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   introduction
+   overview
    install
    examples
    api

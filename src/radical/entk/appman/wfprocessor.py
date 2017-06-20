@@ -225,7 +225,8 @@ class WFprocessor(object):
 
                                     # Starting scheduling of tasks of current stage
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULING
-                                    self._logger.info('Stage: %s, State: %s'%(state.uid, state.state))
+                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe._current_stage-1].uid, 
+                                        pipe.stages[pipe._current_stage-1].state))
 
                                     executable_stage = pipe.stages[pipe._current_stage-1]
                                     executable_tasks = executable_stage.tasks
@@ -287,6 +288,8 @@ class WFprocessor(object):
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
                                                                                         executable_task.state)
                                                                 )
+
+                                                raise
                                     
                                     # All tasks of current stage scheduled
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULED
@@ -313,6 +316,8 @@ class WFprocessor(object):
                                     pipe.stages[pipe._current_stage-1].state = states.INITIAL
                                     self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
                                                                                 pipe.stages[pipe._current_stage-1].state))
+
+                                    raise
 
                             if slow_run:
                                 sleep(1)

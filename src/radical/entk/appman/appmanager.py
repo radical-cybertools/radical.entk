@@ -482,6 +482,7 @@ class AppManager(object):
                                                 )
                 self._logger.info('Starting task manager process from AppManager')
                 self._task_manager.start_manager()
+                self._task_manager.start_monitor()
 
                 
                 active_pipe_count = len(self._workflow)   
@@ -538,6 +539,7 @@ class AppManager(object):
                 
                 self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
+                self._task_manager.end_monitor()
                 
 
                 self._logger.info('Terminating synchronizer thread')

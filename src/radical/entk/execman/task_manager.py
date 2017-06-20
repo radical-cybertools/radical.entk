@@ -42,6 +42,76 @@ class TaskManager(object):
         pass
 
 
+    def start_monitor(self):
+
+        self._logger.info('Starting hearbeat thread')
+        self._hb_thread = threading.Thread(target=self.monitor, name='heartbeat')
+        self._hb_alive = threading.Event()
+        self._hb_thread.start()
+
+
+    def end_monitor(self):
+
+        try:
+
+            if self._hb_thread.is_alive():
+                self._hb_alive.set()
+                self._hb_thread.join()
+
+            self._logger.info('Hearbeat thread terminated')
+
+            return True
+
+        except Exception, ex:
+            self._logger.error('Could not terminate hearbeat thread')
+            raise
+
+    def monitor(self):
+
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        result = channel.queue_declare(exclusive=True)
+        callback_queue = result.method.queue
+        response = True
+        
+
+        #def on_response(ch, method, props, body):
+        #    if corr_id == props.correlation_id:
+        #        response = True
+
+        #    self._logger.info('Received heartbeat response')
+
+        while (response or (not self._hb_alive.is_set())):
+            response = False
+            corr_id = str(uuid.uuid4())
+        
+            # Heartbeat request signal sent to task manager via rpc-queue
+            channel.basic_publish(  exchange='',
+                                    routing_key='rpc_queue',
+                                    properties=pika.BasicProperties(
+                                                reply_to = callback_queue,
+                                                correlation_id = corr_id,
+                                                ),
+                                    body='request')
+
+            self._logger.info('Sent heartbeat request')
+
+            # Ten second interval for heartbeat request to be responded to
+            time.sleep(10)
+
+            method_frame, props, body = channel.basic_get(no_ack=True, queue=callback_queue)
+
+            if body:
+                if corr_id == props.correlation_id:
+                self._logger.info('Received heartbeat response')
+                response = True
+
+
+
+        # Process is dead - close it so that appmanager can restart it
+        self.end_manager()
+        self._hb_alive.set()
+
     def start_manager(self):
 
         # This method starts the extractor function in a separate thread        
@@ -151,6 +221,23 @@ class TaskManager(object):
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
+            # To respond to heartbeat - get request from rpc_queue
+            mq_channel.queue_declare(queue='rpc_queue')
+
+            # Function to be invoked upon request message
+            def on_request(ch, method, props, body):
+
+                self._logger.info('Received heartbeat request')
+
+                ch.basic_publish(   exchange='',
+                                    routing_key=props.reply_to,
+                                    properties=pika.BasicProperties(correlation_id = props.correlation_id),
+                                    body='response')
+
+                self._logger.info('Sent heartbeat response')
+
+                ch.basic_ack(delivery_tag = method.delivery_tag)
+
             while not self._tmgr_terminate.is_set():
 
                 try:
@@ -185,6 +272,21 @@ class TaskManager(object):
                 
                         if slow_run:
                             time.sleep(1)
+
+                    # Get request from rpc_queue for heartbeat response
+                    method_frame, props, body = mq_channel.basic_get(queue='rpc_queue')
+
+                    if body:
+
+                        self._logger.info('Received heartbeat request')
+
+                        mq_channel.basic_publish(   exchange='',
+                                    routing_key=props.reply_to,
+                                    properties=pika.BasicProperties(correlation_id = props.correlation_id),
+                                    body='response')
+
+                        self._logger.info('Sent heartbeat response')
+                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
                 
 
