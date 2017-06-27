@@ -15,28 +15,28 @@ is downloaded to the user machine.
 
 .. code-block:: none
 
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |
-     \-----------------------------------------/
-                          |
-                         [A]
-                          |
-     /-----------------------------------------\
-     |      |      |      |      |      |      |
-    [S]    [S]    [S]    [S]    [S]    [S]    [S]
-     |      |      |      |      |      |      |
-     \-----------------------------------------/
-                          |
-                         [A]
-                          :
+	[S]    [S]    [S]    [S]    [S]    [S]    [S]
+	 |      |      |      |      |      |      |
+	 \-----------------------------------------/
+			|
+			[A]
+			|
+	 /-----------------------------------------\
+	 |      |      |      |      |      |      |
+	[S]    [S]    [S]    [S]    [S]    [S]    [S]
+	 |      |      |      |      |      |      |
+	 \-----------------------------------------/
+			|
+			[A]
+			
 
 Run Locally
 ===========
 
 .. warning:: In order to run this example, you need access to a MongoDB server and
-             set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
-             The format is ``mongodb://hostname:port``. Read more about it
-             MongoDB in chapter :ref:`envpreparation`.
+			 set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+			 The format is ``mongodb://hostname:port``. Read more about it
+			 MongoDB in chapter :ref:`envpreparation`.
 
 **Step 1:** View and download the example sources :ref:`below <multiple_simulations_single_analysis>`   or find it in 
 your virtualenv under ``share/radical.ensemblemd/examples/multiple_simulations_single_analysis.py``.
@@ -44,7 +44,7 @@ your virtualenv under ``share/radical.ensemblemd/examples/multiple_simulations_s
 **Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT`` if you want to
 see log messages about simulation progress::
 
-    RADICAL_ENTK_VERBOSE=REPORT python multiple_simulations_single_analysis.py
+	RADICAL_ENTK_VERBOSE=REPORT python multiple_simulations_single_analysis.py
 
 
 Once the script has finished running, you should see the character frequency files
@@ -58,28 +58,37 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 Run Remotely
 ============
 
-By default, simulation and analysis stages run on one core your local machine::
+By default, simulation and analysis stages run on one core your local machine.
 
-    SingleClusterEnvironment(
-        resource="localhost",
-        cores=1,
-        walltime=30,
-        username=None,
-        project=None
-    )
+.. literalinclude:: ../../../examples/multiple_simulations_single_analysis.py
+	:lines: 75-85
+	:language: python
+	:dedent: 2
+
+	ResourceHandle(
+		resource="localhost",
+		cores=1,
+		walltime=30,
+		username=None,
+		project=None
+	)
 
 You can change the script to use a remote HPC cluster and increase the number
 of cores to see how this affects the runtime of the script as the individual
-simulations instances can run in parallel::
+simulations instances can run in parallel.
 
-    SingleClusterEnvironment(
-        resource="xsede.stampede",
-        cores=16,
-        walltime=30,
-            username="",  #Username is entered as a string. Used when running on remote machine
-            project=""    #Project ID is entered as a string. Used when running on remote machine
-    )
+.. code-block::
 
+	cluster = ResourceHandle(
+		resource="xsede.stampede",
+		cores=16,
+		walltime=30,
+		username=None,  # add your username here
+		project=None # add your allocation or project id here if required
+		database_url=None # add your mongodb url
+	)
+
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 .. _multiple_simulations_single_analysis:
 
@@ -89,4 +98,4 @@ Example Source
 :download:`Download multiple_simulations_single_analysis.py <../../../examples/multiple_simulations_single_analysis.py>`
 
 .. literalinclude:: ../../../examples/multiple_simulations_single_analysis.py
-    :language: python
+	:language: python

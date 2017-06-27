@@ -12,11 +12,11 @@ simulations changes every iteration. We discuss two examples,
 * analysis produces a bunch of output and a script is used to extract the number of simulations for the next iteration.
 
 .. figure:: ../../images/simulation_analysis_pattern.*
-   :width: 300pt
-   :align: center
-   :alt: Simulation-Analysis Pattern
+	 :width: 300pt
+	 :align: center
+	 :alt: Simulation-Analysis Pattern
 
-   Fig.: `The Simulation-Analysis Pattern.`
+	 Fig.: `The Simulation-Analysis Pattern.`
 
 Run adaptive simulation analysis loop
 =====================================
@@ -28,7 +28,7 @@ simulations and no other message, it is sufficient to specify that the pattern i
 
 .. code-block:: python
 
-    mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
+		mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True)
 
 
 **Step 1:** View and download the example sources :ref:`below <example_adaptive_simulation_analysis_loop>`  or find it in 
@@ -36,11 +36,11 @@ your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_an
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop.py
+		RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop.py
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-
+.. note:: The following script and the script in your ``share/radical.ensemblemd/user_guide/scripts`` have some additional parsing of arguments. This is unrelated to Ensemble Toolkit.
 
 .. _example_adaptive_simulation_analysis_loop:
 
@@ -52,7 +52,7 @@ Example Source
 your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop.py``.
 
 .. literalinclude:: ../../../examples/adaptive_simulation_analysis_loop.py
-    :language: python
+		:language: python
 
 
 Run adaptive simulation analysis loop with a script
@@ -66,7 +66,7 @@ parameter during pattern object creation.
 
 .. code-block:: python
 
-    mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True, sim_extraction_script='extract.py')
+		mssa = MSSA(iterations=2, simulation_instances=16, analysis_instances=1, adaptive_simulation=True, sim_extraction_script='extract.py')
 
 
 **Step 1:** View and download the example sources :ref:`below <example_adaptive_simulation_analysis_loop_with_script>`  or find it in 
@@ -74,9 +74,10 @@ your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_an
 
 **Step 2:** Run this example with ``RADICAL_ENMD_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop_with_script.py
+		RADICAL_ENTK_VERBOSE=REPORT python adaptive_simulation_analysis_loop_with_script.py
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
+
 
 .. _example_adaptive_simulation_analysis_loop_with_script:
 
@@ -88,4 +89,4 @@ Example Source
 your virtualenv under ``share/radical.ensemblemd/examples/adaptive_simulation_analysis_loop_with_script.py``.
 
 .. literalinclude:: ../../../examples/adaptive_simulation_analysis_loop_with_script.py
-    :language: python
+		:language: python

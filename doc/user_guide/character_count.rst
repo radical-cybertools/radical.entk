@@ -22,7 +22,6 @@ To run the script, simply execute the following from command line:
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-
 A look at the complete code in this section:
 
 .. literalinclude:: scripts/ccount.py

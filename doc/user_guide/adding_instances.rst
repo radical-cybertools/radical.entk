@@ -30,12 +30,14 @@ To run the script, simply execute the following from command line:
 
 ::
 
-     RADICAL_ENTK_VERBOSE=REPORT python add_instances.py
+	RADICAL_ENTK_VERBOSE=REPORT python add_instances.py
 
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
+As a result of the execution we will obtain 16 different output files. 
 
-As a result of the execution we will obtain 16 different output files. Let's take a look at the complete code:
+
+A look at the complete code in this section:
 
 .. literalinclude:: scripts/add_instances.py

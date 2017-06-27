@@ -20,7 +20,7 @@ You can check the version of Ensemble MD Toolkit with the `ensemblemd-version` c
 .. code-block:: bash
 
 		ensemblemd-version
-		0.4
+		0.4.3
 
 
 .. note::
@@ -58,6 +58,20 @@ a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 						 address and is hidden behind a masked and firewalled home or office
 						 network. This means that the components running on the HPC cluster
 						 will not be able to access the MongoDB server.
+
+Any MongoDB installation should work out, as long as Ensemble toolkit is allowed to create databases and collections (which is the default user setting in MongoDB).
+
+The MongoDB location and name can be communicated to Ensemble toolkit via (a) specifying in the Resource Handle object or (b) the environment variable RADICAL_PILOT_DBURL. The value will have the form:
+
+.. code-block:: bash
+
+		"mongodb://user:pass@host:port/dbname" (mlab urls)
+		"mongodb://host:port/dbname"
+
+
+Many MongoDB instances are by default unsecured, and thus do not require the user:pass@ part of the URL. For production runs, and for runs on large secured resources, we strongly recommend the usage of a secured MongoDB instance!
+
+The dbname component in the database url can be any valid MongoDB database name (ie. it must not contain dots). Ensemble toolkit will create that DB on the fly.
 
 A MongoDB server can support more than one user. In an environment where
 multiple users use Ensemble MD Toolkit applications, a single MongoDB server

@@ -11,5 +11,4 @@ Simulation Analysis
    multiple_simulations_single_analysis
    multiple_simulations_multiple_analysis
    adaptive_simulation_analysis_loop
-   extasy_coco_amber
-   extasy_gromacs_lsdmap
+   

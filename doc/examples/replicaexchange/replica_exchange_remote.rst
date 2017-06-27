@@ -38,7 +38,7 @@ your virtualenv under ``share/radical.ensemblemd/examples/replica_exchange_b.py`
 
 **Step 3:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
 
-    RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_b.py
+	RADICAL_ENTK_VERBOSE=REPORT python replica_exchange_b.py
 
 After execution is done, in working directory you should have 24 md_input_x_y.md files and 24 md_input_x_y.out files where x in {0,1,2} and y in {0,1,...7}. File with extension .md is replica input file and with extension .out is output file providing number of occurrences of each character.
 
@@ -47,26 +47,30 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 Run Remotely
 ============
 
-By default, the exchange steps and the analysis run on one core your local machine::
+By default, the exchange steps and the analysis run on one core your local machine.
 
-    SingleClusterEnvironment(
-        resource="local.localhost",
-        cores=1,
-        walltime=30,
-        username=None,
-        project=None
-    )
+.. code-block:: python
+
+	ResourceHandle(
+		resource="local.localhost",
+		cores=1,
+		walltime=30,
+		username=None,
+		project=None
+	)
 
 You can change the script to use a remote HPC cluster and increase the number of cores to see how this affects the runtime of the script as the individual
-pipeline instances can run in parallel::
+pipeline instances can run in parallel.
 
-    SingleClusterEnvironment(
-        resource="xsede.stampede",
-        cores=16,
-        walltime=30,
-        username=None,  # add your username here
-        project=None # add your allocation or project id here if required
-    )
+.. code-block:: python
+
+	ResourceHandle(
+		resource="xsede.stampede",
+		cores=16,
+		walltime=30,
+		username=None,  # add your username here
+		project=None # add your allocation or project id here if required
+	)
 
 
 
@@ -83,5 +87,5 @@ Example Source
 
 
 .. literalinclude:: ../../../examples/replica_exchange_b.py
-    :language: python
+	:language: python
 

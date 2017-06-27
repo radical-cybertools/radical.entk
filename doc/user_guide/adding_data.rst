@@ -15,11 +15,10 @@ To do this, we just have to add the ``upload_input_data`` and ``download_output_
 
 .. code-block:: python
 
-
 	k = Kernel(name="misc.hello")
 	k.upload_input_data = ['./input_file.txt']
     	k.arguments = ["--file=input_file.txt"]
-    	k.download_output_data = [./input_file.txt]
+    	k.download_output_data = ['./input_file.txt']
 
 It is also possible to rename the files while staging them! Let's rename "input_file.txt" to "temp.txt". The local file still is named "input_file.txt", but the same file on remote will be called "temp.txt". We will also name the downloaded file to "output_file.txt". Let's look at how we can do that:
 
@@ -47,7 +46,6 @@ To run the script, simply execute the following from the command line:
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
-The complete code is as follows:
-
+A look at the complete code in this section:
 
 .. literalinclude:: scripts/add_data.py
