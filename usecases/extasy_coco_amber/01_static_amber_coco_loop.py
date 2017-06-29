@@ -79,7 +79,7 @@ class Extasy_CocoAmber_Static(SimulationAnalysisLoop):
                             "--mdinfile={0}".format(os.path.basename(Kconfig.md_input_file)),
                             "--topfile={0}".format(os.path.basename(Kconfig.top_file)),
                             "--cycle=%s"%(iteration)
-			    
+                
                         ]
         k2.link_input_data = [  
                                 "$PRE_LOOP/{0}".format(os.path.basename(Kconfig.md_input_file)),

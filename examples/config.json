@@ -1,26 +1,45 @@
 {
+<<<<<<< HEAD
+    "local.localhost" : {
+                "project"  : null,
+                "queue"    : null,
+                "schema"   : "local",
+                "cores": 2
+            },
+
+    "xsede.stampede" : {
+                "project"  : "TG-TRA100001S",
+                "queue"    : "development",
+                "schema"   : "gsissh",
+                "cores": 16
+            },
+
+    "xsede.comet"  : {
+                "project"  : "uic157",
+                "queue"    : "compute",
+                "schema"   : "gsissh",
+                "cores": 16
+            }
+=======
 	"local.localhost" : {
 				"project"  : null,
 				"queue"    : null,
-				"schema"   : "local"
+				"schema"   : "local",
+				"cores": 2
 			},
-
-	"epsrc.archer" : {
-				"project"  : "y14-ExTASY",
-				"queue"    : "course1", 
-				"schema"   : null
-			},
-
 
 	"xsede.stampede" : {
 				"project"  : "TG-TRA100001S",
 				"queue"    : "development",
-				"schema"   : "gsissh"
+				"schema"   : "gsissh",
+				"cores": 16
 			},
 
 	"xsede.comet"  : {
-				"project"  : "TG-TRA100001S",
+				"project"  : "uic157",
 				"queue"    : "compute",
-				"schema"   : "gsissh"
+				"schema"   : "gsissh",
+				"cores": 16
 			}
+>>>>>>> documentation
 }

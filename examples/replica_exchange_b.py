@@ -3,8 +3,7 @@
 __author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
 __copyright__    = "Copyright 2014, http://radical.rutgers.edu"
 __license__      = "MIT"
-__example_name__ = "Synchronous Replica Exchange Example with 'remote' \
-					exchange (generic)."
+__example_name__ = "Synchronous Replica Exchange Example with 'remote' \	exchange (generic)."
 
 
 import os
@@ -21,9 +20,16 @@ from os import path
 import radical.pilot
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import SingleClusterEnvironment
-from radical.ensemblemd.patterns.replica_exchange import Replica
-from radical.ensemblemd.patterns.replica_exchange import ReplicaExchange
+from radical.ensemblemd import ResourceHandle
+from radical.ensemblemd import Replica
+from radical.ensemblemd import EnsembleExchange
+
+# ------------------------------------------------------------------------------
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+	os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+
 
 #-------------------------------------------------------------------------------
 #
@@ -48,7 +54,7 @@ class ReplicaP(Replica):
 
 		super(ReplicaP, self).__init__(my_id)
 
-class RePattern(ReplicaExchange):
+class RePattern(EnsembleExchange):
 	"""In this class are specified details of RE simulation:
 		- initialization of replicas
 		- generation of input files
@@ -97,8 +103,7 @@ class RePattern(ReplicaExchange):
 		try:
 			self.replicas+1
 		except:
-			print "Ensemble MD Toolkit Error:  Number of replicas must be \
-				   defined for pattern ReplicaExchange!"
+			print "Ensemble MD Toolkit Error:  Number of replicas must be defined for pattern ReplicaExchange!"
 			raise      
 
 		replicas = []
@@ -216,16 +221,14 @@ class RePattern(ReplicaExchange):
 
 		# checking if matrix columns has enough rows
 		if (len(matrix_columns) < dim):
-			print "Ensemble MD Toolkit Error: matrix_columns does not have \
-			enough rows."
+			print "Ensemble MD Toolkit Error: matrix_columns does not have enough rows."
 			sys.exit()
 
 		# checking if matrix columns rows have enough elements
 		index = 0
 		for row in matrix_columns:
 			if (len(row) < dim):
-				print "Ensemble MD Toolkit Error: matrix_columns row {0} does \
-				not have enough elements.".format(index)
+				print "Ensemble MD Toolkit Error: matrix_columns row {0} does not have enough elements.".format(index)
 				sys.exit()
 			index += 1
 
@@ -236,8 +239,7 @@ class RePattern(ReplicaExchange):
 				if (matrix_columns[r.id][i][pos].isdigit()):
 					swap_matrix[i][r.id] = float(matrix_columns[r.id][i])
 				else:
-					print "Ensemble MD Toolkit Error: matrix_columns element \
-					({0},{1}) is not a number.".format(r.id, i)
+					print "Ensemble MD Toolkit Error: matrix_columns element ({0},{1}) is not a number.".format(r.id, i)
 					sys.exit()
 
 		return swap_matrix
@@ -319,9 +321,9 @@ if __name__ == "__main__":
 
 		# Create a new static execution context with one resource and a fixed
 		# number of cores and runtime.
-		cluster = SingleClusterEnvironment(
+		cluster = ResourceHandle(
 				resource=resource,
-				cores=1,
+				cores=config[resource]["cores"],
 				walltime=15,
 				#username=None,
 
@@ -329,7 +331,7 @@ if __name__ == "__main__":
 				access_schema = config[resource]['schema'],
 				queue = config[resource]['queue'],
 
-				database_url='mongodb://extasy:extasyproject@extasy-db.epcc.ed.ac.uk/radicalpilot',
+				database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
 				#database_name='myexps',
 			)
 		
@@ -355,11 +357,12 @@ if __name__ == "__main__":
 		# run RE simulation
 		cluster.run(re_pattern, force_plugin="replica_exchange.static_pattern_2")
 
-		cluster.deallocate()
-	
-		#-----------------------------------------------------------------------
-
 	except EnsemblemdError, er:
 
 		print "Ensemble MD Toolkit Error: {0}".format(str(er))
 		raise # Just raise the execption again to get the backtrace
+
+	try:
+		cluster.deallocate()
+	except:
+		pass

@@ -9,4 +9,3 @@ API Reference
 
    ./api/api_buildingblocks
    ./api/api_patterns
-   ./api/list_kernels

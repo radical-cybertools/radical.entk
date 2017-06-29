@@ -102,7 +102,7 @@ class grompp_Kernel(KernelBase):
         
         if self.get_arg("--ref=") is None:
             arguments = ['-f','{0}'.format(self.get_arg("--mdp=")),'-c','{0}'.format(self.get_arg("--gro=")),'-p','{0}'.format(self.get_arg("--top=")),'-o','{0}'.format(self.get_arg("--tpr="))]
-        else:			   
+        else:               
             arguments = ['-f','{0}'.format(self.get_arg("--mdp=")),'-r','{0}'.format(self.get_arg("--ref=")),'-c','{0}'.format(self.get_arg("--gro=")),'-p','{0}'.format(self.get_arg("--top=")),'-o','{0}'.format(self.get_arg("--tpr="))]
         
         self._executable  = cfg['executable']

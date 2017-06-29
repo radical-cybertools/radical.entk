@@ -50,9 +50,8 @@ Kernels
 
 A kernel is an object that abstracts a computational task in Ensemble Toolkit. It represents an instantiation of a specific 
 science tool along with the required software environment. Kernel hide tool-specific peculiarities across 
-different clusters as well as differences between the interfaces of the various MD tools to the extent possible. As part of 
-Ensemble Toolkit a :ref:`kernels_list` is available. Users can also create custom kernels objects, discussed 
-:ref:`here <writing_kernels>`
+different clusters as well as differences between the interfaces of the various MD tools to the extent possible.
+Users can create custom kernels objects, discussed :ref:`here <writing_kernels>`
 
 Resource Handle
 ----------------------------------
@@ -81,7 +80,7 @@ along various parameters: total time to completion, amount of data transferred, 
 
 
 Five steps to create an application
-=======================
+===================================
 
 Each of the steps are labelled in Figure 1.
 
