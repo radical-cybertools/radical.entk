@@ -283,23 +283,11 @@ class Kernel(object):
         self._machine_config = config
     # -------------------------------------------------------------
 
-    def validate_config(self):
+    def _validate_config(self):
 
         '''
-        Expected format:
-        config = { 
-                       "mach1": {
-                                    "pre_exec": None,
-                                    "executable": None,
-                                },
-
-                        "mach2": {
-                                    "pre_exec": None,
-                                    "executable": None,
-                                }
-        
-                }
-
+        Config needs to be a dictionary with values for 'pre_exec'
+        and 'executable'
         '''
 
         if self._machine_config:

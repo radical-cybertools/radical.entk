@@ -5,257 +5,21 @@ List of Pre-Configured Resources
 ================================
 
 
-RESOURCE_ORNL
+RESOURCE_STFC
 -------------
 
-TITAN
-*****
-
-The Cray XK7 supercomputer located at the Oak Ridge Leadership Computing Facility (OLCF), (https://www.olcf.ornl.gov/titan/)
-
-* **Resource label**      : ``ornl.titan``
-* **Raw config**          : :download:`resource_ornl.json <../../src/radical/pilot/configs/resource_ornl.json>`
-* **Note**            : Requires the use of an RSA SecurID on every connection.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : batch``
- * ``sandbox       : $MEMBERWORK/`groups | cut -d' ' -f2```
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, local, go``
-
-RESOURCE_DAS4
--------------
-
-FS2
-***
-
-The Distributed ASCI Supercomputer 4 (http://www.cs.vu.nl/das4/).
-
-* **Resource label**      : ``das4.fs2``
-* **Raw config**          : :download:`resource_das4.json <../../src/radical/pilot/configs/resource_das4.json>`
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : all.q``
- * ``sandbox       : $HOME``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-RESOURCE_EPSRC
---------------
-
-ARCHER
-******
-
-The EPSRC Archer Cray XC30 system (https://www.archer.ac.uk/)
-
-* **Resource label**      : ``epsrc.archer``
-* **Raw config**          : :download:`resource_epsrc.json <../../src/radical/pilot/configs/resource_epsrc.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : standard``
- * ``sandbox       : /work/`id -gn`/`id -gn`/$USER``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-ARCHER_ORTE
-***********
-
-The EPSRC Archer Cray XC30 system (https://www.archer.ac.uk/)
-
-* **Resource label**      : ``epsrc.archer_orte``
-* **Raw config**          : :download:`resource_epsrc.json <../../src/radical/pilot/configs/resource_epsrc.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : standard``
- * ``sandbox       : /work/`id -gn`/`id -gn`/$USER``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-RESOURCE_NERSC
---------------
-
-EDISON_CCM
-**********
-
-The NERSC Edison Cray XC30 in Cluster Compatibility Mode (https://www.nersc.gov/users/computational-systems/edison/)
-
-* **Resource label**      : ``nersc.edison_ccm``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : For CCM you need to use special ccm_ queues.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : ccm_queue``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-EDISON
-******
-
-The NERSC Edison Cray XC30 (https://www.nersc.gov/users/computational-systems/edison/)
-
-* **Resource label**      : ``nersc.edison``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : 
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : regular``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, go``
-
-HOPPER
-******
-
-The NERSC Hopper Cray XE6 (https://www.nersc.gov/users/computational-systems/hopper/)
-
-* **Resource label**      : ``nersc.hopper``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : 
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : regular``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, go``
-
-HOPPER_APRUN
+JOULE_RUNJOB
 ************
 
-The NERSC Hopper Cray XE6 (https://www.nersc.gov/users/computational-systems/hopper/)
+The STFC Joule IBM BG/Q system (http://community.hartree.stfc.ac.uk/wiki/site/admin/home.html)
 
-* **Resource label**      : ``nersc.hopper_aprun``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : Only one CU per node in APRUN mode
+* **Resource label**      : ``stfc.joule_runjob``
+* **Raw config**          : :download:`resource_stfc.json <resource_list/resource_stfc.json>`
+* **Note**            : This currently needs a centrally administered outbound ssh tunnel.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : regular``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-HOPPER_CCM
-**********
-
-The NERSC Hopper Cray XE6 in Cluster Compatibility Mode (https://www.nersc.gov/users/computational-systems/hopper/)
-
-* **Resource label**      : ``nersc.hopper_ccm``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : For CCM you need to use special ccm_ queues.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : ccm_queue``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-EDISON_APRUN
-************
-
-The NERSC Edison Cray XC30 (https://www.nersc.gov/users/computational-systems/edison/)
-
-* **Resource label**      : ``nersc.edison_aprun``
-* **Raw config**          : :download:`resource_nersc.json <../../src/radical/pilot/configs/resource_nersc.json>`
-* **Note**            : Only one CU per node in APRUN mode
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : regular``
- * ``sandbox       : $SCRATCH``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, go``
-
-RESOURCE_NCSA
--------------
-
-BW_CCM
-******
-
-The NCSA Blue Waters Cray XE6/XK7 system in CCM (https://bluewaters.ncsa.illinois.edu/)
-
-* **Resource label**      : ``ncsa.bw_ccm``
-* **Raw config**          : :download:`resource_ncsa.json <../../src/radical/pilot/configs/resource_ncsa.json>`
-* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : /scratch/sciteam/$USER``
- * ``access_schema : gsissh``
-
-* **Available schemas**   : ``gsissh``
-
-BW
-**
-
-The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
-
-* **Resource label**      : ``ncsa.bw``
-* **Raw config**          : :download:`resource_ncsa.json <../../src/radical/pilot/configs/resource_ncsa.json>`
-* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : /scratch/sciteam/$USER``
- * ``access_schema : gsissh``
-
-* **Available schemas**   : ``gsissh``
-
-BW_APRUN
-********
-
-The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
-
-* **Resource label**      : ``ncsa.bw_aprun``
-* **Raw config**          : :download:`resource_ncsa.json <../../src/radical/pilot/configs/resource_ncsa.json>`
-* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : /scratch/sciteam/$USER``
- * ``access_schema : gsissh``
-
-* **Available schemas**   : ``gsissh``
-
-RESOURCE_IU
------------
-
-BIGRED2
-*******
-
-Indiana University's Cray XE6/XK7 cluster (https://kb.iu.edu/d/bcqt).
-
-* **Resource label**      : ``iu.bigred2``
-* **Raw config**          : :download:`resource_iu.json <../../src/radical/pilot/configs/resource_iu.json>`
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : None``
+ * ``queue         : prod``
  * ``sandbox       : $HOME``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-BIGRED2_CCM
-***********
-
-Indiana University's Cray XE6/XK7 cluster in Cluster Compatibility Mode (CCM) (https://kb.iu.edu/d/bcqt).
-
-* **Resource label**      : ``iu.bigred2_ccm``
-* **Raw config**          : :download:`resource_iu.json <../../src/radical/pilot/configs/resource_iu.json>`
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : None``
- * ``sandbox       : /N/dc2/scratch/$USER``
  * ``access_schema : ssh``
 
 * **Available schemas**   : ``ssh``
@@ -263,13 +27,13 @@ Indiana University's Cray XE6/XK7 cluster in Cluster Compatibility Mode (CCM) (h
 RESOURCE_LOCAL
 --------------
 
-LOCALHOST_YARN
-**************
+LOCALHOST_SPARK_ANACONDA
+************************
 
-Your local machine.
+Your local machine gets spark.
 
-* **Resource label**      : ``local.localhost_yarn``
-* **Raw config**          : :download:`resource_local.json <../../src/radical/pilot/configs/resource_local.json>`
+* **Resource label**      : ``local.localhost_spark_anaconda``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
 * **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -279,13 +43,29 @@ Your local machine.
 
 * **Available schemas**   : ``local, ssh``
 
-LOCALHOST_ANACONDA
-******************
+LOCALHOST_ORTELIB
+*****************
 
 Your local machine.
 
-* **Resource label**      : ``local.localhost_anaconda``
-* **Raw config**          : :download:`resource_local.json <../../src/radical/pilot/configs/resource_local.json>`
+* **Resource label**      : ``local.localhost_ortelib``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
+* **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : None``
+ * ``sandbox       : $HOME``
+ * ``access_schema : local``
+
+* **Available schemas**   : ``local, ssh``
+
+LOCALHOST_SPARK
+***************
+
+Your local machine gets spark.
+
+* **Resource label**      : ``local.localhost_spark``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
 * **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -301,7 +81,7 @@ LOCALHOST
 Your local machine.
 
 * **Resource label**      : ``local.localhost``
-* **Raw config**          : :download:`resource_local.json <../../src/radical/pilot/configs/resource_local.json>`
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
 * **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -311,154 +91,83 @@ Your local machine.
 
 * **Available schemas**   : ``local, ssh``
 
-RESOURCE_LRZ
-------------
+LOCALHOST_YARN
+**************
 
-SUPERMUC
-********
+Your local machine.
 
-The SuperMUC petascale HPC cluster at LRZ, Munich (http://www.lrz.de/services/compute/supermuc/).
-
-* **Resource label**      : ``lrz.supermuc``
-* **Raw config**          : :download:`resource_lrz.json <../../src/radical/pilot/configs/resource_lrz.json>`
-* **Note**            : Default authentication to SuperMUC uses X509 and is firewalled, make sure you can gsissh into the machine from your registered IP address. Because of outgoing traffic restrictions your MongoDB needs to run on a port in the range 20000 to 25000.
+* **Resource label**      : ``local.localhost_yarn``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
+* **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : test``
+ * ``queue         : None``
  * ``sandbox       : $HOME``
- * ``access_schema : gsissh``
+ * ``access_schema : local``
 
-* **Available schemas**   : ``gsissh, ssh``
+* **Available schemas**   : ``local, ssh``
 
-RESOURCE_RICE
--------------
+LOCALHOST_ANACONDA
+******************
 
-DAVINCI
-*******
+Your local machine.
 
-The DAVinCI Linux cluster at Rice University (https://docs.rice.edu/confluence/display/ITDIY/Getting+Started+on+DAVinCI).
-
-* **Resource label**      : ``rice.davinci``
-* **Raw config**          : :download:`resource_rice.json <../../src/radical/pilot/configs/resource_rice.json>`
-* **Note**            : DAVinCI compute nodes have 12 or 16 processor cores per node.
+* **Resource label**      : ``local.localhost_anaconda``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
+* **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : parallel``
- * ``sandbox       : $SHARED_SCRATCH/$USER``
- * ``access_schema : ssh``
+ * ``queue         : None``
+ * ``sandbox       : $HOME``
+ * ``access_schema : local``
 
-* **Available schemas**   : ``ssh``
+* **Available schemas**   : ``local, ssh``
 
-BIOU
-****
+LOCALHOST_ORTE
+**************
 
-The Blue BioU Linux cluster at Rice University (https://docs.rice.edu/confluence/display/ITDIY/Getting+Started+on+Blue+BioU).
+Your local machine.
 
-* **Resource label**      : ``rice.biou``
-* **Raw config**          : :download:`resource_rice.json <../../src/radical/pilot/configs/resource_rice.json>`
-* **Note**            : Blue BioU compute nodes have 32 processor cores per node.
+* **Resource label**      : ``local.localhost_orte``
+* **Raw config**          : :download:`resource_local.json <resource_list/resource_local.json>`
+* **Note**            : To use the ssh schema, make sure that ssh access to localhost is enabled.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : serial``
- * ``sandbox       : $SHARED_SCRATCH/$USER``
- * ``access_schema : ssh``
+ * ``queue         : None``
+ * ``sandbox       : $HOME``
+ * ``access_schema : local``
 
-* **Available schemas**   : ``ssh``
+* **Available schemas**   : ``local, ssh``
 
-RESOURCE_FUTUREGRID
--------------------
+RESOURCE_IU
+-----------
 
-BRAVO
-*****
+BIGRED2_APRUN
+*************
 
-FutureGrid Hewlett-Packard ProLiant compute cluster (https://futuregrid.github.io/manual/hardware.html).
+Indiana University's Cray XE6/XK7 cluster (https://kb.iu.edu/d/bcqt).
 
-* **Resource label**      : ``futuregrid.bravo``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
-* **Note**            : Works only up to 64 cores, beyond that Torque configuration is broken.
+* **Resource label**      : ``iu.bigred2_aprun``
+* **Raw config**          : :download:`resource_iu.json <resource_list/resource_iu.json>`
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : bravo``
+ * ``queue         : None``
  * ``sandbox       : $HOME``
  * ``access_schema : ssh``
 
 * **Available schemas**   : ``ssh``
 
-INDIA
-*****
+BIGRED2_CCM_SSH
+***************
 
-The FutureGrid 'india' cluster (https://futuregrid.github.io/manual/hardware.html).
+Indiana University's Cray XE6/XK7 cluster in Cluster Compatibility Mode (CCM) (https://kb.iu.edu/d/bcqt).
 
-* **Resource label**      : ``futuregrid.india``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
+* **Resource label**      : ``iu.bigred2_ccm_ssh``
+* **Raw config**          : :download:`resource_iu.json <resource_list/resource_iu.json>`
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : batch``
- * ``sandbox       : $HOME``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-ECHO
-****
-
-FutureGrid Supermicro ScaleMP cluster (https://futuregrid.github.io/manual/hardware.html).
-
-* **Resource label**      : ``futuregrid.echo``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
-* **Note**            : Untested
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : echo``
- * ``sandbox       : $HOME``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-XRAY
-****
-
-FutureGrid Cray XT5m cluster (https://futuregrid.github.io/manual/hardware.html).
-
-* **Resource label**      : ``futuregrid.xray``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
-* **Note**            : One needs to add 'module load torque' to ~/.profile on xray.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : batch``
- * ``sandbox       : /scratch/$USER``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-XRAY_CCM
-********
-
-FutureGrid Cray XT5m cluster in Cluster Compatibility Mode (CCM) (https://futuregrid.github.io/manual/hardware.html).
-
-* **Resource label**      : ``futuregrid.xray_ccm``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
-* **Note**            : One needs to add 'module load torque' to ~/.profile on xray.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : ccm_queue``
- * ``sandbox       : /scratch/$USER``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh``
-
-DELTA
-*****
-
-FutureGrid Supermicro GPU cluster (https://futuregrid.github.io/manual/hardware.html).
-
-* **Resource label**      : ``futuregrid.delta``
-* **Raw config**          : :download:`resource_futuregrid.json <../../src/radical/pilot/configs/resource_futuregrid.json>`
-* **Note**            : Untested.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : delta``
- * ``sandbox       : $HOME``
+ * ``queue         : None``
+ * ``sandbox       : /N/dc2/scratch/$USER``
  * ``access_schema : ssh``
 
 * **Available schemas**   : ``ssh``
@@ -466,77 +175,29 @@ FutureGrid Supermicro GPU cluster (https://futuregrid.github.io/manual/hardware.
 RESOURCE_XSEDE
 --------------
 
-LONESTAR
-********
+BRIDGES
+*******
 
-The XSEDE 'Lonestar' cluster at TACC (https://www.tacc.utexas.edu/resources/hpc/lonestar).
+The XSEDE 'Bridges' cluster at PSC (https://portal.xsede.org/psc-bridges/).
 
-* **Resource label**      : ``xsede.lonestar``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Resource label**      : ``xsede.bridges``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription.
 * **Default values** for ComputePilotDescription attributes:
 
  * ``queue         : normal``
  * ``sandbox       : $HOME``
- * ``access_schema : ssh``
+ * ``access_schema : gsissh``
 
-* **Available schemas**   : ``ssh, gsissh``
+* **Available schemas**   : ``gsissh, ssh, go``
 
-WRANGLER
-********
-
-The XSEDE 'Wrangler' cluster at TACC (https://www.tacc.utexas.edu/wrangler/).
-
-* **Resource label**      : ``xsede.wrangler``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : $WORK``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, gsissh, go``
-
-STAMPEDE_YARN
-*************
-
-The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
-
-* **Resource label**      : ``xsede.stampede_yarn``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : $WORK``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, gsissh, go``
-
-STAMPEDE
-********
-
-The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
-
-* **Resource label**      : ``xsede.stampede``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
-* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
-* **Default values** for ComputePilotDescription attributes:
-
- * ``queue         : normal``
- * ``sandbox       : $WORK``
- * ``access_schema : ssh``
-
-* **Available schemas**   : ``ssh, gsissh, go``
-
-BLACKLIGHT
-**********
+BLACKLIGHT_SSH
+**************
 
 The XSEDE 'Blacklight' cluster at PSC (https://www.psc.edu/index.php/computing-resources/blacklight).
 
-* **Resource label**      : ``xsede.blacklight``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.blacklight_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -546,29 +207,61 @@ The XSEDE 'Blacklight' cluster at PSC (https://www.psc.edu/index.php/computing-r
 
 * **Available schemas**   : ``ssh, gsissh``
 
-GORDON
-******
+STAMPEDE_SPARK
+**************
 
-The XSEDE 'Gordon' cluster at SDSC (http://www.sdsc.edu/us/resources/gordon/).
+The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
 
-* **Resource label**      : ``xsede.gordon``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.stampede_spark``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
  * ``queue         : normal``
- * ``sandbox       : $HOME``
- * ``access_schema : ssh``
+ * ``sandbox       : $WORK``
+ * ``access_schema : gsissh``
 
-* **Available schemas**   : ``ssh, gsissh``
+* **Available schemas**   : ``gsissh, ssh, go``
 
-COMET
-*****
+STAMPEDE_SSH
+************
+
+The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
+
+* **Resource label**      : ``xsede.stampede_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh, ssh, go``
+
+STAMPEDE_YARN
+*************
+
+The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
+
+* **Resource label**      : ``xsede.stampede_yarn``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh, ssh, go``
+
+COMET_SPARK
+***********
 
 The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/hpc/hpc_systems.html#comet).
 
-* **Resource label**      : ``xsede.comet``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.comet_spark``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -578,49 +271,97 @@ The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/h
 
 * **Available schemas**   : ``ssh, gsissh``
 
-SUPERMIC
-********
+STAMPEDE_ORTE
+*************
+
+The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
+
+* **Resource label**      : ``xsede.stampede_orte``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh, go``
+
+LONESTAR_SSH
+************
+
+The XSEDE 'Lonestar' cluster at TACC (https://www.tacc.utexas.edu/resources/hpc/lonestar).
+
+* **Resource label**      : ``xsede.lonestar_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh``
+
+WRANGLER_SSH
+************
+
+The XSEDE 'Wrangler' cluster at TACC (https://www.tacc.utexas.edu/wrangler/).
+
+* **Resource label**      : ``xsede.wrangler_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh, go``
+
+SUPERMIC_SPARK
+**************
 
 SuperMIC (pronounced 'Super Mick') is Louisiana State University's (LSU) newest supercomputer funded by the National Science Foundation's (NSF) Major Research Instrumentation (MRI) award to the Center for Computation & Technology. (https://portal.xsede.org/lsu-supermic)
 
-* **Resource label**      : ``xsede.supermic``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.supermic_spark``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Partially allocated through XSEDE. Primary access through GSISSH. Allows SSH key authentication too.
 * **Default values** for ComputePilotDescription attributes:
 
  * ``queue         : workq``
  * ``sandbox       : /work/$USER``
- * ``access_schema : ssh``
+ * ``access_schema : gsissh``
 
-* **Available schemas**   : ``ssh, gsissh``
+* **Available schemas**   : ``gsissh, ssh``
 
-COMET_ORTE
+GORDON_SSH
 **********
 
-The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/hpc/hpc_systems.html#comet).
+The XSEDE 'Gordon' cluster at SDSC (http://www.sdsc.edu/us/resources/gordon/).
 
-* **Resource label**      : ``xsede.comet_orte``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.gordon_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : compute``
+ * ``queue         : normal``
  * ``sandbox       : $HOME``
  * ``access_schema : ssh``
 
 * **Available schemas**   : ``ssh, gsissh``
 
-TRESTLES
-********
+COMET_ORTELIB
+*************
 
-The XSEDE 'Trestles' cluster at SDSC (http://www.sdsc.edu/us/resources/trestles/).
+The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/hpc/hpc_systems.html#comet).
 
-* **Resource label**      : ``xsede.trestles``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Resource label**      : ``xsede.comet_ortelib``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : normal``
+ * ``queue         : compute``
  * ``sandbox       : $HOME``
  * ``access_schema : ssh``
 
@@ -632,7 +373,7 @@ GREENFIELD
 The XSEDE 'Greenfield' cluster at PSC (https://www.psc.edu/index.php/computing-resources/greenfield).
 
 * **Resource label**      : ``xsede.greenfield``
-* **Raw config**          : :download:`resource_xsede.json <../../src/radical/pilot/configs/resource_xsede.json>`
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
 * **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -642,35 +383,516 @@ The XSEDE 'Greenfield' cluster at PSC (https://www.psc.edu/index.php/computing-r
 
 * **Available schemas**   : ``ssh, gsissh``
 
-RESOURCE_STFC
--------------
+COMET_SSH
+*********
 
-JOULE
-*****
+The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/hpc/hpc_systems.html#comet).
 
-The STFC Joule IBM BG/Q system (http://community.hartree.stfc.ac.uk/wiki/site/admin/home.html)
-
-* **Resource label**      : ``stfc.joule``
-* **Raw config**          : :download:`resource_stfc.json <../../src/radical/pilot/configs/resource_stfc.json>`
-* **Note**            : This currently needs a centrally administered outbound ssh tunnel.
+* **Resource label**      : ``xsede.comet_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
 * **Default values** for ComputePilotDescription attributes:
 
- * ``queue         : prod``
+ * ``queue         : compute``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh``
+
+WRANGLER_SPARK
+**************
+
+The XSEDE 'Wrangler' cluster at TACC (https://www.tacc.utexas.edu/wrangler/).
+
+* **Resource label**      : ``xsede.wrangler_spark``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh, ssh, go``
+
+STAMPEDE_ORTELIB
+****************
+
+The XSEDE 'Stampede' cluster at TACC (https://www.tacc.utexas.edu/stampede/).
+
+* **Resource label**      : ``xsede.stampede_ortelib``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail. To create a virtualenv for the first time, one needs to run towards the development queue.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $WORK``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh, go``
+
+TRESTLES_SSH
+************
+
+The XSEDE 'Trestles' cluster at SDSC (http://www.sdsc.edu/us/resources/trestles/).
+
+* **Resource label**      : ``xsede.trestles_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh``
+
+COMET_ORTE
+**********
+
+The Comet HPC resource at SDSC 'HPC for the 99%' (http://www.sdsc.edu/services/hpc/hpc_systems.html#comet).
+
+* **Resource label**      : ``xsede.comet_orte``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : compute``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh``
+
+WRANGLER_YARN
+*************
+
+The XSEDE 'Wrangler' cluster at TACC (https://www.tacc.utexas.edu/wrangler/).
+
+* **Resource label**      : ``xsede.wrangler_yarn``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : hadoop``
+ * ``sandbox       : $WORK``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, gsissh, go``
+
+SUPERMIC_SSH
+************
+
+SuperMIC (pronounced 'Super Mick') is Louisiana State University's (LSU) newest supercomputer funded by the National Science Foundation's (NSF) Major Research Instrumentation (MRI) award to the Center for Computation & Technology. (https://portal.xsede.org/lsu-supermic)
+
+* **Resource label**      : ``xsede.supermic_ssh``
+* **Raw config**          : :download:`resource_xsede.json <resource_list/resource_xsede.json>`
+* **Note**            : Partially allocated through XSEDE. Primary access through GSISSH. Allows SSH key authentication too.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : workq``
+ * ``sandbox       : /work/$USER``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh, ssh``
+
+RESOURCE_EPSRC
+--------------
+
+ARCHER_ORTE
+***********
+
+The EPSRC Archer Cray XC30 system (https://www.archer.ac.uk/)
+
+* **Resource label**      : ``epsrc.archer_orte``
+* **Raw config**          : :download:`resource_epsrc.json <resource_list/resource_epsrc.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : standard``
+ * ``sandbox       : /work/`id -gn`/`id -gn`/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+ARCHER_APRUN
+************
+
+The EPSRC Archer Cray XC30 system (https://www.archer.ac.uk/)
+
+* **Resource label**      : ``epsrc.archer_aprun``
+* **Raw config**          : :download:`resource_epsrc.json <resource_list/resource_epsrc.json>`
+* **Note**            : Always set the ``project`` attribute in the ComputePilotDescription or the pilot will fail.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : standard``
+ * ``sandbox       : /work/`id -gn`/`id -gn`/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+RESOURCE_DAS4
+-------------
+
+FS2_SSH
+*******
+
+The Distributed ASCI Supercomputer 4 (http://www.cs.vu.nl/das4/).
+
+* **Resource label**      : ``das4.fs2_ssh``
+* **Raw config**          : :download:`resource_das4.json <resource_list/resource_das4.json>`
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : all.q``
  * ``sandbox       : $HOME``
  * ``access_schema : ssh``
 
 * **Available schemas**   : ``ssh``
 
+RESOURCE_NERSC
+--------------
+
+HOPPER_CCM_SSH
+**************
+
+The NERSC Hopper Cray XE6 in Cluster Compatibility Mode (https://www.nersc.gov/users/computational-systems/hopper/)
+
+* **Resource label**      : ``nersc.hopper_ccm_ssh``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : For CCM you need to use special ccm_ queues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : ccm_queue``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+EDISON_ORTE
+***********
+
+The NERSC Edison Cray XC30 (https://www.nersc.gov/users/computational-systems/edison/)
+
+* **Resource label**      : ``nersc.edison_orte``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : 
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : regular``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, go``
+
+HOPPER_ORTE
+***********
+
+The NERSC Hopper Cray XE6 (https://www.nersc.gov/users/computational-systems/hopper/)
+
+* **Resource label**      : ``nersc.hopper_orte``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : 
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : regular``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, go``
+
+HOPPER_APRUN
+************
+
+The NERSC Hopper Cray XE6 (https://www.nersc.gov/users/computational-systems/hopper/)
+
+* **Resource label**      : ``nersc.hopper_aprun``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : Only one CU per node in APRUN mode
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : regular``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+EDISON_CCM_SSH
+**************
+
+The NERSC Edison Cray XC30 in Cluster Compatibility Mode (https://www.nersc.gov/users/computational-systems/edison/)
+
+* **Resource label**      : ``nersc.edison_ccm_ssh``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : For CCM you need to use special ccm_ queues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : ccm_queue``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+EDISON_APRUN
+************
+
+The NERSC Edison Cray XC30 (https://www.nersc.gov/users/computational-systems/edison/)
+
+* **Resource label**      : ``nersc.edison_aprun``
+* **Raw config**          : :download:`resource_nersc.json <resource_list/resource_nersc.json>`
+* **Note**            : Only one CU per node in APRUN mode
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : regular``
+ * ``sandbox       : $SCRATCH``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, go``
+
+RESOURCE_ORNL
+-------------
+
+TITAN_ORTE
+**********
+
+The Cray XK7 supercomputer located at the Oak Ridge Leadership Computing Facility (OLCF), (https://www.olcf.ornl.gov/titan/)
+
+* **Resource label**      : ``ornl.titan_orte``
+* **Raw config**          : :download:`resource_ornl.json <resource_list/resource_ornl.json>`
+* **Note**            : Requires the use of an RSA SecurID on every connection.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $MEMBERWORK/`groups | cut -d' ' -f2```
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, local, go``
+
+TITAN_ORTELIB
+*************
+
+The Cray XK7 supercomputer located at the Oak Ridge Leadership Computing Facility (OLCF), (https://www.olcf.ornl.gov/titan/)
+
+* **Resource label**      : ``ornl.titan_ortelib``
+* **Raw config**          : :download:`resource_ornl.json <resource_list/resource_ornl.json>`
+* **Note**            : Requires the use of an RSA SecurID on every connection.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $MEMBERWORK/`groups | cut -d' ' -f2```
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, local, go``
+
+TITAN_APRUN
+***********
+
+The Cray XK7 supercomputer located at the Oak Ridge Leadership Computing Facility (OLCF), (https://www.olcf.ornl.gov/titan/)
+
+* **Resource label**      : ``ornl.titan_aprun``
+* **Raw config**          : :download:`resource_ornl.json <resource_list/resource_ornl.json>`
+* **Note**            : Requires the use of an RSA SecurID on every connection.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $MEMBERWORK/`groups | cut -d' ' -f2```
+ * ``access_schema : local``
+
+* **Available schemas**   : ``local, ssh, go``
+
+RESOURCE_RICE
+-------------
+
+DAVINCI_SSH
+***********
+
+The DAVinCI Linux cluster at Rice University (https://docs.rice.edu/confluence/display/ITDIY/Getting+Started+on+DAVinCI).
+
+* **Resource label**      : ``rice.davinci_ssh``
+* **Raw config**          : :download:`resource_rice.json <resource_list/resource_rice.json>`
+* **Note**            : DAVinCI compute nodes have 12 or 16 processor cores per node.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : parallel``
+ * ``sandbox       : $SHARED_SCRATCH/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+BIOU_SSH
+********
+
+The Blue BioU Linux cluster at Rice University (https://docs.rice.edu/confluence/display/ITDIY/Getting+Started+on+Blue+BioU).
+
+* **Resource label**      : ``rice.biou_ssh``
+* **Raw config**          : :download:`resource_rice.json <resource_list/resource_rice.json>`
+* **Note**            : Blue BioU compute nodes have 32 processor cores per node.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : serial``
+ * ``sandbox       : $SHARED_SCRATCH/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+RESOURCE_RADICAL
+----------------
+
+TWO
+***
+
+radical server 2
+
+* **Resource label**      : ``radical.two``
+* **Raw config**          : :download:`resource_radical.json <resource_list/resource_radical.json>`
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, local``
+
+TUTORIAL
+********
+
+Our private tutorial VM on EC2
+
+* **Resource label**      : ``radical.tutorial``
+* **Raw config**          : :download:`resource_radical.json <resource_list/resource_radical.json>`
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, local``
+
+ONE
+***
+
+radical server 1
+
+* **Resource label**      : ``radical.one``
+* **Raw config**          : :download:`resource_radical.json <resource_list/resource_radical.json>`
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh, local``
+
+RESOURCE_LRZ
+------------
+
+SUPERMUC_SSH
+************
+
+The SuperMUC petascale HPC cluster at LRZ, Munich (http://www.lrz.de/services/compute/supermuc/).
+
+* **Resource label**      : ``lrz.supermuc_ssh``
+* **Raw config**          : :download:`resource_lrz.json <resource_list/resource_lrz.json>`
+* **Note**            : Default authentication to SuperMUC uses X509 and is firewalled, make sure you can gsissh into the machine from your registered IP address. Because of outgoing traffic restrictions your MongoDB needs to run on a port in the range 20000 to 25000.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : test``
+ * ``sandbox       : $HOME``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh, ssh``
+
+RESOURCE_NCSA
+-------------
+
+BW_LOCAL_ORTE
+*************
+
+The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
+
+* **Resource label**      : ``ncsa.bw_local_orte``
+* **Raw config**          : :download:`resource_ncsa.json <resource_list/resource_ncsa.json>`
+* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : /scratch/training/$USER``
+ * ``access_schema : local``
+
+* **Available schemas**   : ``local``
+
+BW_APRUN
+********
+
+The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
+
+* **Resource label**      : ``ncsa.bw_aprun``
+* **Raw config**          : :download:`resource_ncsa.json <resource_list/resource_ncsa.json>`
+* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : /scratch/sciteam/$USER``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh``
+
+BW_ORTELIB
+**********
+
+The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
+
+* **Resource label**      : ``ncsa.bw_ortelib``
+* **Raw config**          : :download:`resource_ncsa.json <resource_list/resource_ncsa.json>`
+* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : /scratch/sciteam/$USER``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh``
+
+BW_CCM_SSH
+**********
+
+The NCSA Blue Waters Cray XE6/XK7 system in CCM (https://bluewaters.ncsa.illinois.edu/)
+
+* **Resource label**      : ``ncsa.bw_ccm_ssh``
+* **Raw config**          : :download:`resource_ncsa.json <resource_list/resource_ncsa.json>`
+* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : /scratch/sciteam/$USER``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh``
+
+BW_ORTE
+*******
+
+The NCSA Blue Waters Cray XE6/XK7 system (https://bluewaters.ncsa.illinois.edu/)
+
+* **Resource label**      : ``ncsa.bw_orte``
+* **Raw config**          : :download:`resource_ncsa.json <resource_list/resource_ncsa.json>`
+* **Note**            : Running 'touch .hushlogin' on the login node will reduce the likelihood of prompt detection issues.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : normal``
+ * ``sandbox       : /scratch/sciteam/$USER``
+ * ``access_schema : gsissh``
+
+* **Available schemas**   : ``gsissh``
+
 RESOURCE_NCAR
 -------------
 
-YELLOWSTONE
-***********
+YELLOWSTONE_SSH
+***************
 
 The Yellowstone IBM iDataPlex cluster at UCAR (https://www2.cisl.ucar.edu/resources/yellowstone).
 
-* **Resource label**      : ``ncar.yellowstone``
-* **Raw config**          : :download:`resource_ncar.json <../../src/radical/pilot/configs/resource_ncar.json>`
+* **Resource label**      : ``ncar.yellowstone_ssh``
+* **Raw config**          : :download:`resource_ncar.json <resource_list/resource_ncar.json>`
 * **Note**            : We only support one concurrent CU per node currently.
 * **Default values** for ComputePilotDescription attributes:
 
@@ -680,21 +902,101 @@ The Yellowstone IBM iDataPlex cluster at UCAR (https://www2.cisl.ucar.edu/resour
 
 * **Available schemas**   : ``ssh``
 
-RESOURCE_RADICAL
-----------------
+RESOURCE_FUTUREGRID
+-------------------
 
-TUTORIAL
-********
+DELTA_SSH
+*********
 
-Our private tutorial VM on EC2
+FutureGrid Supermicro GPU cluster (https://futuregrid.github.io/manual/hardware.html).
 
-* **Resource label**      : ``radical.tutorial``
-* **Raw config**          : :download:`resource_radical.json <../../src/radical/pilot/configs/resource_radical.json>`
+* **Resource label**      : ``futuregrid.delta_ssh``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
+* **Note**            : Untested.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : delta``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+XRAY_APRUN
+**********
+
+FutureGrid Cray XT5m cluster (https://futuregrid.github.io/manual/hardware.html).
+
+* **Resource label**      : ``futuregrid.xray_aprun``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
+* **Note**            : One needs to add 'module load torque' to ~/.profile on xray.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : batch``
+ * ``sandbox       : /scratch/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+INDIA_SSH
+*********
+
+The FutureGrid 'india' cluster (https://futuregrid.github.io/manual/hardware.html).
+
+* **Resource label**      : ``futuregrid.india_ssh``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
 * **Default values** for ComputePilotDescription attributes:
 
  * ``queue         : batch``
  * ``sandbox       : $HOME``
  * ``access_schema : ssh``
 
-* **Available schemas**   : ``ssh, local``
+* **Available schemas**   : ``ssh``
+
+XRAY_CCM
+********
+
+FutureGrid Cray XT5m cluster in Cluster Compatibility Mode (CCM) (https://futuregrid.github.io/manual/hardware.html).
+
+* **Resource label**      : ``futuregrid.xray_ccm``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
+* **Note**            : One needs to add 'module load torque' to ~/.profile on xray.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : ccm_queue``
+ * ``sandbox       : /scratch/$USER``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+ECHO_SSH
+********
+
+FutureGrid Supermicro ScaleMP cluster (https://futuregrid.github.io/manual/hardware.html).
+
+* **Resource label**      : ``futuregrid.echo_ssh``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
+* **Note**            : Untested
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : echo``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
+
+BRAVO_SSH
+*********
+
+FutureGrid Hewlett-Packard ProLiant compute cluster (https://futuregrid.github.io/manual/hardware.html).
+
+* **Resource label**      : ``futuregrid.bravo_ssh``
+* **Raw config**          : :download:`resource_futuregrid.json <resource_list/resource_futuregrid.json>`
+* **Note**            : Works only up to 64 cores, beyond that Torque configuration is broken.
+* **Default values** for ComputePilotDescription attributes:
+
+ * ``queue         : bravo``
+ * ``sandbox       : $HOME``
+ * ``access_schema : ssh``
+
+* **Available schemas**   : ``ssh``
 

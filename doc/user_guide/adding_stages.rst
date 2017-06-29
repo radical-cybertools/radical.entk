@@ -13,17 +13,17 @@ In this section, we will modify the example from the previous section by adding 
 
 .. code-block:: python
 
-	k = Kernel(name="misc.cat")
-	k.upload_input_data = ['./input_file_2.txt > file2.txt']
-	k.copy_input_data = ['$STAGE_1/temp.txt > file1.txt']
-    	k.arguments = ["--file1=file1.txt","--file2=file2.txt"]
-    	k.download_output_data = ['./file1.txt > output_file.txt']
+    k = Kernel(name="misc.cat")
+    k.upload_input_data = ['./input_file_2.txt > file2.txt']
+    k.copy_input_data = ['$STAGE_1/temp.txt > file1.txt']
+        k.arguments = ["--file1=file1.txt","--file2=file2.txt"]
+        k.download_output_data = ['./file1.txt > output_file.txt']
 
 Also need to specify the number of stages during pattern object creation:
 
 .. code -block:: python
 
-	app = MyApp(stages=2,instances=16)
+    app = MyApp(stages=2,instances=16)
 
 A few points to note:
 
@@ -36,9 +36,9 @@ All the data references can be found :ref:`here <data_refs>`.
 
 To run the script, simply execute the following from command line:
 
-::
+.. code-block:: bash
 
-     RADICAL_ENTK_VERBOSE=REPORT python add_stages.py
+    RADICAL_ENTK_VERBOSE=REPORT python add_stages.py
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 

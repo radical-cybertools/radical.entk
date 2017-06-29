@@ -8,7 +8,7 @@ So far in our example, we had only 1 instance of the stage, i.e. a Bag of Tasks 
 
 .. code-block:: python
 
-	app = MyApp(stages=1,instances=16)
+    app = MyApp(stages=1,instances=16)
 
 You can download the entire script for this section :download:`here <scripts/add_instances.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
@@ -23,14 +23,14 @@ Let's change the name of the 'staged out' file by appending to its name the inst
 
 .. code-block:: python
 
-	k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
+    k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
 
 
 To run the script, simply execute the following from command line:
 
-::
+.. code-block:: bash
 
-	RADICAL_ENTK_VERBOSE=REPORT python add_instances.py
+    RADICAL_ENTK_VERBOSE=REPORT python add_instances.py
 
 
 You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.

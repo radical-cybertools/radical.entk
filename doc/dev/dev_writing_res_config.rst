@@ -10,7 +10,7 @@ If you want to use RADICAL-Pilot with a resource that is not in any of the provi
 
 A configuration file has to be valid JSON. The structure is as follows:
 
-.. code-block:: json
+.. code-block:: bash
 
     # filename: lrz.json
     {

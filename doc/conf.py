@@ -117,7 +117,7 @@ List of Pre-Configured Resources
             resources_rst.write("{0}\n\n".format("*"*len(host_key)))
             resources_rst.write("{0}\n\n".format(resource_config["description"]))
             resources_rst.write("* **Resource label**      : ``{0}``\n".format(resource_key[9:]))
-            resources_rst.write("* **Raw config**          : :download:`{0} <../../src/radical/pilot/configs/{0}>`\n".format(config))
+            resources_rst.write("* **Raw config**          : :download:`{0} <resource_list/{0}>`\n".format(config))
             if resource_config["notes"] != "None":
                 resources_rst.write("* **Note**            : {0}\n".format(resource_config["notes"]))
             resources_rst.write("* **Default values** for ComputePilotDescription attributes:\n\n")
@@ -167,8 +167,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'radical.ensemblemd'
-copyright = u'2015, The Radical Group at Rutgers University'
+project = u'radical.entk'
+copyright = u'2017, The Radical Group at Rutgers University'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -324,7 +324,7 @@ html_show_copyright = True
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'radical.ensemblemd.doc'
+htmlhelp_basename = 'radical.entk.doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -346,7 +346,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'radicalensemblemd.tex', u'radical.ensemblemd Documentation',
+  ('index', 'radicalentk.tex', u'radical.entk Documentation',
    u'The Radical Group at Rutgers University', 'manual'),
 ]
 
@@ -376,7 +376,7 @@ latex_show_pagerefs = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'radicalensemblemd', u'radical.ensemblemd Documentation',
+    ('index', 'radicalentk', u'radical.entk Documentation',
      [u'The Radical Group at Rutgers University'], 1)
 ]
 
@@ -390,8 +390,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'radicalensemblemd', u'radical.ensemblemd Documentation',
-   u'The Radical Group at Rutgers University', 'radicalensemblemd', 'One line description of project.',
+  ('index', 'radicalentk', u'radical.entk Documentation',
+   u'The Radical Group at Rutgers University', 'radicalentk', 'One line description of project.',
    'Miscellaneous'),
 ]
 

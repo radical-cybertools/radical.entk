@@ -14,7 +14,7 @@ You may find the script containing the resource handle as follows:
 
 .. code-block:: python
 
-	cluster = SingleClusterEnvironment(
+    cluster = SingleClusterEnvironment(
                         resource="localhost",
                         cores=1,
                         walltime=15,
@@ -27,7 +27,7 @@ To change the target to a machine with a label ``XYZ.new_machine``, the resource
 
 .. code-block:: python
 
-	cluster = SingleClusterEnvironment(
+    cluster = SingleClusterEnvironment(
                         resource="XYZ.new_machine",
                         cores=<specify the no. of cores to be acquired>,
                         walltime=<specify the duration of the acquisition>,

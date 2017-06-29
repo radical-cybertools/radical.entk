@@ -50,7 +50,7 @@ kernels to access these data.
 
 To run the example script, simply execute the following from the command line:
 
-.. code-bloack:: bash
+.. code-block:: bash
 
     RADICAL_ENTK_VERBOSE=REPORT python shared_data.py
 

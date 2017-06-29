@@ -10,16 +10,11 @@ Who uses Ensemble Toolkit?
 
 Ensemble Toolkit is being used in multiple molecular dynamic application
 projects, like for example the `ExTASY Project <http://extasy-project.org/>`_.
-We also maintain a set of use-cases that showcase different application
-scenarios:
 
-  * :ref:`usecase_haussdorff`
-  * :ref:`usecase_cdi_replica_exchange`
-  * :ref:`usecase_extasy_coco_amber`
-  * :ref:`usecase_extasy_gromacs_lsdmap`
-
-While the concepts in Ensemble Toolkit are fairly generic to ensemble-based simulations, the framework 
-currently targets  molecular dynamics simulations: current patterns and kernel abstractions directly address the requirements for this community.
+While the concepts in Ensemble Toolkit are fairly generic to ensemble-based 
+simulations, the framework currently targets  molecular dynamics simulations:
+current patterns and kernel abstractions directly address the requirements for
+this community.
 
 
 How about data ?
