@@ -144,37 +144,39 @@ class PoE(ExecutionPattern):
             raise
 
 
-    def get_output(self, stage, task=None, monitor=None, iteration=None):
+    def get_output(self, stage, task=None, iteration=None):
         
         try:
+
+            if task is None:
+
+                self._logger.error("argument 'task' not specified")
+                raise ValueError(expected_type=int, actual_type=type(task))
+
             if iteration == None:
                 iteration = self._cur_iteration
-
-            if monitor!=None:
-                return self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["monitor_1"]["output"]
 
             return self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(task)]["output"]
 
         except Exception, ex:
 
-            if monitor==None:
-                self._logger.error("Could not get output of stage: %s, instance: %s"%(stage, task))
-            else:
-                self._logger.error("Could not get output of stage: %s, monitor"%(stage))
+            self._logger.error("Could not get output of stage: %s"%(stage))
 
             raise
 
 
-    def get_file(self, stage, filename, task=None, monitor=None, new_name=None, iteration=None):
+    def get_file(self, stage, filename, task=None, new_name=None, iteration=None):
 
         try:
             if iteration == None:
                 iteration = self._cur_iteration
 
-            if monitor == None:
-                directory = self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(task)]["path"]
-            else:
-                directory = self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["monitor_1"]["path"]
+            if task is None:
+
+                self._logger.error("argument 'task' not specified")
+                raise ValueError(expected_type=int, actual_type=type(task))
+
+            directory = self._pattern_dict["iter_%s"%(iteration)]["stage_%s"%(stage)]["instance_%s"%(task)]["path"]
 
             file_url = directory + '/' + filename
 
@@ -188,13 +190,7 @@ class PoE(ExecutionPattern):
 
         except Exception, ex:
 
-            if monitor==None:
-                self._logger.error("Could not get file of stage: %s, instance: %s, error: %s" \
-                                                                            %(stage, task, ex))
-            else:
-                self._logger.error("Could not get file of stage: %s, monitor, error: %s"\
-                                                                            %(stage, ex))
-
+            self._logger.error("Could not get file of stage: %s, instance: %s, error: %s"%(stage, task, ex))
             raise
 
     def get_path(self, iteration, stage, task):

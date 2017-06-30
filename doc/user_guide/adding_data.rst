@@ -12,7 +12,7 @@ input file ("input_file.txt") from localhost, add `Hello World` to this file and
 transfer it back to the localhost.
 
 You can download the complete code for this section :download:`here 
-<scripts/add_data.py>` or find it in 
+<../../examples/user_guide/add_data.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 To do this, we just have to add the ``upload_input_data`` and 
@@ -59,4 +59,4 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: scripts/add_data.py
+.. literalinclude:: ../../examples/user_guide/add_data.py

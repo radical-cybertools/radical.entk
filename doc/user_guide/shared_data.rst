@@ -15,7 +15,7 @@ be referenced using the "$SHARED" data reference. The other data reference
 mechanisms can be found `here <data_refs>`.
 
 You can download the complete code for this section :download:`here 
-<scripts/shared_data.py>` or find it in your virtualenv under 
+<../../examples/user_guide/shared_data.py>` or find it in your virtualenv under 
 ``share/radical.ensemblemd/user_guide/scripts``.
 
 The following is an example of how one can stage-in the shared data along with
@@ -59,4 +59,4 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: scripts/shared_data.py
+.. literalinclude:: ../../examples/user_guide/shared_data.py

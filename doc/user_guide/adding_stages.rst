@@ -4,12 +4,19 @@
 Adding Stages
 ****************
 
-We have looked at creating a simple bag of tasks application, adding data movement, creating BoT with varying bag size. What's next? Let's add more stages to the pattern!
+We have looked at creating a simple bag of tasks application, adding data 
+movement, creating BoT with varying bag size. What's next? Let's add more 
+stages to the pattern!
 
-You can download the entire script for this section :download:`here <scripts/add_stages.py>` or find it in 
+You can download the entire script for this section 
+:download:`here <../../examples/user_guide/add_stages.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
-In this section, we will modify the example from the previous section by adding another stage, which concatenates two files and transfers the output back to the localhost. One of the files is staged from localhost and the other file is the file from stage_1.The kernel for concatenation of files is already a part of Ensemble MD. This is how our stage_2 looks:
+In this section, we will modify the example from the previous section by adding 
+another stage, which concatenates two files and transfers the output back to the
+localhost. One of the files is staged from localhost and the other file is the
+file from stage_1.The kernel for concatenation of files is already a part of 
+EnTK. This is how our stage_2 looks:
 
 .. code-block:: python
 
@@ -28,7 +35,10 @@ Also need to specify the number of stages during pattern object creation:
 A few points to note:
 
 * We upload a secondary file in stage_2 called input_file_2.txt.
-* As part of the pattern, the data at each stage can be referred by ``$STAGE_*``. So in stage_2 we refer to the output of stage_1 by ``$STAGE_1``. We create a copy of the ``temp.txt`` created in stage_1 and rename it to file1.txt
+* As part of the pattern, the data at each stage can be referred by ``$STAGE_*``.
+So in stage_2 we refer to the output of stage_1 by ``$STAGE_1``. We create a 
+copy of the ``temp.txt`` created in stage_1 and rename it to file1.txt
+
 * We concatenate file2.txt to file1.txt and download file1.txt
 
 All the data references can be found :ref:`here <data_refs>`.
@@ -44,7 +54,7 @@ You can generate a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: scripts/add_stages.py
+.. literalinclude:: ../../examples/user_guide/add_stages.py
 
 
 **And that's pretty much all there is to Ensemble Toolkit.** The rest is

@@ -18,7 +18,7 @@ of Tasks.
 
 
 You can download the complete code discussed in this section :download:`here 
-<scripts/get_started.py>` or find it in 
+<../../examples/user_guide/get_started.py>` or find it in 
 your virtualenv under ``share/radical.ensemblemd/user_guide/scripts``.
 
 
@@ -28,9 +28,10 @@ Importing components from the Ensemble Toolkit Module
 To create any application using Ensemble Toolkit, you need to import three 
 modules: Kernel, Pattern and Resource Handle. The Pattern module depends on the
 application requirements. We have already discussed these components in the 
-earlier sections. The ``EnsemblemdError`` module is imported for proper reporting of any errors.
+earlier sections. The ``EnsemblemdError`` module is imported for proper 
+reporting of any errors.
 
-.. literalinclude:: scripts/get_started.py
+.. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
     :lines: 5-8     
 
@@ -48,7 +49,7 @@ corresponds to an allocation number on a target system (can be unspecified for
 localhost). The 'database_url' parameter specifies the mongodb instance to be 
 used.
 
-.. literalinclude:: scripts/get_started.py
+.. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
     :lines: 40-50
 
@@ -67,7 +68,7 @@ the specific pattern the application requires. In this case, we import the
 BagofTasks class. We simply create our own class ``MyApp`` that is of the 
 BagofTasks pattern type.
 
-.. literalinclude:: scripts/get_started.py
+.. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
     :lines: 10-13
 
@@ -103,7 +104,8 @@ A complete look at our  pattern class,
 Using the Kernel Plugin 
 ===========================
 
-We have now designed the application class completely. We can define what the first stage of the application 
+We have now designed the application class completely. We can define what the 
+first stage of the application 
 needs to execute. We use the kernels to define ``what to do`` in the first stage.
 
 .. code-block:: python
@@ -112,17 +114,22 @@ needs to execute. We use the kernels to define ``what to do`` in the first stage
     k.arguments = ["--file=output.txt"]
 
 
-We use the kernel ``misc.hello`` already predefined in EnsembleMD. This kernel creates a file (if it does not exist already) with the name as defined in the argument and prints a **Hello World** within it. 
+We use the kernel ``misc.hello`` already predefined in EnsembleMD. This kernel 
+creates a file (if it does not exist already) with the name as defined in the 
+argument and prints a **Hello World** within it. 
 
 
-By now we have seen how to create an resource handle, define a pattern and add a kernel to the pattern. We specify the pattern to be executed on the resources by:
+By now we have seen how to create an resource handle, define a pattern and add a
+kernel to the pattern. We specify the pattern to be executed on the resources 
+by:
 
 .. code-block:: python
         
     cluster.run(myapp)
     cluster.deallocate()
 
-In the code snippet above, we also deallocate the resources once the application has finished executing.
+In the code snippet above, we also deallocate the resources once the application
+has finished executing.
 
 
 To run the script, simply execute the following from the command line:
@@ -132,9 +139,10 @@ To run the script, simply execute the following from the command line:
     RADICAL_ENTK_VERBOSE=REPORT python get_started.py
 
 
-And that's it! That's all the steps of the pattern. Let's take a look at the complete code in the example. You can generate
+And that's it! That's all the steps of the pattern. Let's take a look at the 
+complete code in the example. You can generate
 a more verbose output by setting ``RADICAL_ENTK_VERBOSE=INFO``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: scripts/get_started.py
+.. literalinclude:: ../../examples/user_guide/get_started.py

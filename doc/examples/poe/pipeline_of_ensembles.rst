@@ -4,16 +4,16 @@
 Pipeline of Ensembles (PoE) Example
 ***********************************
 
-This example shows how to use the Ensemble Toolkit :class:`.BagofTasks` pattern
-to execute a single stage "Pipeline of Ensembles". The "instances" of the  :class:`.BagofTasks`
-corresponds to the number of ensemble members.
+This example shows how to use the Ensemble Toolkit :class:`.PoE` pattern
+to execute a single stage "Pipeline of Ensembles". The "instances" of the 
+:class:`.PoE` corresponds to the number of ensemble members.
 
 .. figure:: ../../images/pipeline_of_ensembles.png
-     :width: 300pt
-     :align: center
-     :alt: Pipeline of Ensembles
+    :width: 300pt
+    :align: center
+    :alt: Pipeline of Ensembles
 
-     Fig.: `A Pipeline of Ensembles pattern with M stages and N ensemble members`
+    Fig.: `A Pipeline of Ensembles pattern with M stages and N ensemble members`
 
 Run Locally
 ===========
@@ -24,11 +24,15 @@ Run Locally
         The format is ``mongodb://hostname:port``. Read more about it
         MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_pipeline_of_ensembles>` or find it in 
-your virtualenv under ``share/radical.ensemblemd/examples/pipeline_of_ensembles.py``.
+**Step 1:** View and download the example sources 
+:ref:`below <example_source_pipeline_of_ensembles>` or find it in 
+your virtualenv under 
+``share/radical.ensemblemd/examples/pipeline_of_ensembles.py``.
 
 
-**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.::
+**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.
+
+.. code-block:: bash
 
     RADICAL_ENTK_VERBOSE=REPORT python pipeline_of_ensembles.py
 

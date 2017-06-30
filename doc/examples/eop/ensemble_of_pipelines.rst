@@ -4,7 +4,7 @@
 Ensemble of Pipelines (EoP) Example
 ***********************************
 
-This example shows how to use the Ensemble Toolkit ``Ensemble of Pipelines`` pattern
+This example shows how to use the Ensemble Toolkit :class:`.EoP` pattern
 to execute 16 concurrent pipelines of sequential tasks. In the first step of
 each pipeline ``stage_1``, a 10 MB input file is generated and filled with
 ASCII charaters. In the second step ``stage_2``, a character frequency analysis
@@ -22,15 +22,19 @@ the SHA1 checksums are copied back to the machine on which this script runs.
 Run Locally
 ===========
 
-.. warning:: In order to run this example, you need access to a MongoDB server and
-    set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
+.. warning:: In order to run this example, you need access to a MongoDB server 
+    and set the ``RADICAL_PILOT_DBURL`` in your environment accordingly.
     The format is ``mongodb://hostname:port``. Read more about it
     MongoDB in chapter :ref:`envpreparation`.
 
-**Step 1:** View and download the example sources :ref:`below <example_source_ensemble_of_pipelines>`  or find it in 
-your virtualenv under ``share/radical.ensemblemd/examples/ensemble_of_pipelines.py``.
+**Step 1:** View and download the example sources 
+:ref:`below <example_source_ensemble_of_pipelines>` or find it in 
+your virtualenv under 
+``share/radical.ensemblemd/examples/ensemble_of_pipelines.py``.
 
-**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``::
+**Step 2:** Run this example with ``RADICAL_ENTK_VERBOSE`` set to ``REPORT``.
+
+.. code-block:: bash
 
     RADICAL_ENTK_VERBOSE=REPORT python ensemble_of_pipelines.py
 

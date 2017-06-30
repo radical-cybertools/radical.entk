@@ -16,6 +16,7 @@ complete, more meaningful application.
     user_guide/adding_data
     user_guide/adding_instances
     user_guide/adding_stages
+    user_guide/shared_data
     user_guide/character_count
     user_guide/changing_remote
-    user_guide/shared_data
+    

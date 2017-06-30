@@ -2,7 +2,7 @@
 
 __author__    = "Vivek Balasubramanian"
 __email__     = "vivek.balasubramanian@rutgers.edu"
-__copyright__ = "Copyright 2014, The RADICAL Project at Rutgers"
+__copyright__ = "Copyright 2017, The RADICAL Project at Rutgers"
 __license__   = "MIT"
 
 
@@ -162,7 +162,7 @@ setup_args = {
     'author_email'     : 'vivek.balasubramanian@rutgers.edu',
     'maintainer'       : "Vivek Balasubramanian",
     'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
-    'url'              : 'https://github.com/radical-cybertools/radical.ensemblemd',
+    'url'              : 'https://github.com/radical-cybertools/radical.entk',
     'license'          : 'MIT',
     'keywords'         : "ensemble execution",
     'classifiers'      :  [
@@ -200,13 +200,20 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
 
-    'install_requires'  :  ['radical.utils', 'setuptools>=1'],
+    'install_requires'  :  ['radical.utils', 'setuptools>=1', 'radical.pilot'],
     #'test_suite'        : 'radical.ensemblemd.tests',
 
     'zip_safe'          : False,
+
     # This copies the contents of the examples/ dir under
     # sys.prefix/share/radical.pilot.
     # It needs the MANIFEST.in entries to work.
+
+    'data_files': [
+        makeDataFiles('share/radical.entk/examples/user_guide', 'examples/user_guide'),
+        makeDataFiles('share/radical.entk/examples/simple', 'examples/simple'),
+        makeDataFiles('share/radical.entk/examples/advanced', 'examples/advanced')
+    ],
 }
 
 setup (**setup_args)
