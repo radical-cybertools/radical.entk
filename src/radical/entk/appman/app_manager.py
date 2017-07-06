@@ -4,6 +4,7 @@ __license__   = "MIT"
 
 from radical.entk.exceptions import *
 from radical.entk.kernel_plugins.kernel import Kernel
+from radical.entk.kernel_plugins.kernel_base import KernelBase
 from radical.entk.execution_pattern import ExecutionPattern
 from radical.entk.unit_patterns.poe.poe import PoE
 from radical.entk.unit_patterns.eop.eop import EoP
@@ -88,25 +89,92 @@ class AppManager():
         self.pattern_to_json(pattern)
 
 
+    def register_kernels(self, kernel_class):
+
+        # AM: For code which is supposed to handle lists and single items,
+        # please use the following:
+        #
+        # def method(things):
+        #   if not (isinstance(things, list):
+        #     things = [things]
+        #   for thing in things:
+        #     print thing
+        #
+        # that way you avoid code duplication for the two cases, and it is
+        # easier to (a) maintain the code, and (b) see what the method is
+        # supposed to do.
+
+        # print type(kernel_class)
+        try:
+            # AM: using isinstance again
+          # if type(kernel_class) == list:
+
+            self._prof.prof('registering kernels', uid=self._uid)
+
+            if isinstance(kernel_class, list):
+                for item in kernel_class:
+                    if not hasattr(item, '__base__'):
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item))                   
+                    elif item.__base__ != Kernel:
+                        raise TypeError(expected_type="KernelBase", actual_type = type(item()))     
+
+                    if item in self._loaded_kernels:
+                        raise ExistsError(item=item().name, parent = 'loaded_kernels')
+
+                    self._loaded_kernels.append(item)
+                    self._logger.info("Kernel {0} registered with application manager" \
+                                                                            %(item().name))
+
+            elif not hasattr(kernel_class,'__base__'):
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class))
+
+            elif kernel_class.__base__ != KernelBase:
+                raise TypeError(expected_type="KernelBase", actual_type = type(kernel_class()))
+
+            else:
+                self._loaded_kernels.append(kernel_class)
+                self._logger.info("Kernel %s registered with application manager" \
+                                                                        %(kernel_class().name))
+
+            
+            self._prof.prof('kernels registered', uid=self._uid)            
+
+            
+        
+        except Exception, ex:
+
+                self._logger.exception("Kernel registration failed: %s"%(ex))
+                raise
+
+
     # --------------------------------------------------------------------------
     #
     def validate_kernel(self, user_kernel, resource):
 
         try:
 
-            user_kernel._validate_config(resource)
+            found_kernel_base = None
+            for kernel in self._loaded_kernels:
+                if kernel().name == user_kernel.name:
+                    found_kernel_base = kernel()
 
-            if not user_kernel.pre_exec:
-                self._logger.warning('No pre_exec specified for Kernel %s'%user_kernel.name)
+            if found_kernel:
+                user_kernel._validate_config(resource, found_kernel_base)
 
-            if not user_kernel.executable:
-                raise MissingValueError(msg="Kernel executable not specified for kernel %s"
+                if not user_kernel.pre_exec:
+                    self._logger.warning('No pre_exec specified for Kernel %s'%user_kernel.name)
+
+                if not user_kernel.executable:
+                    raise MissingValueError("Kernel executable not specified for kernel %s"
                                                                                 %user_kernel.name)
 
-            if not user_kernel.arguments:
-                self._logger.warning('No arguments specified for Kernel %s'%user_kernel.name)
+                if not user_kernel.arguments:
+                    self._logger.warning('No arguments specified for Kernel %s'%user_kernel.name)
 
-            return user_kernel
+                return user_kernel
+
+            else:
+                self._logger.error('Kernel %s not found'%user_kernel.name)
 
         except Exception, ex:
 

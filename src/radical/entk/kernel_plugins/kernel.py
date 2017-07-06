@@ -283,23 +283,31 @@ class Kernel(object):
         self._machine_config = config
     # -------------------------------------------------------------
 
-    def _validate_config(self, resource_name):
+    def _validate_config(self, resource_name, kernel_base):
 
         '''
         Config needs to be a dictionary with values for 'pre_exec'
         and 'executable'
         '''
 
+        self._machine_config = kernel_base.kernel_info['machine_configs']
+
         if self._machine_config:
 
-            if "pre_exec" not in self._machine_config[resource]:
-                raise MissingValueError(msg="no pre_exec in config for %s"%mach_name)
+            if resource_name in self._machine_config:
 
-            else:
-                self._pre_exec = self._machine_config[resource]['pre_exec']
+                if "pre_exec" not in self._machine_config[resource_name]:
+                    raise MissingValueError("no pre_exec in config for %s"%mach_name)
 
-            if "executable" not in self._machine_config[resource]:
-                raise MissingValueError(msg="no executable in config for %s"%mach_name)
+                if "executable" not in self._machine_config[resource]:
+                    raise MissingValueError("no executable in config for %s"%mach_name)
 
-            else:
-                self._executable = self._machine_config[resource]['executable']
+
+        kernel_base.arguments = self._arguments
+        kernel_base.validate_arguments()
+        kernel_base._bind_to_resource(resource_name)
+
+        self._pre_exec = kernel_base.pre_exec
+        self._executable = kernel_base.executable
+
+        
