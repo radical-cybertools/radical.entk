@@ -90,11 +90,11 @@ class AppManager():
 
     # --------------------------------------------------------------------------
     #
-    def validate_kernel(self, user_kernel):
+    def validate_kernel(self, user_kernel, resource):
 
         try:
 
-            user_kernel.validate_config()
+            user_kernel._validate_config(resource)
 
             if not user_kernel.pre_exec:
                 self._logger.warning('No pre_exec specified for Kernel %s'%user_kernel.name)
@@ -316,7 +316,7 @@ class AppManager():
                     for inst in range(1, instances+1):
 
                         stage_kernel = stage(inst)                                               
-                        validated_kernels.append(self.validate_kernel(stage_kernel))
+                        validated_kernels.append(self.validate_kernel(stage_kernel, resource))
 
                     # Pass resource-unbound kernels to execution plugin
                     #print len(list_kernels_stage)
@@ -468,7 +468,7 @@ class AppManager():
             for inst in range(1, instances+1):
 
                 stage_kernel = stage(inst)
-                validated_kernels.append(self.validate_kernel(stage_kernel))
+                validated_kernels.append(self.validate_kernel(stage_kernel, resource))
 
 
             # Pass resource-unbound kernels to execution plugin
@@ -685,7 +685,7 @@ class AppManager():
                     stage = self._pattern.get_stage(stage=next_stage)
                     stage_kernel = stage(cur_task)
                     
-                    validated_kernel = self.validate_kernel(stage_kernel)                                                                       
+                    validated_kernel = self.validate_kernel(stage_kernel, resource)                                                                       
 
 
                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
@@ -791,7 +791,7 @@ class AppManager():
                     stage =  self._pattern.get_stage(stage=self._pattern.next_stage[cur_task-1])
                     stage_kernel = stage(cur_task)
 
-                    validated_kernel = self.validate_kernel(stage_kernel)
+                    validated_kernel = self.validate_kernel(stage_kernel, plugin.get_resources())
 
                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)
 

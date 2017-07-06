@@ -1,66 +1,177 @@
+#!/usr/bin/env python
+
+"""Defines and implements the abstract kernel base class.
+"""
+
 __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-import radical.utils as ru
+from copy import deepcopy
+
 from radical.entk.exceptions import *
+import radical.utils as ru
+import gc
 
-class Kernel(object):
+# ------------------------------------------------------------------------------
+# Kernel format
+"""
+_KERNEL_INFO = {
+    "name":         "kernel name",
+    "description":  "Description about kernel",
+    "arguments":   {
+                "--arg1=":
+                {
+                    "mandatory": False,
+                    "description": "argument description"
+                }
+            },
+    "machine_configs": 
+            {
+                "resource_name": {
+                    "pre_exec"      : [],
+                    "executable"    : "",
+                    "uses_mpi"      : False
+                },
+            }
+    }
+"""
+#  -------------------------------------------------------------
 
-    def __init__(self, name=None):
+#  -------------------------------------------------------------
+# plugin base class
+#
+class KernelBase(object):
+    
+    def __init__ (self, kernel_info) :
 
-        self._name = name
+        self._kernel_info     = kernel_info
+        self._kernel_name     = kernel_info['name']
+
+        if 'description' in kernel_info:
+            self._kernel_description  = kernel_info['description']
+
+        self._raw_args          = kernel_info["arguments"]
+        self._args              = []
 
         # Parameters required for any Kernel irrespective of RP
-        self._pre_exec                  = list()
-        self._post_exec                 = list()
-        self._executable                = str()
-        self._arguments                 = list()
-        self._mpi                  = False
-        self._cores                     = 1 # If unspecified, number of cores is set to 1
+        self._pre_exec          = list()
+        self._post_exec         = list()
+        self._executable        = str()
+        self._arguments         = list()
+        self._uses_mpi          = False
+        self._cores             = 1 # If unspecified, number of cores is set to 1
+
+        self._timeout           = None
+        self._cancel_tasks      = None
 
         self._upload_input_data          = list()
         self._link_input_data            = list()
+        self._download_input_data        = list()
         self._download_output_data       = list()
         self._copy_input_data            = list()
         self._copy_output_data           = list()
 
-        self._machine_config            = dict()
-
-        self._logger = ru.get_logger("radical.entk.Kernel")
-
-    #  ------------------------------------------------------------- 
+        self._logger = ru.get_logger("radical.entk.kernel_base.%s"%(self._kernel_name))
+        self._logger.debug("Kernel instantiated")
+    #  -------------------------------------------------------------
     
     def as_dict(self):
         """Returns a dictionary representation of the kernel"""
     
-        kernel_dict =   {     
-                            "pre_exec":     self._pre_exec,
-                            "executable":   self._executable,
-                            "arguments":    self._arguments,
-                            "mpi":          self._mpi,
-                            "cores":        self._cores
-                        }
+        kernel_dict = {    "name":     self._kernel_name,
+                "pre_exec":     self._pre_exec,
+                 "executable":     self._executable,
+                 "arguments":     self._arguments,
+                 "uses_mpi":     self._uses_mpi,
+                 "cores":     self._cores
+                 }
 
         return kernel_dict
-
-
-    # -------------------------------------------------------------
+    # ------------------------------------------------------------
+    
     @property
     def name(self):
-        return self._name
+        return self._kernel_name
     
+    def get_name(self):
+        return self._kernel_name
     # -------------------------------------------------------------
-    # Methods to get via API
 
+    @property
+    def kernel_info(self):
+        return self._kernel_info
     
+    def get_kernel_info (self) :
+        return self._kernel_info
     # -------------------------------------------------------------
+    
+    def get_arg(self, arg_name):
+        """Returns the value of the argument given by 'arg_name'.
+        """
+        return self._args[arg_name]["_value"]
+    # -------------------------------------------------------------
+    
+    def get_raw_args(self):
+        """Returns all arguments as they were passed to the kernel.
+        """
+        return self._raw_args
+    # -------------------------------------------------------------
+
+    def validate_arguments(self):
+
+        arg_details = dict()
+
+        try:
+
+            for arg_name, arg_info in self._raw_args.iteritems():
+                self._raw_args[arg_name]["_is_set"] = False
+                self._raw_args[arg_name]["_value"] = None
+
+            for arg in self._arguments:
+                arg_found = False
+                for arg_name, arg_info in self._raw_args.iteritems():
+                    if arg.startswith(arg_name):
+                        arg_found = True
+                        self._raw_args[arg_name]["_is_set"] = True
+                        self._raw_args[arg_name]["_value"] = arg.replace(arg_name,'')
+
+                if arg_found == False:
+                    raise ArgumentError(
+                                        kernel_name=self._kernel_name,
+                                        message="Unknown / malformed argument '%s'"%(arg),
+                                        valid_arguments_set=self._raw_args)
+
+            for arg_name, arg_info in self._raw_args.iteritems():
+                if ((arg_info["mandatory"] == True) and (arg_info["_is_set"] == False)):
+                    raise ArgumentError(
+                                        kernel_name=self._kernel_name,
+                                        message="Mandatory argument '%s' missing"%(arg_name),
+                                        valid_arguments_set=self._raw_args)
+
+            self._args = self._raw_args
+            self._logger.debug("Arguments validated for kernel %s"%(self._kernel_name))
+
+        except Exception, ex:
+            self._logger.error('Kernel argument validation failed: %s'%(ex))
+            raise
+
+    # -------------------------------------------------------------
+
+    def _bind_to_resource(self, resource_key, pattern_name=None):
+        """Binds the kernel to a specific resource.
+        """
+        raise NotImplementedError(
+          method_name="_get_kernel_description",
+          class_name=type(self))
+    # -------------------------------------------------------------
+
     # -------------------------------------------------------------
     # Methods to set kernel parameters via API
 
     # executable
     # pre_exec
-    # post_exec
+    # uses_mpi
     # arguments
     # cores
     # upload_input_data
@@ -69,8 +180,6 @@ class Kernel(object):
     # download_output_data
     # copy_output_data
     
-    #timeout
-
     # -------------------------------------------------------------
     
     @property
@@ -102,6 +211,7 @@ class Kernel(object):
         self._pre_exec = pre_exec
     # -------------------------------------------------------------
 
+
     @property
     def post_exec(self):
         return self._post_exec
@@ -117,20 +227,21 @@ class Kernel(object):
         self._post_exec = post_exec
     # -------------------------------------------------------------
 
+
     @property
-    def mpi(self):
-        return self._mpi
+    def uses_mpi(self):
+        return self._uses_mpi
 
-    @mpi.setter
-    def mpi(self, mpi):
+    @uses_mpi.setter
+    def uses_mpi(self, uses_mpi):
 
-        if type(mpi) != bool:
+        if type(uses_mpi) != bool:
             raise TypeError(
                 expected_type=bool,
-                actual_type=type(mpi))
+                actual_type=type(uses_mpi))
 
         # Call the validate_args() method of the plug-in.
-        self._mpi = mpi
+        self._uses_mpi = uses_mpi
     # -------------------------------------------------------------
 
     @property
@@ -260,46 +371,17 @@ class Kernel(object):
 
         self._copy_output_data = data_directives
     # -------------------------------------------------------------
-    def _bind_to_resource(self, resource):
+    
 
-        try:
 
-            if (not self._pre_exec)and(self._machine_config):
-                self._pre_exec = self._machine_config[resource]["pre_exec"]
-            if (not self._executable)and(self._machine_config):
-                self._executable = self._machine_config[resource]["executable"]
-            
-        except Exception, ex:
-            self._logger.error('Kernel bind to resource failed, error: %s'%ex)
-            raise
     # -------------------------------------------------------------
 
     @property
-    def machine_config(self):
-        return self._machine_config
-    
-    @machine_config.setter
-    def machine_config(self, config):
-        self._machine_config = config
+    def timeout(self):
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, val):
+
+        self._timeout = val
     # -------------------------------------------------------------
-
-    def _validate_config(self, resource_name):
-
-        '''
-        Config needs to be a dictionary with values for 'pre_exec'
-        and 'executable'
-        '''
-
-        if self._machine_config:
-
-            if "pre_exec" not in self._machine_config[resource]:
-                raise MissingValueError(msg="no pre_exec in config for %s"%mach_name)
-
-            else:
-                self._pre_exec = self._machine_config[resource]['pre_exec']
-
-            if "executable" not in self._machine_config[resource]:
-                raise MissingValueError(msg="no executable in config for %s"%mach_name)
-
-            else:
-                self._executable = self._machine_config[resource]['executable']
