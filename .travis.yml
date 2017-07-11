@@ -14,3 +14,7 @@ env:
 
 # command to run tests
 script: python -m pytest -v
+
+# rabbitmq
+services:
+  - rabbitmq
