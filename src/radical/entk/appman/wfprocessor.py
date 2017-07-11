@@ -229,7 +229,7 @@ class WFprocessor(object):
 
             self._prof.prof('termination done', uid=self._uid)
 
-            raise UnknownError(text=ex)           
+            raise Error(text=ex)           
 
 
     def enqueue(self):
@@ -415,7 +415,7 @@ class WFprocessor(object):
             print traceback.format_exc()
             mq_connection.close()
 
-            raise UnknownError(text=ex) 
+            raise Error(text=ex) 
 
 
 
@@ -693,7 +693,7 @@ class WFprocessor(object):
 
             mq_connection.close()
 
-            raise UnknownError(text=ex)
+            raise Error(text=ex)
 
 
     def check_alive(self):

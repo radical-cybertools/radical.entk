@@ -1,2 +1,0 @@
-Consumer 5 start time: 1495231319.58 144443
-Consumer 5 end time: 1495231409.85 144443

@@ -1,2 +1,0 @@
-Consumer 0 start time: 1495229718.83 248804
-Consumer 0 end time: 1495229830.92 248804

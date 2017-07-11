@@ -41,6 +41,7 @@ class ValueError(EnTKError):
 
         super(ValueError, self).__init__ (msg)
 
+
 class ExistsError(EnTKError):
     """TypeError is thrown if a parameter of a wrong type is passed to a method or function."""
 
@@ -51,6 +52,7 @@ class ExistsError(EnTKError):
             )
         super(ExistsError, self).__init__ (msg)
 
+
 class MatchError(EnTKError):
     """MatchError is thrown if two parameters are not equal."""
 
@@ -60,6 +62,7 @@ class MatchError(EnTKError):
             str(par2)
             )
         super(MatchError, self).__init__ (msg)
+
 
 class ArgumentError(EnTKError):
     """A BadArgumentError is thrown if a wrong set of arguments were passed 

@@ -1,2 +1,0 @@
-Consumer 2 start time: 1495231319.57 143375
-Consumer 2 end time: 1495231409.85 143375

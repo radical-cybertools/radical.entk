@@ -1,2 +1,0 @@
-Consumer 15 start time: 1495235345.84 475
-Consumer 15 end time: 1495235346.1 475

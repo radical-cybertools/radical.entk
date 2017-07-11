@@ -1,2 +1,0 @@
-Consumer 4 start time: 1495232519.22 125802
-Consumer 4 end time: 1495232607.04 125802

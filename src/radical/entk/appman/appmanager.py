@@ -163,7 +163,7 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workflow to appmanager')
-            raise UnknownError(text=ex)
+            raise Error(text=ex)
 
         
 
@@ -204,7 +204,7 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workflow to appmanager')
-            raise UnknownError(text=ex)
+            raise Error(text=ex)
 
 
     def _setup_mqs(self):
@@ -268,7 +268,7 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.error('Error setting RabbitMQ system')
-            raise UnknownError(text=ex)
+            raise Error(text=ex)
 
 
     def _synchronizer(self):
@@ -515,7 +515,7 @@ class AppManager(object):
 
             self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread'%ex)
             print traceback.format_exc()
-            raise UnknownError(text=ex)
+            raise Error(text=ex)
 
 
     def run(self):
