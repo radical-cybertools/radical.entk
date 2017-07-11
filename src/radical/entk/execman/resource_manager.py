@@ -223,7 +223,6 @@ class ResourceManager(object):
 
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
-                    raise
 
             self._session = rp.Session(dburl=self._mlab_url)
 
@@ -256,7 +255,10 @@ class ResourceManager(object):
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
     
             # Wait for pilot to go active
-            self._pilot.wait(rp.ACTIVE)
+            self._pilot.wait([rp.ACTIVE, rp.FAILED])
+
+            if self._pilot.state == rp.FAILED:
+                raise Exception
 
             self._prof.prof('resource active', uid=self._uid) 
 

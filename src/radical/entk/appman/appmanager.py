@@ -67,11 +67,10 @@ class AppManager(object):
         self._num_sync_threads = sync_threads
         self._end_sync = Event()
 
-        # Threads and procs
+        # None objects for error handling
         self._wfp = None
+        self._task_manager = None
         self._sync_thread = None
-        self._helper = None
-
 
         # Resource Manager object
         self._resource_manager = None
