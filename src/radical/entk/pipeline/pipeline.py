@@ -132,7 +132,7 @@ class Pipeline(object):
         return self._cur_stage
     
     @property
-    def _state_history(self):
+    def state_history(self):
 
         """
         Returns a list of the states obtained in temporal order

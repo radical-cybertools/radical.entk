@@ -47,6 +47,7 @@ class TaskManager(object):
         self._hb_thread = threading.Thread(target=self.monitor, name='heartbeat')
         self._hb_alive = threading.Event()
         self._prof.prof('starting heartbeat thread', uid=self._uid)
+        self._prof.flush()
         self._hb_thread.start()
 
 
@@ -125,6 +126,7 @@ class TaskManager(object):
                 self._tmgr_terminate = Event()
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
+                self._prof.flush()
                 self._tmgr_process.start()                
 
                 return True

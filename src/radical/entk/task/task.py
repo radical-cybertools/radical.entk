@@ -260,7 +260,7 @@ class Task(object):
         return self._p_pipeline    
 
     @property
-    def _state_history(self):
+    def state_history(self):
 
         """
         Returns a list of the states obtained in temporal order
