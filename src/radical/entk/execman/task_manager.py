@@ -256,6 +256,8 @@ class TaskManager(object):
 
                 ch.basic_ack(delivery_tag = method.delivery_tag)
 
+            self._prof.prof('tmgr infrastructure setup done', uid=self._uid)
+
             while not self._tmgr_terminate.is_set():
 
                 try:
@@ -272,6 +274,10 @@ class TaskManager(object):
 
                             task.state = states.SUBMITTING
 
+                            self._prof.prof('transition', 
+                                            uid=task.uid, 
+                                            state=task.state)
+
                             self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))                            
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
@@ -279,6 +285,10 @@ class TaskManager(object):
                             self._umgr.submit_units(create_cud_from_task(task))
 
                             task.state = states.SUBMITTED
+
+                            self._prof.prof('transition', 
+                                            uid=task.uid, 
+                                            state=task.state)
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -305,15 +315,14 @@ class TaskManager(object):
 
                         self._logger.info('Sent heartbeat response')
                         mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-                
-
+            
 
                 except Exception, ex:
 
                     self._logger.error('Error getting messages from pending queue: %s'%ex)
                     raise Error(text=ex) 
 
+            self._prof.prof('terminating tmgr process', uid=self._uid)
 
         except KeyboardInterrupt:
 

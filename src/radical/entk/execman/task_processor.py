@@ -6,6 +6,7 @@ from radical.entk.exceptions import *
 import os
 
 logger = ru.get_logger('radical.entk.task_processor')
+prof = ru.Profiler(name = 'task_processor')
 
 def get_input_list_from_task(task):
 
@@ -125,7 +126,10 @@ def create_cud_from_task(task):
 
     try:
 
+        
         logger.debug('Creating CU from Task %s'%(task.uid))
+
+        prof.prof('cud from task - create', uid=task.uid)
         cud = rp.ComputeUnitDescription()
         cud.name        = '%s,%s,%s'%(task.uid, task._parent_stage, task._parent_pipeline)
         cud.pre_exec    = task.pre_exec
@@ -137,6 +141,8 @@ def create_cud_from_task(task):
 
         cud.input_staging   = get_input_list_from_task(task)
         cud.output_staging  = get_output_list_from_task(task)
+
+        prof.prof('cud from task - done', uid=task.uid)
 
         logger.debug('CU %s created from Task %s'%(cud.name, task.uid))
 
@@ -153,10 +159,14 @@ def create_task_from_cu(cu):
 
         logger.debug('Create Task from CU %s'%cu.name)
 
+        prof.prof('task from cu - create', uid=cu.name.split(',')[0].strip())
+
         task = Task()
         task.uid                = cu.name.split(',')[0].strip()
         task._parent_stage       = cu.name.split(',')[1].strip()
         task._parent_pipeline    = cu.name.split(',')[2].strip()
+
+        prof.prof('task from cu - done', uid=cu.name.split(',')[0].strip())
 
         logger.debug('Task %s created from CU %s'%(task.uid, cu.name))
 
