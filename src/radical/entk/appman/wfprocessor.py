@@ -22,6 +22,10 @@ class WFprocessor(object):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
         self._logger        = ru.get_logger('radical.entk.wfprocessor')
+        self._prof = ru.Profiler(name = self._uid)
+
+        self._prof.prof('create wfp obj', uid=self._uid)
+
         self._workflow      = workflow
 
         if not isinstance(pending_queue,list):
@@ -42,6 +46,8 @@ class WFprocessor(object):
         self._resubmit_failed = False       
 
         self._logger.info('Created WFProcessor object: %s'%self._uid)
+
+        self._prof.prof('wfp obj created', uid=self._uid)
     
 
     def start_processor(self):
@@ -50,6 +56,8 @@ class WFprocessor(object):
         if not self._wfp_process:
 
             try:
+
+                self._prof.prof('creating wfp process', uid=self._uid)
                 self._wfp_process = Process(target=self.wfp_process, name='wfprocessor')
 
                 self._enqueue_thread = None
@@ -59,6 +67,7 @@ class WFprocessor(object):
 
                 self._wfp_terminate = Event()
                 self._logger.info('Starting WFprocessor process')
+                self._prof.prof('starting wfp process', uid=self._uid)
                 self._wfp_process.start()                
 
                 return True
@@ -81,6 +90,7 @@ class WFprocessor(object):
         # Set termination flag
         try:
             #if not self._wfp_terminate.is_set():
+            
             self._wfp_terminate.set()
             self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
 
@@ -89,6 +99,8 @@ class WFprocessor(object):
                 self._logger.debug('WFprocessor process terminated')
             else:
                 self._logger.debug('WFprocessor process already terminated')
+
+            self._prof.prof('wfp process terminated', uid=self._uid)
 
         except Exception, ex:
             self._logger.error('Could not terminate wfprocessor process')
@@ -118,25 +130,32 @@ class WFprocessor(object):
 
         try:
 
-            # Process should run till terminate condtion is encountered
+            self._prof.prof('wfp process started', uid=self._uid)
             self._logger.info('WFprocessor started')
 
+            # Process should run till terminate condtion is encountered
             while (not self._wfp_terminate.is_set()):
 
                 try:
 
                     # Start dequeue thread
                     if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
+
+                        self._prof.prof('creating dequeue-thread', uid=self._uid)
                         self._dequeue_thread = threading.Thread(target=self.dequeue, name='dequeue-thread')
 
-                        self._logger.info('Starting dequeue thread')
+                        self._logger.info('Starting dequeue-thread')
+                        self._prof.prof('starting dequeue-thread', uid=self._uid)
                         self._dequeue_thread.start()
 
                     # Start enqueue thread
                     if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
+
+                        self._prof.prof('creating enqueue-thread', uid=self._uid)
                         self._enqueue_thread = threading.Thread(target=self.enqueue, name='enqueue-thread')
 
-                        self._logger.info('Starting enqueue thread')
+                        self._logger.info('Starting enqueue-thread')
+                        self._prof.prof('starting enqueue-thread', uid=self._uid)
                         self._enqueue_thread.start()
 
                 except KeyboardInterrupt:
@@ -146,48 +165,64 @@ class WFprocessor(object):
                     self._logger.error('WFProcessor interrupted')
                     raise
 
-            self._logger.info('Terminating enqueue thread')
+            self._prof.prof('start termination', uid=self._uid)
+
+            self._logger.info('Terminating enqueue-thread')
             self._enqueue_thread_terminate.set()
             self._enqueue_thread.join()
-            self._logger.info('Terminating dequeue thread')
+            self._logger.info('Terminating dequeue-thread')
             self._dequeue_thread_terminate.set()
-            self._dequeue_thread.join()              
+            self._dequeue_thread.join()
+
+            self._prof.prof('termination done', uid=self._uid)
+
+            self._prof.prof('terminating wfp process', uid=self._uid)
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel wfprocessor process gracefully...')
 
+            self._prof.prof('start termination', uid=self._uid)
+
             if not self._enqueue_thread_terminate.is_set():
-                self._logger.info('Terminating enqueue thread')
+                self._logger.info('Terminating enqueue-thread')
                 self._enqueue_thread_terminate.set()
                 self._enqueue_thread.join()
 
             if not self._dequeue_thread_terminate.is_set():
-                self._logger.info('Terminating dequeue thread')
+                self._logger.info('Terminating dequeue-thread')
                 self._dequeue_thread_terminate.set()
                 self._dequeue_thread.join()
 
             self._logger.info('WFprocessor process terminated')
 
-            raise
+            self._prof.prof('termination done', uid=self._uid)
+
+            self._prof.prof('terminating wfp process', uid=self._uid)
+
+            raise KeyboardInterrupt
 
 
         except Exception, ex:
             self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
             print traceback.format_exc()
 
+            self._prof.prof('start termination', uid=self._uid)
+
             if not self._enqueue_thread_terminate.is_set():
-                self._logger.info('Terminating enqueue thread')
+                self._logger.info('Terminating enqueue-thread')
                 self._enqueue_thread_terminate.set()
                 self._enqueue_thread.join()
 
             if not self._dequeue_thread_terminate.is_set():
-                self._logger.info('Terminating dequeue thread')
+                self._logger.info('Terminating dequeue-thread')
                 self._dequeue_thread_terminate.set()
                 self._dequeue_thread.join()
 
             self._logger.info('WFprocessor process terminated')
+
+            self._prof.prof('termination done', uid=self._uid)
 
             raise UnknownError(text=ex)           
 
@@ -196,7 +231,8 @@ class WFprocessor(object):
 
         try:
 
-            self._logger.info('Enqueue thread started')
+            self._prof.prof('enqueue-thread started', uid=self._uid)
+            self._logger.info('enqueue-thread started')
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
@@ -217,6 +253,11 @@ class WFprocessor(object):
 
                             elif pipe.state == states.INITIAL:
                                 pipe.state = states.SCHEDULING
+                                
+                                self._prof.prof('transition', 
+                                                uid=pipe.uid, 
+                                                state=pipe.state)
+
                                 self._logger.info('Pipe: %s, State: %s'%(pipe.uid, pipe.state))
     
                             if pipe.stages[pipe._current_stage-1].state in [states.INITIAL]:
@@ -225,6 +266,11 @@ class WFprocessor(object):
 
                                     # Starting scheduling of tasks of current stage
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULING
+                                    
+                                    self._prof.prof('transition', 
+                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
+                                                    state=pipe.stages[pipe._current_stage-1].state)
+
                                     self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe._current_stage-1].uid, 
                                         pipe.stages[pipe._current_stage-1].state))
 
@@ -246,9 +292,13 @@ class WFprocessor(object):
     
                                                 # Update specific task's state to scheduling
                                                 executable_task.state = states.SCHEDULING
+
+                                                self._prof.prof('transition', 
+                                                                uid=executable_task.uid, 
+                                                                state=executable_task.state)
+                                                
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state)
-                                                                )
+                                                                                        executable_task.state))
     
                                                 task_as_dict = json.dumps(executable_task.to_dict())
     
@@ -267,9 +317,13 @@ class WFprocessor(object):
                                                                         )
 
                                                 executable_task.state = states.SCHEDULED
+
+                                                self._prof.prof('transition', 
+                                                                uid=executable_task.uid, 
+                                                                state=executable_task.state)
+
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state)
-                                                                )
+                                                                                        executable_task.state))
 
                                                 tasks_submitted = True
                                                 self._logger.debug('Task %s published to queue'% executable_task.uid)                                                                                                
@@ -285,14 +339,23 @@ class WFprocessor(object):
                                                
                                                 # Revert task status
                                                 executable_task.state = states.INITIAL
+
+                                                self._prof.prof('transition', 
+                                                                uid=executable_task.uid, 
+                                                                state=executable_task.state)
+
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state)
-                                                                )
+                                                                                        executable_task.state))
 
                                                 raise
                                     
                                     # All tasks of current stage scheduled
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULED
+
+                                    self._prof.prof('transition', 
+                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
+                                                    state=pipe.stages[pipe._current_stage-1].state)
+
                                     self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
                                                                                 pipe.stages[pipe._current_stage-1].state))
 
@@ -314,6 +377,11 @@ class WFprocessor(object):
     
                                     # Revert stage state
                                     pipe.stages[pipe._current_stage-1].state = states.INITIAL
+
+                                    self._prof.prof('transition', 
+                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
+                                                    state=pipe.stages[pipe._current_stage-1].state)
+
                                     self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
                                                                                 pipe.stages[pipe._current_stage-1].state))
 
@@ -324,6 +392,8 @@ class WFprocessor(object):
 
             self._logger.info('Enqueue thread terminated')                                  
             mq_connection.close()
+
+            self._prof.prof('terminating enqueue-thread', uid=self._uid)
                                     
         except KeyboardInterrupt:
 
@@ -331,6 +401,8 @@ class WFprocessor(object):
                                 'trying to cancel enqueuer thread gracefully...')
 
             mq_connection.close()
+
+            raise KeyboardInterrupt
 
         except Exception, ex:
 
@@ -346,6 +418,7 @@ class WFprocessor(object):
 
         try:
 
+            self._prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
@@ -365,6 +438,11 @@ class WFprocessor(object):
                         self._logger.info('Got finished task %s from queue'%(completed_task.uid))
 
                         completed_task.state = states.DEQUEUEING
+
+                        self._prof.prof('transition', 
+                                        uid=completed_task.uid, 
+                                        state=completed_task.state)
+
                         self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                     completed_task.state)
                                                                 )
@@ -385,18 +463,25 @@ class WFprocessor(object):
                                                 self._logger.debug('Found parent stage: %s'%(stage.uid))
 
                                                 completed_task.state = states.DEQUEUED
+
+                                                self._prof.prof('transition', 
+                                                                uid=completed_task.uid, 
+                                                                state=completed_task.state)
+
                                                 self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                                            completed_task.state)
-                                                                                        )
+                                                                                            completed_task.state))
 
                                                 if completed_task.exit_code:
                                                     completed_task.state = states.FAILED
                                                 else:
                                                     completed_task.state = states.DONE
 
+                                                self._prof.prof('transition', 
+                                                                uid=completed_task.uid, 
+                                                                state=completed_task.state)
+
                                                 self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                                            completed_task.state)
-                                                                                        )
+                                                                                            completed_task.state))
 
                                                 for task in stage.tasks:
 
@@ -410,6 +495,11 @@ class WFprocessor(object):
                                                                 try:
 
                                                                     stage.state = states.DONE
+
+                                                                    self._prof.prof('transition', 
+                                                                                    uid=stage.uid, 
+                                                                                    state=stage.state)
+
                                                                     self._logger.info('Stage: %s, State: %s'%
                                                                                                 (stage.uid, 
                                                                                                 stage.state))
@@ -420,6 +510,11 @@ class WFprocessor(object):
                                                                             'state, rolling back. Error: %s'%ex)
 
                                                                     stage.state = states.SCHEDULED
+
+                                                                    self._prof.prof('transition', 
+                                                                                    uid=stage.uid, 
+                                                                                    state=stage.state)
+
                                                                     self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -432,10 +527,22 @@ class WFprocessor(object):
                                                                 if pipe._completed:
                                                                     #self._workload.remove(pipe)                                                                    
                                                                     pipe.state = states.SCHEDULED
+
+                                                                    self._prof.prof('transition', 
+                                                                                    uid=pipe.uid, 
+                                                                                    state=pipe.state)
+
                                                                     self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
+
+
                                                                     pipe.state = states.DONE
+
+                                                                    self._prof.prof('transition', 
+                                                                                    uid=pipe.uid, 
+                                                                                    state=pipe.state)
+
                                                                     self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
@@ -462,6 +569,11 @@ class WFprocessor(object):
                                                                     try:
                                                                     
                                                                         stage.state = states.DONE
+
+                                                                        self._prof.prof('transition', 
+                                                                                        uid=stage.uid, 
+                                                                                        state=stage.state)
+
                                                                         self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -474,6 +586,11 @@ class WFprocessor(object):
                                                                                         'state, rolling back. Error: %s'%ex)
 
                                                                         stage.state = states.SCHEDULED
+
+                                                                        self._prof.prof('transition', 
+                                                                                        uid=stage.uid, 
+                                                                                        state=stage.state)
+
                                                                         self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -483,10 +600,21 @@ class WFprocessor(object):
 
                                                                         #self._workload.remove(pipe)
                                                                         pipe.state = states.SCHEDULED
+
+                                                                        self._prof.prof('transition', 
+                                                                                        uid=pipe.uid, 
+                                                                                        state=pipe.state)
+
                                                                         self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
+
                                                                         pipe.state = states.DONE
+
+                                                                        self._prof.prof('transition', 
+                                                                                        uid=pipe.uid, 
+                                                                                        state=pipe.state)
+
                                                                         self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
@@ -532,6 +660,9 @@ class WFprocessor(object):
                         if slow_run:
                             sleep(1)
 
+                except KeyboardInterrupt:
+                    raise KeyboardInterrupt
+
                 except Exception, ex:
                     self._logger.error('Unable to receive message from completed queue: %s'%ex)
                     raise
@@ -540,12 +671,16 @@ class WFprocessor(object):
             self._logger.info('Terminated dequeue thread')
             mq_connection.close()
 
+            self._prof.prof('terminating dequeue-thread', uid=self._uid)
+
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
 
             mq_connection.close()
+
+            raise KeyboardInterrupt
 
         except Exception, ex:
             self._logger.error('Unknown error in thread: %s'%ex)

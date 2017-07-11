@@ -40,6 +40,11 @@ class AppManager(object):
                 sync_threads=1, pending_qs=1, completed_qs=1):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
+        self._logger = ru.get_logger('radical.entk.appmanager')
+        self._prof = ru.Profiler(name = self._uid)
+
+        self._prof.prof('create amgr obj', uid=self._uid)
+
         self._name      = str()
 
         self._workflow  = None
@@ -71,9 +76,10 @@ class AppManager(object):
         # Resource Manager object
         self._resource_manager = None
         
-        # Logger
-        self._logger = ru.get_logger('radical.entk.appmanager')
+        # Logger        
         self._logger.info('Application Manager initialized')
+
+        self._prof.prof('amgr obj created', uid=self._uid)
 
     # -----------------------------------------------
     # Getter functions
@@ -143,22 +149,23 @@ class AppManager(object):
 
         try:
             
+            self._prof.prof('assigning workflow', uid=self._uid)
             self._workflow = self._validate_workflow(workflow)
             self._logger.info('Workflow assigned to Application Manager')
 
-        except TypeError:
-            raise
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user ' + 
+                        '(you probably hit Ctrl+C), tring to exit gracefully...')
+            
+            raise KeyboardInterrupt
 
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workflow to appmanager')
             raise UnknownError(text=ex)
 
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user ' + 
-                        '(you probably hit Ctrl+C), tring to exit gracefully...')
-            sys.exit(1)
+        
 
     def _validate_workflow(self, workflow):
 
@@ -166,21 +173,38 @@ class AppManager(object):
         Validate whether the workflow consists of a set of pipelines
         """
 
-        if not isinstance(workflow, set):
+        try:
 
-            if not isinstance(workflow, list):
-                workflow = set([workflow])
-            else:
-                workflow = set(workflow)
+            self._prof.prof('validating workflow', uid=self._uid)
 
+            if not isinstance(workflow, set):
 
-        for item in workflow:
-            if not isinstance(item, Pipeline):
-                self._logger.info('workflow type incorrect')
-                raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
-                                actual_type=type(item))
+                if not isinstance(workflow, list):
+                    workflow = set([workflow])
+                else:
+                    workflow = set(workflow)
 
-        return workflow
+            for item in workflow:
+                if not isinstance(item, Pipeline):
+                    self._logger.info('workflow type incorrect')
+                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
+                                    actual_type=type(item))
+
+            self._prof.prof('workflow validated', uid=self._uid)
+
+            return workflow
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user ' + 
+                        '(you probably hit Ctrl+C), tring to exit gracefully...')
+            
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+
+            self._logger.error('Fatal error while adding workflow to appmanager')
+            raise UnknownError(text=ex)
 
 
     def _setup_mqs(self):
@@ -190,6 +214,8 @@ class AppManager(object):
         """
 
         try:
+
+            self._prof.prof('init mqs setup', uid=self._uid)
 
             self._logger.debug('Setting up mq connection and channel')
 
@@ -227,6 +253,8 @@ class AppManager(object):
 
             self._logger.debug('All exchanges and queues are setup')
 
+            self._prof.prof('mqs setup done', uid=self._uid)
+
             return True
 
 
@@ -234,6 +262,8 @@ class AppManager(object):
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to exit mqs setup gracefully...')
+
+            raise KeyboardInterrupt
 
         except Exception, ex:
 
@@ -249,7 +279,9 @@ class AppManager(object):
 
         try:
 
-            self._logger.info('Synchronizer thread started')
+            self._prof.prof('synchronizer started', uid=self._uid)
+
+            self._logger.info('synchronizer thread started')
 
 
             mq_connection = pika.BlockingConnection(
@@ -270,6 +302,11 @@ class AppManager(object):
                     self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
 
                     completed_task.state = states.SYNCHRONIZING
+
+                    self._prof.prof('transition', 
+                                    uid=completed_task.uid, 
+                                    state=completed_task.state)
+                    
                     self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                     completed_task.state)
                                                                 )
@@ -288,6 +325,11 @@ class AppManager(object):
                                         self._logger.debug('Found parent stage: %s'%(stage.uid))
 
                                         completed_task.state = states.SYNCHRONIZED
+
+                                        self._prof.prof('transition', 
+                                                        uid=completed_task.uid, 
+                                                        state=completed_task.state)
+                                        
                                         self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                                     completed_task.state)
                                                                                 )
@@ -295,6 +337,10 @@ class AppManager(object):
                                             completed_task.state = states.FAILED
                                         else:
                                             completed_task.state = states.DONE
+
+                                        self._prof.prof('transition', 
+                                                        uid=completed_task.uid, 
+                                                        state=completed_task.state)
 
                                         self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                             completed_task.state)
@@ -313,6 +359,11 @@ class AppManager(object):
                                                         try:
 
                                                             stage.state = states.DONE
+                                                            
+                                                            self._prof.prof('transition', 
+                                                                            uid=stage.uid, 
+                                                                            state=stage.state)
+                                                            
                                                             self._logger.info('Stage: %s, State: %s'%
                                                                                             (stage.uid, 
                                                                                             stage.state))
@@ -323,6 +374,11 @@ class AppManager(object):
                                                                             'state, rolling back. Error: %s'%ex)
 
                                                             stage.state = states.SCHEDULED
+                                                            
+                                                            self._prof.prof('transition', 
+                                                                            uid=stage.uid, 
+                                                                            state=stage.state)
+                                                            
                                                             self._logger.info('Stage: %s, State: %s'%
                                                                                             (stage.uid, 
                                                                                             stage.state))
@@ -334,12 +390,23 @@ class AppManager(object):
 
                                                         if pipe._completed:
                                                             #self._workload.remove(pipe)                                                                    
+                                                            
                                                             pipe.state = states.SCHEDULED
+                                                            
+                                                            self._prof.prof('transition', 
+                                                                            uid=pipe.uid, 
+                                                                            state=pipe.state)
+                                                            
                                                             self._logger.info('Pipe: %s, State: %s'%
                                                                                             (pipe.uid, 
                                                                                             pipe.state))
 
                                                             pipe.state = states.DONE
+                                                            
+                                                            self._prof.prof('transition', 
+                                                                            uid=pipe.uid, 
+                                                                            state=pipe.state)
+                                                            
                                                             self._logger.info('Pipe: %s, State: %s'%
                                                                                             (pipe.uid, 
                                                                                             pipe.state))
@@ -367,6 +434,11 @@ class AppManager(object):
                                                             try:
                                                                     
                                                                 stage.state = states.DONE
+                                                                
+                                                                self._prof.prof('transition', 
+                                                                            uid=stage.uid, 
+                                                                            state=stage.state)
+                                                                
                                                                 self._logger.info('Stage: %s, State: %s'%
                                                                                                 (stage.uid, 
                                                                                                 stage.state))
@@ -380,6 +452,11 @@ class AppManager(object):
                                                                                     'state, rolling back. Error: %s'%ex)
 
                                                                 stage.state = states.SCHEDULED
+                                                                
+                                                                self._prof.prof('transition', 
+                                                                            uid=stage.uid, 
+                                                                            state=stage.state)
+                                                                
                                                                 self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -389,10 +466,20 @@ class AppManager(object):
 
                                                                 #self._workload.remove(pipe)
                                                                 pipe.state = states.SCHEDULED
+                                                                
+                                                                self._prof.prof('transition', 
+                                                                            uid=pipe.uid, 
+                                                                            state=pipe.state)
+                                                                
                                                                 self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
                                                                 pipe.state = states.DONE
+                                                                
+                                                                self._prof.prof('transition', 
+                                                                            uid=pipe.uid, 
+                                                                            state=pipe.state)
+                                                                
                                                                 self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
@@ -413,10 +500,14 @@ class AppManager(object):
 
                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
+            self._prof.prof('terminating synchronizer', uid=self._uid)
+
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to terminate synchronizer thread gracefully...')
+
+            raise KeyboardInterrupt
 
 
 
@@ -447,6 +538,8 @@ class AppManager(object):
 
             else:
 
+                self._prof.prof('amgr run started', uid=self._uid)
+
                 # Setup rabbitmq stuff
                 self._logger.info('Setting up RabbitMQ system')
                 setup = self._setup_mqs()
@@ -457,24 +550,28 @@ class AppManager(object):
 
                 # Submit resource request
                 self._logger.info('Starting resource request submission')
+                self._prof.prof('init rreq submission', uid=self._uid)
                 self._resource_manager._submit_resource_request()
 
 
                 # Start synchronizer thread
                 self._logger.info('Starting synchronizer thread')
                 self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
+                self._prof.prof('starting synchronizer thread', uid=self._uid)
                 self._sync_thread.start()
 
                 # Create WFProcessor object
+                self._prof.prof('creating wfp obj', uid=self._uid)
                 self._wfp = WFprocessor(  workflow = self._workflow, 
                                     pending_queue = self._pending_queue, 
                                     completed_queue=self._completed_queue,
                                     mq_hostname=self._mq_hostname)
-                #wfp.resubmit_failed = self._resubmit_failed
-                self._logger.info('Starting WFProcessor process from AppManager')
+
+                self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
 
-
+                # Create tmgr object
+                self._prof.prof('creating tmgr obj', uid=self._uid)
                 self._task_manager = TaskManager(   pending_queue = self._pending_queue,
                                                     completed_queue = self._completed_queue,
                                                     mq_hostname = self._mq_hostname,
@@ -506,18 +603,28 @@ class AppManager(object):
                                     self._logger.info('Active pipes: %s'%active_pipe_count)
 
 
+                    if not self._sync_thread.is_alive():
+                        self._sync_thread = Thread(   target=self._synchronizer, 
+                                                name='synchronizer-thread')
+                        self._logger.info('Restarting synchronizer thread')
+                        self._prof.prof('restarting synchronizer', uid=self._uid)
+                        self._sync_thread.start()
+
                     
                     if not self._wfp.check_alive():
 
+                        self._prof.prof('recreating wfp obj', uid=self._uid)
                         self._wfp = WFProcessor(  workflow = self._workflow, 
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname)
 
-                        self._logger.info('Restarting WFProcessor process from AppManager')
+                        self._logger.info('Restarting WFProcessor process from AppManager')                        
                         self._wfp.start_processor()
 
                     if not self._task_manager.check_alive():
+
+                        self._prof.prof('recreating tmgr obj', uid=self._uid)
                         self._task_manager = TaskManager(   pending_queue = self._pending_queue,
                                                             completed_queue = self._completed_queue,
                                                             mq_hostname = self._mq_hostname,
@@ -526,16 +633,12 @@ class AppManager(object):
                         self._logger.info('Restarting task manager process from AppManager')
                         self._task_manager.start_manager()
 
-                    if not self._sync_thread.is_alive():
-                        self._sync_thread = Thread(   target=self._synchronizer, 
-                                                name='synchronizer-thread')
-                        self._logger.info('Restarting synchronizer thread')
-                        self._sync_thread.start()
                     
-
+                self._prof.prof('start termination', uid=self._uid)
+                    
                 # Terminate threads in following order: wfp, helper, synchronizer
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()                
+                self._wfp.end_processor()       
                 
                 self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
@@ -547,8 +650,14 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
+                self._resource_manager._cancel_resource_request()
+
+                self._prof.prof('termination done', uid=self._uid)
+
 
         except KeyboardInterrupt:
+
+            self._prof.prof('start termination', uid=self._uid)
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel enqueuer thread gracefully...')
@@ -568,7 +677,15 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
+            self._resource_manager._cancel_resource_request()
+
+            self._prof.prof('termination done', uid=self._uid)
+
+            raise KeyboardInterrupt
+
         except Exception, ex:
+
+            self._prof.prof('start termination', uid=self._uid)
 
             self._logger.error('Unknown error in AppManager: %s'%ex)
             print traceback.format_exc()
@@ -587,5 +704,9 @@ class AppManager(object):
                 self._end_sync.set()
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
+
+            self._resource_manager._cancel_resource_request()
+
+            self._prof.prof('termination done', uid=self._uid)
             
             sys.exit(1)

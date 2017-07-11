@@ -1,4 +1,6 @@
 from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+import os
+
 
 def create_single_task():
 

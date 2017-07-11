@@ -24,6 +24,9 @@ class TaskManager(object):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
+        self._prof = ru.Profiler(name = self._uid)
+
+        self._prof.prof('create tmgr obj', uid=self._uid)
 
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
@@ -34,19 +37,16 @@ class TaskManager(object):
 
         self._logger.info('Created task manager object: %s'%self._uid)
 
-        self._setup()
-
-
-    def _setup(self):
-
-        pass
+        self._prof.prof('tmgr obj created', uid=self._uid)        
 
 
     def start_monitor(self):
 
         self._logger.info('Starting hearbeat thread')
+        self._prof.prof('creating heartbeat thread', uid=self._uid)
         self._hb_thread = threading.Thread(target=self.monitor, name='heartbeat')
         self._hb_alive = threading.Event()
+        self._prof.prof('starting heartbeat thread', uid=self._uid)
         self._hb_thread.start()
 
 
@@ -60,6 +60,8 @@ class TaskManager(object):
 
             self._logger.info('Hearbeat thread terminated')
 
+            self._prof.prof('hearbeat thread terminated', uid=self._uid)
+
             return True
 
         except Exception, ex:
@@ -67,6 +69,8 @@ class TaskManager(object):
             raise
 
     def monitor(self):
+
+        self._prof.prof('heartbeat thread started', uid=self._uid)
 
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
@@ -103,14 +107,17 @@ class TaskManager(object):
 
             if body:
                 if corr_id == props.correlation_id:
-                self._logger.info('Received heartbeat response')
-                response = True
+                    self._logger.info('Received heartbeat response')
+                    response = True
 
 
 
         # Process is dead - close it so that appmanager can restart it
         self.end_manager()
         self._hb_alive.set()
+
+        self._prof.prof('terminating hearbeat thread', uid=self._uid)
+
 
     def start_manager(self):
 
@@ -119,9 +126,12 @@ class TaskManager(object):
         if not self._tmgr_process:
 
             try:
+
+                self._prof.prof('creating tmgr process', uid=self._uid)
                 self._tmgr_process = Process(target=self.tmgr, name='task-manager')
                 self._tmgr_terminate = Event()
                 self._logger.info('Starting task manager process')
+                self._prof.prof('starting tmgr process', uid=self._uid)
                 self._tmgr_process.start()                
 
                 return True
@@ -147,6 +157,8 @@ class TaskManager(object):
             self._tmgr_process.join()
             self._logger.info('Task manager process closed')
 
+            self._prof.prof('tmgr process terminated', uid=self._uid)
+
             return True
 
         except Exception, ex:
@@ -161,10 +173,13 @@ class TaskManager(object):
 
         try:
 
+            self._prof.prof('tmgr process started', uid=self._uid)
+            self._logger.info('Task Manager process started') 
+
+
             def unit_state_cb(unit, state):
 
                 try:
-
 
                     # Thread should run till terminate condtion is encountered
                     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
@@ -176,6 +191,10 @@ class TaskManager(object):
 
                         task = create_task_from_cu(unit)
                         task.state = states.COMPLETED
+
+                        self._prof.prof('transition', 
+                                        uid=task.uid, 
+                                        state=task.state)
 
                         if unit.state == rp.DONE:
                             task.exit_code = 0
@@ -210,8 +229,7 @@ class TaskManager(object):
 
                     self._logger.error('Callback failed with error: %s'%ex)
                     raise
-
-            self._logger.info('Task Manager process started') 
+            
 
             self._umgr = rp.UnitManager(session=self._rmgr._session)
             self._umgr.add_pilots(self._rmgr.pilot)

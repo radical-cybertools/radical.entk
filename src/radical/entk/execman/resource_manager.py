@@ -11,7 +11,11 @@ class ResourceManager(object):
 
     def __init__(self, resource_desc):
 
+        self._uid = ru.generate_id('radical.entk.resource_manager')
         self._logger = ru.get_logger('radical.entk.resource_manager')
+        self._prof = ru.Profiler(name = self._uid)
+
+        self._prof.prof('create rmgr obj', uid=self._uid)
 
         self._logger.info('Resource Manager initialized')
 
@@ -25,7 +29,6 @@ class ResourceManager(object):
         self._access_schema = None
         self._queue         = None
 
-
         self._logger.debug('Validating resource description')
         if self._validate_resource_desc(resource_desc):
             self._logger.info('Resource description validated')
@@ -38,7 +41,12 @@ class ResourceManager(object):
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL',None)
         if not self._mlab_url:
-            raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')    
+            raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
+
+
+        self._prof.prof('rmgr obj created', uid=self._uid)
+
+            
 
     #----------------------------------------------------------------------------------------------------
     # Getter methods
@@ -125,6 +133,8 @@ class ResourceManager(object):
 
         try:
 
+            self._prof.prof('validating rdesc', uid=self._uid)
+
             if not isinstance(resource_desc, dict):
                 raise TypeError(expected_type=dict, actual_type=type(resource_desc))
 
@@ -159,6 +169,8 @@ class ResourceManager(object):
                 if not isinstance(resource_desc['queue'], str):
                     raise TypeError(expected_type=str, actual_type=type(resource_desc['queue']))
 
+            self._prof.prof('rdesc validated', uid=self._uid)
+
             return True
 
         except Exception, ex:
@@ -173,6 +185,8 @@ class ResourceManager(object):
 
         try:
 
+            self._prof.prof('populating rmgr', uid=self._uid)
+
             self._resource = resource_desc['resource']
             self._walltime = resource_desc['walltime']
             self._cores = resource_desc['cores']
@@ -185,6 +199,8 @@ class ResourceManager(object):
                 self._queue = resource_desc['queue']
 
             self._logger.debug('Resource manager population successful')
+
+            self._prof.prof('rmgr populated', uid=self._uid)
 
         except Exception, ex:
             self._logger.error('Resource manager population unsuccessful')
@@ -199,6 +215,8 @@ class ResourceManager(object):
         """
 
         try:
+
+            self._prof.prof('creating rreq', uid=self._uid)
 
             def _pilot_state_cb(pilot, state):
                 self._logger.info('Pilot %s state: %s'%(pilot.uid, state))
@@ -227,14 +245,20 @@ class ResourceManager(object):
     
 
             pdesc = rp.ComputePilotDescription(pd_init)
+
+            self._prof.prof('rreq created', uid=self._uid)
     
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
 
+            self._prof.prof('rreq submitted', uid=self._uid)
+
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
     
             # Wait for pilot to go active
-            self._pilot.wait(rp.ACTIVE) 
+            self._pilot.wait(rp.ACTIVE)
+
+            self._prof.prof('resource active', uid=self._uid) 
 
             self._logger.info('Pilot is now active')
 
@@ -249,7 +273,9 @@ class ResourceManager(object):
 
         try:
 
+            self._prof.prof('canceling resource allocation', uid=self._uid)
             self._session.close(cleanup=False)
+            self._prof.prof('resource allocation cancelled', uid=self._uid)
 
         except KeyboardInterrupt:
 
