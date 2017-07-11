@@ -36,6 +36,9 @@ class Task(object):
 
         self._exit_code = None
 
+        # Keep track of states attained
+        self._state_history = []
+
         ## The following help in updation
         # Stage this task belongs to
         self._p_stage = None
@@ -255,6 +258,17 @@ class Task(object):
         """
 
         return self._p_pipeline    
+
+    @property
+    def _state_history(self):
+
+        """
+        Returns a list of the states obtained in temporal order
+        
+        :return: list
+        """
+
+        return self._state_history
     # -----------------------------------------------
 
 
@@ -280,6 +294,7 @@ class Task(object):
     def state(self, val):
         if isinstance(val,str):
             self._state = val
+            self._state_history.append(val)
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 

@@ -78,13 +78,6 @@ class TaskManager(object):
         callback_queue = result.method.queue
         response = True
         
-
-        #def on_response(ch, method, props, body):
-        #    if corr_id == props.correlation_id:
-        #        response = True
-
-        #    self._logger.info('Received heartbeat response')
-
         while (response or (not self._hb_alive.is_set())):
             response = False
             corr_id = str(uuid.uuid4())

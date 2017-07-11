@@ -8,7 +8,7 @@ __license__     = "MIT"
 INITIAL         = 'DESCRIBED'
 SCHEDULING      = 'SCHEDULING'
 SCHEDULED       = 'SCHEDULED'
-DONE            = 'DONE'            
+DONE            = 'DONE'
 FAILED          = 'FAILED'
 CANCELED        = 'CANCELED'
 

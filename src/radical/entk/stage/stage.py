@@ -19,6 +19,9 @@ class Stage(object):
 
         self._state     = states.INITIAL
 
+        # Keep track of states attained
+        self._state_history = []
+
         # To change states
         self._task_count = len(self._tasks)
 
@@ -105,7 +108,18 @@ class Stage(object):
         :type: String
         """
 
-        return self._uid   
+        return self._uid
+
+    @property
+    def _state_history(self):
+
+        """
+        Returns a list of the states obtained in temporal order
+        
+        :return: list
+        """
+
+        return self._state_history
     # -----------------------------------------------
 
 
@@ -137,6 +151,7 @@ class Stage(object):
     def state(self, value):
         if isinstance(value,str):
             self._state = value
+            self._state_history.append(value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))        
     # -----------------------------------------------

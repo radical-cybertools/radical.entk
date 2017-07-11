@@ -22,6 +22,9 @@ class Pipeline(object):
 
         self._state     = states.INITIAL
 
+        # Keep track of states attained
+        self._state_history = []
+
         # To keep track of current state
         self._stage_count = len(self._stages)
         self._cur_stage = 0
@@ -128,6 +131,16 @@ class Pipeline(object):
 
         return self._cur_stage
     
+    @property
+    def _state_history(self):
+
+        """
+        Returns a list of the states obtained in temporal order
+        
+        :return: list
+        """
+
+        return self._state_history
     # -----------------------------------------------
 
 
@@ -139,6 +152,7 @@ class Pipeline(object):
     def name(self, value):
         if isinstance(value,str):
             self._name = value
+
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
@@ -161,6 +175,7 @@ class Pipeline(object):
     def state(self, value):
         if isinstance(value,str):
             self._state = value
+            self._state_history.append(value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value)) 
 
