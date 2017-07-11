@@ -189,7 +189,7 @@ class TaskManager(object):
 
                     if unit.state in [rp.DONE, rp.FAILED]:
 
-                        task = create_task_from_cu(unit)
+                        task = create_task_from_cu(unit, self._prof)
                         task.state = states.COMPLETED
 
                         self._prof.prof('transition', 
@@ -282,7 +282,7 @@ class TaskManager(object):
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cud_from_task(task))
+                            self._umgr.submit_units(create_cud_from_task(task, self._prof))
 
                             task.state = states.SUBMITTED
 

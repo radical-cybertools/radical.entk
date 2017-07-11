@@ -6,7 +6,6 @@ from radical.entk.exceptions import *
 import os
 
 logger = ru.get_logger('radical.entk.task_processor')
-prof = ru.Profiler(name = 'task_processor')
 
 def get_input_list_from_task(task):
 
@@ -122,10 +121,9 @@ def get_output_list_from_task(task):
 
     return output_data
 
-def create_cud_from_task(task):
+def create_cud_from_task(task, prof):
 
     try:
-
         
         logger.debug('Creating CU from Task %s'%(task.uid))
 
@@ -153,7 +151,7 @@ def create_cud_from_task(task):
         raise
 
 
-def create_task_from_cu(cu):
+def create_task_from_cu(cu, prof):
 
     try:
 
