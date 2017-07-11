@@ -68,6 +68,7 @@ class WFprocessor(object):
                 self._wfp_terminate = Event()
                 self._logger.info('Starting WFprocessor process')
                 self._prof.prof('starting wfp process', uid=self._uid)
+                self._prof.flush()
                 self._wfp_process.start()                
 
                 return True
@@ -101,6 +102,8 @@ class WFprocessor(object):
                 self._logger.debug('WFprocessor process already terminated')
 
             self._prof.prof('wfp process terminated', uid=self._uid)
+
+            self._prof.close()
 
         except Exception, ex:
             self._logger.error('Could not terminate wfprocessor process')
@@ -146,6 +149,7 @@ class WFprocessor(object):
 
                         self._logger.info('Starting dequeue-thread')
                         self._prof.prof('starting dequeue-thread', uid=self._uid)
+                        self._prof.flush()
                         self._dequeue_thread.start()
 
                     # Start enqueue thread
@@ -156,6 +160,7 @@ class WFprocessor(object):
 
                         self._logger.info('Starting enqueue-thread')
                         self._prof.prof('starting enqueue-thread', uid=self._uid)
+                        self._prof.flush()
                         self._enqueue_thread.start()
 
                 except KeyboardInterrupt:

@@ -15,6 +15,7 @@ import traceback
 import os
 import radical.pilot as rp
 from task_processor import create_cud_from_task, create_task_from_cu
+import uuid
 
 slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
@@ -34,6 +35,9 @@ class TaskManager(object):
         self._rmgr = rmgr
 
         self._tmgr_process = None
+        self._tmgr_terminate = None
+        self._hb_thread = None
+        self._hb_alive = None
 
         self._logger.info('Created task manager object: %s'%self._uid)
 
@@ -112,6 +116,8 @@ class TaskManager(object):
 
         self._prof.prof('terminating hearbeat thread', uid=self._uid)
 
+        # We close in the hearbeat because it is ends after the mgr process
+        self._prof.close()
 
     def start_manager(self):
 
