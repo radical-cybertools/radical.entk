@@ -25,7 +25,7 @@ class TaskManager(object):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
-        self._prof = ru.Profiler(name = self._uid)
+        self._prof = ru.Profiler(name = self._uid+'-obj')
 
         self._prof.prof('create tmgr obj', uid=self._uid)
 
@@ -44,18 +44,17 @@ class TaskManager(object):
         self._prof.prof('tmgr obj created', uid=self._uid)        
 
 
-    def start_monitor(self):
+    def start_heartbeat(self):
 
         self._logger.info('Starting hearbeat thread')
         self._prof.prof('creating heartbeat thread', uid=self._uid)
-        self._hb_thread = threading.Thread(target=self.monitor, name='heartbeat')
+        self._hb_thread = threading.Thread(target=self.heartbeat, name='heartbeat')
         self._hb_alive = threading.Event()
         self._prof.prof('starting heartbeat thread', uid=self._uid)
-        self._prof.flush()
         self._hb_thread.start()
 
 
-    def end_monitor(self):
+    def end_heartbeat(self):
 
         try:
 
@@ -67,13 +66,16 @@ class TaskManager(object):
 
             self._prof.prof('hearbeat thread terminated', uid=self._uid)
 
+            # We close in the hearbeat because it is ends after the mgr process
+            self._prof.close()
+
             return True
 
         except Exception, ex:
             self._logger.error('Could not terminate hearbeat thread')
             raise
 
-    def monitor(self):
+    def heartbeat(self):
 
         self._prof.prof('heartbeat thread started', uid=self._uid)
 
@@ -114,10 +116,7 @@ class TaskManager(object):
         self.end_manager()
         self._hb_alive.set()
 
-        self._prof.prof('terminating hearbeat thread', uid=self._uid)
-
-        # We close in the hearbeat because it is ends after the mgr process
-        self._prof.close()
+        self._prof.prof('terminating hearbeat thread', uid=self._uid)        
 
     def start_manager(self):
 
@@ -132,7 +131,6 @@ class TaskManager(object):
                 self._tmgr_terminate = Event()
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
-                self._prof.flush()
                 self._tmgr_process.start()                
 
                 return True
@@ -174,7 +172,10 @@ class TaskManager(object):
 
         try:
 
-            self._prof.prof('tmgr process started', uid=self._uid)
+            local_prof = ru.Profiler(name = self._uid + '-proc')
+
+            local_prof.prof('tmgr process started', uid=self._uid)
+            
             self._logger.info('Task Manager process started') 
 
 
@@ -190,7 +191,7 @@ class TaskManager(object):
 
                     if unit.state in [rp.DONE, rp.FAILED]:
 
-                        task = create_task_from_cu(unit, self._prof)
+                        task = create_task_from_cu(unit, local_prof)
                         task.state = states.COMPLETED
 
                         self._prof.prof('transition', 
@@ -257,7 +258,7 @@ class TaskManager(object):
 
                 ch.basic_ack(delivery_tag = method.delivery_tag)
 
-            self._prof.prof('tmgr infrastructure setup done', uid=self._uid)
+            local_prof.prof('tmgr infrastructure setup done', uid=self._uid)
 
             while not self._tmgr_terminate.is_set():
 
@@ -275,7 +276,7 @@ class TaskManager(object):
 
                             task.state = states.SUBMITTING
 
-                            self._prof.prof('transition', 
+                            local_prof.prof('transition', 
                                             uid=task.uid, 
                                             state=task.state)
 
@@ -283,11 +284,11 @@ class TaskManager(object):
 
                             self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cud_from_task(task, self._prof))
+                            self._umgr.submit_units(create_cud_from_task(task, local_prof))
 
                             task.state = states.SUBMITTED
 
-                            self._prof.prof('transition', 
+                            local_prof.prof('transition', 
                                             uid=task.uid, 
                                             state=task.state)
 
@@ -323,7 +324,9 @@ class TaskManager(object):
                     self._logger.error('Error getting messages from pending queue: %s'%ex)
                     raise Error(text=ex) 
 
-            self._prof.prof('terminating tmgr process', uid=self._uid)
+            local_prof.prof('terminating tmgr process', uid=self._uid)
+
+            local_prof.close()
 
         except KeyboardInterrupt:
 

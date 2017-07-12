@@ -578,7 +578,7 @@ class AppManager(object):
                                                 )
                 self._logger.info('Starting task manager process from AppManager')
                 self._task_manager.start_manager()
-                self._task_manager.start_monitor()
+                self._task_manager.start_heartbeat()
 
                 
                 active_pipe_count = len(self._workflow)   
@@ -641,7 +641,7 @@ class AppManager(object):
                 
                 self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
-                self._task_manager.end_monitor()
+                self._task_manager.end_heartbeat()
                 
 
                 self._logger.info('Terminating synchronizer thread')
@@ -669,6 +669,7 @@ class AppManager(object):
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
+                self._task_manager.end_heartbeat()
                 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')
@@ -697,6 +698,7 @@ class AppManager(object):
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
                 self._task_manager.end_manager()
+                self._task_manager.end_heartbeat()
 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')

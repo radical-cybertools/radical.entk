@@ -58,19 +58,3 @@ if __name__ == '__main__':
     appman.run()
 
 
-    tasks = p1.stages[0].tasks
-
-    p_state_hist = p1.state_history
-    print p_state_hist
-    #assert p_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'DONE']
-
-    s_state_hist = p1.stages[0].state_history
-    print s_state_hist
-    #assert s_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'DONE']
-
-    tasks = p1.stages[0].tasks
-
-    for t in tasks:
-
-        t_state_hist = t.state_history
-        print t_state_hist

@@ -22,7 +22,7 @@ class WFprocessor(object):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
         self._logger        = ru.get_logger('radical.entk.wfprocessor')
-        self._prof = ru.Profiler(name = self._uid)
+        self._prof = ru.Profiler(name = self._uid + '-obj')
 
         self._prof.prof('create wfp obj', uid=self._uid)
 
@@ -68,7 +68,6 @@ class WFprocessor(object):
                 self._wfp_terminate = Event()
                 self._logger.info('Starting WFprocessor process')
                 self._prof.prof('starting wfp process', uid=self._uid)
-                self._prof.flush()
                 self._wfp_process.start()                
 
                 return True
@@ -133,7 +132,10 @@ class WFprocessor(object):
 
         try:
 
-            self._prof.prof('wfp process started', uid=self._uid)
+            local_prof = ru.Profiler(name = self._uid + '-proc')
+
+            local_prof.prof('wfp process started', uid=self._uid)
+
             self._logger.info('WFprocessor started')
 
             # Process should run till terminate condtion is encountered
@@ -144,23 +146,21 @@ class WFprocessor(object):
                     # Start dequeue thread
                     if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
 
-                        self._prof.prof('creating dequeue-thread', uid=self._uid)
-                        self._dequeue_thread = threading.Thread(target=self.dequeue, name='dequeue-thread')
+                        local_prof.prof('creating dequeue-thread', uid=self._uid)
+                        self._dequeue_thread = threading.Thread(target=self.dequeue, args=(local_prof,), name='dequeue-thread')
 
                         self._logger.info('Starting dequeue-thread')
-                        self._prof.prof('starting dequeue-thread', uid=self._uid)
-                        self._prof.flush()
+                        local_prof.prof('starting dequeue-thread', uid=self._uid)
                         self._dequeue_thread.start()
 
                     # Start enqueue thread
                     if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
 
-                        self._prof.prof('creating enqueue-thread', uid=self._uid)
-                        self._enqueue_thread = threading.Thread(target=self.enqueue, name='enqueue-thread')
+                        local_prof.prof('creating enqueue-thread', uid=self._uid)
+                        self._enqueue_thread = threading.Thread(target=self.enqueue, args=(local_prof,), name='enqueue-thread')
 
                         self._logger.info('Starting enqueue-thread')
-                        self._prof.prof('starting enqueue-thread', uid=self._uid)
-                        self._prof.flush()
+                        local_prof.prof('starting enqueue-thread', uid=self._uid)
                         self._enqueue_thread.start()
 
                 except KeyboardInterrupt:
@@ -170,7 +170,7 @@ class WFprocessor(object):
                     self._logger.error('WFProcessor interrupted')
                     raise
 
-            self._prof.prof('start termination', uid=self._uid)
+            local_prof.prof('start termination', uid=self._uid)
 
             self._logger.info('Terminating enqueue-thread')
             self._enqueue_thread_terminate.set()
@@ -179,16 +179,16 @@ class WFprocessor(object):
             self._dequeue_thread_terminate.set()
             self._dequeue_thread.join()
 
-            self._prof.prof('termination done', uid=self._uid)
+            local_prof.prof('termination done', uid=self._uid)
 
-            self._prof.prof('terminating wfp process', uid=self._uid)
+            local_prof.prof('terminating wfp process', uid=self._uid)
+
+            local_prof.close()
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel wfprocessor process gracefully...')
-
-            self._prof.prof('start termination', uid=self._uid)
 
             if not self._enqueue_thread_terminate.is_set():
                 self._logger.info('Terminating enqueue-thread')
@@ -201,10 +201,6 @@ class WFprocessor(object):
                 self._dequeue_thread.join()
 
             self._logger.info('WFprocessor process terminated')
-
-            self._prof.prof('termination done', uid=self._uid)
-
-            self._prof.prof('terminating wfp process', uid=self._uid)
 
             raise KeyboardInterrupt
 
@@ -213,8 +209,6 @@ class WFprocessor(object):
             self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
             print traceback.format_exc()
 
-            self._prof.prof('start termination', uid=self._uid)
-
             if not self._enqueue_thread_terminate.is_set():
                 self._logger.info('Terminating enqueue-thread')
                 self._enqueue_thread_terminate.set()
@@ -227,16 +221,16 @@ class WFprocessor(object):
 
             self._logger.info('WFprocessor process terminated')
 
-            self._prof.prof('termination done', uid=self._uid)
-
             raise Error(text=ex)           
 
 
-    def enqueue(self):
+    def enqueue(self, local_prof):
 
         try:
 
-            self._prof.prof('enqueue-thread started', uid=self._uid)
+            #local_prof = ru.Profiler(name = self._uid + '-proc')
+
+            local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
@@ -259,7 +253,7 @@ class WFprocessor(object):
                             elif pipe.state == states.INITIAL:
                                 pipe.state = states.SCHEDULING
                                 
-                                self._prof.prof('transition', 
+                                local_prof.prof('transition', 
                                                 uid=pipe.uid, 
                                                 state=pipe.state)
 
@@ -272,7 +266,7 @@ class WFprocessor(object):
                                     # Starting scheduling of tasks of current stage
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULING
                                     
-                                    self._prof.prof('transition', 
+                                    local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
 
@@ -298,7 +292,7 @@ class WFprocessor(object):
                                                 # Update specific task's state to scheduling
                                                 executable_task.state = states.SCHEDULING
 
-                                                self._prof.prof('transition', 
+                                                local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
                                                 
@@ -323,7 +317,7 @@ class WFprocessor(object):
 
                                                 executable_task.state = states.SCHEDULED
 
-                                                self._prof.prof('transition', 
+                                                local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
 
@@ -345,7 +339,7 @@ class WFprocessor(object):
                                                 # Revert task status
                                                 executable_task.state = states.INITIAL
 
-                                                self._prof.prof('transition', 
+                                                local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
 
@@ -357,7 +351,7 @@ class WFprocessor(object):
                                     # All tasks of current stage scheduled
                                     pipe.stages[pipe._current_stage-1].state = states.SCHEDULED
 
-                                    self._prof.prof('transition', 
+                                    local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
 
@@ -383,7 +377,7 @@ class WFprocessor(object):
                                     # Revert stage state
                                     pipe.stages[pipe._current_stage-1].state = states.INITIAL
 
-                                    self._prof.prof('transition', 
+                                    local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
 
@@ -398,7 +392,7 @@ class WFprocessor(object):
             self._logger.info('Enqueue thread terminated')                                  
             mq_connection.close()
 
-            self._prof.prof('terminating enqueue-thread', uid=self._uid)
+            local_prof.prof('terminating enqueue-thread', uid=self._uid)
                                     
         except KeyboardInterrupt:
 
@@ -419,11 +413,13 @@ class WFprocessor(object):
 
 
 
-    def dequeue(self):
+    def dequeue(self, local_prof):
 
         try:
 
-            self._prof.prof('dequeue-thread started', uid=self._uid)
+            #local_prof = ru.Profiler(name = self._uid + '-proc')
+
+            local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
@@ -444,7 +440,7 @@ class WFprocessor(object):
 
                         completed_task.state = states.DEQUEUEING
 
-                        self._prof.prof('transition', 
+                        local_prof.prof('transition', 
                                         uid=completed_task.uid, 
                                         state=completed_task.state)
 
@@ -469,7 +465,7 @@ class WFprocessor(object):
 
                                                 completed_task.state = states.DEQUEUED
 
-                                                self._prof.prof('transition', 
+                                                local_prof.prof('transition', 
                                                                 uid=completed_task.uid, 
                                                                 state=completed_task.state)
 
@@ -481,7 +477,7 @@ class WFprocessor(object):
                                                 else:
                                                     completed_task.state = states.DONE
 
-                                                self._prof.prof('transition', 
+                                                local_prof.prof('transition', 
                                                                 uid=completed_task.uid, 
                                                                 state=completed_task.state)
 
@@ -501,7 +497,7 @@ class WFprocessor(object):
 
                                                                     stage.state = states.DONE
 
-                                                                    self._prof.prof('transition', 
+                                                                    local_prof.prof('transition', 
                                                                                     uid=stage.uid, 
                                                                                     state=stage.state)
 
@@ -516,7 +512,7 @@ class WFprocessor(object):
 
                                                                     stage.state = states.SCHEDULED
 
-                                                                    self._prof.prof('transition', 
+                                                                    local_prof.prof('transition', 
                                                                                     uid=stage.uid, 
                                                                                     state=stage.state)
 
@@ -533,7 +529,7 @@ class WFprocessor(object):
                                                                     #self._workload.remove(pipe)                                                                    
                                                                     pipe.state = states.SCHEDULED
 
-                                                                    self._prof.prof('transition', 
+                                                                    local_prof.prof('transition', 
                                                                                     uid=pipe.uid, 
                                                                                     state=pipe.state)
 
@@ -544,7 +540,7 @@ class WFprocessor(object):
 
                                                                     pipe.state = states.DONE
 
-                                                                    self._prof.prof('transition', 
+                                                                    local_prof.prof('transition', 
                                                                                     uid=pipe.uid, 
                                                                                     state=pipe.state)
 
@@ -575,7 +571,7 @@ class WFprocessor(object):
                                                                     
                                                                         stage.state = states.DONE
 
-                                                                        self._prof.prof('transition', 
+                                                                        local_prof.prof('transition', 
                                                                                         uid=stage.uid, 
                                                                                         state=stage.state)
 
@@ -592,7 +588,7 @@ class WFprocessor(object):
 
                                                                         stage.state = states.SCHEDULED
 
-                                                                        self._prof.prof('transition', 
+                                                                        local_prof.prof('transition', 
                                                                                         uid=stage.uid, 
                                                                                         state=stage.state)
 
@@ -606,7 +602,7 @@ class WFprocessor(object):
                                                                         #self._workload.remove(pipe)
                                                                         pipe.state = states.SCHEDULED
 
-                                                                        self._prof.prof('transition', 
+                                                                        local_prof.prof('transition', 
                                                                                         uid=pipe.uid, 
                                                                                         state=pipe.state)
 
@@ -616,7 +612,7 @@ class WFprocessor(object):
 
                                                                         pipe.state = states.DONE
 
-                                                                        self._prof.prof('transition', 
+                                                                        local_prof.prof('transition', 
                                                                                         uid=pipe.uid, 
                                                                                         state=pipe.state)
 
@@ -676,7 +672,7 @@ class WFprocessor(object):
             self._logger.info('Terminated dequeue thread')
             mq_connection.close()
 
-            self._prof.prof('terminating dequeue-thread', uid=self._uid)
+            local_prof.prof('terminating dequeue-thread', uid=self._uid)
 
         except KeyboardInterrupt:
 
