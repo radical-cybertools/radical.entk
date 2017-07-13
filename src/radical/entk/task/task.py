@@ -451,6 +451,7 @@ class Task(object):
                         'uid': self._uid,
                         'name': self._name,
                         'state': self._state,
+                        'state_history': self._state_history,
 
                         'pre_exec': self._pre_exec,
                         'executable': self._executable,
@@ -504,6 +505,14 @@ class Task(object):
 
         else:
             self._state = states.UNSCHEDULED
+
+
+        if 'state_history' in d:
+            if isinstance(d['state_history'], list):
+                self._state_history = d['state_history']
+            else:
+                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+
 
         if 'pre_exec' in d:
             if isinstance(d['pre_exec'], list):

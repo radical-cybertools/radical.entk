@@ -175,8 +175,41 @@ class TaskManager(object):
             local_prof = ru.Profiler(name = self._uid + '-proc')
 
             local_prof.prof('tmgr process started', uid=self._uid)
-            
             self._logger.info('Task Manager process started') 
+
+            def sync_with_master(obj, obj_type, channel):
+
+                object_as_dict = {'object': obj.to_dict()}
+                if obj_type == 'Task': 
+                    object_as_dict['type'] = 'Task'
+
+                elif obj_type == 'Stage':
+                    object_as_dict['type'] = 'Stage'
+
+                elif obj_type == 'Pipeline':
+                    object_as_dict['type'] = 'Pipeline'
+
+                corr_id = str(uuid.uuid4())
+
+                channel.basic_publish(
+                                        exchange='',
+                                        routing_key='rpc-queue',
+                                        body=json.dumps(object_as_dict),
+                                        properties=pika.BasicProperties(
+                                                        reply_to = 'rpc-queue',
+                                                        correlation_id = corr_id
+                                                        )
+                                    )
+            
+                while True:
+                    #self._logger.info('waiting for ack')
+                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+
+                    if body:
+                        if corr_id == props.correlation_id:
+                            self._logger.info('%s synchronized'%obj.uid)
+                            break
+
 
 
             def unit_state_cb(unit, state):
@@ -192,11 +225,13 @@ class TaskManager(object):
                     if unit.state in [rp.DONE, rp.FAILED]:
 
                         task = create_task_from_cu(unit, local_prof)
+                        
                         task.state = states.COMPLETED
-
                         self._prof.prof('transition', 
                                         uid=task.uid, 
                                         state=task.state)
+
+                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
 
                         if unit.state == rp.DONE:
                             task.exit_code = 0
@@ -225,11 +260,17 @@ class TaskManager(object):
                 except KeyboardInterrupt:
                     self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                             'trying to exit callback thread gracefully...')
+
+                    print traceback.format_exc()
+
                     raise KeyboardInterrupt
 
                 except Exception, ex:
 
                     self._logger.error('Callback failed with error: %s'%ex)
+
+                    print traceback.format_exc()
+
                     raise
             
 
@@ -244,6 +285,7 @@ class TaskManager(object):
             # To respond to heartbeat - get request from rpc_queue
             mq_channel.queue_declare(queue='rpc_queue')
 
+            '''
             # Function to be invoked upon request message
             def on_request(ch, method, props, body):
 
@@ -257,6 +299,7 @@ class TaskManager(object):
                 self._logger.info('Sent heartbeat response')
 
                 ch.basic_ack(delivery_tag = method.delivery_tag)
+            '''
 
             local_prof.prof('tmgr infrastructure setup done', uid=self._uid)
 

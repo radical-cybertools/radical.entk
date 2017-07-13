@@ -245,13 +245,12 @@ class AppManager(object):
                 #self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
                                                 # Durable Qs will not be lost if rabbitmq server crashes
 
-            self._mq_channel.queue_delete(queue='synchronizerq')
-            self._mq_channel.queue_declare(queue='synchronizerq')
+            self._mq_channel.queue_delete(queue='rpc-queue')
+            self._mq_channel.queue_declare(queue='rpc-queue')
                                                     # Durable Qs will not be lost if rabbitmq server crashes
 
 
             self._logger.debug('All exchanges and queues are setup')
-
             self._prof.prof('mqs setup done', uid=self._uid)
 
             return True
@@ -274,6 +273,8 @@ class AppManager(object):
 
         """
         Thread to keep the workflow data structure in appmanager up to date
+        Instead reanalyzing every task. We now receive pipelines, stages and tasks.
+        The respective object is updated in this master process.
         """
 
         try:
@@ -283,221 +284,91 @@ class AppManager(object):
             self._logger.info('synchronizer thread started')
 
 
-            mq_connection = pika.BlockingConnection(
-                                    pika.ConnectionParameters(host=self._mq_hostname)
-                                    )
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
             while not self._end_sync.is_set():
 
-                method_frame, header_frame, body = mq_channel.basic_get(
-                                                            queue='synchronizerq'
-                                                            )                
+                method_frame, props, body = mq_channel.basic_get(queue='rpc-queue')
+
+                """
+                The message received is a JSON object with the following structure:
+
+                msg = {
+                        'type': 'Pipeline'/'Stage'/'Task',
+                        'object': json/dict
+                        }
+                """                
 
                 if body:
 
-                    completed_task = Task()
-                    completed_task.from_dict(json.loads(body))
-                    self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
+                    msg = json.loads(body)
 
-                    completed_task.state = states.SYNCHRONIZING
+                    if msg['type'] == 'Task':                        
 
-                    self._prof.prof('transition', 
-                                    uid=completed_task.uid, 
-                                    state=completed_task.state)
+                        completed_task = Task()
+                        completed_task.from_dict(msg['object'])
+                        self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
+
+                        # Traverse the entire workflow to find the correct task
+                        for pipe in self._workflow:
+
+                            if not pipe._completed:
+                                if completed_task._parent_pipeline == pipe.uid:
+                                    self._logger.info('Found parent pipeline: %s'%pipe.uid)
+                                
+                                    for stage in pipe.stages:
+
+                                        if completed_task._parent_stage == stage.uid:
+                                            self._logger.info('Found parent stage: %s'%(stage.uid))
+
+                                            for task in stage.tasks:
+
+                                                if completed_task.uid == task.uid:
+                                                    task.state = str(completed_task.state)
+
+
+                    elif msg['type'] == 'Stage':
+
+                        completed_stage = Stage()
+                        completed_stage.from_dict(msg['object'])
+                        self._logger.info('Got finished stage %s from synchronizer queue'%(completed_stage.uid))
+
+                        # Traverse the entire workflow to find the correct stage
+                        for pipe in self._workflow:
+
+                            if not pipe._completed:
+                                if completed_stage._parent_pipeline == pipe.uid:
+                                    self._logger.debug('Found parent pipeline: %s'%pipe.uid)
+                                
+                                    for stage in pipe.stages:
+
+                                        if completed_stage._parent_stage == stage.uid:                                            
+                                            stage.state = str(completed_stage.state)
+
+
+                    elif msg['type'] == 'Pipeline':
+
+                        completed_pipeline = Pipeline()
+                        completed_pipeline.from_dict(jmsg['object'])
+
+                        self._logger.info('Got finished pipeline %s from synchronizer queue'%(completed_pipeline.uid))
+
+                        # Traverse the entire workflow to find the correct pipeline
+                        for pipe in self._workflow:
+
+                            if not pipe._completed:
+
+                                if completed_stage._parent_pipeline == pipe.uid:
+                                    pipe.state = str(completed_pipeline.state)
                     
-                    self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                    completed_task.state)
-                                                                )
 
-                    for pipe in self._workflow:
+                    mq_channel.basic_publish(   exchange='',
+                                                routing_key=props.reply_to,
+                                                properties=pika.BasicProperties(correlation_id = props.correlation_id),
+                                                body='response')
 
-                        if not pipe._completed:
-
-                            if completed_task._parent_pipeline == pipe.uid:
-
-                                self._logger.debug('Found parent pipeline: %s'%pipe.uid)
-                            
-                                for stage in pipe.stages:
-
-                                    if completed_task._parent_stage == stage.uid:
-                                        self._logger.debug('Found parent stage: %s'%(stage.uid))
-
-                                        completed_task.state = states.SYNCHRONIZED
-
-                                        self._prof.prof('transition', 
-                                                        uid=completed_task.uid, 
-                                                        state=completed_task.state)
-                                        
-                                        self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                                    completed_task.state)
-                                                                                )
-                                        if completed_task.exit_code:
-                                            completed_task.state = states.FAILED
-                                        else:
-                                            completed_task.state = states.DONE
-
-                                        self._prof.prof('transition', 
-                                                        uid=completed_task.uid, 
-                                                        state=completed_task.state)
-
-                                        self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                            completed_task.state)
-                                                        )
-
-                                        for task in stage.tasks:
-
-                                            if task.uid == completed_task.uid:
-
-                                                task.state = str(completed_task.state)
-
-                                                if task.state == states.DONE:
-
-                                                    if stage._check_stage_complete():
-
-                                                        try:
-
-                                                            stage.state = states.DONE
-                                                            
-                                                            self._prof.prof('transition', 
-                                                                            uid=stage.uid, 
-                                                                            state=stage.state)
-                                                            
-                                                            self._logger.info('Stage: %s, State: %s'%
-                                                                                            (stage.uid, 
-                                                                                            stage.state))
-
-                                                        except Exception, ex:
-                                                            # Rolling back stage status
-                                                            self._logger.error('Error while updating stage '+
-                                                                            'state, rolling back. Error: %s'%ex)
-
-                                                            stage.state = states.SCHEDULED
-                                                            
-                                                            self._prof.prof('transition', 
-                                                                            uid=stage.uid, 
-                                                                            state=stage.state)
-                                                            
-                                                            self._logger.info('Stage: %s, State: %s'%
-                                                                                            (stage.uid, 
-                                                                                            stage.state))
-
-                                                        try:
-                                                            pipe._increment_stage()
-                                                        except:
-                                                            pass
-
-                                                        if pipe._completed:
-                                                            #self._workload.remove(pipe)                                                                    
-                                                            
-                                                            pipe.state = states.SCHEDULED
-                                                            
-                                                            self._prof.prof('transition', 
-                                                                            uid=pipe.uid, 
-                                                                            state=pipe.state)
-                                                            
-                                                            self._logger.info('Pipe: %s, State: %s'%
-                                                                                            (pipe.uid, 
-                                                                                            pipe.state))
-
-                                                            pipe.state = states.DONE
-                                                            
-                                                            self._prof.prof('transition', 
-                                                                            uid=pipe.uid, 
-                                                                            state=pipe.state)
-                                                            
-                                                            self._logger.info('Pipe: %s, State: %s'%
-                                                                                            (pipe.uid, 
-                                                                                            pipe.state))
-                                                                    
-                                                elif task.state == states.FAILED:
-
-                                                    if self._resubmit_failed:
-
-                                                        try:
-
-                                                            new_task = Task()
-                                                            new_task._replicate(completed_task)
-
-                                                            pipe.stages[pipe._current_stage-1].add_tasks(new_task)
-
-                                                        except Exception, ex:
-                                                            self._logger.error("Resubmission of task %s failed, error: %s"%
-                                                                                                (completed_task.uid,ex))
-                                                            raise
-
-                                                    else:
-
-                                                        if stage._check_stage_complete():
-
-                                                            try:
-                                                                    
-                                                                stage.state = states.DONE
-                                                                
-                                                                self._prof.prof('transition', 
-                                                                            uid=stage.uid, 
-                                                                            state=stage.state)
-                                                                
-                                                                self._logger.info('Stage: %s, State: %s'%
-                                                                                                (stage.uid, 
-                                                                                                stage.state))
-
-                                                                pipe._increment_stage()
-
-                                                            except Exception, ex:
-                                                    
-                                                                # Rolling back stage status
-                                                                self._logger.error('Error while updating stage '+
-                                                                                    'state, rolling back. Error: %s'%ex)
-
-                                                                stage.state = states.SCHEDULED
-                                                                
-                                                                self._prof.prof('transition', 
-                                                                            uid=stage.uid, 
-                                                                            state=stage.state)
-                                                                
-                                                                self._logger.info('Stage: %s, State: %s'%
-                                                                                                    (stage.uid, 
-                                                                                                    stage.state))
-                                                                pipe._decrement_stage()                                    
-
-                                                            if pipe.completed:
-
-                                                                #self._workload.remove(pipe)
-                                                                pipe.state = states.SCHEDULED
-                                                                
-                                                                self._prof.prof('transition', 
-                                                                            uid=pipe.uid, 
-                                                                            state=pipe.state)
-                                                                
-                                                                self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
-                                                                pipe.state = states.DONE
-                                                                
-                                                                self._prof.prof('transition', 
-                                                                            uid=pipe.uid, 
-                                                                            state=pipe.state)
-                                                                
-                                                                self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
-
-                                                else:
-
-                                                    # Task is canceled
-                                                    pass
-
-                                                # Found the task and processed it -- no more iterations needed
-                                                break
-
-                                        # Found the stage and processed it -- no more iterations neeeded
-                                        break
-
-                                # Found the pipeline and processed it -- no more iterations neeeded
-                                break
-
-                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                    mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
             self._prof.prof('terminating synchronizer', uid=self._uid)
 

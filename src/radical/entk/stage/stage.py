@@ -268,3 +268,83 @@ class Stage(object):
 
             print 'Task state evaluation failed'
             raise UnknownError(text=ex)
+
+
+    def to_dict(self):
+
+        """
+        Convert current Stage into a dictionary
+
+        :return: python dictionary
+        """
+
+        stage_desc_as_dict = {
+
+                                'uid': self._uid,
+                                'name': self._name,
+                                'state': self._state,
+                                'state_history': self._state_history,
+
+                                'tasks': self._tasks,
+                                'task_count': self._task_count,
+                                'parent_pipeline': self._p_pipeline
+                        }
+
+        return stage_desc_as_dict
+
+
+    def from_dict(self, d):
+
+        """
+        Create a Stage from a dictionary. The change is in inplace.
+
+        :argument: python dictionary
+        :return: None
+        """
+
+
+        if 'uid' in d:
+            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
+                self._uid   = d['uid']
+            else:
+                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
+
+        if 'name' in d:
+            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+                self._name = d['name']
+            else:
+                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
+
+        if 'state' in d:
+            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
+                self._state = d['state']
+            else:
+                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+
+        else:
+            self._state = states.UNSCHEDULED
+
+
+        if 'state_history' in d:
+            if isinstance(d['state_history'], list):
+                self._state_history = d['state_history']
+            else:
+                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+
+        if 'tasks' in d:
+            if isinstance(d['tasks'], set):
+                self._tasks = d['tasks']
+            else:
+                raise TypeError(entity='tasks', expected_type=set, actual_type=type(d['tasks']))
+
+        if 'task_count' in d:
+            if isinstance(d['task_count'], int):
+                self._task_count = d['task_count']
+            else:
+                raise TypeError(entity='task_count', expected_type=int, actual_type=type(d['task_count']))
+
+        if 'parent_pipeline' in d:
+            if isinstance(d['parent_pipeline'], str):
+                self._p_pipeline = d['parent_pipeline']
+            else:
+                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))

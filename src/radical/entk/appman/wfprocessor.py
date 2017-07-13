@@ -13,6 +13,7 @@ import threading
 import pika
 import traceback
 import os
+import uuid
 
 slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
@@ -228,7 +229,38 @@ class WFprocessor(object):
 
         try:
 
-            #local_prof = ru.Profiler(name = self._uid + '-proc')
+            def sync_with_master(obj, obj_type, channel):
+
+                object_as_dict = {'object': obj.to_dict()}
+                if obj_type == 'Task': 
+                    object_as_dict['type'] = 'Task'
+
+                elif obj_type == 'Stage':
+                    object_as_dict['type'] = 'Stage'
+
+                elif obj_type == 'Pipeline':
+                    object_as_dict['type'] = 'Pipeline'
+
+                corr_id = str(uuid.uuid4())
+
+                channel.basic_publish(
+                                        exchange='',
+                                        routing_key='rpc-queue',
+                                        body=json.dumps(object_as_dict),
+                                        properties=pika.BasicProperties(
+                                                        reply_to = 'rpc-queue',
+                                                        correlation_id = corr_id
+                                                        )
+                                    )
+            
+                while True:
+                    #self._logger.info('waiting for ack')
+                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+
+                    if body:
+                        if corr_id == props.correlation_id:
+                            self._logger.info('%s synchronized'%obj.uid)
+                            break
 
             local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
@@ -251,11 +283,16 @@ class WFprocessor(object):
                                 continue
 
                             elif pipe.state == states.INITIAL:
+                                
                                 pipe.state = states.SCHEDULING
                                 
                                 local_prof.prof('transition', 
                                                 uid=pipe.uid, 
                                                 state=pipe.state)
+
+                                sync_with_master(   obj=pipe, 
+                                                    obj_type='Pipeline', 
+                                                    channel = mq_channel)
 
                                 self._logger.info('Pipe: %s, State: %s'%(pipe.uid, pipe.state))
     
@@ -269,6 +306,10 @@ class WFprocessor(object):
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
+
+                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                                        obj_type='Stage', 
+                                                        channel = mq_channel)
 
                                     self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe._current_stage-1].uid, 
                                         pipe.stages[pipe._current_stage-1].state))
@@ -295,6 +336,10 @@ class WFprocessor(object):
                                                 local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
+
+                                                sync_with_master(   obj=executable_task, 
+                                                                    obj_type='Task', 
+                                                                    channel = mq_channel)
                                                 
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
                                                                                         executable_task.state))
@@ -321,6 +366,10 @@ class WFprocessor(object):
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
 
+                                                sync_with_master(   obj=executable_task, 
+                                                                    obj_type='Task', 
+                                                                    channel = mq_channel)
+
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
                                                                                         executable_task.state))
 
@@ -343,17 +392,25 @@ class WFprocessor(object):
                                                                 uid=executable_task.uid, 
                                                                 state=executable_task.state)
 
+                                                sync_with_master(   obj=executable_task, 
+                                                                    obj_type='Task', 
+                                                                    channel = mq_channel)
+
                                                 self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
                                                                                         executable_task.state))
 
                                                 raise
                                     
                                     # All tasks of current stage scheduled
-                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULED
+                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULED                                    
 
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
+
+                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                                        obj_type='Stage', 
+                                                        channel = mq_channel)
 
                                     self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
                                                                                 pipe.stages[pipe._current_stage-1].state))
@@ -380,6 +437,10 @@ class WFprocessor(object):
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state)
+
+                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                                        obj_type='Stage', 
+                                                        channel = mq_channel)
 
                                     self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
                                                                                 pipe.stages[pipe._current_stage-1].state))
@@ -417,7 +478,38 @@ class WFprocessor(object):
 
         try:
 
-            #local_prof = ru.Profiler(name = self._uid + '-proc')
+            def sync_with_master(obj, obj_type, channel):
+
+                object_as_dict = {'object': obj.to_dict()}
+                if obj_type == 'Task': 
+                    object_as_dict['type'] = 'Task'
+
+                elif obj_type == 'Stage':
+                    object_as_dict['type'] = 'Stage'
+
+                elif obj_type == 'Pipeline':
+                    object_as_dict['type'] = 'Pipeline'
+
+                corr_id = str(uuid.uuid4())
+
+                channel.basic_publish(
+                                        exchange='',
+                                        routing_key='rpc-queue',
+                                        body=json.dumps(object_as_dict),
+                                        properties=pika.BasicProperties(
+                                                        reply_to = 'rpc-queue',
+                                                        correlation_id = corr_id
+                                                        )
+                                    )
+            
+                while True:
+                    #self._logger.info('waiting for ack')
+                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+
+                    if body:
+                        if corr_id == props.correlation_id:
+                            self._logger.info('%s synchronized'%obj.uid)
+                            break
 
             local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
@@ -438,11 +530,15 @@ class WFprocessor(object):
                         completed_task.from_dict(json.loads(body))
                         self._logger.info('Got finished task %s from queue'%(completed_task.uid))
 
-                        completed_task.state = states.DEQUEUEING
+                        completed_task.state = states.DEQUEUEING                        
 
                         local_prof.prof('transition', 
                                         uid=completed_task.uid, 
                                         state=completed_task.state)
+
+                        sync_with_master(   obj=completed_task, 
+                                            obj_type='Task', 
+                                            channel = mq_channel)
 
                         self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                     completed_task.state)
@@ -469,6 +565,10 @@ class WFprocessor(object):
                                                                 uid=completed_task.uid, 
                                                                 state=completed_task.state)
 
+                                                sync_with_master(   obj=completed_task, 
+                                                                    obj_type='Task', 
+                                                                    channel = mq_channel)
+
                                                 self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                                             completed_task.state))
 
@@ -480,6 +580,10 @@ class WFprocessor(object):
                                                 local_prof.prof('transition', 
                                                                 uid=completed_task.uid, 
                                                                 state=completed_task.state)
+
+                                                sync_with_master(   obj=completed_task, 
+                                                                    obj_type='Task', 
+                                                                    channel = mq_channel)
 
                                                 self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
                                                                                             completed_task.state))
@@ -501,6 +605,10 @@ class WFprocessor(object):
                                                                                     uid=stage.uid, 
                                                                                     state=stage.state)
 
+                                                                    sync_with_master(   obj=stage, 
+                                                                                        obj_type='Stage', 
+                                                                                        channel = mq_channel)
+
                                                                     self._logger.info('Stage: %s, State: %s'%
                                                                                                 (stage.uid, 
                                                                                                 stage.state))
@@ -511,6 +619,10 @@ class WFprocessor(object):
                                                                             'state, rolling back. Error: %s'%ex)
 
                                                                     stage.state = states.SCHEDULED
+
+                                                                    sync_with_master(   obj=stage, 
+                                                                                        obj_type='Stage', 
+                                                                                        channel = mq_channel)
 
                                                                     local_prof.prof('transition', 
                                                                                     uid=stage.uid, 
@@ -527,11 +639,15 @@ class WFprocessor(object):
 
                                                                 if pipe._completed:
                                                                     #self._workload.remove(pipe)                                                                    
-                                                                    pipe.state = states.SCHEDULED
+                                                                    pipe.state = states.SCHEDULED                                                                    
 
                                                                     local_prof.prof('transition', 
                                                                                     uid=pipe.uid, 
                                                                                     state=pipe.state)
+
+                                                                    sync_with_master(   obj=pipe, 
+                                                                                        obj_type='Pipe', 
+                                                                                        channel = mq_channel)
 
                                                                     self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
@@ -543,6 +659,10 @@ class WFprocessor(object):
                                                                     local_prof.prof('transition', 
                                                                                     uid=pipe.uid, 
                                                                                     state=pipe.state)
+
+                                                                    sync_with_master(   obj=pipe, 
+                                                                                        obj_type='Pipe', 
+                                                                                        channel = mq_channel)
 
                                                                     self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
@@ -575,6 +695,10 @@ class WFprocessor(object):
                                                                                         uid=stage.uid, 
                                                                                         state=stage.state)
 
+                                                                        sync_with_master(   obj=stage, 
+                                                                                            obj_type='Stage', 
+                                                                                            channel = mq_channel)
+
                                                                         self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -592,6 +716,10 @@ class WFprocessor(object):
                                                                                         uid=stage.uid, 
                                                                                         state=stage.state)
 
+                                                                        sync_with_master(   obj=stage, 
+                                                                                            obj_type='Stage', 
+                                                                                            channel = mq_channel)
+
                                                                         self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
                                                                                                     stage.state))
@@ -606,6 +734,10 @@ class WFprocessor(object):
                                                                                         uid=pipe.uid, 
                                                                                         state=pipe.state)
 
+                                                                        sync_with_master(   obj=stage, 
+                                                                                            obj_type='Stage', 
+                                                                                            channel = mq_channel)
+
                                                                         self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
                                                                                                     pipe.state))
@@ -615,6 +747,10 @@ class WFprocessor(object):
                                                                         local_prof.prof('transition', 
                                                                                         uid=pipe.uid, 
                                                                                         state=pipe.state)
+
+                                                                        sync_with_master(   obj=stage, 
+                                                                                            obj_type='Stage', 
+                                                                                            channel = mq_channel)
 
                                                                         self._logger.info('Pipe: %s, State: %s'%
                                                                                                     (pipe.uid, 
