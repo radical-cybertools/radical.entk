@@ -284,9 +284,6 @@ class Stage(object):
                                 'name': self._name,
                                 'state': self._state,
                                 'state_history': self._state_history,
-
-                                'tasks': self._tasks,
-                                'task_count': self._task_count,
                                 'parent_pipeline': self._p_pipeline
                         }
 
@@ -331,20 +328,8 @@ class Stage(object):
             else:
                 raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
-        if 'tasks' in d:
-            if isinstance(d['tasks'], set):
-                self._tasks = d['tasks']
-            else:
-                raise TypeError(entity='tasks', expected_type=set, actual_type=type(d['tasks']))
-
-        if 'task_count' in d:
-            if isinstance(d['task_count'], int):
-                self._task_count = d['task_count']
-            else:
-                raise TypeError(entity='task_count', expected_type=int, actual_type=type(d['task_count']))
-
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str):
+            if isinstance(d['parent_pipeline'], str) or isinstance(d['parent_pipeline'], unicode):
                 self._p_pipeline = d['parent_pipeline']
             else:
                 raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))

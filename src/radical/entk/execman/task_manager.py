@@ -81,8 +81,8 @@ class TaskManager(object):
 
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
-        result = channel.queue_declare(exclusive=True)
-        callback_queue = result.method.queue
+        channel.queue_delete(queue='heartbeat-req')
+        channel.queue_declare(queue='heartbeat-req')
         response = True
         
         while (response or (not self._hb_alive.is_set())):
@@ -91,9 +91,9 @@ class TaskManager(object):
         
             # Heartbeat request signal sent to task manager via rpc-queue
             channel.basic_publish(  exchange='',
-                                    routing_key='rpc_queue',
+                                    routing_key='heartbeat-req',
                                     properties=pika.BasicProperties(
-                                                reply_to = callback_queue,
+                                                reply_to = 'heartbeat-res',
                                                 correlation_id = corr_id,
                                                 ),
                                     body='request')
@@ -103,12 +103,14 @@ class TaskManager(object):
             # Ten second interval for heartbeat request to be responded to
             time.sleep(10)
 
-            method_frame, props, body = channel.basic_get(no_ack=True, queue=callback_queue)
+            method_frame, props, body = channel.basic_get(queue='heartbeat-res')
 
             if body:
                 if corr_id == props.correlation_id:
                     self._logger.info('Received heartbeat response')
                     response = True
+
+                    channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
 
 
@@ -193,21 +195,24 @@ class TaskManager(object):
 
                 channel.basic_publish(
                                         exchange='',
-                                        routing_key='rpc-queue',
+                                        routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'rpc-queue',
+                                                        reply_to = 'sync-ack',
                                                         correlation_id = corr_id
                                                         )
                                     )
             
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack')
 
                     if body:
                         if corr_id == props.correlation_id:
                             self._logger.info('%s synchronized'%obj.uid)
+
+                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
                             break
 
 
@@ -283,7 +288,8 @@ class TaskManager(object):
             mq_channel = mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_declare(queue='rpc_queue')
+            mq_channel.queue_delete(queue='heartbeat-res')
+            mq_channel.queue_declare(queue='heartbeat-res')
 
             '''
             # Function to be invoked upon request message
@@ -323,9 +329,11 @@ class TaskManager(object):
                                             uid=task.uid, 
                                             state=task.state)
 
+                            sync_with_master(task, 'Task', mq_channel)
+
                             self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))                            
 
-                            self._logger.debug('Task %s, %s; submitted to RTS'%(task.uid, task.state))
+                            self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
                             self._umgr.submit_units(create_cud_from_task(task, local_prof))
 
@@ -334,6 +342,8 @@ class TaskManager(object):
                             local_prof.prof('transition', 
                                             uid=task.uid, 
                                             state=task.state)
+
+                            sync_with_master(task, 'Task', mq_channel)
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -347,14 +357,14 @@ class TaskManager(object):
                             time.sleep(1)
 
                     # Get request from rpc_queue for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue='rpc_queue')
+                    method_frame, props, body = mq_channel.basic_get(queue='heartbeat-req')
 
                     if body:
 
                         self._logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(   exchange='',
-                                    routing_key=props.reply_to,
+                                    routing_key='heartbeat-res',
                                     properties=pika.BasicProperties(correlation_id = props.correlation_id),
                                     body='response')
 

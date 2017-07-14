@@ -5,6 +5,7 @@ __license__     = "MIT"
 import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
+from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
 from radical.entk.execman.resource_manager import ResourceManager
 from radical.entk.execman.task_manager import TaskManager
@@ -245,8 +246,10 @@ class AppManager(object):
                 #self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
                                                 # Durable Qs will not be lost if rabbitmq server crashes
 
-            self._mq_channel.queue_delete(queue='rpc-queue')
-            self._mq_channel.queue_declare(queue='rpc-queue')
+            self._mq_channel.queue_delete(queue='sync-to-master')
+            self._mq_channel.queue_declare(queue='sync-to-master')
+            self._mq_channel.queue_delete(queue='sync-ack')
+            self._mq_channel.queue_declare(queue='sync-ack')
                                                     # Durable Qs will not be lost if rabbitmq server crashes
 
 
@@ -289,7 +292,7 @@ class AppManager(object):
 
             while not self._end_sync.is_set():
 
-                method_frame, props, body = mq_channel.basic_get(queue='rpc-queue')
+                method_frame, props, body = mq_channel.basic_get(queue='sync-to-master')
 
                 """
                 The message received is a JSON object with the following structure:
@@ -313,19 +316,29 @@ class AppManager(object):
                         # Traverse the entire workflow to find the correct task
                         for pipe in self._workflow:
 
-                            if not pipe._completed:
-                                if completed_task._parent_pipeline == pipe.uid:
-                                    self._logger.info('Found parent pipeline: %s'%pipe.uid)
+                            with pipe._stage_lock:
+
+                                if not pipe._completed:
+                                    if completed_task._parent_pipeline == pipe.uid:
                                 
-                                    for stage in pipe.stages:
+                                        for stage in pipe.stages:
 
-                                        if completed_task._parent_stage == stage.uid:
-                                            self._logger.info('Found parent stage: %s'%(stage.uid))
+                                            if completed_task._parent_stage == stage.uid:
 
-                                            for task in stage.tasks:
+                                                for task in stage.tasks:
 
-                                                if completed_task.uid == task.uid:
-                                                    task.state = str(completed_task.state)
+                                                    if completed_task.uid == task.uid:
+
+                                                        self._logger.debug('Found task %s'%task.uid)
+                                                        task.state = str(completed_task.state)
+
+                                                        mq_channel.basic_publish(   exchange='',
+                                                                                    routing_key='sync-ack',
+                                                                                    properties=pika.BasicProperties(
+                                                                                        correlation_id = props.correlation_id),
+                                                                                    body='%s-ack'%task.uid)
+
+                                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
 
                     elif msg['type'] == 'Stage':
@@ -337,38 +350,59 @@ class AppManager(object):
                         # Traverse the entire workflow to find the correct stage
                         for pipe in self._workflow:
 
-                            if not pipe._completed:
-                                if completed_stage._parent_pipeline == pipe.uid:
-                                    self._logger.debug('Found parent pipeline: %s'%pipe.uid)
-                                
-                                    for stage in pipe.stages:
+                            with pipe._stage_lock:
 
-                                        if completed_stage._parent_stage == stage.uid:                                            
-                                            stage.state = str(completed_stage.state)
+                                if not pipe._completed:
+                                    if completed_stage._parent_pipeline == pipe.uid:
+                                        self._logger.info('Found parent pipeline: %s'%pipe.uid)
+                                
+                                        for stage in pipe.stages:
+
+                                            if completed_stage.uid == stage.uid:              
+
+                                                self._logger.debug('Found stage %s'%stage.uid)
+
+                                                stage.state = str(completed_stage.state)
+
+                                                mq_channel.basic_publish(   exchange='',
+                                                                            routing_key='sync-ack',
+                                                                            properties=pika.BasicProperties(
+                                                                                    correlation_id = props.correlation_id),
+                                                                            body='%s-ack'%stage.uid)
+
+                                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
 
                     elif msg['type'] == 'Pipeline':
 
                         completed_pipeline = Pipeline()
-                        completed_pipeline.from_dict(jmsg['object'])
+                        completed_pipeline.from_dict(msg['object'])
 
                         self._logger.info('Got finished pipeline %s from synchronizer queue'%(completed_pipeline.uid))
 
                         # Traverse the entire workflow to find the correct pipeline
                         for pipe in self._workflow:
 
-                            if not pipe._completed:
+                            with pipe._stage_lock:
 
-                                if completed_stage._parent_pipeline == pipe.uid:
-                                    pipe.state = str(completed_pipeline.state)
-                    
+                                if not pipe._completed:
 
-                    mq_channel.basic_publish(   exchange='',
-                                                routing_key=props.reply_to,
-                                                properties=pika.BasicProperties(correlation_id = props.correlation_id),
-                                                body='response')
+                                    if completed_pipeline.uid == pipe.uid:
 
-                    mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+                                        pipe.state = str(completed_pipeline.state)
+
+                                        if completed_pipeline._completed:
+                                            pipe._completed_flag.set()
+
+                                        self._logger.info('Found pipeline %s, state %s, completed %s'%(pipe.uid, pipe.state, pipe._completed))
+
+                                        mq_channel.basic_publish(   exchange='',
+                                                                    routing_key='sync-ack',
+                                                                    properties=pika.BasicProperties(
+                                                                                correlation_id = props.correlation_id),
+                                                                    body='%s-ack'%pipe.uid)
+
+                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
             self._prof.prof('terminating synchronizer', uid=self._uid)
 

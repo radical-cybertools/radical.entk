@@ -20,13 +20,13 @@ if __name__ == '__main__':
     p2 = Pipeline()
     p2.name = 'p2'
 
-    stages=3
+    stages=1
 
     for cnt in range(stages):
         s = Stage()
         s.name = 's_%s'%cnt
         s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
+        #s.add_tasks(create_single_task())
 
         p1.add_stages(s)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     appman = AppManager()
     appman.resource_manager = rman
-    appman.assign_workflow(set([p1,p2]))
+    appman.assign_workflow(set([p1]))
     appman.run()
 
 

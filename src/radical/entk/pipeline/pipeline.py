@@ -318,10 +318,8 @@ class Pipeline(object):
                                 'state': self._state,
                                 'state_history': self._state_history,
 
-                                'stages': self._stages,
-                                'stage_count': self._stage_count,
                                 'cur_stage': self._cur_stage,
-                                'completed': self._completed_flag
+                                'completed': self._completed_flag.is_set()
                         }
 
         return pipe_desc_as_dict
@@ -365,18 +363,6 @@ class Pipeline(object):
             else:
                 raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
-        if 'stages' in d:
-            if isinstance(d['stages'], set):
-                self._stages = d['stages']
-            else:
-                raise TypeError(entity='stages', expected_type=set, actual_type=type(d['stages']))
-
-        if 'stage_count' in d:
-            if isinstance(d['stage_count'], int):
-                self._stage_count = d['stage_count']
-            else:
-                raise TypeError(entity='stage_count', expected_type=int, actual_type=type(d['stage_count']))
-
         if 'cur_stage' in d:
             if isinstance(d['cur_stage'], int):
                 self._cur_stage = d['cur_stage']
@@ -385,7 +371,8 @@ class Pipeline(object):
 
         if 'completed' in d:
             if isinstance(d['completed'], bool):
-                self._completed_flag = d['completed']
+                if d['completed']:
+                    self._completed_flag.set()
             else:
                 raise TypeError(entity='completed', expected_type=int, actual_type=type(d['completed']))
 

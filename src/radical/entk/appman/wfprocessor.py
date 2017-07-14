@@ -245,21 +245,24 @@ class WFprocessor(object):
 
                 channel.basic_publish(
                                         exchange='',
-                                        routing_key='rpc-queue',
+                                        routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'rpc-queue',
+                                                        reply_to = 'sync-ack',
                                                         correlation_id = corr_id
                                                         )
                                     )
             
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack')
 
                     if body:
                         if corr_id == props.correlation_id:
                             self._logger.info('%s synchronized'%obj.uid)
+
+                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
                             break
 
             local_prof.prof('enqueue-thread started', uid=self._uid)
@@ -494,21 +497,24 @@ class WFprocessor(object):
 
                 channel.basic_publish(
                                         exchange='',
-                                        routing_key='rpc-queue',
+                                        routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'rpc-queue',
+                                                        reply_to = 'sync-ack',
                                                         correlation_id = corr_id
                                                         )
                                     )
             
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(no_ack=True, queue='rpc-queue')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack')
 
                     if body:
                         if corr_id == props.correlation_id:
                             self._logger.info('%s synchronized'%obj.uid)
+
+                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
                             break
 
             local_prof.prof('dequeue-thread started', uid=self._uid)
@@ -638,21 +644,7 @@ class WFprocessor(object):
                                                                     pass
 
                                                                 if pipe._completed:
-                                                                    #self._workload.remove(pipe)                                                                    
-                                                                    pipe.state = states.SCHEDULED                                                                    
-
-                                                                    local_prof.prof('transition', 
-                                                                                    uid=pipe.uid, 
-                                                                                    state=pipe.state)
-
-                                                                    sync_with_master(   obj=pipe, 
-                                                                                        obj_type='Pipe', 
-                                                                                        channel = mq_channel)
-
-                                                                    self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
-
+                                                                    #self._workload.remove(pipe) 
 
                                                                     pipe.state = states.DONE
 
@@ -661,7 +653,7 @@ class WFprocessor(object):
                                                                                     state=pipe.state)
 
                                                                     sync_with_master(   obj=pipe, 
-                                                                                        obj_type='Pipe', 
+                                                                                        obj_type='Pipeline', 
                                                                                         channel = mq_channel)
 
                                                                     self._logger.info('Pipe: %s, State: %s'%
@@ -725,22 +717,7 @@ class WFprocessor(object):
                                                                                                     stage.state))
                                                                         pipe._decrement_stage()                                    
 
-                                                                    if pipe.completed:
-
-                                                                        #self._workload.remove(pipe)
-                                                                        pipe.state = states.SCHEDULED
-
-                                                                        local_prof.prof('transition', 
-                                                                                        uid=pipe.uid, 
-                                                                                        state=pipe.state)
-
-                                                                        sync_with_master(   obj=stage, 
-                                                                                            obj_type='Stage', 
-                                                                                            channel = mq_channel)
-
-                                                                        self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
+                                                                    if pipe._completed:
 
                                                                         pipe.state = states.DONE
 
@@ -748,8 +725,8 @@ class WFprocessor(object):
                                                                                         uid=pipe.uid, 
                                                                                         state=pipe.state)
 
-                                                                        sync_with_master(   obj=stage, 
-                                                                                            obj_type='Stage', 
+                                                                        sync_with_master(   obj=pipe, 
+                                                                                            obj_type='Pipeline', 
                                                                                             channel = mq_channel)
 
                                                                         self._logger.info('Pipe: %s, State: %s'%
@@ -771,28 +748,6 @@ class WFprocessor(object):
                                         break
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                        try:
-
-                            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
-                            mq_channel = mq_connection.channel()
-
-                            mq_channel.basic_publish(   exchange='',
-                                                        routing_key='synchronizerq',
-                                                        body=body
-                                                        #properties=pika.BasicProperties(
-                                                            # make message persistent
-                                                            #delivery_mode = 2, 
-                                                            #)
-                                                    )
-
-                        except KeyboardInterrupt:
-                            raise KeyboardInterrupt
-
-                        except Exception, ex:
-
-                            self._logger.error('Error sending dequeued message to synchronizer: %s'%ex)
-                            raise
 
                         if slow_run:
                             sleep(1)
