@@ -58,3 +58,8 @@ if __name__ == '__main__':
     appman.run()
 
 
+    print p1.state_history
+    print p1.stages[0].state_history
+
+    for t in p1.stages[0].tasks:
+        print t.state_history

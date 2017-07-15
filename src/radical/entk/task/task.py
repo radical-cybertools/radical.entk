@@ -37,7 +37,7 @@ class Task(object):
         self._exit_code = None
 
         # Keep track of states attained
-        self._state_history = []
+        self._state_history = [states.INITIAL]
 
         ## The following help in updation
         # Stage this task belongs to

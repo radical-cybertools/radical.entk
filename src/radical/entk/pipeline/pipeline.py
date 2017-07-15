@@ -23,7 +23,7 @@ class Pipeline(object):
         self._state     = states.INITIAL
 
         # Keep track of states attained
-        self._state_history = []
+        self._state_history = [states.INITIAL]
 
         # To keep track of current state
         self._stage_count = len(self._stages)

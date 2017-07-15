@@ -20,7 +20,7 @@ class Stage(object):
         self._state     = states.INITIAL
 
         # Keep track of states attained
-        self._state_history = []
+        self._state_history = [states.INITIAL]
 
         # To change states
         self._task_count = len(self._tasks)

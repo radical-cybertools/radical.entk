@@ -15,7 +15,7 @@ CANCELED        = 'CANCELED'
 # unique states - Tasks
 SUBMITTING      = 'SUBMITTING'
 SUBMITTED       = 'SUBMITTED'
-COMPLETED       = 'COMPLETED'
+COMPLETED       = 'EXECUTED'
 DEQUEUEING      = 'DEQUEUEING'
 DEQUEUED        = 'DEQUEUED'        # Dequeue thread will have this state
 SYNCHRONIZING   = 'SYNCHRONIZING'
