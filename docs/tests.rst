@@ -2,7 +2,7 @@
 
 
 *****************************
-Unit tests & Functional tests
+Unit tests & Regression tests
 *****************************
 
 Following are the unit tests and functional tests currently covered in 
@@ -49,5 +49,13 @@ at every commit in every branch.
     :undoc-members:
 
 .. automodule:: radical.entk.tests.test_task_processor
+    :members:
+    :undoc-members:
+
+.. automodule:: radical.entk.tests.test_state_order
+    :members:
+    :undoc-members:
+
+.. automodule:: radical.entk.tests.test_regression_local
     :members:
     :undoc-members:

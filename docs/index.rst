@@ -16,6 +16,7 @@ Welcome to radical.entk's documentation!
    examples
    api
    tests
+   exceptions
 
 Indices and tables
 ==================

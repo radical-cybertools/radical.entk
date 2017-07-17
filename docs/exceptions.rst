@@ -10,3 +10,4 @@ complete.
 
 .. automodule:: radical.entk.exceptions
     :members:
+    :undoc-members:
