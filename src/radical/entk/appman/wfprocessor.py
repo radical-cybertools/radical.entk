@@ -115,7 +115,7 @@ class WFprocessor(object):
         try:
             for pipe in self._workflow:
                 with pipe._stage_lock:
-                    if pipe._completed:                    
+                    if pipe.completed:                    
                         pass
                     else:
                         return True
@@ -277,7 +277,7 @@ class WFprocessor(object):
 
                     with pipe._stage_lock:
 
-                        if not pipe._completed:
+                        if not pipe.completed:
     
                             #self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
     
@@ -299,25 +299,25 @@ class WFprocessor(object):
 
                                 self._logger.info('Pipe: %s, State: %s'%(pipe.uid, pipe.state))
     
-                            if pipe.stages[pipe._current_stage-1].state in [states.INITIAL]:
+                            if pipe.stages[pipe.current_stage-1].state in [states.INITIAL]:
     
                                 try:
 
                                     # Starting scheduling of tasks of current stage
-                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULING
+                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULING
                                     
                                     local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    uid=pipe.stages[pipe.current_stage-1].uid, 
+                                                    state=pipe.stages[pipe.current_stage-1].state)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe._current_stage-1].uid, 
-                                        pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe.current_stage-1].uid, 
+                                        pipe.stages[pipe.current_stage-1].state))
 
-                                    executable_stage = pipe.stages[pipe._current_stage-1]
+                                    executable_stage = pipe.stages[pipe.current_stage-1]
                                     executable_tasks = executable_stage.tasks
     
                                     tasks_submitted=False
@@ -405,18 +405,18 @@ class WFprocessor(object):
                                                 raise
                                     
                                     # All tasks of current stage scheduled
-                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULED                                    
+                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULED                                    
 
                                     local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    uid=pipe.stages[pipe.current_stage-1].uid, 
+                                                    state=pipe.stages[pipe.current_stage-1].state)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
-                                                                                pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
+                                                                                pipe.stages[pipe.current_stage-1].state))
 
                                     if tasks_submitted:
                                         tasks_submitted = False
@@ -435,18 +435,18 @@ class WFprocessor(object):
                                                         'state, rolling back. Error: %s'%ex)
     
                                     # Revert stage state
-                                    pipe.stages[pipe._current_stage-1].state = states.INITIAL
+                                    pipe.stages[pipe.current_stage-1].state = states.INITIAL
 
                                     local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    uid=pipe.stages[pipe.current_stage-1].uid, 
+                                                    state=pipe.stages[pipe.current_stage-1].state)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
-                                                                                pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
+                                                                                pipe.stages[pipe.current_stage-1].state))
 
                                     raise
 
@@ -554,7 +554,7 @@ class WFprocessor(object):
 
                             with pipe._stage_lock:
 
-                                if not pipe._completed:
+                                if not pipe.completed:
 
                                     if completed_task._parent_pipeline == pipe.uid:
 
@@ -643,7 +643,7 @@ class WFprocessor(object):
                                                                 except:
                                                                     pass
 
-                                                                if pipe._completed:
+                                                                if pipe.completed:
                                                                     #self._workload.remove(pipe) 
 
                                                                     pipe.state = states.DONE
@@ -668,7 +668,7 @@ class WFprocessor(object):
                                                                     new_task = Task()
                                                                     new_task._replicate(completed_task)
 
-                                                                    pipe.stages[pipe._current_stage-1].add_tasks(new_task)
+                                                                    pipe.stages[pipe.current_stage-1].add_tasks(new_task)
 
                                                                 except Exception, ex:
                                                                     self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -717,7 +717,7 @@ class WFprocessor(object):
                                                                                                     stage.state))
                                                                         pipe._decrement_stage()                                    
 
-                                                                    if pipe._completed:
+                                                                    if pipe.completed:
 
                                                                         pipe.state = states.DONE
 

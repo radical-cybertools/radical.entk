@@ -24,7 +24,6 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 class AppManager(object):
 
     """
-
     An application manager takes the responsibility of dispatching tasks from the various pipelines
     according to their relative order to an underlying runtime system for execution.
 
@@ -56,11 +55,11 @@ class AppManager(object):
         self._num_completed_qs = completed_qs
         self._pending_queue = list()
         self._completed_queue = list()
+
         # RabbitMQ inits
         self._mq_connection = None
         self._mq_channel = None
         self._mq_hostname = hostname
-
 
         # Threads and procs counts
         self._num_push_threads = push_threads
@@ -81,9 +80,9 @@ class AppManager(object):
 
         self._prof.prof('amgr obj created', uid=self._uid)
 
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def name(self):
@@ -119,9 +118,10 @@ class AppManager(object):
         """
 
         return self._resource_manager
-    # -----------------------------------------------
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
@@ -135,8 +135,9 @@ class AppManager(object):
     def resource_manager(self, value):
         self._resource_manager = value
 
-    # Function to add workflow to the application manager
-    # ------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def assign_workflow(self, workflow):
 
@@ -165,263 +166,7 @@ class AppManager(object):
             self._logger.error('Fatal error while adding workflow to appmanager')
             raise Error(text=ex)
 
-        
-
-    def _validate_workflow(self, workflow):
-
-        """
-        Validate whether the workflow consists of a set of pipelines
-        """
-
-        try:
-
-            self._prof.prof('validating workflow', uid=self._uid)
-
-            if not isinstance(workflow, set):
-
-                if not isinstance(workflow, list):
-                    workflow = set([workflow])
-                else:
-                    workflow = set(workflow)
-
-            for item in workflow:
-                if not isinstance(item, Pipeline):
-                    self._logger.info('workflow type incorrect')
-                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
-                                    actual_type=type(item))
-
-            self._prof.prof('workflow validated', uid=self._uid)
-
-            return workflow
-
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user ' + 
-                        '(you probably hit Ctrl+C), tring to exit gracefully...')
-            
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-
-            self._logger.error('Fatal error while adding workflow to appmanager')
-            raise Error(text=ex)
-
-
-    def _setup_mqs(self):
-
-        """
-        Setup RabbitMQ system
-        """
-
-        try:
-
-            self._prof.prof('init mqs setup', uid=self._uid)
-
-            self._logger.debug('Setting up mq connection and channel')
-
-            self._mq_connection = pika.BlockingConnection(
-                                    pika.ConnectionParameters(host=self._mq_hostname)
-                                    )
-            self._mq_channel = self._mq_connection.channel()
-
-            self._logger.debug('Connection and channel setup successful')
-
-            self._logger.debug('Setting up all exchanges and queues')
-
-            #self._mq_channel.exchange_delete(exchange='fork')
-            #self._mq_channel.exchange_declare(exchange='fork')
-
-            for i in range(1,self._num_pending_qs+1):
-                queue_name = 'pendingq-%s'%i
-                self._pending_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
-                self._mq_channel.queue_declare(queue=queue_name) 
-                                                # Durable Qs will not be lost if rabbitmq server crashes
-
-            for i in range(1,self._num_completed_qs+1):
-                queue_name = 'completedq-%s'%i
-                self._completed_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
-                self._mq_channel.queue_declare(queue=queue_name)
-                #self._mq_channel.queue_bind(exchange='fork', queue=queue_name)
-                                                # Durable Qs will not be lost if rabbitmq server crashes
-
-            self._mq_channel.queue_delete(queue='sync-to-master')
-            self._mq_channel.queue_declare(queue='sync-to-master')
-            self._mq_channel.queue_delete(queue='sync-ack')
-            self._mq_channel.queue_declare(queue='sync-ack')
-                                                    # Durable Qs will not be lost if rabbitmq server crashes
-
-
-            self._logger.debug('All exchanges and queues are setup')
-            self._prof.prof('mqs setup done', uid=self._uid)
-
-            return True
-
-
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to exit mqs setup gracefully...')
-
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-
-            self._logger.error('Error setting RabbitMQ system')
-            raise Error(text=ex)
-
-
-    def _synchronizer(self):
-
-        """
-        Thread to keep the workflow data structure in appmanager up to date
-        Instead reanalyzing every task. We now receive pipelines, stages and tasks.
-        The respective object is updated in this master process.
-        """
-
-        try:
-
-            self._prof.prof('synchronizer started', uid=self._uid)
-
-            self._logger.info('synchronizer thread started')
-
-
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
-            mq_channel = mq_connection.channel()
-
-            while not self._end_sync.is_set():
-
-                method_frame, props, body = mq_channel.basic_get(queue='sync-to-master')
-
-                """
-                The message received is a JSON object with the following structure:
-
-                msg = {
-                        'type': 'Pipeline'/'Stage'/'Task',
-                        'object': json/dict
-                        }
-                """                
-
-                if body:
-
-                    msg = json.loads(body)
-
-                    if msg['type'] == 'Task':                        
-
-                        completed_task = Task()
-                        completed_task.from_dict(msg['object'])
-                        self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
-
-                        # Traverse the entire workflow to find the correct task
-                        for pipe in self._workflow:
-
-                            with pipe._stage_lock:
-
-                                if not pipe._completed:
-                                    if completed_task._parent_pipeline == pipe.uid:
-                                
-                                        for stage in pipe.stages:
-
-                                            if completed_task._parent_stage == stage.uid:
-
-                                                for task in stage.tasks:
-
-                                                    if completed_task.uid == task.uid:
-
-                                                        self._logger.debug('Found task %s'%task.uid)
-                                                        task.state = str(completed_task.state)
-
-                                                        mq_channel.basic_publish(   exchange='',
-                                                                                    routing_key='sync-ack',
-                                                                                    properties=pika.BasicProperties(
-                                                                                        correlation_id = props.correlation_id),
-                                                                                    body='%s-ack'%task.uid)
-
-                                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-
-                    elif msg['type'] == 'Stage':
-
-                        completed_stage = Stage()
-                        completed_stage.from_dict(msg['object'])
-                        self._logger.info('Got finished stage %s from synchronizer queue'%(completed_stage.uid))
-
-                        # Traverse the entire workflow to find the correct stage
-                        for pipe in self._workflow:
-
-                            with pipe._stage_lock:
-
-                                if not pipe._completed:
-                                    if completed_stage._parent_pipeline == pipe.uid:
-                                        self._logger.info('Found parent pipeline: %s'%pipe.uid)
-                                
-                                        for stage in pipe.stages:
-
-                                            if completed_stage.uid == stage.uid:              
-
-                                                self._logger.debug('Found stage %s'%stage.uid)
-
-                                                stage.state = str(completed_stage.state)
-
-                                                mq_channel.basic_publish(   exchange='',
-                                                                            routing_key='sync-ack',
-                                                                            properties=pika.BasicProperties(
-                                                                                    correlation_id = props.correlation_id),
-                                                                            body='%s-ack'%stage.uid)
-
-                                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-
-                    elif msg['type'] == 'Pipeline':
-
-                        completed_pipeline = Pipeline()
-                        completed_pipeline.from_dict(msg['object'])
-
-                        self._logger.info('Got finished pipeline %s from synchronizer queue'%(completed_pipeline.uid))
-
-                        # Traverse the entire workflow to find the correct pipeline
-                        for pipe in self._workflow:
-
-                            with pipe._stage_lock:
-
-                                if not pipe._completed:
-
-                                    if completed_pipeline.uid == pipe.uid:
-
-                                        pipe.state = str(completed_pipeline.state)
-
-                                        if completed_pipeline._completed:
-                                            pipe._completed_flag.set()
-
-                                        self._logger.info('Found pipeline %s, state %s, completed %s'%(pipe.uid, pipe.state, pipe._completed))
-
-                                        mq_channel.basic_publish(   exchange='',
-                                                                    routing_key='sync-ack',
-                                                                    properties=pika.BasicProperties(
-                                                                                correlation_id = props.correlation_id),
-                                                                    body='%s-ack'%pipe.uid)
-
-                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-            self._prof.prof('terminating synchronizer', uid=self._uid)
-
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to terminate synchronizer thread gracefully...')
-
-            raise KeyboardInterrupt
-
-
-
-        except Exception, ex:
-
-            self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread'%ex)
-            print traceback.format_exc()
-            raise Error(text=ex)
-
-
+    
     def run(self):
 
         """
@@ -464,6 +209,7 @@ class AppManager(object):
                 self._prof.prof('starting synchronizer thread', uid=self._uid)
                 self._sync_thread.start()
 
+
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
                 self._wfp = WFprocessor(  workflow = self._workflow, 
@@ -473,6 +219,7 @@ class AppManager(object):
 
                 self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
+
 
                 # Create tmgr object
                 self._prof.prof('creating tmgr obj', uid=self._uid)
@@ -489,6 +236,9 @@ class AppManager(object):
                 active_pipe_count = len(self._workflow)   
                 finished_pipe_uids = []             
 
+
+                # We wait till all pipelines of the workflow are marked
+                # complete
                 while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
 
                     if slow_run:
@@ -500,7 +250,7 @@ class AppManager(object):
 
                             with pipe._stage_lock:
 
-                                if (pipe._completed) and (pipe.uid not in finished_pipe_uids) :
+                                if (pipe.completed) and (pipe.uid not in finished_pipe_uids) :
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     finished_pipe_uids.append(pipe.uid)
                                     active_pipe_count -= 1
@@ -616,3 +366,293 @@ class AppManager(object):
             self._prof.prof('termination done', uid=self._uid)
             
             sys.exit(1)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def _validate_workflow(self, workflow):
+
+        """
+        Purpose: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
+
+        Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
+        Pipelines themselves remain to be validated before execution.
+        """
+
+        try:
+
+            self._prof.prof('validating workflow', uid=self._uid)
+
+            if not isinstance(workflow, set):
+
+                if not isinstance(workflow, list):
+                    workflow = set([workflow])
+                else:
+                    workflow = set(workflow)
+
+            for item in workflow:
+                if not isinstance(item, Pipeline):
+                    self._logger.info('workflow type incorrect')
+                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'], 
+                                    actual_type=type(item))
+
+                item._validate()
+
+            self._prof.prof('workflow validated', uid=self._uid)
+
+            return workflow
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user ' + 
+                        '(you probably hit Ctrl+C), tring to exit gracefully...')
+            
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+
+            self._logger.error('Fatal error while adding workflow to appmanager')
+            raise Error(text=ex)
+
+
+    def _setup_mqs(self):
+
+        """
+        Purpose: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
+        between the enqueuer thread and the task manager process. We instantiate queue(s) 'completedq-*' for
+        communication between the task manager and dequeuer thread. We instantiate queue 'sync-to-master' for 
+        communication from enqueuer/dequeuer/task_manager to the synchronizer thread. We instantiate queue
+        'sync-ack' for communication from synchronizer thread to enqueuer/dequeuer/task_manager.
+
+        Details: All queues are durable: Even if the RabbitMQ server goes down, the queues are saved to disk and can
+        be retrieved. This also means that after an erroneous run the queues might still have unacknowledged messages
+        and will contain messages from that run. Hence, in every new run, we first delete the queue and create a new 
+        one.
+        """
+
+        try:
+
+            self._prof.prof('init mqs setup', uid=self._uid)
+
+            self._logger.debug('Setting up mq connection and channel')
+
+            self._mq_connection = pika.BlockingConnection(
+                                    pika.ConnectionParameters(host=self._mq_hostname)
+                                    )
+            self._mq_channel = self._mq_connection.channel()
+
+            self._logger.debug('Connection and channel setup successful')
+
+            self._logger.debug('Setting up all exchanges and queues')
+
+            for i in range(1,self._num_pending_qs+1):
+                queue_name = 'pendingq-%s'%i
+                self._pending_queue.append(queue_name)
+                self._mq_channel.queue_delete(queue=queue_name)
+                # Durable Qs will not be lost if rabbitmq server crashes
+                self._mq_channel.queue_declare(queue=queue_name, durable=True) 
+                                                
+
+            for i in range(1,self._num_completed_qs+1):
+                queue_name = 'completedq-%s'%i
+                self._completed_queue.append(queue_name)
+                self._mq_channel.queue_delete(queue=queue_name)
+                # Durable Qs will not be lost if rabbitmq server crashes
+                self._mq_channel.queue_declare(queue=queue_name, durable=True)
+                                                
+
+            self._mq_channel.queue_delete(queue='sync-to-master')
+            # Durable Qs will not be lost if rabbitmq server crashes
+            self._mq_channel.queue_declare(queue='sync-to-master', durable=True)
+            self._mq_channel.queue_delete(queue='sync-ack')
+            # Durable Qs will not be lost if rabbitmq server crashes
+            self._mq_channel.queue_declare(queue='sync-ack', durable=True)
+
+            self._logger.debug('All exchanges and queues are setup')
+            self._prof.prof('mqs setup done', uid=self._uid)
+
+            return True
+
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                'trying to exit mqs setup gracefully...')
+
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+
+            self._logger.error('Error setting RabbitMQ system')
+            raise Error(text=ex)
+
+
+    def _synchronizer(self):
+
+        """
+        Purpose: Thread in the master process to keep the workflow data 
+        structure in appmanager up to date. We receive pipelines, stages and 
+        tasks objects directly. The respective object is updated in this master 
+        process. 
+
+        Details: Important to note that acknowledgements of the type
+        channel.basic_ack() is an acknowledgement to the server that the msg
+        was received. This is not to be confused with the Ack sent to the 
+        enqueuer/dequeuer/task_manager through the sync-ack queue. 
+        """
+
+        try:
+
+            self._prof.prof('synchronizer started', uid=self._uid)
+
+            self._logger.info('synchronizer thread started')
+
+
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
+            mq_channel = mq_connection.channel()
+
+            while not self._end_sync.is_set():
+
+                method_frame, props, body = mq_channel.basic_get(queue='sync-to-master')
+
+                """
+                The message received is a JSON object with the following structure:
+
+                msg = {
+                        'type': 'Pipeline'/'Stage'/'Task',
+                        'object': json/dict
+                        }
+                """                
+
+                if body:
+
+                    msg = json.loads(body)
+
+                    if msg['type'] == 'Task':                        
+
+                        completed_task = Task()
+                        completed_task.from_dict(msg['object'])
+                        self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
+
+                        # Traverse the entire workflow to find the correct task
+                        for pipe in self._workflow:
+
+                            with pipe._stage_lock:
+
+                                if not pipe.completed:
+                                    if completed_task._parent_pipeline == pipe.uid:
+                                
+                                        for stage in pipe.stages:
+
+                                            if completed_task._parent_stage == stage.uid:
+
+                                                for task in stage.tasks:
+
+                                                    if completed_task.uid == task.uid:
+
+                                                        self._logger.debug('Found task %s'%task.uid)
+                                                        task.state = str(completed_task.state)
+
+                                                        # Reply with ack msg to the sender
+                                                        mq_channel.basic_publish(   
+                                                                            exchange='',
+                                                                            routing_key='sync-ack',
+                                                                            properties=pika.BasicProperties(
+                                                                                correlation_id = props.correlation_id),
+                                                                            body='%s-ack'%task.uid)
+
+                                                        # Acknowledge RabbitMQ server that the message was received
+                                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+
+                    elif msg['type'] == 'Stage':
+
+                        completed_stage = Stage()
+                        completed_stage.from_dict(msg['object'])
+                        self._logger.info('Got finished stage %s from synchronizer queue'%(completed_stage.uid))
+
+                        # Traverse the entire workflow to find the correct stage
+                        for pipe in self._workflow:
+
+                            with pipe._stage_lock:
+
+                                if not pipe.completed:
+                                    if completed_stage._parent_pipeline == pipe.uid:
+                                        self._logger.info('Found parent pipeline: %s'%pipe.uid)
+                                
+                                        for stage in pipe.stages:
+
+                                            if completed_stage.uid == stage.uid:              
+
+                                                self._logger.debug('Found stage %s'%stage.uid)
+
+                                                stage.state = str(completed_stage.state)
+
+                                                # Reply with ack msg to the sender
+                                                mq_channel.basic_publish(   exchange='',
+                                                                            routing_key='sync-ack',
+                                                                            properties=pika.BasicProperties(
+                                                                                correlation_id = props.correlation_id),
+                                                                            body='%s-ack'%stage.uid)
+
+                                                # Acknowledge RabbitMQ server that the message was received
+                                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+
+                    elif msg['type'] == 'Pipeline':
+
+                        completed_pipeline = Pipeline()
+                        completed_pipeline.from_dict(msg['object'])
+
+                        self._logger.info('Got finished pipeline %s from synchronizer queue'%(completed_pipeline.uid))
+
+                        # Traverse the entire workflow to find the correct pipeline
+                        for pipe in self._workflow:
+
+                            with pipe._stage_lock:
+
+                                if not pipe.completed:
+
+                                    if completed_pipeline.uid == pipe.uid:
+
+                                        pipe.state = str(completed_pipeline.state)
+
+                                        if completed_pipeline.completed:
+                                            pipe._completed_flag.set()
+
+                                        self._logger.info('Found pipeline %s, state %s, completed %s'%( pipe.uid, 
+                                                                                                        pipe.state, 
+                                                                                                        pipe.completed)
+                                                                                                    )
+
+                                        # Reply with ack msg to the sender
+                                        mq_channel.basic_publish(   exchange='',
+                                                                    routing_key='sync-ack',
+                                                                    properties=pika.BasicProperties(
+                                                                                correlation_id = props.correlation_id),
+                                                                    body='%s-ack'%pipe.uid)
+
+                                        # Acknowledge RabbitMQ server that the message was received
+                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+
+            self._prof.prof('terminating synchronizer', uid=self._uid)
+
+        except KeyboardInterrupt:
+
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                'trying to terminate synchronizer thread gracefully...')
+
+            self._end_sync.set()
+            raise KeyboardInterrupt
+
+
+
+        except Exception, ex:
+
+            self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread'%ex)
+            print traceback.format_exc()
+            raise Error(text=ex)  
+
+    # ------------------------------------------------------------------------------------------------------------------

@@ -46,9 +46,9 @@ class Task(object):
         self._p_pipeline = None
 
 
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def uid(self):
@@ -269,12 +269,11 @@ class Task(object):
         """
 
         return self._state_history
-    # -----------------------------------------------
 
 
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @uid.setter
     def uid(self, val):
@@ -398,46 +397,12 @@ class Task(object):
             self._p_pipeline = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
-    # -----------------------------------------------
-        
-    def _replicate(self, original_task):
-
-        """
-        Replicate an existing task with a new uid and INITIAL state. The change is in inplace.
-
-        :return: None
-        """
-
-        self._uid       = ru.generate_id('radical.entk.task')
-        self._name      = original_task.name
-
-        self._state     = states.INITIAL
-
-        # Attributes necessary for execution
-        self._pre_exec      = original_task.pre_exec
-        self._executable    = original_task.executable
-        self._arguments     = original_task.arguments
-        self._cores         = original_task.cores
-        self._mpi           = original_task.mpi
-        self._post_exec     = original_task.post_exec
-
-        # Data staging attributes
-        self._upload_input_data     = original_task.upload_input_data
-        self._copy_input_data       = original_task.copy_input_data
-        self._link_input_data       = original_task.link_input_data
-        self._copy_output_data      = original_task.copy_output_data
-        self._download_output_data  = original_task.download_output_data
 
 
-        self._exit_code = original_task.exit_code
 
-        ## The following help in updation
-        # Stage this task belongs to
-        self._p_stage = original_task._parent_stage
-        # Pipeline this task belongs to
-        self._p_pipeline = original_task._parent_pipeline
-
-
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def to_dict(self):
 
@@ -599,3 +564,61 @@ class Task(object):
                 self._p_pipeline = d['parent_pipeline']
             else:
                 raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def _validate(self):
+
+        """
+        Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the 
+        task. 
+        """
+
+        if self._state is not states.INITIAL:
+            raise ValueError(   object=self._uid, 
+                                attribute='state', 
+                                expected_value=states.INITIAL,
+                                actual_value=self._state)
+
+        if self._executable is None:
+            raise MissingError( object=self._uid,
+                                missing_attribute='executable')
+        
+    def _replicate(self, original_task):
+
+        """
+        Purpose: Replicate an existing task with a new uid and INITIAL state. The change is in inplace.
+        """
+
+        self._uid       = ru.generate_id('radical.entk.task')
+        self._name      = original_task.name
+
+        self._state     = states.INITIAL
+
+        # Attributes necessary for execution
+        self._pre_exec      = original_task.pre_exec
+        self._executable    = original_task.executable
+        self._arguments     = original_task.arguments
+        self._cores         = original_task.cores
+        self._mpi           = original_task.mpi
+        self._post_exec     = original_task.post_exec
+
+        # Data staging attributes
+        self._upload_input_data     = original_task.upload_input_data
+        self._copy_input_data       = original_task.copy_input_data
+        self._link_input_data       = original_task.link_input_data
+        self._copy_output_data      = original_task.copy_output_data
+        self._download_output_data  = original_task.download_output_data
+
+
+        self._exit_code = original_task.exit_code
+
+        ## The following help in updation
+        # Stage this task belongs to
+        self._p_stage = original_task._parent_stage
+        # Pipeline this task belongs to
+        self._p_pipeline = original_task._parent_pipeline
+
+    # ------------------------------------------------------------------------------------------------------------------
