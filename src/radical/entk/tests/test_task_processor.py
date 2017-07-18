@@ -8,7 +8,6 @@ def test_input_list_from_task():
 
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
-            t = list()
             get_input_list_from_task(t)
 
 
@@ -74,7 +73,6 @@ def test_output_list_from_task():
 
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
-            t = list()
             get_output_list_from_task(t)
 
 

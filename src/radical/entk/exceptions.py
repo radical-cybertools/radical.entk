@@ -14,11 +14,17 @@ class TypeError(EnTKError):
 
     def __init__ (self, expected_type, actual_type, entity=None):
         
-        msg = "Entity: %s, Expected (base) type(s) %s, but got %s."%(
-            str(entity),
-            str(expected_type), 
-            str(actual_type)
-            )
+        if entity:
+            msg = "Entity: %s, Expected (base) type(s) %s, but got %s."%(
+                str(entity),
+                str(expected_type), 
+                str(actual_type)
+                )
+        else:
+            msg = "Expected (base) type(s) %s, but got %s."%(
+                str(expected_type), 
+                str(actual_type)
+                )
         super(TypeError, self).__init__ (msg)
 
 

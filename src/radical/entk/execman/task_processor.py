@@ -19,6 +19,10 @@ def get_input_list_from_task(task):
     :return: list of RP directives for the files that need to be staged in
     """
 
+    if not isinstance(task, Task):
+        raise TypeError(expected_type=Task, actual_type=type(task))
+
+
     input_data = []
 
     if task.link_input_data:
@@ -91,6 +95,9 @@ def get_output_list_from_task(task):
     :arguments: Task 
     :return: list of RP directives for the files that need to be staged out
     """
+
+    if not isinstance(task, Task):
+        raise TypeError(expected_type=Task, actual_type=type(task))
 
     output_data = []
 
