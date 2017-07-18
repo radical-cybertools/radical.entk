@@ -1,8 +1,8 @@
 from radical.entk.execman.task_manager import TaskManager
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import ResourceManager
 import pytest
 from radical.entk.exceptions import *
-from Queue import Queue
+import os
 
 def test_tmgr_process():
 

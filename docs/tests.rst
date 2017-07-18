@@ -1,9 +1,9 @@
 .. _tests:
 
 
-*****************************
-Unit tests & Regression tests
-*****************************
+******************************
+Unit tests & Integration tests
+******************************
 
 Following are the unit tests and functional tests currently covered in 
 Ensemble Toolkit.
@@ -56,6 +56,6 @@ at every commit in every branch.
     :members:
     :undoc-members:
 
-.. automodule:: radical.entk.tests.test_regression_local
+.. automodule:: radical.entk.tests.test_integration_local
     :members:
     :undoc-members:
