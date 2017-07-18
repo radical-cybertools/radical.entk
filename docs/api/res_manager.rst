@@ -1,4 +1,4 @@
-.. _dev_res_man:
+.. _res_man:
 
 *******************
 ResourceManager API
@@ -7,4 +7,3 @@ ResourceManager API
 .. autoclass:: radical.entk.execman.resource_manager.ResourceManager
     :members:
     :undoc-members:
-    :private-members:

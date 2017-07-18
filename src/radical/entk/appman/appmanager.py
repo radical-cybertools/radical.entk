@@ -172,7 +172,9 @@ class AppManager(object):
     def run(self):
 
         """
-        **Purpose**: Run the application manager
+        **Purpose**: Run the application manager. Once the workflow and resource manager have been assigned. Invoking this
+        method will start the setting up the communication infrastructure, submitting a resource request and then
+        submission of all the tasks.
         """
 
         try:
@@ -196,7 +198,8 @@ class AppManager(object):
                 setup = self._setup_mqs()
 
                 if not setup:
-                    raise
+                    self._logger.error('RabbitMQ system not available')
+                    raise Error(text="RabbitMQ setup failed")
 
 
                 # Submit resource request

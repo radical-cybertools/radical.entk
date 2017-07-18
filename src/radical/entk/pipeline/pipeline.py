@@ -232,6 +232,73 @@ class Pipeline(object):
             raise Error(text=ex)
 
 
+    def to_dict(self):
+
+
+        """
+        Convert current Pipeline into a dictionary
+
+        :return: python dictionary
+        """
+
+        pipeline_desc_as_dict = {
+
+                                'uid': self._uid,
+                                'name': self._name,
+                                'state': self._state,
+                                'state_history': self._state_history,
+                                'completed': self._completed_flag.is_set()
+                        }
+
+        return pipeline_desc_as_dict
+
+
+    def from_dict(self, d):
+
+        """
+        Create a Pipeline from a dictionary. The change is in inplace.
+
+        :argument: python dictionary
+        :return: None
+        """
+
+
+        if 'uid' in d:
+            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
+                self._uid   = d['uid']
+            else:
+                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
+
+        if 'name' in d:
+            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+                self._name = d['name']
+            else:
+                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
+
+        if 'state' in d:
+            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
+                self._state = d['state']
+            else:
+                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+
+        else:
+            self._state = states.INITIAL
+
+
+        if 'state_history' in d:
+            if isinstance(d['state_history'], list):
+                self._state_history = d['state_history']
+            else:
+                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+
+        if 'completed' in d:
+            if isinstance(d['completed'], bool):
+                if d['completed']:
+                    self._completed_flag.set()
+            else:
+                raise TypeError(entity='completed', expected_type=bool, actual_type=type(d['completed']))
+
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------

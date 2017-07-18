@@ -1,4 +1,4 @@
-.. _wfp:
+.. _dev_wfp:
 
 ***************
 WFProcessor API
@@ -7,3 +7,4 @@ WFProcessor API
 .. autoclass:: radical.entk.appman.wfprocessor.WFprocessor
     :members:
     :undoc-members:
+    :private-members:

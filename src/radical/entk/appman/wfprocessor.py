@@ -776,7 +776,7 @@ class WFprocessor(object):
         """
         **Purpose**: Method to start the wfp process. The wfp function
         is not to be accessed directly. The function is started in a separate
-        thread using this method.
+        process using this method.
         """
 
         if not self._wfp_process:
@@ -832,7 +832,7 @@ class WFprocessor(object):
             self._prof.close()
 
         except Exception, ex:
-            self._logger.error('Could not terminate wfprocessor process')``
+            self._logger.error('Could not terminate wfprocessor process')
             raise Error(text=ex)
 
     def workflow_incomplete(self):

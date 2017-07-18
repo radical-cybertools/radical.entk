@@ -469,7 +469,7 @@ class Task(object):
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
-            self._state = states.UNSCHEDULED
+            self._state = states.INITIAL
 
 
         if 'state_history' in d:

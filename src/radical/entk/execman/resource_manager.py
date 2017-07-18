@@ -16,8 +16,7 @@ class ResourceManager(object):
 
     :arguments: 
         :resource_desc: dictionary with details of the resource request + access credentials of the user 
-
-    Example: resource_desc = {  'resource': 'xsede.stampede', 'walltime': 120, 'cores': 64, 'project: 'TG-abcxyz'}
+        :example: resource_desc = {  'resource': 'xsede.stampede', 'walltime': 120, 'cores': 64, 'project: 'TG-abcxyz'}
 
     """
 
