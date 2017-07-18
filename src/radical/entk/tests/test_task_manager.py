@@ -1,4 +1,4 @@
-from radical.entk.appman.wfprocessor import TaskManager
+from radical.entk.execman.task_manager import TaskManager
 from radical.entk import Pipeline, Stage, Task
 import pytest
 from radical.entk.exceptions import *

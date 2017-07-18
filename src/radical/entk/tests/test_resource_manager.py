@@ -148,5 +148,5 @@ def test_resource_request():
 
     rm._cancel_resource_request()
 
-    assert rm.pilot.state == rp.CANCELED
+    assert rm.pilot.state == rp.CANCELED or rm.pilot.state == rp.DONE
     
