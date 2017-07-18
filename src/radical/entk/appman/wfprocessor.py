@@ -19,6 +19,18 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class WFprocessor(object):
 
+    """
+    An WFProcessor (workflow processor) takes the responsibility of dispatching tasks from the various pipelines of the
+    workflow according to their relative order to the TaskManager. All state updates are communicated to the AppManager.
+
+    :Arguments:
+        :workflow: COPY of the entire workflow existing in the AppManager 
+        :pending_qs: number of queues to hold pending tasks
+        :completed_qs: number of queues to hold completed tasks
+        :mq_hostname: hostname where the RabbitMQ is live
+    """
+
+
     def __init__(self, workflow, pending_queue, completed_queue, mq_hostname):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
@@ -51,85 +63,18 @@ class WFprocessor(object):
         self._prof.prof('wfp obj created', uid=self._uid)
     
 
-    def start_processor(self):
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private Methods
+    # ------------------------------------------------------------------------------------------------------------------
 
-        # This method starts the extractor function in a separate thread
-        if not self._wfp_process:
+    def _wfp(self):
 
-            try:
-
-                self._prof.prof('creating wfp process', uid=self._uid)
-                self._wfp_process = Process(target=self.wfp_process, name='wfprocessor')
-
-                self._enqueue_thread = None
-                self._dequeue_thread = None
-                self._enqueue_thread_terminate = threading.Event()
-                self._dequeue_thread_terminate = threading.Event()
-
-                self._wfp_terminate = Event()
-                self._logger.info('Starting WFprocessor process')
-                self._prof.prof('starting wfp process', uid=self._uid)
-                self._wfp_process.start()                
-
-                return True
-
-            except Exception, ex:
-
-                self.end_processor()
-                self._logger.error('WFprocessor not started')
-                raise            
-
-        else:
-            self._logger.info('WFprocessor already running')
-
-            raise
-
-
-
-    def end_processor(self):
-
-        # Set termination flag
-        try:
-            #if not self._wfp_terminate.is_set():
-            
-            self._wfp_terminate.set()
-            self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
-
-            if self.check_alive():
-                self._wfp_process.join()
-                self._logger.debug('WFprocessor process terminated')
-            else:
-                self._logger.debug('WFprocessor process already terminated')
-
-            self._prof.prof('wfp process terminated', uid=self._uid)
-
-            self._prof.close()
-
-        except Exception, ex:
-            self._logger.error('Could not terminate wfprocessor process')
-
-            raise
-
-    def workflow_incomplete(self):
-        
-        try:
-            for pipe in self._workflow:
-                with pipe._stage_lock:
-                    if pipe.completed:                    
-                        pass
-                    else:
-                        return True
-            return False
-
-        except KeyboardInterrupt:
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-            self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
-            raise
-
-
-    def wfp_process(self):
+        """
+        **Purpose**: This is the function executed in the wfp process. The function is used to simply create
+        and spawn two threads: enqueue, dequeue. The enqueue thread pushes ready tasks to the queues in the pending_q 
+        list whereas the dequeue thread pulls completed tasks from the queues in the completed_q. This function is also
+        responsible for the termination of these threads and hence blocking.
+        """
 
         try:
 
@@ -148,7 +93,7 @@ class WFprocessor(object):
                     if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
 
                         local_prof.prof('creating dequeue-thread', uid=self._uid)
-                        self._dequeue_thread = threading.Thread(target=self.dequeue, args=(local_prof,), name='dequeue-thread')
+                        self._dequeue_thread = threading.Thread(target=self._dequeue, args=(local_prof,), name='dequeue-thread')
 
                         self._logger.info('Starting dequeue-thread')
                         local_prof.prof('starting dequeue-thread', uid=self._uid)
@@ -158,7 +103,7 @@ class WFprocessor(object):
                     if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
 
                         local_prof.prof('creating enqueue-thread', uid=self._uid)
-                        self._enqueue_thread = threading.Thread(target=self.enqueue, args=(local_prof,), name='enqueue-thread')
+                        self._enqueue_thread = threading.Thread(target=self._enqueue, args=(local_prof,), name='enqueue-thread')
 
                         self._logger.info('Starting enqueue-thread')
                         local_prof.prof('starting enqueue-thread', uid=self._uid)
@@ -225,13 +170,25 @@ class WFprocessor(object):
             raise Error(text=ex)           
 
 
-    def enqueue(self, local_prof):
+    def _enqueue(self, local_prof):
+
+        """
+        **Purpose**: This is the function that is run in the enqueue thread. This function extracts Tasks from the 
+        copy of workflow that exists in the WFprocessor object and pushes them to the queues in the pending_q list.
+        Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
+        communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
+        queues to communicate with the master.
+
+        Details: Termination condition of this thread is set by the wfp process.
+        """
 
         try:
 
             def sync_with_master(obj, obj_type, channel):
 
+                # Convert object to dictionary so that we can JSON-ify it for communication.
                 object_as_dict = {'object': obj.to_dict()}
+
                 if obj_type == 'Task': 
                     object_as_dict['type'] = 'Task'
 
@@ -241,8 +198,11 @@ class WFprocessor(object):
                 elif obj_type == 'Pipeline':
                     object_as_dict['type'] = 'Pipeline'
 
+                # Assign a unique number to the message so that RabbitMQ can differentiate
                 corr_id = str(uuid.uuid4())
 
+                # Send the message to the 'sync-to-master' queue which will be polled by the synchronizer in the
+                # AppManager
                 channel.basic_publish(
                                         exchange='',
                                         routing_key='sync-to-master',
@@ -254,13 +214,16 @@ class WFprocessor(object):
                                     )
             
                 while True:
-                    #self._logger.info('waiting for ack')
+                    
+                    # Wait for message from the synchronizer before moving forward
                     method_frame, props, body = channel.basic_get(queue='sync-ack')
 
                     if body:
+
                         if corr_id == props.correlation_id:
                             self._logger.info('%s synchronized'%obj.uid)
 
+                            # Acknowledge reception of the message
                             channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
                             break
@@ -278,9 +241,7 @@ class WFprocessor(object):
                     with pipe._stage_lock:
 
                         if not pipe.completed:
-    
-                            #self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
-    
+      
                             # Test if the pipeline is already in the final state
                             if pipe.state in states.FINAL:
                                 continue
@@ -333,7 +294,6 @@ class WFprocessor(object):
                                             # Try-exception block for tasks
                                             try:
     
-                                                # Update specific task's state to scheduling
                                                 executable_task.state = states.SCHEDULING
 
                                                 local_prof.prof('transition', 
@@ -353,6 +313,9 @@ class WFprocessor(object):
                                                                             %(executable_task.uid,
                                                                                 self._pending_queue[0])
                                                                         )
+
+
+                                                # Put the task on one of the pending_queues
 
                                                 mq_channel.basic_publish(   exchange='',
                                                                             routing_key=self._pending_queue[0],
@@ -477,13 +440,25 @@ class WFprocessor(object):
 
 
 
-    def dequeue(self, local_prof):
+    def _dequeue(self, local_prof):
+
+        """
+        **Purpose**: This is the function that is run in the dequeue thread. This function extracts Tasks from the 
+        completed queus and updates the copy of workflow that exists in the WFprocessor object.
+        Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
+        communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
+        queues to communicate with the master.
+
+        Details: Termination condition of this thread is set by the wfp process.
+        """
 
         try:
 
             def sync_with_master(obj, obj_type, channel):
 
+                # Convert object to dictionary so that we can JSON-ify it for communication.
                 object_as_dict = {'object': obj.to_dict()}
+
                 if obj_type == 'Task': 
                     object_as_dict['type'] = 'Task'
 
@@ -493,8 +468,11 @@ class WFprocessor(object):
                 elif obj_type == 'Pipeline':
                     object_as_dict['type'] = 'Pipeline'
 
+                # Assign a unique number to the message so that RabbitMQ can differentiate
                 corr_id = str(uuid.uuid4())
 
+                # Send the message to the 'sync-to-master' queue which will be polled by the synchronizer in the
+                # AppManager
                 channel.basic_publish(
                                         exchange='',
                                         routing_key='sync-to-master',
@@ -506,13 +484,16 @@ class WFprocessor(object):
                                     )
             
                 while True:
-                    #self._logger.info('waiting for ack')
+                    
+                    # Wait for message from the synchronizer before moving forward
                     method_frame, props, body = channel.basic_get(queue='sync-ack')
 
                     if body:
+
                         if corr_id == props.correlation_id:
                             self._logger.info('%s synchronized'%obj.uid)
 
+                            # Acknowledge reception of the message
                             channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
                             break
@@ -550,6 +531,8 @@ class WFprocessor(object):
                                                                     completed_task.state)
                                                                 )
 
+
+                        # Traverse the entire workflow to find out the correct Task
                         for pipe in self._workflow:
 
                             with pipe._stage_lock:
@@ -783,6 +766,102 @@ class WFprocessor(object):
             raise Error(text=ex)
 
 
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public Methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def start_processor(self):
+
+        """
+        **Purpose**: Method to start the wfp process. The wfp function
+        is not to be accessed directly. The function is started in a separate
+        thread using this method.
+        """
+
+        if not self._wfp_process:
+
+            try:
+
+                self._prof.prof('creating wfp process', uid=self._uid)
+                self._wfp_process = Process(target=self._wfp, name='wfprocessor')
+
+                self._enqueue_thread = None
+                self._dequeue_thread = None
+                self._enqueue_thread_terminate = threading.Event()
+                self._dequeue_thread_terminate = threading.Event()
+
+                self._wfp_terminate = Event()
+                self._logger.info('Starting WFprocessor process')
+                self._prof.prof('starting wfp process', uid=self._uid)
+                self._wfp_process.start()                
+
+                return True
+
+            except Exception, ex:
+
+                self.end_processor()
+                self._logger.error('WFprocessor not started')
+                raise Error(text=ex)      
+
+        else:
+            self._logger.info('WFprocessor already running')
+
+
+    def end_processor(self):
+
+        """
+        **Purpose**: Method to terminate the wfp process. This method is 
+        blocking as it waits for the wfp process to terminate (aka join).
+        """
+
+        try:
+            #if not self._wfp_terminate.is_set():
+            
+            self._wfp_terminate.set()
+            self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
+
+            if self.check_alive():
+                self._wfp_process.join()
+                self._logger.debug('WFprocessor process terminated')
+            else:
+                self._logger.debug('WFprocessor process already terminated')
+
+            self._prof.prof('wfp process terminated', uid=self._uid)
+
+            self._prof.close()
+
+        except Exception, ex:
+            self._logger.error('Could not terminate wfprocessor process')``
+            raise Error(text=ex)
+
+    def workflow_incomplete(self):
+
+        """
+        **Purpose**: Method to check if the workflow execution is incomplete.
+        """
+        
+        try:
+            for pipe in self._workflow:
+                with pipe._stage_lock:
+                    if pipe.completed:                    
+                        pass
+                    else:
+                        return True
+            return False
+
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+            self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
+            raise
+
+
     def check_alive(self):
+
+        """
+        **Purpose**: Method to check if the wfp process is alive
+        """
 
         return self._wfp_process.is_alive()

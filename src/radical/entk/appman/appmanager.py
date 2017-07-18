@@ -24,16 +24,17 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 class AppManager(object):
 
     """
-    An application manager takes the responsibility of dispatching tasks from the various pipelines
-    according to their relative order to an underlying runtime system for execution.
+    An application manager takes the responsibility of setting up the communication infrastructure, instantiates the
+    ResourceManager, TaskManager, WFProcessor objects and all their threads and processes. This is the Master object
+    running in the main process and is designed to recover from errors from all other objects, threads and processes.
 
     :Arguments:
         :hostname: host rabbitmq server is running
         :push_threads: number of threads to push tasks on the pending_qs
         :pull_threads: number of threads to pull tasks from the completed_qs
         :sync_threads: number of threads to pull task from the synchronizer_q
-        :pending_qs: number of queues to hold pending tasks to be pulled by the helper/execution manager
-        :completed_qs: number of queues to hold completed tasks pushed by the helper/execution manager
+        :pending_qs: number of queues to hold pending tasks to be pulled by the task manager
+        :completed_qs: number of queues to hold completed tasks pushed by the task manager
     """
 
 
@@ -41,8 +42,8 @@ class AppManager(object):
                 sync_threads=1, pending_qs=1, completed_qs=1):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
-        self._logger = ru.get_logger('radical.entk.appmanager')
-        self._prof = ru.Profiler(name = self._uid)
+        self._logger    = ru.get_logger('radical.entk.appmanager')
+        self._prof      = ru.Profiler(name = self._uid)
 
         self._prof.prof('create amgr obj', uid=self._uid)
 
