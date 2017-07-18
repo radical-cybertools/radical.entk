@@ -5,6 +5,10 @@ import pytest
 
 def test_stage_initialization():
 
+    """
+    ***Purpose***: Test if all attributes have, thus expect, the correct data types
+    """
+
     s = Stage()
 
     assert type(s._uid) == str
@@ -16,6 +20,10 @@ def test_stage_initialization():
     assert s._parent_pipeline == None
 
 def test_assignment_exceptions():
+
+    """
+    ***Purpose***: Test if correct exceptions are raised when attributes are assigned unacceptable values.
+    """
 
     s = Stage()
 
@@ -45,6 +53,10 @@ def test_assignment_exceptions():
 
 def test_task_assignment_in_stage():
 
+    """
+    ***Purpose***: Test if necessary attributes are automatically updates upon task assignment
+    """
+
     s = Stage()
     t = Task()
     s.tasks = t
@@ -55,6 +67,10 @@ def test_task_assignment_in_stage():
 
 
 def test_task_addition_in_stage():
+
+    """
+    ***Purpose***: Test if necessary attributes are automatically updates upon task addition
+    """
 
     s = Stage()
     t1 = Task()
@@ -80,6 +96,10 @@ def test_task_addition_in_stage():
 
 def test_task_removal_from_stage():
 
+    """
+    ***Purpose***: Test if necessary attributes are automatically updates upon task removal
+    """
+
     s = Stage()
     t1 = Task()
     t1.name = 't1'
@@ -102,16 +122,11 @@ def test_task_removal_from_stage():
     assert s._task_count == 1
     
 
-def test_uid_assignment():
-
-    p = Pipeline()
-    s = Stage()
-    p.stages    = s
-
-    assert s._parent_pipeline == p.uid
-
-
 def test_uid_passing():
+
+    """
+    ***Purpose***: Test automatic uid assignments of all Stages and Tasks of a Pipeline
+    """
 
     p = Pipeline()
     s = Stage()
@@ -124,6 +139,10 @@ def test_uid_passing():
     assert t._parent_stage == s.uid
 
 def test_task_set_state():
+
+    """
+    ***Purpose***: Test method to set state of all Tasks of a Stage
+    """
 
     s = Stage()
     t1 = Task()
@@ -138,6 +157,9 @@ def test_task_set_state():
     assert t2.state == states.DONE
 
 def test_check_stage_complete():
+    """
+    ***Purpose***: Test method to test if all Tasks of a Stage are DONE and hence the Stage is DONE
+    """
 
     s = Stage()
     t1 = Task()

@@ -456,4 +456,13 @@ class TaskManager(object):
 
         return self._tmgr_process.is_alive()
 
+
+    def check_heartbeat(self):
+
+        """
+        **Purpose**: Check if the heartbeat thread is alive and running
+        """
+
+        return self._hb_thread.is_alive()
+
     # ------------------------------------------------------------------------------------------------------------------

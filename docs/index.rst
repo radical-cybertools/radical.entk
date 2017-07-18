@@ -8,6 +8,7 @@ Welcome to radical.entk's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
    :caption: Contents:
 
    introduction

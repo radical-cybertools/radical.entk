@@ -6,6 +6,11 @@ import os, pytest, shutil, glob
 
 def test_input_list_from_task():
 
+    """
+    **Purpose**: Test if the 'get_input_list_from_task' function generates the correct RP input transfer directives
+    when given a Task
+    """
+
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
             get_input_list_from_task(t)
@@ -71,6 +76,12 @@ def test_input_list_from_task():
 
 def test_output_list_from_task():
 
+    """
+    **Purpose**: Test if the 'get_output_list_from_task' function generates the correct RP output transfer directives
+    when given a Task
+    """
+
+
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
             get_output_list_from_task(t)
@@ -116,6 +127,11 @@ def test_output_list_from_task():
 
 def test_create_cud_from_task():
 
+    """
+    **Purpose**: Test if the 'create_cud_from_task' function generates a RP ComputeUnitDescription with the complete
+    Task description
+    """
+
     t1 = Task()
     t1.name = 'simulation'
     t1.pre_exec = ['module load gromacs']
@@ -155,6 +171,12 @@ def test_create_cud_from_task():
     assert {'source':'download_output.dat', 'target':'download_output.dat'} in cud.output_staging
 
 def test_create_task_from_cu():
+
+    """
+    **Purpose**: Test if the 'create_task_from_cu' function generates a Task with the correct uid, parent_stage and
+    parent_pipeline from a RP ComputeUnit
+    """
+
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk@ds129010.mlab.com:29010/test_entk'
     session = rp.Session()

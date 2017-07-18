@@ -99,17 +99,18 @@ class AppManager(object):
 
         return self._name
 
+    """
     @property
     def resubmit_failed(self):
 
-        """
+        
         Enable resubmission of failed tasks
 
         :getter: Returns the value of the resubmission flag
         :setter: Assigns a boolean value for the resubmission flag
-        """
+        
         return self._resubmit_failed
-    
+    """
 
     @property
     def resource_manager(self):
@@ -127,15 +128,27 @@ class AppManager(object):
 
     @name.setter
     def name(self, value):
-        self._name = value
 
+        if not instantiate(value, str):
+            raise TypeError(expected_type=str, actual_type=type(value))
+
+        else:
+            self._name = value
+
+
+    """
     @resubmit_failed.setter
     def resubmit_failed(self, value):
         self._resubmit_failed = value
+    """
 
     @resource_manager.setter
     def resource_manager(self, value):
-        self._resource_manager = value
+
+        if not isinstance(value, ResourceManager):
+            raise TypeError(expected_type=ResourceManager, actual_type=type(value))
+        else:
+            self._resource_manager = value
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -182,12 +195,12 @@ class AppManager(object):
             if not self._workflow:
                 print 'Assign workflow before invoking run method - cannot proceed'
                 self._logger.error('No workflow assigned currently, please check your script')
-                raise ValueError(expected_value='set of pipelines', actual_value=None)
+                raise MissingError(obj=self._uid, missing_attribute='workflow')
 
 
             if not self._resource_manager:
                 self._logger.error('No resource manager assigned currently, please create and add a valid resource manager')
-                raise ValueError(expected_value=ResourceManager, actual_value=None)
+                raise MissingError(obj=self._uid, missing_attribute='resource_manager')
 
             else:
 

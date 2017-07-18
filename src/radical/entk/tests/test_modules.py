@@ -1,7 +1,7 @@
 def test_user_module_loads():
 
     """
-    Test if the user components can be imported by the user
+    **Purpose**: Test if all the user components can be imported by the user
     """
 
     import radical.entk

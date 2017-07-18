@@ -6,7 +6,7 @@ import pytest, threading
 def test_pipeline_initialization():
 
     """
-    Test if pipeline attributes are correctly initialized upon creation
+    ***Purpose***: Test if pipeline attributes are correctly initialized upon creation
     """
 
     p = Pipeline()
@@ -22,6 +22,10 @@ def test_pipeline_initialization():
     assert p._completed_flag.is_set() == False
 
 def test_assignment_exceptions():
+
+    """
+    ***Purpose***: Test values that can be assigned to Pipeline attributes
+    """
 
     p = Pipeline()
 
@@ -45,6 +49,10 @@ def test_assignment_exceptions():
    
 def test_stage_assignment_in_pipeline():
 
+    """
+    ***Purpose***: Test stage assignment to Pipeline
+    """
+
     p = Pipeline()
     s = Stage()
     p.stages = s
@@ -56,6 +64,10 @@ def test_stage_assignment_in_pipeline():
     
 
 def test_stage_addition_in_pipeline():
+
+    """
+    ***Purpose***: Test stage addition to Pipeline
+    """
 
     p = Pipeline()
     s1 = Stage()
@@ -70,6 +82,10 @@ def test_stage_addition_in_pipeline():
 
 
 def test_stage_removal_from_pipeline():
+
+    """
+    ***Purpose***: Test stage removal from Pipeline
+    """
 
     p = Pipeline()
     s1 = Stage()
@@ -105,6 +121,10 @@ def test_stage_removal_from_pipeline():
 
 def test_pipeline_increment():
 
+    """
+    ***Purpose***: Test automatic increment of stage pointer in Pipeline
+    """
+
     p = Pipeline()
     s1 = Stage()
     s2 = Stage()
@@ -126,6 +146,10 @@ def test_pipeline_increment():
 
 
 def test_pipeline_decrement():
+
+    """
+    ***Purpose***: Test automatic decrement of stage pointer in Pipeline
+    """
 
     p = Pipeline()
     s1 = Stage()
@@ -150,6 +174,10 @@ def test_pipeline_decrement():
 
 
 def test_uid_passing():
+
+    """
+    ***Purpose***: Test automatic uid assignments of all Stages of a Pipeline
+    """
 
     p = Pipeline()
     s = Stage()

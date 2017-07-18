@@ -5,6 +5,11 @@ import radical.pilot as rp
 
 def test_resource_manager_initialization():
 
+    """
+    ***Purpose***:  Test initialization of all attributes of resource manager upon instantiation with a 
+    resource description
+    """
+
     res_dict = {
                     'resource': 'local.localhost',
                     'walltime': 40,
@@ -27,6 +32,10 @@ def test_resource_manager_initialization():
 
 
 def test_validate_resource_description():
+
+    """
+    ***Purpose***: Test method that validates the resource description
+    """
 
     res_dict = {
                     'resource': 'local.localhost',
@@ -92,6 +101,10 @@ def test_validate_resource_description():
 
 def test_resource_manager_populate():
 
+    """
+    ***Purpose***: Test method that populates all the attributes of ResourceManager with a valid resource description.
+    """
+
     res_dict = {
                     'resource': 'local.localhost',
                     'walltime': 40,
@@ -111,10 +124,12 @@ def test_resource_manager_populate():
 
 
 def test_resource_request():
-    
-    pass
 
-    '''
+    """
+    ***Purpose***: Test the submission and cancelation of a resource request. Check states that pilot starts and 
+    ends with.
+    """
+    
     res_dict = {
                     'resource': 'local.localhost',
                     'walltime': 40,
@@ -134,4 +149,4 @@ def test_resource_request():
     rm._cancel_resource_request()
 
     assert rm.pilot.state == rp.CANCELED
-    '''
+    

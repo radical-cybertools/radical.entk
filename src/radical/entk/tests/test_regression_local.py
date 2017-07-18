@@ -6,6 +6,11 @@ import os
 
 def test_regression_local():
 
+    """
+    ***Purpose***: Run end-to-end application on localhost. Application 
+    consists of 1 Pipeline with 1 Stage with 1 Task.
+    """
+
     def create_single_task():
 
         t1 = Task()
