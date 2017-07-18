@@ -14,13 +14,11 @@ class ResourceManager(object):
     DCIs. Currently, the runtime system being used is RADICAL Pilot and hence the resource request is made via
     Pilot Jobs.
 
-    :resource_desc: dictionary with details of the resource request + access credentials of the user 
+    :arguments: 
+        :resource_desc: dictionary with details of the resource request + access credentials of the user 
 
-    Example: resource_desc = {  'resource': 'xsede.stampede',
-                                'walltime': 120,
-                                'cores': 64,
-                                'project: 'TG-abcxyz'
-                            }
+    Example: resource_desc = {  'resource': 'xsede.stampede', 'walltime': 120, 'cores': 64, 'project: 'TG-abcxyz'}
+
     """
 
     def __init__(self, resource_desc):
@@ -150,7 +148,7 @@ class ResourceManager(object):
     def _validate_resource_desc(self, resource_desc):
 
         """
-        Purpose: Validate the resource description that was provided to ResourceManager
+        **Purpose**: Validate the resource description that was provided to ResourceManager
 
         :arguments: dictionary consisting of details of the resource request
         :return: boolean (valid/invalid)
@@ -205,7 +203,7 @@ class ResourceManager(object):
     def _populate(self, resource_desc):
 
         """
-        Purpose: Populate the ResourceManager attributes with values provided in the resource description
+        **Purpose**: Populate the ResourceManager attributes with values provided in the resource description
 
         :arguments: valid dictionary consisting of details of the resource request
         """
@@ -237,7 +235,7 @@ class ResourceManager(object):
     def _submit_resource_request(self):
 
         """
-        Purpose: Function to initiate the resource request.
+        **Purpose**: Function to initiate the resource request.
 
         Details: Currently, submits a Pilot job using the RADICAL Pilot runtime system.
         """
@@ -312,7 +310,7 @@ class ResourceManager(object):
     def _cancel_resource_request(self):
 
         """
-        Purpose: Cancel the resource request
+        **Purpose**: Cancel the resource request
         """
 
         try:

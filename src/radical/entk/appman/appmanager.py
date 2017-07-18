@@ -27,12 +27,13 @@ class AppManager(object):
     An application manager takes the responsibility of dispatching tasks from the various pipelines
     according to their relative order to an underlying runtime system for execution.
 
-    :hostname: host rabbitmq server is running
-    :push_threads: number of threads to push tasks on the pending_qs
-    :pull_threads: number of threads to pull tasks from the completed_qs
-    :sync_threads: number of threads to pull task from the synchronizer_q
-    :pending_qs: number of queues to hold pending tasks to be pulled by the helper/execution manager
-    :completed_qs: number of queues to hold completed tasks pushed by the helper/execution manager
+    :Arguments:
+        :hostname: host rabbitmq server is running
+        :push_threads: number of threads to push tasks on the pending_qs
+        :pull_threads: number of threads to pull tasks from the completed_qs
+        :sync_threads: number of threads to pull task from the synchronizer_q
+        :pending_qs: number of queues to hold pending tasks to be pulled by the helper/execution manager
+        :completed_qs: number of queues to hold completed tasks pushed by the helper/execution manager
     """
 
 
@@ -142,7 +143,7 @@ class AppManager(object):
     def assign_workflow(self, workflow):
 
         """
-        Assign workflow to the application manager to be executed
+        **Purpose**: Assign workflow to the application manager to be executed
 
         :arguments: set of Pipelines
         """
@@ -170,7 +171,7 @@ class AppManager(object):
     def run(self):
 
         """
-        Run the application manager
+        **Purpose**: Run the application manager
         """
 
         try:
@@ -374,7 +375,7 @@ class AppManager(object):
     def _validate_workflow(self, workflow):
 
         """
-        Purpose: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
+        **Purpose**: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
 
         Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
         Pipelines themselves remain to be validated before execution.
@@ -419,7 +420,7 @@ class AppManager(object):
     def _setup_mqs(self):
 
         """
-        Purpose: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
+        **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
         between the enqueuer thread and the task manager process. We instantiate queue(s) 'completedq-*' for
         communication between the task manager and dequeuer thread. We instantiate queue 'sync-to-master' for 
         communication from enqueuer/dequeuer/task_manager to the synchronizer thread. We instantiate queue
@@ -491,7 +492,7 @@ class AppManager(object):
     def _synchronizer(self):
 
         """
-        Purpose: Thread in the master process to keep the workflow data 
+        **Purpose**: Thread in the master process to keep the workflow data 
         structure in appmanager up to date. We receive pipelines, stages and 
         tasks objects directly. The respective object is updated in this master 
         process. 

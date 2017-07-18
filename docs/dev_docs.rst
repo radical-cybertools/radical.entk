@@ -9,4 +9,4 @@ Developer Documentation
    :maxdepth: 2
 
    ./dev_docs/uml
-   ./dev_docs/api
+   ./dev_docs/dev_api

@@ -21,6 +21,22 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class TaskManager(object):
 
+    """
+    A Task Manager takes the responsibility of dispatching tasks it receives from a queue for execution on to 
+    the available resources using a runtime system. In this case, the runtime system being used RADICAL Pilot. Once 
+    the tasks have completed execution, they are pushed on to another queue for other components of EnTK to access.
+
+
+    :arguments:
+        :pending_queue: List of queue(s) with tasks ready to be executed. Currently, only one queue.
+        :completed_queue: List of queue(s) with tasks that have finished execution. Currently, only one queue.
+        :mq_hostname: Name of the host where RabbitMQ is running
+        :rmgr: ResourceManager object to be used to access the Pilot where the tasks can be submitted
+
+    Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of 
+    queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
+    """
+
     def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
@@ -44,38 +60,16 @@ class TaskManager(object):
         self._prof.prof('tmgr obj created', uid=self._uid)        
 
 
-    def start_heartbeat(self):
 
-        self._logger.info('Starting hearbeat thread')
-        self._prof.prof('creating heartbeat thread', uid=self._uid)
-        self._hb_thread = threading.Thread(target=self.heartbeat, name='heartbeat')
-        self._hb_alive = threading.Event()
-        self._prof.prof('starting heartbeat thread', uid=self._uid)
-        self._hb_thread.start()
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private Methods
+    # ------------------------------------------------------------------------------------------------------------------
 
+    def _heartbeat(self):
 
-    def end_heartbeat(self):
+        """
 
-        try:
-
-            if self._hb_thread.is_alive():
-                self._hb_alive.set()
-                self._hb_thread.join()
-
-            self._logger.info('Hearbeat thread terminated')
-
-            self._prof.prof('hearbeat thread terminated', uid=self._uid)
-
-            # We close in the hearbeat because it is ends after the mgr process
-            self._prof.close()
-
-            return True
-
-        except Exception, ex:
-            self._logger.error('Could not terminate hearbeat thread')
-            raise
-
-    def heartbeat(self):
+        """
 
         self._prof.prof('heartbeat thread started', uid=self._uid)
 
@@ -118,60 +112,18 @@ class TaskManager(object):
         self.end_manager()
         self._hb_alive.set()
 
-        self._prof.prof('terminating hearbeat thread', uid=self._uid)        
-
-    def start_manager(self):
-
-        # This method starts the extractor function in a separate thread        
-        
-        if not self._tmgr_process:
-
-            try:
-
-                self._prof.prof('creating tmgr process', uid=self._uid)
-                self._tmgr_process = Process(target=self.tmgr, name='task-manager')
-                self._tmgr_terminate = Event()
-                self._logger.info('Starting task manager process')
-                self._prof.prof('starting tmgr process', uid=self._uid)
-                self._tmgr_process.start()                
-
-                return True
-
-            except Exception, ex:
-
-                self.end_manager()
-                self._logger.error('Task manager not started')
-                raise                
-
-        else:
-            self._logger.info('Helper process already running')
-            raise
+        self._prof.prof('terminating hearbeat thread', uid=self._uid)
 
 
-    def end_manager(self):
+    def _tmgr(self):
 
-        # Set termination flag
-        try:
-            if not self._tmgr_terminate.is_set():
-                self._tmgr_terminate.set()
-
-            self._tmgr_process.join()
-            self._logger.info('Task manager process closed')
-
-            self._prof.prof('tmgr process terminated', uid=self._uid)
-
-            return True
-
-        except Exception, ex:
-            self._logger.error('Could not terminate task manager process')
-            raise
-
-  
-    def tmgr(self):
+        """
 
         # This function extracts currently tasks from the pending_queue
         # and pushes it to the executed_queue. Thus mimicking an execution plugin
 
+        """
+        
         try:
 
             local_prof = ru.Profiler(name = self._uid + '-proc')
@@ -392,9 +344,116 @@ class TaskManager(object):
 
             self._logger.error('Unknown error in helper process: %s'%ex)
             print traceback.format_exc()
-            raise Error(text=ex) 
+            raise Error(text=ex)
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public Methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def start_heartbeat(self):
+
+        """
+        **Purpose**: Method to start the heartbeat thread. The heartbeat function
+        is not to be accessed directly. The function is started in a separate
+        thread using this method.
+        """
+
+        self._logger.info('Starting hearbeat thread')
+        self._prof.prof('creating heartbeat thread', uid=self._uid)
+        self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
+        self._hb_alive = threading.Event()
+        self._prof.prof('starting heartbeat thread', uid=self._uid)
+        self._hb_thread.start()
+
+
+    def end_heartbeat(self):
+
+        """
+        **Purpose**: Method to terminate the heartbeat thread. This method is 
+        blocking as it waits for the heartbeat thread to terminate (aka join).
+
+        This is the last method that is executed from the TaskManager and
+        hence closes the profiler.
+        """
+
+        try:
+
+            if self._hb_thread.is_alive():
+                self._hb_alive.set()
+                self._hb_thread.join()
+
+            self._logger.info('Hearbeat thread terminated')
+
+            self._prof.prof('hearbeat thread terminated', uid=self._uid)
+
+            # We close in the hearbeat because it is ends after the mgr process
+            self._prof.close()
+
+            return True
+
+        except Exception, ex:
+            self._logger.error('Could not terminate hearbeat thread')
+            raise
+          
+
+    def start_manager(self):
+
+        """
+        **Purpose**: Method to start the tmgr process. The tmgr process
+        is not to be accessed directly. The function is started in a separate
+        process using this method.
+        """
+        
+        if not self._tmgr_process:
+
+            try:
+
+                self._prof.prof('creating tmgr process', uid=self._uid)
+                self._tmgr_process = Process(target=self._tmgr, name='task-manager')
+                self._tmgr_terminate = Event()
+                self._logger.info('Starting task manager process')
+                self._prof.prof('starting tmgr process', uid=self._uid)
+                self._tmgr_process.start()                
+
+            except Exception, ex:
+
+                self.end_manager()
+                self._logger.error('Task manager not started')
+                raise                
+
+        else:
+            self._logger.info('Helper process already running')
+            raise
+
+
+    def end_manager(self):
+
+        """
+        **Purpose**: Method to terminate the tmgr process. This method is 
+        blocking as it waits for the tmgr process to terminate (aka join).
+        """
+
+        try:
+            if not self._tmgr_terminate.is_set():
+                self._tmgr_terminate.set()
+
+            self._tmgr_process.join()
+            self._logger.info('Task manager process closed')
+
+            self._prof.prof('tmgr process terminated', uid=self._uid)
+
+        except Exception, ex:
+            self._logger.error('Could not terminate task manager process')
+            raise     
 
 
     def check_alive(self):
 
+        """
+        **Purpose**: Check if the tmgr process is alive and running
+        """
+
         return self._tmgr_process.is_alive()
+
+    # ------------------------------------------------------------------------------------------------------------------
