@@ -307,6 +307,8 @@ class AppManager(object):
 
                     msg = json.loads(body)
 
+                    self._prof.prof('received obj with state %s for sync'%msg['object']['state'], uid=msg['object']['uid'])
+
                     if msg['type'] == 'Task':                        
 
                         completed_task = Task()
@@ -337,6 +339,11 @@ class AppManager(object):
                                                                                     properties=pika.BasicProperties(
                                                                                         correlation_id = props.correlation_id),
                                                                                     body='%s-ack'%task.uid)
+
+                                                        self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                                            msg['object']['state'], 
+                                                                                            uid=msg['object']['uid']
+                                                                                        )
 
                                                         mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
@@ -370,6 +377,11 @@ class AppManager(object):
                                                                                     correlation_id = props.correlation_id),
                                                                             body='%s-ack'%stage.uid)
 
+                                                self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                                        msg['object']['state'], 
+                                                                                        uid=msg['object']['uid']
+                                                                                    )
+
                                                 mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
 
@@ -401,6 +413,11 @@ class AppManager(object):
                                                                     properties=pika.BasicProperties(
                                                                                 correlation_id = props.correlation_id),
                                                                     body='%s-ack'%pipe.uid)
+
+                                        self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                                        msg['object']['state'], 
+                                                                                        uid=msg['object']['uid']
+                                                                                    )
 
                                         mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 

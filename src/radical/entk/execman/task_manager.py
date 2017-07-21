@@ -202,6 +202,8 @@ class TaskManager(object):
                                                         correlation_id = corr_id
                                                         )
                                     )
+
+                local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
             
                 while True:
                     #self._logger.info('waiting for ack')
@@ -209,6 +211,9 @@ class TaskManager(object):
 
                     if body:
                         if corr_id == props.correlation_id:
+
+                            local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
+                            
                             self._logger.info('%s synchronized'%obj.uid)
 
                             channel.basic_ack(delivery_tag = method_frame.delivery_tag)
