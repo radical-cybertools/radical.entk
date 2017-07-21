@@ -237,7 +237,7 @@ class TaskManager(object):
                         task = create_task_from_cu(unit, local_prof)
                         
                         task.state = states.COMPLETED
-                        self._prof.prof('transition', 
+                        local_prof.prof('transition', 
                                         uid=task.uid, 
                                         state=task.state)
 
@@ -259,7 +259,7 @@ class TaskManager(object):
                                                         #)
                                                 ) 
 
-                        self._logger.debug('Pushed task %s with state %s to completed queue %s'%(
+                        self._logger.info('Pushed task %s with state %s to completed queue %s'%(
                                                                                     task.uid, 
                                                                                     task.state,
                                                                                     self._completed_queue[0])
