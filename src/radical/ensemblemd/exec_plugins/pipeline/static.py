@@ -337,6 +337,10 @@ class Plugin(PluginBase):
 			cud.executable      = kernel._cu_def_executable
 			cud.arguments       = kernel.arguments
 			cud.mpi             = kernel.uses_mpi
+
+			if kernel.cores:
+				cud.cores = kernel.cores
+
 			cud.input_staging   = get_input_data(kernel,1,task_instance)
 			cud.output_staging  = get_output_data(kernel,1,task_instance)
 
@@ -376,6 +380,10 @@ class Plugin(PluginBase):
 				cud.executable      = kernel._cu_def_executable
 				cud.arguments       = kernel.arguments
 				cud.mpi             = kernel.uses_mpi
+
+				if kernel.cores:
+					cud.cores = kernel.cores
+					
 				cud.input_staging   = get_input_data(kernel,cur_stage,cur_task)
 				cud.output_staging  = get_output_data(kernel,cur_stage,cur_task)
 
