@@ -193,19 +193,97 @@ class Profiler(object):
             return data
 
 
+    def _get_Toverlap(self, d, start_state, stop_state):
+        '''
+        Helper function to create the list of lists from which to calculate the
+        overlap of the elements of a DataFrame between the two boundaries passed as
+        arguments.
+        '''
+
+        overlap = 0
+        ranges = []
+
+        for obj, states in d.iteritems():
+            #print states
+            ranges.append([states[start_state], states[stop_state]])
+
+
+
+        for crange in self._collapse_ranges(ranges):
+            overlap += crange[1] - crange[0]
+
+        return overlap
+
+    def _collapse_ranges(self, ranges):
+        """
+        given be a set of ranges (as a set of pairs of floats [start, end] with
+        'start <= end'. This algorithm will then collapse that set into the
+        smallest possible set of ranges which cover the same, but not more nor
+        less, of the domain (floats).
+    
+        We first sort the ranges by their starting point. We then start with the
+        range with the smallest starting point [start_1, end_1], and compare to the
+        next following range [start_2, end_2], where we now know that start_1 <=
+        start_2. We have now two cases:
+    
+        a) when start_2 <= end_1, then the ranges overlap, and we collapse them
+        into range_1: range_1 = [start_1, max[end_1, end_2]
+    
+        b) when start_2 > end_2, then ranges don't overlap. Importantly, none of
+        the other later ranges can ever overlap range_1. So we move range_1 to
+        the set of final ranges, and restart the algorithm with range_2 being
+        the smallest one.
+    
+        Termination condition is if only one range is left -- it is also moved to
+        the list of final ranges then, and that list is returned.
+        """
+
+        final = []
+
+        # sort ranges into a copy list
+        _ranges = sorted (ranges, key=lambda x: x[0])
+
+        START = 0
+        END = 1
+
+        base = _ranges[0] # smallest range
+
+        for _range in _ranges[1:]:
+
+            if _range[START] <= base[END]:
+
+                # ranges overlap -- extend the base
+                base[END] = max(base[END], _range[END])
+
+            else:
+
+                # ranges don't overlap -- move base to final, and current _range
+                # becomes the new base
+                final.append(base)
+                base = _range
+
+        # termination: push last base to final
+        final.append(base)
+
+        return final
+
+
     def duration(self, objects, states=None, events=None):
 
-        if not isinstance(states, list):
+        if not isinstance(states, list) and (states is not None):
             states = [states]
 
-        if not isinstance(events, list):
+        if not isinstance(events, list) and (events is not None):
             events = [events]
 
         if not isinstance(objects, list):
             objects =[objects]
 
+        if len(objects)==1:
+            objects = [objects[0], objects[0]]
 
-        print self._states_dict
+        #pprint.pprint(self._states_dict)
+        #pprint.pprint(self._events_dict)
 
         # Check if objects are in accepted format
 
@@ -213,48 +291,62 @@ class Profiler(object):
 
         extracted_dict = {}
 
-        if states is not None and events is None:
+        '''
+        {
+            object0: 
+                    { 
+                        state0: time, 
+                        state1: time
+                    },
+            object1: 
+                    { 
+                        state0: time, 
+                        state1: time
+                    },
+        }
+
+        '''
+
+        if (states is not None) and events is None:
 
             for obj in objects:
 
-                extracted_dict[obj] = self._states_dict[states[0]][obj.split('.')[0].strip()][obj]
+                extracted_dict[obj] = {}
+                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[0].strip()][obj]
+                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[0].strip()][obj]
+
+            #pprint.pprint(extracted_dict)
+
+            return self._get_Toverlap(extracted_dict, states[0], states[1])
 
 
-        if len(states) == 2:
+        elif (states is None) and (events is not None):
 
-            p1 = states[0]
-            p2 = states[1]
+            for obj in objects:
 
-        elif len(events) == 2:
+                extracted_dict[obj] = {}
+                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[0].strip()][obj]
+                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[0].strip()][obj]            
 
-            p1 = events[0]
-            p2 = events[1]
+            #pprint.pprint(extracted_dict)
 
-        else:
+            return self._get_Toverlap(extracted_dict, events[0], events[1])
 
-            if (len(states)==1 and len(events)==1):
+
+        elif states is not None and events is not None:
+
+            t1 = None
+            t2 = None
+
+            for obj in objects:
+
                 
-                p1 = states[0]
-                p2 = events[0]                
+                if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
+                    t1 = float(self._states_dict[states[0]][obj.split('.')[0].strip()][obj])
+                else:
+                    t2 = float(self._events_dict[events[0]][obj.split('.')[0].strip()][obj])
 
+            if t1>t2:
+                return float(t1) - float(t2)
             else:
-
-                print 'Need at least two values between states, events'
-
-
-
-
-        if not events:
-
-            # Means interested only in states
-
-            t_min = None
-            t_max = None
-
-            for obj in objects:
-
-                self._states_dict[p1]
-
-
-
-                
+                return float(t2) - float(t1)

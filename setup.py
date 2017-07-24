@@ -68,7 +68,7 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
-    'install_requires'  :  ['radical.utils', 'setuptools>=1', 'pika'],
+    'install_requires'  :  ['radical.utils', 'pika'],
     #'test_suite'        : 'radical.entk.tests',
 
     'zip_safe'          : False,
