@@ -100,6 +100,7 @@ class Profiler(object):
     def _get_states_dict(self):
 
         self._states_dict = dict()
+        self._state_objs = dict()
 
         for row in self._states_df.iterrows():
 
@@ -116,9 +117,25 @@ class Profiler(object):
 
             self._states_dict[row['state']][obj_type][obj_name] = row['timestamp']
 
-        #pprint.pprint(self._states_dict)
 
+        for row in self._states_df.iterrows():
 
+            row = row[1]
+
+            if 'pipeline' in row['uid']:
+                if row['uid'] not in self._state_objs:
+                    self._state_objs[row['uid']] = dict()
+
+            elif 'stage' in row['uid']:
+                if row['uid'] not in self._state_objs[row['msg']]:
+                    self._state_objs[row['msg']][row['uid']] = list()
+
+            elif 'task' in row['uid']:
+                for pipeline, stages in self._state_objs.iteritems():
+                    for stage, tasks in stages.iteritems():
+                        if row['msg'] == stage:
+                            if row['uid'] not in tasks:
+                                tasks.append(row['uid'])
 
     def _get_events_dict(self):
 
@@ -350,3 +367,8 @@ class Profiler(object):
                 return float(t1) - float(t2)
             else:
                 return float(t2) - float(t1)
+
+
+    def list_all_stateful_objects(self):
+
+        return self._state_objs

@@ -254,11 +254,11 @@ class WFprocessor(object):
                                     )
 
                 if obj_type == 'Task':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_stage)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
                 elif obj_type == 'Stage':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_pipeline)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
                 else:
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
             
                 while True:
                     #self._logger.info('waiting for ack')
@@ -323,7 +323,8 @@ class WFprocessor(object):
                                     
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    state=pipe.stages[pipe._current_stage-1].state,
+                                                    msg = pipe.uid)
 
                                     sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
                                                         obj_type='Stage', 
@@ -353,7 +354,8 @@ class WFprocessor(object):
 
                                                 local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
-                                                                state=executable_task.state)
+                                                                state=executable_task.state,
+                                                                msg = executable_stage.uid)
 
                                                 sync_with_master(   obj=executable_task, 
                                                                     obj_type='Task', 
@@ -382,7 +384,8 @@ class WFprocessor(object):
 
                                                 local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
-                                                                state=executable_task.state)
+                                                                state=executable_task.state,
+                                                                msg = executable_stage.uid)
 
                                                 sync_with_master(   obj=executable_task, 
                                                                     obj_type='Task', 
@@ -408,7 +411,8 @@ class WFprocessor(object):
 
                                                 local_prof.prof('transition', 
                                                                 uid=executable_task.uid, 
-                                                                state=executable_task.state)
+                                                                state=executable_task.state,
+                                                                msg = executable_stage.uid)
 
                                                 sync_with_master(   obj=executable_task, 
                                                                     obj_type='Task', 
@@ -424,7 +428,8 @@ class WFprocessor(object):
 
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    state=pipe.stages[pipe._current_stage-1].state,
+                                                    msg=pipe.uid)
 
                                     sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
                                                         obj_type='Stage', 
@@ -454,7 +459,8 @@ class WFprocessor(object):
 
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state)
+                                                    state=pipe.stages[pipe._current_stage-1].state,
+                                                    msg=pipe.uid)
 
                                     sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
                                                         obj_type='Stage', 
@@ -521,11 +527,11 @@ class WFprocessor(object):
                                     )
 
                 if obj_type == 'Task':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_stage)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
                 elif obj_type == 'Stage':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_pipeline)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
                 else:
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid)
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
                 while True:
                     #self._logger.info('waiting for ack')
@@ -570,7 +576,8 @@ class WFprocessor(object):
 
                         local_prof.prof('transition', 
                                         uid=completed_task.uid, 
-                                        state=completed_task.state)
+                                        state=completed_task.state,
+                                        msg=completed_task._parent_stage)
 
                         sync_with_master(   obj=completed_task, 
                                             obj_type='Task', 
@@ -599,7 +606,8 @@ class WFprocessor(object):
 
                                                 local_prof.prof('transition', 
                                                                 uid=completed_task.uid, 
-                                                                state=completed_task.state)
+                                                                state=completed_task.state,
+                                                                msg=completed_task._parent_stage)
 
                                                 sync_with_master(   obj=completed_task, 
                                                                     obj_type='Task', 
@@ -615,7 +623,8 @@ class WFprocessor(object):
 
                                                 local_prof.prof('transition', 
                                                                 uid=completed_task.uid, 
-                                                                state=completed_task.state)
+                                                                state=completed_task.state,
+                                                                msg=completed_task._parent_stage)
 
                                                 sync_with_master(   obj=completed_task, 
                                                                     obj_type='Task', 
@@ -639,7 +648,8 @@ class WFprocessor(object):
 
                                                                     local_prof.prof('transition', 
                                                                                     uid=stage.uid, 
-                                                                                    state=stage.state)
+                                                                                    state=stage.state,
+                                                                                    msg=stage._parent_pipeline)
 
                                                                     sync_with_master(   obj=stage, 
                                                                                         obj_type='Stage', 
@@ -656,13 +666,16 @@ class WFprocessor(object):
 
                                                                     stage.state = states.SCHEDULED
 
+                                                                    local_prof.prof('transition', 
+                                                                                    uid=stage.uid, 
+                                                                                    state=stage.state,
+                                                                                    msg=stage._parent_pipeline)
+
                                                                     sync_with_master(   obj=stage, 
                                                                                         obj_type='Stage', 
                                                                                         channel = mq_channel)
 
-                                                                    local_prof.prof('transition', 
-                                                                                    uid=stage.uid, 
-                                                                                    state=stage.state)
+
 
                                                                     self._logger.info('Stage: %s, State: %s'%
                                                                                                     (stage.uid, 
@@ -715,7 +728,8 @@ class WFprocessor(object):
 
                                                                         local_prof.prof('transition', 
                                                                                         uid=stage.uid, 
-                                                                                        state=stage.state)
+                                                                                        state=stage.state,
+                                                                                        msg=stage._parent_pipeline)
 
                                                                         sync_with_master(   obj=stage, 
                                                                                             obj_type='Stage', 
@@ -736,7 +750,8 @@ class WFprocessor(object):
 
                                                                         local_prof.prof('transition', 
                                                                                         uid=stage.uid, 
-                                                                                        state=stage.state)
+                                                                                        state=stage.state,
+                                                                                        msg=stage._parent_pipeline)
 
                                                                         sync_with_master(   obj=stage, 
                                                                                             obj_type='Stage', 

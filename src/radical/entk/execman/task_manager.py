@@ -203,8 +203,13 @@ class TaskManager(object):
                                                         )
                                     )
 
-                local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
-            
+                if obj_type == 'Task':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+                elif obj_type == 'Stage':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+                else:
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
+
                 while True:
                     #self._logger.info('waiting for ack')
                     method_frame, props, body = channel.basic_get(queue='sync-ack')
@@ -212,7 +217,12 @@ class TaskManager(object):
                     if body:
                         if corr_id == props.correlation_id:
 
-                            local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
+                            if obj_type == 'Task':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+                            elif obj_type == 'Stage':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+                            else:
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
                             
                             self._logger.info('%s synchronized'%obj.uid)
 
@@ -239,7 +249,8 @@ class TaskManager(object):
                         task.state = states.COMPLETED
                         local_prof.prof('transition', 
                                         uid=task.uid, 
-                                        state=task.state)
+                                        state=task.state,
+                                        msg=task._parent_stage)
 
                         sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
 
@@ -332,7 +343,8 @@ class TaskManager(object):
 
                             local_prof.prof('transition', 
                                             uid=task.uid, 
-                                            state=task.state)
+                                            state=task.state,
+                                            msg=task._parent_stage)
 
                             sync_with_master(task, 'Task', mq_channel)
 
@@ -346,7 +358,8 @@ class TaskManager(object):
 
                             local_prof.prof('transition', 
                                             uid=task.uid, 
-                                            state=task.state)
+                                            state=task.state,
+                                            msg=task._parent_stage)
 
                             sync_with_master(task, 'Task', mq_channel)
 
