@@ -253,7 +253,12 @@ class WFprocessor(object):
                                                         )
                                     )
 
-                local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
+                if obj_type == 'Task':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_stage)
+                elif obj_type == 'Stage':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_pipeline)
+                else:
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid)
             
                 while True:
                     #self._logger.info('waiting for ack')
@@ -262,7 +267,12 @@ class WFprocessor(object):
                     if body:
                         if corr_id == props.correlation_id:
 
-                            local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
+                            if obj_type == 'Task':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+                            elif obj_type == 'Stage':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+                            else:
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
 
                             self._logger.info('%s synchronized'%obj.uid)
 
@@ -510,8 +520,13 @@ class WFprocessor(object):
                                                         )
                                     )
 
-                local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
-            
+                if obj_type == 'Task':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_stage)
+                elif obj_type == 'Stage':
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid, msg=obj._parent_pipeline)
+                else:
+                    local_prof.prof('publishing obj with state %s for sync'%obj.state,, uid=obj.uid)
+
                 while True:
                     #self._logger.info('waiting for ack')
                     method_frame, props, body = channel.basic_get(queue='sync-ack')
@@ -519,7 +534,12 @@ class WFprocessor(object):
                     if body:
                         if corr_id == props.correlation_id:
 
-                            local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
+                            if obj_type == 'Task':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+                            elif obj_type == 'Stage':
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+                            else:
+                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
                             
                             self._logger.info('%s synchronized'%obj.uid)
 
