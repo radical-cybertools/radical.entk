@@ -43,3 +43,5 @@ if __name__ == '__main__':
     appman.resource_manager = rman
     appman.assign_workflow(set([p]))
     appman.run()
+
+   
