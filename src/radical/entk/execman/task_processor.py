@@ -7,7 +7,40 @@ import os
 
 logger = ru.get_logger('radical.entk.task_processor')
 
-def get_input_list_from_task(task):
+def resolve_placeholders(path, placeholder_dict):
+
+    # Substitute placeholders in task descriptipons with actual paths to
+    # the corresponding tasks
+
+    if '$' not in path:
+        return path
+
+    # Extract placeholder from path
+    if len(path.split('>'))==1:
+        placeholder = path.split('/')[0]
+    else:
+        if path.split('>')[0].strip().startswith('$'):
+            placeholder = path.split('>')[0].strip().split('/')[0]
+        else:
+            placeholder = path.split('>')[1].strip().split('/')[0]
+
+    # SHARED
+    if placeholder == "$SHARED":
+        return path.replace(placeholder, 'staging://')
+
+    # Expected placeholder format:
+    # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
+
+    broken_placeholder = placeholder.split('_')
+
+    pipeline_uid    = broken_placeholder[1]
+    stage_uid       = broken_placeholder[3]
+    task_uid        = broken_placeholder[5]
+
+    return path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
+    
+
+def get_input_list_from_task(task, placeholder_dict):
 
     if not isinstance(task, Task):
         raise TypeError(expected_type=Task, actual_type=type(task))
@@ -16,19 +49,21 @@ def get_input_list_from_task(task):
 
     if task.link_input_data:
 
-        for data in task.link_input_data:
+        for path in task.link_input_data:
 
-            if len(data.split('>')) > 1:
+            path = resolve_placeholders(path, placeholder_dict)
+
+            if len(path.split('>')) > 1:
 
                 temp = {
-                            'source': data.split('>')[0].strip(),                            
-                            'target': data.split('>')[1].strip(),
+                            'source': path.split('>')[0].strip(),                            
+                            'target': path.split('>')[1].strip(),
                             'action': rp.LINK
                         }
             else:
                 temp = {
-                            'source': data.split('>')[0].strip(),                            
-                            'target': os.path.basename(data.split('>')[0].strip()),
+                            'source': path.split('>')[0].strip(),                            
+                            'target': os.path.basename(path.split('>')[0].strip()),
                             'action': rp.LINK
                         }
             input_data.append(temp)
@@ -37,35 +72,39 @@ def get_input_list_from_task(task):
 
         for data in task.upload_input_data:
 
-            if len(data.split('>')) > 1:
+            path = resolve_placeholders(path, placeholder_dict)
+
+            if len(path.split('>')) > 1:
 
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip()
+                            'source': path.split('>')[0].strip(),
+                            'target': path.split('>')[1].strip()
                         }
             else:
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip())
+                            'source': path.split('>')[0].strip(),
+                            'target': os.path.basename(path.split('>')[0].strip())
                         }
             input_data.append(temp)
 
 
     if task.copy_input_data:
 
-        for data in task.copy_input_data:
+        for path in task.copy_input_data:
 
-            if len(data.split('>')) > 1:
+            path = resolve_placeholders(path, placeholder_dict)
+
+            if len(path.split('>')) > 1:
 
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip(),
+                            'source': path.split('>')[0].strip(),
+                            'target': path.split('>')[1].strip(),
                             'action': rp.COPY
                         }
             else:
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip()),
+                            'source': path.split('>')[0].strip(),
+                            'target': os.path.basename(path.split('>')[0].strip()),
                             'action': rp.COPY
                         }
             input_data.append(temp)
@@ -73,7 +112,7 @@ def get_input_list_from_task(task):
     return input_data
 
 
-def get_output_list_from_task(task):
+def get_output_list_from_task(task, placeholder_dict):
 
     if not isinstance(task, Task):
         raise TypeError(expected_type=Task, actual_type=type(task))
@@ -83,19 +122,21 @@ def get_output_list_from_task(task):
 
     if task.copy_output_data:
 
-        for data in task.copy_output_data:
+        for path in task.copy_output_data:
 
-            if len(data.split('>')) > 1:
+            path = resolve_placeholders(path, placeholder_dict)
+
+            if len(path.split('>')) > 1:
 
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip(),
+                            'source': path.split('>')[0].strip(),
+                            'target': path.split('>')[1].strip(),
                             'action': rp.COPY
                         }
             else:
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip()),
+                            'source': path.split('>')[0].strip(),
+                            'target': os.path.basename(path.split('>')[0].strip()),
                             'action': rp.COPY
                         }
             output_data.append(temp)
@@ -103,25 +144,27 @@ def get_output_list_from_task(task):
 
     if task.download_output_data:
 
-        for data in task.download_output_data:
+        for path in task.download_output_data:
 
-            if len(data.split('>')) > 1:
+            path = resolve_placeholders(path, placeholder_dict)
+
+            if len(path.split('>')) > 1:
 
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip()
+                            'source': path.split('>')[0].strip(),
+                            'target': path.split('>')[1].strip()
                         }
             else:
                 temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip())
+                            'source': path.split('>')[0].strip(),
+                            'target': os.path.basename(path.split('>')[0].strip())
                         }
             output_data.append(temp)
 
 
     return output_data
 
-def create_cud_from_task(task, prof=None):
+def create_cud_from_task(task, placeholder_dict, prof=None):
 
     try:
         
@@ -139,8 +182,8 @@ def create_cud_from_task(task, prof=None):
         cud.cores       = task.cores
         cud.mpi         = task.mpi
 
-        cud.input_staging   = get_input_list_from_task(task)
-        cud.output_staging  = get_output_list_from_task(task)
+        cud.input_staging   = get_input_list_from_task(task, placeholder_dict)
+        cud.output_staging  = get_output_list_from_task(task, placeholder_dict)
 
         if prof:
             prof.prof('cud from task - done', uid=task.uid)

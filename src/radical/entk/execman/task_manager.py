@@ -179,6 +179,23 @@ class TaskManager(object):
             local_prof.prof('tmgr process started', uid=self._uid)
             self._logger.info('Task Manager process started') 
 
+
+            placeholder_dict = dict()
+
+            def load_placeholder(task):
+
+                parent_pipeline = task._parent_pipeline
+                parent_stage = task._parent_stage
+
+                if parent_pipeline not in placeholder_dict:
+                    placeholder_dict[parent_pipeline] = dict()
+
+                if parent_stage not in placeholder_dict[parent_pipeline]:
+                    placeholder_dict[parent_pipeline][parent_stage] = dict()
+
+                placeholder_dict[parent_pipeline][parent_stage][task.uid] = task.path
+
+
             def sync_with_master(obj, obj_type, channel):
 
                 object_as_dict = {'object': obj.to_dict()}
@@ -252,13 +269,17 @@ class TaskManager(object):
                                         state=task.state,
                                         msg=task._parent_stage)
 
-                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
-
                         if unit.state == rp.DONE:
                             task.exit_code = 0
                         else:
                             task.exit_code = 1
-                    
+
+                        task.path = unit.sandbox
+
+                        load_placeholder(task)
+
+                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
+                
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(   exchange='',
@@ -352,7 +373,7 @@ class TaskManager(object):
 
                             self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cud_from_task(task, local_prof))
+                            self._umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
 
                             task.state = states.SUBMITTED
 

@@ -57,3 +57,5 @@ if __name__ == '__main__':
     appman.assign_workflow(set([p1]))
     appman.run()
 
+    for t in p1.stages[0].tasks:
+        print t.path

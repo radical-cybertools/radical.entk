@@ -334,6 +334,9 @@ class AppManager(object):
                                                         self._logger.debug('Found task %s'%task.uid)
                                                         task.state = str(completed_task.state)
 
+                                                        if completed_task.path:
+                                                            task.path = str(completed_task.path)
+
                                                         mq_channel.basic_publish(   exchange='',
                                                                                     routing_key='sync-ack',
                                                                                     properties=pika.BasicProperties(
