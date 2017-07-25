@@ -27,24 +27,22 @@ if __name__ == '__main__':
         s.name = 's_%s'%cnt
         s.tasks = create_single_task()
         s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
 
         p1.add_stages(s)
 
-    
-    for cnt in range(stages-1):
-        s = Stage()
-        s.name = 's-%s'%cnt
-        s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
-
-        p2.add_stages(s)
     
 
     res_dict = {
 
             'resource': 'local.localhost',
             'walltime': 15,
-            'cores': 2,
+            'cores': 4,
             'project': ''
 
     }
@@ -57,5 +55,3 @@ if __name__ == '__main__':
     appman.assign_workflow(set([p1]))
     appman.run()
 
-    for t in p1.stages[0].tasks:
-        print t.path
