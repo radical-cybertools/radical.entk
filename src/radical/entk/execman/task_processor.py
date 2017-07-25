@@ -12,157 +12,185 @@ def resolve_placeholders(path, placeholder_dict):
     # Substitute placeholders in task descriptipons with actual paths to
     # the corresponding tasks
 
-    if '$' not in path:
-        return path
+    try:
 
-    # Extract placeholder from path
-    if len(path.split('>'))==1:
-        placeholder = path.split('/')[0]
-    else:
-        if path.split('>')[0].strip().startswith('$'):
-            placeholder = path.split('>')[0].strip().split('/')[0]
+        if not isinstance(path,str):
+            raise TypeError(entity='resolve_placeholder', expected_type=str, actual_type=type(path))
+
+        if '$' not in path:
+            return path
+
+        # Extract placeholder from path
+        if len(path.split('>'))==1:
+            placeholder = path.split('/')[0]
         else:
-            placeholder = path.split('>')[1].strip().split('/')[0]
+            if path.split('>')[0].strip().startswith('$'):
+                placeholder = path.split('>')[0].strip().split('/')[0]
+            else:
+                placeholder = path.split('>')[1].strip().split('/')[0]
 
-    # SHARED
-    if placeholder == "$SHARED":
-        return path.replace(placeholder, 'staging://')
+        # SHARED
+        if placeholder == "$SHARED":
+            return path.replace(placeholder, 'staging://')
 
-    # Expected placeholder format:
-    # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
+        # Expected placeholder format:
+        # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
 
-    broken_placeholder = placeholder.split('_')
+        broken_placeholder = placeholder.split('_')
 
-    pipeline_uid    = broken_placeholder[1]
-    stage_uid       = broken_placeholder[3]
-    task_uid        = broken_placeholder[5]
+        if not len(broken_placeholder) ==  6:
+            raise ValueError(   expected_value = '$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
+                                actual_value = broken_placeholder)
 
-    return path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
+        pipeline_uid    = broken_placeholder[1]
+        stage_uid       = broken_placeholder[3]
+        task_uid        = broken_placeholder[5]
+
+        return path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
+
+    except Exception, ex:
+
+        self._logger.error('Failed to resolve placeholder %s, error: %s'%(path, ex))
+        raise Error(text=ex)
     
 
 def get_input_list_from_task(task, placeholder_dict):
 
-    if not isinstance(task, Task):
-        raise TypeError(expected_type=Task, actual_type=type(task))
 
-    input_data = []
+    try:
 
-    if task.link_input_data:
+        if not isinstance(task, Task):
+            raise TypeError(expected_type=Task, actual_type=type(task))
 
-        for path in task.link_input_data:
+        input_data = []
 
-            path = resolve_placeholders(path, placeholder_dict)
+        if task.link_input_data:
 
-            if len(path.split('>')) > 1:
+            for path in task.link_input_data:
 
-                temp = {
-                            'source': path.split('>')[0].strip(),                            
-                            'target': path.split('>')[1].strip(),
-                            'action': rp.LINK
-                        }
-            else:
-                temp = {
-                            'source': path.split('>')[0].strip(),                            
-                            'target': os.path.basename(path.split('>')[0].strip()),
-                            'action': rp.LINK
-                        }
-            input_data.append(temp)
+                path = resolve_placeholders(path, placeholder_dict)
 
-    if task.upload_input_data:
+                if len(path.split('>')) > 1:
 
-        for data in task.upload_input_data:
+                    temp = {
+                                'source': path.split('>')[0].strip(),                            
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.LINK
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),                            
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.LINK
+                            }
+                input_data.append(temp)
 
-            path = resolve_placeholders(path, placeholder_dict)
+        if task.upload_input_data:
 
-            if len(path.split('>')) > 1:
+            for data in task.upload_input_data:
 
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': path.split('>')[1].strip()
-                        }
-            else:
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': os.path.basename(path.split('>')[0].strip())
-                        }
-            input_data.append(temp)
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip()
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip())
+                            }
+                input_data.append(temp)
 
 
-    if task.copy_input_data:
+        if task.copy_input_data:
 
-        for path in task.copy_input_data:
+            for path in task.copy_input_data:
 
-            path = resolve_placeholders(path, placeholder_dict)
+                path = resolve_placeholders(path, placeholder_dict)
 
-            if len(path.split('>')) > 1:
+                if len(path.split('>')) > 1:
 
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': path.split('>')[1].strip(),
-                            'action': rp.COPY
-                        }
-            else:
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': os.path.basename(path.split('>')[0].strip()),
-                            'action': rp.COPY
-                        }
-            input_data.append(temp)
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.COPY
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.COPY
+                            }
+                input_data.append(temp)
 
-    return input_data
+        return input_data
+
+    except Exception, ex:
+
+        self._logger('Failed to get input list of files from task, error: %s'%ex)
+        raise Error(text=ex)
 
 
 def get_output_list_from_task(task, placeholder_dict):
 
-    if not isinstance(task, Task):
-        raise TypeError(expected_type=Task, actual_type=type(task))
+    try:
+
+        if not isinstance(task, Task):
+            raise TypeError(expected_type=Task, actual_type=type(task))
 
 
-    output_data = []
+        output_data = []
 
-    if task.copy_output_data:
+        if task.copy_output_data:
 
-        for path in task.copy_output_data:
+            for path in task.copy_output_data:
 
-            path = resolve_placeholders(path, placeholder_dict)
+                path = resolve_placeholders(path, placeholder_dict)
 
-            if len(path.split('>')) > 1:
+                if len(path.split('>')) > 1:
 
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': path.split('>')[1].strip(),
-                            'action': rp.COPY
-                        }
-            else:
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': os.path.basename(path.split('>')[0].strip()),
-                            'action': rp.COPY
-                        }
-            output_data.append(temp)
-
-
-    if task.download_output_data:
-
-        for path in task.download_output_data:
-
-            path = resolve_placeholders(path, placeholder_dict)
-
-            if len(path.split('>')) > 1:
-
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': path.split('>')[1].strip()
-                        }
-            else:
-                temp = {
-                            'source': path.split('>')[0].strip(),
-                            'target': os.path.basename(path.split('>')[0].strip())
-                        }
-            output_data.append(temp)
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.COPY
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.COPY
+                            }
+                output_data.append(temp)
 
 
-    return output_data
+        if task.download_output_data:
+
+            for path in task.download_output_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip()
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip())
+                            }
+                output_data.append(temp)
+
+        return output_data
+
+    except Exception, ex:
+        self._logger('Failed to get output list of files from task, error: %s'%ex)
+        raise Error(text=ex)
+
 
 def create_cud_from_task(task, placeholder_dict, prof=None):
 
@@ -192,8 +220,9 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
 
         return cud
 
-    except Exception, ex:
+    except Exception, ex:        
         logger.error('CU creation failed, error: %s'%ex)
+        print traceback.format_exc()
         raise
 
 

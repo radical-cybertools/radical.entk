@@ -3,6 +3,7 @@ from radical.entk.exceptions import *
 from radical.entk import Task, Stage, Pipeline
 import radical.pilot as rp
 import os, pytest, shutil, glob
+import radical.utils as ru
 
 def test_input_list_from_task():
 
@@ -175,3 +176,55 @@ def test_create_task_from_cu():
 
     for path in glob.glob('./rp.session.*'):
         shutil.rmtree(path)
+
+
+def test_resolve_placeholder():
+
+    pipeline    = str(ru.generate_id('radical.entk.pipeline'))
+    stage       = str(ru.generate_id('radical.entk.stage'))
+    task        = str(ru.generate_id('radical.entk.task'))
+
+    placeholder_dict = {
+                            pipeline: {
+                                        stage:{
+                                                task: '/home/vivek/some_file.txt'
+                                        }
+                            }
+                    }
+
+    # Test only strings are accepted
+    raw_paths = [1, list(), dict()]
+
+    for raw_path in raw_paths:
+        with pytest.raises(TypeError):
+            resolve_placeholders(raw_path, placeholder_dict)
+
+    # Test when no placeholders to resolve
+    raw_path = '/home/vivek/some_file.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == raw_path
+
+    # Test for shared data location
+    raw_path = '$SHARED/test.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == 'staging://test.txt'
+
+    # Test for shared data location with rename
+    raw_path = '$SHARED/test.txt > new.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == 'staging://test.txt > new.txt'
+
+    # Test for resolving relative data references
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'.format(pipeline, stage, task)
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == '/home/vivek/some_file.txt'
+
+    # Test for resolving relative data references with rename
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt > new.txt'.format(pipeline, stage, task)
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == '/home/vivek/some_file.txt > new.txt'
+    
+    # Test only placeholders in $Pipeline_%s_Stage_%s_Task_%s are accepted
+    raw_path='$Task_2'
+    with pytest.raises(ValueError):
+        resolve_placeholders(raw_path, placeholder_dict)

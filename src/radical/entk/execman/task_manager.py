@@ -38,6 +38,7 @@ class TaskManager(object):
         self._tmgr_terminate = None
         self._hb_thread = None
         self._hb_alive = None
+        self._umgr = None
 
         self._logger.info('Created task manager object: %s'%self._uid)
 
@@ -129,7 +130,11 @@ class TaskManager(object):
             try:
 
                 self._prof.prof('creating tmgr process', uid=self._uid)
-                self._tmgr_process = Process(target=self.tmgr, name='task-manager')
+                self._tmgr_process = Process(   target=self.tmgr, 
+                                                name='task-manager', 
+                                                args=(self._umgr,)
+                                            )
+
                 self._tmgr_terminate = Event()
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
@@ -167,7 +172,7 @@ class TaskManager(object):
             raise
 
   
-    def tmgr(self):
+    def tmgr(self, umgr):
 
         # This function extracts currently tasks from the pending_queue
         # and pushes it to the executed_queue. Thus mimicking an execution plugin
@@ -184,8 +189,8 @@ class TaskManager(object):
 
             def load_placeholder(task):
 
-                parent_pipeline = task._parent_pipeline
-                parent_stage = task._parent_stage
+                parent_pipeline = str(task._parent_pipeline)
+                parent_stage = str(task._parent_stage)
 
                 if parent_pipeline not in placeholder_dict:
                     placeholder_dict[parent_pipeline] = dict()
@@ -193,7 +198,7 @@ class TaskManager(object):
                 if parent_stage not in placeholder_dict[parent_pipeline]:
                     placeholder_dict[parent_pipeline][parent_stage] = dict()
 
-                placeholder_dict[parent_pipeline][parent_stage][task.uid] = task.path
+                placeholder_dict[parent_pipeline][parent_stage][str(task.uid)] = str(task.path)
 
 
             def sync_with_master(obj, obj_type, channel):
@@ -274,7 +279,7 @@ class TaskManager(object):
                         else:
                             task.exit_code = 1
 
-                        task.path = unit.sandbox
+                        task.path = str(unit.sandbox)
 
                         load_placeholder(task)
 
@@ -316,9 +321,10 @@ class TaskManager(object):
                     raise
             
 
-            self._umgr = rp.UnitManager(session=self._rmgr._session)
-            self._umgr.add_pilots(self._rmgr.pilot)
-            self._umgr.register_callback(unit_state_cb)
+            if not umgr:
+                umgr = rp.UnitManager(session=self._rmgr._session)
+                umgr.add_pilots(self._rmgr.pilot)
+                umgr.register_callback(unit_state_cb)
 
             # Thread should run till terminate condtion is encountered
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
@@ -373,7 +379,7 @@ class TaskManager(object):
 
                             self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
+                            umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
 
                             task.state = states.SUBMITTED
 
@@ -414,6 +420,7 @@ class TaskManager(object):
                 except Exception, ex:
 
                     self._logger.error('Error getting messages from pending queue: %s'%ex)
+                    print traceback.format_exc()
                     raise Error(text=ex) 
 
             local_prof.prof('terminating tmgr process', uid=self._uid)
