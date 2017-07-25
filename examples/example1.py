@@ -27,6 +27,9 @@ if __name__ == '__main__':
         s.name = 's_%s'%cnt
         s.tasks = create_single_task()
         s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
 
         p1.add_stages(s)
 
