@@ -50,7 +50,7 @@ def resolve_placeholders(path, placeholder_dict):
 
     except Exception, ex:
 
-        self._logger.error('Failed to resolve placeholder %s, error: %s'%(path, ex))
+        logger.error('Failed to resolve placeholder %s, error: %s'%(path, ex))
         raise Error(text=ex)
     
 
@@ -130,7 +130,7 @@ def get_input_list_from_task(task, placeholder_dict):
 
     except Exception, ex:
 
-        self._logger('Failed to get input list of files from task, error: %s'%ex)
+        logger.error('Failed to get input list of files from task, error: %s'%ex)
         raise Error(text=ex)
 
 
@@ -188,7 +188,7 @@ def get_output_list_from_task(task, placeholder_dict):
         return output_data
 
     except Exception, ex:
-        self._logger('Failed to get output list of files from task, error: %s'%ex)
+        logger.error('Failed to get output list of files from task, error: %s'%ex)
         raise Error(text=ex)
 
 
