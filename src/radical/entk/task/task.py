@@ -33,7 +33,7 @@ class Task(object):
         self._copy_output_data      = list()
         self._download_output_data  = list()
 
-
+        self._path = None
         self._exit_code = None
 
         # Keep track of states attained
@@ -240,6 +240,19 @@ class Task(object):
         """
         return self._exit_code
 
+
+    @property
+    def path(self):
+
+        """
+        Get the path of the task on the remote machine. Useful to reference files
+        generated in the current task.
+
+        :getter: return the path of the current task
+        """
+
+        return self._path
+
     @property
     def _parent_stage(self):
 
@@ -385,6 +398,14 @@ class Task(object):
         else:
             raise TypeError(entity='exit_code', expected_type=int, actual_type=type(val))
 
+
+    @path.setter
+    def path(self, val):
+        if isinstance(val, str):
+            self._path = val
+        else:
+            raise TypeError(entity='path', expected_type=str, actual_type=type(val))
+
     @_parent_stage.setter
     def _parent_stage(self, val):
         if isinstance(val,str):
@@ -467,6 +488,7 @@ class Task(object):
                         'download_output_data': self._download_output_data,
 
                         'exit_code': self._exit_code,
+                        'path': self._path,
 
                         'parent_stage': self._p_stage,
                         'parent_pipeline': self._p_pipeline,
@@ -581,12 +603,19 @@ class Task(object):
             else:
                 raise TypeError(expected_type=list, actual_type=type(d['download_output_data']))
 
-
         if 'exit_code' in d:
-            if isinstance(d['exit_code'], int) or (d['exit_code']==None):
-                self._exit_code = d['exit_code']
-            else:
-                raise TypeError(expected_type=int, actual_type=type(d['exit_code']))
+            if d['exit_code']:
+                if isinstance(d['exit_code'], int):
+                    self._exit_code = d['exit_code']
+                else:
+                    raise TypeError(entity='exit_code', expected_type=int, actual_type=type(d['exit_code']))
+
+        if 'path' in d:
+            if d['path']:
+                if isinstance(d['path'], str) or isinstance(d['path'], unicode):
+                    self._path = d['path']
+                else:
+                    raise TypeError(entity='path',expected_type=str, actual_type=type(d['path']))
 
         if 'parent_stage' in d:
             if isinstance(d['parent_stage'], str) or isinstance(d['parent_stage'], unicode):

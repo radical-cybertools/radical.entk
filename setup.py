@@ -68,8 +68,7 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
-    'install_requires'  :  ['radical.utils', 'pika'],
-    #'test_suite'        : 'radical.entk.tests',
+    'install_requires'  :  ['radical.utils', 'pika', 'pandas', 'numpy'],
 
     'zip_safe'          : False,
     # This copies the contents of the examples/ dir under

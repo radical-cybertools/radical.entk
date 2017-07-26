@@ -7,121 +7,192 @@ import os
 
 logger = ru.get_logger('radical.entk.task_processor')
 
-def get_input_list_from_task(task):
+def resolve_placeholders(path, placeholder_dict):
 
-    if not isinstance(task, Task):
-        raise TypeError(expected_type=Task, actual_type=type(task))
+    # Substitute placeholders in task descriptipons with actual paths to
+    # the corresponding tasks
 
-    input_data = []
+    try:
 
-    if task.link_input_data:
+        if not isinstance(path,str):
+            raise TypeError(entity='resolve_placeholder', expected_type=str, actual_type=type(path))
 
-        for data in task.link_input_data:
+        if '$' not in path:
+            return path
 
-            if len(data.split('>')) > 1:
-
-                temp = {
-                            'source': data.split('>')[0].strip(),                            
-                            'target': data.split('>')[1].strip(),
-                            'action': rp.LINK
-                        }
+        # Extract placeholder from path
+        if len(path.split('>'))==1:
+            placeholder = path.split('/')[0]
+        else:
+            if path.split('>')[0].strip().startswith('$'):
+                placeholder = path.split('>')[0].strip().split('/')[0]
             else:
-                temp = {
-                            'source': data.split('>')[0].strip(),                            
-                            'target': os.path.basename(data.split('>')[0].strip()),
-                            'action': rp.LINK
-                        }
-            input_data.append(temp)
+                placeholder = path.split('>')[1].strip().split('/')[0]
 
-    if task.upload_input_data:
+        # SHARED
+        if placeholder == "$SHARED":
+            return path.replace(placeholder, 'staging://')
 
-        for data in task.upload_input_data:
+        # Expected placeholder format:
+        # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
 
-            if len(data.split('>')) > 1:
+        broken_placeholder = placeholder.split('_')
 
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip()
-                        }
-            else:
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip())
-                        }
-            input_data.append(temp)
+        if not len(broken_placeholder) ==  6:
+            raise ValueError(   expected_value = '$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
+                                actual_value = broken_placeholder)
 
+        pipeline_uid    = broken_placeholder[1]
+        stage_uid       = broken_placeholder[3]
+        task_uid        = broken_placeholder[5]
 
-    if task.copy_input_data:
+        return path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
 
-        for data in task.copy_input_data:
+    except Exception, ex:
 
-            if len(data.split('>')) > 1:
+        logger.error('Failed to resolve placeholder %s, error: %s'%(path, ex))
+        raise Error(text=ex)
+    
 
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip(),
-                            'action': rp.COPY
-                        }
-            else:
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip()),
-                            'action': rp.COPY
-                        }
-            input_data.append(temp)
-
-    return input_data
+def get_input_list_from_task(task, placeholder_dict):
 
 
-def get_output_list_from_task(task):
+    try:
 
-    if not isinstance(task, Task):
-        raise TypeError(expected_type=Task, actual_type=type(task))
+        if not isinstance(task, Task):
+            raise TypeError(expected_type=Task, actual_type=type(task))
+
+        input_data = []
+
+        if task.link_input_data:
+
+            for path in task.link_input_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),                            
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.LINK
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),                            
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.LINK
+                            }
+                input_data.append(temp)
+
+        if task.upload_input_data:
+
+            for data in task.upload_input_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip()
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip())
+                            }
+                input_data.append(temp)
 
 
-    output_data = []
+        if task.copy_input_data:
 
-    if task.copy_output_data:
+            for path in task.copy_input_data:
 
-        for data in task.copy_output_data:
+                path = resolve_placeholders(path, placeholder_dict)
 
-            if len(data.split('>')) > 1:
+                if len(path.split('>')) > 1:
 
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip(),
-                            'action': rp.COPY
-                        }
-            else:
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip()),
-                            'action': rp.COPY
-                        }
-            output_data.append(temp)
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.COPY
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.COPY
+                            }
+                input_data.append(temp)
 
+        return input_data
 
-    if task.download_output_data:
+    except Exception, ex:
 
-        for data in task.download_output_data:
-
-            if len(data.split('>')) > 1:
-
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': data.split('>')[1].strip()
-                        }
-            else:
-                temp = {
-                            'source': data.split('>')[0].strip(),
-                            'target': os.path.basename(data.split('>')[0].strip())
-                        }
-            output_data.append(temp)
+        logger.error('Failed to get input list of files from task, error: %s'%ex)
+        raise Error(text=ex)
 
 
-    return output_data
+def get_output_list_from_task(task, placeholder_dict):
 
-def create_cud_from_task(task, prof=None):
+    try:
+
+        if not isinstance(task, Task):
+            raise TypeError(expected_type=Task, actual_type=type(task))
+
+
+        output_data = []
+
+        if task.copy_output_data:
+
+            for path in task.copy_output_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip(),
+                                'action': rp.COPY
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip()),
+                                'action': rp.COPY
+                            }
+                output_data.append(temp)
+
+
+        if task.download_output_data:
+
+            for path in task.download_output_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': path.split('>')[1].strip()
+                            }
+                else:
+                    temp = {
+                                'source': path.split('>')[0].strip(),
+                                'target': os.path.basename(path.split('>')[0].strip())
+                            }
+                output_data.append(temp)
+
+        return output_data
+
+    except Exception, ex:
+        logger.error('Failed to get output list of files from task, error: %s'%ex)
+        raise Error(text=ex)
+
+
+def create_cud_from_task(task, placeholder_dict, prof=None):
 
     try:
         
@@ -139,8 +210,8 @@ def create_cud_from_task(task, prof=None):
         cud.cores       = task.cores
         cud.mpi         = task.mpi
 
-        cud.input_staging   = get_input_list_from_task(task)
-        cud.output_staging  = get_output_list_from_task(task)
+        cud.input_staging   = get_input_list_from_task(task, placeholder_dict)
+        cud.output_staging  = get_output_list_from_task(task, placeholder_dict)
 
         if prof:
             prof.prof('cud from task - done', uid=task.uid)
@@ -149,8 +220,9 @@ def create_cud_from_task(task, prof=None):
 
         return cud
 
-    except Exception, ex:
+    except Exception, ex:        
         logger.error('CU creation failed, error: %s'%ex)
+        print traceback.format_exc()
         raise
 
 

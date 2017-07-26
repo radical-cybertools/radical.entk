@@ -3,19 +3,32 @@ from radical.entk.exceptions import *
 from radical.entk import Task, Stage, Pipeline
 import radical.pilot as rp
 import os, pytest, shutil, glob
+import radical.utils as ru
 
 def test_input_list_from_task():
+
+    pipeline    = str(ru.generate_id('radical.entk.pipeline'))
+    stage       = str(ru.generate_id('radical.entk.stage'))
+    task        = str(ru.generate_id('radical.entk.task'))
+
+    placeholder_dict = {
+                            pipeline: {
+                                        stage:{
+                                                task: '/home/vivek/some_file.txt'
+                                        }
+                            }
+                    }
 
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
             t = list()
-            get_input_list_from_task(t)
+            get_input_list_from_task(t, placeholder_dict)
 
 
     # Test link input data
     t = Task()
-    t.link_input_data = ['$HOME/test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.link_input_data = ['/home/vivek/test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.link_input_data[0]
     assert ip_list[0]['action'] == rp.LINK
@@ -23,8 +36,8 @@ def test_input_list_from_task():
 
 
     t = Task()
-    t.link_input_data = ['$HOME/test.dat > new_test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.link_input_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.link_input_data[0].split('>')[0].strip()
     assert ip_list[0]['action'] == rp.LINK
@@ -33,8 +46,8 @@ def test_input_list_from_task():
 
     # Test copy input data
     t = Task()
-    t.copy_input_data = ['$HOME/test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.copy_input_data = ['/home/vivek/test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.copy_input_data[0]
     assert ip_list[0]['action'] == rp.COPY
@@ -42,8 +55,8 @@ def test_input_list_from_task():
 
 
     t = Task()
-    t.copy_input_data = ['$HOME/test.dat > new_test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.copy_input_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.copy_input_data[0].split('>')[0].strip()
     assert ip_list[0]['action'] == rp.COPY
@@ -53,8 +66,8 @@ def test_input_list_from_task():
     # Test upload input data
 
     t = Task()
-    t.upload_input_data = ['$HOME/test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.upload_input_data = ['/home/vivek/test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.upload_input_data[0]
     assert 'action' not in ip_list[0]
@@ -62,8 +75,8 @@ def test_input_list_from_task():
 
 
     t = Task()
-    t.upload_input_data = ['$HOME/test.dat > new_test.dat']
-    ip_list = get_input_list_from_task(t)
+    t.upload_input_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.upload_input_data[0].split('>')[0].strip()
     assert 'action' not in ip_list[0]
@@ -72,16 +85,28 @@ def test_input_list_from_task():
 
 def test_output_list_from_task():
 
+    pipeline    = str(ru.generate_id('radical.entk.pipeline'))
+    stage       = str(ru.generate_id('radical.entk.stage'))
+    task        = str(ru.generate_id('radical.entk.task'))
+
+    placeholder_dict = {
+                            pipeline: {
+                                        stage:{
+                                                task: '/home/vivek/some_file.txt'
+                                        }
+                            }
+                    }
+
     for t in [1,'a',list(), dict(),True]:
         with pytest.raises(TypeError):
             t = list()
-            get_output_list_from_task(t)
+            get_output_list_from_task(t, placeholder_dict)
 
 
     # Test copy output data
     t = Task()
-    t.copy_output_data = ['$HOME/test.dat']
-    ip_list = get_output_list_from_task(t)
+    t.copy_output_data = ['/home/vivek/test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.copy_output_data[0]
     assert ip_list[0]['action'] == rp.COPY
@@ -89,8 +114,8 @@ def test_output_list_from_task():
 
 
     t = Task()
-    t.copy_output_data = ['$HOME/test.dat > new_test.dat']
-    ip_list = get_output_list_from_task(t)
+    t.copy_output_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.copy_output_data[0].split('>')[0].strip()
     assert ip_list[0]['action'] == rp.COPY
@@ -100,8 +125,8 @@ def test_output_list_from_task():
     # Test download input data
 
     t = Task()
-    t.download_output_data = ['$HOME/test.dat']
-    ip_list = get_output_list_from_task(t)
+    t.download_output_data = ['/home/vivek/test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.download_output_data[0]
     assert 'action' not in ip_list[0]
@@ -109,14 +134,26 @@ def test_output_list_from_task():
 
 
     t = Task()
-    t.download_output_data = ['$HOME/test.dat > new_test.dat']
-    ip_list = get_output_list_from_task(t)
+    t.download_output_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
 
     assert ip_list[0]['source'] == t.download_output_data[0].split('>')[0].strip()
     assert 'action' not in ip_list[0]
     assert ip_list[0]['target'] == os.path.basename(t.download_output_data[0].split('>')[1].strip())
 
 def test_create_cud_from_task():
+
+    pipeline    = str(ru.generate_id('radical.entk.pipeline'))
+    stage       = str(ru.generate_id('radical.entk.stage'))
+    task        = str(ru.generate_id('radical.entk.task'))
+
+    placeholder_dict = {
+                            pipeline: {
+                                        stage:{
+                                                task: '/home/vivek/some_file.txt'
+                                        }
+                            }
+                    }
 
     t1 = Task()
     t1.name = 'simulation'
@@ -138,7 +175,7 @@ def test_create_cud_from_task():
     p.stages = s
     s.tasks = t1
 
-    cud = create_cud_from_task(t1)
+    cud = create_cud_from_task(t1, placeholder_dict)
 
     assert cud.name == '%s,%s,%s'%(t1.uid, t1._parent_stage, t1._parent_pipeline)
     assert cud.pre_exec == t1.pre_exec
@@ -175,3 +212,55 @@ def test_create_task_from_cu():
 
     for path in glob.glob('./rp.session.*'):
         shutil.rmtree(path)
+
+
+def test_resolve_placeholder():
+
+    pipeline    = str(ru.generate_id('radical.entk.pipeline'))
+    stage       = str(ru.generate_id('radical.entk.stage'))
+    task        = str(ru.generate_id('radical.entk.task'))
+
+    placeholder_dict = {
+                            pipeline: {
+                                        stage:{
+                                                task: '/home/vivek/some_file.txt'
+                                        }
+                            }
+                    }
+
+    # Test only strings are accepted
+    raw_paths = [1, list(), dict()]
+
+    for raw_path in raw_paths:
+        with pytest.raises(TypeError):
+            resolve_placeholders(raw_path, placeholder_dict)
+
+    # Test when no placeholders to resolve
+    raw_path = '/home/vivek/some_file.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == raw_path
+
+    # Test for shared data location
+    raw_path = '$SHARED/test.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == 'staging://test.txt'
+
+    # Test for shared data location with rename
+    raw_path = '$SHARED/test.txt > new.txt'
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == 'staging://test.txt > new.txt'
+
+    # Test for resolving relative data references
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'.format(pipeline, stage, task)
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == '/home/vivek/some_file.txt'
+
+    # Test for resolving relative data references with rename
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt > new.txt'.format(pipeline, stage, task)
+    processed_path = resolve_placeholders(raw_path, placeholder_dict)
+    assert processed_path == '/home/vivek/some_file.txt > new.txt'
+    
+    # Test only placeholders in $Pipeline_%s_Stage_%s_Task_%s are accepted
+    raw_path='$Task_2'
+    with pytest.raises(ValueError):
+        resolve_placeholders(raw_path, placeholder_dict)

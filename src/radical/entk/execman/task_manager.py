@@ -38,6 +38,7 @@ class TaskManager(object):
         self._tmgr_terminate = None
         self._hb_thread = None
         self._hb_alive = None
+        self._umgr = None
 
         self._logger.info('Created task manager object: %s'%self._uid)
 
@@ -129,7 +130,18 @@ class TaskManager(object):
             try:
 
                 self._prof.prof('creating tmgr process', uid=self._uid)
-                self._tmgr_process = Process(target=self.tmgr, name='task-manager')
+                self._tmgr_process = Process(   target=self.tmgr, 
+                                                name='task-manager', 
+                                                args=(
+                                                    self._uid,
+                                                    self._umgr, 
+                                                    self._rmgr,
+                                                    self._logger,
+                                                    self._mq_hostname,
+                                                    self._pending_queue,
+                                                    self._completed_queue)
+                                            )
+
                 self._tmgr_terminate = Event()
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
@@ -167,7 +179,7 @@ class TaskManager(object):
             raise
 
   
-    def tmgr(self):
+    def tmgr(self, uid, umgr, rmgr, logger, mq_hostname, pending_queue, completed_queue):
 
         # This function extracts currently tasks from the pending_queue
         # and pushes it to the executed_queue. Thus mimicking an execution plugin
@@ -177,9 +189,27 @@ class TaskManager(object):
             local_prof = ru.Profiler(name = self._uid + '-proc')
 
             local_prof.prof('tmgr process started', uid=self._uid)
-            self._logger.info('Task Manager process started') 
+            logger.info('Task Manager process started') 
+
+
+            placeholder_dict = dict()
+
+            def load_placeholder(task):
+
+                parent_pipeline = str(task._parent_pipeline)
+                parent_stage = str(task._parent_stage)
+
+                if parent_pipeline not in placeholder_dict:
+                    placeholder_dict[parent_pipeline] = dict()
+
+                if parent_stage not in placeholder_dict[parent_pipeline]:
+                    placeholder_dict[parent_pipeline][parent_stage] = dict()
+
+                placeholder_dict[parent_pipeline][parent_stage][str(task.uid)] = str(task.path)
+
 
             def sync_with_master(obj, obj_type, channel):
+
 
                 object_as_dict = {'object': obj.to_dict()}
                 if obj_type == 'Task': 
@@ -198,7 +228,7 @@ class TaskManager(object):
                                         routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack',
+                                                        reply_to = 'sync-ack-tmgr',
                                                         correlation_id = corr_id
                                                         )
                                     )
@@ -210,13 +240,16 @@ class TaskManager(object):
                 else:
                     local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
+
+                
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack-tmgr')
 
                     if body:
                         if corr_id == props.correlation_id:
 
+                            #print 'acknowledged: ', obj.uid, obj.state
                             if obj_type == 'Task':
                                 local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
                             elif obj_type == 'Stage':
@@ -236,15 +269,20 @@ class TaskManager(object):
 
                 try:
 
-                    # Thread should run till terminate condtion is encountered
-                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
-                    mq_channel = mq_connection.channel()
+                    logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
 
-                    self._logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
+                    # Thread should run till terminate condtion is encountered
+                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
+                    mq_channel = mq_connection.channel()
+                
+                    if unit.state in [rp.EXECUTING]:
+                        task = create_task_from_cu(unit, local_prof)
+                        #print 'Executing: %s %s'%(unit.uid, task.uid)
 
                     if unit.state in [rp.DONE, rp.FAILED]:
 
                         task = create_task_from_cu(unit, local_prof)
+                        #print 'Done: %s %s'%(unit.uid, task.uid)
                         
                         task.state = states.COMPLETED
                         local_prof.prof('transition', 
@@ -252,13 +290,17 @@ class TaskManager(object):
                                         state=task.state,
                                         msg=task._parent_stage)
 
-                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
-
                         if unit.state == rp.DONE:
                             task.exit_code = 0
                         else:
                             task.exit_code = 1
-                    
+
+                        task.path = str(unit.sandbox)
+
+                        load_placeholder(task)
+
+                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
+                
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(   exchange='',
@@ -270,10 +312,10 @@ class TaskManager(object):
                                                         #)
                                                 ) 
 
-                        self._logger.info('Pushed task %s with state %s to completed queue %s'%(
+                        logger.info('Pushed task %s with state %s to completed queue %s'%(
                                                                                     task.uid, 
                                                                                     task.state,
-                                                                                    self._completed_queue[0])
+                                                                                    completed_queue[0])
                                                                                     )
 
                     mq_connection.close()
@@ -295,12 +337,13 @@ class TaskManager(object):
                     raise
             
 
-            self._umgr = rp.UnitManager(session=self._rmgr._session)
-            self._umgr.add_pilots(self._rmgr.pilot)
-            self._umgr.register_callback(unit_state_cb)
+            if not umgr:
+                umgr = rp.UnitManager(session=rmgr._session)
+                umgr.add_pilots(rmgr.pilot)
+                umgr.register_callback(unit_state_cb)
 
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
             mq_channel = mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
@@ -323,18 +366,19 @@ class TaskManager(object):
                 ch.basic_ack(delivery_tag = method.delivery_tag)
             '''
 
-            local_prof.prof('tmgr infrastructure setup done', uid=self._uid)
+            local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
             while not self._tmgr_terminate.is_set():
 
                 try:
 
-                    method_frame, header_frame, body = mq_channel.basic_get(queue=self._pending_queue[0])
+                    method_frame, header_frame, body = mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
 
-
                         try:
+
+                            #print 'Body: ',body
 
                             task = Task()
                             task.from_dict(json.loads(body))
@@ -348,11 +392,11 @@ class TaskManager(object):
 
                             sync_with_master(task, 'Task', mq_channel)
 
-                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, self._pending_queue[0]))                            
+                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, pending_queue[0]))                            
 
                             self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            self._umgr.submit_units(create_cud_from_task(task, local_prof))
+                            umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
 
                             task.state = states.SUBMITTED
 
@@ -368,7 +412,7 @@ class TaskManager(object):
                         except Exception, ex:
 
                             # Rolling back queue and task status
-                            self._logger.error('Error while pushing task to completed queue, rolling back: %s'%ex)
+                            logger.error('Error while pushing task to completed queue, rolling back: %s'%ex)
                             raise Error(text=ex)
                 
                         if slow_run:
@@ -379,23 +423,24 @@ class TaskManager(object):
 
                     if body:
 
-                        self._logger.info('Received heartbeat request')
+                        logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(   exchange='',
                                     routing_key='heartbeat-res',
                                     properties=pika.BasicProperties(correlation_id = props.correlation_id),
                                     body='response')
 
-                        self._logger.info('Sent heartbeat response')
+                        logger.info('Sent heartbeat response')
                         mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
             
 
                 except Exception, ex:
 
-                    self._logger.error('Error getting messages from pending queue: %s'%ex)
+                    logger.error('Error getting messages from pending queue: %s'%ex)
+                    print traceback.format_exc()
                     raise Error(text=ex) 
 
-            local_prof.prof('terminating tmgr process', uid=self._uid)
+            local_prof.prof('terminating tmgr process', uid=uid)
 
             local_prof.close()
 

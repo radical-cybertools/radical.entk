@@ -17,8 +17,7 @@ if __name__ == '__main__':
 
     p1 = Pipeline()
     p1.name = 'p1'
-    p2 = Pipeline()
-    p2.name = 'p2'
+
 
     stages=1
 
@@ -34,21 +33,15 @@ if __name__ == '__main__':
         p1.add_stages(s)
 
     
-    for cnt in range(stages-1):
-        s = Stage()
-        s.name = 's-%s'%cnt
-        s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
-
-        p2.add_stages(s)
-    
 
     res_dict = {
 
-            'resource': 'local.localhost',
-            'walltime': 15,
-            'cores': 2,
-            'project': ''
+            'resource': 'xsede.stampede',
+            'walltime': 30,
+            'cores': 32,
+            'project': 'TG-MCB090174',
+            'queue': 'development',
+            'schema': 'gsissh'
 
     }
 
