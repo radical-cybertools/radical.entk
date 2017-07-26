@@ -248,7 +248,7 @@ class WFprocessor(object):
                                         routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack',
+                                                        reply_to = 'sync-ack-enq',
                                                         correlation_id = corr_id
                                                         )
                                     )
@@ -262,7 +262,7 @@ class WFprocessor(object):
             
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack-enq')
 
                     if body:
                         if corr_id == props.correlation_id:
@@ -521,7 +521,7 @@ class WFprocessor(object):
                                         routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack',
+                                                        reply_to = 'sync-ack-deq',
                                                         correlation_id = corr_id
                                                         )
                                     )
@@ -535,7 +535,7 @@ class WFprocessor(object):
 
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack-deq')
 
                     if body:
                         if corr_id == props.correlation_id:

@@ -248,8 +248,12 @@ class AppManager(object):
 
             self._mq_channel.queue_delete(queue='sync-to-master')
             self._mq_channel.queue_declare(queue='sync-to-master')
-            self._mq_channel.queue_delete(queue='sync-ack')
-            self._mq_channel.queue_declare(queue='sync-ack')
+            self._mq_channel.queue_delete(queue='sync-ack-tmgr')
+            self._mq_channel.queue_declare(queue='sync-ack-tmgr')
+            self._mq_channel.queue_delete(queue='sync-ack-enq')
+            self._mq_channel.queue_declare(queue='sync-ack-enq')
+            self._mq_channel.queue_delete(queue='sync-ack-deq')
+            self._mq_channel.queue_declare(queue='sync-ack-deq')
                                                     # Durable Qs will not be lost if rabbitmq server crashes
 
 
@@ -329,16 +333,18 @@ class AppManager(object):
 
                                                 for task in stage.tasks:
 
-                                                    if completed_task.uid == task.uid:
-
-                                                        self._logger.debug('Found task %s'%task.uid)
+                                                    if (completed_task.uid == task.uid)and(completed_task.state != task.state):
+                                                        
                                                         task.state = str(completed_task.state)
+                                                        self._logger.debug('Found task %s with state %s'%(task.uid, task.state))
 
                                                         if completed_task.path:
                                                             task.path = str(completed_task.path)
 
+                                                        #print 'Syncing task %s with state %s'%(task.uid, task.state)
+
                                                         mq_channel.basic_publish(   exchange='',
-                                                                                    routing_key='sync-ack',
+                                                                                    routing_key=props.reply_to,
                                                                                     properties=pika.BasicProperties(
                                                                                         correlation_id = props.correlation_id),
                                                                                     body='%s-ack'%task.uid)
@@ -349,6 +355,8 @@ class AppManager(object):
                                                                                         )
 
                                                         mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+                                                        #print 'Synced task %s with state %s'%(task.uid, task.state)
 
 
                     elif msg['type'] == 'Stage':
@@ -368,14 +376,15 @@ class AppManager(object):
                                 
                                         for stage in pipe.stages:
 
-                                            if completed_stage.uid == stage.uid:              
+                                            if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):              
 
                                                 self._logger.debug('Found stage %s'%stage.uid)
 
                                                 stage.state = str(completed_stage.state)
 
+
                                                 mq_channel.basic_publish(   exchange='',
-                                                                            routing_key='sync-ack',
+                                                                            routing_key=props.reply_to,
                                                                             properties=pika.BasicProperties(
                                                                                     correlation_id = props.correlation_id),
                                                                             body='%s-ack'%stage.uid)
@@ -402,7 +411,7 @@ class AppManager(object):
 
                                 if not pipe._completed:
 
-                                    if completed_pipeline.uid == pipe.uid:
+                                    if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
 
                                         pipe.state = str(completed_pipeline.state)
 
@@ -412,7 +421,7 @@ class AppManager(object):
                                         self._logger.info('Found pipeline %s, state %s, completed %s'%(pipe.uid, pipe.state, pipe._completed))
 
                                         mq_channel.basic_publish(   exchange='',
-                                                                    routing_key='sync-ack',
+                                                                    routing_key=props.reply_to,
                                                                     properties=pika.BasicProperties(
                                                                                 correlation_id = props.correlation_id),
                                                                     body='%s-ack'%pipe.uid)

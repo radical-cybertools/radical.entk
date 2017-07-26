@@ -210,6 +210,7 @@ class TaskManager(object):
 
             def sync_with_master(obj, obj_type, channel):
 
+
                 object_as_dict = {'object': obj.to_dict()}
                 if obj_type == 'Task': 
                     object_as_dict['type'] = 'Task'
@@ -227,7 +228,7 @@ class TaskManager(object):
                                         routing_key='sync-to-master',
                                         body=json.dumps(object_as_dict),
                                         properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack',
+                                                        reply_to = 'sync-ack-tmgr',
                                                         correlation_id = corr_id
                                                         )
                                     )
@@ -239,13 +240,16 @@ class TaskManager(object):
                 else:
                     local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
+
+                
                 while True:
                     #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack')
+                    method_frame, props, body = channel.basic_get(queue='sync-ack-tmgr')
 
                     if body:
                         if corr_id == props.correlation_id:
 
+                            #print 'acknowledged: ', obj.uid, obj.state
                             if obj_type == 'Task':
                                 local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
                             elif obj_type == 'Stage':
@@ -265,20 +269,20 @@ class TaskManager(object):
 
                 try:
 
+                    logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
+
                     # Thread should run till terminate condtion is encountered
                     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
                     mq_channel = mq_connection.channel()
-
-                    logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
-
+                
                     if unit.state in [rp.EXECUTING]:
                         task = create_task_from_cu(unit, local_prof)
-                        print 'Executing: %s %s'%(unit.uid, task.uid)
+                        #print 'Executing: %s %s'%(unit.uid, task.uid)
 
                     if unit.state in [rp.DONE, rp.FAILED]:
 
                         task = create_task_from_cu(unit, local_prof)
-                        print 'Executing: %s %s'%(unit.uid, task.uid)
+                        #print 'Done: %s %s'%(unit.uid, task.uid)
                         
                         task.state = states.COMPLETED
                         local_prof.prof('transition', 
@@ -374,7 +378,7 @@ class TaskManager(object):
 
                         try:
 
-                            print 'Body: ',body
+                            #print 'Body: ',body
 
                             task = Task()
                             task.from_dict(json.loads(body))

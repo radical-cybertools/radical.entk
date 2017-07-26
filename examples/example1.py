@@ -33,17 +33,21 @@ if __name__ == '__main__':
         s.add_tasks(create_single_task())
         s.add_tasks(create_single_task())
         s.add_tasks(create_single_task())
-
+        s.add_tasks(create_single_task())
+        s.add_tasks(create_single_task())
+        
         p1.add_stages(s)
 
     
 
     res_dict = {
 
-            'resource': 'local.localhost',
-            'walltime': 15,
-            'cores': 4,
-            'project': ''
+            'resource': 'xsede.stampede',
+            'walltime': 30,
+            'cores': 32,
+            'project': 'TG-MCB090174',
+            'queue': 'development',
+            'schema': 'gsissh'
 
     }
 
