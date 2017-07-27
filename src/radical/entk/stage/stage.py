@@ -26,32 +26,11 @@ class Stage(object):
         self._task_count = len(self._tasks)
 
         # Pipeline this stage belongs to
-        self._p_pipeline = None
+        self._p_pipeline = None    
 
-
-    def _validate_tasks(self, tasks):
-
-        """
-        Validate whether the 'tasks' is of type set
-        """
-
-        if not isinstance(tasks, set):
-
-            if not isinstance(tasks, list):
-                tasks = set([tasks])
-            else:
-                tasks = set(tasks)
-
-        for val in tasks:
-
-            if not isinstance(val, Task):
-                raise TypeError(expected_type=Task, actual_type=type(val))
-
-        return tasks
-
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def name(self):
@@ -120,12 +99,11 @@ class Stage(object):
         """
 
         return self._state_history
-    # -----------------------------------------------
 
 
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
@@ -154,8 +132,11 @@ class Stage(object):
             self._state_history.append(value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))        
-    # -----------------------------------------------
+    
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def add_tasks(self, tasks):
 
@@ -210,66 +191,6 @@ class Stage(object):
         except Exception, ex:
             raise Error(text=ex)
 
-
-    def _pass_uid(self, tasks=None):
-
-        """
-        Assign parent pipeline of current stage + pass the same as well as the stage uid 
-        to all tasks of the current stage
-
-        :arguments: set of Tasks (optional)
-        :return: list of updated Tasks
-        """
-
-        if tasks is None:
-            for task in self._tasks:
-                task._parent_stage = self._uid
-                task._parent_pipeline = self._p_pipeline
-        else:
-            for task in tasks:
-                task._parent_stage = self._uid
-                task._parent_pipeline = self._p_pipeline
-
-
-            return tasks
-
-    def _set_tasks_state(self, value):
-
-        """
-        Set state value to all tasks of the current stage
-
-        :arguments: String
-        """
-
-        if isinstance(value, str):
-            for task in self._tasks:
-                task.state = value
-
-        else:
-            raise TypeError(expected_type=str, actual_type=type(value))
-
-    def _check_stage_complete(self):
-
-        """
-        Check if all tasks of the current stage have completed, i.e.
-        are in either DONE or FAILED state.
-        """
-
-
-        try:
-
-            for task in self._tasks:
-                if task.state not in [states.DONE, states.FAILED]:
-                    return False
-                    
-            return True
-
-        except Exception, ex:
-
-            print 'Task state evaluation failed'
-            raise UnknownError(text=ex)
-
-
     def to_dict(self):
 
         """
@@ -319,7 +240,7 @@ class Stage(object):
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
-            self._state = states.UNSCHEDULED
+            self._state = states.INITIAL
 
 
         if 'state_history' in d:
@@ -333,3 +254,115 @@ class Stage(object):
                 self._p_pipeline = d['parent_pipeline']
             else:
                 raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def _pass_uid(self, tasks=None):
+
+        """
+        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
+
+        Details: This lets us trace the Stage and Pipeline if only the Task is provided.
+
+        :arguments: set of Tasks (optional)
+        :return: list of updated Tasks
+        """
+
+        if tasks is None:
+            for task in self._tasks:
+                task._parent_stage = self._uid
+                task._parent_pipeline = self._p_pipeline
+        else:
+            for task in tasks:
+                task._parent_stage = self._uid
+                task._parent_pipeline = self._p_pipeline
+
+
+            return tasks
+
+    def _set_tasks_state(self, value):
+
+        """
+        Purpose: Set state of all tasks of the current stage.
+
+        :arguments: String
+        """
+
+        if isinstance(value, str):
+            for task in self._tasks:
+                task.state = value
+
+        else:
+            raise TypeError(expected_type=str, actual_type=type(value))
+
+    def _check_stage_complete(self):
+
+        """
+        Purpose: Check if all tasks of the current stage have completed, i.e., are in either DONE or FAILED state.
+        """
+
+        try:
+
+            for task in self._tasks:
+                if task.state not in [states.DONE, states.FAILED]:
+                    return False
+                    
+            return True
+
+        except Exception, ex:
+
+            print 'Task state evaluation failed'
+            raise Error(text=ex)
+
+
+    def _validate_tasks(self, tasks):
+
+        """
+        Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
+
+        Details: This method is to be called before the resource request is placed. Currently, this method is called 
+        when tasks are added to the stage.
+        """
+
+        if not isinstance(tasks, set):
+
+            if not isinstance(tasks, list):
+                tasks = set([tasks])
+            else:
+                tasks = set(tasks)
+
+        for t in tasks:
+
+            if not isinstance(t, Task):
+                raise TypeError(expected_type=Task, actual_type=type(t))
+
+            t._validate()
+
+        return tasks
+
+    def _validate(self):
+
+        """
+        Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
+        validate that the current Stage contains Tasks
+
+        Details: This method is to be called before the resource request is placed. Currently, this method is called
+        when the parent Pipeline is validated.
+        """
+
+        if self._state is not states.INITIAL:
+            
+            raise ValueError(   object=self._uid, 
+                                attribute='state', 
+                                expected_value=states.INITIAL,
+                                actual_value=self._state)
+
+        if self._tasks is None:
+
+            raise MissingError( object=self._uid,
+                                missing_attribute='tasks')
+
+    # ------------------------------------------------------------------------------------------------------------------

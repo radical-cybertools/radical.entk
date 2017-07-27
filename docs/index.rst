@@ -8,6 +8,7 @@ Welcome to radical.entk's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
    :caption: Contents:
 
    introduction
@@ -16,6 +17,8 @@ Welcome to radical.entk's documentation!
    examples
    api
    tests
+   exceptions
+   dev_docs
 
 Indices and tables
 ==================

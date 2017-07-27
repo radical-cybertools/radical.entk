@@ -9,6 +9,17 @@ import os
 
 class ResourceManager(object):
 
+    """
+    A resource manager takes the responsibility of placing resource requests on different, possibly multiple,
+    DCIs. Currently, the runtime system being used is RADICAL Pilot and hence the resource request is made via
+    Pilot Jobs.
+
+    :arguments: 
+        :resource_desc: dictionary with details of the resource request + access credentials of the user 
+        :example: resource_desc = {  'resource': 'xsede.stampede', 'walltime': 120, 'cores': 64, 'project: 'TG-abcxyz'}
+
+    """
+
     def __init__(self, resource_desc):
 
         self._uid = ru.generate_id('radical.entk.resource_manager')
@@ -46,10 +57,10 @@ class ResourceManager(object):
 
         self._prof.prof('rmgr obj created', uid=self._uid)
 
-            
 
-    #----------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def pilot(self):
@@ -123,12 +134,23 @@ class ResourceManager(object):
         """
         return self._queue
 
-    #----------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def _validate_resource_desc(self, resource_desc):
 
         """
-        Validate the resource description that was provided to current class's constructor
+        **Purpose**: Validate the resource description that was provided to ResourceManager
+
+        :arguments: dictionary consisting of details of the resource request
+        :return: boolean (valid/invalid)
         """
 
         try:
@@ -180,7 +202,9 @@ class ResourceManager(object):
     def _populate(self, resource_desc):
 
         """
-        Populate the class attributes with values provided in the resource description
+        **Purpose**: Populate the ResourceManager attributes with values provided in the resource description
+
+        :arguments: valid dictionary consisting of details of the resource request
         """
 
         try:
@@ -210,8 +234,9 @@ class ResourceManager(object):
     def _submit_resource_request(self):
 
         """
-        Function to initiate the resource request
-        Currently, submits a Pilot job using the RADICAL Pilot system
+        **Purpose**: Function to initiate the resource request.
+
+        Details: Currently, submits a Pilot job using the RADICAL Pilot runtime system.
         """
 
         try:
@@ -243,6 +268,7 @@ class ResourceManager(object):
                 pd_init['queue'] = self._queue
     
 
+            # Create Compute Pilot with validated resource description
             pdesc = rp.ComputePilotDescription(pd_init)
 
             self._prof.prof('rreq created', uid=self._uid)
@@ -266,12 +292,25 @@ class ResourceManager(object):
 
             return self._pilot
 
+        except KeyboardInterrupt:
+
+            if self._session:
+                self._session.close()
+
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                            'trying to exit callback thread gracefully...')
+            raise KeyboardInterrupt
+
         except Exception, ex:
-            self._logger.error('Resource request submission failed, error: %s'%ex)
-            raise
+            self._logger.error('Resource request submission failed')
+            raise Error(text=ex)
 
 
     def _cancel_resource_request(self):
+
+        """
+        **Purpose**: Cancel the resource request
+        """
 
         try:
 
@@ -286,5 +325,7 @@ class ResourceManager(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not cancel resource request, error: %s'%ex)
-            raise
+            self._logger.error('Could not cancel resource request')
+            raise Error(text=ex)
+
+    # ------------------------------------------------------------------------------------------------------------------

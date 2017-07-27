@@ -65,3 +65,6 @@ docs/_build/
 
 # Throughput files
 .txt
+
+# pytest files
+./src/radical/entk/tests/__pycache__

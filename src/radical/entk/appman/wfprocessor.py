@@ -20,6 +20,18 @@ slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
 
 class WFprocessor(object):
 
+    """
+    An WFProcessor (workflow processor) takes the responsibility of dispatching tasks from the various pipelines of the
+    workflow according to their relative order to the TaskManager. All state updates are communicated to the AppManager.
+
+    :Arguments:
+        :workflow: COPY of the entire workflow existing in the AppManager 
+        :pending_qs: number of queues to hold pending tasks
+        :completed_qs: number of queues to hold completed tasks
+        :mq_hostname: hostname where the RabbitMQ is live
+    """
+
+
     def __init__(self, workflow, pending_queue, completed_queue, mq_hostname):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
@@ -52,85 +64,18 @@ class WFprocessor(object):
         self._prof.prof('wfp obj created', uid=self._uid)
     
 
-    def start_processor(self):
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private Methods
+    # ------------------------------------------------------------------------------------------------------------------
 
-        # This method starts the extractor function in a separate thread
-        if not self._wfp_process:
+    def _wfp(self):
 
-            try:
-
-                self._prof.prof('creating wfp process', uid=self._uid)
-                self._wfp_process = Process(target=self.wfp_process, name='wfprocessor')
-
-                self._enqueue_thread = None
-                self._dequeue_thread = None
-                self._enqueue_thread_terminate = threading.Event()
-                self._dequeue_thread_terminate = threading.Event()
-
-                self._wfp_terminate = Event()
-                self._logger.info('Starting WFprocessor process')
-                self._prof.prof('starting wfp process', uid=self._uid)
-                self._wfp_process.start()                
-
-                return True
-
-            except Exception, ex:
-
-                self.end_processor()
-                self._logger.error('WFprocessor not started')
-                raise            
-
-        else:
-            self._logger.info('WFprocessor already running')
-
-            raise
-
-
-
-    def end_processor(self):
-
-        # Set termination flag
-        try:
-            #if not self._wfp_terminate.is_set():
-            
-            self._wfp_terminate.set()
-            self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
-
-            if self.check_alive():
-                self._wfp_process.join()
-                self._logger.debug('WFprocessor process terminated')
-            else:
-                self._logger.debug('WFprocessor process already terminated')
-
-            self._prof.prof('wfp process terminated', uid=self._uid)
-
-            self._prof.close()
-
-        except Exception, ex:
-            self._logger.error('Could not terminate wfprocessor process')
-
-            raise
-
-    def workflow_incomplete(self):
-        
-        try:
-            for pipe in self._workflow:
-                with pipe._stage_lock:
-                    if pipe._completed:                    
-                        pass
-                    else:
-                        return True
-            return False
-
-        except KeyboardInterrupt:
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-            self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
-            raise
-
-
-    def wfp_process(self):
+        """
+        **Purpose**: This is the function executed in the wfp process. The function is used to simply create
+        and spawn two threads: enqueue, dequeue. The enqueue thread pushes ready tasks to the queues in the pending_q 
+        list whereas the dequeue thread pulls completed tasks from the queues in the completed_q. This function is also
+        responsible for the termination of these threads and hence blocking.
+        """
 
         try:
 
@@ -149,7 +94,7 @@ class WFprocessor(object):
                     if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
 
                         local_prof.prof('creating dequeue-thread', uid=self._uid)
-                        self._dequeue_thread = threading.Thread(target=self.dequeue, args=(local_prof,), name='dequeue-thread')
+                        self._dequeue_thread = threading.Thread(target=self._dequeue, args=(local_prof,), name='dequeue-thread')
 
                         self._logger.info('Starting dequeue-thread')
                         local_prof.prof('starting dequeue-thread', uid=self._uid)
@@ -159,7 +104,7 @@ class WFprocessor(object):
                     if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
 
                         local_prof.prof('creating enqueue-thread', uid=self._uid)
-                        self._enqueue_thread = threading.Thread(target=self.enqueue, args=(local_prof,), name='enqueue-thread')
+                        self._enqueue_thread = threading.Thread(target=self._enqueue, args=(local_prof,), name='enqueue-thread')
 
                         self._logger.info('Starting enqueue-thread')
                         local_prof.prof('starting enqueue-thread', uid=self._uid)
@@ -226,9 +171,20 @@ class WFprocessor(object):
             raise Error(text=ex)           
 
 
-    def enqueue(self, local_prof):
+    def _enqueue(self, local_prof):
+
+        """
+        **Purpose**: This is the function that is run in the enqueue thread. This function extracts Tasks from the 
+        copy of workflow that exists in the WFprocessor object and pushes them to the queues in the pending_q list.
+        Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
+        communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
+        queues to communicate with the master.
+
+        Details: Termination condition of this thread is set by the wfp process.
+        """
 
         try:
+
 
             local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
@@ -242,10 +198,8 @@ class WFprocessor(object):
 
                     with pipe._stage_lock:
 
-                        if not pipe._completed:
-    
-                            #self._logger.debug('Pipe %s lock acquired'%(pipe.uid))
-    
+                        if not pipe.completed:
+      
                             # Test if the pipeline is already in the final state
                             if pipe.state in states.FINAL:
                                 continue
@@ -264,26 +218,26 @@ class WFprocessor(object):
 
                                 self._logger.info('Pipe: %s, State: %s'%(pipe.uid, pipe.state))
     
-                            if pipe.stages[pipe._current_stage-1].state in [states.INITIAL]:
+                            if pipe.stages[pipe.current_stage-1].state in [states.INITIAL]:
     
                                 try:
 
                                     # Starting scheduling of tasks of current stage
-                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULING
+                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULING
                                     
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state,
                                                     msg = pipe.uid)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe._current_stage-1].uid, 
-                                        pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe.current_stage-1].uid, 
+                                        pipe.stages[pipe.current_stage-1].state))
 
-                                    executable_stage = pipe.stages[pipe._current_stage-1]
+                                    executable_stage = pipe.stages[pipe.current_stage-1]
                                     executable_tasks = executable_stage.tasks
     
                                     tasks_submitted=False
@@ -299,7 +253,6 @@ class WFprocessor(object):
                                             # Try-exception block for tasks
                                             try:
     
-                                                # Update specific task's state to scheduling
                                                 executable_task.state = states.SCHEDULING
 
                                                 local_prof.prof('transition', 
@@ -320,6 +273,9 @@ class WFprocessor(object):
                                                                             %(executable_task.uid,
                                                                                 self._pending_queue[0])
                                                                         )
+
+
+                                                # Put the task on one of the pending_queues
 
                                                 mq_channel.basic_publish(   exchange='',
                                                                             routing_key=self._pending_queue[0],
@@ -374,19 +330,20 @@ class WFprocessor(object):
                                                 raise
                                     
                                     # All tasks of current stage scheduled
-                                    pipe.stages[pipe._current_stage-1].state = states.SCHEDULED                                    
+                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULED                                    
 
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state,
                                                     msg=pipe.uid)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
-                                                                                pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
+                                                                                pipe.stages[pipe.current_stage-1].state))
 
                                     if tasks_submitted:
                                         tasks_submitted = False
@@ -405,19 +362,19 @@ class WFprocessor(object):
                                                         'state, rolling back. Error: %s'%ex)
     
                                     # Revert stage state
-                                    pipe.stages[pipe._current_stage-1].state = states.INITIAL
+                                    pipe.stages[pipe.current_stage-1].state = states.INITIAL
 
                                     local_prof.prof('transition', 
                                                     uid=pipe.stages[pipe._current_stage-1].uid, 
                                                     state=pipe.stages[pipe._current_stage-1].state,
                                                     msg=pipe.uid)
 
-                                    sync_with_master(   obj=pipe.stages[pipe._current_stage-1], 
+                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
                                                         obj_type='Stage', 
                                                         channel = mq_channel)
 
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe._current_stage-1].uid, 
-                                                                                pipe.stages[pipe._current_stage-1].state))
+                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
+                                                                                pipe.stages[pipe.current_stage-1].state))
 
                                     raise
 
@@ -448,7 +405,17 @@ class WFprocessor(object):
 
 
 
-    def dequeue(self, local_prof):
+    def _dequeue(self, local_prof):
+
+        """
+        **Purpose**: This is the function that is run in the dequeue thread. This function extracts Tasks from the 
+        completed queus and updates the copy of workflow that exists in the WFprocessor object.
+        Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
+        communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
+        queues to communicate with the master.
+
+        Details: Termination condition of this thread is set by the wfp process.
+        """
 
         try:
 
@@ -486,11 +453,13 @@ class WFprocessor(object):
                                                                     completed_task.state)
                                                                 )
 
+
+                        # Traverse the entire workflow to find out the correct Task
                         for pipe in self._workflow:
 
                             with pipe._stage_lock:
 
-                                if not pipe._completed:
+                                if not pipe.completed:
 
                                     if completed_task._parent_pipeline == pipe.uid:
 
@@ -585,7 +554,7 @@ class WFprocessor(object):
                                                                 except:
                                                                     pass
 
-                                                                if pipe._completed:
+                                                                if pipe.completed:
                                                                     #self._workload.remove(pipe) 
 
                                                                     pipe.state = states.DONE
@@ -610,7 +579,7 @@ class WFprocessor(object):
                                                                     new_task = Task()
                                                                     new_task._replicate(completed_task)
 
-                                                                    pipe.stages[pipe._current_stage-1].add_tasks(new_task)
+                                                                    pipe.stages[pipe.current_stage-1].add_tasks(new_task)
 
                                                                 except Exception, ex:
                                                                     self._logger.error("Resubmission of task %s failed, error: %s"%
@@ -661,7 +630,7 @@ class WFprocessor(object):
                                                                                                     stage.state))
                                                                         pipe._decrement_stage()                                    
 
-                                                                    if pipe._completed:
+                                                                    if pipe.completed:
 
                                                                         pipe.state = states.DONE
 
@@ -727,6 +696,102 @@ class WFprocessor(object):
             raise Error(text=ex)
 
 
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public Methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def start_processor(self):
+
+        """
+        **Purpose**: Method to start the wfp process. The wfp function
+        is not to be accessed directly. The function is started in a separate
+        process using this method.
+        """
+
+        if not self._wfp_process:
+
+            try:
+
+                self._prof.prof('creating wfp process', uid=self._uid)
+                self._wfp_process = Process(target=self._wfp, name='wfprocessor')
+
+                self._enqueue_thread = None
+                self._dequeue_thread = None
+                self._enqueue_thread_terminate = threading.Event()
+                self._dequeue_thread_terminate = threading.Event()
+
+                self._wfp_terminate = Event()
+                self._logger.info('Starting WFprocessor process')
+                self._prof.prof('starting wfp process', uid=self._uid)
+                self._wfp_process.start()                
+
+                return True
+
+            except Exception, ex:
+
+                self.end_processor()
+                self._logger.error('WFprocessor not started')
+                raise Error(text=ex)      
+
+        else:
+            self._logger.info('WFprocessor already running')
+
+
+    def end_processor(self):
+
+        """
+        **Purpose**: Method to terminate the wfp process. This method is 
+        blocking as it waits for the wfp process to terminate (aka join).
+        """
+
+        try:
+            #if not self._wfp_terminate.is_set():
+            
+            self._wfp_terminate.set()
+            self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
+
+            if self.check_alive():
+                self._wfp_process.join()
+                self._logger.debug('WFprocessor process terminated')
+            else:
+                self._logger.debug('WFprocessor process already terminated')
+
+            self._prof.prof('wfp process terminated', uid=self._uid)
+
+            self._prof.close()
+
+        except Exception, ex:
+            self._logger.error('Could not terminate wfprocessor process')
+            raise Error(text=ex)
+
+    def workflow_incomplete(self):
+
+        """
+        **Purpose**: Method to check if the workflow execution is incomplete.
+        """
+        
+        try:
+            for pipe in self._workflow:
+                with pipe._stage_lock:
+                    if pipe.completed:                    
+                        pass
+                    else:
+                        return True
+            return False
+
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+
+        except Exception, ex:
+            self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
+            raise
+
+
     def check_alive(self):
+
+        """
+        **Purpose**: Method to check if the wfp process is alive
+        """
 
         return self._wfp_process.is_alive()

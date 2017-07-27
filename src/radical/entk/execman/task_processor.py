@@ -56,6 +56,16 @@ def resolve_placeholders(path, placeholder_dict):
 
 def get_input_list_from_task(task, placeholder_dict):
 
+    """
+    Purpose: Parse a Task object to extract the files to be staged as the output. 
+
+    Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
+    is to be copied/downloaded.
+
+    :arguments: Task 
+    :return: list of RP directives for the files that need to be staged out
+    """
+
 
     try:
 
@@ -136,6 +146,18 @@ def get_input_list_from_task(task, placeholder_dict):
 
 def get_output_list_from_task(task, placeholder_dict):
 
+    """
+    Purpose: Parse a Task object to extract the files to be staged as the output. 
+    
+    Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
+    is to be copied/downloaded.
+    
+    :arguments: Task 
+    :return: list of RP directives for the files that need to be staged out
+    
+    """
+
+
     try:
 
         if not isinstance(task, Task):
@@ -194,6 +216,13 @@ def get_output_list_from_task(task, placeholder_dict):
 
 def create_cud_from_task(task, placeholder_dict, prof=None):
 
+    """
+    Purpose: Create a Compute Unit description based on the defined Task.
+
+    :arguments: Task
+    :return: ComputeUnitDescription
+    """
+
     try:
         
         logger.debug('Creating CU from Task %s'%(task.uid))
@@ -227,6 +256,19 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
 
 
 def create_task_from_cu(cu, prof=None):
+
+    """
+    Purpose: Create a Task based on the Compute Unit.
+
+    Details: Currently, only the uid, parent_stage and parent_pipeline are retrieved. The exact initial Task (that was
+    converted to a CUD) cannot be recovered as the RP API does not provide the same attributes for a CU as for a CUD. 
+    Also, this is not required for the most part.
+
+    TODO: Add exit code, stdout, stderr and path attributes to a Task. These can be extracted from a CU
+
+    :arguments: ComputeUnit
+    :return: Task
+    """
 
     try:
 

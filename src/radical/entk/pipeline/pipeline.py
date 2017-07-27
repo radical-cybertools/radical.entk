@@ -33,22 +33,11 @@ class Pipeline(object):
         self._lock = threading.Lock()
 
         # To keep track of termination of pipeline
-        self._completed_flag = threading.Event()
+        self._completed_flag = threading.Event()    
 
-
-    def _validate_stages(self, stages):
-
-        if not isinstance(stages, list):
-            stages = [stages]
-
-        for val in stages:
-            if not isinstance(val, Stage):
-                raise TypeError(expected_type=Stage, actual_type=type(val))
-
-        return stages
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def name(self):
@@ -111,7 +100,7 @@ class Pipeline(object):
         return self._lock
     
     @property
-    def _completed(self):
+    def completed(self):
 
         """
         Returns whether the Pipeline has completed
@@ -121,7 +110,7 @@ class Pipeline(object):
         return self._completed_flag.is_set()
 
     @property
-    def _current_stage(self):
+    def current_stage(self):
 
         """
         Returns the current stage being executed
@@ -141,12 +130,10 @@ class Pipeline(object):
         """
 
         return self._state_history
-    # -----------------------------------------------
 
-
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
@@ -179,12 +166,13 @@ class Pipeline(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value)) 
 
-    # -----------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def add_stages(self, stages):
 
-        """
-        
+        """        
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
@@ -204,7 +192,6 @@ class Pipeline(object):
     def remove_stages(self, stage_names):
 
         """
-
         Remove stages from the current Pipeline
 
         :argument: List of stage names as strings
@@ -244,66 +231,9 @@ class Pipeline(object):
         except Exception, ex:
             raise Error(text=ex)
 
-    def _pass_uid(self, stages=None):
-
-
-        """
-        Pass current Pipeline's uid to all stages
-
-        :argument: List of Stage objects (optional)
-        :return: List of updated Stage objects
-        """
-
-        try:
-
-            if stages is None:
-                for stage in self._stages:
-                    stage._parent_pipeline = self._uid
-                    stage._pass_uid()
-            else:
-                for stage in stages:
-                    stage._parent_pipeline = self._uid
-                    stage._pass_uid()
-
-                return stages
-
-        except Exception, ex:
-            raise Error(text=ex)
-
-
-    def _increment_stage(self):
-
-        """
-        Increment pointer to current stage, also check if Pipeline has completed
-        """
-
-        try:
-
-            if self._cur_stage < self._stage_count:
-                self._cur_stage+=1
-            else:
-                self._completed_flag.set()
-
-        except Exception, ex:
-            raise Error(text=ex)
-
-    def _decrement_stage(self):
-
-        """
-        Decrement pointer to current stage
-        """
-
-        try:
-
-            if self._cur_stage > 0:
-                self._cur_stage -= 1
-                self._completed_flag = threading.Event() # reset
-            
-        except Exception, ex:
-            raise Error(text=ex)
-
 
     def to_dict(self):
+
 
         """
         Convert current Pipeline into a dictionary
@@ -311,24 +241,22 @@ class Pipeline(object):
         :return: python dictionary
         """
 
-        pipe_desc_as_dict = {
+        pipeline_desc_as_dict = {
 
                                 'uid': self._uid,
                                 'name': self._name,
                                 'state': self._state,
                                 'state_history': self._state_history,
-
-                                'cur_stage': self._cur_stage,
                                 'completed': self._completed_flag.is_set()
                         }
 
-        return pipe_desc_as_dict
+        return pipeline_desc_as_dict
 
 
     def from_dict(self, d):
 
         """
-        Create a Stage from a dictionary. The change is in inplace.
+        Create a Pipeline from a dictionary. The change is in inplace.
 
         :argument: python dictionary
         :return: None
@@ -354,7 +282,7 @@ class Pipeline(object):
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
-            self._state = states.UNSCHEDULED
+            self._state = states.INITIAL
 
 
         if 'state_history' in d:
@@ -363,16 +291,118 @@ class Pipeline(object):
             else:
                 raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
-        if 'cur_stage' in d:
-            if isinstance(d['cur_stage'], int):
-                self._cur_stage = d['cur_stage']
-            else:
-                raise TypeError(entity='cur_stage', expected_type=int, actual_type=type(d['cur_stage']))
-
         if 'completed' in d:
             if isinstance(d['completed'], bool):
                 if d['completed']:
                     self._completed_flag.set()
             else:
-                raise TypeError(entity='completed', expected_type=int, actual_type=type(d['completed']))
+                raise TypeError(entity='completed', expected_type=bool, actual_type=type(d['completed']))
 
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def _pass_uid(self, stages=None):
+
+
+        """
+        Purpose: Pass current Pipeline's uid to all Stages. 
+
+        Details: This allows us to trace the correct Pipeline if only the Stage is given.
+
+        :argument: List of Stage objects (optional)
+        :return: List of updated Stage objects
+        """
+
+        try:
+
+            if stages is None:
+                for stage in self._stages:
+                    stage._parent_pipeline = self._uid
+                    stage._pass_uid()
+            else:
+                for stage in stages:
+                    stage._parent_pipeline = self._uid
+                    stage._pass_uid()
+
+                return stages
+
+        except Exception, ex:
+            raise Error(text=ex)
+
+
+    def _increment_stage(self):
+
+        """
+        Purpose: Increment stage pointer. Also check if Pipeline has completed.
+        """
+
+        try:
+
+            if self._cur_stage < self._stage_count:
+                self._cur_stage+=1
+            else:
+                self._completed_flag.set()
+
+        except Exception, ex:
+            raise Error(text=ex)
+
+    def _decrement_stage(self):
+
+        """
+        Purpose: Decrement stage pointer 
+        """
+
+        try:
+
+            if self._cur_stage > 0:
+                self._cur_stage -= 1
+                self._completed_flag = threading.Event() # reset
+            
+        except Exception, ex:
+            raise Error(text=ex)
+
+    def _validate_stages(self, stages):
+
+        """
+        Purpose: Validate whether the 'stages' is of type list. Validate the description of each Stage.
+
+        Details: This method is to be called before the resource request is placed. Currently, this method is called 
+        when stages are added to the Pipeline.
+        """
+
+        if not isinstance(stages, list):
+            stages = [stages]
+
+        for val in stages:
+            if not isinstance(val, Stage):
+                raise TypeError(expected_type=Stage, actual_type=type(val))
+
+            val._validate()
+
+        return stages
+
+
+    def _validate(self):
+
+        """
+        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also 
+        validate that the current Pipeline contains Stages.
+
+        Details: This method is to be called before the resource request is placed. Currently, this method is called
+        when the entire workflow is validated (in the AppManager).
+        """
+
+        if self._state is not states.INITIAL:
+            
+            raise ValueError(   object=self._uid, 
+                                attribute='state', 
+                                expected_value=states.INITIAL,
+                                actual_value=self._state)
+
+        if self._stages is None:
+
+            raise MissingError( object=self._uid,
+                                missing_attribute='stages')
+    # ------------------------------------------------------------------------------------------------------------------

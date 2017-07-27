@@ -5,6 +5,10 @@ import pytest
 
 def test_task_initialization():
 
+    """
+    **Purpose**: Test if the task attributes have, thus expect, the correct data types
+    """
+
     t = Task()
 
     assert type(t._uid) == str
@@ -27,6 +31,10 @@ def test_task_initialization():
 
 
 def test_assignment_exceptions():
+
+    """
+    **Purpose**: Test if all attribute assignments raise exceptions for invalid values
+    """
 
     t = Task()
 
@@ -81,6 +89,11 @@ def test_assignment_exceptions():
 
 def test_task_replicate():
 
+    """
+    **Purpose**: Test if the replicate method of the Task class exactly recreates a new Task with the same
+    description
+    """
+
     t1 = Task()
     t1.name = 'simulation'
     t1.pre_exec = ['module load gromacs']
@@ -119,6 +132,11 @@ def test_task_replicate():
 
 def test_task_to_dict():
 
+    """
+    **Purpose**: Test if the 'to_dict' function of Task class converts all expected attributes of the Task into a
+    dictionary
+    """
+
     t1 = Task()
     t1.name = 'simulation'
     t1.pre_exec = ['module load gromacs']
@@ -152,6 +170,11 @@ def test_task_to_dict():
     assert task_dict['download_output_data']    == t1.download_output_data
 
 def test_task_from_dict():
+
+    """
+    **Purpose**: Test if the 'from_dict' function of Task class converts a dictionary into a Task correctly with all
+    the expected attributes
+    """
 
     t1 = Task()
     t1.name = 'simulation'

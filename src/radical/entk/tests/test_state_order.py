@@ -6,6 +6,10 @@ import os
 
 def test_state_order():
 
+    """
+    **Purpose**: Test if the Pipeline, Stage and Task are assigned their states in the correct order
+    """
+
     def create_single_task():
 
         t1 = Task()

@@ -4,7 +4,11 @@ import pytest
 from radical.entk.exceptions import *
 from Queue import Queue
 
-def test_pending_completed_queue_types():
+def test_wfp_attributes():
+
+    """
+    **Purpose**: Test the attributes that the WFprocessor object accepts upon instantiation
+    """
 
     def create_single_task():
 
@@ -36,8 +40,6 @@ def test_pending_completed_queue_types():
             p = WFprocessor(p1, queue, queue, 'localhost')
 
 
-def test_hostname_types():
-
     def create_single_task():
 
         t1 = Task()
@@ -68,7 +70,13 @@ def test_hostname_types():
         with pytest.raises(TypeError):
             p = WFprocessor(p1, queue, queue, hostname)
 
-def test_thread_termination():
+
+
+def test_wfp_process():
+
+    """
+    **Purpose**: Test the functions to start and terminate the WFP process
+    """
 
     def create_single_task():
 
