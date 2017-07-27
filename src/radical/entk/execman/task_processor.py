@@ -9,13 +9,19 @@ logger = ru.get_logger('radical.entk.task_processor')
 
 def resolve_placeholders(path, placeholder_dict):
 
-    # Substitute placeholders in task descriptipons with actual paths to
-    # the corresponding tasks
+    """
+    **Purpose**: Substitute placeholders in staging attributes of a Task with actual paths to the corresponding tasks.
+
+    :arguments:
+        :path: string describing the staging paths, possibly containing a placeholder
+        :placeholder_dict: dictionary holding the values for placeholders
+
+    """
 
     try:
 
         if not isinstance(path,str):
-            raise TypeError(entity='resolve_placeholder', expected_type=str, actual_type=type(path))
+            raise TypeError(expected_type=str, actual_type=type(path))
 
         if '$' not in path:
             return path
@@ -51,7 +57,7 @@ def resolve_placeholders(path, placeholder_dict):
     except Exception, ex:
 
         logger.error('Failed to resolve placeholder %s, error: %s'%(path, ex))
-        raise Error(text=ex)
+        raise 
     
 
 def get_input_list_from_task(task, placeholder_dict):
@@ -62,7 +68,10 @@ def get_input_list_from_task(task, placeholder_dict):
     Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
     is to be copied/downloaded.
 
-    :arguments: Task 
+    :arguments: 
+        :task: EnTK Task object
+        :placeholder_dict: dictionary holding the values for placeholders
+
     :return: list of RP directives for the files that need to be staged out
     """
 
@@ -141,7 +150,7 @@ def get_input_list_from_task(task, placeholder_dict):
     except Exception, ex:
 
         logger.error('Failed to get input list of files from task, error: %s'%ex)
-        raise Error(text=ex)
+        raise 
 
 
 def get_output_list_from_task(task, placeholder_dict):
@@ -152,7 +161,10 @@ def get_output_list_from_task(task, placeholder_dict):
     Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
     is to be copied/downloaded.
     
-    :arguments: Task 
+    :arguments: 
+        :task: EnTK Task object
+        :placeholder_dict: dictionary holding the values for placeholders
+
     :return: list of RP directives for the files that need to be staged out
     
     """
@@ -211,7 +223,7 @@ def get_output_list_from_task(task, placeholder_dict):
 
     except Exception, ex:
         logger.error('Failed to get output list of files from task, error: %s'%ex)
-        raise Error(text=ex)
+        raise 
 
 
 def create_cud_from_task(task, placeholder_dict, prof=None):
@@ -219,7 +231,10 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
     """
     Purpose: Create a Compute Unit description based on the defined Task.
 
-    :arguments: Task
+    :arguments: 
+        :task: EnTK Task object
+        :placeholder_dict: dictionary holding the values for placeholders
+
     :return: ComputeUnitDescription
     """
 
@@ -251,7 +266,6 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
 
     except Exception, ex:        
         logger.error('CU creation failed, error: %s'%ex)
-        print traceback.format_exc()
         raise
 
 
@@ -266,7 +280,9 @@ def create_task_from_cu(cu, prof=None):
 
     TODO: Add exit code, stdout, stderr and path attributes to a Task. These can be extracted from a CU
 
-    :arguments: ComputeUnit
+    :arguments: 
+        :cu: RP Compute Unit
+
     :return: Task
     """
 
@@ -279,8 +295,10 @@ def create_task_from_cu(cu, prof=None):
 
         task = Task()
         task.uid                = cu.name.split(',')[0].strip()
-        task._parent_stage       = cu.name.split(',')[1].strip()
-        task._parent_pipeline    = cu.name.split(',')[2].strip()
+        task._parent_stage      = cu.name.split(',')[1].strip()
+        task._parent_pipeline   = cu.name.split(',')[2].strip()
+        task.exit_code          = cu.exit_code
+        task.path               = str(cu.sandbox)
 
         if prof:
             prof.prof('task from cu - done', uid=cu.name.split(',')[0].strip())
@@ -291,5 +309,4 @@ def create_task_from_cu(cu, prof=None):
 
     except Exception, ex:
         logger.error('Task creation from CU failed, error: %s'%ex)
-        print traceback.format_exc()
         raise

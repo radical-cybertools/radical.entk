@@ -195,13 +195,6 @@ class TaskManager(object):
                                         state=task.state,
                                         msg=task._parent_stage)
 
-                        if unit.state == rp.DONE:
-                            task.exit_code = 0
-                        else:
-                            task.exit_code = 1
-
-                        task.path = str(unit.sandbox)
-
                         load_placeholder(task)
 
                         sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
