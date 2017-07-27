@@ -317,7 +317,7 @@ class AppManager(object):
 
                         completed_task = Task()
                         completed_task.from_dict(msg['object'])
-                        self._logger.info('Got finished task %s from synchronizer queue'%(completed_task.uid))
+                        self._logger.info('Received %s with state %s'%(completed_task.uid, completed_task.state))
 
                         # Traverse the entire workflow to find the correct task
                         for pipe in self._workflow:
@@ -363,7 +363,7 @@ class AppManager(object):
 
                         completed_stage = Stage()
                         completed_stage.from_dict(msg['object'])
-                        self._logger.info('Got finished stage %s from synchronizer queue'%(completed_stage.uid))
+                        self._logger.info('Received %s with state %s'%(completed_stage.uid, completed_stage.state))
 
                         # Traverse the entire workflow to find the correct stage
                         for pipe in self._workflow:
@@ -402,7 +402,7 @@ class AppManager(object):
                         completed_pipeline = Pipeline()
                         completed_pipeline.from_dict(msg['object'])
 
-                        self._logger.info('Got finished pipeline %s from synchronizer queue'%(completed_pipeline.uid))
+                        self._logger.info('Received %s with state %s'%(completed_pipeline.uid, completed_pipeline.state))
 
                         # Traverse the entire workflow to find the correct pipeline
                         for pipe in self._workflow:

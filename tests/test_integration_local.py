@@ -4,7 +4,7 @@ from radical.entk.exceptions import *
 import os
 
 
-def test_regression_local():
+def test_integration_local():
 
     def create_single_task():
 

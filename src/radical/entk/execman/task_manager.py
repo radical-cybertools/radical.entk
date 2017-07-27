@@ -8,6 +8,7 @@ import threading
 from multiprocessing import Process, Event
 import Queue
 from radical.entk import states, Task
+from radical.entk.utils.sync_initiator import sync_with_master
 import time
 import json
 import pika

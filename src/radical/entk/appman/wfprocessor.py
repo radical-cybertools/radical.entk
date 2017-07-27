@@ -6,6 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from multiprocessing import Process, Event
 from radical.entk import states, Pipeline, Task
+from radical.entk.utils.sync_initiator import sync_with_master
 import time
 from time import sleep
 import json
@@ -229,57 +230,6 @@ class WFprocessor(object):
 
         try:
 
-            def sync_with_master(obj, obj_type, channel):
-
-                object_as_dict = {'object': obj.to_dict()}
-                if obj_type == 'Task': 
-                    object_as_dict['type'] = 'Task'
-
-                elif obj_type == 'Stage':
-                    object_as_dict['type'] = 'Stage'
-
-                elif obj_type == 'Pipeline':
-                    object_as_dict['type'] = 'Pipeline'
-
-                corr_id = str(uuid.uuid4())
-
-                channel.basic_publish(
-                                        exchange='',
-                                        routing_key='sync-to-master',
-                                        body=json.dumps(object_as_dict),
-                                        properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack-enq',
-                                                        correlation_id = corr_id
-                                                        )
-                                    )
-
-                if obj_type == 'Task':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                elif obj_type == 'Stage':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                else:
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
-            
-                while True:
-                    #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack-enq')
-
-                    if body:
-                        if corr_id == props.correlation_id:
-
-                            if obj_type == 'Task':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                            elif obj_type == 'Stage':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                            else:
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
-
-                            self._logger.info('%s synchronized'%obj.uid)
-
-                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-                            break
-
             local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
@@ -501,57 +451,6 @@ class WFprocessor(object):
     def dequeue(self, local_prof):
 
         try:
-
-            def sync_with_master(obj, obj_type, channel):
-
-                object_as_dict = {'object': obj.to_dict()}
-                if obj_type == 'Task': 
-                    object_as_dict['type'] = 'Task'
-
-                elif obj_type == 'Stage':
-                    object_as_dict['type'] = 'Stage'
-
-                elif obj_type == 'Pipeline':
-                    object_as_dict['type'] = 'Pipeline'
-
-                corr_id = str(uuid.uuid4())
-
-                channel.basic_publish(
-                                        exchange='',
-                                        routing_key='sync-to-master',
-                                        body=json.dumps(object_as_dict),
-                                        properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack-deq',
-                                                        correlation_id = corr_id
-                                                        )
-                                    )
-
-                if obj_type == 'Task':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                elif obj_type == 'Stage':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                else:
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
-
-                while True:
-                    #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack-deq')
-
-                    if body:
-                        if corr_id == props.correlation_id:
-
-                            if obj_type == 'Task':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                            elif obj_type == 'Stage':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                            else:
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
-                            
-                            self._logger.info('%s synchronized'%obj.uid)
-
-                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-                            break
 
             local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')

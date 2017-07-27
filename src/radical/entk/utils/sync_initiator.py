@@ -1,4 +1,6 @@
 import uuid
+import json
+import pika
 
 def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
 
@@ -14,6 +16,7 @@ def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
 
     corr_id = str(uuid.uuid4())
 
+    logger.debug('Attempting to sync %s with state %s with AppManager'%(obj.uid, obj.state))
     channel.basic_publish(
                             exchange='',
                             routing_key='sync-to-master',
@@ -48,7 +51,7 @@ def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
                 else:
                     local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
                             
-                logger.info('%s synchronized'%obj.uid)
+                logger.debug('%s with state %s synced with AppManager'%(obj.uid, obj.state))
 
                 channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
