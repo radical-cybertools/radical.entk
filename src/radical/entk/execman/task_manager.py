@@ -208,63 +208,6 @@ class TaskManager(object):
                 placeholder_dict[parent_pipeline][parent_stage][str(task.uid)] = str(task.path)
 
 
-            def sync_with_master(obj, obj_type, channel):
-
-
-                object_as_dict = {'object': obj.to_dict()}
-                if obj_type == 'Task': 
-                    object_as_dict['type'] = 'Task'
-
-                elif obj_type == 'Stage':
-                    object_as_dict['type'] = 'Stage'
-
-                elif obj_type == 'Pipeline':
-                    object_as_dict['type'] = 'Pipeline'
-
-                corr_id = str(uuid.uuid4())
-
-                channel.basic_publish(
-                                        exchange='',
-                                        routing_key='sync-to-master',
-                                        body=json.dumps(object_as_dict),
-                                        properties=pika.BasicProperties(
-                                                        reply_to = 'sync-ack-tmgr',
-                                                        correlation_id = corr_id
-                                                        )
-                                    )
-
-                if obj_type == 'Task':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                elif obj_type == 'Stage':
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                else:
-                    local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
-
-
-                
-                while True:
-                    #self._logger.info('waiting for ack')
-                    method_frame, props, body = channel.basic_get(queue='sync-ack-tmgr')
-
-                    if body:
-                        if corr_id == props.correlation_id:
-
-                            #print 'acknowledged: ', obj.uid, obj.state
-                            if obj_type == 'Task':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
-                            elif obj_type == 'Stage':
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
-                            else:
-                                local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
-                            
-                            self._logger.info('%s synchronized'%obj.uid)
-
-                            channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-                            break
-
-
-
             def unit_state_cb(unit, state):
 
                 try:
