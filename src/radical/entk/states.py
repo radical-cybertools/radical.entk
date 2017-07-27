@@ -4,13 +4,12 @@ __license__     = "MIT"
 
 
 # -----------------------------------------------------------------------------
-# common states - Pipeline, Stage
+# common states - Pipeline, Stage, Task
 INITIAL         = 'DESCRIBED'
 SCHEDULING      = 'SCHEDULING'
+
+# common states - Stage, Task
 SCHEDULED       = 'SCHEDULED'
-DONE            = 'DONE'
-FAILED          = 'FAILED'
-CANCELED        = 'CANCELED'
 
 # unique states - Tasks
 SUBMITTING      = 'SUBMITTING'
@@ -20,6 +19,11 @@ DEQUEUEING      = 'DEQUEUEING'
 DEQUEUED        = 'DEQUEUED'        # Dequeue thread will have this state
 SYNCHRONIZING   = 'SYNCHRONIZING'
 SYNCHRONIZED    = 'SYNCHRONIZED'    # Syncrhonizer thread will have this state
+
+# common states - Pipeline, Stage, Task
+DONE            = 'DONE'
+FAILED          = 'FAILED'
+#CANCELED        = 'CANCELED'
 
 # shortcut
 FINAL = [DONE, FAILED, CANCELED]

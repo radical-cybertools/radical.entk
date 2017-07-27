@@ -18,8 +18,6 @@ import radical.pilot as rp
 from task_processor import create_cud_from_task, create_task_from_cu
 import uuid
 
-slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
-
 class TaskManager(object):
 
     """
@@ -70,116 +68,82 @@ class TaskManager(object):
     def _heartbeat(self):
 
         """
+        **Purpose**: Method to be executed in the heartbeat thread. This method sends a 'request' to the
+        heartbeat-req queue. It expects a 'response' message from the 'heartbeart-res' queue within 10 seconds. This
+        message should contain the same correlation id. If no message if received in 10 seconds, the tmgr is assumed
+        dead. The end_manager() is called to cleanly terminate tmgr process and the heartbeat thread is also 
+        terminated.
 
+        **Details**: The AppManager can re-invoke both if the execution is still not complete.
         """
 
-        self._prof.prof('heartbeat thread started', uid=self._uid)
-
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-        channel = connection.channel()
-        channel.queue_delete(queue='heartbeat-req')
-        channel.queue_declare(queue='heartbeat-req')
-        response = True
-        
-        while (response or (not self._hb_alive.is_set())):
-            response = False
-            corr_id = str(uuid.uuid4())
-        
-            # Heartbeat request signal sent to task manager via rpc-queue
-            channel.basic_publish(  exchange='',
-                                    routing_key='heartbeat-req',
-                                    properties=pika.BasicProperties(
-                                                reply_to = 'heartbeat-res',
-                                                correlation_id = corr_id,
-                                                ),
-                                    body='request')
-
-            self._logger.info('Sent heartbeat request')
-
-            # Ten second interval for heartbeat request to be responded to
-            time.sleep(10)
-
-            method_frame, props, body = channel.basic_get(queue='heartbeat-res')
-
-            if body:
-                if corr_id == props.correlation_id:
-                    self._logger.info('Received heartbeat response')
-                    response = True
-
-                    channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-
-
-        # Process is dead - close it so that appmanager can restart it
-        self.end_manager()
-        self._hb_alive.set()
-
-        self._prof.prof('terminating hearbeat thread', uid=self._uid)        
-
-    def start_manager(self):
-
-        # This method starts the extractor function in a separate thread        
-        
-        if not self._tmgr_process:
-
-            try:
-
-                self._prof.prof('creating tmgr process', uid=self._uid)
-                self._tmgr_process = Process(   target=self.tmgr, 
-                                                name='task-manager', 
-                                                args=(
-                                                    self._uid,
-                                                    self._umgr, 
-                                                    self._rmgr,
-                                                    self._logger,
-                                                    self._mq_hostname,
-                                                    self._pending_queue,
-                                                    self._completed_queue)
-                                            )
-
-                self._tmgr_terminate = Event()
-                self._logger.info('Starting task manager process')
-                self._prof.prof('starting tmgr process', uid=self._uid)
-                self._tmgr_process.start()                
-
-                return True
-
-            except Exception, ex:
-
-                self.end_manager()
-                self._logger.error('Task manager not started')
-                raise                
-
-        else:
-            self._logger.info('Helper process already running')
-            raise
-
-
-    def end_manager(self):
-
-        # Set termination flag
         try:
-            if not self._tmgr_terminate.is_set():
-                self._tmgr_terminate.set()
 
-            self._tmgr_process.join()
-            self._logger.info('Task manager process closed')
+            self._prof.prof('heartbeat thread started', uid=self._uid)
 
-            self._prof.prof('tmgr process terminated', uid=self._uid)
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+            channel = connection.channel()
+            channel.queue_delete(queue='heartbeat-req')
+            channel.queue_declare(queue='heartbeat-req')
+            response = True
+        
+            while (response or (not self._hb_alive.is_set())):
+                response = False
+                corr_id = str(uuid.uuid4())
+        
+                # Heartbeat request signal sent to task manager via rpc-queue
+                channel.basic_publish(  exchange='',
+                                        routing_key='heartbeat-req',
+                                        properties=pika.BasicProperties(
+                                                    reply_to = 'heartbeat-res',
+                                                    correlation_id = corr_id),
+                                        body='request')
 
-            return True
+                self._logger.info('Sent heartbeat request')
 
-        except Exception, ex:
-            self._logger.error('Could not terminate task manager process')
+                # Ten second interval for heartbeat request to be responded to
+                time.sleep(10)
+
+                method_frame, props, body = channel.basic_get(queue='heartbeat-res')
+
+                if body:
+                    if corr_id == props.correlation_id:
+                        self._logger.info('Received heartbeat response')
+                        response = True
+
+                        channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+        except KeyboardInterrupt:
             raise
 
-  
-    def tmgr(self, uid, umgr, rmgr, logger, mq_hostname, pending_queue, completed_queue):
+        except Exception as ex:
+            self._logger.error('Heartbeat failed with error: %s'%ex)
+            raise
+
+        finally:
+
+            # Process is dead - close it so that appmanager can restart it
+            self.end_manager()
+            self._hb_alive.set()
+
+            self._prof.prof('terminating hearbeat thread', uid=self._uid)        
+
+
+    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, pending_queue, completed_queue):
 
         """
-        # This function extracts currently tasks from the pending_queue
-        # and pushes it to the executed_queue. Thus mimicking an execution plugin
+        **Purpose**: Method to be run by the tmgr process. This method receives a Task from the pending_queue
+        and submits it to the RTS. Currently, it also converts Tasks into CUDs and CUs into (partially described) Tasks.
+        This conversion is necessary since the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU, they
+        are then pushed to the completed_queue. At all state transititons, they are synced (blocking) with the AppManager
+        in the master process.
 
+        In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-req queue. It responds with a
+        'response' message to the 'heartbeart-res' queue.
+
+        **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is 
+        still incomplete. There is also population of a dictionary, placeholder_dict, which stores the path of each of
+        the tasks on the remote machine. 
         """
         
         try:
@@ -265,17 +229,13 @@ class TaskManager(object):
                     self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                             'trying to exit callback thread gracefully...')
 
-                    print traceback.format_exc()
-
                     raise KeyboardInterrupt
 
                 except Exception, ex:
 
                     self._logger.error('Callback failed with error: %s'%ex)
-
                     print traceback.format_exc()
-
-                    raise
+                    #raise      # Not necessary to raise the callback thread, we don't want RP to react
             
 
             if not umgr:
@@ -319,25 +279,35 @@ class TaskManager(object):
 
                         try:
 
-                            #print 'Body: ',body
-
+                            task = None
                             task = Task()
                             task.from_dict(json.loads(body))
 
                             task.state = states.SUBMITTING
 
                             local_prof.prof('transition', 
-                                            uid=task.uid, 
-                                            state=task.state,
-                                            msg=task._parent_stage)
+                                        uid=task.uid, 
+                                        state=task.state,
+                                        msg=task._parent_stage)
 
                             sync_with_master(task, 'Task', mq_channel)
 
-                            self._logger.debug('Got task %s from pending_queue %s'%(task.uid, pending_queue[0]))                            
+                        except Exception, ex:
+                            
+                            # Rollback and pass exception
+                            if task:
+                                self._logger.error('Task %s preparation for submission failed, error: %s'%(task.uid, ex))
+                                task.state = states.SCHEDULED
+                                sync_with_master(task, 'Task', mq_channel)
+                            else:
+                                self._logger.error('Task preparation for submission failed, error: %s'%ex)
 
-                            self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
+                            raise
+
+                        try:
 
                             umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
+                            self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
                             task.state = states.SUBMITTED
 
@@ -352,14 +322,22 @@ class TaskManager(object):
 
                         except Exception, ex:
 
-                            # Rolling back queue and task status
-                            logger.error('Error while pushing task to completed queue, rolling back: %s'%ex)
-                            raise Error(text=ex)
-                
-                        if slow_run:
-                            time.sleep(1)
+                            # Rollback and pass exception
+                            self._logger.error('Task %s submission failed, error: %s'%(task.uid, ex))
+                            task.state = states.SUBMITTING
+                            sync_with_master(task, 'Task', mq_channel)                            
+                            raise
 
-                    # Get request from rpc_queue for heartbeat response
+                except Exception, ex:
+
+                    # Rollback and pass exception
+                    logger.error('Error in task execution')
+                    raise 
+                
+
+                try:
+
+                    # Get request from heartbeat-req for heartbeat response
                     method_frame, props, body = mq_channel.basic_get(queue='heartbeat-req')
 
                     if body:
@@ -377,24 +355,22 @@ class TaskManager(object):
 
                 except Exception, ex:
 
-                    logger.error('Error getting messages from pending queue: %s'%ex)
-                    print traceback.format_exc()
-                    raise Error(text=ex) 
+                    logger.error('Failed to respond to heartbeat request, error: %s'%ex)
+                    raise 
+
 
             local_prof.prof('terminating tmgr process', uid=uid)
-
             local_prof.close()
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to cancel enqueuer thread gracefully...')
+                                'trying to cancel tmgr process gracefully...')
             raise KeyboardInterrupt
 
 
         except Exception, ex:
 
-            self._logger.error('Unknown error in helper process: %s'%ex)
             print traceback.format_exc()
             raise Error(text=ex)
 
@@ -411,12 +387,27 @@ class TaskManager(object):
         thread using this method.
         """
 
-        self._logger.info('Starting hearbeat thread')
-        self._prof.prof('creating heartbeat thread', uid=self._uid)
-        self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
-        self._hb_alive = threading.Event()
-        self._prof.prof('starting heartbeat thread', uid=self._uid)
-        self._hb_thread.start()
+        if not self._hb_thread:
+
+            try:
+
+                self._logger.info('Starting hearbeat thread')
+                self._prof.prof('creating heartbeat thread', uid=self._uid)
+                self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
+                self._hb_alive = threading.Event()
+                self._prof.prof('starting heartbeat thread', uid=self._uid)
+                self._hb_thread.start()
+
+                return True
+
+            except Exception, ex:
+
+                self._logger.error('Heartbeat not started, error: %s'%ex)
+                self.end_heartbeat()
+                raise
+
+        else:
+            self._logger.warn('Heartbeat thread already running, but attempted to restart!')
 
 
     def end_heartbeat(self):
@@ -439,7 +430,7 @@ class TaskManager(object):
 
             self._prof.prof('hearbeat thread terminated', uid=self._uid)
 
-            # We close in the hearbeat because it is ends after the mgr process
+            # We close in the hearbeat because it ends after the tmgr process
             self._prof.close()
 
             return True
@@ -452,31 +443,44 @@ class TaskManager(object):
     def start_manager(self):
 
         """
-        **Purpose**: Method to start the tmgr process. The tmgr process
+        **Purpose**: Method to start the tmgr process. The tmgr function
         is not to be accessed directly. The function is started in a separate
-        process using this method.
+        thread using this method.
         """
         
         if not self._tmgr_process:
 
             try:
 
-                self._prof.prof('creating tmgr process', uid=self._uid)
-                self._tmgr_process = Process(target=self._tmgr, name='task-manager')
+                self._prof.prof('creating tmgr process', uid=self._uid)\
                 self._tmgr_terminate = Event()
+
+                self._tmgr_process = Process(   target=self.tmgr, 
+                                                name='task-manager', 
+                                                args=(
+                                                    self._uid,
+                                                    self._umgr, 
+                                                    self._rmgr,
+                                                    self._logger,
+                                                    self._mq_hostname,
+                                                    self._pending_queue,
+                                                    self._completed_queue)
+                                            )
+
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
                 self._tmgr_process.start()                
 
+                return True
+
             except Exception, ex:
 
+                self._logger.error('Task manager not started, error: %s'%ex)
                 self.end_manager()
-                self._logger.error('Task manager not started')
-                raise                
+                raise
 
         else:
-            self._logger.info('Helper process already running')
-            raise
+            self._logger.warn('tmgr process already running, but attempted to restart!')
 
 
     def end_manager(self):
@@ -495,9 +499,11 @@ class TaskManager(object):
 
             self._prof.prof('tmgr process terminated', uid=self._uid)
 
+            return True
+
         except Exception, ex:
             self._logger.error('Could not terminate task manager process')
-            raise     
+            raise    
 
 
     def check_alive(self):
@@ -518,3 +524,4 @@ class TaskManager(object):
         return self._hb_thread.is_alive()
 
     # ------------------------------------------------------------------------------------------------------------------
+
