@@ -16,8 +16,6 @@ import traceback
 import os
 import uuid
 
-slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
-
 class WFprocessor(object):
 
     """
@@ -347,9 +345,6 @@ class WFprocessor(object):
 
                                     if tasks_submitted:
                                         tasks_submitted = False
-
-                                    if slow_run:
-                                        sleep(1)
                                 
                                 except KeyboardInterrupt:
                                     raise KeyboardInterrupt
@@ -377,9 +372,6 @@ class WFprocessor(object):
                                                                                 pipe.stages[pipe.current_stage-1].state))
 
                                     raise
-
-                            if slow_run:
-                                sleep(1)
 
             self._logger.info('Enqueue thread terminated')                                  
             mq_connection.close()
@@ -661,9 +653,6 @@ class WFprocessor(object):
                                         break
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                        if slow_run:
-                            sleep(1)
 
                 except KeyboardInterrupt:
                     raise KeyboardInterrupt
