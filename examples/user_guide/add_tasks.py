@@ -24,10 +24,10 @@ if __name__ == '__main__':
         t.arguments = ['I am task %s'%cnt]  # Assign arguments for the task executable
 
         # Add the Task to the Stage
-        s.add_task(t)
+        s.add_tasks(t)
 
     # Add Stage to the Pipeline
-    p.add_stage(s)
+    p.add_stages(s)
 
 
     # Create a dictionary describe four mandatory keys:

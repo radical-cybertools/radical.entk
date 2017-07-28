@@ -31,10 +31,10 @@ def generate_pipeline(name, stages):
             t.arguments = ['I am task %s in %s in %s'%(t_cnt, s_cnt, name)]  
 
             # Add the Task to the Stage
-            s.add_task(t)
+            s.add_tasks(t)
 
         # Add Stage to the Pipeline
-        p.add_stage(s)
+        p.add_stages(s)
 
 
 

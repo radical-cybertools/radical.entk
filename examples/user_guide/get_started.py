@@ -7,6 +7,7 @@ import os
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
     os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
+ 
 if __name__ == '__main__':
 
     # Create a Pipeline object
@@ -18,14 +19,14 @@ if __name__ == '__main__':
     # Create a Task object
     t = Task()
     t.name = 'my-first-task'        # Assign a name to the task (optional)
-    t1.executable = ['/bin/echo']   # Assign executable to the task   
-    t1.arguments = ['Hello World']  # Assign arguments for the task executable
+    t.executable = ['/bin/echo']   # Assign executable to the task   
+    t.arguments = ['Hello World']  # Assign arguments for the task executable
 
     # Add Task to the Stage
-    s.add_task(t)
+    s.add_tasks(t)
 
     # Add Stage to the Pipeline
-    p.add_stage(s)
+    p.add_stages(s)
 
 
     # Create a dictionary describe four mandatory keys:
@@ -49,7 +50,7 @@ if __name__ == '__main__':
     appman.resource_manager = rman
 
     # Assign the workflow as a set of Pipelines to the Application Manager
-    appman.assign_workflow(set([p1]))
+    appman.assign_workflow(set([p]))
 
     # Run the Application Manager
     appman.run()
