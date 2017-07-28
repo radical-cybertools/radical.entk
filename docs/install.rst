@@ -28,7 +28,7 @@ setup the same environment, run the following in the same terminal.
         cd radical.entk
         git checkout arch/v0.6
         cd ..
-        pip install radical.utils saga-python radical.pilot radical.entk-0.6
+        pip install radical.utils saga-python radical.pilot radical.entk
 
 You can check the version of Ensemble MD Toolkit with the `entk-version` command-line tool. It should return 0.6.
 
