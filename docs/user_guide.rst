@@ -5,7 +5,7 @@ User Guide
 **********
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    ./user_guide/get_started
    ./user_guide/adding_tasks
