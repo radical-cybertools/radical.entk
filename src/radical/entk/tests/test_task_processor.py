@@ -270,7 +270,7 @@ def test_resolve_placeholder():
     # Test for shared data location with rename
     raw_path = '$SHARED/test.txt > new.txt'
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
-    assert processed_path == 'staging://test.txt > new.txt'
+    assert processed_path == 'staging:///test.txt > new.txt'
 
     # Test for resolving relative data references
     raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'.format(pipeline, stage, task)

@@ -151,7 +151,7 @@ def test_resource_request():
     rm._cancel_resource_request()
 
     # State transition seems to be taking some time. So sleep
-    sleep(10)
+    sleep(30)
 
     assert rm.pilot.state == rp.CANCELED or rm.pilot.state == rp.DONE
     
