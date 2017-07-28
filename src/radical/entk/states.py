@@ -23,7 +23,7 @@ SYNCHRONIZED    = 'SYNCHRONIZED'    # Syncrhonizer thread will have this state
 # common states - Pipeline, Stage, Task
 DONE            = 'DONE'
 FAILED          = 'FAILED'
-#CANCELED        = 'CANCELED'
+CANCELED        = 'CANCELED'
 
 # shortcut
 FINAL = [DONE, FAILED, CANCELED]

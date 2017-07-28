@@ -1,6 +1,7 @@
 from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager, Profiler
 import os
 from glob import glob
+import traceback
 
 '''
 EnTK 0.6 script - Analog Ensemble application
@@ -97,6 +98,7 @@ if __name__ == '__main__':
     except Exception, ex:
 
         print 'Execution failed, error: %s'%ex
+        print traceback.format_exc()
 
     finally:
 

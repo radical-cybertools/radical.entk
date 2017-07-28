@@ -8,7 +8,7 @@ import threading
 from multiprocessing import Process, Event
 import Queue
 from radical.entk import states, Task
-from radical.entk.utils.sync_initiator import sync_with_master
+from radical.entk.utils.init_transition import transition
 import time
 import json
 import pika
@@ -114,7 +114,9 @@ class TaskManager(object):
                         channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
         except KeyboardInterrupt:
-            raise
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
+                                'trying to cancel tmgr process gracefully...')
+            raise KeyboardInterrupt
 
         except Exception as ex:
             self._logger.error('Heartbeat failed with error: %s'%ex)
@@ -179,25 +181,36 @@ class TaskManager(object):
                     # Thread should run till terminate condtion is encountered
                     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
                     mq_channel = mq_connection.channel()
-                
-                    if unit.state in [rp.EXECUTING]:
-                        task = create_task_from_cu(unit, local_prof)
-                        #print 'Executing: %s %s'%(unit.uid, task.uid)
 
                     if unit.state in [rp.DONE, rp.FAILED]:
 
-                        task = create_task_from_cu(unit, local_prof)
-                        #print 'Done: %s %s'%(unit.uid, task.uid)
+                        try:
+
+                            task = None
+                            task = create_task_from_cu(unit, local_prof)
                         
-                        task.state = states.COMPLETED
-                        local_prof.prof('transition', 
-                                        uid=task.uid, 
-                                        state=task.state,
-                                        msg=task._parent_stage)
+                            transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.COMPLETED, 
+                                        channel = mq_channel,
+                                        reply_to = 'sync-ack-tmgr',
+                                        profiler=local_prof, 
+                                        logger=logger)
 
-                        load_placeholder(task)
+                            load_placeholder(task)
 
-                        sync_with_master(obj=task, obj_type='Task', channel = mq_channel)
+                        except Exception, ex:
+
+                            # Rollback and pass exception
+                            if task:
+                                self._logger.error('Task %s creation for completed cu %s failed, error: %s'%(task.uid, unit.uid, ex))
+                                task.state = states.SCHEDULED
+                                sync_with_master(task, 'Task', mq_channel)
+                            else:
+                                self._logger.error('Task creation from completed cu %s failed, error: %s'%(cu.uid, ex))
+
+                            raise
+
                 
                         task_as_dict = json.dumps(task.to_dict())
 
@@ -226,7 +239,7 @@ class TaskManager(object):
 
                 except Exception, ex:
 
-                    self._logger.error('Callback failed with error: %s'%ex)
+                    self._logger.error('Error in RP callback thread: %s'%ex)
                     print traceback.format_exc()
                     #raise      # Not necessary to raise the callback thread, we don't want RP to react
             
@@ -235,6 +248,7 @@ class TaskManager(object):
                 umgr = rp.UnitManager(session=rmgr._session)
                 umgr.add_pilots(rmgr.pilot)
                 umgr.register_callback(unit_state_cb)
+                self._umgr = umgr
 
             # Thread should run till terminate condtion is encountered
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
@@ -276,14 +290,13 @@ class TaskManager(object):
                             task = Task()
                             task.from_dict(json.loads(body))
 
-                            task.state = states.SUBMITTING
-
-                            local_prof.prof('transition', 
-                                        uid=task.uid, 
-                                        state=task.state,
-                                        msg=task._parent_stage)
-
-                            sync_with_master(task, 'Task', mq_channel)
+                            transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.SUBMITTING, 
+                                        channel = mq_channel,
+                                        reply_to = 'sync-ack-tmgr',
+                                        profiler=local_prof, 
+                                        logger=self._logger)
 
                         except Exception, ex:
                             
@@ -302,14 +315,13 @@ class TaskManager(object):
                             umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
                             self._logger.info('Task %s, %s; submitted to RTS'%(task.uid, task.state))
 
-                            task.state = states.SUBMITTED
-
-                            local_prof.prof('transition', 
-                                            uid=task.uid, 
-                                            state=task.state,
-                                            msg=task._parent_stage)
-
-                            sync_with_master(task, 'Task', mq_channel)
+                            transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.SUBMITTED, 
+                                        channel = mq_channel,
+                                        reply_to = 'sync-ack-tmgr',
+                                        profiler=local_prof, 
+                                        logger=self._logger)
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
@@ -353,7 +365,9 @@ class TaskManager(object):
 
 
             local_prof.prof('terminating tmgr process', uid=uid)
+            mq_connection.close()
             local_prof.close()
+
 
         except KeyboardInterrupt:
 
@@ -415,18 +429,20 @@ class TaskManager(object):
 
         try:
 
-            if self._hb_thread.is_alive():
-                self._hb_alive.set()
-                self._hb_thread.join()
+            if self._hb_thread:
 
-            self._logger.info('Hearbeat thread terminated')
+                if self._hb_thread.is_alive():
+                    self._hb_alive.set()
+                    self._hb_thread.join()
 
-            self._prof.prof('hearbeat thread terminated', uid=self._uid)
+                self._logger.info('Hearbeat thread terminated')
 
-            # We close in the hearbeat because it ends after the tmgr process
-            self._prof.close()
+                self._prof.prof('hearbeat thread terminated', uid=self._uid)
 
-            return True
+                # We close in the hearbeat because it ends after the tmgr process
+                self._prof.close()
+
+                return True
 
         except Exception, ex:
             self._logger.error('Could not terminate hearbeat thread')
@@ -445,10 +461,10 @@ class TaskManager(object):
 
             try:
 
-                self._prof.prof('creating tmgr process', uid=self._uid)\
+                self._prof.prof('creating tmgr process', uid=self._uid)
                 self._tmgr_terminate = Event()
 
-                self._tmgr_process = Process(   target=self.tmgr, 
+                self._tmgr_process = Process(   target=self._tmgr, 
                                                 name='task-manager', 
                                                 args=(
                                                     self._uid,
@@ -484,15 +500,18 @@ class TaskManager(object):
         """
 
         try:
-            if not self._tmgr_terminate.is_set():
-                self._tmgr_terminate.set()
 
-            self._tmgr_process.join()
-            self._logger.info('Task manager process closed')
+            if self._tmgr_process:
 
-            self._prof.prof('tmgr process terminated', uid=self._uid)
+                if not self._tmgr_terminate.is_set():
+                    self._tmgr_terminate.set()
 
-            return True
+                self._tmgr_process.join()
+                self._logger.info('Task manager process closed')
+
+                self._prof.prof('tmgr process terminated', uid=self._uid)
+
+                return True
 
         except Exception, ex:
             self._logger.error('Could not terminate task manager process')

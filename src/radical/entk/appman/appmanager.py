@@ -179,6 +179,7 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workflow to appmanager')
+            print traceback.format_exc()
             raise Error(text=ex)
 
     
@@ -193,7 +194,7 @@ class AppManager(object):
         try:
 
             if not self._workflow:
-                print 'Assign workflow before invoking run method - cannot proceed'
+                print 'Please assign workflow before invoking run method - cannot proceed'
                 self._logger.error('No workflow assigned currently, please check your script')
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
@@ -350,7 +351,8 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-            self._resource_manager._cancel_resource_request()
+            if self._resource_manager:
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -360,7 +362,8 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.error('Unknown error in AppManager: %s'%ex)
+            self._logger.error('Error in AppManager')
+
             print traceback.format_exc()
 
             ## Terminate threads in following order: wfp, helper, synchronizer
@@ -379,11 +382,12 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-            self._resource_manager._cancel_resource_request()
+            if self._resource_manager:
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
             
-            sys.exit(1)
+            raise Error(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -421,17 +425,10 @@ class AppManager(object):
 
             return workflow
 
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user ' + 
-                        '(you probably hit Ctrl+C), tring to exit gracefully...')
-            
-            raise KeyboardInterrupt
-
         except Exception, ex:
 
-            self._logger.error('Fatal error while adding workflow to appmanager')
-            raise Error(text=ex)
+            self._logger.error('Fatal error while adding workflow to appmanager: %s'%ex)
+            raise
 
 
     def _setup_mqs(self):
@@ -495,18 +492,10 @@ class AppManager(object):
 
             return True
 
-
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                'trying to exit mqs setup gracefully...')
-
-            raise KeyboardInterrupt
-
         except Exception, ex:
 
-            self._logger.error('Error setting RabbitMQ system')
-            raise Error(text=ex)
+            self._logger.error('Error setting RabbitMQ system: %s' %ex)
+            raise 
 
 
     def _synchronizer(self):
@@ -694,6 +683,7 @@ class AppManager(object):
 
             self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread'%ex)
             print traceback.format_exc()
+            self._end_sync.set()
             raise Error(text=ex)  
 
     # ------------------------------------------------------------------------------------------------------------------

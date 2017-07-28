@@ -228,7 +228,7 @@ class ResourceManager(object):
 
         except Exception, ex:
             self._logger.error('Resource manager population unsuccessful')
-            raise Error(text=ex)
+            raise 
 
 
     def _submit_resource_request(self):
@@ -303,8 +303,7 @@ class ResourceManager(object):
 
         except Exception, ex:
             self._logger.error('Resource request submission failed')
-            raise Error(text=ex)
-
+            raise 
 
     def _cancel_resource_request(self):
 
@@ -326,6 +325,6 @@ class ResourceManager(object):
 
         except Exception, ex:
             self._logger.error('Could not cancel resource request')
-            raise Error(text=ex)
+            raise
 
     # ------------------------------------------------------------------------------------------------------------------

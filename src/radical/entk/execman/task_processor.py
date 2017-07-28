@@ -20,6 +20,9 @@ def resolve_placeholders(path, placeholder_dict):
 
     try:
 
+        if isinstance(path, unicode):
+            path = str(path)
+
         if not isinstance(path,str):
             raise TypeError(expected_type=str, actual_type=type(path))
 

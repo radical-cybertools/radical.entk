@@ -6,7 +6,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from multiprocessing import Process, Event
 from radical.entk import states, Pipeline, Task
-from radical.entk.utils.sync_initiator import sync_with_master
+from radical.entk.utils.init_transition import transition
 import time
 from time import sleep
 import json
@@ -70,7 +70,7 @@ class WFprocessor(object):
 
         """
         **Purpose**: This is the function executed in the wfp process. The function is used to simply create
-        and spawn two threads: enqueue, dequeue. The enqueue thread pushes ready tasks to the queues in the pending_q 
+        and spawn two threads: enqueue, dequeue. The enqueue thread pushes ready tasks to the queues in the pending_q slow
         list whereas the dequeue thread pulls completed tasks from the queues in the completed_q. This function is also
         responsible for the termination of these threads and hence blocking.
         """
@@ -108,9 +108,6 @@ class WFprocessor(object):
                         local_prof.prof('starting enqueue-thread', uid=self._uid)
                         self._enqueue_thread.start()
 
-                except KeyboardInterrupt:
-                    raise KeyboardInterrupt
-
                 except Exception, ex:
                     self._logger.error('WFProcessor interrupted')
                     raise
@@ -135,15 +132,19 @@ class WFprocessor(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel wfprocessor process gracefully...')
 
-            if not self._enqueue_thread_terminate.is_set():
-                self._logger.info('Terminating enqueue-thread')
-                self._enqueue_thread_terminate.set()
-                self._enqueue_thread.join()
+            if self._enqueue_thread:
 
-            if not self._dequeue_thread_terminate.is_set():
-                self._logger.info('Terminating dequeue-thread')
-                self._dequeue_thread_terminate.set()
-                self._dequeue_thread.join()
+                if not self._enqueue_thread_terminate.is_set():
+                    self._logger.info('Terminating enqueue-thread')
+                    self._enqueue_thread_terminate.set()
+                    self._enqueue_thread.join()
+
+            if self._dequeue_thread:
+
+                if not self._dequeue_thread_terminate.is_set():
+                    self._logger.info('Terminating dequeue-thread')
+                    self._dequeue_thread_terminate.set()
+                    self._dequeue_thread.join()
 
             self._logger.info('WFprocessor process terminated')
 
@@ -151,21 +152,25 @@ class WFprocessor(object):
 
 
         except Exception, ex:
-            self._logger.error('Unknown error in wfp process: %s. \n Closing all threads'%ex)
-            print traceback.format_exc()
+            self._logger.error('Error in wfp process: %s. \n Closing enqueue, dequeue threads'%ex)
 
-            if not self._enqueue_thread_terminate.is_set():
-                self._logger.info('Terminating enqueue-thread')
-                self._enqueue_thread_terminate.set()
-                self._enqueue_thread.join()
+            if self._enqueue_thread:
 
-            if not self._dequeue_thread_terminate.is_set():
-                self._logger.info('Terminating dequeue-thread')
-                self._dequeue_thread_terminate.set()
-                self._dequeue_thread.join()
+                if not self._enqueue_thread_terminate.is_set():
+                    self._logger.info('Terminating enqueue-thread')
+                    self._enqueue_thread_terminate.set()
+                    self._enqueue_thread.join()
+
+            if self._dequeue_thread:
+
+                if not self._dequeue_thread_terminate.is_set():
+                    self._logger.info('Terminating dequeue-thread')
+                    self._dequeue_thread_terminate.set()
+                    self._dequeue_thread.join()
 
             self._logger.info('WFprocessor process terminated')
 
+            print traceback.format_exc()
             raise Error(text=ex)           
 
 
@@ -204,38 +209,31 @@ class WFprocessor(object):
 
                             elif pipe.state == states.INITIAL:
                                 
-                                pipe.state = states.SCHEDULING
-                                
-                                local_prof.prof('transition', 
-                                                uid=pipe.uid, 
-                                                state=pipe.state)
-
-                                sync_with_master(   obj=pipe, 
-                                                    obj_type='Pipeline', 
-                                                    channel = mq_channel)
-
-                                self._logger.info('Pipe: %s, State: %s'%(pipe.uid, pipe.state))
+                                # Set state of pipeline to SCHEDULING if it is in INITIAL
+                                transition( obj=pipe, 
+                                            obj_type = 'Pipeline', 
+                                            new_state = states.SCHEDULING, 
+                                            channel = mq_channel,
+                                            reply_to = 'sync-ack-enq',
+                                            profiler=local_prof, 
+                                            logger=self._logger)
     
                             if pipe.stages[pipe.current_stage-1].state in [states.INITIAL]:
     
                                 try:
 
-                                    # Starting scheduling of tasks of current stage
-                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULING
-                                    
-                                    local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state,
-                                                    msg = pipe.uid)
-
-                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
-                                                        obj_type='Stage', 
-                                                        channel = mq_channel)
-
-                                    self._logger.info('Stage: %s, State: %s'%(pipe.stages[pipe.current_stage-1].uid, 
-                                        pipe.stages[pipe.current_stage-1].state))
-
+                                    # Starting scheduling of tasks of current stage, so set state of stage to 
+                                    # SCHEDULING
                                     executable_stage = pipe.stages[pipe.current_stage-1]
+
+                                    transition( obj=executable_stage, 
+                                                obj_type = 'Stage', 
+                                                new_state = states.SCHEDULING, 
+                                                channel = mq_channel,
+                                                reply_to = 'sync-ack-enq',
+                                                profiler=local_prof, 
+                                                logger=self._logger)
+                                    
                                     executable_tasks = executable_stage.tasks
     
                                     tasks_submitted=False
@@ -244,133 +242,74 @@ class WFprocessor(object):
     
                                         if executable_task.state == states.INITIAL:
                                             
-                                            self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state)
-                                                                )
+                                            # Set state of Tasks in current Stage to SCHEDULING
+                                            transition( obj=executable_task, 
+                                                        obj_type = 'Task', 
+                                                        new_state = states.SCHEDULING, 
+                                                        channel = mq_channel,
+                                                        reply_to = 'sync-ack-enq',
+                                                        profiler=local_prof, 
+                                                        logger=self._logger)                                            
     
-                                            # Try-exception block for tasks
-                                            try:
+                                            task_as_dict = json.dumps(executable_task.to_dict())
     
-                                                executable_task.state = states.SCHEDULING
+                                            self._logger.debug('Publishing task %s to %s'
+                                                                        %(executable_task.uid,
+                                                                            self._pending_queue[0]))
 
-                                                local_prof.prof('transition', 
-                                                                uid=executable_task.uid, 
-                                                                state=executable_task.state,
-                                                                msg = executable_stage.uid)
 
-                                                sync_with_master(   obj=executable_task, 
-                                                                    obj_type='Task', 
-                                                                    channel = mq_channel)
+                                            # Put the task on one of the pending_queues
+                                            mq_channel.basic_publish(   exchange='',
+                                                                        routing_key=self._pending_queue[0],
+                                                                        body=task_as_dict
+                                                                        #properties=pika.BasicProperties(
+                                                                            # make message persistent
+                                                                            #delivery_mode = 2)
+                                                                    )
+
+                                            # Set state of Tasks in current Stage to SCHEDULED
+                                            transition( obj=executable_task, 
+                                                obj_type = 'Task', 
+                                                new_state = states.SCHEDULED, 
+                                                channel = mq_channel,
+                                                reply_to = 'sync-ack-enq',
+                                                profiler=local_prof, 
+                                                logger=self._logger)
                                                 
-                                                self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state))
-    
-                                                task_as_dict = json.dumps(executable_task.to_dict())
-    
-                                                self._logger.debug('Publishing task %s to %s'
-                                                                            %(executable_task.uid,
-                                                                                self._pending_queue[0])
-                                                                        )
-
-
-                                                # Put the task on one of the pending_queues
-
-                                                mq_channel.basic_publish(   exchange='',
-                                                                            routing_key=self._pending_queue[0],
-                                                                            body=task_as_dict
-                                                                            #properties=pika.BasicProperties(
-                                                                                # make message persistent
-                                                                                #delivery_mode = 2, 
-                                                                                #)
-                                                                        )
-
-                                                executable_task.state = states.SCHEDULED
-
-                                                local_prof.prof('transition', 
-                                                                uid=executable_task.uid, 
-                                                                state=executable_task.state,
-                                                                msg = executable_stage.uid)
-
-                                                sync_with_master(   obj=executable_task, 
-                                                                    obj_type='Task', 
-                                                                    channel = mq_channel)
-
-                                                self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state))
-
-                                                tasks_submitted = True
-                                                self._logger.debug('Task %s published to queue'% executable_task.uid)                                                                                                
-    
-                                            except KeyboardInterrupt:
-                                                raise KeyboardInterrupt
-
-                                            except Exception, ex:
-    
-                                                # Rolling back queue status
-                                                self._logger.error('Error while updating task '+
-                                                                    'state, rolling back. Error: %s'%ex)
-                                               
-                                                # Revert task status
-                                                executable_task.state = states.INITIAL
-
-                                                local_prof.prof('transition', 
-                                                                uid=executable_task.uid, 
-                                                                state=executable_task.state,
-                                                                msg = executable_stage.uid)
-
-                                                sync_with_master(   obj=executable_task, 
-                                                                    obj_type='Task', 
-                                                                    channel = mq_channel)
-
-                                                self._logger.info('Task: %s, State: %s'%(  executable_task.uid, 
-                                                                                        executable_task.state))
-
-                                                raise
+                                            tasks_submitted = True
+                                            self._logger.debug('Task %s published to queue'% executable_task.uid)                                                                                                
+                                                
                                     
-                                    # All tasks of current stage scheduled
-                                    pipe.stages[pipe.current_stage-1].state = states.SCHEDULED                                    
-
-                                    local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state,
-                                                    msg=pipe.uid)
-
-
-                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
-                                                        obj_type='Stage', 
-                                                        channel = mq_channel)
-
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
-                                                                                pipe.stages[pipe.current_stage-1].state))
+                                    # All tasks of current stage scheduled, so set state of stage to
+                                    # SCHEDULED
+                                    transition( obj=executable_stage, 
+                                                obj_type = 'Stage', 
+                                                new_state = states.SCHEDULED, 
+                                                channel = mq_channel,
+                                                reply_to = 'sync-ack-enq',
+                                                profiler=local_prof, 
+                                                logger=self._logger)
 
                                     if tasks_submitted:
                                         tasks_submitted = False
-                                
-                                except KeyboardInterrupt:
-                                    raise KeyboardInterrupt
 
                                                                                 
                                 except Exception, ex:
     
-                                    # Rolling back queue status
+                                    # If there is an error, explicitly switching the state of Stage to INITIAL
                                     self._logger.error('Error while updating stage '+
                                                         'state, rolling back. Error: %s'%ex)
-    
-                                    # Revert stage state
-                                    pipe.stages[pipe.current_stage-1].state = states.INITIAL
 
-                                    local_prof.prof('transition', 
-                                                    uid=pipe.stages[pipe._current_stage-1].uid, 
-                                                    state=pipe.stages[pipe._current_stage-1].state,
-                                                    msg=pipe.uid)
+                                    executable_stage = pipe.stages[pipe.current_stage-1]
 
-                                    sync_with_master(   obj=pipe.stages[pipe.current_stage-1], 
-                                                        obj_type='Stage', 
-                                                        channel = mq_channel)
-
-                                    self._logger.info('Stage: %s, State: %s'%(  pipe.stages[pipe.current_stage-1].uid, 
-                                                                                pipe.stages[pipe.current_stage-1].state))
-
+                                    transition( obj=executable_stage, 
+                                                obj_type = 'Stage', 
+                                                new_state = states.INITIAL,
+                                                channel = mq_channel,
+                                                reply_to = 'sync-ack-enq', 
+                                                profiler=local_prof, 
+                                                logger=self._logger)
+                                        
                                     raise
 
             self._logger.info('Enqueue thread terminated')                                  
@@ -389,7 +328,7 @@ class WFprocessor(object):
 
         except Exception, ex:
 
-            self._logger.error('Unknown error in wfp process: %s. \n Terminating all threads'%ex)
+            self._logger.error('Error in enqueue-thread: %s'%ex)
             print traceback.format_exc()
             mq_connection.close()
 
@@ -428,23 +367,15 @@ class WFprocessor(object):
                         # Get task from the message
                         completed_task = Task()
                         completed_task.from_dict(json.loads(body))
-                        self._logger.info('Got finished task %s from queue'%(completed_task.uid))
+                        self._logger.info('Got finished task %s from queue'%(completed_task.uid))                       
 
-                        completed_task.state = states.DEQUEUEING                        
-
-                        local_prof.prof('transition', 
-                                        uid=completed_task.uid, 
-                                        state=completed_task.state,
-                                        msg=completed_task._parent_stage)
-
-                        sync_with_master(   obj=completed_task, 
-                                            obj_type='Task', 
-                                            channel = mq_channel)
-
-                        self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                    completed_task.state)
-                                                                )
-
+                        transition( obj=completed_task, 
+                                    obj_type = 'Task', 
+                                    new_state = states.DEQUEUEING, 
+                                    channel = mq_channel,
+                                    reply_to = 'sync-ack-deq',
+                                    profiler=local_prof, 
+                                    logger=self._logger)
 
                         # Traverse the entire workflow to find out the correct Task
                         for pipe in self._workflow:
@@ -462,37 +393,35 @@ class WFprocessor(object):
                                             if completed_task._parent_stage == stage.uid:
                                                 self._logger.debug('Found parent stage: %s'%(stage.uid))
 
-                                                completed_task.state = states.DEQUEUED
-
-                                                local_prof.prof('transition', 
-                                                                uid=completed_task.uid, 
-                                                                state=completed_task.state,
-                                                                msg=completed_task._parent_stage)
-
-                                                sync_with_master(   obj=completed_task, 
-                                                                    obj_type='Task', 
-                                                                    channel = mq_channel)
-
-                                                self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                                            completed_task.state))
+                                                transition( obj=completed_task, 
+                                                            obj_type = 'Task', 
+                                                            new_state = states.DEQUEUED, 
+                                                            channel = mq_channel,
+                                                            reply_to = 'sync-ack-deq',
+                                                            profiler=local_prof, 
+                                                            logger=self._logger)
 
                                                 if completed_task.exit_code:
                                                     completed_task.state = states.FAILED
+
+                                                    transition( obj=completed_task, 
+                                                                obj_type = 'Task', 
+                                                                new_state = states.FAILED, 
+                                                                channel = mq_channel,
+                                                                reply_to = 'sync-ack-deq',
+                                                                profiler=local_prof, 
+                                                                logger=self._logger)
                                                 else:
                                                     completed_task.state = states.DONE
 
-                                                local_prof.prof('transition', 
-                                                                uid=completed_task.uid, 
-                                                                state=completed_task.state,
-                                                                msg=completed_task._parent_stage)
-
-                                                sync_with_master(   obj=completed_task, 
-                                                                    obj_type='Task', 
-                                                                    channel = mq_channel)
-
-                                                self._logger.info('Task: %s, State: %s'%(  completed_task.uid, 
-                                                                                            completed_task.state))
-
+                                                    transition( obj=completed_task, 
+                                                                obj_type = 'Task', 
+                                                                new_state = states.DONE, 
+                                                                channel = mq_channel,
+                                                                reply_to = 'sync-ack-deq',
+                                                                profiler=local_prof, 
+                                                                logger=self._logger)
+                                                
                                                 for task in stage.tasks:
 
                                                     if task.uid == completed_task.uid:
@@ -502,67 +431,30 @@ class WFprocessor(object):
 
                                                             if stage._check_stage_complete():
 
-                                                                try:
-
-                                                                    stage.state = states.DONE
-
-                                                                    local_prof.prof('transition', 
-                                                                                    uid=stage.uid, 
-                                                                                    state=stage.state,
-                                                                                    msg=stage._parent_pipeline)
-
-                                                                    sync_with_master(   obj=stage, 
-                                                                                        obj_type='Stage', 
-                                                                                        channel = mq_channel)
-
-                                                                    self._logger.info('Stage: %s, State: %s'%
-                                                                                                (stage.uid, 
-                                                                                                stage.state))
-
-                                                                except Exception, ex:
-                                                                    # Rolling back stage status
-                                                                    self._logger.error('Error while updating stage '+
-                                                                            'state, rolling back. Error: %s'%ex)
-
-                                                                    stage.state = states.SCHEDULED
-
-                                                                    local_prof.prof('transition', 
-                                                                                    uid=stage.uid, 
-                                                                                    state=stage.state,
-                                                                                    msg=stage._parent_pipeline)
-
-                                                                    sync_with_master(   obj=stage, 
-                                                                                        obj_type='Stage', 
-                                                                                        channel = mq_channel)
-
-
-
-                                                                    self._logger.info('Stage: %s, State: %s'%
-                                                                                                    (stage.uid, 
-                                                                                                    stage.state))
+                                                                transition( obj=stage, 
+                                                                            obj_type = 'Stage', 
+                                                                            new_state = states.DONE, 
+                                                                            channel = mq_channel,
+                                                                            reply_to = 'sync-ack-deq',
+                                                                            profiler=local_prof, 
+                                                                            logger=self._logger)
 
                                                                 try:
                                                                     pipe._increment_stage()
-                                                                except:
-                                                                    pass
 
-                                                                if pipe.completed:
-                                                                    #self._workload.remove(pipe) 
-
-                                                                    pipe.state = states.DONE
-
-                                                                    local_prof.prof('transition', 
-                                                                                    uid=pipe.uid, 
-                                                                                    state=pipe.state)
-
-                                                                    sync_with_master(   obj=pipe, 
-                                                                                        obj_type='Pipeline', 
-                                                                                        channel = mq_channel)
-
-                                                                    self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
+                                                                    if pipe.completed:
+                                                                        
+                                                                        transition( obj=pipe, 
+                                                                                    obj_type = 'Pipeline', 
+                                                                                    new_state = states.DONE, 
+                                                                                    channel = mq_channel,
+                                                                                    reply_to = 'sync-ack-deq',
+                                                                                    profiler=local_prof, 
+                                                                                    logger=self._logger)
                                                                     
+                                                                except:
+                                                                    pipe._decrement_stage()
+
                                                         elif task.state == states.FAILED:
 
                                                             if self._resubmit_failed:
@@ -581,62 +473,30 @@ class WFprocessor(object):
                                                             else:
 
                                                                 if stage._check_stage_complete():
+                                                                    
+                                                                    transition( obj=stage, 
+                                                                                obj_type = 'Stage', 
+                                                                                new_state = states.DONE, 
+                                                                                channel = mq_channel,
+                                                                                reply_to = 'sync-ack-deq',
+                                                                                profiler=local_prof, 
+                                                                                logger=self._logger)
 
                                                                     try:
-                                                                    
-                                                                        stage.state = states.DONE
-
-                                                                        local_prof.prof('transition', 
-                                                                                        uid=stage.uid, 
-                                                                                        state=stage.state,
-                                                                                        msg=stage._parent_pipeline)
-
-                                                                        sync_with_master(   obj=stage, 
-                                                                                            obj_type='Stage', 
-                                                                                            channel = mq_channel)
-
-                                                                        self._logger.info('Stage: %s, State: %s'%
-                                                                                                    (stage.uid, 
-                                                                                                    stage.state))
-
                                                                         pipe._increment_stage()
 
-                                                                    except Exception, ex:
-                                                                        # Rolling back stage status
-                                                                        self._logger.error('Error while updating stage '+
-                                                                                        'state, rolling back. Error: %s'%ex)
-
-                                                                        stage.state = states.SCHEDULED
-
-                                                                        local_prof.prof('transition', 
-                                                                                        uid=stage.uid, 
-                                                                                        state=stage.state,
-                                                                                        msg=stage._parent_pipeline)
-
-                                                                        sync_with_master(   obj=stage, 
-                                                                                            obj_type='Stage', 
-                                                                                            channel = mq_channel)
-
-                                                                        self._logger.info('Stage: %s, State: %s'%
-                                                                                                    (stage.uid, 
-                                                                                                    stage.state))
-                                                                        pipe._decrement_stage()                                    
-
-                                                                    if pipe.completed:
-
-                                                                        pipe.state = states.DONE
-
-                                                                        local_prof.prof('transition', 
-                                                                                        uid=pipe.uid, 
-                                                                                        state=pipe.state)
-
-                                                                        sync_with_master(   obj=pipe, 
-                                                                                            obj_type='Pipeline', 
-                                                                                            channel = mq_channel)
-
-                                                                        self._logger.info('Pipe: %s, State: %s'%
-                                                                                                    (pipe.uid, 
-                                                                                                    pipe.state))
+                                                                        if pipe.completed:
+                                                                        
+                                                                            transition( obj=pipe, 
+                                                                                        obj_type = 'Pipeline', 
+                                                                                        new_state = states.DONE,
+                                                                                        channel = mq_channel, 
+                                                                                        reply_to = 'sync-ack-deq',
+                                                                                        profiler=local_prof, 
+                                                                                        logger=self._logger)
+                                                                    
+                                                                    except:
+                                                                        pipe._decrement_stage()
 
                                                         else:
 
@@ -653,9 +513,6 @@ class WFprocessor(object):
                                         break
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                except KeyboardInterrupt:
-                    raise KeyboardInterrupt
 
                 except Exception, ex:
                     self._logger.error('Unable to receive message from completed queue: %s'%ex)
@@ -677,7 +534,7 @@ class WFprocessor(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Unknown error in thread: %s'%ex)
+            self._logger.error('Error in dequeue-thread: %s'%ex)
             print traceback.format_exc()
 
             mq_connection.close()
@@ -719,12 +576,12 @@ class WFprocessor(object):
 
             except Exception, ex:
 
-                self.end_processor()
                 self._logger.error('WFprocessor not started')
-                raise Error(text=ex)      
+                self.end_processor()
+                raise       
 
         else:
-            self._logger.info('WFprocessor already running')
+            self._logger.warn('Wfp process already running, attempted to restart!')
 
 
     def end_processor(self):
@@ -735,12 +592,11 @@ class WFprocessor(object):
         """
 
         try:
-            #if not self._wfp_terminate.is_set():
             
-            self._wfp_terminate.set()
             self._logger.debug('Attempting to end WFprocessor... event: %s'%self._wfp_terminate.is_set())
 
             if self.check_alive():
+                self._wfp_terminate.set()
                 self._wfp_process.join()
                 self._logger.debug('WFprocessor process terminated')
             else:
@@ -752,7 +608,7 @@ class WFprocessor(object):
 
         except Exception, ex:
             self._logger.error('Could not terminate wfprocessor process')
-            raise Error(text=ex)
+            raise
 
     def workflow_incomplete(self):
 
@@ -768,9 +624,6 @@ class WFprocessor(object):
                     else:
                         return True
             return False
-
-        except KeyboardInterrupt:
-            raise KeyboardInterrupt
 
         except Exception, ex:
             self._logger.error('Could not check if workflow is incomplete, error:%s'%ex)
