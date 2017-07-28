@@ -124,10 +124,6 @@ class TaskManager(object):
 
         finally:
 
-            # Process is dead - close it so that appmanager can restart it
-            self.end_manager()
-            self.end_heartbeat()
-
             self._prof.prof('terminating hearbeat thread', uid=self._uid)        
 
 

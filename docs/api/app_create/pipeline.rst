@@ -5,3 +5,4 @@ Pipeline API
 
 .. autoclass:: radical.entk.Pipeline
     :members:
+    :noindex:

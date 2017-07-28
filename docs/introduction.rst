@@ -51,6 +51,8 @@ Ensemble Toolkit uses a runtime system as a framework to simply execute tasks on
 runtime system is expected to manage the direct interactions with the various software and hardware layers of the CIs, 
 including the heterogeneity amongst various CIs.
 
+.. _implementation:
+
 Implementation
 --------------
 
@@ -83,3 +85,15 @@ Ensemble Toolkit is completely python based and requires familiarity with the py
 Our primary focus is to support domain scientists and enable them to execute their applications at scale on various of 
 CI. But this does not mean this framework cannot be used by users with simpler requirements. Even if no HPC is to be 
 used, consider using EnTK for its automation and fault-tolerance capabilities (even on your personal PC)!
+
+Some of our current users are mentioned below.
+
++------------------------+------------+
+| User Groups            |   Domain   |
++========================+============+
+| Shirts Group,          |  Molecular |
+| University of Colorado,|  Dynamics  |
+| Denver                 |            |
++------------------------+------------+
+| ...                    | ...        |
++------------------------+------------+

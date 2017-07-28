@@ -141,6 +141,7 @@ setup_args = {
     
     'data_files'        : [
                                     makeDataFiles('share/radical.entk/user_guide/', 'examples/user_guide'),
+                                    makeDataFiles('share/radical.entk/simple_examples/', 'examples/simple_examples')
                             ],
 
 }

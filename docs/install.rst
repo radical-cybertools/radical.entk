@@ -55,20 +55,20 @@ rabbitmq-server process is alive. If not, please run the following:
 
 
 Preparing the Environment
-===================================
+=========================
 
 Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as the runtime system. RADICAL Pilot can 
 access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up 
-SSH/GSISSH environment.
+passwordless SSH/GSISSH environment.
+
+
+MongoDB Server
+--------------
 
 .. figure:: figures/hosts_and_ports.png
      :width: 360pt
      :align: center
      :alt: MongoDB and SSH ports.
-
-
-MongoDB Server
----------------------------------------
 
 The MongoDB server is used to store and retrieve operational data during the
 execution of an application using RADICAL-Pilot. The MongoDB server must
@@ -78,19 +78,18 @@ the HPC cluster (see blue arrows in the figure above). In our experience,
 a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 
 .. warning:: If you want to run your application on your laptop or private
-                         workstation, but run your MD tasks on a remote HPC cluster,
-                         installing MongoDB on your laptop or workstation won't work.
-                         Your laptop or workstations usually does not have a public IP
-                         address and is hidden behind a masked and firewalled home or office
-                         network. This means that the components running on the HPC cluster
-                         will not be able to access the MongoDB server.
+            workstation, but run your MD tasks on a remote HPC cluster,
+            installing MongoDB on your laptop or workstation won't work.
+            Your laptop or workstations usually does not have a public IP
+            address and is hidden behind a masked and firewalled home or office
+            network. This means that the components running on the HPC cluster
+            will not be able to access the MongoDB server.
 
 A MongoDB server can support more than one user. In an environment where
-multiple users use Ensemble MD Toolkit applications, a single MongoDB server
+multiple users use Ensemble Toolkit, a single MongoDB server
 for all users / hosts is usually sufficient.
 
-Install your own MongoDB
-----------------------------------------------------
+**Install your own MongoDB**
 
 Once you have identified a host that can serve as the new home for MongoDB,
 installation is straight forward. You can either install the MongoDB
@@ -99,8 +98,7 @@ follow the installation instructions on the MongoDB website:
 
 http://docs.mongodb.org/manual/installation/
 
-MongoDB-as-a-Service
-----------------------------------------------
+**MongoDB-as-a-Service**
 
 There are multiple commercial providers of hosted MongoDB services, some of them
 offering free usage tiers. We have had some good experience with the following:
@@ -108,21 +106,28 @@ offering free usage tiers. We have had some good experience with the following:
 * https://mongolab.com/
 
 
-Setup an easy method for SSH Access to machines
------------------------------------------------
+.. _ssh_gsissh_setup:
 
-An easy way to setup SSH Access to multiple remote machines is to create a file ``~/.ssh/config``.
+Setup passwordless SSH Access to machines
+-----------------------------------------
+
+In order to create a passwordless access to another machine, you need to create a RSA key on your local machine
+and paste the public key into the `authorizes_users` list on the remote machine.
+
+`This <http://linuxproblem.org/art_9.html>`_ is a recommended tutorial to create password ssh access.
+
+An easy way to setup SSH access to multiple remote machines is to create a file ``~/.ssh/config``.
 Suppose the url used to access a specific machine is ``foo@machine.example.com``. You can create an entry in this 
 config file as follows:
 
 .. code-block:: bash
 
         # contents of $HOME/.ssh/config
-        Host mach1
+        Host machine1
                 HostName machine.example.com
                 User foo
 
-Now you can login to the machine by ``ssh mach1``.
+Now you can login to the machine by ``ssh machine1``.
 
 
 Source: http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
@@ -131,7 +136,14 @@ Source: http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-fi
 Setup GSISSH Access to a machine
 ---------------------------------
 
-[TODO]
+Setting up GSISSH access to a machine is a bit more complicated. We have documented the steps to setup GSISSH on
+`Ubuntu <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_stampede_ubuntu_xenial.sh>`_ (tested for 
+trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute 
+all the commands, see comments for details.
+
+The above links document the overall procedure and get certificates to access XSEDE machines. Depending on the machine
+you want to access, you will have to get the certificates from the corresponding locations. In most cases, this
+information is available in their user guide. 
 
 
 Troubleshooting

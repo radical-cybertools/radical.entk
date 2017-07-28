@@ -324,7 +324,7 @@ class ResourceManager(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not cancel resource request')
+            self._logger.error('Could not cancel resource request, error: %s'%ex)
             raise
 
     # ------------------------------------------------------------------------------------------------------------------
