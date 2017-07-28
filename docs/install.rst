@@ -30,12 +30,12 @@ setup the same environment, run the following in the same terminal.
         cd ..
         pip install radical.utils/ saga-python/ radical.pilot/ radical.entk/
 
-You can check the version of Ensemble MD Toolkit with the `entk-version` command-line tool. It should return 0.6.
+You can check the version of Ensemble MD Toolkit with the ```entk-version``` command-line tool. It should return 0.6.
 
 .. code-block:: bash
 
         entk-version
-        0.6
+        0.6.0
 
 
 Installing rabbitmq

@@ -26,7 +26,7 @@ def func_for_process(p, mq_channel, logger, profiler):
     except Exception, ex:
         raise
 
-def test_synchronizer()
+def test_synchronizer():
 
 
     try:
