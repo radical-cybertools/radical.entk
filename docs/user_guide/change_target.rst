@@ -22,10 +22,11 @@ Once you have passwordless access to another machine, switching from one target 
 We simply re-describe the resource dictionary that is used to create the Resource Manager. For example, in order to
 run on the XSEDE Stampede cluster, we redescribe the resource dictionary as follows:
 
-.. .. literalinclude:: ../../examples/user_guide/change_target.py
+.. literalinclude:: ../../examples/user_guide/change_target.py
     :language: python
     :lines: 50-60
     :dedent: 4
+
 
 You can download the complete code discussed in this section :download:`here 
 <../../examples/user_guide/change_target.py>` or find it in your virtualenv under 

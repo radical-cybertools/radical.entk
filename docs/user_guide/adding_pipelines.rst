@@ -21,7 +21,7 @@ and assign them to the Application Manager.
 
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
     :language: python
-    :lines: 43-44, 68
+    :lines: 45-46, 69-70
     :dedent: 4
 
 To keep the script shorter, we created a function that creates, populates and returns a Pipeline. The code snippet 
