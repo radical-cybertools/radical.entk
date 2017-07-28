@@ -24,7 +24,7 @@ setup the same environment, run the following in the same terminal.
         git clone https://github.com/radical-cybertools/radical.utils
         git clone https://github.com/radical-cybertools/saga-python
         git clone https://github.com/radical-cybertools/radical.pilot
-        https://github.com/vivek-bala/radical.entk.git
+        git clone https://github.com/vivek-bala/radical.entk.git
         cd radical.entk
         git checkout arch/v0.6
         cd ..
