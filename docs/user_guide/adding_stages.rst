@@ -14,15 +14,6 @@ In this section, we will take a look at how we can add more tasks to our script 
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_stages.py>` or find it in 
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
-Use pre-configured MongoDB
-==========================
-
-For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
-
-.. code-block:: bash
-
-        export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
-
         
 Below, you can see the code snippet that shows how you can add more Stages to a Pipeline. You simple create more Stage 
 objects, populate them with Tasks and **add** them to the Pipeline using the **add_stage()** method.
@@ -33,6 +24,9 @@ objects, populate them with Tasks and **add** them to the Pipeline using the **a
     :linenos:
 
 To run the script, simply execute the following from the command line:
+
+.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it
+        ``export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"``
 
 .. code-block:: bash
 
