@@ -14,6 +14,15 @@ In this section, we will take a look at how we can add more pipelines to our scr
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_pipelines.py>` or find it in 
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
+Use pre-configured MongoDB
+==========================
+
+For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
+
+.. code-block:: bash
+
+        export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
+        
 
 Below, you can see the code snippet that shows how you can create a workflow with two Pipelines. You simple create more 
 another Pipeline objects, populate them with Stages and Tasks and create the workflow as a set of two Pipelines 

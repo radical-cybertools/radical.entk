@@ -46,6 +46,13 @@ instructions can be found at ```https://www.rabbitmq.com/download.html```. At
 the end of the installation run ```rabbitmq-server``` to start the server. RabbitMQ needs to be installed
 on the same machine as where EnTK is installed.
 
+In some cases, you might have to explicitly start the rabbitmq-server after installation. You can check if the 
+rabbitmq-server process is alive. If not, please run the following:
+
+.. code-block:: bash
+
+        rabbitmq-server -detached
+
 
 Preparing the Environment
 ===================================

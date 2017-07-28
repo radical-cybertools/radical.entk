@@ -5,7 +5,7 @@
 Getting Started
 ***************
 
-In this section we will run you through the basic building blocks of the  API.
+In this section we will run you through Ensemble Toolkit  API.
 We will develop an example application consisting of a simple bag of Tasks.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
@@ -14,6 +14,17 @@ We will develop an example application consisting of a simple bag of Tasks.
 
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/get_started.py>` or find it in 
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
+
+
+Use pre-configured MongoDB
+==========================
+
+For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
+
+.. code-block:: bash
+
+        export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
+
 
 Importing components from the Ensemble Toolkit Module
 ===========================================================
