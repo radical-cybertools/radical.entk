@@ -29,7 +29,6 @@ and **add** them to the Stage using the **add_task()** method.
 
 .. literalinclude:: ../../examples/user_guide/add_tasks.py
     :language: python
-    :linenos:
     :dedent: 4
 
 

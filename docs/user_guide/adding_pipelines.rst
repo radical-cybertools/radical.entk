@@ -22,7 +22,7 @@ and assign them to the Application Manager.
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
     :language: python
     :lines: 43-44, 68
-    :linenos:
+    :dedent: 4
 
 To keep the script shorter, we created a function that creates, populates and returns a Pipeline. The code snippet 
 of this function is as follows.
@@ -30,7 +30,7 @@ of this function is as follows.
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
     :language: python
     :lines: 11-37
-    :linenos:
+    :dedent: 4
 
 To run the script, simply execute the following from the command line:
 
