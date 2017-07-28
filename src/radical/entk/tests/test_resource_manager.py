@@ -2,6 +2,8 @@ from radical.entk import ResourceManager
 from radical.entk.exceptions import *
 import pytest, os
 import radical.pilot as rp
+from time import sleep
+
 
 def test_resource_manager_initialization():
 
@@ -147,6 +149,9 @@ def test_resource_request():
     assert rm.pilot.state == rp.ACTIVE
 
     rm._cancel_resource_request()
+
+    # State transition seems to be taking some time. So sleep
+    sleep(10)
 
     assert rm.pilot.state == rp.CANCELED or rm.pilot.state == rp.DONE
     

@@ -109,7 +109,7 @@ def get_input_list_from_task(task, placeholder_dict):
 
         if task.upload_input_data:
 
-            for data in task.upload_input_data:
+            for path in task.upload_input_data:
 
                 path = resolve_placeholders(path, placeholder_dict)
 
@@ -300,7 +300,16 @@ def create_task_from_cu(cu, prof=None):
         task.uid                = cu.name.split(',')[0].strip()
         task._parent_stage      = cu.name.split(',')[1].strip()
         task._parent_pipeline   = cu.name.split(',')[2].strip()
-        task.exit_code          = cu.exit_code
+
+        if cu.exit_code is not None:
+            task.exit_code = cu.exit_code
+        else:
+
+            if cu.state == rp.DONE:
+                task.exit_code = 0
+            else:
+                task.exit_code = 1
+
         task.path               = str(cu.sandbox)
 
         if prof:

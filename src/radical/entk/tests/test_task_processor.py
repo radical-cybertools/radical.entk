@@ -265,7 +265,7 @@ def test_resolve_placeholder():
     # Test for shared data location
     raw_path = '$SHARED/test.txt'
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
-    assert processed_path == 'staging://test.txt'
+    assert processed_path == 'staging:///test.txt'
 
     # Test for shared data location with rename
     raw_path = '$SHARED/test.txt > new.txt'

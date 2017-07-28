@@ -203,7 +203,7 @@ class TaskManager(object):
                                 task.state = states.SCHEDULED
                                 sync_with_master(task, 'Task', mq_channel)
                             else:
-                                self._logger.error('Task creation from completed cu %s failed, error: %s'%(cu.uid, ex))
+                                self._logger.error('Task creation from completed cu %s failed, error: %s'%(unit.uid, ex))
 
                             raise
 
