@@ -138,7 +138,7 @@ class Stage(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_tasks(self, tasks):
+    def add_task(self, tasks):
 
         """
         Adds tasks to the existing set of tasks of the Stage

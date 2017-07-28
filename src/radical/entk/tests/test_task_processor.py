@@ -7,7 +7,11 @@ import radical.utils as ru
 
 def test_input_list_from_task():
 
-<<<<<<< HEAD:tests/test_task_processor.py
+    """
+    **Purpose**: Test if the 'get_input_list_from_task' function generates the correct RP input transfer directives
+    when given a Task
+    """
+
     pipeline    = str(ru.generate_id('radical.entk.pipeline'))
     stage       = str(ru.generate_id('radical.entk.stage'))
     task        = str(ru.generate_id('radical.entk.task'))
@@ -24,16 +28,6 @@ def test_input_list_from_task():
         with pytest.raises(TypeError):
             t = list()
             get_input_list_from_task(t, placeholder_dict)
-=======
-    """
-    **Purpose**: Test if the 'get_input_list_from_task' function generates the correct RP input transfer directives
-    when given a Task
-    """
-
-    for t in [1,'a',list(), dict(),True]:
-        with pytest.raises(TypeError):
-            get_input_list_from_task(t)
->>>>>>> fix/improve_code_doc:src/radical/entk/tests/test_task_processor.py
 
 
     # Test link input data
@@ -96,7 +90,11 @@ def test_input_list_from_task():
 
 def test_output_list_from_task():
 
-<<<<<<< HEAD:tests/test_task_processor.py
+    """
+    **Purpose**: Test if the 'get_output_list_from_task' function generates the correct RP output transfer directives
+    when given a Task
+    """
+
     pipeline    = str(ru.generate_id('radical.entk.pipeline'))
     stage       = str(ru.generate_id('radical.entk.stage'))
     task        = str(ru.generate_id('radical.entk.task'))
@@ -113,17 +111,6 @@ def test_output_list_from_task():
         with pytest.raises(TypeError):
             t = list()
             get_output_list_from_task(t, placeholder_dict)
-=======
-    """
-    **Purpose**: Test if the 'get_output_list_from_task' function generates the correct RP output transfer directives
-    when given a Task
-    """
-
-
-    for t in [1,'a',list(), dict(),True]:
-        with pytest.raises(TypeError):
-            get_output_list_from_task(t)
->>>>>>> fix/improve_code_doc:src/radical/entk/tests/test_task_processor.py
 
 
     # Test copy output data
@@ -166,7 +153,12 @@ def test_output_list_from_task():
 
 def test_create_cud_from_task():
 
-<<<<<<< HEAD:tests/test_task_processor.py
+
+    """
+    **Purpose**: Test if the 'create_cud_from_task' function generates a RP ComputeUnitDescription with the complete
+    Task description
+    """
+
     pipeline    = str(ru.generate_id('radical.entk.pipeline'))
     stage       = str(ru.generate_id('radical.entk.stage'))
     task        = str(ru.generate_id('radical.entk.task'))
@@ -178,12 +170,6 @@ def test_create_cud_from_task():
                                         }
                             }
                     }
-=======
-    """
-    **Purpose**: Test if the 'create_cud_from_task' function generates a RP ComputeUnitDescription with the complete
-    Task description
-    """
->>>>>>> fix/improve_code_doc:src/radical/entk/tests/test_task_processor.py
 
     t1 = Task()
     t1.name = 'simulation'

@@ -116,7 +116,7 @@ def test_resource_manager_populate():
 
     rm = ResourceManager(res_dict)
 
-    with pytest.raises(Error):
+    with pytest.raises(Exception):
 
         rm._populate({  'resource': 'local.localhost',
                         'walltime': 40,

@@ -170,7 +170,7 @@ class Pipeline(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_stages(self, stages):
+    def add_stage(self, stages):
 
         """        
         Appends stages to the current Pipeline
