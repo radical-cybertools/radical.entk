@@ -36,6 +36,8 @@ def generate_pipeline(name, stages):
         # Add Stage to the Pipeline
         p.add_stages(s)
 
+    return p
+
 
 
 if __name__ == '__main__':
