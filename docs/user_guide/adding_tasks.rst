@@ -14,7 +14,7 @@ In this section, we will take a look at how we can add more tasks to our base sc
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_tasks.py>` or find it in 
 your virtualenv under ``share/radical.entk/user_guide/scripts``.        
 
-Below, you can see the code snippet that shows how you can add more Tasks to a Stage. You simple create more Task objects
++Below, you can see the code snippet that shows how you can create more Task objects
 and **add** them to the Stage using the **add_task()** method.
 
 .. literalinclude:: ../../examples/user_guide/add_tasks.py
