@@ -316,7 +316,6 @@ class ResourceManager(object):
             self._prof.prof('canceling resource allocation', uid=self._uid)
             self._pilot.cancel()
             self._session.close(cleanup=False)
-            print self._pilot.state
             self._prof.prof('resource allocation cancelled', uid=self._uid)
 
         except KeyboardInterrupt:

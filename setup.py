@@ -140,8 +140,8 @@ setup_args = {
     'zip_safe'          : False,
     
     'data_files'        : [
-                                    makeDataFiles('share/radical.entk/user_guide/', 'examples/user_guide'),
-                                    makeDataFiles('share/radical.entk/simple_examples/', 'examples/simple_examples')
+                                    makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
+                                    makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
                             ],
 
 }
