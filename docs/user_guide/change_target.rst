@@ -34,8 +34,10 @@ You can download the complete code discussed in this section :download:`here
 
 To run the script, simply execute the following from the command line:
 
-.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it
-        ``export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"``
+.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use 
+        it::
+
+            export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
 
 .. code-block:: bash
 

@@ -10,8 +10,8 @@ Ensemble Toolkit.
 
 All tests are run on Travis CI. The current build status:
 
-.. image:: https://travis-ci.org/vivek-bala/radical.entk-0.6.svg?branch=arch%2Fv0.6
-    :target: https://travis-ci.org/vivek-bala/radical.entk-0.6
+.. image:: https://travis-ci.org/vivek-bala/radical.entk.svg?branch=arch%2Fv0.6
+    :target: https://travis-ci.org/vivek-bala/radical.entk
 
 Click the above to look at the test logs. The following are tests are performed
 at every commit in every branch.

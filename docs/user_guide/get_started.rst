@@ -42,12 +42,33 @@ Creating the workflow
 
 
 We first create a Pipeline, Stage and Task object. Then we assign the 'executable' and 'arguments' for the Task. For
-this example, we will create one Pipeline consisting of one Stage that contains one Task. We do this in lines 13-17.
+this example, we will create one Pipeline consisting of one Stage that contains one Task. 
+
+In the below snippet, we first create a Pipeline then a Stage.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 12-28
+    :lines: 13-17
     :linenos:
+    :lineno-start: 13
+
+Next, we create a Task and assign its name, executable and arguments of the executable.
+
+.. literalinclude:: ../../examples/user_guide/get_started.py
+    :language: python
+    :lines: 19-23
+    :linenos:
+    :lineno-start: 19
+
+
+Now, that we have a fully described Task, a Stage and a Pipeline. We create our workflow by adding the Task to the
+Stage and adding the Stage to the Pipeline.
+
+.. literalinclude:: ../../examples/user_guide/get_started.py
+    :language: python
+    :lines: 25-29
+    :linenos:
+    :lineno-start: 25
 
 
 Creating the Resource Manager
@@ -60,8 +81,9 @@ local machine. With this description, we create the Resource Manager object.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 31-43
+    :lines: 32-44
     :linenos:
+    :lineno-start: 31
 
 
 Creating the Application Manager
@@ -74,8 +96,9 @@ the run() method of the Application Manager.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 45-55
+    :lines: 46-56
     :linenos:
+    :lineno-start: 46
 
 To run the script, simply execute the following from the command line:
 

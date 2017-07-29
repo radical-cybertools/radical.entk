@@ -235,6 +235,11 @@ def test_create_task_from_cu():
 
 def test_resolve_placeholder():
 
+    """
+    **Purpose**: Test if the 'resolve_placeholder' function resolves expected placeholders correctly. These 
+    placeholders are used to refer to files in different task folders.
+    """
+
     pipeline    = str(ru.generate_id('radical.entk.pipeline'))
     stage       = str(ru.generate_id('radical.entk.stage'))
     task        = str(ru.generate_id('radical.entk.task'))

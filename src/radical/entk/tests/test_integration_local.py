@@ -6,6 +6,10 @@ import os
 
 def test_integration_local():
 
+    """
+    **Purpose**: Run an EnTK application on localhost
+    """
+
     def create_single_task():
 
         t1 = Task()
