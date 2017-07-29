@@ -20,6 +20,7 @@ and **add** them to the Stage using the **add_task()** method.
 .. literalinclude:: ../../examples/user_guide/add_tasks.py
     :language: python
     :dedent: 4
+    :linenos:15-27
 
 
 To run the script, simply execute the following from the command line:

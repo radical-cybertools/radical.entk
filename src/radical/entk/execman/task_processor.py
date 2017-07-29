@@ -45,17 +45,22 @@ def resolve_placeholders(path, placeholder_dict):
         # Expected placeholder format:
         # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
 
-        broken_placeholder = placeholder.split('_')
+        broken_placeholder = placeholder.split('/')[0].split('_')
 
         if not len(broken_placeholder) ==  6:
-            raise ValueError(   expected_value = '$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
+            raise ValueError(   
+                                obj='placeholder',
+                                attribute='length',
+                                expected_value = '$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
                                 actual_value = broken_placeholder)
 
         pipeline_uid    = broken_placeholder[1]
         stage_uid       = broken_placeholder[3]
         task_uid        = broken_placeholder[5]
 
-        return path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
+        resolved_placeholder = path.replace(placeholder,placeholder_dict[pipeline_uid][stage_uid][task_uid])
+
+        return resolved_placeholder
 
     except Exception, ex:
 

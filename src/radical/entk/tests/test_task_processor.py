@@ -232,9 +232,6 @@ def test_create_task_from_cu():
     assert t._parent_stage == 'parent_stage'
     assert t._parent_pipeline == 'parent_pipeline'
 
-    for path in glob.glob('./rp.session.*'):
-        shutil.rmtree(path)
-
 
 def test_resolve_placeholder():
 
@@ -245,7 +242,7 @@ def test_resolve_placeholder():
     placeholder_dict = {
                             pipeline: {
                                         stage:{
-                                                task: '/home/vivek/some_file.txt'
+                                                task: '/home/vivek'
                                         }
                             }
                     }
@@ -273,12 +270,12 @@ def test_resolve_placeholder():
     assert processed_path == 'staging:///test.txt > new.txt'
 
     # Test for resolving relative data references
-    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'.format(pipeline, stage, task)
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'%(pipeline, stage, task)
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
     assert processed_path == '/home/vivek/some_file.txt'
 
     # Test for resolving relative data references with rename
-    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt > new.txt'.format(pipeline, stage, task)
+    raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt > new.txt'%(pipeline, stage, task)
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
     assert processed_path == '/home/vivek/some_file.txt > new.txt'
     
