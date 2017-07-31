@@ -14,7 +14,7 @@ Toolkit can be found at http://arxiv.org/abs/1602.00678 (accepted in ICPP 2016).
 **Project Github Page**
 
 https://github.com/radical-cybertools/radical.ensemblemd (soon!)
-
+https://github.com/vivek-bala/radical.entk (currently)
 
 **Mailing Lists**
 

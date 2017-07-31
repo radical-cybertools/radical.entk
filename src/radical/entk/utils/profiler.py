@@ -110,7 +110,8 @@ class Profiler(object):
                 self._states_dict[row['state']] = dict()
 
             obj_type = row['uid'].split('.')[2]
-            obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+            #obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+            obj_name = row['uid']
 
             if obj_type not in self._states_dict[row['state']]:
                 self._states_dict[row['state']][obj_type] = dict()
@@ -152,7 +153,8 @@ class Profiler(object):
 
             if pd.notnull(row['uid']):
                 obj_type = row['uid'].split('.')[2]
-                obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+                #obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+                obj_name = row['uid']
 
                 if obj_type not in self._events_dict[row['event']]:
                     self._events_dict[row['event']][obj_type] = dict()
@@ -329,8 +331,8 @@ class Profiler(object):
             for obj in objects:
 
                 extracted_dict[obj] = {}
-                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[0].strip()][obj]
-                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[0].strip()][obj]
+                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[2].strip()][obj]
 
             #pprint.pprint(extracted_dict)
 
@@ -342,8 +344,8 @@ class Profiler(object):
             for obj in objects:
 
                 extracted_dict[obj] = {}
-                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[0].strip()][obj]
-                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[0].strip()][obj]            
+                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]            
 
             #pprint.pprint(extracted_dict)
 
@@ -359,9 +361,9 @@ class Profiler(object):
 
                 
                 if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
-                    t1 = float(self._states_dict[states[0]][obj.split('.')[0].strip()][obj])
+                    t1 = float(self._states_dict[states[0]][obj.split('.')[2].strip()][obj])
                 else:
-                    t2 = float(self._events_dict[events[0]][obj.split('.')[0].strip()][obj])
+                    t2 = float(self._events_dict[events[0]][obj.split('.')[2].strip()][obj])
 
             if t1>t2:
                 return float(t1) - float(t2)

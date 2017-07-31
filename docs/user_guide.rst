@@ -13,3 +13,4 @@ User Guide
    ./user_guide/adding_pipelines
    ./user_guide/adding_data
    ./user_guide/change_target
+   ./user_guide/profiling
