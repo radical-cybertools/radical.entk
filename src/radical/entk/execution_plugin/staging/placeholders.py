@@ -73,8 +73,8 @@ def resolve_placeholder_vars(record, cur_pat, cur_iter, cur_stage, cur_task, pat
 
     try:
 
-        logger.debug('Pat: %s, Iter: %s, stage: %s, task: %s, monitor: %s, placeholder: %s' \
-                        %(ref_pat, ref_iter, ref_stage, ref_task, ref_monitor, placeholder))
+        logger.debug('Pat: %s, Iter: %s, stage: %s, task: %s, placeholder: %s' \
+                        %(ref_pat, ref_iter, ref_stage, ref_task, placeholder))
 
         if ref_task != None:
             return path.replace(placeholder, record["pat_%s"%(ref_pat)]["iter_%s"%(ref_iter)]["stage_%s"%(ref_stage)]["instance_%s"%(ref_task)]["path"])

@@ -9,10 +9,13 @@ import sys
 import os
 import json
 
-from radical.ensemblemd import Kernel
-from radical.ensemblemd import EoP
-from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import ResourceHandle
+from radical.entk import AppManager, Kernel, ResourceHandle, EoP, EnTKError
+
+
+from kernel_defs.ccount import ccount_kernel
+from kernel_defs.chksum import chksum_kernel
+from kernel_defs.mkfile import mkfile_kernel
+
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -34,7 +37,7 @@ class CharCount(EoP):
     def stage_1(self, instance):
         """The first stage of the pipeline creates a 1 MB ASCI file.
         """
-        k = Kernel(name="misc.mkfile")
+        k = Kernel(name="mkfile")
         k.arguments = ["--size=1000000", "--filename=asciifile-{0}.dat".format(instance)]
         return k
 
@@ -47,7 +50,7 @@ class CharCount(EoP):
                     a reference to the working directory of stage 1. ``$STAGE_``
                     can be used analogous to refernce other stages.
         """
-        k = Kernel(name="misc.ccount")
+        k = Kernel(name="ccount")
         k.arguments            = ["--inputfile=asciifile-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.dat".format(instance)]
         k.link_input_data      = "$STAGE_1/asciifile-{0}.dat".format(instance)
         k.download_output_data = "cfreqs-{0}.dat".format(instance)
@@ -58,7 +61,7 @@ class CharCount(EoP):
            of the second stage. The result is transferred back to the host
            running this script.
         """
-        k = Kernel(name="misc.chksum")
+        k = Kernel(name="chksum")
         k.arguments            = ["--inputfile=cfreqs-{0}.dat".format(instance), "--outputfile=cfreqs-{0}.sha1".format(instance)]
         k.link_input_data      = "$STAGE_2/cfreqs-{0}.dat".format(instance)
         k.download_output_data = "cfreqs-{0}.sha1".format(instance)
@@ -69,10 +72,28 @@ class CharCount(EoP):
 if __name__ == "__main__":
 
 
+    # use the resource specified as argument, fall back to localhost
+    if   len(sys.argv)  > 2: 
+        print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
+        sys.exit(1)
+    elif len(sys.argv) == 2: 
+        resource = sys.argv[1]
+    else: 
+        resource = 'local.localhost'
+
     try:
 
         with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
             config = json.load(data_file)
+
+
+        # Create an application manager
+        app = AppManager(name='example_1')
+
+        # Register kernels to be used
+        app.register_kernels(chksum_kernel)
+        app.register_kernels(ccount_kernel)
+        app.register_kernels(mkfile_kernel)
 
         # Create a new resource handle with one resource and a fixed
         # number of cores and runtime.
@@ -97,17 +118,14 @@ if __name__ == "__main__":
         # Execution of the 16 pipeline instances can happen concurrently or
         # sequentially, depending on the resources (cores) available in the
         # SingleClusterEnvironment.
-        ccount = CharCount(stages=3,instances=16)
+        ccount = CharCount(pipeline_size=3, ensemble_size=16)
 
-        cluster.run(ccount)
+        # Add workload to the application manager
+        app.add_workload(ccount)
 
-        # Print the checksums
-        print "\nResulting checksums:"
-        import glob
-        for result in glob.glob("cfreqs-*.sha1"):
-            print "  * {0}".format(open(result, "r").readline().strip())
+        cluster.run(app)
 
-    except EnsemblemdError, er:
+    except EnTKError, er:
 
         print "Ensemble MD Toolkit Error: {0}".format(str(er))
         raise # Just raise the execption again to get the backtrace

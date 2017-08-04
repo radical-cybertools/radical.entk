@@ -299,7 +299,7 @@ class Kernel(object):
                 if "pre_exec" not in self._machine_config[resource_name]:
                     raise MissingValueError("no pre_exec in config for %s"%mach_name)
 
-                if "executable" not in self._machine_config[resource]:
+                if "executable" not in self._machine_config[resource_name]:
                     raise MissingValueError("no executable in config for %s"%mach_name)
 
 
@@ -308,6 +308,10 @@ class Kernel(object):
         kernel_base._bind_to_resource(resource_name)
 
         self._pre_exec = kernel_base.pre_exec
-        self._executable = kernel_base.executable
+
+        if not self._executable:
+            self._executable = kernel_base.executable
+            
+        self._arguments = kernel_base.arguments
 
         

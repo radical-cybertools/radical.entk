@@ -37,7 +37,7 @@ class Test(PoE):
         This stage calculates the number of characters in a UTF file.
         """
         k = Kernel(name="ccount")
-        k.executable = ["/bin/bash"]
+        #k.executable = "/bin/bash"
         k.arguments = ["--inputfile=UTF-8-demo.txt", "--outputfile=ccount-{0}.txt".format(instance)]
         k.upload_input_data  = "UTF-8-demo.txt"
 
@@ -52,7 +52,7 @@ class Test(PoE):
         """
         k = Kernel(name="chksum")
         k.pre_exec = ["command -v sha1sum >/dev/null 2>&1 && export SHASUM=sha1sum  || export SHASUM=shasum"]
-        k.executable = ["$SHASUM"]
+        #k.executable = "$SHASUM"
         k.arguments            = ["--inputfile=UTF-8-demo.txt", "--outputfile=checksum{0}.sha1".format(instance)]
         k.upload_input_data  = "UTF-8-demo.txt"
         k.download_output_data = "checksum{0}.sha1".format(instance)
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         app = AppManager(name='example_1')
 
         # Register kernels to be used
-        app.register_kernels(checksum_kernel)
+        app.register_kernels(chksum_kernel)
         app.register_kernels(ccount_kernel)
 
         # Create a new resource handle with one resource and a fixed
@@ -107,10 +107,10 @@ if __name__ == "__main__":
         # Create pattern object with desired ensemble size, pipeline size
         pipe = Test(ensemble_size=[2,4], pipeline_size=2)
 
-        cluster.run(pipe)
-
         # Add workload to the application manager
         app.add_workload(pipe)
+
+        cluster.run(app)
 
     except Exception, ex:
         print 'Application failed, error: ', ex

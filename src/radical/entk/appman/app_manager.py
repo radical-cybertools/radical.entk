@@ -158,7 +158,7 @@ class AppManager():
                 if kernel().name == user_kernel.name:
                     found_kernel_base = kernel()
 
-            if found_kernel:
+            if found_kernel_base:
                 user_kernel._validate_config(resource, found_kernel_base)
 
                 if not user_kernel.pre_exec:
@@ -753,7 +753,7 @@ class AppManager():
                     stage = self._pattern.get_stage(stage=next_stage)
                     stage_kernel = stage(cur_task)
                     
-                    validated_kernel = self.validate_kernel(stage_kernel, resource)                                                                       
+                    validated_kernel = self.validate_kernel(stage_kernel, plugin._resource)                                                                       
 
 
                     plugin.set_workload(kernels=validated_kernel, cur_task=cur_task)

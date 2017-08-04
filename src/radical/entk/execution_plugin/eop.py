@@ -109,7 +109,7 @@ class PluginEoP(object):
                     cud.post_exec          = rbound_kernel.post_exec
                     cud.executable         = rbound_kernel.executable
                     cud.arguments          = rbound_kernel.arguments
-                    cud.mpi                = rbound_kernel.uses_mpi
+                    cud.mpi                = rbound_kernel.mpi
                     cud.cores              = rbound_kernel.cores
                     cud.input_staging      = get_input_data(rbound_kernel, 
                                                             record, 
