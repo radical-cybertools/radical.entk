@@ -286,6 +286,12 @@ class AppManager(object):
                     
                     if not self._wfp.check_alive():
 
+                        """
+                        If WFP dies, both child threads are also cleaned out.
+                        We simply recreate the wfp object with a copy of the workflow
+                        in the appmanager and start the processor.
+                        """
+
                         self._prof.prof('recreating wfp obj', uid=self._uid)
                         self._wfp = WFProcessor(  workflow = self._workflow, 
                                             pending_queue = self._pending_queue, 
@@ -297,15 +303,39 @@ class AppManager(object):
 
                     if not self._task_manager.check_alive():
 
-                        self._prof.prof('recreating tmgr obj', uid=self._uid)
-                        self._task_manager = TaskManager(   pending_queue = self._pending_queue,
-                                                            completed_queue = self._completed_queue,
-                                                            mq_hostname = self._mq_hostname,
-                                                            rmgr = self._resource_manager
-                                                        )
+                        """
+                        If the tmgr process dies, we simply start a new process
+                        using the start_manager method. We do not need to create
+                        a new instance of the TaskManager object itself. We stop
+                        and start a new isntance of the heartbeat thread as well.
+                        """
+                        self._prof.prof('restarting tmgr process', uid=self._uid)
+
+                        self._logger.info('Terminating heartbeat thread from AppManager')
+                        self._task_manager.end_heartbeat()
                         self._logger.info('Restarting task manager process from AppManager')
                         self._task_manager.start_manager()
+                        self._logger.info('Restarting heartbeat thread from AppManager')
+                        self._task_manager.start_heartbeat()
 
+
+                    if not self._task_manager.check_hearbeat():
+
+                        """
+                        If the heartbeat thread dies, we simply start a new thread
+                        using the start_heartbeat method. We do not need to create
+                        a new instance of the TaskManager object itself. We stop
+                        and start a new isntance of the tmgr process as well
+                        """
+
+                        self._prof.prof('restarting heartbeat thread', uid=self._uid)
+
+                        self._logger.info('Terminating tmgr process from AppManager')
+                        self._task_manager.end_manager()
+                        self._logger.info('Restarting task manager process from AppManager')
+                        self._task_manager.start_manager()
+                        self._logger.info('Restarting heartbeat thread from AppManager')
+                        self._task_manager.start_heartbeat()
                     
                 self._prof.prof('start termination', uid=self._uid)
                     

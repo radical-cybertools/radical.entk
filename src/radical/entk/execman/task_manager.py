@@ -124,6 +124,9 @@ class TaskManager(object):
 
         finally:
 
+            if self._hb_thread.is_alive():
+                self._hb_alive.set()
+
             self._prof.prof('terminating hearbeat thread', uid=self._uid)        
 
 
