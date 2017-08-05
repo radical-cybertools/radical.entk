@@ -87,7 +87,7 @@ class TaskManager(object):
             channel.queue_declare(queue='heartbeat-req')
             response = True
         
-            while (response or (not self._hb_alive.is_set())):
+            while (response and (not self._hb_alive.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
         

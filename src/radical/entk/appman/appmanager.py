@@ -319,7 +319,7 @@ class AppManager(object):
                         self._task_manager.start_heartbeat()
 
 
-                    if not self._task_manager.check_hearbeat():
+                    if not self._task_manager.check_heartbeat():
 
                         """
                         If the heartbeat thread dies, we simply start a new thread
