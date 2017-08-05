@@ -39,7 +39,7 @@ class AppManager(object):
 
 
     def __init__(self, hostname = 'localhost', push_threads=1, pull_threads=1, 
-                sync_threads=1, pending_qs=1, completed_qs=1):
+                sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
         self._logger    = ru.get_logger('radical.entk.appmanager')
@@ -51,6 +51,8 @@ class AppManager(object):
 
         self._workflow  = None
         self._resubmit_failed = False
+        self._reattempts = reattempts
+        self._cur_attempt = 1
 
         # RabbitMQ Queues
         self._num_pending_qs = pending_qs
@@ -276,15 +278,17 @@ class AppManager(object):
                                     self._logger.info('Active pipes: %s'%active_pipe_count)
 
 
-                    if not self._sync_thread.is_alive():
+                    if (not self._sync_thread.is_alive()) and (self._cur_attempt<=self._reattempts):
                         self._sync_thread = Thread(   target=self._synchronizer, 
                                                 name='synchronizer-thread')
                         self._logger.info('Restarting synchronizer thread')
                         self._prof.prof('restarting synchronizer', uid=self._uid)
                         self._sync_thread.start()
 
+                        self._cur_attempt += 1
+
                     
-                    if not self._wfp.check_alive():
+                    if (not self._wfp.check_alive()) and (self._cur_attempt<=self._reattempts):
 
                         """
                         If WFP dies, both child threads are also cleaned out.
@@ -301,7 +305,9 @@ class AppManager(object):
                         self._logger.info('Restarting WFProcessor process from AppManager')                        
                         self._wfp.start_processor()
 
-                    if not self._task_manager.check_alive():
+                        self._cur_attempt += 1
+
+                    if (not self._task_manager.check_alive()) and (self._cur_attempt<=self._reattempts):
 
                         """
                         If the tmgr process dies, we simply start a new process
@@ -318,8 +324,10 @@ class AppManager(object):
                         self._logger.info('Restarting heartbeat thread from AppManager')
                         self._task_manager.start_heartbeat()
 
+                        self._cur_attempt += 1
 
-                    if not self._task_manager.check_heartbeat():
+
+                    if (not self._task_manager.check_heartbeat()) and (self._cur_attempt<=self._reattempts):
 
                         """
                         If the heartbeat thread dies, we simply start a new thread
@@ -336,6 +344,8 @@ class AppManager(object):
                         self._task_manager.start_manager()
                         self._logger.info('Restarting heartbeat thread from AppManager')
                         self._task_manager.start_heartbeat()
+
+                        self._cur_attempt += 1
                     
                 self._prof.prof('start termination', uid=self._uid)
                     
