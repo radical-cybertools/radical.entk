@@ -54,6 +54,15 @@ rabbitmq-server process is alive. If not, please run the following:
         rabbitmq-server -detached
 
 
+Installation Video
+==================
+
+
+.. raw:: html
+
+        <video controls src="_static/entk_installation_get_started.mp4"></video> 
+
+
 Preparing the Environment
 =========================
 

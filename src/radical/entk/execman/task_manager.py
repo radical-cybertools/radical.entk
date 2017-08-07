@@ -102,7 +102,7 @@ class TaskManager(object):
                 self._logger.info('Sent heartbeat request')
 
                 # Ten second interval for heartbeat request to be responded to
-                time.sleep(10)
+                time.sleep(300)
 
                 method_frame, props, body = channel.basic_get(queue='heartbeat-res')
 
@@ -192,7 +192,7 @@ class TaskManager(object):
                                         obj_type = 'Task', 
                                         new_state = states.COMPLETED, 
                                         channel = mq_channel,
-                                        reply_to = 'sync-ack-tmgr',
+                                        queue = 'tmgr-to-sync',
                                         profiler=local_prof, 
                                         logger=logger)
 
@@ -204,7 +204,13 @@ class TaskManager(object):
                             if task:
                                 self._logger.error('Task %s creation for completed cu %s failed, error: %s'%(task.uid, unit.uid, ex))
                                 task.state = states.SCHEDULED
-                                sync_with_master(task, 'Task', mq_channel)
+                                transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.SCHEDULED, 
+                                        channel = mq_channel,
+                                        queue = 'tmgr-to-sync',
+                                        profiler=local_prof, 
+                                        logger=logger)
                             else:
                                 self._logger.error('Task creation from completed cu %s failed, error: %s'%(unit.uid, ex))
 
@@ -247,7 +253,6 @@ class TaskManager(object):
                 umgr = rp.UnitManager(session=rmgr._session)
                 umgr.add_pilots(rmgr.pilot)
                 umgr.register_callback(unit_state_cb)
-                self._umgr = umgr
 
             # Thread should run till terminate condtion is encountered
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
@@ -293,7 +298,7 @@ class TaskManager(object):
                                         obj_type = 'Task', 
                                         new_state = states.SUBMITTING, 
                                         channel = mq_channel,
-                                        reply_to = 'sync-ack-tmgr',
+                                        queue = 'tmgr-to-sync',
                                         profiler=local_prof, 
                                         logger=self._logger)
 
@@ -303,7 +308,13 @@ class TaskManager(object):
                             if task:
                                 self._logger.error('Task %s preparation for submission failed, error: %s'%(task.uid, ex))
                                 task.state = states.SCHEDULED
-                                sync_with_master(task, 'Task', mq_channel)
+                                transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.SCHEDULED, 
+                                        channel = mq_channel,
+                                        queue = 'tmgr-to-sync',
+                                        profiler=local_prof, 
+                                        logger=self._logger)
                             else:
                                 self._logger.error('Task preparation for submission failed, error: %s'%ex)
 
@@ -318,7 +329,7 @@ class TaskManager(object):
                                         obj_type = 'Task', 
                                         new_state = states.SUBMITTED, 
                                         channel = mq_channel,
-                                        reply_to = 'sync-ack-tmgr',
+                                        queue = 'tmgr-to-sync',
                                         profiler=local_prof, 
                                         logger=self._logger)
 
@@ -329,7 +340,13 @@ class TaskManager(object):
                             # Rollback and pass exception
                             self._logger.error('Task %s submission failed, error: %s'%(task.uid, ex))
                             task.state = states.SUBMITTING
-                            sync_with_master(task, 'Task', mq_channel)                            
+                            transition( obj=task, 
+                                        obj_type = 'Task', 
+                                        new_state = states.SUBMITTING, 
+                                        channel = mq_channel,
+                                        queue = 'tmgr-to-sync',
+                                        profiler=local_prof, 
+                                        logger=self._logger)                            
                             raise
 
                 except Exception, ex:
@@ -365,6 +382,7 @@ class TaskManager(object):
 
             local_prof.prof('terminating tmgr process', uid=uid)
             mq_connection.close()
+            #umgr.unregister_callback(unit_state_cb)
             local_prof.close()
 
 

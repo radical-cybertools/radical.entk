@@ -517,15 +517,26 @@ class AppManager(object):
                 self._mq_channel.queue_declare(queue=queue_name, durable=True)
                                                 
 
-            self._mq_channel.queue_delete(queue='sync-to-master')
-            self._mq_channel.queue_declare(queue='sync-to-master')
-            self._mq_channel.queue_delete(queue='sync-ack-tmgr')
-            self._mq_channel.queue_declare(queue='sync-ack-tmgr')
-            self._mq_channel.queue_delete(queue='sync-ack-enq')
-            self._mq_channel.queue_declare(queue='sync-ack-enq')
-            self._mq_channel.queue_delete(queue='sync-ack-deq')
-            self._mq_channel.queue_declare(queue='sync-ack-deq')
-                                                    # Durable Qs will not be lost if rabbitmq server crashes
+            #self._mq_channel.queue_delete(queue='sync-to-master')
+            #self._mq_channel.queue_declare(queue='sync-to-master')
+
+            # Queues to send messages from the threads/procs to master
+            self._mq_channel.queue_delete(queue='tmgr-to-sync')
+            self._mq_channel.queue_declare(queue='tmgr-to-sync')
+            self._mq_channel.queue_delete(queue='enq-to-sync')
+            self._mq_channel.queue_declare(queue='enq-to-sync')
+            self._mq_channel.queue_delete(queue='deq-to-sync')
+            self._mq_channel.queue_declare(queue='deq-to-sync')
+
+            # Queues to send messages from master to threads/procs
+            self._mq_channel.queue_delete(queue='sync-to-tmgr')
+            self._mq_channel.queue_declare(queue='sync-to-tmgr')
+            self._mq_channel.queue_delete(queue='sync-to-enq')
+            self._mq_channel.queue_declare(queue='sync-to-enq')
+            self._mq_channel.queue_delete(queue='sync-to-deq')
+            self._mq_channel.queue_declare(queue='sync-to-deq')
+                            # Durable Qs will not be lost if rabbitmq server crashes
+
 
             self._logger.debug('All exchanges and queues are setup')
             self._prof.prof('mqs setup done', uid=self._uid)
@@ -559,12 +570,143 @@ class AppManager(object):
             self._logger.info('synchronizer thread started')
 
 
+            def task_update(msg, reply_to, corr_id, mq_channel):
+
+                completed_task = Task()
+                completed_task.from_dict(msg['object'])
+                self._logger.info('Received %s with state %s'%(completed_task.uid, completed_task.state))
+
+                # Traverse the entire workflow to find the correct task
+                for pipe in self._workflow:
+
+                    with pipe._stage_lock:
+
+                        if not pipe.completed:
+                            if completed_task._parent_pipeline == pipe.uid:
+                                
+                                for stage in pipe.stages:
+
+                                    if completed_task._parent_stage == stage.uid:
+
+                                        for task in stage.tasks:
+
+                                            if (completed_task.uid == task.uid)and(completed_task.state != task.state):
+                                                        
+                                                task.state = str(completed_task.state)
+                                                self._logger.debug('Found task %s with state %s'%(task.uid, task.state))
+
+                                                if completed_task.path:
+                                                    task.path = str(completed_task.path)
+
+                                                print 'Syncing task %s with state %s'%(task.uid, task.state)
+
+                                                mq_channel.basic_publish(   exchange='',
+                                                                            routing_key=reply_to,
+                                                                            properties=pika.BasicProperties(
+                                                                                correlation_id = corr_id),
+                                                                            body='%s-ack'%task.uid)
+
+                                                self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                                    msg['object']['state'], 
+                                                                                    uid=msg['object']['uid']
+                                                                                )
+
+                                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+                                                print 'Synced task %s with state %s'%(task.uid, task.state)
+
+
+            def stage_update(msg, reply_to, corr_id, mq_channel):
+
+                completed_stage = Stage()
+                completed_stage.from_dict(msg['object'])
+                self._logger.info('Received %s with state %s'%(completed_stage.uid, completed_stage.state))
+
+                # Traverse the entire workflow to find the correct stage
+                for pipe in self._workflow:
+
+                    with pipe._stage_lock:
+
+                        if not pipe.completed:
+                            if completed_stage._parent_pipeline == pipe.uid:
+                                self._logger.info('Found parent pipeline: %s'%pipe.uid)
+                                
+                                for stage in pipe.stages:
+
+                                    if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):              
+
+                                        self._logger.debug('Found stage %s'%stage.uid)
+
+                                        stage.state = str(completed_stage.state)
+
+                                        mq_channel.basic_publish(   exchange='',
+                                                                    routing_key=reply_to,
+                                                                    properties=pika.BasicProperties(
+                                                                        correlation_id = corr_id),
+                                                                    body='%s-ack'%stage.uid)
+
+
+                                        self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                                msg['object']['state'], 
+                                                                                uid=msg['object']['uid']
+                                                                            )
+
+                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+
+            def pipeline_update(msg, reply_to, corr_id, mq_channel):
+
+                completed_pipeline = Pipeline()
+                completed_pipeline.from_dict(msg['object'])
+
+                self._logger.info('Received %s with state %s'%(completed_pipeline.uid, completed_pipeline.state))
+
+                # Traverse the entire workflow to find the correct pipeline
+                for pipe in self._workflow:
+
+                    with pipe._stage_lock:
+
+                        if not pipe.completed:
+
+                            if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
+
+                                pipe.state = str(completed_pipeline.state)
+
+                                if completed_pipeline.completed:
+                                    pipe._completed_flag.set()
+
+                                self._logger.info('Found pipeline %s, state %s, completed %s'%( pipe.uid, 
+                                                                                                        pipe.state, 
+                                                                                                        pipe.completed)
+                                                                                                    )
+
+                                # Reply with ack msg to the sender
+                                mq_channel.basic_publish(   exchange='',
+                                                            routing_key=reply_to,
+                                                            properties=pika.BasicProperties(
+                                                                    correlation_id = corr_id),
+                                                            body='%s-ack'%pipe.uid)
+
+                                self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                            msg['object']['state'], 
+                                                                            uid=msg['object']['uid']
+                                                                        )
+
+
+                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+
+
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
             while not self._end_sync.is_set():
 
-                method_frame, props, body = mq_channel.basic_get(queue='sync-to-master')
+
+                #-------------------------------------------------------------------------------------------------------
+                # Messages between tmgr and synchronizer -- only Task objects
+
+                method_frame, props, body = mq_channel.basic_get(queue='tmgr-to-sync')
 
                 """
                 The message received is a JSON object with the following structure:
@@ -582,129 +724,51 @@ class AppManager(object):
                     self._prof.prof('received obj with state %s for sync'%msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':                        
+                        task_update(msg, 'sync-to-tmgr', props.correlation_id, mq_channel)
 
-                        completed_task = Task()
-                        completed_task.from_dict(msg['object'])
-                        self._logger.info('Received %s with state %s'%(completed_task.uid, completed_task.state))
+                #-------------------------------------------------------------------------------------------------------
 
-                        # Traverse the entire workflow to find the correct task
-                        for pipe in self._workflow:
 
-                            with pipe._stage_lock:
+                #-------------------------------------------------------------------------------------------------------
+                # Messages between enqueue thread and synchronizer -- Task, Stage or Pipeline
+                method_frame, props, body = mq_channel.basic_get(queue='enq-to-sync')
 
-                                if not pipe.completed:
-                                    if completed_task._parent_pipeline == pipe.uid:
-                                
-                                        for stage in pipe.stages:
+                if body:
 
-                                            if completed_task._parent_stage == stage.uid:
+                    msg = json.loads(body)
 
-                                                for task in stage.tasks:
+                    self._prof.prof('received obj with state %s for sync'%msg['object']['state'], uid=msg['object']['uid'])
 
-                                                    if (completed_task.uid == task.uid)and(completed_task.state != task.state):
-                                                        
-                                                        task.state = str(completed_task.state)
-                                                        self._logger.debug('Found task %s with state %s'%(task.uid, task.state))
-
-                                                        if completed_task.path:
-                                                            task.path = str(completed_task.path)
-
-                                                        #print 'Syncing task %s with state %s'%(task.uid, task.state)
-
-                                                        mq_channel.basic_publish(   exchange='',
-                                                                                    routing_key=props.reply_to,
-                                                                                    properties=pika.BasicProperties(
-                                                                                        correlation_id = props.correlation_id),
-                                                                                    body='%s-ack'%task.uid)
-
-                                                        self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                                            msg['object']['state'], 
-                                                                                            uid=msg['object']['uid']
-                                                                                        )
-
-                                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
-                                                        #print 'Synced task %s with state %s'%(task.uid, task.state)
-
+                    if msg['type'] == 'Task':                        
+                        task_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Stage':
-
-                        completed_stage = Stage()
-                        completed_stage.from_dict(msg['object'])
-                        self._logger.info('Received %s with state %s'%(completed_stage.uid, completed_stage.state))
-
-                        # Traverse the entire workflow to find the correct stage
-                        for pipe in self._workflow:
-
-                            with pipe._stage_lock:
-
-                                if not pipe.completed:
-                                    if completed_stage._parent_pipeline == pipe.uid:
-                                        self._logger.info('Found parent pipeline: %s'%pipe.uid)
-                                
-                                        for stage in pipe.stages:
-
-                                            if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):              
-
-                                                self._logger.debug('Found stage %s'%stage.uid)
-
-                                                stage.state = str(completed_stage.state)
-
-                                                mq_channel.basic_publish(   exchange='',
-                                                                            routing_key=props.reply_to,
-                                                                            properties=pika.BasicProperties(
-                                                                                correlation_id = props.correlation_id),
-                                                                            body='%s-ack'%stage.uid)
-
-
-                                                self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                                        msg['object']['state'], 
-                                                                                        uid=msg['object']['uid']
-                                                                                    )
-
-                                                mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
+                        stage_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Pipeline':
-
-                        completed_pipeline = Pipeline()
-                        completed_pipeline.from_dict(msg['object'])
-
-                        self._logger.info('Received %s with state %s'%(completed_pipeline.uid, completed_pipeline.state))
-
-                        # Traverse the entire workflow to find the correct pipeline
-                        for pipe in self._workflow:
-
-                            with pipe._stage_lock:
-
-                                if not pipe.completed:
-
-                                    if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
-
-                                        pipe.state = str(completed_pipeline.state)
-
-                                        if completed_pipeline.completed:
-                                            pipe._completed_flag.set()
-
-                                        self._logger.info('Found pipeline %s, state %s, completed %s'%( pipe.uid, 
-                                                                                                        pipe.state, 
-                                                                                                        pipe.completed)
-                                                                                                    )
-
-                                        # Reply with ack msg to the sender
-                                        mq_channel.basic_publish(   exchange='',
-                                                                    routing_key=props.reply_to,
-                                                                    properties=pika.BasicProperties(
-                                                                                correlation_id = props.correlation_id),
-                                                                    body='%s-ack'%pipe.uid)
-
-                                        self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                                        msg['object']['state'], 
-                                                                                        uid=msg['object']['uid']
-                                                                                    )
+                        pipeline_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
+                #-------------------------------------------------------------------------------------------------------
 
 
-                                        mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+                #-------------------------------------------------------------------------------------------------------
+                # Messages between dequeue thread and synchronizer -- Task, Stage or Pipeline
+                method_frame, props, body = mq_channel.basic_get(queue='deq-to-sync')
+
+                if body:
+
+                    msg = json.loads(body)
+
+                    self._prof.prof('received obj with state %s for sync'%msg['object']['state'], uid=msg['object']['uid'])
+
+                    if msg['type'] == 'Task':                        
+                        task_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+
+                    elif msg['type'] == 'Stage':
+                        stage_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+
+                    elif msg['type'] == 'Pipeline':
+                        pipeline_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+                #-------------------------------------------------------------------------------------------------------
 
 
             self._prof.prof('terminating synchronizer', uid=self._uid)

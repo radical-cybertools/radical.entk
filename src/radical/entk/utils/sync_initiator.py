@@ -2,7 +2,7 @@ import uuid
 import json
 import pika
 
-def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
+def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
     object_as_dict = {'object': obj.to_dict()}
     if obj_type == 'Task': 
@@ -19,10 +19,9 @@ def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
     logger.debug('Attempting to sync %s with state %s with AppManager'%(obj.uid, obj.state))
     channel.basic_publish(
                             exchange='',
-                            routing_key='sync-to-master',
+                            routing_key=queue,
                             body=json.dumps(object_as_dict),
                             properties=pika.BasicProperties(
-                                        reply_to = reply_to,
                                         correlation_id = corr_id
                                         )
                         )
@@ -35,10 +34,14 @@ def sync_with_master(obj, obj_type, channel, reply_to, logger, local_prof):
         local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
 
+    temp = queue.split('-')
+    temp.reverse()
+    reply_queue = '-'.join(temp)
                 
     while True:
         #self._logger.info('waiting for ack')
-        method_frame, props, body = channel.basic_get(queue=reply_to)
+
+        method_frame, props, body = channel.basic_get(queue=reply_queue)
 
         if body:
             if corr_id == props.correlation_id:

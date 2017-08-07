@@ -1,6 +1,6 @@
 from sync_initiator import sync_with_master
 
-def transition(obj, obj_type, new_state, channel, reply_to, profiler, logger):
+def transition(obj, obj_type, new_state, channel, queue, profiler, logger):
 
 
     try:
@@ -22,7 +22,7 @@ def transition(obj, obj_type, new_state, channel, reply_to, profiler, logger):
         sync_with_master(   obj=obj, 
                             obj_type=obj_type,
                             channel = channel,
-                            reply_to = reply_to, 
+                            queue = queue, 
                             logger=logger, 
                             local_prof = profiler)
 
@@ -35,7 +35,7 @@ def transition(obj, obj_type, new_state, channel, reply_to, profiler, logger):
         sync_with_master(   obj=obj, 
                             obj_type=obj_type,
                             channel = channel,
-                            reply_to = reply_to, 
+                            queue= queue, 
                             logger=logger, 
                             local_prof = profiler)
         raise

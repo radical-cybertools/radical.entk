@@ -1,0 +1,695 @@
+#time,name,uid,state,event,msg
+1502147930.1702,update.0.child:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147930.15:1502147930.16:ntp
+1502147930.1707,update.0.child:MainThread,update.0.child,,initialize,
+1502147935.1259,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,get,update pilot state to PMGR_LAUNCHING_PENDING
+1502147935.1262,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,bulk,bulked (PMGR_LAUNCHING_PENDING)
+1502147935.2320,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502147935.2320,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,update,pilot update pushed (PMGR_LAUNCHING_PENDING)
+1502147935.2323,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,get,update pilot state to PMGR_LAUNCHING
+1502147935.2324,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,bulk,bulked (PMGR_LAUNCHING)
+1502147936.6246,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502147936.6247,update.0.child:update.0.child.idler._idle_cb,pilot.0000,,update,pilot update pushed (PMGR_LAUNCHING)
+1502147948.2898,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,get,update pilot state to PMGR_ACTIVE_PENDING
+1502147948.2900,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,bulk,bulked (PMGR_ACTIVE_PENDING)
+1502147948.4020,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502147948.4021,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,update,pilot update pushed (PMGR_ACTIVE_PENDING)
+1502148001.9353,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,get,update pilot state to PMGR_ACTIVE
+1502148001.9354,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,bulk,bulked (PMGR_ACTIVE)
+1502148002.0462,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148002.0463,update.0.child:update.0.child.subscriber._state_cb,pilot.0000,,update,pilot update pushed (PMGR_ACTIVE)
+1502148005.6119,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148005.6121,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148005.7176,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148005.7177,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148005.7178,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_SCHEDULING
+1502148005.7179,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_SCHEDULING)
+1502148005.7183,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148005.7184,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148005.7187,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_STAGING_INPUT
+1502148005.7188,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148005.7191,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148005.7192,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148005.7787,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148005.7788,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148005.7886,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_SCHEDULING
+1502148005.7906,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_SCHEDULING)
+1502148005.8007,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148005.8025,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148005.8036,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_STAGING_INPUT
+1502148005.8037,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148005.8071,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148005.8072,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148006.8749,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (9),
+1502148006.8749,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_SCHEDULING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (UMGR_SCHEDULING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148006.8750,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148008.6017,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_STAGING_INPUT
+1502148008.6018,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148008.7067,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148008.7067,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148008.7069,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_STAGING_INPUT
+1502148008.7070,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148009.7443,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148009.7444,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148009.8526,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (2),
+1502148009.8529,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148009.8534,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148009.8544,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_SCHEDULING
+1502148009.8544,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_SCHEDULING)
+1502148009.8555,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148009.8556,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148009.8559,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_EXECUTING
+1502148009.8560,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_EXECUTING)
+1502148009.8568,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148009.8569,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148009.8584,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148009.8585,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148009.8838,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148009.8839,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148009.9020,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_SCHEDULING
+1502148009.9021,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_SCHEDULING)
+1502148009.9345,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148009.9437,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148009.9658,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_EXECUTING
+1502148009.9659,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_EXECUTING)
+1502148009.9889,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148009.9890,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148010.0130,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148010.0131,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148010.0501,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148010.0502,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148010.3654,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148010.3656,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148010.3684,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148010.3685,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148010.3700,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,get,update unit state to DONE
+1502148010.3701,update.0.child:update.0.child.subscriber._state_cb,unit.000000,,bulk,bulked (DONE)
+1502148010.5972,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148010.5973,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148010.6029,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_SCHEDULING
+1502148010.6030,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_SCHEDULING)
+1502148010.6034,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148010.6034,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148010.6072,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_STAGING_INPUT
+1502148010.6073,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148010.6076,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148010.6077,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148011.0095,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (20),
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_SCHEDULING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_EXECUTING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000001,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_SCHEDULING)
+1502148011.0096,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_EXECUTING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000000,,update,unit update pushed (DONE)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (UMGR_SCHEDULING)
+1502148011.0097,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148011.0098,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148011.0098,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148011.1924,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148011.1925,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148011.7021,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148011.7022,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148011.7047,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148011.7048,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148011.7051,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,get,update unit state to DONE
+1502148011.7051,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,bulk,bulked (DONE)
+1502148011.9262,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148011.9263,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148012.0370,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (5),
+1502148012.0374,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148012.0378,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148012.0378,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148012.0378,update.0.child:update.0.child.subscriber._state_cb,unit.000001,,update,unit update pushed (DONE)
+1502148012.0378,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148012.0380,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_SCHEDULING
+1502148012.0381,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_SCHEDULING)
+1502148012.0384,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148012.0384,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148012.0386,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_STAGING_INPUT
+1502148012.0387,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148012.0389,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148012.0389,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148012.3124,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_STAGING_INPUT
+1502148012.3125,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148012.3296,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148012.3297,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148012.3732,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_SCHEDULING
+1502148012.3747,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_SCHEDULING)
+1502148012.3833,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148012.3834,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148012.4002,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_EXECUTING
+1502148012.4003,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_EXECUTING)
+1502148013.1532,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (9),
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_SCHEDULING)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_SCHEDULING)
+1502148013.1533,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148013.1534,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (AGENT_EXECUTING)
+1502148013.5265,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148013.5266,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148013.5385,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148013.5386,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148013.5547,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148013.5548,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148014.1320,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148014.1321,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148014.2400,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (4),
+1502148014.2400,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148014.2400,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148014.2401,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148014.2401,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148014.2403,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148014.2404,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148014.2408,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,get,update unit state to DONE
+1502148014.2409,update.0.child:update.0.child.subscriber._state_cb,unit.000002,,bulk,bulked (DONE)
+1502148014.3627,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148014.3628,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148014.3652,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_SCHEDULING
+1502148014.3652,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_SCHEDULING)
+1502148014.3679,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148014.3682,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148014.3689,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_STAGING_INPUT
+1502148014.3690,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148014.3692,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148014.3692,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148014.6814,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_STAGING_INPUT
+1502148014.6815,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148015.3515,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (8),
+1502148015.3515,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148015.3516,update.0.child:update.0.child.idler._idle_cb,unit.000002,,update,unit update pushed (DONE)
+1502148015.3517,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148015.3517,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_SCHEDULING)
+1502148015.3518,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148015.3518,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148015.3518,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148015.3518,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148015.8159,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148015.8160,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148015.8491,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_SCHEDULING
+1502148015.8492,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_SCHEDULING)
+1502148015.8734,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148015.8735,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148015.8850,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_EXECUTING
+1502148015.8851,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_EXECUTING)
+1502148015.9015,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148015.9016,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148016.4839,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (5),
+1502148016.4839,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148016.4839,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_SCHEDULING)
+1502148016.4839,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148016.4839,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_EXECUTING)
+1502148016.4840,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148017.0324,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148017.0324,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148017.0497,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148017.0498,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148017.0762,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_STAGING_INPUT
+1502148017.0764,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148017.0888,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148017.0891,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148017.1021,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_SCHEDULING
+1502148017.1028,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_SCHEDULING)
+1502148017.1147,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148017.1148,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148017.1321,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_EXECUTING
+1502148017.1322,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_EXECUTING)
+1502148017.5935,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (7),
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_SCHEDULING)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148017.5936,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_EXECUTING)
+1502148017.6811,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148017.6817,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148017.6832,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148017.6833,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148017.6854,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,get,update unit state to DONE
+1502148017.6855,update.0.child:update.0.child.subscriber._state_cb,unit.000003,,bulk,bulked (DONE)
+1502148017.9415,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148017.9416,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148017.9456,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_SCHEDULING
+1502148017.9457,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_SCHEDULING)
+1502148017.9476,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148017.9477,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148017.9503,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_STAGING_INPUT
+1502148017.9504,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148017.9514,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148017.9515,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148018.2586,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148018.2587,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148018.2755,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148018.2756,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148018.2961,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148018.2962,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148018.7197,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (11),
+1502148018.7198,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000003,,update,unit update pushed (DONE)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (UMGR_SCHEDULING)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148018.7199,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148018.7200,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148018.7200,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148019.0025,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148019.0026,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148019.0063,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148019.0064,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148019.0082,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,get,update unit state to DONE
+1502148019.0083,update.0.child:update.0.child.subscriber._state_cb,unit.000004,,bulk,bulked (DONE)
+1502148019.2475,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148019.2489,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148019.2573,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_SCHEDULING
+1502148019.2574,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_SCHEDULING)
+1502148019.2582,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148019.2583,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148019.2615,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_STAGING_INPUT
+1502148019.2616,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148019.2633,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148019.2634,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (8),
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,unit.000004,,update,unit update pushed (DONE)
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148019.8373,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (UMGR_SCHEDULING)
+1502148019.8374,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148019.8374,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148019.8374,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148020.5535,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_STAGING_INPUT
+1502148020.5536,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148020.5652,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_STAGING_INPUT
+1502148020.5653,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148020.9451,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (2),
+1502148020.9452,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148020.9452,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148021.6922,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148021.6923,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148021.7051,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_SCHEDULING
+1502148021.7052,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_SCHEDULING)
+1502148021.7160,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148021.7161,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148021.7268,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_EXECUTING
+1502148021.7269,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_EXECUTING)
+1502148021.7400,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148021.7401,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148021.7526,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_SCHEDULING
+1502148021.7527,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_SCHEDULING)
+1502148021.7673,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148021.7674,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148021.7762,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_EXECUTING
+1502148021.7763,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_EXECUTING)
+1502148022.1085,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (8),
+1502148022.1085,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148022.1085,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_SCHEDULING)
+1502148022.1085,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148022.1086,update.0.child:update.0.child.idler._idle_cb,unit.000006,,update,unit update pushed (AGENT_EXECUTING)
+1502148022.1086,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148022.1086,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_SCHEDULING)
+1502148022.1086,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148022.1087,update.0.child:update.0.child.idler._idle_cb,unit.000005,,update,unit update pushed (AGENT_EXECUTING)
+1502148023.0045,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148023.0046,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148023.1123,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148023.1123,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148023.1125,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148023.1126,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148023.1129,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148023.1130,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148023.1132,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148023.1133,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148023.1135,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148023.1135,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148023.1137,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148023.1138,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148023.6686,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148023.6687,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148023.6695,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148023.6703,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148023.6743,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148023.6744,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148023.6751,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148023.6751,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148023.6769,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,get,update unit state to DONE
+1502148023.6770,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,bulk,bulked (DONE)
+1502148023.6780,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,get,update unit state to DONE
+1502148023.6780,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,bulk,bulked (DONE)
+1502148024.0161,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148024.0162,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148024.1284,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (12),
+1502148024.1285,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148024.1285,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000005,,update,unit update pushed (DONE)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000006,,update,unit update pushed (DONE)
+1502148024.1286,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148024.1288,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_SCHEDULING
+1502148024.1289,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_SCHEDULING)
+1502148024.1294,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148024.1295,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148024.1298,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_STAGING_INPUT
+1502148024.1299,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148024.1301,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148024.1302,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148024.1880,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148024.1882,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148024.1993,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_SCHEDULING
+1502148024.2004,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_SCHEDULING)
+1502148024.2023,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148024.2024,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148024.2044,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_STAGING_INPUT
+1502148024.2044,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148024.2056,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148024.2058,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148025.2410,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (9),
+1502148025.2411,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (UMGR_SCHEDULING)
+1502148025.2411,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148025.2411,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148025.2411,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148025.2412,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148025.2412,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (UMGR_SCHEDULING)
+1502148025.2412,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148025.2412,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148025.2412,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148026.9016,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_STAGING_INPUT
+1502148026.9017,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148027.0072,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148027.0073,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148027.0074,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_STAGING_INPUT
+1502148027.0075,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148028.1931,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148028.1933,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148028.3075,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (2),
+1502148028.3076,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148028.3076,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148028.3079,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_SCHEDULING
+1502148028.3079,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_SCHEDULING)
+1502148028.3083,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148028.3083,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148028.3086,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_EXECUTING
+1502148028.3087,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_EXECUTING)
+1502148028.3092,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148028.3093,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148028.3097,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_SCHEDULING
+1502148028.3097,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_SCHEDULING)
+1502148028.3101,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148028.3101,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148028.3104,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_EXECUTING
+1502148028.3105,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_EXECUTING)
+1502148029.4199,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (7),
+1502148029.4200,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (AGENT_SCHEDULING)
+1502148029.4200,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148029.4201,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (AGENT_EXECUTING)
+1502148029.4201,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148029.4201,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (AGENT_SCHEDULING)
+1502148029.4201,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148029.4201,update.0.child:update.0.child.idler._idle_cb,unit.000007,,update,unit update pushed (AGENT_EXECUTING)
+1502148029.5383,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148029.5384,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148030.5298,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148030.5298,update.0.child:update.0.child.idler._idle_cb,unit.000008,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148030.7851,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148030.7852,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148030.7978,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148030.7978,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148030.8107,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148030.8108,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148030.8256,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148030.8257,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148030.8439,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148030.8440,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.1661,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148031.1673,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.1682,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148031.1689,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.1759,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148031.1760,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148031.1762,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148031.1763,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148031.1797,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,get,update unit state to DONE
+1502148031.1798,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,bulk,bulked (DONE)
+1502148031.1803,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,get,update unit state to DONE
+1502148031.1818,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,bulk,bulked (DONE)
+1502148031.4823,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148031.4832,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (12),
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148031.6138,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148031.6139,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148031.6139,update.0.child:update.0.child.subscriber._state_cb,unit.000008,,update,unit update pushed (DONE)
+1502148031.6139,update.0.child:update.0.child.subscriber._state_cb,unit.000007,,update,unit update pushed (DONE)
+1502148031.6139,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148031.6141,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_SCHEDULING
+1502148031.6141,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_SCHEDULING)
+1502148031.6145,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148031.6146,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148031.6151,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_STAGING_INPUT
+1502148031.6152,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148031.6154,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148031.6155,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148031.6767,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148031.6768,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148031.6833,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_SCHEDULING
+1502148031.6835,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_SCHEDULING)
+1502148031.6881,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148031.6882,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148031.6928,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_STAGING_INPUT
+1502148031.6929,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148031.6932,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148031.6932,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148032.7271,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (9),
+1502148032.7272,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (UMGR_SCHEDULING)
+1502148032.7272,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148032.7272,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148032.7272,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148032.7272,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148032.7273,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_SCHEDULING)
+1502148032.7273,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148032.7273,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148032.7273,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148034.5263,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_STAGING_INPUT
+1502148034.5264,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148034.6316,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148034.6316,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148034.6318,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_STAGING_INPUT
+1502148034.6319,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148035.8416,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148035.8416,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148035.8417,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148035.8418,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148035.8422,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_SCHEDULING
+1502148035.8422,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_SCHEDULING)
+1502148035.8425,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148035.8426,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148035.8703,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_EXECUTING
+1502148035.8704,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_EXECUTING)
+1502148035.8999,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148035.9014,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148035.9185,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_SCHEDULING
+1502148035.9186,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_SCHEDULING)
+1502148035.9585,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148035.9586,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148036.0090,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_EXECUTING
+1502148036.0091,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_EXECUTING)
+1502148036.0424,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148036.0430,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148036.3643,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148036.3645,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148036.3707,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148036.3708,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148036.3751,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,get,update unit state to DONE
+1502148036.3752,update.0.child:update.0.child.subscriber._state_cb,unit.000010,,bulk,bulked (DONE)
+1502148036.6482,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148036.6483,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148036.6566,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_SCHEDULING
+1502148036.6606,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_SCHEDULING)
+1502148036.6613,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148036.6614,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148036.6619,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_STAGING_INPUT
+1502148036.6620,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148036.6759,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148036.6761,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148036.9649,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (17),
+1502148036.9650,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148036.9650,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (AGENT_SCHEDULING)
+1502148036.9650,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148036.9651,update.0.child:update.0.child.idler._idle_cb,unit.000009,,update,unit update pushed (AGENT_EXECUTING)
+1502148036.9651,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148036.9651,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_SCHEDULING)
+1502148036.9651,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148036.9651,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_EXECUTING)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000010,,update,unit update pushed (DONE)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (UMGR_SCHEDULING)
+1502148036.9652,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148036.9653,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148036.9653,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148037.3013,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148037.3014,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148037.3186,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148037.3187,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148037.3479,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148037.3480,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148037.6905,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148037.6906,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148037.6953,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148037.6954,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148037.6959,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,get,update unit state to DONE
+1502148037.6960,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,bulk,bulked (DONE)
+1502148037.9313,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148037.9314,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148038.0644,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (7),
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000009,,update,unit update pushed (DONE)
+1502148038.0645,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148038.0647,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_SCHEDULING
+1502148038.0648,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_SCHEDULING)
+1502148038.0653,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148038.0654,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148038.0662,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_STAGING_INPUT
+1502148038.0663,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148038.0676,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148038.0677,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148038.6179,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_STAGING_INPUT
+1502148038.6183,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148039.1899,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (5),
+1502148039.1899,update.0.child:update.0.child.idler._idle_cb,unit.000012,,update,unit update pushed (UMGR_SCHEDULING)
+1502148039.1899,update.0.child:update.0.child.idler._idle_cb,unit.000012,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148039.1900,update.0.child:update.0.child.idler._idle_cb,unit.000012,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148039.1900,update.0.child:update.0.child.idler._idle_cb,unit.000012,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148039.1900,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148039.8717,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148039.8719,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148039.9075,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_SCHEDULING
+1502148039.9076,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_SCHEDULING)
+1502148039.9343,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148039.9361,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148039.9455,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_EXECUTING
+1502148039.9456,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_EXECUTING)
+1502148039.9635,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148039.9636,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148039.9894,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148039.9895,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148040.0045,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148040.0046,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148040.3039,update.0.child:update.0.child.idler._idle_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (7),
+1502148040.3039,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_SCHEDULING)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_EXECUTING)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (AGENT_STAGING_OUTPUT)
+1502148040.3040,update.0.child:update.0.child.idler._idle_cb,unit.000011,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148040.3249,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148040.3250,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148040.3291,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148040.3292,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148040.3322,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,get,update unit state to DONE
+1502148040.3323,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,bulk,bulked (DONE)
+1502148040.5794,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to UMGR_SCHEDULING_PENDING
+1502148040.5795,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (UMGR_SCHEDULING_PENDING)
+1502148040.5833,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to UMGR_SCHEDULING
+1502148040.5834,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (UMGR_SCHEDULING)
+1502148040.5934,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to UMGR_STAGING_INPUT_PENDING
+1502148040.5935,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (UMGR_STAGING_INPUT_PENDING)
+1502148040.5979,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to UMGR_STAGING_INPUT
+1502148040.5980,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (UMGR_STAGING_INPUT)
+1502148040.5983,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_STAGING_INPUT_PENDING
+1502148040.5984,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_STAGING_INPUT_PENDING)
+1502148041.2483,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_STAGING_INPUT
+1502148041.2496,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (9),
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,update,unit update pushed (UMGR_STAGING_OUTPUT_PENDING)
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,update,unit update pushed (UMGR_STAGING_OUTPUT)
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,unit.000011,,update,unit update pushed (DONE)
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (UMGR_SCHEDULING_PENDING)
+1502148041.3634,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (UMGR_SCHEDULING)
+1502148041.3635,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (UMGR_STAGING_INPUT_PENDING)
+1502148041.3635,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (UMGR_STAGING_INPUT)
+1502148041.3635,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (AGENT_STAGING_INPUT_PENDING)
+1502148041.3635,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148042.4965,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148042.4966,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148042.6034,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (1),
+1502148042.6034,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_SCHEDULING_PENDING)
+1502148042.6036,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_SCHEDULING
+1502148042.6036,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_SCHEDULING)
+1502148042.6039,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148042.6040,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148042.6042,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_EXECUTING
+1502148042.6043,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_EXECUTING)
+1502148042.6146,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148042.6147,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148043.8557,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_STAGING_INPUT
+1502148043.8558,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_STAGING_INPUT)
+1502148043.9624,update.0.child:update.0.child.subscriber._state_cb,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0010,,update bulk pushed (5),
+1502148043.9624,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_SCHEDULING)
+1502148043.9624,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_EXECUTING_PENDING)
+1502148043.9624,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_EXECUTING)
+1502148043.9625,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,update,unit update pushed (AGENT_STAGING_OUTPUT_PENDING)
+1502148043.9625,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,update,unit update pushed (AGENT_STAGING_INPUT)
+1502148043.9626,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_SCHEDULING_PENDING
+1502148043.9627,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_SCHEDULING_PENDING)
+1502148043.9630,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_SCHEDULING
+1502148043.9630,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_SCHEDULING)
+1502148043.9633,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_EXECUTING_PENDING
+1502148043.9633,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_EXECUTING_PENDING)
+1502148043.9636,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_EXECUTING
+1502148043.9636,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_EXECUTING)
+1502148043.9774,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_STAGING_OUTPUT_PENDING
+1502148043.9775,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,bulk,bulked (AGENT_STAGING_OUTPUT_PENDING)
+1502148043.9897,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148043.9898,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (AGENT_STAGING_OUTPUT)
+1502148044.0038,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148044.0039,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148044.3262,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_STAGING_OUTPUT_PENDING
+1502148044.3263,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_STAGING_OUTPUT_PENDING)
+1502148044.3302,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to UMGR_STAGING_OUTPUT
+1502148044.3304,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (UMGR_STAGING_OUTPUT)
+1502148044.3319,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,get,update unit state to DONE
+1502148044.3320,update.0.child:update.0.child.subscriber._state_cb,unit.000012,,bulk,bulked (DONE)
+1502148045.2429,update.0.child:update.0.child.subscriber._state_cb,unit.000013,,get,update unit state to AGENT_STAGING_OUTPUT
+1502148045.2430,update.0.child:update.0.child.subscriber._state_c

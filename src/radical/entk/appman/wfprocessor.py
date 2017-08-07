@@ -214,7 +214,7 @@ class WFprocessor(object):
                                             obj_type = 'Pipeline', 
                                             new_state = states.SCHEDULING, 
                                             channel = mq_channel,
-                                            reply_to = 'sync-ack-enq',
+                                            queue = 'enq-to-sync',
                                             profiler=local_prof, 
                                             logger=self._logger)
     
@@ -230,7 +230,7 @@ class WFprocessor(object):
                                                 obj_type = 'Stage', 
                                                 new_state = states.SCHEDULING, 
                                                 channel = mq_channel,
-                                                reply_to = 'sync-ack-enq',
+                                                queue = 'enq-to-sync',
                                                 profiler=local_prof, 
                                                 logger=self._logger)
                                     
@@ -247,7 +247,7 @@ class WFprocessor(object):
                                                         obj_type = 'Task', 
                                                         new_state = states.SCHEDULING, 
                                                         channel = mq_channel,
-                                                        reply_to = 'sync-ack-enq',
+                                                        queue = 'enq-to-sync',
                                                         profiler=local_prof, 
                                                         logger=self._logger)                                            
     
@@ -272,7 +272,7 @@ class WFprocessor(object):
                                                 obj_type = 'Task', 
                                                 new_state = states.SCHEDULED, 
                                                 channel = mq_channel,
-                                                reply_to = 'sync-ack-enq',
+                                                queue = 'enq-to-sync',
                                                 profiler=local_prof, 
                                                 logger=self._logger)
                                                 
@@ -286,9 +286,11 @@ class WFprocessor(object):
                                                 obj_type = 'Stage', 
                                                 new_state = states.SCHEDULED, 
                                                 channel = mq_channel,
-                                                reply_to = 'sync-ack-enq',
+                                                queue = 'enq-to-sync',
                                                 profiler=local_prof, 
                                                 logger=self._logger)
+
+                                    print 'State transition done'
 
                                     if tasks_submitted:
                                         tasks_submitted = False
@@ -306,7 +308,7 @@ class WFprocessor(object):
                                                 obj_type = 'Stage', 
                                                 new_state = states.INITIAL,
                                                 channel = mq_channel,
-                                                reply_to = 'sync-ack-enq', 
+                                                queue = 'enq-to-sync',
                                                 profiler=local_prof, 
                                                 logger=self._logger)
                                         
@@ -330,7 +332,6 @@ class WFprocessor(object):
 
             self._logger.error('Error in enqueue-thread: %s'%ex)
             print traceback.format_exc()
-            mq_connection.close()
 
             raise Error(text=ex) 
 
@@ -373,7 +374,7 @@ class WFprocessor(object):
                                     obj_type = 'Task', 
                                     new_state = states.DEQUEUEING, 
                                     channel = mq_channel,
-                                    reply_to = 'sync-ack-deq',
+                                    queue = 'deq-to-sync',
                                     profiler=local_prof, 
                                     logger=self._logger)
 
@@ -397,7 +398,7 @@ class WFprocessor(object):
                                                             obj_type = 'Task', 
                                                             new_state = states.DEQUEUED, 
                                                             channel = mq_channel,
-                                                            reply_to = 'sync-ack-deq',
+                                                            queue = 'deq-to-sync',
                                                             profiler=local_prof, 
                                                             logger=self._logger)
 
@@ -408,7 +409,7 @@ class WFprocessor(object):
                                                                 obj_type = 'Task', 
                                                                 new_state = states.FAILED, 
                                                                 channel = mq_channel,
-                                                                reply_to = 'sync-ack-deq',
+                                                                queue = 'deq-to-sync',
                                                                 profiler=local_prof, 
                                                                 logger=self._logger)
                                                 else:
@@ -418,7 +419,7 @@ class WFprocessor(object):
                                                                 obj_type = 'Task', 
                                                                 new_state = states.DONE, 
                                                                 channel = mq_channel,
-                                                                reply_to = 'sync-ack-deq',
+                                                                queue = 'deq-to-sync',
                                                                 profiler=local_prof, 
                                                                 logger=self._logger)
                                                 
@@ -435,7 +436,7 @@ class WFprocessor(object):
                                                                             obj_type = 'Stage', 
                                                                             new_state = states.DONE, 
                                                                             channel = mq_channel,
-                                                                            reply_to = 'sync-ack-deq',
+                                                                            queue = 'deq-to-sync',
                                                                             profiler=local_prof, 
                                                                             logger=self._logger)
 
@@ -448,7 +449,7 @@ class WFprocessor(object):
                                                                                     obj_type = 'Pipeline', 
                                                                                     new_state = states.DONE, 
                                                                                     channel = mq_channel,
-                                                                                    reply_to = 'sync-ack-deq',
+                                                                                    queue = 'deq-to-sync',
                                                                                     profiler=local_prof, 
                                                                                     logger=self._logger)
                                                                     
@@ -478,7 +479,7 @@ class WFprocessor(object):
                                                                                 obj_type = 'Stage', 
                                                                                 new_state = states.DONE, 
                                                                                 channel = mq_channel,
-                                                                                reply_to = 'sync-ack-deq',
+                                                                                queue = 'deq-to-sync',
                                                                                 profiler=local_prof, 
                                                                                 logger=self._logger)
 
@@ -491,7 +492,7 @@ class WFprocessor(object):
                                                                                         obj_type = 'Pipeline', 
                                                                                         new_state = states.DONE,
                                                                                         channel = mq_channel, 
-                                                                                        reply_to = 'sync-ack-deq',
+                                                                                        queue = 'deq-to-sync',
                                                                                         profiler=local_prof, 
                                                                                         logger=self._logger)
                                                                     
