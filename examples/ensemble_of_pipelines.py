@@ -93,7 +93,7 @@ if __name__ == "__main__":
 				project=config[resource]['project'],
 				access_schema = config[resource]['schema'],
 				queue = config[resource]['queue'],
-				database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
+				database_url='mongodb://138.201.86.166:27017/ee_exp_4c',
 			)
 
 		# Allocate the resources. 
