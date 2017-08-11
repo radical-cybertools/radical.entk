@@ -102,7 +102,7 @@ class TaskManager(object):
                 self._logger.info('Sent heartbeat request')
 
                 # Ten second interval for heartbeat request to be responded to
-                time.sleep(300)
+                time.sleep(10)
 
                 method_frame, props, body = channel.basic_get(queue='heartbeat-res')
 
