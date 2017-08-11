@@ -139,6 +139,28 @@ class ResourceManager(object):
     # ------------------------------------------------------------------------------------------------------------------
 
 
+    def get_resource_allocation_state(self):
+
+        """
+        **Purpose**: Get the state of the resource allocation
+
+        """
+
+        if self._pilot:
+            return self._pilot.state
+        else:
+            return None
+
+
+    def completed_states(self):
+
+        """
+        **Purpose**: Test if a resouce allocation was submitted
+
+        """
+
+        return [rp. CANCELED, rp.FAILED, rp.DONE]
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -289,8 +311,6 @@ class ResourceManager(object):
             self._prof.prof('resource active', uid=self._uid) 
 
             self._logger.info('Pilot is now active')
-
-            return self._pilot
 
         except KeyboardInterrupt:
 

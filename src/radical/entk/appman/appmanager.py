@@ -71,7 +71,8 @@ class AppManager(object):
         self._num_sync_threads = sync_threads
         self._end_sync = Event()
 
-        # None objects for error handling
+        # None objects for error handling and resubmission
+        self._mqs_setup = False
         self._wfp = None
         self._task_manager = None
         self._sync_thread = None
@@ -210,53 +211,61 @@ class AppManager(object):
                 self._prof.prof('amgr run started', uid=self._uid)
 
                 # Setup rabbitmq stuff
-                self._logger.info('Setting up RabbitMQ system')
-                setup = self._setup_mqs()
+                if not self._setup_mqs:
 
-                if not setup:
-                    self._logger.error('RabbitMQ system not available')
-                    raise Error(text="RabbitMQ setup failed")
+                    self._logger.info('Setting up RabbitMQ system')
+                    setup = self._setup_mqs()
+
+                    if not setup:
+                        self._logger.error('RabbitMQ system not available')
+                        raise Error(text="RabbitMQ setup failed")
 
 
-                # Submit resource request
-                self._logger.info('Starting resource request submission')
-                self._prof.prof('init rreq submission', uid=self._uid)
-                self._resource_manager._submit_resource_request()
+                # Submit resource request if not resource allocation done till now or
+                # resubmit a new one if the old one has completed
+                res_alloc_state = self._resource_manager.get_resource_allocation_state()
+                if res_alloc_state or res_alloc_state in self._resource_manager.completed_states():
+
+                    self._logger.info('Starting resource request submission')
+                    self._prof.prof('init rreq submission', uid=self._uid)
+                    self._resource_manager._submit_resource_request()
 
 
                 # Start synchronizer thread
-                self._logger.info('Starting synchronizer thread')
-                self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
-                self._prof.prof('starting synchronizer thread', uid=self._uid)
-                self._sync_thread.start()
+                if not self._sync_thread:
+                    self._logger.info('Starting synchronizer thread')
+                    self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
+                    self._prof.prof('starting synchronizer thread', uid=self._uid)
+                    self._sync_thread.start()
 
 
                 # Create WFProcessor object
-                self._prof.prof('creating wfp obj', uid=self._uid)
-                self._wfp = WFprocessor(  workflow = self._workflow, 
-                                    pending_queue = self._pending_queue, 
-                                    completed_queue=self._completed_queue,
-                                    mq_hostname=self._mq_hostname)
+                if not self._wfp:
+                    self._prof.prof('creating wfp obj', uid=self._uid)
+                    self._wfp = WFprocessor(    workflow = self._workflow, 
+                                                pending_queue = self._pending_queue, 
+                                                completed_queue=self._completed_queue,
+                                                mq_hostname=self._mq_hostname)
 
-                self._logger.info('Starting WFProcessor process from AppManager')                
-                self._wfp.start_processor()                
+                    self._logger.info('Starting WFProcessor process from AppManager')                
+                    self._wfp.start_processor()                
 
 
-                # Create tmgr object
-                self._prof.prof('creating tmgr obj', uid=self._uid)
-                self._task_manager = TaskManager(   pending_queue = self._pending_queue,
-                                                    completed_queue = self._completed_queue,
-                                                    mq_hostname = self._mq_hostname,
-                                                    rmgr = self._resource_manager
-                                                )
-                self._logger.info('Starting task manager process from AppManager')
-                self._task_manager.start_manager()
-                self._task_manager.start_heartbeat()
+                if not self._task_manager:
+                    # Create tmgr object
+                    self._prof.prof('creating tmgr obj', uid=self._uid)
+                    self._task_manager = TaskManager(   pending_queue = self._pending_queue,
+                                                        completed_queue = self._completed_queue,
+                                                        mq_hostname = self._mq_hostname,
+                                                        rmgr = self._resource_manager
+                                                    )
+                    self._logger.info('Starting task manager process from AppManager')
+                    self._task_manager.start_manager()
+                    self._task_manager.start_heartbeat()
 
                 
                 active_pipe_count = len(self._workflow)   
                 finished_pipe_uids = []             
-
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
