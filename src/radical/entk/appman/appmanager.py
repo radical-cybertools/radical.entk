@@ -523,6 +523,8 @@ class AppManager(object):
             # Queues to send messages from the threads/procs to master
             self._mq_channel.queue_delete(queue='tmgr-to-sync')
             self._mq_channel.queue_declare(queue='tmgr-to-sync')
+            self._mq_channel.queue_delete(queue='cb-to-sync')
+            self._mq_channel.queue_declare(queue='cb-to-sync')
             self._mq_channel.queue_delete(queue='enq-to-sync')
             self._mq_channel.queue_declare(queue='enq-to-sync')
             self._mq_channel.queue_delete(queue='deq-to-sync')
@@ -531,6 +533,8 @@ class AppManager(object):
             # Queues to send messages from master to threads/procs
             self._mq_channel.queue_delete(queue='sync-to-tmgr')
             self._mq_channel.queue_declare(queue='sync-to-tmgr')
+            self._mq_channel.queue_delete(queue='sync-to-cb')
+            self._mq_channel.queue_declare(queue='sync-to-cb')
             self._mq_channel.queue_delete(queue='sync-to-enq')
             self._mq_channel.queue_declare(queue='sync-to-enq')
             self._mq_channel.queue_delete(queue='sync-to-deq')
@@ -704,7 +708,7 @@ class AppManager(object):
 
 
                 #-------------------------------------------------------------------------------------------------------
-                # Messages between tmgr and synchronizer -- only Task objects
+                # Messages between tmgr Main thread and synchronizer -- only Task objects
 
                 method_frame, props, body = mq_channel.basic_get(queue='tmgr-to-sync')
 
@@ -725,6 +729,32 @@ class AppManager(object):
 
                     if msg['type'] == 'Task':                        
                         task_update(msg, 'sync-to-tmgr', props.correlation_id, mq_channel)
+
+                #-------------------------------------------------------------------------------------------------------
+
+
+                #-------------------------------------------------------------------------------------------------------
+                # Messages between callback thread and synchronizer -- only Task objects
+
+                method_frame, props, body = mq_channel.basic_get(queue='cb-to-sync')
+
+                """
+                The message received is a JSON object with the following structure:
+
+                msg = {
+                        'type': 'Pipeline'/'Stage'/'Task',
+                        'object': json/dict
+                        }
+                """                
+
+                if body:
+
+                    msg = json.loads(body)
+
+                    self._prof.prof('received obj with state %s for sync'%msg['object']['state'], uid=msg['object']['uid'])
+
+                    if msg['type'] == 'Task':                        
+                        task_update(msg, 'sync-to-cb', props.correlation_id, mq_channel)
 
                 #-------------------------------------------------------------------------------------------------------
 

@@ -192,7 +192,7 @@ class TaskManager(object):
                                         obj_type = 'Task', 
                                         new_state = states.COMPLETED, 
                                         channel = mq_channel,
-                                        queue = 'tmgr-to-sync',
+                                        queue = 'cb-to-sync',
                                         profiler=local_prof, 
                                         logger=logger)
 
@@ -208,7 +208,7 @@ class TaskManager(object):
                                         obj_type = 'Task', 
                                         new_state = states.SCHEDULED, 
                                         channel = mq_channel,
-                                        queue = 'tmgr-to-sync',
+                                        queue = 'cb-to-sync',
                                         profiler=local_prof, 
                                         logger=logger)
                             else:

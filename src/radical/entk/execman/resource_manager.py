@@ -249,7 +249,7 @@ class ResourceManager(object):
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
 
-            self._session = rp.Session(dburl=self._mlab_url)
+            self._session = rp.Session(database_url=self._mlab_url)
 
             self._pmgr = rp.PilotManager(session=self._session)
             self._pmgr.register_callback(_pilot_state_cb)
