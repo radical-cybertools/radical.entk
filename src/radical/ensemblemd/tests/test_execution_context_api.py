@@ -27,8 +27,8 @@ class ExecutionContextAPITestCases(unittest.TestCase):
     def test__import(self):
         """ Tests whether we can import the execution context classes.
         """
-        from radical.ensemblemd import SingleClusterEnvironment
-        from radical.ensemblemd import MultiClusterEnvironment
+        from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
+        from radical.ensemblemd.multi_cluster_environment import MultiClusterEnvironment
 
     #-------------------------------------------------------------------------
     #

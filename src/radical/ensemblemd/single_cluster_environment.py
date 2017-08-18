@@ -192,7 +192,7 @@ class SingleClusterEnvironment(ExecutionContext):
 			self._database_url = os.getenv ("RADICAL_PILOT_DBURL", None)
 
 		if  not self._database_url :
-			raise PilotException ("no database URL (set RADICAL_PILOT_DBURL)")  
+			raise Exception ("no database URL (set RADICAL_PILOT_DBURL)")
 
 		if self._database_name is None:
 			self._session = radical.pilot.Session(database_url=self._database_url)

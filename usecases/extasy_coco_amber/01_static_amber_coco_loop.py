@@ -9,7 +9,7 @@ __use_case_name__ = "'Amber + CoCo' simulation-analysis proof-of-concept (ExTASY
 from radical.ensemblemd import Kernel
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
 import imp
 import argparse
 import sys

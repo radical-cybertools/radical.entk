@@ -1,8 +1,8 @@
 from radical.ensemblemd import Kernel
-from radical.ensemblemd import Pipeline
+from radical.ensemblemd.patterns.pipeline import Pipeline
 from radical.ensemblemd import EnsemblemdError
 from radical.ensemblemd import SimulationAnalysisLoop
-from radical.ensemblemd import SingleClusterEnvironment
+from radical.ensemblemd.single_cluster_environment import SingleClusterEnvironment
 
 
 from radical.ensemblemd.engine import get_engine
