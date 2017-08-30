@@ -55,6 +55,9 @@ class ResourceManager(object):
             raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
 
 
+        # Shared data list
+        self._shared_data = list()
+
         self._prof.prof('rmgr obj created', uid=self._uid)
 
 
@@ -134,10 +137,53 @@ class ResourceManager(object):
         """
         return self._queue
 
+    @property
+    def shared_data(self):
+
+        """
+        :getter: list of files to be staged to remote and that are common to multiple tasks
+        """
+        return self._shared_data
+
+
+    @shared_data.setter
+    def shared_data(self, data_list):
+
+        if not isinstance(data_list, list):
+            data_list = [data_list]
+
+        for val in data_list:
+            if not isinstance(val, str):
+                raise TypeError(expected_type=str, actual_type=type(val))
+
+        self._shared_data = data_list
+
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
+
+    def get_resource_allocation_state(self):
+
+        """
+        **Purpose**: Get the state of the resource allocation
+
+        """
+
+        if self._pilot:
+            return self._pilot.state
+        else:
+            return None
+
+
+    def completed_states(self):
+
+        """
+        **Purpose**: Test if a resouce allocation was submitted
+
+        """
+
+        return [rp. CANCELED, rp.FAILED, rp.DONE]
 
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -249,7 +295,7 @@ class ResourceManager(object):
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
 
-            self._session = rp.Session(database_url=self._mlab_url)
+            self._session = rp.Session(dburl=self._mlab_url)
 
             self._pmgr = rp.PilotManager(session=self._session)
             self._pmgr.register_callback(_pilot_state_cb)
@@ -275,6 +321,17 @@ class ResourceManager(object):
     
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
+
+            shared_staging_directives = list()
+            for data in self._shared_data:
+                temp = {
+                            'source': data,
+                            'target': 'pilot:///' + os.path.basename(data)
+                        }
+                shared_staging_directives.append(temp)
+
+
+            self._pilot.stage_in(shared_staging_directives)
 
             self._prof.prof('rreq submitted', uid=self._uid)
 

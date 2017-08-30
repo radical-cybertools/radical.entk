@@ -39,7 +39,8 @@ class AppManager(object):
 
 
     def __init__(self, hostname = 'localhost', push_threads=1, pull_threads=1, 
-                sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3):
+                sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
+                autoterminate=True):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
         self._logger    = ru.get_logger('radical.entk.appmanager')
@@ -47,12 +48,8 @@ class AppManager(object):
 
         self._prof.prof('create amgr obj', uid=self._uid)
 
-        self._name      = str()
-
-        self._workflow  = None
-        self._resubmit_failed = False
-        self._reattempts = reattempts
-        self._cur_attempt = 1
+        self._name      = str()      
+        
 
         # RabbitMQ Queues
         self._num_pending_qs = pending_qs
@@ -61,8 +58,6 @@ class AppManager(object):
         self._completed_queue = list()
 
         # RabbitMQ inits
-        self._mq_connection = None
-        self._mq_channel = None
         self._mq_hostname = hostname
 
         # Threads and procs counts
@@ -71,14 +66,17 @@ class AppManager(object):
         self._num_sync_threads = sync_threads
         self._end_sync = Event()
 
-        # None objects for error handling
-        self._wfp = None
-        self._task_manager = None
-        self._sync_thread = None
-
-        # Resource Manager object
+        # Global parameters to have default values
+        self._mqs_setup = False
         self._resource_manager = None
-        
+        self._task_manager = None
+        self._workflow  = None
+        self._resubmit_failed = False
+        self._reattempts = reattempts
+        self._cur_attempt = 1
+        self._resource_autoterminate = autoterminate
+
+
         # Logger        
         self._logger.info('Application Manager initialized')
 
@@ -195,6 +193,10 @@ class AppManager(object):
 
         try:
 
+            # Set None objects local to each run
+            self._wfp = None            
+            self._sync_thread = None
+
             if not self._workflow:
                 print 'Please assign workflow before invoking run method - cannot proceed'
                 self._logger.error('No workflow assigned currently, please check your script')
@@ -210,53 +212,73 @@ class AppManager(object):
                 self._prof.prof('amgr run started', uid=self._uid)
 
                 # Setup rabbitmq stuff
-                self._logger.info('Setting up RabbitMQ system')
-                setup = self._setup_mqs()
+                if not self._mqs_setup:
 
-                if not setup:
-                    self._logger.error('RabbitMQ system not available')
-                    raise Error(text="RabbitMQ setup failed")
+                    self._logger.info('Setting up RabbitMQ system')
+                    setup = self._setup_mqs()
+
+                    if not setup:
+                        self._logger.error('RabbitMQ system not available')
+                        raise Error(text="RabbitMQ setup failed")
+
+                    self._mqs_setup = True
 
 
-                # Submit resource request
-                self._logger.info('Starting resource request submission')
-                self._prof.prof('init rreq submission', uid=self._uid)
-                self._resource_manager._submit_resource_request()
+                # Submit resource request if not resource allocation done till now or
+                # resubmit a new one if the old one has completed
+                if self._resource_manager:
+                    res_alloc_state = self._resource_manager.get_resource_allocation_state()
+                    if (not res_alloc_state) or (res_alloc_state in self._resource_manager.completed_states()):
+
+                        self._logger.info('Starting resource request submission')
+                        self._prof.prof('init rreq submission', uid=self._uid)
+                        self._resource_manager._submit_resource_request()
+
+                else:
+
+                    self._logger.error('Cannot run without resource manager, please create and assign a resource manager')
+                    raise Error(text='Missing resource manager')
 
 
                 # Start synchronizer thread
-                self._logger.info('Starting synchronizer thread')
-                self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
-                self._prof.prof('starting synchronizer thread', uid=self._uid)
-                self._sync_thread.start()
+                if not self._sync_thread:
+                    self._logger.info('Starting synchronizer thread')
+                    self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
+                    self._prof.prof('starting synchronizer thread', uid=self._uid)
+                    self._sync_thread.start()
+
+                print self._sync_thread.is_alive()
 
 
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
-                self._wfp = WFprocessor(  workflow = self._workflow, 
-                                    pending_queue = self._pending_queue, 
-                                    completed_queue=self._completed_queue,
-                                    mq_hostname=self._mq_hostname)
+                self._wfp = WFprocessor(    workflow = self._workflow, 
+                                            pending_queue = self._pending_queue, 
+                                            completed_queue=self._completed_queue,
+                                            mq_hostname=self._mq_hostname)
 
                 self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
 
 
-                # Create tmgr object
-                self._prof.prof('creating tmgr obj', uid=self._uid)
-                self._task_manager = TaskManager(   pending_queue = self._pending_queue,
-                                                    completed_queue = self._completed_queue,
-                                                    mq_hostname = self._mq_hostname,
-                                                    rmgr = self._resource_manager
-                                                )
-                self._logger.info('Starting task manager process from AppManager')
-                self._task_manager.start_manager()
-                self._task_manager.start_heartbeat()
+                # Create tmgr object only if it does not already exist
+                if not self._task_manager:
+                    self._prof.prof('creating tmgr obj', uid=self._uid)
+                    self._task_manager = TaskManager(   pending_queue = self._pending_queue,
+                                                        completed_queue = self._completed_queue,
+                                                        mq_hostname = self._mq_hostname,
+                                                        rmgr = self._resource_manager
+                                                    )
+                    self._logger.info('Starting task manager process from AppManager')
+                    self._task_manager.start_manager()
+                    self._task_manager.start_heartbeat()
 
                 
                 active_pipe_count = len(self._workflow)   
                 finished_pipe_uids = []             
 
+                print 'Active pipes: ',active_pipe_count
+                print 'WFP complete: ', self._wfp.workflow_incomplete()
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
@@ -272,6 +294,9 @@ class AppManager(object):
                             with pipe._stage_lock:
 
                                 if (pipe.completed) and (pipe.uid not in finished_pipe_uids) :
+
+                                    print '4'
+
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     finished_pipe_uids.append(pipe.uid)
                                     active_pipe_count -= 1
@@ -279,6 +304,9 @@ class AppManager(object):
 
 
                     if (not self._sync_thread.is_alive()) and (self._cur_attempt<=self._reattempts):
+
+                        
+
                         self._sync_thread = Thread(   target=self._synchronizer, 
                                                 name='synchronizer-thread')
                         self._logger.info('Restarting synchronizer thread')
@@ -351,11 +379,7 @@ class AppManager(object):
                     
                 # Terminate threads in following order: wfp, helper, synchronizer
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()       
-                
-                self._logger.info('Terminating task manager process')
-                self._task_manager.end_manager()
-                self._task_manager.end_heartbeat()
+                self._wfp.end_processor()                                      
                 
 
                 self._logger.info('Terminating synchronizer thread')
@@ -363,7 +387,13 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-                self._resource_manager._cancel_resource_request()
+                if self._resource_autoterminate:
+
+                    self._logger.info('Terminating task manager process')
+                    self._task_manager.end_manager()
+                    self._task_manager.end_heartbeat()
+
+                    self._resource_manager._cancel_resource_request()
 
                 self._prof.prof('termination done', uid=self._uid)
 
@@ -428,6 +458,13 @@ class AppManager(object):
             self._prof.prof('termination done', uid=self._uid)
             
             raise Error(text=ex)
+
+
+    def resource_terminate(self):
+
+        if self._resource_manager:
+
+            self._resource_manager._cancel_resource_request()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
