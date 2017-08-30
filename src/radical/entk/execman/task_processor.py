@@ -315,7 +315,7 @@ def create_task_from_cu(cu, prof=None):
             else:
                 task.exit_code = 1
 
-        task.path               = str(cu.sandbox)
+        task.path               =  ru.Url(cu.sandbox).path
 
         if prof:
             prof.prof('task from cu - done', uid=cu.name.split(',')[0].strip())
