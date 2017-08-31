@@ -36,7 +36,7 @@ class TaskManager(object):
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
-    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr):
+    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr, port):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
@@ -47,6 +47,7 @@ class TaskManager(object):
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
         self._mq_hostname = mq_hostname
+        self._port = port
         self._rmgr = rmgr
 
         self._tmgr_process = None
@@ -81,7 +82,7 @@ class TaskManager(object):
 
             self._prof.prof('heartbeat thread started', uid=self._uid)
 
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             channel = connection.channel()
             channel.queue_delete(queue='heartbeat-req')
             channel.queue_declare(queue='heartbeat-req')
