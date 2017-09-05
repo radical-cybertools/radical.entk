@@ -29,14 +29,15 @@ class TaskManager(object):
     :arguments:
         :pending_queue: List of queue(s) with tasks ready to be executed. Currently, only one queue.
         :completed_queue: List of queue(s) with tasks that have finished execution. Currently, only one queue.
-        :mq_hostname: Name of the host where RabbitMQ is running
         :rmgr: ResourceManager object to be used to access the Pilot where the tasks can be submitted
+        :mq_hostname: Name of the host where RabbitMQ is running
+        :port: port at which rabbitMQ can be accessed
 
     Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of 
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
-    def __init__(self, pending_queue, completed_queue, mq_hostname, rmgr, port):
+    def __init__(self, pending_queue, completed_queue, rmgr, mq_hostname, port):
 
         self._uid           = ru.generate_id('radical.entk.task_manager')
         self._logger        = ru.get_logger('radical.entk.task_manager')
@@ -131,7 +132,7 @@ class TaskManager(object):
             self._prof.prof('terminating hearbeat thread', uid=self._uid)        
 
 
-    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, pending_queue, completed_queue):
+    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
 
         """
         **Purpose**: Method to be run by the tmgr process. This method receives a Task from the pending_queue
@@ -179,7 +180,7 @@ class TaskManager(object):
                     logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
 
                     # Thread should run till terminate condtion is encountered
-                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
+                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
                     mq_channel = mq_connection.channel()
 
                     if unit.state in [rp.DONE, rp.FAILED]:
@@ -256,7 +257,7 @@ class TaskManager(object):
                 umgr.register_callback(unit_state_cb)
 
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
             mq_channel = mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
@@ -490,6 +491,7 @@ class TaskManager(object):
                                                     self._rmgr,
                                                     self._logger,
                                                     self._mq_hostname,
+                                                    self._port,
                                                     self._pending_queue,
                                                     self._completed_queue)
                                             )

@@ -30,6 +30,7 @@ class AppManager(object):
 
     :Arguments:
         :hostname: host rabbitmq server is running
+        :port: port at which rabbitmq can be accessed
         :push_threads: number of threads to push tasks on the pending_qs
         :pull_threads: number of threads to pull tasks from the completed_qs
         :sync_threads: number of threads to pull task from the synchronizer_q
@@ -38,7 +39,7 @@ class AppManager(object):
     """
 
 
-    def __init__(self, hostname = 'localhost', port = None, push_threads=1, pull_threads=1, 
+    def __init__(self, hostname = 'localhost', port = 5672, push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
                 autoterminate=True):
 
@@ -743,7 +744,7 @@ class AppManager(object):
 
 
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             while not self._end_sync.is_set():

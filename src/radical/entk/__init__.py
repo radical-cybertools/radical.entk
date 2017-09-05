@@ -9,4 +9,4 @@ from radical.entk.appman.appmanager import AppManager
 from radical.entk.execman.resource_manager import ResourceManager
 import states
 
-from radical.entk.utils.profiler import Profiler
+#from radical.entk.utils.profiler import Profiler

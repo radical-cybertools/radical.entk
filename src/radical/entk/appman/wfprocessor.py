@@ -27,6 +27,7 @@ class WFprocessor(object):
         :pending_qs: number of queues to hold pending tasks
         :completed_qs: number of queues to hold completed tasks
         :mq_hostname: hostname where the RabbitMQ is live
+        :port: port at which rabbitmq can be accessed
     """
 
 
