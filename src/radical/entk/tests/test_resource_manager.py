@@ -139,7 +139,7 @@ def test_resource_request():
                     'project': ''
                 }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk@ds129010.mlab.com:29010/test_entk'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rm = ResourceManager(res_dict)
