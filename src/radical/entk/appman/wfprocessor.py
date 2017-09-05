@@ -30,7 +30,7 @@ class WFprocessor(object):
     """
 
 
-    def __init__(self, workflow, pending_queue, completed_queue, mq_hostname, port):
+    def __init__(self, workflow, pending_queue, completed_queue, mq_hostname):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
         self._logger        = ru.get_logger('radical.entk.wfprocessor')
@@ -53,7 +53,6 @@ class WFprocessor(object):
         self._pending_queue = pending_queue
         self._completed_queue = completed_queue
         self._mq_hostname = mq_hostname
-        self._port = port
 
         self._wfp_process = None       
         self._resubmit_failed = False       
@@ -193,7 +192,7 @@ class WFprocessor(object):
             local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
             while not self._enqueue_thread_terminate.is_set():
@@ -355,7 +354,7 @@ class WFprocessor(object):
             local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname))
             mq_channel = mq_connection.channel()
 
             while not self._dequeue_thread_terminate.is_set():

@@ -38,7 +38,7 @@ class AppManager(object):
     """
 
 
-    def __init__(self, hostname = 'localhost', port = None, push_threads=1, pull_threads=1, 
+    def __init__(self, hostname = 'localhost', push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
                 autoterminate=True):
 
@@ -59,7 +59,6 @@ class AppManager(object):
 
         # RabbitMQ inits
         self._mq_hostname = hostname
-        self._port = port
 
         # Threads and procs counts
         self._num_push_threads = push_threads
@@ -256,8 +255,7 @@ class AppManager(object):
                 self._wfp = WFprocessor(    workflow = self._workflow, 
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
-                                            mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            mq_hostname=self._mq_hostname)
 
                 self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
@@ -269,8 +267,7 @@ class AppManager(object):
                     self._task_manager = TaskManager(   pending_queue = self._pending_queue,
                                                         completed_queue = self._completed_queue,
                                                         mq_hostname = self._mq_hostname,
-                                                        rmgr = self._resource_manager,
-                                                        port=self._port
+                                                        rmgr = self._resource_manager
                                                     )
                     self._logger.info('Starting task manager process from AppManager')
                     self._task_manager.start_manager()
@@ -331,8 +328,7 @@ class AppManager(object):
                         self._wfp = WFProcessor(  workflow = self._workflow, 
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
-                                            mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            mq_hostname=self._mq_hostname)
 
                         self._logger.info('Restarting WFProcessor process from AppManager')                        
                         self._wfp.start_processor()
@@ -534,7 +530,7 @@ class AppManager(object):
             self._logger.debug('Setting up mq connection and channel')
 
             self._mq_connection = pika.BlockingConnection(
-                                    pika.ConnectionParameters(host=self._mq_hostname, port=self._port),
+                                    pika.ConnectionParameters(host=self._mq_hostname),
 
                                     )
             self._mq_channel = self._mq_connection.channel()
