@@ -406,10 +406,10 @@ class Task(object):
 
             if set(val.keys()) <= set(['process','threads_per_process', 'process_type','thread_type']):
 
-                if val.get('process') in [type(None), int]:
+                if type(val.get('process')) in [type(None), int]:
                     self._cpu_reqs['process'] = val.get('process')
                 else:
-                    raise TypeError(    expected_type=dict, 
+                    raise TypeError(    expected_type=int, 
                                         actual_type=type(val.get('process')), 
                                         entity='process'
                                     )
@@ -423,7 +423,7 @@ class Task(object):
                                         attribute='process_type'
                                     )
 
-                if val.get('threads_per_process') in [type(None), int]:
+                if type(val.get('threads_per_process')) in [type(None), int]:
                     self._cpu_reqs['threads_per_process'] = val.get('threads_per_process')                
                 else:
                     raise TypeError(    expected_type=int, 
@@ -449,7 +449,7 @@ class Task(object):
 
             if set(val.keys()) <= set(['process','threads_per_process', 'process_type','thread_type']):
 
-                if val.get('process') in [type(None), int]:
+                if type(val.get('process')) in [type(None), int]:
                     self._gpu_reqs['process'] = val.get('process')
                 else:
                     raise TypeError(    expected_type=dict, 
@@ -466,7 +466,7 @@ class Task(object):
                                         attribute='process_type'
                                     )
 
-                if val.get('threads_per_process') in [type(None), int]:
+                if type(val.get('threads_per_process')) in [type(None), int]:
                     self._gpu_reqs['threads_per_process'] = val.get('threads_per_process')                
                 else:
                     raise TypeError(    expected_type=int, 
