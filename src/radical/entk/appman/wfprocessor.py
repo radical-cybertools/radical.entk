@@ -242,6 +242,49 @@ class WFprocessor(object):
     
                                     for executable_task in executable_tasks:
     
+                                        if self._resubmit_failed:
+
+                                            if executable_task.state in [states.INITIAL, states.FAILED]:
+                                            
+                                                # Set state of Tasks in current Stage to SCHEDULING
+                                                transition( obj=executable_task, 
+                                                            obj_type = 'Task', 
+                                                            new_state = states.SCHEDULING, 
+                                                            channel = mq_channel,
+                                                            queue = 'enq-to-sync',
+                                                            profiler=local_prof, 
+                                                            logger=self._logger)                                            
+        
+                                                task_as_dict = json.dumps(executable_task.to_dict())
+        
+                                                self._logger.debug('Publishing task %s to %s'
+                                                                            %(executable_task.uid,
+                                                                                self._pending_queue[0]))
+
+
+                                                # Put the task on one of the pending_queues
+                                                mq_channel.basic_publish(   exchange='',
+                                                                            routing_key=self._pending_queue[0],
+                                                                            body=task_as_dict
+                                                                            #properties=pika.BasicProperties(
+                                                                                # make message persistent
+                                                                                #delivery_mode = 2)
+                                                                        )
+
+                                                # Set state of Tasks in current Stage to SCHEDULED
+                                                transition( obj=executable_task, 
+                                                    obj_type = 'Task', 
+                                                    new_state = states.SCHEDULED, 
+                                                    channel = mq_channel,
+                                                    queue = 'enq-to-sync',
+                                                    profiler=local_prof, 
+                                                    logger=self._logger)
+                                                    
+                                                tasks_submitted = True
+                                                self._logger.debug('Task %s published to queue'% executable_task.uid)
+
+
+
                                         if executable_task.state == states.INITIAL:
                                             
                                             # Set state of Tasks in current Stage to SCHEDULING
@@ -460,21 +503,8 @@ class WFprocessor(object):
 
                                                         elif task.state == states.FAILED:
 
-                                                            if self._resubmit_failed:
-
-                                                                try:
-                                                                    new_task = Task()
-                                                                    new_task._replicate(completed_task)
-
-                                                                    pipe.stages[pipe.current_stage-1].add_tasks(new_task)
-
-                                                                except Exception, ex:
-                                                                    self._logger.error("Resubmission of task %s failed, error: %s"%
-                                                                                                    (completed_task.uid,ex))
-                                                                    raise
-
-                                                            else:
-
+                                                            if not self._resubmit_failed:
+                                                                
                                                                 if stage._check_stage_complete():
                                                                     
                                                                     transition( obj=stage, 
