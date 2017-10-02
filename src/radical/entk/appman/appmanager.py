@@ -743,6 +743,8 @@ class AppManager(object):
 
 
 
+            # Disable heartbeat for long running jobs since that might load the TCP channel
+            # https://github.com/pika/pika/issues/753
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
                                                                                     port=port,
