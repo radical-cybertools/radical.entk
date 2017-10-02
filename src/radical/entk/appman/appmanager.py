@@ -743,7 +743,17 @@ class AppManager(object):
 
 
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                    port=port,
+                                                                                    hearbeat=0
+                                                                                )
+                                                        )
+            else:
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                    port=port
+                                                                                )
+                                                        )
             mq_channel = mq_connection.channel()
 
             while not self._end_sync.is_set():

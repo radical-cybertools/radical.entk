@@ -23,12 +23,12 @@ class Task(object):
         self._executable    = list()
         self._arguments     = list()
         self._post_exec     = list()
-        self._cpu_reqs      = { 'process': 1, 
+        self._cpu_reqs      = { 'processes': 1, 
                                 'process_type': None, 
                                 'threads_per_process': 1, 
                                 'thread_type': None
                             }
-        self._gpu_reqs      = { 'process': 0, 
+        self._gpu_reqs      = { 'processes': 0, 
                                 'process_type': None, 
                                 'threads_per_process': 0, 
                                 'thread_type': None
@@ -153,7 +153,7 @@ class Task(object):
         The requirements are described in terms of the number of processes and threads to 
         be run in this Task. The expected format is:
 
-        task.cpu_reqs = {   'process': X, 
+        task.cpu_reqs = {   'processes': X, 
                             'process_type': None/MPI,       # Currently only two options
                             'threads_per_process': Y, 
                             'thread_type': None/OpenMP      # Currently only two options
@@ -167,7 +167,7 @@ class Task(object):
 
         The default value is:
 
-        task.cpu_reqs = {   'process': 1, 
+        task.cpu_reqs = {   'processes': 1, 
                             'process_type': None,       
                             'threads_per_process': 1, 
                             'thread_type': None
@@ -192,7 +192,7 @@ class Task(object):
         The requirements are described in terms of the number of processes and threads to 
         be run in this Task. The expected format is:
 
-        task.gpu_reqs = {   'process': X, 
+        task.gpu_reqs = {   'processes': X, 
                             'process_type': None/MPI,       # Currently only two options
                             'threads_per_process': Y, 
                             'thread_type': None/OpenMP      # Currently only two options
@@ -206,7 +206,7 @@ class Task(object):
 
         The default value is:
 
-        task.gpu_reqs = {   'process': 0, 
+        task.gpu_reqs = {   'processes': 0, 
                             'process_type': None,       
                             'threads_per_process': 0, 
                             'thread_type': None
@@ -404,14 +404,16 @@ class Task(object):
     def cpu_reqs(self, val):
         if isinstance(val, dict):
 
-            if set(val.keys()) <= set(['process','threads_per_process', 'process_type','thread_type']):
+            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
 
-                if type(val.get('process')) in [type(None), int]:
-                    self._cpu_reqs['process'] = val.get('process')
+            if set(val.keys()) <= expected_keys:
+
+                if type(val.get('processes')) in [type(None), int]:
+                    self._cpu_reqs['processes'] = val.get('processes')
                 else:
                     raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('process')), 
-                                        entity='process'
+                                        actual_type=type(val.get('processes')), 
+                                        entity='processes'
                                     )
 
                 if val.get('process_type') in [None, 'MPI']:
@@ -439,6 +441,9 @@ class Task(object):
                                         obj='cpu_reqs', 
                                         attribute='thread_type'
                                     )
+            else:
+
+                raise MissingError(obj='cpu_reqs', missing_attribute= expected_keys - set(val.keys()))
         else:
             raise TypeError(expected_type=dict, actual_type=type(val))
 
@@ -447,14 +452,16 @@ class Task(object):
     def gpu_reqs(self, val):
         if isinstance(val, dict):
 
-            if set(val.keys()) <= set(['process','threads_per_process', 'process_type','thread_type']):
+            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
 
-                if type(val.get('process')) in [type(None), int]:
-                    self._gpu_reqs['process'] = val.get('process')
+            if set(val.keys()) <= set(['processes','threads_per_process', 'process_type','thread_type']):
+
+                if type(val.get('processes')) in [type(None), int]:
+                    self._gpu_reqs['processes'] = val.get('processes')
                 else:
                     raise TypeError(    expected_type=dict, 
-                                        actual_type=type(val.get('process')), 
-                                        entity='process'
+                                        actual_type=type(val.get('processes')), 
+                                        entity='processes'
                                     )
 
                 if val.get('process_type') in [None, 'MPI']:
@@ -482,6 +489,10 @@ class Task(object):
                                         obj='gpu_reqs', 
                                         attribute='thread_type'
                                     )
+
+            else:
+                raise MissingError(obj='gpu_reqs', missing_attribute= expected_keys - set(val.keys()))
+
         else:
             raise TypeError(expected_type=dict, actual_type=type(val))
 
@@ -656,17 +667,17 @@ class Task(object):
                 raise TypeError(expected_type=list, actual_type=type(d['post_exec']))
 
         if 'cpu_reqs' in d:
-            if isinstance(d['cpu_reqs'], int):
-                self._cores = d['cpu_reqs']
+            if isinstance(d['cpu_reqs'], dict):
+                self._cpu_reqs = d['cpu_reqs']
             else:
-                raise TypeError(expected_type=int, actual_type=type(d['cpu_reqs']))
+                raise TypeError(expected_type=dict, actual_type=type(d['cpu_reqs']))
 
 
         if 'gpu_reqs' in d:
-            if isinstance(d['gpu_reqs'], int):
-                self._cores = d['gpu_reqs']
+            if isinstance(d['gpu_reqs'], dict):
+                self._gpu_reqs = d['gpu_reqs']
             else:
-                raise TypeError(expected_type=int, actual_type=type(d['gpu_reqs']))
+                raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
 
             
         if 'upload_input_data' in d:
@@ -764,7 +775,6 @@ class Task(object):
         self._arguments     = original_task.arguments
         self._cpu_reqs      = original_task.cpu_reqs
         self._gpu_reqs      = original_task.gpu_reqs
-        self._mpi           = original_task.mpi
         self._post_exec     = original_task.post_exec
 
         # Data staging attributes

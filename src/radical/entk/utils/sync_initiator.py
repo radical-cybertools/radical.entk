@@ -39,7 +39,7 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
     reply_queue = '-'.join(temp)
                 
     while True:
-        #self._logger.info('waiting for ack')
+        #self._logger.info('waiting for ack')        
 
         method_frame, props, body = channel.basic_get(queue=reply_queue)
 

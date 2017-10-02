@@ -181,7 +181,17 @@ class TaskManager(object):
                     logger.debug('Unit %s in state %s'%(unit.uid, unit.state))
 
                     # Thread should run till terminate condtion is encountered
-                    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+                    if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                            port=port,
+                                                                                            hearbeat=0
+                                                                                        )
+                                                                )
+                    else:
+                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                            port=port
+                                                                                        )
+                                                                )
                     mq_channel = mq_connection.channel()
 
                     if unit.state in [rp.DONE, rp.FAILED]:
@@ -258,7 +268,17 @@ class TaskManager(object):
                 umgr.register_callback(unit_state_cb)
 
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                    port=port,
+                                                                                    hearbeat=0
+                                                                                )
+                                                        )
+            else:
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
+                                                                                    port=port
+                                                                                )
+                                                        )
             mq_channel = mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
