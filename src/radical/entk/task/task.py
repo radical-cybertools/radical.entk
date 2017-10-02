@@ -574,8 +574,8 @@ class Task(object):
                         'executable': self._executable,
                         'arguments': self._arguments,
                         'post_exec': self._post_exec,
-                        'cores': self._cores,
-                        'mpi': self._mpi,
+                        'cpu_reqs': self._cpu_reqs,
+                        'gpu_reqs': self._gpu_reqs,
 
                         'upload_input_data': self._upload_input_data,
                         'copy_input_data': self._copy_input_data,
@@ -620,7 +620,6 @@ class Task(object):
                 self._state = d['state']
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
-
         else:
             self._state = states.INITIAL
 
@@ -656,17 +655,19 @@ class Task(object):
             else:
                 raise TypeError(expected_type=list, actual_type=type(d['post_exec']))
 
-        if 'cores' in d:
-            if isinstance(d['cores'], int):
-                self._cores = d['cores']
+        if 'cpu_reqs' in d:
+            if isinstance(d['cpu_reqs'], int):
+                self._cores = d['cpu_reqs']
             else:
-                raise TypeError(expected_type=int, actual_type=type(d['cores']))
+                raise TypeError(expected_type=int, actual_type=type(d['cpu_reqs']))
 
-        if 'mpi' in d:
-            if isinstance(d['mpi'], bool):
-                self._mpi = d['mpi']
+
+        if 'gpu_reqs' in d:
+            if isinstance(d['gpu_reqs'], int):
+                self._cores = d['gpu_reqs']
             else:
-                raise TypeError(expected_type=bool, actual_type=type(d['mpi']))
+                raise TypeError(expected_type=int, actual_type=type(d['gpu_reqs']))
+
             
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
@@ -761,7 +762,8 @@ class Task(object):
         self._pre_exec      = original_task.pre_exec
         self._executable    = original_task.executable
         self._arguments     = original_task.arguments
-        self._cores         = original_task.cores
+        self._cpu_reqs      = original_task.cpu_reqs
+        self._gpu_reqs      = original_task.gpu_reqs
         self._mpi           = original_task.mpi
         self._post_exec     = original_task.post_exec
 
