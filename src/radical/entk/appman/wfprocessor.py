@@ -195,14 +195,14 @@ class WFprocessor(object):
             self._logger.info('enqueue-thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
-                                                                                    port=port,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
-                                                                                    port=port
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port
                                                                                 )
                                                         )
             mq_channel = mq_connection.channel()
@@ -367,14 +367,14 @@ class WFprocessor(object):
             self._logger.info('Dequeue thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
-                                                                                    port=port,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=mq_hostname, 
-                                                                                    port=port
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port
                                                                                 )
                                                         )
             mq_channel = mq_connection.channel()

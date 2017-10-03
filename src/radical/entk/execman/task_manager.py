@@ -83,8 +83,18 @@ class TaskManager(object):
 
             self._prof.prof('heartbeat thread started', uid=self._uid)
 
+            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port,
+                                                                                    hearbeat=0
+                                                                                )
+                                                        )
+            else:
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                                                                                    port=self._port
+                                                                                )
+                                                        )
 
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             channel = connection.channel()
             channel.queue_delete(queue='heartbeat-req')
             channel.queue_declare(queue='heartbeat-req')
