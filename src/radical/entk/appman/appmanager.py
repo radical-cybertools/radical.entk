@@ -198,6 +198,9 @@ class AppManager(object):
             # Set None objects local to each run
             self._wfp = None            
             self._sync_thread = None
+            self._end_sync = Event()
+            self._resubmit_failed = False
+            self._cur_attempt = 1
 
             if not self._workflow:
                 print 'Please assign workflow before invoking run method - cannot proceed'
@@ -282,7 +285,7 @@ class AppManager(object):
                 finished_pipe_uids = []             
 
                 print 'Active pipes: ',active_pipe_count
-                print 'WFP complete: ', self._wfp.workflow_incomplete()
+                print 'WFP incomplete: ', self._wfp.workflow_incomplete()
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
@@ -298,8 +301,6 @@ class AppManager(object):
                             with pipe._stage_lock:
 
                                 if (pipe.completed) and (pipe.uid not in finished_pipe_uids) :
-
-                                    print '4'
 
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     finished_pipe_uids.append(pipe.uid)
@@ -467,9 +468,15 @@ class AppManager(object):
 
     def resource_terminate(self):
 
-        if self._resource_manager:
+        if self._task_manager:
+            self._logger.info('Terminating task manager process')
+            self._task_manager.end_manager()
+            self._task_manager.end_heartbeat()
 
+        if self._resource_manager:
             self._resource_manager._cancel_resource_request()
+
+        
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
