@@ -16,7 +16,7 @@ def func_for_process(p, mq_channel, logger, profiler):
             sync_with_master(   obj=t, 
                                 obj_type='Task', 
                                 channel=mq_channel, 
-                                reply_to='sync-ack-tmgr',
+                                queue='tmgr-to-sync',
                                 logger=logger, 
                                 local_prof=profiler)
 
@@ -58,17 +58,17 @@ def test_synchronizer():
 
         amgr.assign_workflow(set([p]))
 
-        # Start the synchronizer method in a thread
-        sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
-        sync_thread.start()
-
-        
         try:
 
             for t in p.stages[0].tasks:
                 assert t.state == states.INITIAL
         except:
             raise AssertionError
+
+
+        # Start the synchronizer method in a thread
+        sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
+        sync_thread.start()        
 
         # Start the synchronizer method in a thread
         proc = Process(target=func_for_process, name='temp-proc',
@@ -80,6 +80,7 @@ def test_synchronizer():
 
         try:
             for t in p.stages[0].tasks:
+                print t.state
                 assert t.state == states.SCHEDULING
         except AssertionError:
             raise AssertionError

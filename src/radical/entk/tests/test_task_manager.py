@@ -21,7 +21,7 @@ def test_tmgr_process():
 
     rm = ResourceManager(res_dict)
 
-    t = TaskManager(['pendingq'], ['completedq'], 'localhost', rm)
+    t = TaskManager(['pendingq'], ['completedq'], 'localhost', 5672, rm)
     t.start_manager()
     assert t.check_alive() == True
     t.end_manager()
@@ -45,7 +45,7 @@ def test_heartbeat():
 
     rm = ResourceManager(res_dict)
 
-    t = TaskManager(['pendingq'], ['completedq'], 'localhost', rm)
+    t = TaskManager(['pendingq'], ['completedq'], 'localhost', 5672, rm)
     t.start_heartbeat()
     assert t.check_heartbeat() == True
     t.end_heartbeat()

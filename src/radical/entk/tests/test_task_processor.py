@@ -216,9 +216,7 @@ def test_create_task_from_cu():
     parent_pipeline from a RP ComputeUnit
     """
 
-
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk@ds129010.mlab.com:29010/test_entk'
-    session = rp.Session()
+    session = rp.Session(dburl='mongodb://user:user@ds129013.mlab.com:29013/travis_tests')
     umgr = rp.UnitManager(session=session)
     cud = rp.ComputeUnitDescription()
     cud.name = 'uid, parent_stage, parent_pipeline'
@@ -267,12 +265,12 @@ def test_resolve_placeholder():
     # Test for shared data location
     raw_path = '$SHARED/test.txt'
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
-    assert processed_path == 'staging:///test.txt'
+    assert processed_path == 'pilot:///test.txt'
 
     # Test for shared data location with rename
     raw_path = '$SHARED/test.txt > new.txt'
     processed_path = resolve_placeholders(raw_path, placeholder_dict)
-    assert processed_path == 'staging:///test.txt > new.txt'
+    assert processed_path == 'pilot:///test.txt > new.txt'
 
     # Test for resolving relative data references
     raw_path = '$Pipeline_%s_Stage_%s_Task_%s/some_file.txt'%(pipeline, stage, task)
