@@ -215,12 +215,15 @@ class AppManager(object):
 
                 # Setup rabbitmq stuff
                 if not self._mqs_setup:
+
                     self._logger.info('Setting up RabbitMQ system')
                     setup = self._setup_mqs()
 
                     if not setup:
                         self._logger.error('RabbitMQ system not available')
                         raise Error(text="RabbitMQ setup failed")
+
+                    self._mqs_setup = True
 
 
                 # Submit resource request if not resource allocation done till now or
