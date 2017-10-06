@@ -539,13 +539,13 @@ class AppManager(object):
 
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
@@ -759,17 +759,17 @@ class AppManager(object):
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
-            mq_channel = mq_connection.channel()
+            mq_channel = self._mq_connection.channel()
 
             while not self._end_sync.is_set():
 

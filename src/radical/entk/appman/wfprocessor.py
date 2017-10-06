@@ -200,17 +200,17 @@ class WFprocessor(object):
             self._logger.info('enqueue-thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
-            mq_channel = mq_connection.channel()
+            mq_channel = self._mq_connection.channel()
 
             while not self._enqueue_thread_terminate.is_set():
 
@@ -327,7 +327,7 @@ class WFprocessor(object):
                                     raise
 
             self._logger.info('Enqueue thread terminated')                                  
-            mq_connection.close()
+            self._mq_connection.close()
 
             local_prof.prof('terminating enqueue-thread', uid=self._uid)
                                     
@@ -336,7 +336,7 @@ class WFprocessor(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                                 'trying to cancel enqueuer thread gracefully...')
 
-            mq_connection.close()
+            self._mq_connection.close()
 
             raise KeyboardInterrupt
 
@@ -367,17 +367,17 @@ class WFprocessor(object):
             self._logger.info('Dequeue thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
-            mq_channel = mq_connection.channel()
+            mq_channel = self._mq_connection.channel()
 
             while not self._dequeue_thread_terminate.is_set():
 
@@ -484,7 +484,7 @@ class WFprocessor(object):
 
 
             self._logger.info('Terminated dequeue thread')
-            mq_connection.close()
+            self._mq_connection.close()
 
             local_prof.prof('terminating dequeue-thread', uid=self._uid)
 
@@ -493,7 +493,7 @@ class WFprocessor(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
                             'trying to exit gracefully...')
 
-            mq_connection.close()
+            self._mq_connection.close()
 
             raise KeyboardInterrupt
 
@@ -501,7 +501,7 @@ class WFprocessor(object):
             self._logger.error('Error in dequeue-thread: %s'%ex)
             print traceback.format_exc()
 
-            mq_connection.close()
+            self._mq_connection.close()
 
             raise Error(text=ex)
 
