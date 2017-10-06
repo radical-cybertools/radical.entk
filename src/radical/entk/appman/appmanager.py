@@ -41,6 +41,7 @@ class AppManager(object):
 
     def __init__(self, hostname = 'localhost', port = 5672, push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
+                resubmit_failed = False,
                 autoterminate=True):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
@@ -73,7 +74,7 @@ class AppManager(object):
         self._resource_manager = None
         self._task_manager = None
         self._workflow  = None
-        self._resubmit_failed = False
+        self._resubmit_failed = resubmit_failed
         self._reattempts = reattempts
         self._cur_attempt = 1
         self._resource_autoterminate = autoterminate
@@ -258,7 +259,8 @@ class AppManager(object):
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            port=self._port,
+                                            resubmit_failed=self._resubmit_failed)
 
                 self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
@@ -333,7 +335,8 @@ class AppManager(object):
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            port=self._port,
+                                            resubmit_failed=self._resubmit_failed)
 
                         self._logger.info('Restarting WFProcessor process from AppManager')                        
                         self._wfp.start_processor()

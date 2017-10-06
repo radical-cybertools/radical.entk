@@ -31,7 +31,12 @@ class WFprocessor(object):
     """
 
 
-    def __init__(self, workflow, pending_queue, completed_queue, mq_hostname, port):
+    def __init__(self,  workflow, 
+                        pending_queue, 
+                        completed_queue, 
+                        mq_hostname, 
+                        port,
+                        resubmit_failed):
 
         self._uid           = ru.generate_id('radical.entk.wfprocessor')        
         self._logger        = ru.get_logger('radical.entk.wfprocessor')
@@ -57,7 +62,7 @@ class WFprocessor(object):
         self._port = port
 
         self._wfp_process = None       
-        self._resubmit_failed = False       
+        self._resubmit_failed = resubmit_failed
 
         self._logger.info('Created WFProcessor object: %s'%self._uid)
 
@@ -220,7 +225,7 @@ class WFprocessor(object):
                                             profiler=local_prof, 
                                             logger=self._logger)
     
-                            if pipe.stages[pipe.current_stage-1].state in [states.INITIAL]:
+                            if pipe.stages[pipe.current_stage-1].state in [states.INITIAL, states.SCHEDULED]:
     
                                 try:
 
@@ -228,17 +233,17 @@ class WFprocessor(object):
                                     # SCHEDULING
                                     executable_stage = pipe.stages[pipe.current_stage-1]
 
-                                    transition( obj=executable_stage, 
-                                                obj_type = 'Stage', 
-                                                new_state = states.SCHEDULING, 
-                                                channel = mq_channel,
-                                                queue = 'enq-to-sync',
-                                                profiler=local_prof, 
-                                                logger=self._logger)
+                                    if executable_stage.state == states.INITIAL:
+
+                                        transition( obj=executable_stage, 
+                                                    obj_type = 'Stage', 
+                                                    new_state = states.SCHEDULING, 
+                                                    channel = mq_channel,
+                                                    queue = 'enq-to-sync',
+                                                    profiler=local_prof, 
+                                                    logger=self._logger)
                                     
                                     executable_tasks = executable_stage.tasks
-    
-                                    tasks_submitted=False
     
                                     for executable_task in executable_tasks:
     
@@ -278,25 +283,20 @@ class WFprocessor(object):
                                                 profiler=local_prof, 
                                                 logger=self._logger)
                                                 
-                                            tasks_submitted = True
                                             self._logger.debug('Task %s published to queue'% executable_task.uid)                                                                                                
                                                 
                                     
-                                    # All tasks of current stage scheduled, so set state of stage to
-                                    # SCHEDULED
-                                    transition( obj=executable_stage, 
-                                                obj_type = 'Stage', 
-                                                new_state = states.SCHEDULED, 
-                                                channel = mq_channel,
-                                                queue = 'enq-to-sync',
-                                                profiler=local_prof, 
-                                                logger=self._logger)
 
-                                    print 'State transition done'
-
-                                    if tasks_submitted:
-                                        tasks_submitted = False
-
+                                    if executable_stage.state == states.SCHEDULING:
+                                        # All tasks of current stage scheduled, so set state of stage to
+                                        # SCHEDULED
+                                        transition( obj=executable_stage, 
+                                                    obj_type = 'Stage', 
+                                                    new_state = states.SCHEDULED, 
+                                                    channel = mq_channel,
+                                                    queue = 'enq-to-sync',
+                                                    profiler=local_prof, 
+                                                    logger=self._logger)            
                                                                                 
                                 except Exception, ex:
     
