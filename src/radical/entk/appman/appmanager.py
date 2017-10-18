@@ -547,7 +547,7 @@ class AppManager(object):
                                                                                 )
                                                         )
                 
-            self._mq_channel = self._mq_connection.channel()
+            self._mq_channel = mq_connection.channel()
 
             self._logger.debug('Connection and channel setup successful')
 
