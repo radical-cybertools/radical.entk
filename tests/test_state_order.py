@@ -4,10 +4,10 @@ from radical.entk.exceptions import *
 import os
 
 
-def test_integration_local():
+def test_state_order():
 
     """
-    **Purpose**: Run an EnTK application on localhost
+    **Purpose**: Test if the Pipeline, Stage and Task are assigned their states in the correct order
     """
 
     def create_single_task():
@@ -35,7 +35,7 @@ def test_integration_local():
 
             'resource': 'local.localhost',
             'walltime': 5,
-            'cores': 1,
+            'cpus': 1,
             'project': ''
 
     }
@@ -50,4 +50,18 @@ def test_integration_local():
     appman.assign_workflow(set([p1]))
     appman.run()
 
-    pass
+    p_state_hist = p1.state_history
+    assert p_state_hist == ['DESCRIBED', 'SCHEDULING', 'DONE']
+
+    s_state_hist = p1.stages[0].state_history
+    assert s_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'DONE']
+
+    tasks = p1.stages[0].tasks
+
+    for t in tasks:
+
+        t_state_hist = t.state_history
+        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'SUBMITTING', 'SUBMITTED',
+                            'EXECUTED', 'DEQUEUEING', 'DEQUEUED', 'DONE']
+
+    
