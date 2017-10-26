@@ -94,6 +94,8 @@ def test_assignment_exceptions():
                 t.gpu_reqs = data
 
 
+    
+
 def test_task_replicate():
 
     """
