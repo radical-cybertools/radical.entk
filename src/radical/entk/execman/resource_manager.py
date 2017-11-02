@@ -35,8 +35,7 @@ class ResourceManager(object):
         self._pilot         = None
         self._resource      = None
         self._walltime      = None
-        self._cpus          = None
-        self._gpus          = None
+        self._cores         = None
         self._project       = None
         self._access_schema = None
         self._queue         = None
