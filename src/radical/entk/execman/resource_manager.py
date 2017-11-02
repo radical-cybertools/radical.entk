@@ -106,21 +106,12 @@ class ResourceManager(object):
         return self._walltime
 
     @property
-    def cpus(self):
+    def cores(self):
 
         """
         :getter: Return user specified number of cpus
         """
-        return self._cpus
-
-
-    @property
-    def gpus(self):
-
-        """
-        :getter: Return user specified number of gpus
-        """
-        return self._gpus
+        return self._cores
 
     @property
     def project(self):
@@ -218,7 +209,7 @@ class ResourceManager(object):
 
             expected_keys = [   'resource',
                                 'walltime',
-                                'cpus',
+                                'cores',
                                 'project'
                             ]
 
@@ -232,15 +223,11 @@ class ResourceManager(object):
             if not isinstance(resource_desc['walltime'], int):
                 raise TypeError(expected_type=int, actual_type=type(resource_desc['walltime']))
 
-            if not isinstance(resource_desc['cpus'], int):
-                raise TypeError(expected_type=int, actual_type=type(resource_desc['cpus']))
+            if not isinstance(resource_desc['cores'], int):
+                raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
 
             if not isinstance(resource_desc['project'],str):
                 raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
-
-            if 'gpus' in resource_desc:
-                if not isinstance(resource_desc['gpus'], int):
-                    raise TypeError(expected_type=int, actual_type=type(resource_desc['access_schema']))
 
             if 'access_schema' in resource_desc:
                 if not isinstance(resource_desc['access_schema'], str):
@@ -272,11 +259,8 @@ class ResourceManager(object):
 
             self._resource = resource_desc['resource']
             self._walltime = resource_desc['walltime']
-            self._cores = resource_desc['cpus']
+            self._cores = resource_desc['cores']
             self._project = resource_desc['project']
-
-            if 'gpus' in resource_desc:
-                self._gpus = resource_desc['gpus']
 
             if 'access_schema' in resource_desc:
                 self._access_schema = resource_desc['access_schema']
@@ -322,9 +306,6 @@ class ResourceManager(object):
                     'cores'     : self._cores,
                     'project'   : self._project,
                     }
-
-            if self._gpus:
-                pd_init['gpus'] = self._gpus
     
             if self._access_schema:
                 pd_init['access_schema'] = self._access_schema

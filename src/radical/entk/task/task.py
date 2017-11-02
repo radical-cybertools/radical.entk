@@ -23,16 +23,8 @@ class Task(object):
         self._executable    = list()
         self._arguments     = list()
         self._post_exec     = list()
-        self._cpu_reqs      = { 'processes': 1, 
-                                'process_type': None, 
-                                'threads_per_process': 1, 
-                                'thread_type': None
-                            }
-        self._gpu_reqs      = { 'processes': 0, 
-                                'process_type': None, 
-                                'threads_per_process': 0, 
-                                'thread_type': None
-                            }
+        self._cores         = 1
+        self._mpi           = False
 
         # Data staging attributes
         self._upload_input_data     = list()
@@ -145,81 +137,29 @@ class Task(object):
         return self._post_exec
 
     @property
-    def cpu_reqs(self):
+    def cores(self):
 
         """
-        **Purpose:** The CPU requirements of the current Task. 
+        List of commands to be executed post executable
 
-        The requirements are described in terms of the number of processes and threads to 
-        be run in this Task. The expected format is:
-
-        task.cpu_reqs = {   'processes': X, 
-                            'process_type': None/MPI,       # Currently only two options
-                            'threads_per_process': Y, 
-                            'thread_type': None/OpenMP      # Currently only two options
-                        }
-
-        This description means that the Task is going to spawn X processes and Y threads
-        per each of these processes to run on CPUs. Hence, the total number of cpus required by the
-        Task is X*Y for all the processes and threads to execute concurrently. The 
-        same assumption is made in implementation and X*Y cores are requested for this
-        Task.
-
-        The default value is:
-
-        task.cpu_reqs = {   'processes': 1, 
-                            'process_type': None,       
-                            'threads_per_process': 1, 
-                            'thread_type': None
-                        }
-
-        This description requests 1 core and expected the executable to non-MPI and
-        single threaded.
-
-        :getter: return the cpu requirement of the current Task
-        :setter: assign the cpu requirement of the current Task
-        :arguments: dict
+        :getter: return the number of cores for this Task
+        :setter: assign the number of cores for this Task
         """
 
-        return self._cpu_reqs
+        return self._cores
+
 
     @property
-    def gpu_reqs(self):
+    def mpi(self):
 
         """
-        **Purpose:** The GPU requirements of the current Task.
+        List of commands to be executed post executable
 
-        The requirements are described in terms of the number of processes and threads to 
-        be run in this Task. The expected format is:
-
-        task.gpu_reqs = {   'processes': X, 
-                            'process_type': None/MPI,       # Currently only two options
-                            'threads_per_process': Y, 
-                            'thread_type': None/OpenMP      # Currently only two options
-                        }
-
-        This description means that the Task is going to spawn X processes and Y threads
-        per each of these processes to run on GPUs. Hence, the total number of gpus required by the
-        Task is X*Y for all the processes and threads to execute concurrently. The 
-        same assumption is made in implementation and X*Y gpus are requested for this
-        Task.
-
-        The default value is:
-
-        task.gpu_reqs = {   'processes': 0, 
-                            'process_type': None,       
-                            'threads_per_process': 0, 
-                            'thread_type': None
-                        }
-
-        This description requests 0 gpus as not all machines have GPUs.
-
-        :getter: return the gpu requirement of the current Task
-        :setter: assign the gpu requirement of the current Task
-        :arguments: dict
+        :getter: return MPI flag
+        :setter: assign MPI flag
         """
 
-        return self._gpu_reqs
+        return self._mpi
 
     @property
     def upload_input_data(self):
@@ -400,101 +340,21 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
 
-    @cpu_reqs.setter
-    def cpu_reqs(self, val):
-        if isinstance(val, dict):
 
-            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
-
-            if set(val.keys()) <= expected_keys:
-
-                if type(val.get('processes')) in [type(None), int]:
-                    self._cpu_reqs['processes'] = val.get('processes')
-                else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('processes')), 
-                                        entity='processes'
-                                    )
-
-                if val.get('process_type') in [None, 'MPI']:
-                    self._cpu_reqs['process_type'] = val.get('process_type')
-                else:
-                    raise ValueError(   expected_value='None or MPI', 
-                                        actual_value=val.get('process_type'), 
-                                        obj='cpu_reqs', 
-                                        attribute='process_type'
-                                    )
-
-                if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process')                
-                else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('threads_per_process')), 
-                                        entity='threads_per_process'
-                                    )
-
-                if val.get('thread_type') in [None, 'OpenMP']:
-                    self._cpu_reqs['thread_type'] = val.get('thread_type')
-                else:
-                    raise ValueError(   expected_value='None or OpenMP', 
-                                        actual_value=val.get('thread_type'), 
-                                        obj='cpu_reqs', 
-                                        attribute='thread_type'
-                                    )
-            else:
-
-                raise MissingError(obj='cpu_reqs', missing_attribute= expected_keys - set(val.keys()))
+    @cores.setter
+    def cores(self, val):
+        if isinstance(val, int):
+            self._cores = val
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=int, actual_type=type(val))
 
 
-    @gpu_reqs.setter
-    def gpu_reqs(self, val):
-        if isinstance(val, dict):
-
-            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
-
-            if set(val.keys()) <= set(['processes','threads_per_process', 'process_type','thread_type']):
-
-                if type(val.get('processes')) in [type(None), int]:
-                    self._gpu_reqs['processes'] = val.get('processes')
-                else:
-                    raise TypeError(    expected_type=dict, 
-                                        actual_type=type(val.get('processes')), 
-                                        entity='processes'
-                                    )
-
-                if val.get('process_type') in [None, 'MPI']:
-                    self._gpu_reqs['process_type'] = val.get('process_type')
-                else:
-                    raise ValueError(   expected_value='None or MPI', 
-                                        actual_value=val.get('process_type'), 
-                                        obj='gpu_reqs', 
-                                        attribute='process_type'
-                                    )
-
-                if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process')                
-                else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('threads_per_process')), 
-                                        entity='threads_per_process'
-                                    )
-
-                if val.get('thread_type') in [None, 'OpenMP']:
-                    self._gpu_reqs['thread_type'] = val.get('thread_type')
-                else:
-                    raise ValueError(   expected_value='None or OpenMP', 
-                                        actual_value=val.get('thread_type'), 
-                                        obj='gpu_reqs', 
-                                        attribute='thread_type'
-                                    )
-
-            else:
-                raise MissingError(obj='gpu_reqs', missing_attribute= expected_keys - set(val.keys()))
-
+    @mpi.setter
+    def mpi(self, val):
+        if isinstance(val, bool):
+            self._mpi = val
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=bool, actual_type=type(val))
 
 
     @upload_input_data.setter
@@ -585,8 +445,8 @@ class Task(object):
                         'executable': self._executable,
                         'arguments': self._arguments,
                         'post_exec': self._post_exec,
-                        'cpu_reqs': self._cpu_reqs,
-                        'gpu_reqs': self._gpu_reqs,
+                        'cores': self._cores,
+                        'mpi': self._mpi,
 
                         'upload_input_data': self._upload_input_data,
                         'copy_input_data': self._copy_input_data,
@@ -666,19 +526,18 @@ class Task(object):
             else:
                 raise TypeError(expected_type=list, actual_type=type(d['post_exec']))
 
-        if 'cpu_reqs' in d:
-            if isinstance(d['cpu_reqs'], dict):
-                self._cpu_reqs = d['cpu_reqs']
+        if 'cores' in d:
+            if isinstance(d['cores'], int):
+                self._cores = d['cores']
             else:
-                raise TypeError(expected_type=dict, actual_type=type(d['cpu_reqs']))
+                raise TypeError(expected_type=int, actual_type=type(d['cores']))
 
 
-        if 'gpu_reqs' in d:
-            if isinstance(d['gpu_reqs'], dict):
-                self._gpu_reqs = d['gpu_reqs']
+        if 'mpi' in d:
+            if isinstance(d['mpi'], bool):
+                self._mpi = d['mpi']
             else:
-                raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
-
+                raise TypeError(expected_type=bool, actual_type=type(d['mpi']))
             
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
@@ -773,8 +632,8 @@ class Task(object):
         self._pre_exec      = original_task.pre_exec
         self._executable    = original_task.executable
         self._arguments     = original_task.arguments
-        self._cpu_reqs      = original_task.cpu_reqs
-        self._gpu_reqs      = original_task.gpu_reqs
+        self._cores         = original_task.cores
+        self._mpi           = original_task.mpi
         self._post_exec     = original_task.post_exec
 
         # Data staging attributes

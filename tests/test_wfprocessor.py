@@ -37,7 +37,7 @@ def test_wfp_attributes():
     for queue in queue_type:
 
         with pytest.raises(TypeError):
-            p = WFprocessor(p1, queue, queue, 'localhost', 5672)
+            p = WFprocessor(p1, queue, queue, 'localhost', 5672, False)
 
 
     def create_single_task():
@@ -68,7 +68,7 @@ def test_wfp_attributes():
     for hostname in hostname_type:
 
         with pytest.raises(TypeError):
-            p = WFprocessor(p1, queue, queue, hostname, 5672)
+            p = WFprocessor(p1, queue, queue, hostname, 5672, False)
 
 
 
@@ -101,7 +101,7 @@ def test_wfp_process():
 
         p1.add_stages(s)
 
-    p = WFprocessor(p1, ['pendingq'], ['completedq'], 'localhost', 5672)
+    p = WFprocessor(p1, ['pendingq'], ['completedq'], 'localhost', 5672, False)
     p.start_processor()
     assert p.check_alive() == True
     p.end_processor()
