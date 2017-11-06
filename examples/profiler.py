@@ -36,25 +36,26 @@ class Profiler(object):
     def _get_resource_manager_details(self):
     
         self._rman_df = pd.read_csv('%s/radical.entk.resource_manager.0000.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
+                            # names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
                         )
 
 
     def _get_app_manager_details(self):
     
         self._aman_df = pd.read_csv('%s/radical.entk.appmanager.0000.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
                         )
     
     
     def _get_wfp_details(self):
     
         df_obj = pd.read_csv('%s/radical.entk.wfprocessor.0000-obj.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
                         )
     
         df_proc = pd.read_csv('%s/radical.entk.wfprocessor.0000-proc.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
                         )
     
         self._wfp_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
@@ -63,11 +64,11 @@ class Profiler(object):
     def _get_task_manager_details(self):
     
         df_obj = pd.read_csv('%s/radical.entk.task_manager.0000-obj.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
                         )
     
         df_proc = pd.read_csv('%s/radical.entk.task_manager.0000-proc.prof'%self._src,skiprows=[0,1], 
-                            names=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
+                            names = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
                         )
     
         self._tman_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
@@ -75,7 +76,8 @@ class Profiler(object):
     
     def _get_state_details(self):
     
-        state_df  = pd.DataFrame(columns=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg'])
+        # state_df  = pd.DataFrame(columns=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg'])
+        state_df  = pd.DataFrame(columns=['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg'])
     
         state_df = state_df.append(self._wfp_df[pd.notnull(self._wfp_df['state'])]).sort_values(by='timestamp')
         state_df = state_df.append(self._tman_df[pd.notnull(self._tman_df['state'])]).sort_values(by='timestamp')
@@ -86,7 +88,8 @@ class Profiler(object):
     
     def _get_event_details(self):
     
-        event_df  = pd.DataFrame(columns=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg'])    
+        # event_df  = pd.DataFrame(columns=['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg'])    
+        event_df  = pd.DataFrame(columns=['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg'])    
 
         event_df = event_df.append(self._rman_df[pd.isnull(self._rman_df['state'])]).sort_values(by='timestamp')
         event_df = event_df.append(self._aman_df[pd.isnull(self._aman_df['state'])]).sort_values(by='timestamp')
@@ -110,7 +113,8 @@ class Profiler(object):
                 self._states_dict[row['state']] = dict()
 
             obj_type = row['uid'].split('.')[2]
-            obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+            #obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+            obj_name = row['uid']
 
             if obj_type not in self._states_dict[row['state']]:
                 self._states_dict[row['state']][obj_type] = dict()
@@ -152,7 +156,8 @@ class Profiler(object):
 
             if pd.notnull(row['uid']):
                 obj_type = row['uid'].split('.')[2]
-                obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+                #obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
+                obj_name = row['uid']
 
                 if obj_type not in self._events_dict[row['event']]:
                     self._events_dict[row['event']][obj_type] = dict()
@@ -329,8 +334,8 @@ class Profiler(object):
             for obj in objects:
 
                 extracted_dict[obj] = {}
-                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[0].strip()][obj]
-                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[0].strip()][obj]
+                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[2].strip()][obj]
 
             #pprint.pprint(extracted_dict)
 
@@ -342,8 +347,8 @@ class Profiler(object):
             for obj in objects:
 
                 extracted_dict[obj] = {}
-                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[0].strip()][obj]
-                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[0].strip()][obj]            
+                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]            
 
             #pprint.pprint(extracted_dict)
 
@@ -359,9 +364,9 @@ class Profiler(object):
 
                 
                 if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
-                    t1 = float(self._states_dict[states[0]][obj.split('.')[0].strip()][obj])
+                    t1 = float(self._states_dict[states[0]][obj.split('.')[2].strip()][obj])
                 else:
-                    t2 = float(self._events_dict[events[0]][obj.split('.')[0].strip()][obj])
+                    t2 = float(self._events_dict[events[0]][obj.split('.')[2].strip()][obj])
 
             if t1>t2:
                 return float(t1) - float(t2)
