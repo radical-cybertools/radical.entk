@@ -360,7 +360,7 @@ class ResourceManager(object):
             self._logger.error('Resource request submission failed')
             raise 
 
-    def _cancel_resource_request(self):
+    def _cancel_resource_request(self, download_rp_profile=False):
 
         """
         **Purpose**: Cancel the resource request
@@ -370,7 +370,7 @@ class ResourceManager(object):
 
             self._prof.prof('canceling resource allocation', uid=self._uid)
             self._pilot.cancel()
-            self._session.close(cleanup=False)
+            self._session.close(cleanup=False, download=download_rp_profile)
             self._prof.prof('resource allocation cancelled', uid=self._uid)
 
         except KeyboardInterrupt:
