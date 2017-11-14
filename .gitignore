@@ -62,3 +62,9 @@ docs/_build/
 
 #editor specifics
 .idea/
+
+# Throughput files
+.txt
+
+# pytest files
+./src/radical/entk/tests/__pycache__
