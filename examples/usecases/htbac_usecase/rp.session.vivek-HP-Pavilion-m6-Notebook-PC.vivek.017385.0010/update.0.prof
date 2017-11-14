@@ -1,0 +1,7 @@
+#time,name,uid,state,event,msg
+1502147930.1285,update.0:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147930.12:1502147930.13:ntp
+#time,name,uid,state,event,msg
+1502147930.1285,update.0:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147930.12:1502147930.13:ntp
+1502147930.4421,update.0:MainThread,update.0,,initialize,
+1502148305.0411,update.0:MainThread,update.0,,stopped,
+1502148305.0411,update.0:MainThread,,,END,

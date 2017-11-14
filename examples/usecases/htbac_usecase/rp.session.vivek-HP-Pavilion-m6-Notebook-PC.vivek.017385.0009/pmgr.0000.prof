@@ -1,0 +1,5 @@
+#time,name,uid,state,event,msg
+1502147911.0631,pmgr.0000:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147911.04:1502147911.06:ntp
+1502147911.0642,pmgr.0000:MainThread,pmgr.0000,,initialize,
+1502147911.3157,pmgr.0000:MainThread,pmgr.0000,,create pmgr,
+1502147911.5334,pmgr.0000:MainThread,,,PMGR setup done,

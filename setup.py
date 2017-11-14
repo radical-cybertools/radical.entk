@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 __author__    = "Vivek Balasubramanian"
 __email__     = "vivek.balasubramanian@rutgers.edu"
@@ -14,66 +14,7 @@ import subprocess
 
 from setuptools import setup, find_packages, Command
 
-#-----------------------------------------------------------------------------
-#
-def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-#-----------------------------------------------------------------------------
-#
-def check_version():
-    if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-        raise RuntimeError("SETUP ERROR: radical.ensemblemd requires Python 2.6 or higher")
-
-#-----------------------------------------------------------------------------
-#
-def get_version():
-    short_version = None  # 0.4.0
-    long_version  = None  # 0.4.0-9-g0684b06
-
-    try:
-        import subprocess as sp
-        import re
-
-        srcroot       = os.path.dirname (os.path.abspath(__file__))
-        VERSION_MATCH = re.compile(r'(([\d\.]+)\D.*)')
-
-        # attempt to get version information from git
-        p   = sp.Popen ('cd %s && git describe --tags --always' % srcroot,
-                        stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-        out = p.communicate()[0]
-
-        if  p.returncode != 0 or not out:
-
-            # the git check failed -- its likely that we are called from
-            # a tarball, so use ./VERSION instead
-            out=open("%s/VERSION" % ".", 'r').read().strip()
-
-        # from the full string, extract short and long versions
-        v = VERSION_MATCH.search (out)
-        if v:
-            long_version  = v.groups()[0]
-            short_version = v.groups()[1]
-
-        # sanity check if we got *something*
-        if not short_version or not long_version:
-            raise RuntimeError("SETUP ERROR: Cannot determine version from git or ./VERSION\n")
-
-        short_version = open('VERSION', 'r').read().strip()
-
-        # make sure the version files exist for the runtime version inspection
-        #open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
-        open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
-
-
-    except Exception as e :
-        raise RuntimeError("SETUP ERROR: Could not extract/set version: %s" % e)
-
-    return short_version, long_version
-
-
-# ------------------------------------------------------------------------------
-#
 # borrowed from the MoinMoin-wiki installer
 #
 def makeDataFiles(prefix, dir):
@@ -140,18 +81,16 @@ def isgood(name):
             return True
     return False
 
-
-#-----------------------------------------------------------------------------
-
-
-
 #-----------------------------------------------------------------------------
 #
-#srcroot = os.path.dirname(os.path.realpath(__file__))
-#check_version()
-#short_version, long_version = get_version()
+def check_version():
+    if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
+        raise RuntimeError("SETUP ERROR: radical.entk requires Python 2.6 or higher")
 
-short_version = 0.5
+
+check_version()
+
+short_version = 0.6
 
 setup_args = {
     'name'             : 'radical.entk',
@@ -164,7 +103,7 @@ setup_args = {
     'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
     'url'              : 'https://github.com/radical-cybertools/radical.entk',
     'license'          : 'MIT',
-    'keywords'         : "ensemble execution",
+    'keywords'         : "ensemble workflow execution",
     'classifiers'      :  [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -182,11 +121,7 @@ setup_args = {
         'Operating System :: Unix'
     ],
 
-    #'entry_points': {
-    #    'console_scripts':
-    #        ['htbac-fecalc = radical.ensemblemd.htbac.bin.fecalc:main',
-    #         'htbac-sim    = radical.ensemblemd.htbac.bin.sim:main']
-    #},
+    #'entry_points': {},
 
     #'dependency_links': ['https://github.com/saga-project/saga-pilot/tarball/master#egg=sagapilot'],
 
@@ -195,25 +130,20 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    #'scripts'           : ['bin/ensemblemd-version'],
+    'scripts'           : ['bin/entk-version'],
                            
 
-    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
+    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
-    'install_requires'  :  ['radical.utils', 'setuptools>=1', 'radical.pilot'],
-    #'test_suite'        : 'radical.ensemblemd.tests',
+    'install_requires'  :  ['radical.pilot', 'pika'],
 
     'zip_safe'          : False,
+    
+    'data_files'        : [
+                                    makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
+                                    makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
+                            ],
 
-    # This copies the contents of the examples/ dir under
-    # sys.prefix/share/radical.pilot.
-    # It needs the MANIFEST.in entries to work.
-
-    'data_files': [
-        makeDataFiles('share/radical.entk/examples/user_guide', 'examples/user_guide'),
-        makeDataFiles('share/radical.entk/examples/simple', 'examples/simple'),
-        makeDataFiles('share/radical.entk/examples/advanced', 'examples/advanced')
-    ],
 }
 
 setup (**setup_args)
