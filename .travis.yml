@@ -1,0 +1,20 @@
+language: python
+python: "2.7.13"
+  
+# command to install dependencies
+install: 
+  - pip install .
+  - pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
+  - pip install git+https://github.com/radical-cybertools/saga-python.git@devel
+  - pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
+
+#env variables
+env:
+  - RP_ENABLE_OLD_DEFINES=True RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129013.mlab.com:29013/travis_tests
+
+# command to run tests
+script: python -m pytest -v /home/travis/build/vivek-bala/radical.entk/tests
+
+# rabbitmq
+services:
+  - rabbitmq
