@@ -79,6 +79,9 @@ class AppManager(object):
         self._resource_autoterminate = autoterminate
 
 
+        # Check if RP Profiler is set
+        self._rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
+
         # Logger        
         self._logger.info('Application Manager initialized')
 
@@ -458,7 +461,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._cancel_resource_request(self._rp_profile)
 
             self._prof.prof('termination done', uid=self._uid)
             
@@ -469,7 +472,7 @@ class AppManager(object):
 
         if self._resource_manager:
 
-            self._resource_manager._cancel_resource_request()
+            self._resource_manager._cancel_resource_request(self._rp_profile)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
