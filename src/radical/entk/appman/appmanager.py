@@ -67,7 +67,6 @@ class AppManager(object):
         self._num_push_threads = push_threads
         self._num_pull_threads = pull_threads
         self._num_sync_threads = sync_threads
-        self._end_sync = Event()
 
         # Global parameters to have default values
         self._mqs_setup = False
@@ -291,7 +290,7 @@ class AppManager(object):
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
-                while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
+                while (active_pipe_count > 0)and(self._wfp.workflow_incomplete()):
 
                     if slow_run:
                         time.sleep(1)
@@ -738,9 +737,6 @@ class AppManager(object):
 
                                 pipe.state = str(completed_pipeline.state)
 
-                                if completed_pipeline.completed:
-                                    pipe._completed_flag.set()
-
                                 self._logger.info('Found pipeline %s, state %s, completed %s'%( pipe.uid, 
                                                                                                         pipe.state, 
                                                                                                         pipe.completed)
@@ -760,6 +756,12 @@ class AppManager(object):
 
 
                                 mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+
+                                # Keep the assignment of the completed flag after sending the acknowledgment
+                                # back. Otherwise the MainThread takes lock over the pipeline because of logging
+                                # and profiling
+                                if completed_pipeline.completed:
+                                    pipe._completed_flag.set()
 
 
 

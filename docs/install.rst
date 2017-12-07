@@ -79,7 +79,7 @@ You can see the mapping of the ports running ```docker ps```.
 
 
 Interactions between RabbitMQ and EnTK are done through port 5672 by default. For the above docker instance, we need to 
-use port 32775. In your EnTK scripts, while creating the AppManager, you need to specify port=32776.
+use port 32775. In your EnTK scripts, while creating the AppManager, you need to specify port=32775.
 
 
 Installation Video
