@@ -18,9 +18,6 @@ from threading import Thread, Event
 import traceback
 from radical.entk import states
 
-slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
-
-
 class AppManager(object):
 
     """
@@ -41,7 +38,6 @@ class AppManager(object):
 
     def __init__(self, hostname = 'localhost', port = 5672, push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
-                resubmit_failed = False,
                 autoterminate=True):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
@@ -74,14 +70,11 @@ class AppManager(object):
         self._resource_manager = None
         self._task_manager = None
         self._workflow  = None
-        self._resubmit_failed = resubmit_failed
+        self._resubmit_failed = False
         self._reattempts = reattempts
         self._cur_attempt = 1
         self._resource_autoterminate = autoterminate
 
-
-        # Check if RP Profiler is set
-        self._rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
 
         # Logger        
         self._logger.info('Application Manager initialized')
@@ -202,6 +195,9 @@ class AppManager(object):
             # Set None objects local to each run
             self._wfp = None            
             self._sync_thread = None
+            self._end_sync = Event()
+            self._resubmit_failed = False
+            self._cur_attempt = 1
 
             if not self._workflow:
                 print 'Please assign workflow before invoking run method - cannot proceed'
@@ -287,14 +283,11 @@ class AppManager(object):
                 finished_pipe_uids = []             
 
                 print 'Active pipes: ',active_pipe_count
-                print 'WFP complete: ', self._wfp.workflow_incomplete()
+                print 'WFP incomplete: ', self._wfp.workflow_incomplete()
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
                 while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
-
-                    if slow_run:
-                        time.sleep(1)
 
                     if active_pipe_count > 0:
 
@@ -303,8 +296,6 @@ class AppManager(object):
                             with pipe._stage_lock:
 
                                 if (pipe.completed) and (pipe.uid not in finished_pipe_uids) :
-
-                                    print '4'
 
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     finished_pipe_uids.append(pipe.uid)
@@ -404,7 +395,7 @@ class AppManager(object):
                     self._task_manager.end_manager()
                     self._task_manager.end_heartbeat()
 
-                    self._resource_manager._cancel_resource_request(self._rp_profile)
+                    self._resource_manager._cancel_resource_request()
 
                 self._prof.prof('termination done', uid=self._uid)
 
@@ -433,7 +424,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request(self._rp_profile)
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -464,7 +455,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request(self._rp_profile)
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
             
@@ -473,9 +464,15 @@ class AppManager(object):
 
     def resource_terminate(self):
 
-        if self._resource_manager:
+        if self._task_manager:
+            self._logger.info('Terminating task manager process')
+            self._task_manager.end_manager()
+            self._task_manager.end_heartbeat()
 
-            self._resource_manager._cancel_resource_request(self._rp_profile)
+        if self._resource_manager:
+            self._resource_manager._cancel_resource_request()
+
+        
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
