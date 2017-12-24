@@ -1,0 +1,10 @@
+#time,comp,uid,state,event,msg
+1509934048.9442,sync_abs,rp.session.two.jdakka.017476.0003,MainThread,,,localhost.localdomain:138.201.86.166:1509934048.92:1509934048.91:ntp
+1509934048.9445,session_start,rp.session.two.jdakka.017476.0003,MainThread,rp.session.two.jdakka.017476.0003,,
+1509934048.9446,config_parser_start,rp.session.two.jdakka.017476.0003,MainThread,rp.session.two.jdakka.017476.0003,,
+1509934049.0339,config_parser_stop,rp.session.two.jdakka.017476.0003,MainThread,rp.session.two.jdakka.017476.0003,,
+1509934059.3913,staging_in_start,rp.session.two.jdakka.017476.0003,MainThread,pilot.0000,,sd.0000
+1509934066.7547,staging_in_stop,rp.session.two.jdakka.017476.0003,MainThread,pilot.0000,,sd.0000
+1509962754.2110,session_close,rp.session.two.jdakka.017476.0003,MainThread,rp.session.two.jdakka.017476.0003,,
+1509962760.0442,session_stop,rp.session.two.jdakka.017476.0003,MainThread,rp.session.two.jdakka.017476.0003,,
+1509962760.0442,END,rp.session.two.jdakka.017476.0003,MainThread,,,

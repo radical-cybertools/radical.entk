@@ -1,0 +1,4 @@
+#time,comp,uid,state,event,msg
+1509959652.8345,sync_abs,umgr.0000.staging.output.0,MainThread,,,localhost.localdomain:138.201.86.166:1509959652.67:1509959652.67:ntp
+1509959652.8901,END,umgr.0000.staging.output.0,MainThread,,,
+1509959652.9658,component_init,umgr.0000.staging.output.0,MainThread,,,

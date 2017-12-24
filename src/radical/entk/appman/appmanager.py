@@ -18,8 +18,6 @@ from threading import Thread, Event
 import traceback
 from radical.entk import states
 
-slow_run = os.environ.get('RADICAL_ENTK_SLOW',False)
-
 
 class AppManager(object):
 
@@ -41,6 +39,7 @@ class AppManager(object):
 
     def __init__(self, hostname = 'localhost', port = 5672, push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
+                resubmit_failed = False,
                 autoterminate=True):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
@@ -66,14 +65,14 @@ class AppManager(object):
         self._num_push_threads = push_threads
         self._num_pull_threads = pull_threads
         self._num_sync_threads = sync_threads
-        self._end_sync = Event()
 
         # Global parameters to have default values
         self._mqs_setup = False
         self._resource_manager = None
         self._task_manager = None
         self._workflow  = None
-        self._resubmit_failed = False
+
+        self._resubmit_failed = resubmit_failed
         self._reattempts = reattempts
         self._cur_attempt = 1
         self._resource_autoterminate = autoterminate
@@ -201,6 +200,9 @@ class AppManager(object):
             # Set None objects local to each run
             self._wfp = None            
             self._sync_thread = None
+            self._end_sync = Event()
+            self._resubmit_failed = False
+            self._cur_attempt = 1
 
             if not self._workflow:
                 print 'Please assign workflow before invoking run method - cannot proceed'
@@ -261,7 +263,8 @@ class AppManager(object):
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            port=self._port,
+                                            resubmit_failed=self._resubmit_failed)
 
                 self._logger.info('Starting WFProcessor process from AppManager')                
                 self._wfp.start_processor()                
@@ -285,14 +288,11 @@ class AppManager(object):
                 finished_pipe_uids = []             
 
                 print 'Active pipes: ',active_pipe_count
-                print 'WFP complete: ', self._wfp.workflow_incomplete()
+                print 'WFP incomplete: ', self._wfp.workflow_incomplete()
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
-                while (active_pipe_count > 0)or(self._wfp.workflow_incomplete()):
-
-                    if slow_run:
-                        time.sleep(1)
+                while (active_pipe_count > 0)and(self._wfp.workflow_incomplete()):
 
                     if active_pipe_count > 0:
 
@@ -301,8 +301,6 @@ class AppManager(object):
                             with pipe._stage_lock:
 
                                 if (pipe.completed) and (pipe.uid not in finished_pipe_uids) :
-
-                                    print '4'
 
                                     self._logger.info('Pipe %s completed'%pipe.uid)
                                     finished_pipe_uids.append(pipe.uid)
@@ -336,7 +334,8 @@ class AppManager(object):
                                             pending_queue = self._pending_queue, 
                                             completed_queue=self._completed_queue,
                                             mq_hostname=self._mq_hostname,
-                                            port=self._port)
+                                            port=self._port,
+                                            resubmit_failed=self._resubmit_failed)
 
                         self._logger.info('Restarting WFProcessor process from AppManager')                        
                         self._wfp.start_processor()
@@ -401,7 +400,7 @@ class AppManager(object):
                     self._task_manager.end_manager()
                     self._task_manager.end_heartbeat()
 
-                    self._resource_manager._cancel_resource_request()
+                    self._resource_manager._cancel_resource_request(self._rp_profile)
 
                 self._prof.prof('termination done', uid=self._uid)
 
@@ -430,7 +429,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._cancel_resource_request(self._rp_profile)
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -470,9 +469,14 @@ class AppManager(object):
 
     def resource_terminate(self):
 
-        if self._resource_manager:
+        if self._task_manager:
+            self._logger.info('Terminating task manager process')
+            self._task_manager.end_manager()
+            self._task_manager.end_heartbeat()
 
+        if self._resource_manager:
             self._resource_manager._cancel_resource_request(self._rp_profile)
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -539,13 +543,13 @@ class AppManager(object):
 
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
@@ -731,9 +735,6 @@ class AppManager(object):
 
                                 pipe.state = str(completed_pipeline.state)
 
-                                if completed_pipeline.completed:
-                                    pipe._completed_flag.set()
-
                                 self._logger.info('Found pipeline %s, state %s, completed %s'%( pipe.uid, 
                                                                                                         pipe.state, 
                                                                                                         pipe.completed)
@@ -754,22 +755,28 @@ class AppManager(object):
 
                                 mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
+                                # Keep the assignment of the completed flag after sending the acknowledgment
+                                # back. Otherwise the MainThread takes lock over the pipeline because of logging
+                                # and profiling
+                                if completed_pipeline.completed:
+                                    pipe._completed_flag.set()
+
 
 
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port,
                                                                                     hearbeat=0
                                                                                 )
                                                         )
             else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
+                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(  host=self._mq_hostname, 
                                                                                     port=self._port
                                                                                 )
                                                         )
-            mq_channel = mq_connection.channel()
+            mq_channel = self._mq_connection.channel()
 
             while not self._end_sync.is_set():
 

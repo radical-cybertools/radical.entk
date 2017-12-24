@@ -48,4 +48,8 @@ def test_integration_local():
     appman = AppManager()
     appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
+<<<<<<< HEAD:tests/test_integration_local.py
     appman.run()
+=======
+    # appman.run()
+>>>>>>> arch/v0.6:tests/test_integration_local.py

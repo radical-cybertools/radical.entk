@@ -14,3 +14,4 @@ if __name__ == '__main__':
     print p.duration(
         objects= ['task.0000','wfprocessor.0000',], 
         events=['starting dequeue-thread'], states=['EXECUTED'])
+

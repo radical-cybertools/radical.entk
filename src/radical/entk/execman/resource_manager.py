@@ -38,7 +38,7 @@ class ResourceManager(object):
         self._pilot         = None
         self._resource      = None
         self._walltime      = None
-        self._cpus         = None
+        self._cpus          = None
         self._gpus          = None
         self._project       = None
         self._access_schema = None
@@ -110,21 +110,12 @@ class ResourceManager(object):
         return self._walltime
 
     @property
-    def cpus(self):
+    def cores(self):
 
         """
         :getter: Return user specified number of cpus
         """
-        return self._cpus
-
-
-    @property
-    def gpus(self):
-
-        """
-        :getter: Return user specified number of gpus
-        """
-        return self._gpus
+        return self._cores
 
     @property
     def project(self):
@@ -247,7 +238,7 @@ class ResourceManager(object):
                 raise TypeError(expected_type=int, actual_type=type(resource_desc['walltime']))
 
             if not isinstance(resource_desc['cpus'], int):
-                raise TypeError(expected_type=int, actual_type=type(resource_desc['cpus']))
+                raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
 
             if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
                 raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
@@ -290,7 +281,7 @@ class ResourceManager(object):
             self._project = str(resource_desc['project'])
 
             if 'gpus' in resource_desc:
-                self._gpus = resource_desc['gpus']
+                self._gpus = str(resource_desc['gpus'])
 
             if 'access_schema' in resource_desc:
                 self._access_schema = str(resource_desc['access_schema'])
@@ -337,7 +328,7 @@ class ResourceManager(object):
                     'project'   : self._project,
                     }
 
-            if self._gpus:
+            if self._access_schema:
                 pd_init['gpus'] = self._gpus
     
             if self._access_schema:
@@ -380,8 +371,6 @@ class ResourceManager(object):
 
             self._logger.info('Pilot is now active')
 
-            return self._pilot
-
         except KeyboardInterrupt:
 
             if self._session:
@@ -394,6 +383,7 @@ class ResourceManager(object):
         except Exception, ex:
             self._logger.error('Resource request submission failed')
             raise 
+
 
     def _cancel_resource_request(self, download_rp_profile=False):
 

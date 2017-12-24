@@ -12,8 +12,13 @@ install:
 env:
   - RP_ENABLE_OLD_DEFINES=True RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129013.mlab.com:29013/travis_tests
 
+<<<<<<< HEAD
 # command to run tests
 script: python -m pytest -v /home/travis/build/vivek-bala/radical.entk/tests
+=======
+
+script: python -m pytest -v /home/travis/build/radical-cybertools/radical.entk/tests
+>>>>>>> arch/v0.6
 
 # rabbitmq
 services:

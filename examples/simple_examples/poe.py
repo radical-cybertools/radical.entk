@@ -7,8 +7,9 @@ import os
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
     os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
-if __name__ == '__main__':
 
+def generate_pipeline():
+    
     # Create a Pipeline object
     p = Pipeline()
 
@@ -68,6 +69,10 @@ if __name__ == '__main__':
     # Add Stage to the Pipeline
     p.add_stages(s3)
 
+    return p
+
+if __name__ == '__main__':
+
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, cores and project
@@ -84,13 +89,27 @@ if __name__ == '__main__':
     rman = ResourceManager(res_dict)
 
     # Create Application Manager
-    appman = AppManager()
+    appman = AppManager(autoterminate=False)
 
     # Assign resource manager to the Application Manager
     appman.resource_manager = rman
+
+    p = generate_pipeline()
+    
+    # Assign the workflow as a set of Pipelines to the Application Manager
+    appman.assign_workflow(set([p]))
+
+    # Run the Application Manager
+    appman.run()
+
+    p = generate_pipeline()
+    print p.uid
 
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.assign_workflow(set([p]))
 
     # Run the Application Manager
     appman.run()
+
+    appman.resource_terminate()
+
