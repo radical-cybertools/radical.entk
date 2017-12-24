@@ -257,49 +257,6 @@ class WFprocessor(object):
     
                                     for executable_task in executable_tasks:
     
-                                        if self._resubmit_failed:
-
-                                            if executable_task.state in [states.INITIAL, states.FAILED]:
-                                            
-                                                # Set state of Tasks in current Stage to SCHEDULING
-                                                transition( obj=executable_task, 
-                                                            obj_type = 'Task', 
-                                                            new_state = states.SCHEDULING, 
-                                                            channel = mq_channel,
-                                                            queue = 'enq-to-sync',
-                                                            profiler=local_prof, 
-                                                            logger=self._logger)                                            
-        
-                                                task_as_dict = json.dumps(executable_task.to_dict())
-        
-                                                self._logger.debug('Publishing task %s to %s'
-                                                                            %(executable_task.uid,
-                                                                                self._pending_queue[0]))
-
-
-                                                # Put the task on one of the pending_queues
-                                                mq_channel.basic_publish(   exchange='',
-                                                                            routing_key=self._pending_queue[0],
-                                                                            body=task_as_dict
-                                                                            #properties=pika.BasicProperties(
-                                                                                # make message persistent
-                                                                                #delivery_mode = 2)
-                                                                        )
-
-                                                # Set state of Tasks in current Stage to SCHEDULED
-                                                transition( obj=executable_task, 
-                                                    obj_type = 'Task', 
-                                                    new_state = states.SCHEDULED, 
-                                                    channel = mq_channel,
-                                                    queue = 'enq-to-sync',
-                                                    profiler=local_prof, 
-                                                    logger=self._logger)
-                                                    
-                                                tasks_submitted = True
-                                                self._logger.debug('Task %s published to queue'% executable_task.uid)
-
-
-
                                         if executable_task.state == states.INITIAL:
                                             
                                             # Set state of Tasks in current Stage to SCHEDULING
@@ -509,42 +466,6 @@ class WFprocessor(object):
                                                                             queue = 'deq-to-sync',
                                                                             profiler=local_prof, 
                                                                             logger=self._logger)
-
-
-                                                        elif task.state == states.FAILED:
-
-                                                            if not self._resubmit_failed:
-                                                                
-                                                                if stage._check_stage_complete():
-                                                                    
-                                                                    transition( obj=stage, 
-                                                                                obj_type = 'Stage', 
-                                                                                new_state = states.DONE, 
-                                                                                channel = mq_channel,
-                                                                                queue = 'deq-to-sync',
-                                                                                profiler=local_prof, 
-                                                                                logger=self._logger)
-
-                                                                    try:
-                                                                        pipe._increment_stage()
-
-                                                                        if pipe.completed:
-                                                                        
-                                                                            transition( obj=pipe, 
-                                                                                        obj_type = 'Pipeline', 
-                                                                                        new_state = states.DONE,
-                                                                                        channel = mq_channel, 
-                                                                                        queue = 'deq-to-sync',
-                                                                                        profiler=local_prof, 
-                                                                                        logger=self._logger)
-                                                                    
-                                                                    except:
-                                                                        pipe._decrement_stage()
-
-                                                        else:
-
-                                                            # Task is canceled
-                                                            pass
 
                                                         # Found the task and processed it -- no more iterations needed
 
