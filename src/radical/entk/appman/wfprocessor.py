@@ -510,21 +510,6 @@ class WFprocessor(object):
                                                                             profiler=local_prof, 
                                                                             logger=self._logger)
 
-                                                                try:
-                                                                    pipe._increment_stage()
-
-                                                                    if pipe.completed:
-                                                                        
-                                                                        transition( obj=pipe, 
-                                                                                    obj_type = 'Pipeline', 
-                                                                                    new_state = states.DONE, 
-                                                                                    channel = mq_channel,
-                                                                                    queue = 'deq-to-sync',
-                                                                                    profiler=local_prof, 
-                                                                                    logger=self._logger)
-                                                                    
-                                                                except:
-                                                                    pipe._decrement_stage()
 
                                                         elif task.state == states.FAILED:
 
