@@ -18,6 +18,7 @@ from threading import Thread, Event
 import traceback
 from radical.entk import states
 
+
 class AppManager(object):
 
     """
@@ -38,6 +39,7 @@ class AppManager(object):
 
     def __init__(self, hostname = 'localhost', port = 5672, push_threads=1, pull_threads=1, 
                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
+                resubmit_failed = False,
                 autoterminate=True):
 
         self._uid       = ru.generate_id('radical.entk.appmanager')
@@ -69,11 +71,15 @@ class AppManager(object):
         self._resource_manager = None
         self._task_manager = None
         self._workflow  = None
-        self._resubmit_failed = False
+
+        self._resubmit_failed = resubmit_failed
         self._reattempts = reattempts
         self._cur_attempt = 1
         self._resource_autoterminate = autoterminate
 
+
+        # Check if RP Profiler is set
+        self._rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
 
         # Logger        
         self._logger.info('Application Manager initialized')
@@ -394,7 +400,7 @@ class AppManager(object):
                     self._task_manager.end_manager()
                     self._task_manager.end_heartbeat()
 
-                    self._resource_manager._cancel_resource_request()
+                    self._resource_manager._cancel_resource_request(self._rp_profile)
 
                 self._prof.prof('termination done', uid=self._uid)
 
@@ -423,7 +429,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._cancel_resource_request(self._rp_profile)
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -454,7 +460,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._cancel_resource_request(self._rp_profile)
 
             self._prof.prof('termination done', uid=self._uid)
             
@@ -469,7 +475,7 @@ class AppManager(object):
             self._task_manager.end_heartbeat()
 
         if self._resource_manager:
-            self._resource_manager._cancel_resource_request()
+            self._resource_manager._cancel_resource_request(self._rp_profile)
 
         
 

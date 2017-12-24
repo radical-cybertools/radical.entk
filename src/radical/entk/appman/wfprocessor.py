@@ -467,6 +467,7 @@ class WFprocessor(object):
                                                                             profiler=local_prof, 
                                                                             logger=self._logger)
 
+
                                                         # Found the task and processed it -- no more iterations needed
 
                                                         break

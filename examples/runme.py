@@ -1,18 +1,17 @@
 from profiler import Profiler
 import pprint
 
-def get_task_uids(num_pipelines):
-    
-    num_tasks = num_pipelines*7*1
-    task_uids = []
-    for t in range(num_tasks):
-        task_uids.append('radical.entk.task.%04d'%t)
-
-    return task_uids
-
 if __name__ == '__main__':
 
-    task_uids = get_task_uids(16)
+    p = Profiler()
 
-    p = Profiler(src='./16_replicas/')
-    print p.duration(task_uids, states=['SCHEDULING','DONE'])
+    print p.duration(objects= ['task.0000', 'task.0001'], states=['SCHEDULING', 'EXECUTED'])
+    print p.duration(
+        objects= ['wfprocessor.0000'], 
+        events=['starting dequeue-thread', 'terminating dequeue-thread'])
+
+
+    print p.duration(
+        objects= ['task.0000','wfprocessor.0000',], 
+        events=['starting dequeue-thread'], states=['EXECUTED'])
+

@@ -360,6 +360,7 @@ class ResourceManager(object):
             self._logger.error('Resource request submission failed')
             raise 
 
+
     def _cancel_resource_request(self, download_rp_profile=False):
 
         """
