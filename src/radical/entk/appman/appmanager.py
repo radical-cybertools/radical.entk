@@ -20,8 +20,6 @@ from threading import Thread, Event
 import traceback
 from radical.entk import states
 
-slow_run = os.environ.get('RADICAL_ENTK_SLOW', False)
-
 
 class AppManager(object):
 
@@ -33,46 +31,54 @@ class AppManager(object):
     :Arguments:
         :hostname: host rabbitmq server is running
         :port: port at which rabbitmq can be accessed
-        :push_threads: number of threads to push tasks on the pending_qs
-        :pull_threads: number of threads to pull tasks from the completed_qs
-        :sync_threads: number of threads to pull task from the synchronizer_q
-        :pending_qs: number of queues to hold pending tasks to be pulled by the task manager
-        :completed_qs: number of queues to hold completed tasks pushed by the task manager
+        :reattempts: number of attempts to re-invoke any failed EnTK components
+        :resubmit_failed: resubmit failed tasks (True/False)
+        :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
     """
 
-    def __init__(self, hostname='localhost', port=5672, push_threads=1, pull_threads=1,
-                 sync_threads=1, pending_qs=1, completed_qs=1, reattempts=3,
+    def __init__(self,
+                 hostname='localhost',
+                 port=5672,
+                 reattempts=3,
                  resubmit_failed=False,
                  autoterminate=True):
 
+        # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
-        path = os.getcwd() + '/' + self._sid
 
+        # Create a folder for each session to hold EnTK profiles
+        path = os.getcwd() + '/' + self._sid
         if not os.path.exists(path):
             os.makedirs(path)
 
-        self._uid = ru.generate_id('radical.entk.appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.get_logger(self._uid, path=path)
-        self._prof = ru.Profiler(name=self._uid, path=path)
+        # Create an uid + logger + profiles for AppManager, under the sid
+        # namespace
+        self._uid = ru.generate_id('radical.entk.appmanager.%(item_counter)04d',
+                                   ru.ID_CUSTOM,
+                                   namespace=self._sid)
+        self._logger = ru.get_logger(self._uid,
+                                     path=path)
+        self._prof = ru.Profiler(name=self._uid,
+                                 path=path)
 
         self._prof.prof('create amgr obj', uid=self._uid)
 
         self._name = str()
 
-        # RabbitMQ Queues
-        self._num_pending_qs = pending_qs
-        self._num_completed_qs = completed_qs
-        self._pending_queue = list()
-        self._completed_queue = list()
-
         # RabbitMQ inits
         self._mq_hostname = hostname
         self._port = port
 
+        # RabbitMQ Queues
+        self._num_pending_qs = 1
+        self._num_completed_qs = 1
+        self._pending_queue = list()
+        self._completed_queue = list()
+
         # Threads and procs counts
-        self._num_push_threads = push_threads
-        self._num_pull_threads = pull_threads
-        self._num_sync_threads = sync_threads
+        self._num_push_threads = 1
+        self._num_pull_threads = 1
+        self._num_sync_threads = 1
 
         # Global parameters to have default values
         self._mqs_setup = False
@@ -105,19 +111,6 @@ class AppManager(object):
 
         return self._name
 
-    """
-    @property
-    def resubmit_failed(self):
-
-        
-        Enable resubmission of failed tasks
-
-        :getter: Returns the value of the resubmission flag
-        :setter: Assigns a boolean value for the resubmission flag
-        
-        return self._resubmit_failed
-    """
-
     @property
     def resource_manager(self):
         """
@@ -140,20 +133,15 @@ class AppManager(object):
         else:
             self._name = value
 
-    """
-    @resubmit_failed.setter
-    def resubmit_failed(self, value):
-        self._resubmit_failed = value
-    """
-
     @resource_manager.setter
     def resource_manager(self, value):
 
         if not isinstance(value, ResourceManager):
-            raise TypeError(expected_type=ResourceManager, actual_type=type(value))
+            raise TypeError(expected_type=ResourceManager,
+                            actual_type=type(value))
         else:
             self._resource_manager = value
-            
+
             if self._resource_manager._validate_resource_desc(self._sid):
                 self._resource_manager._populate()
             else:
@@ -207,7 +195,6 @@ class AppManager(object):
             self._cur_attempt = 1
 
             if not self._workflow:
-                print 'Please assign workflow before invoking run method - cannot proceed'
                 self._logger.error('No workflow assigned currently, please check your script')
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
@@ -255,8 +242,6 @@ class AppManager(object):
                     self._prof.prof('starting synchronizer thread', uid=self._uid)
                     self._sync_thread.start()
 
-                print self._sync_thread.is_alive()
-
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
                 self._wfp = WFprocessor(sid=self._sid,
@@ -287,15 +272,9 @@ class AppManager(object):
                 active_pipe_count = len(self._workflow)
                 finished_pipe_uids = []
 
-                print 'Active pipes: ', active_pipe_count
-                print 'WFP incomplete: ', self._wfp.workflow_incomplete()
-
                 # We wait till all pipelines of the workflow are marked
                 # complete
                 while (active_pipe_count > 0)and(self._wfp.workflow_incomplete()):
-
-                    if slow_run:
-                        time.sleep(1)
 
                     if active_pipe_count > 0:
 
@@ -553,14 +532,14 @@ class AppManager(object):
             self._logger.debug('Setting up all exchanges and queues')
 
             for i in range(1, self._num_pending_qs + 1):
-                queue_name = 'pendingq-%s' % i
+                queue_name = '%s-pendingq-%s' % (self._sid, i)
                 self._pending_queue.append(queue_name)
                 self._mq_channel.queue_delete(queue=queue_name)
                 # Durable Qs will not be lost if rabbitmq server crashes
                 self._mq_channel.queue_declare(queue=queue_name, durable=True)
 
             for i in range(1, self._num_completed_qs + 1):
-                queue_name = 'completedq-%s' % i
+                queue_name = '%s-completedq-%s' % (self._sid, i)
                 self._completed_queue.append(queue_name)
                 self._mq_channel.queue_delete(queue=queue_name)
                 # Durable Qs will not be lost if rabbitmq server crashes
@@ -570,24 +549,24 @@ class AppManager(object):
             # self._mq_channel.queue_declare(queue='sync-to-master')
 
             # Queues to send messages from the threads/procs to master
-            self._mq_channel.queue_delete(queue='tmgr-to-sync')
-            self._mq_channel.queue_declare(queue='tmgr-to-sync')
-            self._mq_channel.queue_delete(queue='cb-to-sync')
-            self._mq_channel.queue_declare(queue='cb-to-sync')
-            self._mq_channel.queue_delete(queue='enq-to-sync')
-            self._mq_channel.queue_declare(queue='enq-to-sync')
-            self._mq_channel.queue_delete(queue='deq-to-sync')
-            self._mq_channel.queue_declare(queue='deq-to-sync')
+            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-tmgr-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-cb-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-enq-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-deq-to-sync' % self._sid)
 
             # Queues to send messages from master to threads/procs
-            self._mq_channel.queue_delete(queue='sync-to-tmgr')
-            self._mq_channel.queue_declare(queue='sync-to-tmgr')
-            self._mq_channel.queue_delete(queue='sync-to-cb')
-            self._mq_channel.queue_declare(queue='sync-to-cb')
-            self._mq_channel.queue_delete(queue='sync-to-enq')
-            self._mq_channel.queue_declare(queue='sync-to-enq')
-            self._mq_channel.queue_delete(queue='sync-to-deq')
-            self._mq_channel.queue_declare(queue='sync-to-deq')
+            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-sync-to-tmgr' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-sync-to-cb' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-sync-to-enq' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
+            self._mq_channel.queue_declare(queue='%s-sync-to-deq' % self._sid)
             # Durable Qs will not be lost if rabbitmq server crashes
 
             self._logger.debug('All exchanges and queues are setup')
@@ -764,7 +743,7 @@ class AppManager(object):
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between tmgr Main thread and synchronizer -- only Task objects
 
-                method_frame, props, body = mq_channel.basic_get(queue='tmgr-to-sync')
+                method_frame, props, body = mq_channel.basic_get(queue='%s-tmgr-to-sync'%self._sid)
 
                 """
                 The message received is a JSON object with the following structure:
@@ -783,14 +762,14 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, 'sync-to-tmgr', props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-tmgr'%self._sid, props.correlation_id, mq_channel)
 
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between callback thread and synchronizer -- only Task objects
 
-                method_frame, props, body = mq_channel.basic_get(queue='cb-to-sync')
+                method_frame, props, body = mq_channel.basic_get(queue='%s-cb-to-sync'%self._sid)
 
                 """
                 The message received is a JSON object with the following structure:
@@ -809,13 +788,13 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, 'sync-to-cb', props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-cb'%self._sid, props.correlation_id, mq_channel)
 
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between enqueue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='enq-to-sync')
+                method_frame, props, body = mq_channel.basic_get(queue='%s-enq-to-sync'%self._sid)
 
                 if body:
 
@@ -825,18 +804,18 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Stage':
-                        stage_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
+                        stage_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, 'sync-to-enq', props.correlation_id, mq_channel)
+                        pipeline_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between dequeue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='deq-to-sync')
+                method_frame, props, body = mq_channel.basic_get(queue='%s-deq-to-sync'%self._sid)
 
                 if body:
 
@@ -846,13 +825,13 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Stage':
-                        stage_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+                        stage_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, 'sync-to-deq', props.correlation_id, mq_channel)
+                        pipeline_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
             self._prof.prof('terminating synchronizer', uid=self._uid)

@@ -21,7 +21,7 @@ class ResourceManager(object):
 
     """
 
-    def __init__(self, resource_desc):        
+    def __init__(self, resource_desc):
 
         self._resource_desc = resource_desc
 
@@ -33,7 +33,7 @@ class ResourceManager(object):
         self._cores = None
         self._project = None
         self._access_schema = None
-        self._queue = None        
+        self._queue = None
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
@@ -41,7 +41,6 @@ class ResourceManager(object):
 
         # Shared data list
         self._shared_data = list()
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter methods
@@ -212,7 +211,7 @@ class ResourceManager(object):
             self._logger.info('Resource description validated')
 
             self._prof.prof('rdesc validated', uid=self._uid)
-            
+
             return True
 
         except Exception, ex:
@@ -226,11 +225,11 @@ class ResourceManager(object):
         :arguments: valid dictionary consisting of details of the resource request
         """
 
-        try:            
+        try:
 
             self._prof.prof('populating rmgr', uid=self._uid)
 
-            self._logger.debug('Populating resource manager object')            
+            self._logger.debug('Populating resource manager object')
 
             self._resource = self._resource_desc['resource']
             self._walltime = self._resource_desc['walltime']

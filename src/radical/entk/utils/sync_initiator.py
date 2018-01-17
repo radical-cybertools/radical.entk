@@ -34,9 +34,11 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
         local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
 
-    temp = queue.split('-')
-    temp.reverse()
-    reply_queue = '-'.join(temp)
+    sid = '-'.join(queue.split('-')[:-3])
+    qname = queue.split('-')[-3:]
+    qname.reverse()
+    reply_queue = '-'.join(qname)
+    reply_queue = sid + '-' + reply_queue
                 
     while True:
         #self._logger.info('waiting for ack')        

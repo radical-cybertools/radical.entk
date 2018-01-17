@@ -40,8 +40,10 @@ class TaskManager(object):
 
     def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
 
-        self._uid = ru.generate_id('radical.entk.task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
-        self._path = os.getcwd() + '/' + sid
+        self._sid = sid
+
+        self._uid = ru.generate_id('radical.entk.task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._path = os.getcwd() + '/' + self._sid
 
         self._logger = ru.get_logger(self._uid, path=self._path)
         self._prof = ru.Profiler(name=self._uid + '-obj', path=self._path)
@@ -96,8 +98,8 @@ class TaskManager(object):
                                                               )
 
             channel = self._mq_connection.channel()
-            channel.queue_delete(queue='heartbeat-req')
-            channel.queue_declare(queue='heartbeat-req')
+            channel.queue_delete(queue='%s-heartbeat-req'%self._sid)
+            channel.queue_declare(queue='%s-heartbeat-req'%self._sid)
             response = True
 
             while (response and (not self._hb_alive.is_set())):
@@ -106,9 +108,9 @@ class TaskManager(object):
 
                 # Heartbeat request signal sent to task manager via rpc-queue
                 channel.basic_publish(exchange='',
-                                      routing_key='heartbeat-req',
+                                      routing_key='%s-heartbeat-req'%self._sid,
                                       properties=pika.BasicProperties(
-                                          reply_to='heartbeat-res',
+                                          reply_to='%s-heartbeat-res'%self._sid,
                                           correlation_id=corr_id),
                                       body='request')
 
@@ -117,7 +119,7 @@ class TaskManager(object):
                 # Ten second interval for heartbeat request to be responded to
                 time.sleep(10)
 
-                method_frame, props, body = channel.basic_get(queue='heartbeat-res')
+                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res'%self._sid)
 
                 if body:
                     if corr_id == props.correlation_id:
@@ -211,7 +213,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.COMPLETED,
                                        channel=mq_channel,
-                                       queue='cb-to-sync',
+                                       queue='%s-cb-to-sync'%self._sid,
                                        profiler=local_prof,
                                        logger=logger)
 
@@ -228,7 +230,7 @@ class TaskManager(object):
                                            obj_type='Task',
                                            new_state=states.SCHEDULED,
                                            channel=mq_channel,
-                                           queue='cb-to-sync',
+                                           queue='%s-cb-to-sync'%self._sid,
                                            profiler=local_prof,
                                            logger=logger)
                             else:
@@ -240,7 +242,7 @@ class TaskManager(object):
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='completedq-1',
+                                                 routing_key='%s-completedq-1'%self._sid,
                                                  body=task_as_dict
                                                  # properties=pika.BasicProperties(
                                                  # make message persistent
@@ -288,8 +290,8 @@ class TaskManager(object):
             mq_channel = self._mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_delete(queue='heartbeat-res')
-            mq_channel.queue_declare(queue='heartbeat-res')
+            mq_channel.queue_delete(queue='%s-heartbeat-res'%self._sid)
+            mq_channel.queue_declare(queue='%s-heartbeat-res'%self._sid)
 
             '''
             # Function to be invoked upon request message
@@ -327,7 +329,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
-                                       queue='tmgr-to-sync',
+                                       queue='%s-tmgr-to-sync'%self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
 
@@ -342,7 +344,7 @@ class TaskManager(object):
                                            obj_type='Task',
                                            new_state=states.SCHEDULED,
                                            channel=mq_channel,
-                                           queue='tmgr-to-sync',
+                                           queue='%s-tmgr-to-sync'%self._sid,
                                            profiler=local_prof,
                                            logger=self._logger)
                             else:
@@ -359,7 +361,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTED,
                                        channel=mq_channel,
-                                       queue='tmgr-to-sync',
+                                       queue='%s-tmgr-to-sync'%self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
 
@@ -374,7 +376,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
-                                       queue='tmgr-to-sync',
+                                       queue='%s-tmgr-to-sync'%self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
                             raise
@@ -388,14 +390,14 @@ class TaskManager(object):
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue='heartbeat-req')
+                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req'%self._sid)
 
                     if body:
 
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='heartbeat-res',
+                                                 routing_key='%s-heartbeat-res'%self._sid,
                                                  properties=pika.BasicProperties(correlation_id=props.correlation_id),
                                                  body='response')
 
