@@ -163,14 +163,14 @@ class ResourceManager(object):
         :return: boolean (valid/invalid)
         """
 
+        self._uid = ru.generate_id('radical.entk.resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._path = os.getcwd() + '/' + sid
+
+        self._logger = ru.get_logger(self._uid, path=self._path)
+        self._prof = ru.Profiler(name=self._uid, path=self._path)
+
         try:
-
-            self._uid = ru.generate_id('radical.entk.resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
-            self._path = os.getcwd() + '/' + sid
-
-            self._logger = ru.get_logger(self._uid, path=self._path)
-            self._prof = ru.Profiler(name=self._uid, path=self._path)
-
+            
             self._prof.prof('validating rdesc', uid=self._uid)
 
             self._logger.debug('Validating resource description')
