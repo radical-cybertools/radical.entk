@@ -30,23 +30,24 @@ def test_task_initialization():
     assert t._parent_stage == None
 
 
-    t = Task(from_dict=True)
+    t = Task(duplicate=True)
     assert not hasattr(t, '_uid')
-    assert not hasattr(t, 'name')
-    assert not hasattr(t, 'state')
-    assert not hasattr(t, 'pre_exec')
-    assert not hasattr(t, 'executable')
-    assert not hasattr(t, 'arguments')
-    assert not hasattr(t, 'post_exec')
-    assert not hasattr(t, 'cores')
-    assert not hasattr(t, 'mpi')
-    assert not hasattr(t, 'upload_input_data')
-    assert not hasattr(t, 'copy_input_data')
-    assert not hasattr(t, 'link_input_data')
-    assert not hasattr(t, 'copy_output_data')
-    assert not hasattr(t, 'download_output_data')
-    assert not hasattr(t, '_parent_pipeline')
-    assert not hasattr(t, '_parent_stage')
+    assert type(t.name) == str
+    assert type(t.state) == str
+    assert t.state == states.INITIAL
+    assert type(t.pre_exec) == list
+    assert type(t.executable) == list
+    assert type(t.arguments) == list
+    assert type(t.post_exec) == list
+    assert t.cores == 1
+    assert t.mpi == False
+    assert type(t.upload_input_data) == list
+    assert type(t.copy_input_data) == list
+    assert type(t.link_input_data) == list
+    assert type(t.copy_output_data) == list
+    assert type(t.download_output_data) == list
+    assert t._parent_pipeline == None
+    assert t._parent_stage == None
 
 def test_assignment_exceptions():
 
