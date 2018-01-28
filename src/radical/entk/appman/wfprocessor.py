@@ -235,7 +235,6 @@ class WFprocessor(object):
                                             profiler=local_prof, 
                                             logger=self._logger)
 
-                                print 'check-1'
     
                             if pipe.stages[pipe.current_stage-1].state in [states.INITIAL, states.SCHEDULED]:
     
@@ -255,7 +254,7 @@ class WFprocessor(object):
                                                     profiler=local_prof, 
                                                     logger=self._logger)
 
-                                        print 'check-2'
+
                                     
                                     executable_tasks = executable_stage.tasks
     
@@ -274,7 +273,6 @@ class WFprocessor(object):
                                                             profiler=local_prof, 
                                                             logger=self._logger)                                            
 
-                                                print 'check-3'
         
                                                 task_as_dict = json.dumps(executable_task.to_dict())
         
@@ -301,7 +299,6 @@ class WFprocessor(object):
                                                     profiler=local_prof, 
                                                     logger=self._logger)
 
-                                                print 'check-4'
                                                     
                                                 tasks_submitted = True
                                                 self._logger.debug('Task %s published to queue'% executable_task.uid)
@@ -318,8 +315,7 @@ class WFprocessor(object):
                                                         queue = 'enq-to-sync',
                                                         profiler=local_prof, 
                                                         logger=self._logger)
-
-                                            print 'check-5'                                            
+                                     
     
                                             task_as_dict = json.dumps(executable_task.to_dict())
     
@@ -346,7 +342,6 @@ class WFprocessor(object):
                                                 profiler=local_prof, 
                                                 logger=self._logger)
 
-                                            print 'check-6'
                                                 
                                             self._logger.debug('Task %s published to queue'% executable_task.uid)                                                                                                
                                                 
@@ -362,8 +357,6 @@ class WFprocessor(object):
                                                     queue = 'enq-to-sync',
                                                     profiler=local_prof, 
                                                     logger=self._logger) 
-
-                                        print 'check-7'
 
                                                                                 
                                 except Exception, ex:
@@ -384,17 +377,6 @@ class WFprocessor(object):
                                         
                                     raise
 
-                                print 'check-8'
-
-                            print 'check-9'
-
-                        print 'check-10'
-
-                    print 'check-11'
-
-                print 'check-12', self._enqueue_thread_terminate.is_set()
-
-            print 'check-13'
 
             self._logger.info('Enqueue thread terminated')                                  
             self._mq_connection.close()
