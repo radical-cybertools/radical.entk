@@ -683,7 +683,7 @@ class AppManager(object):
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_stage = Stage()
+                completed_stage = Stage(from_dict=True)
                 completed_stage.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s'%(completed_stage.uid, completed_stage.state))
 
