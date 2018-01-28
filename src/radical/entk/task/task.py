@@ -6,44 +6,53 @@ class Task(object):
 
 
     """
-    A Task is an abstraction of a computational unit. In this case, a Task consists of its
-    executable along with its required software environment, files to be staged as input 
-    and output.
+    A Task is an abstraction of a computational unit. In this case, a Task 
+    consists of its executable along with its required software environment, 
+    files to be staged as input and output.
+
+    At the user level a Task is to be populated by assigning attributes. 
+    Internally, an empty Task is created and population using the `from_dict`
+    function. This is to avoid creating Tasks with new `uid` as tasks with new 
+    `uid` offset the uid count file in radical.utils and can potentially affect
+    the profiling if not taken care.
     """
 
-    def __init__(self):
+    def __init__(self, from_dict = False):
 
-        self._uid       = ru.generate_id('radical.entk.task')
-        self._name      = str()
+        if not from_dict:
 
-        self._state     = states.INITIAL
+            self._uid       = ru.generate_id('radical.entk.task')
+            self._name      = str()
 
-        # Attributes necessary for execution
-        self._pre_exec      = list()
-        self._executable    = list()
-        self._arguments     = list()
-        self._post_exec     = list()
-        self._cores         = 1
-        self._mpi           = False
+            self._state     = states.INITIAL
 
-        # Data staging attributes
-        self._upload_input_data     = list()
-        self._copy_input_data       = list()
-        self._link_input_data       = list()
-        self._copy_output_data      = list()
-        self._download_output_data  = list()
+            # Attributes necessary for execution
+            self._pre_exec      = list()
+            self._executable    = list()
+            self._arguments     = list()
+            self._post_exec     = list()
+            self._cores         = 1
+            self._mpi           = False
 
-        self._path = None
-        self._exit_code = None
+            # Data staging attributes
+            self._upload_input_data     = list()
+            self._copy_input_data       = list()
+            self._link_input_data       = list()
+            self._copy_output_data      = list()
+            self._download_output_data  = list()
 
-        # Keep track of states attained
-        self._state_history = [states.INITIAL]
+            self._path = None
+            self._exit_code = None
 
-        ## The following help in updation
-        # Stage this task belongs to
-        self._p_stage = None
-        # Pipeline this task belongs to
-        self._p_pipeline = None
+            # Keep track of states attained
+            self._state_history = [states.INITIAL]
+
+            ## The following help in updation
+            # Stage this task belongs to
+            self._p_stage = None
+            # Pipeline this task belongs to
+            self._p_pipeline = None
+
 
 
     # ------------------------------------------------------------------------------------------------------------------

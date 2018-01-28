@@ -637,7 +637,7 @@ class AppManager(object):
 
             def task_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_task = Task()
+                completed_task = Task(from_dict=True)
                 completed_task.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s'%(completed_task.uid, completed_task.state))
 

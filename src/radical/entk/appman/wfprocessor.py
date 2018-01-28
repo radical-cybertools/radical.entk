@@ -431,7 +431,7 @@ class WFprocessor(object):
                     if body:
 
                         # Get task from the message
-                        completed_task = Task()
+                        completed_task = Task(from_dict=True)
                         completed_task.from_dict(json.loads(body))
                         self._logger.info('Got finished task %s from queue'%(completed_task.uid))                       
 

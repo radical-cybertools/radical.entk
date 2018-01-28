@@ -324,7 +324,7 @@ class TaskManager(object):
                         try:
 
                             task = None
-                            task = Task()
+                            task = Task(from_dict=True)
                             task.from_dict(json.loads(body))
 
                             transition( obj=task, 
