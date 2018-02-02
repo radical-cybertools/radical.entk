@@ -32,6 +32,19 @@ def test_resource_manager_initialization():
     assert rm.cores == res_dict['cores']
     assert rm.project == res_dict['project']
 
+    res_dict = {
+                    'resource': 'local.localhost',
+                    'walltime': 40,
+                    'cores': 20,
+                    'project': None
+                }
+
+    rm = ResourceManager(res_dict)
+
+    assert rm.resource == res_dict['resource']
+    assert rm.walltime == res_dict['walltime']
+    assert rm.cores == res_dict['cores']
+    assert rm.project == res_dict['project']
 
 def test_validate_resource_description():
 
