@@ -210,7 +210,6 @@ class ResourceManager(object):
             expected_keys = [   'resource',
                                 'walltime',
                                 'cores',
-                                'project'
                             ]
 
             for key in expected_keys:
@@ -226,8 +225,9 @@ class ResourceManager(object):
             if not isinstance(resource_desc['cores'], int):
                 raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
 
-            if not isinstance(resource_desc['project'],str):
-                raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
+            if 'project' in resource_desc:
+                if not isinstance(resource_desc['project'],str) or resource_desc['project'] is not None:
+                    raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
 
             if 'access_schema' in resource_desc:
                 if not isinstance(resource_desc['access_schema'], str):
