@@ -135,7 +135,8 @@ setup_args = {
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
-    'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
+    #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
+    'install_requires'  :  ['radical.utils', 'pika'],
 
     'zip_safe'          : False,
     
@@ -143,6 +144,8 @@ setup_args = {
                                     makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
                                     makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
                             ],
+
+    # 'dependency_links': ['git+https://github.com/radical-cybertools/radical.utils.git@devel#egg=radical.utils-devel']
 
 }
 

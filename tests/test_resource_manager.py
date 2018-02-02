@@ -26,7 +26,9 @@ def test_resource_manager_initialization():
     os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
 
     rm = ResourceManager(res_dict)
-
+    rm._validate_resource_desc(sid='xyz')
+    rm._populate()
+    
     assert rm.resource == res_dict['resource']
     assert rm.walltime == res_dict['walltime']
     assert rm.cores == res_dict['cores']
@@ -64,14 +66,14 @@ def test_validate_resource_description():
     rm = ResourceManager(res_dict)
 
     new_res_dict = None
-
     with pytest.raises(TypeError):
-        rm._validate_resource_desc(new_res_dict)
+        rm = ResourceManager(new_res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
     new_res_dict = {'a': 'b'}
-
     with pytest.raises(Error):
-        rm._validate_resource_desc(new_res_dict)
+        rm = ResourceManager(new_res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
     data = [1, 'a']
 
@@ -83,8 +85,8 @@ def test_validate_resource_description():
                     'cores': 20,
                     'project': 'Random'
                 }
-
-        rm._validate_resource_desc(res_dict)
+        rm = ResourceManager(res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
         res_dict = {
                     'resource': 'local.localhost',
@@ -92,8 +94,8 @@ def test_validate_resource_description():
                     'cores': 20,
                     'project': data[0]
                 }
-
-        rm._validate_resource_desc(res_dict)
+        rm = ResourceManager(res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
         res_dict = {
                     'resource': 'local.localhost',
@@ -101,8 +103,8 @@ def test_validate_resource_description():
                     'cores': 20,
                     'project': 'Random'
                 }
-
-        rm._validate_resource_desc(res_dict)
+        rm = ResourceManager(res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
         res_dict = {
                     'resource': 'local.localhost',
@@ -110,8 +112,8 @@ def test_validate_resource_description():
                     'cores': data[1],
                     'project': 'Random'
                 }
-
-        rm._validate_resource_desc(res_dict)
+        rm = ResourceManager(res_dict)
+        rm._validate_resource_desc(sid='xyz')
 
 
 def test_resource_manager_populate():
