@@ -322,7 +322,7 @@ class TaskManager(object):
                         try:
 
                             task = None
-                            task = Task()
+                            task = Task(duplicate=True)
                             task.from_dict(json.loads(body))
 
                             transition(obj=task,

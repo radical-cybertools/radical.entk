@@ -48,4 +48,4 @@ def test_integration_local():
     appman = AppManager()
     appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
-    # appman.run()
+    appman.run()

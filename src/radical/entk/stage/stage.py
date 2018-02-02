@@ -11,9 +11,11 @@ class Stage(object):
     stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
     """
 
-    def __init__(self):
+    def __init__(self, duplicate = False):
 
-        self._uid       = ru.generate_id('radical.entk.stage')
+        if not duplicate:
+            self._uid       = ru.generate_id('radical.entk.stage')
+            
         self._tasks     = set()
         self._name      = str()
 

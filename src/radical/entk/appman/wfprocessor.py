@@ -239,6 +239,7 @@ class WFprocessor(object):
 
                             if pipe.stages[pipe.current_stage - 1].state in [states.INITIAL, states.SCHEDULED]:
 
+
                                 try:
 
                                     # Starting scheduling of tasks of current stage, so set state of stage to
@@ -346,7 +347,6 @@ class WFprocessor(object):
                                                    queue='%s-enq-to-sync'%self._sid,
                                                    profiler=local_prof,
                                                    logger=self._logger)
-
                                 except Exception, ex:
 
                                     # If there is an error, explicitly switching the state of Stage to INITIAL
@@ -424,7 +424,7 @@ class WFprocessor(object):
                     if body:
 
                         # Get task from the message
-                        completed_task = Task()
+                        completed_task = Task(duplicate=True)
                         completed_task.from_dict(json.loads(body))
                         self._logger.info('Got finished task %s from queue' % (completed_task.uid))
 

@@ -601,7 +601,7 @@ class AppManager(object):
 
             def task_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_task = Task()
+                completed_task = Task(duplicate=True)
                 completed_task.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s' % (completed_task.uid, completed_task.state))
 
@@ -647,7 +647,7 @@ class AppManager(object):
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_stage = Stage()
+                completed_stage = Stage(duplicate=True)
                 completed_stage.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s' % (completed_stage.uid, completed_stage.state))
 

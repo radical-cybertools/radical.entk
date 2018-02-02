@@ -301,7 +301,7 @@ def create_task_from_cu(cu, prof=None):
         if prof:
             prof.prof('task from cu - create', uid=cu.name.split(',')[0].strip())
 
-        task = Task()
+        task = Task(duplicate=True)
         task.uid                = cu.name.split(',')[0].strip()
         task._parent_stage      = cu.name.split(',')[1].strip()
         task._parent_pipeline   = cu.name.split(',')[2].strip()

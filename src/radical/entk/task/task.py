@@ -6,14 +6,22 @@ class Task(object):
 
 
     """
-    A Task is an abstraction of a computational unit. In this case, a Task consists of its
-    executable along with its required software environment, files to be staged as input 
-    and output.
+    A Task is an abstraction of a computational unit. In this case, a Task 
+    consists of its executable along with its required software environment, 
+    files to be staged as input and output.
+
+    At the user level a Task is to be populated by assigning attributes. 
+    Internally, an empty Task is created and population using the `from_dict`
+    function. This is to avoid creating Tasks with new `uid` as tasks with new 
+    `uid` offset the uid count file in radical.utils and can potentially affect
+    the profiling if not taken care.
     """
 
-    def __init__(self):
+    def __init__(self, duplicate = False):
 
-        self._uid       = ru.generate_id('radical.entk.task')
+        if not duplicate:
+            self._uid       = ru.generate_id('radical.entk.task')
+
         self._name      = str()
 
         self._state     = states.INITIAL
@@ -44,6 +52,7 @@ class Task(object):
         self._p_stage = None
         # Pipeline this task belongs to
         self._p_pipeline = None
+
 
 
     # ------------------------------------------------------------------------------------------------------------------
