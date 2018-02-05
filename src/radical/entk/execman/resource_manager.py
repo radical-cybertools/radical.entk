@@ -38,8 +38,8 @@ class ResourceManager(object):
         self._pilot         = None
         self._resource      = None
         self._walltime      = None
-        self._cpus          = None
-        self._gpus          = None
+        self._cpus          = 1
+        self._gpus          = 0
         self._project       = None
         self._access_schema = None
         self._queue         = None
@@ -281,7 +281,7 @@ class ResourceManager(object):
             self._project = str(resource_desc['project'])
 
             if 'gpus' in resource_desc:
-                self._gpus = str(resource_desc['gpus'])
+                self._gpus = resource_desc['gpus']
 
             if 'access_schema' in resource_desc:
                 self._access_schema = str(resource_desc['access_schema'])
@@ -328,7 +328,7 @@ class ResourceManager(object):
                     'project'   : self._project,
                     }
 
-            if self._access_schema:
+            if self._gpus:
                 pd_init['gpus'] = self._gpus
     
             if self._access_schema:
