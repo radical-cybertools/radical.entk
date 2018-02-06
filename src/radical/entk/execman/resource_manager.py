@@ -226,7 +226,7 @@ class ResourceManager(object):
                 raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
 
             if 'project' in resource_desc:
-                if not isinstance(resource_desc['project'],str) or resource_desc['project'] is not None:
+                if not isinstance(resource_desc['project'],str) and resource_desc['project'] is not None:
                     raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
 
             if 'access_schema' in resource_desc:
