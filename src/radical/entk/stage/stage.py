@@ -2,7 +2,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.task.task import Task
 from radical.entk import states
-
+from collections import Iterable
 
 class Stage(object):
 
@@ -116,9 +116,17 @@ class Stage(object):
         
 
     @tasks.setter
-    def tasks(self, tasks):        
-        self._tasks = self._validate_tasks(tasks)
-        self._task_count = len(self._tasks)
+    def tasks(self, val):        
+        if (not isinstance(val, set)) and (isinstance(val, Iterable)) and val:
+            val = set(val)
+        else:
+            raise TypeError(expected_type=set, actual_type=type(val))
+
+        if False not in [isinstance(t, Task) for t in val]:
+            self._tasks = self._validate_tasks(val)
+            self._task_count = len(self._tasks)
+        else:
+            raise TypeError(expected_type='set of tasks', actual_type=[not isinstance(t, Task) for t in val])
 
     @_parent_pipeline.setter
     def _parent_pipeline(self, value):
@@ -140,58 +148,26 @@ class Stage(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_tasks(self, tasks):
+    def add_tasks(self, val):
 
         """
         Adds tasks to the existing set of tasks of the Stage
 
         :argument: set of tasks
         """
+        if (not isinstance(val, set)) and (isinstance(val, Iterable)) and val:
+            val = set(val)
+        else:
+            raise TypeError(expected_type=set, actual_type=type(val))
 
-        tasks = self._validate_tasks(tasks)
-        self._tasks.update(tasks)
-        self._task_count = len(self._tasks)
-        
+        if False not in [isinstance(t, Task) for t in val]:
+            val = self._validate_tasks(val)
+            self._tasks.update(val)
+            self._task_count = len(self._tasks)
+        else:
 
+            raise TypeError(expected_type='set of tasks', actual_type=[not isinstance(t, Task) for t in val])
 
-    def remove_tasks(self, task_names):
-
-        """
-        Removes tasks from the current stage
-
-        :argument: list of task names as strings
-        """
-
-
-        if not isinstance(task_names, list):
-            task_names = [task_names]
-
-        for val in task_names:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
-
-
-        try:
-            copy_of_existing_tasks = list(self._tasks)
-            copy_task_names = list(task_names)
-
-            for task in self._tasks:
-
-                for task_name in task_names:
-                
-                    if task.name ==  task_name:
-
-                        copy_of_existing_tasks.remove(task)
-                        copy_task_names.remove(task_name)
-
-                task_names = copy_task_names
-
-            if len(self._tasks) != len(copy_of_existing_tasks):
-                self._tasks = copy_of_existing_tasks
-                self._task_count = len(self._tasks)
-
-        except Exception, ex:
-            raise Error(text=ex)
 
     def to_dict(self):
 

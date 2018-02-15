@@ -180,7 +180,7 @@ class ResourceManager(object):
 
             expected_keys = [   'resource',
                                 'walltime',
-                                'cores',
+                                'cores'
                             ]
 
             for key in expected_keys:

@@ -69,7 +69,8 @@ class Task(object):
         :type: String
         """
 
-        return self._uid
+        if hasattr(self, '_uid'):
+            return self._uid
 
     @property
     def name(self):
@@ -353,7 +354,10 @@ class Task(object):
     @cores.setter
     def cores(self, val):
         if isinstance(val, int):
-            self._cores = val
+            if val > 0:
+                self._cores = val
+            else:
+                raise ValueError(obj=self._uid, attribute='cores', expected_value='int > 0', actual_value=val)
         else:
             raise TypeError(expected_type=int, actual_type=type(val))
 

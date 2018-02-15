@@ -128,7 +128,7 @@ class AppManager(object):
     @name.setter
     def name(self, value):
 
-        if not instantiate(value, str):
+        if not isinstance(value, str):
             raise TypeError(expected_type=str, actual_type=type(value))
 
         else:

@@ -3,7 +3,7 @@ from radical.entk.exceptions import *
 from radical.entk.stage.stage import Stage
 import threading
 from radical.entk import states
-
+from collections import Iterable
 
 class Pipeline(object):
 
@@ -144,19 +144,22 @@ class Pipeline(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @stages.setter
-    def stages(self, stages):
+    def stages(self, val):
             
-        self._stages = self._validate_stages(stages)
+        if (not isinstance(val, list)) and (isinstance(val, Iterable)) and val:
+            val = list(val)
+        else:
+            raise TypeError(expected_type=list, actual_type=type(val))
 
-        try:
+        if False not in [isinstance(s, Stage) for s in val]:
+            self._stages = self._validate_stages(stages)
             self._pass_uid()
             self._stage_count = len(self._stages)
             if self._cur_stage == 0:
                 self._cur_stage = 1
 
-        except Exception, ex:
-            raise Error(text=ex)
-
+        else:
+            raise TypeError(expected_type='list of stages', actual_type=[not isinstance(s, Stage) for s in val])
 
     @state.setter
     def state(self, value):
@@ -170,68 +173,29 @@ class Pipeline(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_stages(self, stages):
+    def add_stages(self, val):
 
         """        
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
         """
-        stages = self._validate_stages(stages)
+        if (not isinstance(val, list)) and (isinstance(val, Iterable)) and val:
+            val = list(val)
+        else:
+            raise TypeError(expected_type=list, actual_type=type(val))
 
-        try:
-            stages = self._pass_uid(stages)
-            self._stages.extend(stages)
+        if False not in [isinstance(s, Stage) for s in val]:
+            self._stages = self._validate_stages(stages)
+            self._pass_uid()
             self._stage_count = len(self._stages)
             if self._cur_stage == 0:
                 self._cur_stage = 1
 
-        except Exception, ex:
-            raise Error(text=ex)
+        else:
+            raise TypeError(expected_type='list of stages', actual_type=[not isinstance(s, Stage) for s in val])
 
-    def remove_stages(self, stage_names):
-
-        """
-        Remove stages from the current Pipeline
-
-        :argument: List of stage names as strings
-        """
-
-        if not isinstance(stage_names, list):
-            stage_names = [stage_names]
-
-        for val in stage_names:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
-
-        try:
-
-            copy_of_existing_stages = list(self._stages)
-            copy_stage_names = list(stage_names)
-
-            for stage in self._stages:
-
-                for stage_name in stage_names:
-                
-                    if stage.name ==  stage_name:
-
-                        copy_of_existing_stages.remove(stage)
-                        copy_stage_names.remove(stage_name)
-
-                stage_names = copy_stage_names
-
-            if len(self._stages) != len(copy_of_existing_stages):
-
-                self._stages = copy_of_existing_stages
-                self._stage_count = len(self._stages)
-
-                # Current stage does not change or changes to the 'new' last stage
-                self._cur_stage = min(self._cur_stage, self._stage_count)
-
-        except Exception, ex:
-            raise Error(text=ex)
-
-
+  
     def to_dict(self):
 
 
