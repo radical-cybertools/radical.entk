@@ -71,7 +71,8 @@ docs/_build/
 ./tests/__pycache__
 ./tests/test_api/__pycache__
 ./tests/test_functionality/__pycache__
-./tests/test_integration /__pycache__
+./tests/test_integration/__pycache__
+./tests/test_issues/__pycache__
 
 
 # hypothesis files
@@ -79,7 +80,8 @@ docs/_build/
 ./tests/.hypothesis
 ./tests/test_api/.hypothesis
 ./tests/test_functionality/.hypothesis
-./tests/test_integration /.hypothesis
+./tests/test_integration/.hypothesis
+./tests/test_issues/.hypothesis
 
 # misc files
 ./.pytest_cache
