@@ -18,7 +18,7 @@ def test_initialization():
     assert s.name == str()
     assert s.state == states.INITIAL
     assert s._task_count == 0
-    assert s._parent_pipeline == None
+    assert s.parent_pipeline == None
 
 
 @given(t=st.text(),

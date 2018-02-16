@@ -264,7 +264,7 @@ class Task(object):
         return self._path
 
     @property
-    def _parent_stage(self):
+    def parent_stage(self):
 
         """
         :getter: Returns the stage this task belongs to
@@ -273,7 +273,7 @@ class Task(object):
         return self._p_stage
     
     @property
-    def _parent_pipeline(self):
+    def parent_pipeline(self):
 
         """
         :getter: Returns the pipeline this task belongs to
@@ -332,8 +332,10 @@ class Task(object):
     def executable(self, val):
         if isinstance(val, list):
             self._executable = val
+        elif isinstance(val, str):
+            self._executable = [val]
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type='list or str', actual_type=type(val))
 
     @arguments.setter
     def arguments(self, val):
@@ -420,15 +422,15 @@ class Task(object):
         else:
             raise TypeError(entity='path', expected_type=str, actual_type=type(val))
 
-    @_parent_stage.setter
-    def _parent_stage(self, val):
+    @parent_stage.setter
+    def parent_stage(self, val):
         if isinstance(val,str):
             self._p_stage = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
-    @_parent_pipeline.setter
-    def _parent_pipeline(self, val):
+    @parent_pipeline.setter
+    def parent_pipeline(self, val):
         if isinstance(val,str):
             self._p_pipeline = val
         else:
@@ -621,48 +623,12 @@ class Task(object):
         """
 
         if self._state is not states.INITIAL:
-            raise ValueError(   object=self._uid, 
+            raise ValueError(   obj=self._uid, 
                                 attribute='state', 
                                 expected_value=states.INITIAL,
                                 actual_value=self._state)
 
-        if self._executable is None:
-            raise MissingError( object=self._uid,
+        if not self._executable:
+            raise MissingError( obj=self._uid,
                                 missing_attribute='executable')
-        
-    def _replicate(self, original_task):
-
-        """
-        Purpose: Replicate an existing task with a new uid and INITIAL state. The change is in inplace.
-        """
-
-        self._uid       = ru.generate_id('radical.entk.task')
-        self._name      = original_task.name
-
-        self._state     = states.INITIAL
-
-        # Attributes necessary for execution
-        self._pre_exec      = original_task.pre_exec
-        self._executable    = original_task.executable
-        self._arguments     = original_task.arguments
-        self._cores         = original_task.cores
-        self._mpi           = original_task.mpi
-        self._post_exec     = original_task.post_exec
-
-        # Data staging attributes
-        self._upload_input_data     = original_task.upload_input_data
-        self._copy_input_data       = original_task.copy_input_data
-        self._link_input_data       = original_task.link_input_data
-        self._copy_output_data      = original_task.copy_output_data
-        self._download_output_data  = original_task.download_output_data
-
-
-        self._exit_code = original_task.exit_code
-
-        ## The following help in updation
-        # Stage this task belongs to
-        self._p_stage = original_task._parent_stage
-        # Pipeline this task belongs to
-        self._p_pipeline = original_task._parent_pipeline
-
     # ------------------------------------------------------------------------------------------------------------------

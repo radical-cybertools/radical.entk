@@ -146,20 +146,14 @@ class Pipeline(object):
     @stages.setter
     def stages(self, val):
             
-        if (not isinstance(val, list)) and (isinstance(val, Iterable)) and val:
-            val = list(val)
-        else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+        self._stages = self._validate_stages(val)
 
-        if False not in [isinstance(s, Stage) for s in val]:
-            self._stages = self._validate_stages(stages)
-            self._pass_uid()
-            self._stage_count = len(self._stages)
-            if self._cur_stage == 0:
-                self._cur_stage = 1
+        self._pass_uid()
+        self._stage_count = len(self._stages)
+        if self._cur_stage == 0:
+            self._cur_stage = 1
 
-        else:
-            raise TypeError(expected_type='list of stages', actual_type=[not isinstance(s, Stage) for s in val])
+
 
     @state.setter
     def state(self, value):
@@ -180,20 +174,13 @@ class Pipeline(object):
 
         :argument: List of Stage objects
         """
-        if (not isinstance(val, list)) and (isinstance(val, Iterable)) and val:
-            val = list(val)
-        else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+        stages = self._validate_stages(val)
 
-        if False not in [isinstance(s, Stage) for s in val]:
-            self._stages = self._validate_stages(stages)
-            self._pass_uid()
-            self._stage_count = len(self._stages)
-            if self._cur_stage == 0:
-                self._cur_stage = 1
-
-        else:
-            raise TypeError(expected_type='list of stages', actual_type=[not isinstance(s, Stage) for s in val])
+        stages = self._pass_uid(stages)
+        self._stages.extend(stages)
+        self._stage_count = len(self._stages)
+        if self._cur_stage == 0:
+            self._cur_stage = 1
 
   
     def to_dict(self):
@@ -283,11 +270,11 @@ class Pipeline(object):
 
             if stages is None:
                 for stage in self._stages:
-                    stage._parent_pipeline = self._uid
+                    stage.parent_pipeline = self._uid
                     stage._pass_uid()
             else:
                 for stage in stages:
-                    stage._parent_pipeline = self._uid
+                    stage.parent_pipeline = self._uid
                     stage._pass_uid()
 
                 return stages

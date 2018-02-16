@@ -29,8 +29,8 @@ def test_initialization():
     assert t.exit_code == None
     assert t.path == None
     assert t.state_history == [states.INITIAL]
-    assert t._parent_pipeline == None
-    assert t._parent_stage == None
+    assert t.parent_pipeline == None
+    assert t.parent_stage == None
 
 
     t = Task(duplicate=True)
@@ -51,8 +51,8 @@ def test_initialization():
     assert t.exit_code == None
     assert t.path == None
     assert t.state_history == [states.INITIAL]
-    assert t._parent_pipeline == None
-    assert t._parent_stage == None
+    assert t.parent_pipeline == None
+    assert t.parent_stage == None
 
 @given(s=st.text(), l=st.lists(st.text()), i=st.integers().filter(lambda x: type(x) == int), b=st.booleans())
 def test_task_exceptions(s,l,i,b):
