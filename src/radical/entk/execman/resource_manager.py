@@ -149,7 +149,7 @@ class ResourceManager(object):
 
         """
 
-        return [rp. CANCELED, rp.FAILED, rp.DONE]
+        return [rp.CANCELED, rp.FAILED, rp.DONE]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -308,7 +308,7 @@ class ResourceManager(object):
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
 
             # Wait for pilot to go active
-            self._pilot.wait([rp.ACTIVE, rp.FAILED])
+            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED])
 
             if self._pilot.state == rp.FAILED:
                 raise Exception
