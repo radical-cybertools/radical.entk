@@ -254,7 +254,7 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
             prof.prof('cud from task - create', uid=task.uid)
 
         cud = rp.ComputeUnitDescription()
-        cud.name        = '%s,%s,%s'%(task.uid, task._parent_stage, task._parent_pipeline)
+        cud.name        = '%s,%s,%s'%(task.uid, task.parent_stage, task.parent_pipeline)
         cud.pre_exec    = task.pre_exec
         cud.executable  = task.executable
         cud.arguments   = task.arguments
@@ -303,8 +303,8 @@ def create_task_from_cu(cu, prof=None):
 
         task = Task(duplicate=True)
         task.uid                = cu.name.split(',')[0].strip()
-        task._parent_stage      = cu.name.split(',')[1].strip()
-        task._parent_pipeline   = cu.name.split(',')[2].strip()
+        task.parent_stage      = cu.name.split(',')[1].strip()
+        task.parent_pipeline   = cu.name.split(',')[2].strip()
 
         if cu.exit_code is not None:
             task.exit_code = cu.exit_code

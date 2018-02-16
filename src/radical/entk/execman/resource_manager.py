@@ -196,9 +196,9 @@ class ResourceManager(object):
             if not isinstance(self._resource_desc['cores'], int):
                 raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
 
-            if 'project' in resource_desc:
-                if not isinstance(resource_desc['project'],str) or resource_desc['project'] is not None:
-                    raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
+            if 'project' in self._resource_desc:
+                if (not isinstance(self._resource_desc['project'],str)) and (not self._resource_desc['project']):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
 
             if 'access_schema' in self._resource_desc:
                 if not isinstance(self._resource_desc['access_schema'], str):
@@ -234,7 +234,9 @@ class ResourceManager(object):
             self._resource = self._resource_desc['resource']
             self._walltime = self._resource_desc['walltime']
             self._cores = self._resource_desc['cores']
-            self._project = self._resource_desc['project']
+
+            if 'project' is self._resource_desc:
+                self._project = self._resource_desc['project']
 
             if 'access_schema' in self._resource_desc:
                 self._access_schema = self._resource_desc['access_schema']
@@ -266,6 +268,12 @@ class ResourceManager(object):
 
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
+
+                elif state == rp.DONE:
+                    self._logger.error('Pilot has completed')
+
+                elif state == rp.CANCELED:
+                    self._logger.error('Pilot has been canceled')
 
             self._session = rp.Session(dburl=self._mlab_url)
 

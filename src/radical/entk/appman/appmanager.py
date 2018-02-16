@@ -275,7 +275,10 @@ class AppManager(object):
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
-                while (active_pipe_count > 0)and(self._wfp.workflow_incomplete()):
+                while ( (active_pipe_count > 0) and
+                        (self._wfp.workflow_incomplete()) and
+                        (self._resource_manager.get_resource_allocation_state() not
+                        in self._resource_manager.completed_states())):
 
                     if active_pipe_count > 0:
 
@@ -611,11 +614,11 @@ class AppManager(object):
                     with pipe._stage_lock:
 
                         if not pipe.completed:
-                            if completed_task._parent_pipeline == pipe.uid:
+                            if completed_task.parent_pipeline == pipe.uid:
 
                                 for stage in pipe.stages:
 
-                                    if completed_task._parent_stage == stage.uid:
+                                    if completed_task.parent_stage == stage.uid:
 
                                         for task in stage.tasks:
 
@@ -657,7 +660,7 @@ class AppManager(object):
                     with pipe._stage_lock:
 
                         if not pipe.completed:
-                            if completed_stage._parent_pipeline == pipe.uid:
+                            if completed_stage.parent_pipeline == pipe.uid:
                                 self._logger.info('Found parent pipeline: %s' % pipe.uid)
 
                                 for stage in pipe.stages:

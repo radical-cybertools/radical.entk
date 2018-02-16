@@ -443,13 +443,13 @@ class WFprocessor(object):
 
                                 if not pipe.completed:
 
-                                    if completed_task._parent_pipeline == pipe.uid:
+                                    if completed_task.parent_pipeline == pipe.uid:
 
                                         self._logger.debug('Found parent pipeline: %s' % pipe.uid)
 
                                         for stage in pipe.stages:
 
-                                            if completed_task._parent_stage == stage.uid:
+                                            if completed_task.parent_stage == stage.uid:
                                                 self._logger.debug('Found parent stage: %s' % (stage.uid))
 
                                                 transition(obj=completed_task,

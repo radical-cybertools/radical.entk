@@ -171,8 +171,8 @@ class TaskManager(object):
 
             def load_placeholder(task):
 
-                parent_pipeline = str(task._parent_pipeline)
-                parent_stage = str(task._parent_stage)
+                parent_pipeline = str(task.parent_pipeline)
+                parent_stage = str(task.parent_stage)
 
                 if parent_pipeline not in placeholder_dict:
                     placeholder_dict[parent_pipeline] = dict()
