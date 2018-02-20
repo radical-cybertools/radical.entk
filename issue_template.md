@@ -1,11 +1,9 @@
-# General template for issues
-
 When encountering an issue during execution, please do due diligence to
 check whether the source of the error is in the user script/tool. If you 
 suspect the source of the error comes from EnTK or tools below please open a
 ticket in the github repo and follow these steps:
 
-## Enable verbose messages
+### Enable verbose messages
 
 Run your script again with ``RADICAL_VERBOSE=DEBUG`` and 
 ``RADICAL_ENTK_VERBOSE=DEBUG``. Once these environment variables are set, a lot
@@ -28,7 +26,7 @@ that in the ticket via inline comments.
     talking about the error
     ```
 
-## Client and remote logs in RP
+### Client and remote logs in RP
 
 When running a RP script or a tool that uses RP, multiple logs are created by the components of RP. A set
 of these logs are created in the current working directory on the client machine (where your script lies) 
@@ -46,7 +44,7 @@ folder by doing ``ls -ltr`` (last is recent).
 All the logfiles are brought to this rp.session.* folder. Please zip this folder and attach to 
 github ticket.
 
-## Access to sandbox
+### Access to sandbox
 
 Sometimes the above two steps may not be enough, the developers might require to take a look at
 the entire sandbox. You may either downlod the entire sandbox from the remote machine (using 
