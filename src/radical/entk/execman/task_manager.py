@@ -8,6 +8,7 @@ import threading
 from multiprocessing import Process, Event
 import Queue
 from radical.entk import states, Task
+from radical.entk.execman.resource_manager import ResourceManager
 from radical.entk.utils.init_transition import transition
 import time
 import json
@@ -40,7 +41,10 @@ class TaskManager(object):
 
     def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
 
-        self._sid = sid
+        if isinstance(sid, str):
+            self._sid = sid
+        else:
+            raise TypeError(expected_type=str, actual_type=type(sid))
 
         self._uid = ru.generate_id('radical.entk.task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
@@ -50,11 +54,30 @@ class TaskManager(object):
 
         self._prof.prof('create tmgr obj', uid=self._uid)
 
-        self._pending_queue = pending_queue
-        self._completed_queue = completed_queue
-        self._mq_hostname = mq_hostname
-        self._port = port
-        self._rmgr = rmgr
+        if isinstance(pending_queue, str):
+            self._pending_queue = pending_queue
+        else:
+            raise TypeError(expected_type=str, actual_type=type(pending_queue))
+
+        if isinstance(completed_queue, str):
+            self._completed_queue = completed_queue
+        else:
+            raise TypeError(expected_type=str, actual_type=type(completed_queue))
+
+        if isinstance(mq_hostname, str):
+            self._mq_hostname = mq_hostname
+        else:
+            raise TypeError(expected_type=str, actual_type=type(mq_hostname))
+
+        if isinstance(port, int):
+            self._port = port
+        else:
+            raise TypeError(expected_type=int, actual_type=type(port))
+
+        if isinstance(rmgr, ResourceManager):
+            self._rmgr = rmgr
+        else:
+            raise TypeError(expected_type=ResourceManager, actual_type=type(rmgr))
 
         self._tmgr_process = None
         self._tmgr_terminate = None

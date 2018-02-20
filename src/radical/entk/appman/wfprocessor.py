@@ -41,7 +41,11 @@ class WFprocessor(object):
                  resubmit_failed):
 
 
-        self._sid = sid
+        if isinstance(sid, str):
+            self._sid = sid
+        else:
+            raise TypeError(expected_type=str, actual_type=type(sid))
+
         self._uid = ru.generate_id('radical.entk.wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
@@ -49,6 +53,9 @@ class WFprocessor(object):
         self._prof = ru.Profiler(name=self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
+
+        if isinstance(workflow, Pipeline):
+            workflow = set(workflow)
 
         self._workflow = workflow
 
@@ -74,9 +81,48 @@ class WFprocessor(object):
 
         self._prof.prof('wfp obj created', uid=self._uid)
 
+        self._validate_workflow()
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
     # ------------------------------------------------------------------------------------------------------------------
+
+    def _validate_workflow(self):
+        """
+        **Purpose**: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
+
+        Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
+        Pipelines themselves remain to be validated before execution.
+        """
+
+        try:
+
+            self._prof.prof('validating workflow', uid=self._uid)
+
+            if not isinstance(workflow, set):
+
+                if not isinstance(workflow, list):
+                    workflow = set([workflow])
+                else:
+                    workflow = set(workflow)
+
+            for item in workflow:
+                if not isinstance(item, Pipeline):
+                    self._logger.info('workflow type incorrect')
+                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
+                                    actual_type=type(item))
+
+                item._validate()
+
+            self._prof.prof('workflow validated', uid=self._uid)
+
+            return workflow
+
+        except Exception, ex:
+
+            self._logger.error('Fatal error while adding workflow to appmanager: %s' % ex)
+            raise
+
 
     def _wfp(self):
         """

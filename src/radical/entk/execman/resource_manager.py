@@ -235,7 +235,7 @@ class ResourceManager(object):
             self._walltime = self._resource_desc['walltime']
             self._cores = self._resource_desc['cores']
 
-            if 'project' is self._resource_desc:
+            if 'project' in self._resource_desc:
                 self._project = self._resource_desc['project']
 
             if 'access_schema' in self._resource_desc:

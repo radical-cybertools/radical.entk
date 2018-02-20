@@ -163,7 +163,7 @@ class AppManager(object):
         try:
 
             self._prof.prof('assigning workflow', uid=self._uid)
-            self._workflow = self._validate_workflow(workflow)
+            self._workflow = workflow
             self._logger.info('Workflow assigned to Application Manager')
 
         except KeyboardInterrupt:
@@ -220,6 +220,19 @@ class AppManager(object):
 
                     self._mqs_setup = True
 
+
+                # Create WFProcessor object
+                self._prof.prof('creating wfp obj', uid=self._uid)
+                self._wfp = WFprocessor(sid=self._sid,
+                                        workflow=self._workflow,
+                                        pending_queue=self._pending_queue,
+                                        completed_queue=self._completed_queue,
+                                        mq_hostname=self._mq_hostname,
+                                        port=self._port,
+                                        resubmit_failed=self._resubmit_failed)
+                self._wfp._validate_workflow()
+
+
                 # Submit resource request if not resource allocation done till now or
                 # resubmit a new one if the old one has completed
                 if self._resource_manager:
@@ -243,16 +256,8 @@ class AppManager(object):
                     self._prof.prof('starting synchronizer thread', uid=self._uid)
                     self._sync_thread.start()
 
-                # Create WFProcessor object
-                self._prof.prof('creating wfp obj', uid=self._uid)
-                self._wfp = WFprocessor(sid=self._sid,
-                                        workflow=self._workflow,
-                                        pending_queue=self._pending_queue,
-                                        completed_queue=self._completed_queue,
-                                        mq_hostname=self._mq_hostname,
-                                        port=self._port,
-                                        resubmit_failed=self._resubmit_failed)
-
+                
+                # Start WFprocessor
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()
 
@@ -459,43 +464,7 @@ class AppManager(object):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def _validate_workflow(self, workflow):
-        """
-        **Purpose**: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
-
-        Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
-        Pipelines themselves remain to be validated before execution.
-        """
-
-        try:
-
-            self._prof.prof('validating workflow', uid=self._uid)
-
-            if not isinstance(workflow, set):
-
-                if not isinstance(workflow, list):
-                    workflow = set([workflow])
-                else:
-                    workflow = set(workflow)
-
-            for item in workflow:
-                if not isinstance(item, Pipeline):
-                    self._logger.info('workflow type incorrect')
-                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
-                                    actual_type=type(item))
-
-                item._validate()
-
-            self._prof.prof('workflow validated', uid=self._uid)
-
-            return workflow
-
-        except Exception, ex:
-
-            self._logger.error('Fatal error while adding workflow to appmanager: %s' % ex)
-            raise
+    # ------------------------------------------------------------------------------------------------------------------  
 
     def _setup_mqs(self):
         """
