@@ -272,9 +272,6 @@ class ResourceManager(object):
                 elif state == rp.DONE:
                     self._logger.error('Pilot has completed')
 
-                elif state == rp.CANCELED:
-                    self._logger.error('Pilot has been canceled')
-
             self._session = rp.Session(dburl=self._mlab_url)
 
             self._pmgr = rp.PilotManager(session=self._session)
