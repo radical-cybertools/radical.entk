@@ -12,11 +12,12 @@ large-scale ensemble-based workflows. It is being developed by the
 Ensemble Toolkit is released under the 
 `MIT License <http://opensource.org/licenses/MIT>`_. 
 
-More details about EnTK can be found in the following publications:
+More details about the science enabled by EnTK can be found in the following publications:
+
+* Balasubramanian, Vivek, Matteo Turilli, Weiming Hu, Matthieu Lefebvre, Wenjie Lei, Guido Cervone, Jeroen Tromp, and Shantenu Jha. "Harnessing the Power of Many: Extensible Toolkit for Scalable Ensemble Applications." 32nd IEEE International Parallel and Distributed Processing Symposium, 2018 (https://arxiv.org/abs/1710.08491)
 
 * Balasubramanian, Vivekanandan, Antons Treikalis, Ole Weidner, and Shantenu Jha. "Ensemble toolkit: Scalable and flexible execution of ensembles of tasks." In Parallel Processing (ICPP), 2016 45th International Conference on, pp. 458-463. IEEE, 2016. (https://arxiv.org/abs/1602.00678v2)
 
-* Balasubramanian, Vivek, Matteo Turilli, Weiming Hu, Matthieu Lefebvre, Wenjie Lei, Guido Cervone, Jeroen Tromp, and Shantenu Jha. "Harnessing the Power of Many: Extensible Toolkit for Scalable Ensemble Applications." 32nd IEEE International Parallel and Distributed Processing Symposium, 2018 (https://arxiv.org/abs/1710.08491)
 
 .. note:: Please use the following to reference Ensemble Toolkit
 
