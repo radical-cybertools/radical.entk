@@ -8,7 +8,7 @@ Profiling
 In this section, we will take a look at how we can profiling our executions using the ``Profiler`` in Ensemble Toolkit.
 We will modify our script from the :ref:`Adding Stages <uguide_add_stages>` section.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 

@@ -20,7 +20,7 @@ provided below.
 We encourage you to take a look at the Pipeline of Ensembles example in the next page and compare with the above
 pattern.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 

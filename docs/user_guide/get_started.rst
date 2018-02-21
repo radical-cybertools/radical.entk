@@ -8,7 +8,7 @@ Getting Started
 In this section we will run you through Ensemble Toolkit  API.
 We will develop an example application consisting of a simple bag of Tasks.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 

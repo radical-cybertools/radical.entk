@@ -10,9 +10,9 @@ of Ensemble Toolkit is that you can submit tasks on another machine remotely fro
 some requirements, you need to have passwordless ssh or gsissh access to the target machine. If you don't have
 such access, we discuss setup :ref:`here <ssh_gsissh_setup>`. You also need to confirm that RP and Ensemble Toolkit
 are supported on this machine. A list of supported machines and mechanism to get support for new machines is 
-discussed :ref:`here <implementation>`.
+discussed :ref:`here <entk>`.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through 
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through 
             the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.

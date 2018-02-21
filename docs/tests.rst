@@ -16,57 +16,117 @@ All tests are run on Travis CI. The current build status:
 Click the above to look at the test logs. The following are tests are performed
 at every commit in every branch.
 
-.. automodule:: radical.entk.tests.test_modules
+API tests
+=========
+
+.. automodule:: tests.test_api.test_amgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_pipeline
+.. automodule:: tests.test_api.test_modules
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_stage
+.. automodule:: tests.test_api.test_pipeline
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_task
+.. automodule:: tests.test_api.test_rmgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_appmanager
+.. automodule:: tests.test_api.test_stage
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_resource_manager
+.. automodule:: tests.test_api.test_task
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_wfprocessor
+.. automodule:: tests.test_api.test_tmgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_task_manager
+.. automodule:: tests.test_api.test_wfp
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_task_processor
+
+Functional tests
+================
+
+.. automodule:: tests.test_functionality.test_func_amgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_state_order
+.. automodule:: tests.test_functionality.test_func_pipeline
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: radical.entk.tests.test_integration_local
+.. automodule:: tests.test_functionality.test_func_rmgr
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_stage
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_state_order
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_task
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_tmgr
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_tproc
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_functionality.test_func_wfp
+    :members:
+    :undoc-members:
+    :noindex:
+
+
+Integration test
+================
+
+.. automodule:: tests.test_integration.test_integration_local
+    :members:
+    :undoc-members:
+    :noindex:
+
+
+Issue test
+==========
+
+.. automodule:: tests.test_issues.test_issue_199
+    :members:
+    :undoc-members:
+    :noindex:
+
+.. automodule:: tests.test_issues.test_issue_26
     :members:
     :undoc-members:
     :noindex:
