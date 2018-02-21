@@ -43,9 +43,6 @@ def test_assignment_exceptions():
         with pytest.raises(TypeError):
             p.add_stages(data)
 
-        if not isinstance(data,str):
-            with pytest.raises(TypeError):
-                p.remove_stages(data)
    
 def test_stage_assignment_in_pipeline():
 
@@ -55,6 +52,9 @@ def test_stage_assignment_in_pipeline():
 
     p = Pipeline()
     s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.tasks = t
     p.stages = s
 
     assert type(p.stages) == list
@@ -71,7 +71,13 @@ def test_stage_addition_in_pipeline():
 
     p = Pipeline()
     s1 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s1.tasks = t
     s2 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s2.tasks = t
     p.add_stages([s1,s2])
 
     assert type(p.stages) == list
@@ -80,43 +86,6 @@ def test_stage_addition_in_pipeline():
     assert p.stages[0] == s1
     assert p.stages[1] == s2
 
-
-def test_stage_removal_from_pipeline():
-
-    """
-    ***Purpose***: Test stage removal from Pipeline
-    """
-
-    p = Pipeline()
-    s1 = Stage()
-    s1.name = 's1'
-    s2 = Stage()
-    s2.name = 's2'
-    s3 = Stage()
-    s3.name = 's3'
-    p.add_stages([s1,s2,s3])
-
-    assert type(p.stages) == list
-    assert p._stage_count == 3
-    assert p._cur_stage == 1
-
-    p.remove_stages('s2')
-    assert p._stage_count == 2    
-    assert p._cur_stage == 1
-
-    p.remove_stages('s1')
-    assert p._stage_count == 1
-    assert p._cur_stage == 1
-    assert p.stages[0] == s3
-
-    p.remove_stages('s1')
-    assert p._stage_count == 1
-    assert p._cur_stage == 1
-    assert p.stages[0] == s3
-
-    p.remove_stages('s3')
-    assert p._stage_count == 0
-    assert p._cur_stage == 0
 
 
 def test_pipeline_increment():
@@ -127,7 +96,13 @@ def test_pipeline_increment():
 
     p = Pipeline()
     s1 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s1.tasks = t
     s2 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s2.tasks = t
     p.add_stages([s1,s2])
 
     assert p._stage_count == 2
@@ -153,7 +128,13 @@ def test_pipeline_decrement():
 
     p = Pipeline()
     s1 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s1.tasks = t
     s2 = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s2.tasks = t
     p.add_stages([s1,s2])
 
     p._increment_stage()
@@ -181,6 +162,9 @@ def test_uid_passing():
 
     p = Pipeline()
     s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.tasks = t
     p.stages    = s
 
-    assert s._parent_pipeline == p.uid
+    assert s.parent_pipeline == p.uid

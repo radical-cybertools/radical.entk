@@ -160,25 +160,11 @@ class AppManager(object):
         :arguments: set of Pipelines
         """
 
-        try:
+        self._prof.prof('assigning workflow', uid=self._uid)
+        self._workflow = workflow
+        self._logger.info('Workflow assigned to Application Manager')
 
-            self._prof.prof('assigning workflow', uid=self._uid)
-            self._workflow = workflow
-            self._logger.info('Workflow assigned to Application Manager')
-
-        except KeyboardInterrupt:
-
-            self._logger.error('Execution interrupted by user ' +
-                               '(you probably hit Ctrl+C), tring to exit gracefully...')
-
-            raise KeyboardInterrupt
-
-        except Exception, ex:
-
-            self._logger.error('Fatal error while adding workflow to appmanager')
-            print traceback.format_exc()
-            raise Error(text=ex)
-
+ 
     def run(self):
         """
         **Purpose**: Run the application manager. Once the workflow and resource manager have been assigned. Invoking this
@@ -231,6 +217,7 @@ class AppManager(object):
                                         port=self._port,
                                         resubmit_failed=self._resubmit_failed)
                 self._wfp._validate_workflow()
+                self._workflow = self._wfp.workflow
 
 
                 # Submit resource request if not resource allocation done till now or

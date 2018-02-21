@@ -54,12 +54,12 @@ class TaskManager(object):
 
         self._prof.prof('create tmgr obj', uid=self._uid)
 
-        if isinstance(pending_queue, str):
+        if isinstance(pending_queue, list):
             self._pending_queue = pending_queue
         else:
             raise TypeError(expected_type=str, actual_type=type(pending_queue))
 
-        if isinstance(completed_queue, str):
+        if isinstance(completed_queue, list):
             self._completed_queue = completed_queue
         else:
             raise TypeError(expected_type=str, actual_type=type(completed_queue))

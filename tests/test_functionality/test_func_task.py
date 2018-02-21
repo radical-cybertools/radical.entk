@@ -3,49 +3,6 @@ from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
 
-def test_task_replicate():
-
-    """
-    **Purpose**: Test if the replicate method of the Task class exactly recreates a new Task with the same
-    description
-    """
-
-    t1 = Task()
-    t1.name = 'simulation'
-    t1.pre_exec = ['module load gromacs']
-    t1.executable = ['grompp']
-    t1.arguments = ['hello']
-    t1.cores = 4
-    t1.mpi = True
-    t1.post_exec = ['echo test']
-    
-    t1.upload_input_data    = ['upload_input.dat']
-    t1.copy_input_data      = ['copy_input.dat']
-    t1.link_input_data      = ['link_input.dat']
-    t1.copy_output_data     = ['copy_output.dat']
-    t1.download_output_data = ['download_output.dat']
-
-
-    t2 = Task()
-    t2._replicate(t1)
-
-    assert t2._uid != t1._uid
-    assert t2.name == t1.name
-    assert t2.pre_exec == t1.pre_exec
-    assert t2.executable == t1.executable
-    assert t2.arguments == t1.arguments
-    assert t2.cores == t1.cores
-    assert t2.mpi == t1.mpi
-    assert t2.post_exec == t1.post_exec
-    assert t2.upload_input_data == t1.upload_input_data
-    assert t2.copy_input_data == t1.copy_input_data
-    assert t2.link_input_data == t1.link_input_data
-    assert t2.copy_output_data == t1.copy_output_data
-    assert t2.download_output_data == t1.download_output_data
-
-    assert t2._parent_pipeline == t1._parent_pipeline
-    assert t2._parent_stage == t1._parent_stage
-
 def test_task_to_dict():
 
     """

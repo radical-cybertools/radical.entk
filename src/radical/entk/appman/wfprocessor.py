@@ -54,34 +54,43 @@ class WFprocessor(object):
 
         self._prof.prof('create wfp obj', uid=self._uid)
 
-        if isinstance(workflow, Pipeline):
-            workflow = set(workflow)
-
         self._workflow = workflow
+        self._validate_workflow()
+
 
         if not isinstance(pending_queue, list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
+        self._pending_queue = pending_queue
 
         if not isinstance(completed_queue, list):
             raise TypeError(expected_type=list, actual_type=type(completed_queue))
-
-        if not isinstance(mq_hostname, str):
-            raise TypeError(expected_type=str, actual_type=type(mq_hostname))
-
-        # Mqs queue names and channel
-        self._pending_queue = pending_queue
         self._completed_queue = completed_queue
+
+        if not isinstance(mq_hostname, str) and not isinstance(mq_hostname, unicode):
+            raise TypeError(expected_type=str, actual_type=type(mq_hostname))
         self._mq_hostname = mq_hostname
+
+        if not isinstance(port, int):
+            raise TypeError(expected_type=int, actual_type=type(port))
         self._port = port
 
-        self._wfp_process = None
+        if not isinstance(resubmit_failed, bool):
+            raise TypeError(expected_type=bool, actual_type=type(resubmit_failed))
         self._resubmit_failed = resubmit_failed
 
+        self._wfp_process = None
+        
         self._logger.info('Created WFProcessor object: %s' % self._uid)
 
         self._prof.prof('wfp obj created', uid=self._uid)
 
-        self._validate_workflow()
+        
+    # ------------------------------------------------------------------------------------------------------------------
+    # Getter
+    # ------------------------------------------------------------------------------------------------------------------
+    @property
+    def workflow(self):
+        return self._workflow
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
@@ -99,14 +108,14 @@ class WFprocessor(object):
 
             self._prof.prof('validating workflow', uid=self._uid)
 
-            if not isinstance(workflow, set):
+            if not isinstance(self._workflow, set):
 
-                if not isinstance(workflow, list):
-                    workflow = set([workflow])
+                if not isinstance(self._workflow, list):
+                    self._workflow = set([self._workflow])
                 else:
-                    workflow = set(workflow)
+                    self._workflow = set(self._workflow)
 
-            for item in workflow:
+            for item in self._workflow:
                 if not isinstance(item, Pipeline):
                     self._logger.info('workflow type incorrect')
                     raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
@@ -116,13 +125,12 @@ class WFprocessor(object):
 
             self._prof.prof('workflow validated', uid=self._uid)
 
-            return workflow
-
         except Exception, ex:
 
             self._logger.error('Fatal error while adding workflow to appmanager: %s' % ex)
             raise
 
+    #
 
     def _wfp(self):
         """
@@ -675,3 +683,4 @@ class WFprocessor(object):
         """
 
         return self._wfp_process.is_alive()
+

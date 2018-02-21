@@ -322,6 +322,8 @@ class Pipeline(object):
         Details: This method is to be called before the resource request is placed. Currently, this method is called 
         when stages are added to the Pipeline.
         """
+        if not stages:
+            raise TypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]

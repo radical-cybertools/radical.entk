@@ -5,49 +5,6 @@ import radical.pilot as rp
 from time import sleep
 
 
-def test_resource_manager_initialization():
-
-    """
-    ***Purpose***:  Test initialization of all attributes of resource manager upon instantiation with a 
-    resource description
-    """
-
-    res_dict = {
-                    'resource': 'local.localhost',
-                    'walltime': 40,
-                    'cores': 20,
-                    'project': 'Random'
-                }
-
-    if not os.environ.get('RADICAL_PILOT_DBURL', None):
-        with pytest.raises(Error):
-            rm = ResourceManager(res_dict)
-    
-    os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
-
-    rm = ResourceManager(res_dict)
-    rm._validate_resource_desc(sid='xyz')
-    rm._populate()
-    
-    assert rm.resource == res_dict['resource']
-    assert rm.walltime == res_dict['walltime']
-    assert rm.cores == res_dict['cores']
-    assert rm.project == res_dict['project']
-
-    res_dict = {
-                    'resource': 'local.localhost',
-                    'walltime': 40,
-                    'cores': 20,
-                    'project': None
-                }
-
-    rm = ResourceManager(res_dict)
-
-    assert rm.resource == res_dict['resource']
-    assert rm.walltime == res_dict['walltime']
-    assert rm.cores == res_dict['cores']
-    assert rm.project == res_dict['project']
-
 def test_validate_resource_description():
 
     """
@@ -158,6 +115,8 @@ def test_resource_request():
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rm = ResourceManager(res_dict)
+    rm._validate_resource_desc(sid='test')
+    rm._populate()
 
     rm._submit_resource_request()
 

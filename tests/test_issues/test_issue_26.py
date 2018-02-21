@@ -1,9 +1,10 @@
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import Pipeline, Stage, Task, ResourceManager, AppManager
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
+import os
 
-def test_issue():
+def test_issue_26():
 
     def create_pipeline():
 
@@ -22,7 +23,7 @@ def test_issue():
 
         p.add_stages(s)
 
-        return set(p)
+        return p
     
 
     res_dict = {
@@ -35,24 +36,29 @@ def test_issue():
     }
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
-    os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rman = ResourceManager(res_dict)
 
     appman = AppManager(autoterminate=False)
     appman.resource_manager = rman
     p1 = create_pipeline()
+    print p1.uid, p1.stages[0].uid
     appman.assign_workflow(p1)
     appman.run()
 
     p2 = create_pipeline()
+    print p2.uid, p2.stages[0].uid
     appman.assign_workflow(p2)
     appman.run()
 
     appman.resource_terminate()
 
-    assert int(p1.stages[0].uid.split('.')[-1]) + 1 == int(p2.stages[0].uid.split('.')[-1])
+    lhs = int(p1.stages[0].uid.split('.')[-1]) + 1 
+    rhs = int(p2.stages[0].uid.split('.')[-1])
+    assert lhs == rhs
 
     for t in p1.stages[0].tasks:
         for tt in p2.stages[0].tasks:
-           assert int(t.uid.split('.')[-1]) + 1 == int(tt.uid.split('.')[-1]) 
+            lhs = int(t.uid.split('.')[-1]) + 1 
+            rhs = int(tt.uid.split('.')[-1])
+            assert lhs == rhs

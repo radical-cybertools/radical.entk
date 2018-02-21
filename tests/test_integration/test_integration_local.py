@@ -41,7 +41,6 @@ def test_integration_local():
     }
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
-    os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rman = ResourceManager(res_dict)
 

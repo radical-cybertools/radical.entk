@@ -1,9 +1,46 @@
 from radical.entk import AppManager, Pipeline, Stage, Task, states
-from radical.entk.utils.sync_initiator import sync_with_master
-from threading import Thread, Event
-from multiprocessing import Process
+import pytest
+from radical.entk.exceptions import *
 import pika
 import radical.utils as ru
+from threading import Event, Thread
+from multiprocessing import Process
+from radical.entk.utils.sync_initiator import sync_with_master
+
+def test_sid_in_mqs():
+
+    """
+    **Purpose**: Test if all queues created in the RMQ server have a unique
+    id derived from the session ID of the AppManager
+    """
+
+    appman = AppManager()
+    appman._setup_mqs()
+    sid = appman._sid
+
+    qs =    [
+                    '%s-tmgr-to-sync' % sid,
+                    '%s-cb-to-sync' % sid,
+                    '%s-enq-to-sync' % sid,
+                    '%s-deq-to-sync' % sid,
+                    '%s-sync-to-tmgr' % sid,
+                    '%s-sync-to-cb' % sid,
+                    '%s-sync-to-enq' % sid,
+                    '%s-sync-to-deq' % sid
+                ]
+
+    mq_connection = pika.BlockingConnection(pika.ConnectionParameters())
+    mq_channel = mq_connection.channel()
+
+    def callback():
+        print True
+
+    for q in qs:
+
+        try:
+            mq_channel.basic_consume(callback, queue=q, no_ack=True)
+        except Exception as ex:
+            raise Error(ex)
 
 
 def func_for_process(sid, p, mq_channel, logger, profiler):
@@ -75,4 +112,3 @@ def test_synchronizer():
 
     amgr._end_sync.set()
     sync_thread.join()
-            
