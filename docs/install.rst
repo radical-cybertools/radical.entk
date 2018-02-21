@@ -28,7 +28,7 @@ and checkout the branch. You can do so using the following commands:
 
 .. code-block:: bash
 
-        git clone https://github.com/vivek-bala/radical.entk.git
+        git clone https://github.com/radical-cybertools/radical.entk.git
         cd radical.entk
         git checkout <branch-name>
         pip install .
