@@ -115,24 +115,18 @@ Some of our current users are mentioned below.
 +------------------------+------------+
 | User Groups            |   Domain   |
 +========================+============+
-| Shirts Group,          |  Molecular |
-| University of Colorado,|  Dynamics  |
-| Denver                 |            |
+| University of Colorado,|  Molecular |
+| Denver                 |  Dynamics  |
 +------------------------+------------+
-| Weiming Hu, Guido      | Climate    |
-| Cervone, Michael Mann, | Science    |
-| Penn State University  |            |
+| Penn State University  | Climate    |
+|                        | Science    |
 +------------------------+------------+
-| Wenjie Lie, Matthieu   | Seismology |
-| Lefebvre, Jeroen Tromp,|            |
-| Princeton University   |            |
+| Princeton University   | Seismology |
 +------------------------+------------+
-| David Wright, Peter    | Molecular  |
-| Coveney,               | Dynamics,  |
-| University College of  | Medicine   |
-| London                 |            |
+| University College of  | Molecular  |
+| London                 | Dynamics,  |
+|                        | Medicine   |
 +------------------------+------------+
-| Clementi Group,        | Molecular  |
-| Rice University        | Dynamics   |
-|                        |            |
+| Rice University        | Molecular  |
+|                        | Dynamics   |
 +------------------------+------------+

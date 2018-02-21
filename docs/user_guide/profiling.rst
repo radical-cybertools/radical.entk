@@ -5,8 +5,9 @@
 Profiling
 *********
 
-In this section, we will take a look at how we can profiling our executions using the ``Profiler`` in Ensemble Toolkit.
-We will modify our script from the :ref:`Adding Stages <uguide_add_stages>` section.
+In this section, we will take a look at how we can profiling our executions 
+using the ``Profiler`` in Ensemble Toolkit.  We will modify our script from the 
+:ref:`Adding Stages <uguide_add_stages>` section.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
@@ -32,28 +33,35 @@ Next, we append the uid of all the tasks in the second stage to another list.
     :lines: 39-56
     :dedent: 4
 
-After the execution of the workflow is complete, we use the ``Profiler`` module in Ensemble Toolkit, specifically its
-``duration`` method to find the execution duration of all the tasks in the first stage and then the same for the 
-tasks in the second stage.
+After the execution of the workflow is complete, we use the ``Profiler`` module 
+in Ensemble Toolkit, specifically its ``duration`` method to find the execution 
+duration of all the tasks in the first stage and then the same for the tasks in 
+the second stage.
 
 .. literalinclude:: ../../examples/user_guide/profiling.py
     :language: python
     :lines: 89-95
     :dedent: 4
 
-We get the execution duration since we mentioned the states as "SCHEDULING" and "EXECUTED" which is the execution
-time from the perspective of Ensemble Toolkit. You can use the same profiler to obtain durations between two events or
-a state and an event. You can find a list of all the states in the UML se
+We get the execution duration since we mentioned the states as "SCHEDULING" and 
+"EXECUTED" which is the execution time from the perspective of Ensemble Toolkit.
+You can use the same profiler to obtain durations between two events or a state 
+and an event. You can find a list of all the :ref:`states <dev_docs_state_model>`
+and :ref:`events <dev_docs_events>` in the developer documentation.
 
 
-Before running the script, you will have to enable the profiling variable. To do this, run the following command
-in the same terminal where you have the virtualenv sourced:
+Before running the script, you will have to enable the profiling variable. To do
+this, run the following command in the same terminal where you have the 
+virtualenv sourced:
 
 ::
 
     export RADICAL_ENTK_PROFILE=True
 
 
+Examples of the plots that can be derived include the performance plots 
+presented in :ref:`here <entk_perf_plots>` and all the plots presented in the 
+technical papers.
 
 To run the script, simply execute the following from the command line:
 

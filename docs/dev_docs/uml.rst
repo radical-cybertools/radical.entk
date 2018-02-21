@@ -7,6 +7,9 @@ UML diagrams and other resources
 This page presents the UML diagrams for the Ensemble Toolkit. Additional information to help understand 
 the design of Ensemble Toolkit is also presented for interested developers.
 
+
+.. _dev_docs_cls_diag:
+
 Class Diagram
 =============
 
@@ -17,6 +20,8 @@ The following document describes the classes in EnTK, their data members and fun
    :width: 1200
 
 
+.. _dev_docs_seq_diag:
+
 Sequence Diagram
 ================
 
@@ -26,6 +31,9 @@ following figure:
 .. image:: ../figures/entk_sequence_diagram.jpg
    :target: ../figures/entk_sequence_diagram.jpg
 
+
+.. _dev_docs_state_model:
+
 State Diagram
 =============
 
@@ -34,6 +42,9 @@ document them in the following figure:
 
 .. image:: ../figures/entk_state_diagram.jpg
    :target: ../figures/entk_state_diagram.jpg
+
+
+.. _dev_docs_comm_model:
 
 Communication Model
 ===================
@@ -55,6 +66,8 @@ sure our the tmgr is alive and the interaction with the runtime system is progre
 .. image:: ../figures/heartbeat_model.jpg
    :target: ../figures/heartbeat_model.jpg
 
+
+.. _dev_docs_events:
 
 Events Recorded
 ===============

@@ -138,3 +138,33 @@ placeholder job and subsequently used to execute the application’s tasks. When
 pilot is submitted to a CI as a job, it waits in the CI’s queue until the 
 requested resources become available. At that point, the CI’s scheduler 
 bootstraps the job on the CI’s compute nodes.
+
+You can view the :ref:`class diagram <dev_docs_cls_diag>` and 
+:ref:`sequence diagram <dev_docs_seq_diag>` and more in the 
+:ref:`developer documentation <dev_docs>`.
+
+
+.. _entk_perf_plots:
+
+Performance
+===========
+
+Below we present the weak and strong scaling behavior of EnTK on the ORNL
+Titan machine.
+
+Detailed description of the experiments can be found in 
+`technical paper <https://arxiv.org/pdf/1710.08491>`_.
+
+.. figure:: figures/entk_weak_scaling.png
+ :width: 400pt
+ :align: center
+ :alt: Ensemble Toolkit Architecture and Execution Model
+
+ `Figure 3: Weak scalability on Titan: 512, 1,024, 2,048, and 4,096 1-core tasks executed on the same amount of cores`
+
+.. figure:: figures/entk_strong_scaling.png
+ :width: 400pt
+ :align: center
+ :alt: Ensemble Toolkit Architecture and Execution Model
+
+ `Figure 4: Strong scalability on Titan: 8,192 1-core tasks are executed on 1,024, 2,048 and 4,096 cores`
