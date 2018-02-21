@@ -8,6 +8,9 @@ import os
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
     os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
+
+os.environ['RADICAL_ENTK_PROFILE'] = 'True'
+
 if __name__ == '__main__':
 
     # Create a Pipeline object
@@ -86,7 +89,7 @@ if __name__ == '__main__':
     appman.run()
 
 
-    p = Profiler()
+    p = Profiler(src='./%s'%appman.sid)
 
     print 'Tasks in Stage 1: ', s1_task_uids
     print 'Execution time: ', p.duration(objects = s1_task_uids, states=['SCHEDULING', 'EXECUTED'])

@@ -44,28 +44,6 @@ document them in the following figure:
    :target: ../figures/entk_state_diagram.jpg
 
 
-.. _dev_docs_comm_model:
-
-Communication Model
-===================
-
-The communication model of the various components in Ensemble Toolkit is presented below.
-
-.. image:: ../figures/comm_model.jpg
-   :target: ../figures/comm_model.jpg
-
-
-Using RabbitMQ queues, the tmgr process, enqueue thread and dequeue thread communication the stateful objects
-to the synchronizer thread in the master process. The synchronizer thread then sends acknowledgements (Ack) for each 
-object received. The tmgr process, enqueue thread and dequeue thread are blocked till they receive an Ack and thus the 
-the master process always remains in sync.
-
-There also exist heartbeat messages between the heartbeat thread and the tmgr process in the TaskManager. This makes
-sure our the tmgr is alive and the interaction with the runtime system is progressing.
-
-.. image:: ../figures/heartbeat_model.jpg
-   :target: ../figures/heartbeat_model.jpg
-
 
 .. _dev_docs_events:
 

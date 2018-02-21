@@ -113,6 +113,17 @@ class AppManager(object):
         return self._name
 
     @property
+    def sid(self):
+        """
+        Get the session ID of the current EnTK execution
+
+        :getter: Returns the session ID of the EnTK execution
+        :type: String
+        """
+
+        return self._sid
+
+    @property
     def resource_manager(self):
         """
         :getter: Returns the resource manager object being used
