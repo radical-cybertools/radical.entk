@@ -47,7 +47,8 @@ We get the execution duration since we mentioned the states as "SCHEDULING" and
 "EXECUTED" which is the execution time from the perspective of Ensemble Toolkit.
 You can use the same profiler to obtain durations between two events or a state 
 and an event. You can find a list of all the :ref:`states <dev_docs_state_model>`
-and :ref:`events <dev_docs_events>` in the developer documentation.
+and :ref:`events <dev_docs_events>` in the developer documentation. An API
+reference to the profiler can be found :ref:`here <uapi_prof>`.
 
 
 Before running the script, you will have to enable the profiling variable. To do

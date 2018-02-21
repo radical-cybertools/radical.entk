@@ -1,3 +1,7 @@
+__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
+__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__license__ = "MIT"
+
 import pandas as pd
 import argparse
 import numpy as np
@@ -38,6 +42,16 @@ class Profiler(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def get(self, uid=None, state=None):
+
+        """
+        Get a specific object as specified by the 'uid' argument or
+        get a list of objects with a specific state as specified by the 'state'
+        argument
+
+        :Arguments:
+            :uid: Uid of the object whose details are required
+            :state: Details of all objects that have the specified state
+        """
 
         if uid and not state:
 
@@ -85,6 +99,18 @@ class Profiler(object):
 
 
     def duration(self, objects, states=None, events=None):
+
+        """
+        Get the duration the list of objects spent between the list of states or 
+        events specified
+
+        :Arguments:
+            :objects: List of uids of objects across which the duration is to be computed
+            :states: The states between which the duration is to be computed
+                syntax: [start_state, end_state]
+            :events: The events between which the duration is to be computed
+                syntax: [start_event, end_event]
+        """
 
         if not isinstance(states, list) and (states is not None):
             states = [states]
@@ -169,6 +195,10 @@ class Profiler(object):
 
 
     def list_all_stateful_objects(self):
+
+    """
+    List all objects and the details as stored in the profiler
+    """
 
         return self._state_objs
 
