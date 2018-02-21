@@ -237,7 +237,7 @@ setup_args = {
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
     #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
-    'install_requires'  :  ['radical.utils', 'pika'],
+    'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot'],
 
     'zip_safe'          : False,
     
