@@ -196,9 +196,9 @@ class Profiler(object):
 
     def list_all_stateful_objects(self):
 
-    """
-    List all objects and the details as stored in the profiler
-    """
+        """
+        List all objects and the details as stored in the profiler
+        """
 
         return self._state_objs
 
