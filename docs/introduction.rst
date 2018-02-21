@@ -59,6 +59,9 @@ on computing infrastructures (CIs). The runtime system is expected to manage
 the direct interactions with the various software and hardware layers of the 
 CIs, including the heterogeneity amongst various CIs.
 
+More details about how EnTK is designed and implemented can be found 
+:ref:`here <entk>`.
+
 .. _dependency:
 
 Dependencies
@@ -72,12 +75,16 @@ RP can be extended to support more HPC systems by contacting the developers of
 RP/EnTK or by the user themselves by following 
 `this page <http://radicalpilot.readthedocs.io/en/latest/machconf.html#writing-a-custom-resource-configuration-file>`_.
 
-
 Ensemble Toolkit also relies on RabbitMQ to support messaging capabilities 
 between its various components. Read more about it `here <http://www.rabbitmq.com/>`_.
 
-More details about how EnTK is designed and implemented can be found 
-:ref:`here <entk>`.
+EnTK also has profiling capabilities and uses `Pandas <https://pandas.pydata.org/>`_ 
+dataframes to store the data. Users can use these dataframes to wrangle the data
+or directly plot the required fields.
+
+Dependencies such as RP and Pandas are automatically installed when installing 
+EnTK. RabbitMQ, on the other hand, needs to be installed manually by the user.
+Instructions for all are provided in :ref:`here <installation>`.
 
 Five steps to create an application
 -----------------------------------
@@ -88,6 +95,8 @@ Five steps to create an application
 4. Run the Application Manager
 5. Sit back and relax!
 
+Jump ahead to take a look at the step by step instructions for an example
+script :ref:`here <uguide_get_started>`.
 
 Intended users
 ==============
