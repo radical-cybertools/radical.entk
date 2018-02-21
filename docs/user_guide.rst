@@ -1,0 +1,16 @@
+.. _user_guide:
+
+**********
+User Guide
+**********
+
+.. toctree::
+   :maxdepth: 1
+
+   ./user_guide/get_started
+   ./user_guide/adding_tasks
+   ./user_guide/adding_stages
+   ./user_guide/adding_pipelines
+   ./user_guide/adding_data
+   ./user_guide/change_target
+   ./user_guide/profiling

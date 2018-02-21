@@ -1,89 +1,77 @@
-import sys
+from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
 import os
-import json
-
-from radical.entk import Kernel
-from radical.entk import PoE
-from radical.entk import EnsemblemdError
-from radical.entk import ResourceHandle
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
-    os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+
+if __name__ == '__main__':
+
+    # Create a Pipeline object
+    p = Pipeline()
+
+    # Create a Stage object 
+    s1 = Stage()
+    s1.name = 'Stage 1'
+
+    for cnt in range(10):
+
+        # Create a Task object
+        t = Task()
+        t.name = 'my-task'        # Assign a name to the task (optional)
+        t.executable = ['/bin/echo']   # Assign executable to the task   
+        t.arguments = ['I am task %s in %s'%(cnt, s1.name)]  # Assign arguments for the task executable
+
+        # Add the Task to the Stage
+        s1.add_tasks(t)
+
+    # Add Stage to the Pipeline
+    p.add_stages(s1)
 
 
-class MyApp(PoE):
+    # Create another Stage object
+    s2 = Stage()
+    s2.name = 'Stage 2'
 
-    def __init__(self, stages,instances):
-         PoE.__init__(self, stages,instances)
+    for cnt in range(5):
 
-    def stage_1(self, instance):
-        k = Kernel(name="misc.hello")
-        k.upload_input_data = ['./input_file.txt > temp.txt']
-        k.arguments = ["--file=temp.txt"]
-        k.download_output_data = ['./temp.txt > output_file_{0}.txt'.format(instance)]
-        return k
+        # Create a Task object
+        t = Task()
+        t.name = 'my-task'        # Assign a name to the task (optional)
+        t.executable = ['/bin/echo']   # Assign executable to the task   
+        t.arguments = ['I am task %s in %s'%(cnt, s2.name)]  # Assign arguments for the task executable
 
-    def stage_2(self, instances):
+        # Add the Task to the Stage
+        s2.add_tasks(t)
 
-        k = Kernel(name="misc.cat")
-        k.upload_input_data = ['./output_file_2.txt > file2.txt']
-        k.copy_input_data = ['$STAGE_1/temp.txt > file1.txt']
-        k.arguments = ["--file1=file1.txt","--file2=file2.txt"]
-        k.download_output_data = ['./file1.txt > output_file.txt']
-        return k
+    # Add Stage to the Pipeline
+    p.add_stages(s2)
 
-if __name__ == "__main__":
 
-    # use the resource specified as argument, fall back to localhost
-    if   len(sys.argv)  > 2: 
-        print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
-        sys.exit(1)
-    elif len(sys.argv) == 2: 
-        resource = sys.argv[1]
-    else: 
-        resource = 'local.localhost'
+    # Create a dictionary describe four mandatory keys:
+    # resource, walltime, cores and project
+    # resource is 'local.localhost' to execute locally
+    res_dict = {
 
-    try:
+            'resource': 'local.localhost',
+            'walltime': 10,
+            'cores': 1,
+            'project': '',
+    }
 
-        with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
-            config = json.load(data_file)
+    # Create Resource Manager object with the above resource description
+    rman = ResourceManager(res_dict)
 
-        # Create a new resource handle with one resource and a fixed
-        # number of cores and runtime.
-        cluster = ResourceHandle(
-                resource=resource,
-                cores=config[resource]["cores"],
-                walltime=15,
-                #username=None,
+    # Create Application Manager
+    appman = AppManager()
 
-                project=config[resource]['project'],
-                access_schema = config[resource]['schema'],
-                queue = config[resource]['queue'],
-                database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
-            )
+    # Assign resource manager to the Application Manager
+    appman.resource_manager = rman
 
-        os.system('/bin/echo Welcome! > input_file.txt')
+    # Assign the workflow as a set of Pipelines to the Application Manager
+    appman.assign_workflow(set([p]))
 
-        # Allocate the resources.
-        cluster.allocate()
-
-        # Set the 'instances' of the BagofTasks to 16. This means that 16 instances
-        # of each BagofTasks step are executed.
-        app = MyApp(stages=2,instances=16)
-
-        cluster.run(app)
-
-    except EnsemblemdError, er:
-
-        print "Ensemble MD Toolkit Error: {0}".format(str(er))
-        raise # Just raise the execption again to get the backtrace
-
-    try:
-        # Deallocate the resources. 
-        cluster.deallocate()
-
-    except:
-        pass
+    # Run the Application Manager
+    appman.run()

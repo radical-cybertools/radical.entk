@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 __author__    = "Vivek Balasubramanian"
 __email__     = "vivek.balasubramanian@rutgers.edu"
@@ -10,70 +10,116 @@ __license__   = "MIT"
 
 import os
 import sys
-import subprocess
+import subprocess as sp
+import re
+import shutil
 
-from setuptools import setup, find_packages, Command
+name     = 'radical.entk'
+mod_root = 'src/radical/entk/'
 
-#-----------------------------------------------------------------------------
-#
-def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+try:
+    from setuptools import setup, Command, find_packages
+except ImportError as e:
+    print("%s needs setuptools to install" % name)
+    sys.exit(1)
 
-#-----------------------------------------------------------------------------
-#
-def check_version():
-    if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-        raise RuntimeError("SETUP ERROR: radical.ensemblemd requires Python 2.6 or higher")
-
-#-----------------------------------------------------------------------------
-#
-def get_version():
-    short_version = None  # 0.4.0
-    long_version  = None  # 0.4.0-9-g0684b06
+def set_version(mod_root):
+    """
+    mod_root
+        a VERSION file containes the version strings is created in mod_root,
+        during installation.  That file is used at runtime to get the version
+        information.
+        """
 
     try:
-        import subprocess as sp
-        import re
 
-        srcroot       = os.path.dirname (os.path.abspath(__file__))
-        VERSION_MATCH = re.compile(r'(([\d\.]+)\D.*)')
+        version_base   = None
+        version_detail = None
 
-        # attempt to get version information from git
-        p   = sp.Popen ('cd %s && git describe --tags --always' % srcroot,
-                        stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-        out = p.communicate()[0]
+        # get version from './VERSION'
+        src_root = os.path.dirname(__file__)
+        if  not src_root:
+            src_root = '.'
 
-        if  p.returncode != 0 or not out:
+        with open(src_root + '/VERSION', 'r') as f:
+            version_base = f.readline().strip()
 
-            # the git check failed -- its likely that we are called from
-            # a tarball, so use ./VERSION instead
-            out=open("%s/VERSION" % ".", 'r').read().strip()
+        # attempt to get version detail information from git
+        # We only do that though if we are in a repo root dir,
+        # ie. if 'git rev-parse --show-prefix' returns an empty string --
+        # otherwise we get confused if the ve lives beneath another repository,
+        # and the pip version used uses an install tmp dir in the ve space
+        # instead of /tmp (which seems to happen with some pip/setuptools
+        # versions).
+        p = sp.Popen('cd %s ; '
+                     'test -z `git rev-parse --show-prefix` || exit -1; '
+                     'tag=`git describe --tags --always` 2>/dev/null ; '
+                     'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
+                     'echo $tag@$branch' % src_root,
+                     stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        version_detail = str(p.communicate()[0].strip())
+        version_detail = version_detail.replace('detached from ', 'detached-')
 
-        # from the full string, extract short and long versions
-        v = VERSION_MATCH.search (out)
-        if v:
-            long_version  = v.groups()[0]
-            short_version = v.groups()[1]
+        # remove all non-alphanumeric (and then some) chars
+        version_detail = re.sub('[/ ]+', '-', version_detail)
+        version_detail = re.sub('[^a-zA-Z0-9_+@.-]+', '', version_detail)
 
-        # sanity check if we got *something*
-        if not short_version or not long_version:
-            raise RuntimeError("SETUP ERROR: Cannot determine version from git or ./VERSION\n")
-
-        short_version = open('VERSION', 'r').read().strip()
+        if  p.returncode   !=  0  or \
+            version_detail == '@' or \
+            'not-a-git-repo' in version_detail or \
+            'not-found'      in version_detail or \
+            'fatal'          in version_detail :
+            version = version_base
+        elif '@' not in version_base:
+            version = '%s-%s' % (version_base, version_detail)
+        else:
+            version = version_base
 
         # make sure the version files exist for the runtime version inspection
-        #open ('%s/VERSION' % srcroot, 'w').write (long_version+"\n")
-        open ('%s/src/radical/ensemblemd/VERSION' % srcroot, 'w').write (long_version+"\n")
+        path = '%s/%s' % (src_root, mod_root)
+        with open(path + "/VERSION", "w") as f:
+            f.write(version + "\n")
 
+        sdist_name = "%s-%s.tar.gz" % (name, version)
+        sdist_name = sdist_name.replace('/', '-')
+        sdist_name = sdist_name.replace('@', '-')
+        sdist_name = sdist_name.replace('#', '-')
+        sdist_name = sdist_name.replace('_', '-')
+
+        if '--record'    in sys.argv or \
+           'bdist_egg'   in sys.argv or \
+           'bdist_wheel' in sys.argv    :
+          # pip install stage 2 or easy_install stage 1
+          #
+          # pip install will untar the sdist in a tmp tree.  In that tmp
+          # tree, we won't be able to derive git version tags -- so we pack the
+          # formerly derived version as ./VERSION
+            shutil.move("VERSION", "VERSION.bak")            # backup version
+            shutil.copy("%s/VERSION" % path, "VERSION")      # use full version instead
+            os.system  ("python setup.py sdist")             # build sdist
+            shutil.copy('dist/%s' % sdist_name,
+                        '%s/%s'   % (mod_root, sdist_name))  # copy into tree
+            shutil.move("VERSION.bak", "VERSION")            # restore version
+
+        with open(path + "/SDIST", "w") as f: 
+            f.write(sdist_name + "\n")
+
+        return version_base, version_detail, sdist_name
 
     except Exception as e :
-        raise RuntimeError("SETUP ERROR: Could not extract/set version: %s" % e)
-
-    return short_version, long_version
+        raise RuntimeError('Could not extract/set version: %s' % e)
 
 
 # ------------------------------------------------------------------------------
-#
+# check python version. we need >= 2.7, <3.x
+if  sys.hexversion < 0x02070000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError("%s requires Python 2.x (2.7 or higher)" % name)
+
+
+# ------------------------------------------------------------------------------
+# get version info -- this will create VERSION and srcroot/VERSION
+version, version_detail, sdist_name = set_version(mod_root)
+
 # borrowed from the MoinMoin-wiki installer
 #
 def makeDataFiles(prefix, dir):
@@ -140,22 +186,16 @@ def isgood(name):
             return True
     return False
 
-
-#-----------------------------------------------------------------------------
-
-
-
 #-----------------------------------------------------------------------------
 #
-#srcroot = os.path.dirname(os.path.realpath(__file__))
-#check_version()
-#short_version, long_version = get_version()
+if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError("SETUP ERROR: radical.entk requires Python 2.6 or higher")
 
-short_version = 0.5
+# short_version = 0.6
 
 setup_args = {
     'name'             : 'radical.entk',
-    'version'          : short_version,
+    'version'          : version,
     'description'      : "Radical Ensemble Toolkit.",
     #'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'           : 'RADICAL Group at Rutgers University',
@@ -164,7 +204,7 @@ setup_args = {
     'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
     'url'              : 'https://github.com/radical-cybertools/radical.entk',
     'license'          : 'MIT',
-    'keywords'         : "ensemble execution",
+    'keywords'         : "ensemble workflow execution",
     'classifiers'      :  [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -182,11 +222,7 @@ setup_args = {
         'Operating System :: Unix'
     ],
 
-    #'entry_points': {
-    #    'console_scripts':
-    #        ['htbac-fecalc = radical.ensemblemd.htbac.bin.fecalc:main',
-    #         'htbac-sim    = radical.ensemblemd.htbac.bin.sim:main']
-    #},
+    #'entry_points': {},
 
     #'dependency_links': ['https://github.com/saga-project/saga-pilot/tarball/master#egg=sagapilot'],
 
@@ -195,25 +231,22 @@ setup_args = {
 
     'package_dir'       : {'': 'src'},
 
-    #'scripts'           : ['bin/ensemblemd-version'],
+    'scripts'           : ['bin/entk-version'],
                            
 
-    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'VERSION.git']},
+    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
-    'install_requires'  :  ['radical.utils', 'setuptools>=1', 'radical.pilot'],
-    #'test_suite'        : 'radical.ensemblemd.tests',
+    #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
+    'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot',
+                            'autodoc','pytest','pandas','hypothesis','sphinx'],
 
     'zip_safe'          : False,
+    
+    'data_files'        : [
+                                    makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
+                                    makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
+                            ],
 
-    # This copies the contents of the examples/ dir under
-    # sys.prefix/share/radical.pilot.
-    # It needs the MANIFEST.in entries to work.
-
-    'data_files': [
-        makeDataFiles('share/radical.entk/examples/user_guide', 'examples/user_guide'),
-        makeDataFiles('share/radical.entk/examples/simple', 'examples/simple'),
-        makeDataFiles('share/radical.entk/examples/advanced', 'examples/advanced')
-    ],
 }
 
 setup (**setup_args)

@@ -1,78 +1,56 @@
-import sys
+from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
 import os
-import json
-
-from radical.entk import Kernel, PoE, AppManager, ResourceHandle, EnTKError
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
-if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
-    os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+
+ 
+if __name__ == '__main__':
+
+    # Create a Pipeline object
+    p = Pipeline()
+
+    # Create a Stage object
+    s = Stage()
+
+    # Create a Task object
+    t = Task()
+    t.name = 'my-first-task'        # Assign a name to the task (optional)
+    t.executable = ['/bin/echo']   # Assign executable to the task   
+    t.arguments = ['Hello World']  # Assign arguments for the task executable
+
+    # Add Task to the Stage
+    s.add_tasks(t)
+
+    # Add Stage to the Pipeline
+    p.add_stages(s)
 
 
-class MyApp(PoE):
+    # Create a dictionary describe four mandatory keys:
+    # resource, walltime, cores and project
+    # resource is 'local.localhost' to execute locally
+    res_dict = {
 
-    def __init__(self, stages,instances):
-        PoE.__init__(self, stages,instances)
+            'resource': 'local.localhost',
+            'walltime': 10,
+            'cores': 1,
+            'project': '',
+    }
 
-    def stage_1(self, instance):
-        k = Kernel(name="hello")
-        k.arguments = ["--file=output.txt"]
-        return k
+    # Create Resource Manager object with the above resource description
+    rman = ResourceManager(res_dict)
 
+    # Create Application Manager
+    appman = AppManager()
 
-if __name__ == "__main__":
+    # Assign resource manager to the Application Manager
+    appman.resource_manager = rman
 
+    # Assign the workflow as a set of Pipelines to the Application Manager
+    appman.assign_workflow(set([p]))
 
-    # use the resource specified as argument, fall back to localhost
-    if   len(sys.argv)  > 2: 
-        print 'Usage:{4}%s [resource]\n\n' % sys.argv[0]
-        sys.exit(1)
-    elif len(sys.argv) == 2: 
-        resource = sys.argv[1]
-    else: 
-        resource = 'local.localhost'
-
-    try:
-        
-        with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
-            config = json.load(data_file)
-
-        app = MyApp(stages=1,instances=1)
-
-        appman = AppManager()
-
-        # Create a new resource handle with one resource and a fixed
-        # number of cores and runtime.
-        cluster = ResourceHandle(
-                resource=resource,
-                cores=config[resource]["cores"],
-                walltime=15,
-                #username=None,
-
-                project=config[resource]['project'],
-                access_schema = config[resource]['schema'],
-                queue = config[resource]['queue'],
-                database_url='mongodb://rp:rp@ds015335.mlab.com:15335/entk',
-            )
-
-        # Allocate the resources.
-        cluster.allocate()
-
-        # Set the 'instances' of the BagofTasks to 1. This means that 1 instance
-        # of each BagofTasks step is executed.
-        cluster.run(appman)
-
-    except EnTKError, er:
-
-        print "Ensemble Toolkit Error: {0}".format(str(er))
-        raise # Just raise the execption again to get the backtrace
-
-    try:
-        # Deallocate the resources. 
-        cluster.deallocate()
-
-    except Exception, ex:
-        print 'Error while deallocating: %s'%ex
-        pass
+    # Run the Application Manager
+    appman.run()
