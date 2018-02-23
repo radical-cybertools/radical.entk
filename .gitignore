@@ -86,3 +86,7 @@ docs/_build/
 # misc files
 ./.pytest_cache
 ./.cache
+
+# pypi files
+./src/radical.entk.egg-info
+./dist
