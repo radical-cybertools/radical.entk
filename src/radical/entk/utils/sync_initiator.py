@@ -27,16 +27,18 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
                         )
 
     if obj_type == 'Task':
-        local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+        local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj.parent_stage)
     elif obj_type == 'Stage':
-        local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+        local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid, msg=obj.parent_pipeline)
     else:
         local_prof.prof('publishing obj with state %s for sync'%obj.state, uid=obj.uid)
 
 
-    temp = queue.split('-')
-    temp.reverse()
-    reply_queue = '-'.join(temp)
+    sid = '-'.join(queue.split('-')[:-3])
+    qname = queue.split('-')[-3:]
+    qname.reverse()
+    reply_queue = '-'.join(qname)
+    reply_queue = sid + '-' + reply_queue
                 
     while True:
         #self._logger.info('waiting for ack')        
@@ -48,9 +50,9 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
                 #print 'acknowledged: ', obj.uid, obj.state
                 if obj_type == 'Task':
-                    local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_stage)
+                    local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj.parent_stage)
                 elif obj_type == 'Stage':
-                    local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj._parent_pipeline)
+                    local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid, msg=obj.parent_pipeline)
                 else:
                     local_prof.prof('obj with state %s synchronized'%obj.state, uid=obj.uid)
                             

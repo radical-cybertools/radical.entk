@@ -8,7 +8,7 @@ Getting Started
 In this section we will run you through Ensemble Toolkit  API.
 We will develop an example application consisting of a simple bag of Tasks.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
@@ -23,7 +23,7 @@ For the purposes of this user guide, we have a MongoDB setup to use. Please run 
 
 .. code-block:: bash
 
-        export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
+        export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
 
 Importing components from the Ensemble Toolkit Module

@@ -8,7 +8,7 @@ Adding Data
 Data movement is one of the important elements of any application. In this section, we will take a look at how we can 
 move data between different tasks.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <overview>` and to have read through 
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through 
             the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
@@ -37,7 +37,7 @@ To run the script, simply execute the following from the command line:
 .. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use 
         it::
 
-            export RADICAL_PILOT_DBURL="mongodb://138.201.86.166:27017/ee_exp_4c"
+            export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
 .. code-block:: bash
 

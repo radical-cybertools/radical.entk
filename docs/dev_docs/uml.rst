@@ -7,6 +7,9 @@ UML diagrams and other resources
 This page presents the UML diagrams for the Ensemble Toolkit. Additional information to help understand 
 the design of Ensemble Toolkit is also presented for interested developers.
 
+
+.. _dev_docs_cls_diag:
+
 Class Diagram
 =============
 
@@ -17,6 +20,8 @@ The following document describes the classes in EnTK, their data members and fun
    :width: 1200
 
 
+.. _dev_docs_seq_diag:
+
 Sequence Diagram
 ================
 
@@ -25,6 +30,9 @@ following figure:
 
 .. image:: ../figures/entk_sequence_diagram.jpg
    :target: ../figures/entk_sequence_diagram.jpg
+
+
+.. _dev_docs_state_model:
 
 State Diagram
 =============
@@ -35,26 +43,9 @@ document them in the following figure:
 .. image:: ../figures/entk_state_diagram.jpg
    :target: ../figures/entk_state_diagram.jpg
 
-Communication Model
-===================
-
-The communication model of the various components in Ensemble Toolkit is presented below.
-
-.. image:: ../figures/comm_model.jpg
-   :target: ../figures/comm_model.jpg
 
 
-Using RabbitMQ queues, the tmgr process, enqueue thread and dequeue thread communication the stateful objects
-to the synchronizer thread in the master process. The synchronizer thread then sends acknowledgements (Ack) for each 
-object received. The tmgr process, enqueue thread and dequeue thread are blocked till they receive an Ack and thus the 
-the master process always remains in sync.
-
-There also exist heartbeat messages between the heartbeat thread and the tmgr process in the TaskManager. This makes
-sure our the tmgr is alive and the interaction with the runtime system is progressing.
-
-.. image:: ../figures/heartbeat_model.jpg
-   :target: ../figures/heartbeat_model.jpg
-
+.. _dev_docs_events:
 
 Events Recorded
 ===============
