@@ -111,7 +111,7 @@ class TaskManager(object):
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
-                                                                                        hearbeat=0
+                                                                                        heartbeat=0
                                                                                         )
                                                               )
             else:
@@ -165,7 +165,7 @@ class TaskManager(object):
             if self._hb_thread.is_alive():
                 self._hb_alive.set()
 
-            self._prof.prof('terminating hearbeat thread', uid=self._uid)
+            self._prof.prof('terminating heartbeat thread', uid=self._uid)
 
     def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
         """
@@ -215,7 +215,7 @@ class TaskManager(object):
                     if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                         self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
                                                                                                 port=port,
-                                                                                                hearbeat=0
+                                                                                                heartbeat=0
                                                                                                 )
                                                                       )
                     else:
@@ -302,7 +302,7 @@ class TaskManager(object):
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
                                                                                         port=port,
-                                                                                        hearbeat=0
+                                                                                        heartbeat=0
                                                                                         )
                                                               )
             else:
@@ -463,7 +463,7 @@ class TaskManager(object):
 
             try:
 
-                self._logger.info('Starting hearbeat thread')
+                self._logger.info('Starting heartbeat thread')
                 self._prof.prof('creating heartbeat thread', uid=self._uid)
                 self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
                 self._hb_alive = threading.Event()
@@ -500,15 +500,15 @@ class TaskManager(object):
 
                 self._logger.info('Hearbeat thread terminated')
 
-                self._prof.prof('hearbeat thread terminated', uid=self._uid)
+                self._prof.prof('heartbeat thread terminated', uid=self._uid)
 
-                # We close in the hearbeat because it ends after the tmgr process
+                # We close in the heartbeat because it ends after the tmgr process
                 self._prof.close()
 
                 return True
 
         except Exception, ex:
-            self._logger.error('Could not terminate hearbeat thread')
+            self._logger.error('Could not terminate heartbeat thread')
             raise
 
     def start_manager(self):

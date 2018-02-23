@@ -258,7 +258,7 @@ class WFprocessor(object):
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
-                                                                                        hearbeat=0
+                                                                                        heartbeat=0
                                                                                         )
                                                               )
             else:
@@ -459,7 +459,7 @@ class WFprocessor(object):
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
-                                                                                        hearbeat=0
+                                                                                        heartbeat=0
                                                                                         )
                                                               )
             else:
