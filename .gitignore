@@ -68,3 +68,25 @@ docs/_build/
 
 # pytest files
 ./src/radical/entk/tests/__pycache__
+./tests/__pycache__
+./tests/test_api/__pycache__
+./tests/test_functionality/__pycache__
+./tests/test_integration/__pycache__
+./tests/test_issues/__pycache__
+
+
+# hypothesis files
+./src/radical/entk/tests/.hypothesis
+./tests/.hypothesis
+./tests/test_api/.hypothesis
+./tests/test_functionality/.hypothesis
+./tests/test_integration/.hypothesis
+./tests/test_issues/.hypothesis
+
+# misc files
+./.pytest_cache
+./.cache
+
+# pypi files
+./src/radical.entk.egg-info
+./dist

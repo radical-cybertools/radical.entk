@@ -2,7 +2,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.task.task import Task
 from radical.entk import states
-
+from collections import Iterable
 
 class Stage(object):
 
@@ -11,9 +11,11 @@ class Stage(object):
     stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
     """
 
-    def __init__(self):
+    def __init__(self, duplicate = False):
 
-        self._uid       = ru.generate_id('radical.entk.stage')
+        if not duplicate:
+            self._uid       = ru.generate_id('radical.entk.stage')
+            
         self._tasks     = set()
         self._name      = str()
 
@@ -69,7 +71,7 @@ class Stage(object):
         return self._state
 
     @property
-    def _parent_pipeline(self):
+    def parent_pipeline(self):
 
         """
         :getter: Returns the pipeline this stage belongs to
@@ -114,12 +116,12 @@ class Stage(object):
         
 
     @tasks.setter
-    def tasks(self, tasks):        
-        self._tasks = self._validate_tasks(tasks)
+    def tasks(self, val):        
+        self._tasks = self._validate_tasks(val)
         self._task_count = len(self._tasks)
-
-    @_parent_pipeline.setter
-    def _parent_pipeline(self, value):
+    
+    @parent_pipeline.setter
+    def parent_pipeline(self, value):
         if isinstance(value, str):
             self._p_pipeline = value
         else:
@@ -138,58 +140,17 @@ class Stage(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_tasks(self, tasks):
+    def add_tasks(self, val):
 
         """
         Adds tasks to the existing set of tasks of the Stage
 
         :argument: set of tasks
         """
-
-        tasks = self._validate_tasks(tasks)
+        tasks =  self._validate_tasks(val)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
-        
 
-
-    def remove_tasks(self, task_names):
-
-        """
-        Removes tasks from the current stage
-
-        :argument: list of task names as strings
-        """
-
-
-        if not isinstance(task_names, list):
-            task_names = [task_names]
-
-        for val in task_names:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
-
-
-        try:
-            copy_of_existing_tasks = list(self._tasks)
-            copy_task_names = list(task_names)
-
-            for task in self._tasks:
-
-                for task_name in task_names:
-                
-                    if task.name ==  task_name:
-
-                        copy_of_existing_tasks.remove(task)
-                        copy_task_names.remove(task_name)
-
-                task_names = copy_task_names
-
-            if len(self._tasks) != len(copy_of_existing_tasks):
-                self._tasks = copy_of_existing_tasks
-                self._task_count = len(self._tasks)
-
-        except Exception, ex:
-            raise Error(text=ex)
 
     def to_dict(self):
 
@@ -273,12 +234,12 @@ class Stage(object):
 
         if tasks is None:
             for task in self._tasks:
-                task._parent_stage = self._uid
-                task._parent_pipeline = self._p_pipeline
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._p_pipeline
         else:
             for task in tasks:
-                task._parent_stage = self._uid
-                task._parent_pipeline = self._p_pipeline
+                task.parent_stage = self._uid
+                task.parent_pipeline = self._p_pipeline
 
 
             return tasks
@@ -290,13 +251,15 @@ class Stage(object):
 
         :arguments: String
         """
+        if value not in states.state_numbers.keys():
+            raise ValueError(   obj=self._uid, 
+                                attribute='set_tasks_state', 
+                                expected_value = states.state_numbers.keys(), 
+                                actual_value = value)
 
-        if isinstance(value, str):
-            for task in self._tasks:
-                task.state = value
+        for task in self._tasks:
+            task.state = value
 
-        else:
-            raise TypeError(expected_type=str, actual_type=type(value))
 
     def _check_stage_complete(self):
 
@@ -325,7 +288,7 @@ class Stage(object):
 
         Details: This method is to be called before the resource request is placed. Currently, this method is called 
         when tasks are added to the stage.
-        """
+        """        
 
         if not isinstance(tasks, set):
 
@@ -333,6 +296,9 @@ class Stage(object):
                 tasks = set([tasks])
             else:
                 tasks = set(tasks)
+
+        if not tasks:
+            raise TypeError(expected_type=Task, actual_type=type(tasks))
 
         for t in tasks:
 
@@ -355,14 +321,14 @@ class Stage(object):
 
         if self._state is not states.INITIAL:
             
-            raise ValueError(   object=self._uid, 
+            raise ValueError(   obj=self._uid, 
                                 attribute='state', 
                                 expected_value=states.INITIAL,
                                 actual_value=self._state)
 
-        if self._tasks is None:
+        if not self._tasks:
 
-            raise MissingError( object=self._uid,
+            raise MissingError( obj=self._uid,
                                 missing_attribute='tasks')
 
     # ------------------------------------------------------------------------------------------------------------------

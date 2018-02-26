@@ -1,11 +1,22 @@
+__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
+__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__license__ = "MIT"
+
 import pandas as pd
 import argparse
 import numpy as np
 import pprint
-
-
+import os
 
 class Profiler(object):
+
+    """
+    The Profiler object to read EnTK profiles are produce data frames and 
+    durations based on states and events within EnTK.
+
+    :Arguments:
+        :src: full path to the folder containing the EnTK profiles        
+    """
 
     def __init__(self, src=None):
 
@@ -18,14 +29,182 @@ class Profiler(object):
         self._states = dict()
         self._events = dict()
 
-        self._initialize()
-
         self._legacy = os.environ.get("RADICAL_ANALYTICS_LEGACY_PROFILES", False)
         if self._legacy:
             self._cols = ['timestamp', 'thread/proc', 'uid', 'state', 'event', 'msg']
         else:
             self._cols = ['timestamp', 'event', 'comp', 'tid', 'uid', 'state', 'msg']
 
+        self._initialize()
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get(self, uid=None, state=None):
+
+        """
+        Get a specific object as specified by the 'uid' argument or
+        get a list of objects with a specific state as specified by the 'state'
+        argument
+
+        :Arguments:
+            :uid: Uid of the object whose details are required
+            :state: Details of all objects that have the specified state
+        """
+
+        if uid and not state:
+
+            data = dict()            
+
+            obj_type = uid.split('.')[0]
+
+            for state, object_collection in self._states_dict.iteritems():
+                
+                for obj, timestamp in object_collection[obj_type].iteritems():
+
+                    if obj == uid:
+
+                        if 'uid' not in data:
+                            data['uid'] = uid
+
+                        data[state] = timestamp
+
+            return data
+
+        elif state and not uid:
+
+            data = dict()
+
+            for object_collection, objs in self._states_dict[state].iteritems():
+
+                for obj, timestamp in objs.iteritems():
+
+                    if 'state' not in data:
+                        data['state'] = state
+
+                    data[obj] = timestamp
+
+            return data
+
+        else:
+
+            data = dict()
+            obj_type = uid.split('.')[0]
+
+            data['uid'] = uid
+            data[state] = self._states_dict[state][obj_type][uid]
+
+            return data
+
+
+    def duration(self, objects, states=None, events=None):
+
+        """
+        Get the duration the list of objects spent between the list of states or 
+        events specified
+
+        :Arguments:
+            :objects: List of uids of objects across which the duration is to be computed
+            :states: The states between which the duration is to be computed
+                syntax: [start_state, end_state]
+            :events: The events between which the duration is to be computed
+                syntax: [start_event, end_event]
+        """
+
+        if not isinstance(states, list) and (states is not None):
+            states = [states]
+
+        if not isinstance(events, list) and (events is not None):
+            events = [events]
+
+        if not isinstance(objects, list):
+            objects =[objects]
+
+        if len(objects)==1:
+            objects = [objects[0], objects[0]]
+
+        #pprint.pprint(self._states_dict)
+        #pprint.pprint(self._events_dict)
+
+        # Check if objects are in accepted format
+
+        # extract info about required objects
+
+        extracted_dict = {}
+
+        '''
+        {
+            object0: 
+                    { 
+                        state0: time, 
+                        state1: time
+                    },
+            object1: 
+                    { 
+                        state0: time, 
+                        state1: time
+                    },
+        }
+
+        '''
+
+        if (states is not None) and events is None:
+
+            for obj in objects:
+
+                extracted_dict[obj] = {}
+                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[2].strip()][obj]
+
+            #pprint.pprint(extracted_dict)
+
+            return self._get_Toverlap(extracted_dict, states[0], states[1])
+
+
+        elif (states is None) and (events is not None):
+
+            for obj in objects:
+
+                extracted_dict[obj] = {}
+                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[2].strip()][obj]
+                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]            
+
+            #pprint.pprint(extracted_dict)
+
+            return self._get_Toverlap(extracted_dict, events[0], events[1])
+
+
+        elif states is not None and events is not None:
+
+            t1 = None
+            t2 = None
+
+            for obj in objects:
+
+                
+                if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
+                    t1 = float(self._states_dict[states[0]][obj.split('.')[2].strip()][obj])
+                else:
+                    t2 = float(self._events_dict[events[0]][obj.split('.')[2].strip()][obj])
+
+            if t1>t2:
+                return float(t1) - float(t2)
+            else:
+                return float(t2) - float(t1)
+
+
+    def list_all_stateful_objects(self):
+
+        """
+        List all objects and the details as stored in the profiler
+        """
+
+        return self._state_objs
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def _initialize(self):
       
@@ -168,53 +347,6 @@ class Profiler(object):
 
         #pprint.pprint(self._events_dict)
 
-        
-    def get(self, uid=None, state=None):
-
-        if uid and not state:
-
-            data = dict()            
-
-            obj_type = uid.split('.')[0]
-
-            for state, object_collection in self._states_dict.iteritems():
-                
-                for obj, timestamp in object_collection[obj_type].iteritems():
-
-                    if obj == uid:
-
-                        if 'uid' not in data:
-                            data['uid'] = uid
-
-                        data[state] = timestamp
-
-            return data
-
-        elif state and not uid:
-
-            data = dict()
-
-            for object_collection, objs in self._states_dict[state].iteritems():
-
-                for obj, timestamp in objs.iteritems():
-
-                    if 'state' not in data:
-                        data['state'] = state
-
-                    data[obj] = timestamp
-
-            return data
-
-        else:
-
-            data = dict()
-            obj_type = uid.split('.')[0]
-
-            data['uid'] = uid
-            data[state] = self._states_dict[state][obj_type][uid]
-
-            return data
-
 
     def _get_Toverlap(self, d, start_state, stop_state):
         '''
@@ -291,90 +423,4 @@ class Profiler(object):
         return final
 
 
-    def duration(self, objects, states=None, events=None):
-
-        if not isinstance(states, list) and (states is not None):
-            states = [states]
-
-        if not isinstance(events, list) and (events is not None):
-            events = [events]
-
-        if not isinstance(objects, list):
-            objects =[objects]
-
-        if len(objects)==1:
-            objects = [objects[0], objects[0]]
-
-        #pprint.pprint(self._states_dict)
-        #pprint.pprint(self._events_dict)
-
-        # Check if objects are in accepted format
-
-        # extract info about required objects
-
-        extracted_dict = {}
-
-        '''
-        {
-            object0: 
-                    { 
-                        state0: time, 
-                        state1: time
-                    },
-            object1: 
-                    { 
-                        state0: time, 
-                        state1: time
-                    },
-        }
-
-        '''
-
-        if (states is not None) and events is None:
-
-            for obj in objects:
-
-                extracted_dict[obj] = {}
-                extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[2].strip()][obj]
-                extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[2].strip()][obj]
-
-            #pprint.pprint(extracted_dict)
-
-            return self._get_Toverlap(extracted_dict, states[0], states[1])
-
-
-        elif (states is None) and (events is not None):
-
-            for obj in objects:
-
-                extracted_dict[obj] = {}
-                extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[2].strip()][obj]
-                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]            
-
-            #pprint.pprint(extracted_dict)
-
-            return self._get_Toverlap(extracted_dict, events[0], events[1])
-
-
-        elif states is not None and events is not None:
-
-            t1 = None
-            t2 = None
-
-            for obj in objects:
-
-                
-                if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
-                    t1 = float(self._states_dict[states[0]][obj.split('.')[2].strip()][obj])
-                else:
-                    t2 = float(self._events_dict[events[0]][obj.split('.')[2].strip()][obj])
-
-            if t1>t2:
-                return float(t1) - float(t2)
-            else:
-                return float(t2) - float(t1)
-
-
-    def list_all_stateful_objects(self):
-
-        return self._state_objs
+    

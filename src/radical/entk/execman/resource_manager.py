@@ -1,11 +1,12 @@
-__copyright__   = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__      = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
-__license__     = "MIT"
+__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
+__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__license__ = "MIT"
 
 import radical.utils as ru
 from radical.entk.exceptions import *
 import radical.pilot as rp
 import os
+
 
 class ResourceManager(object):
 
@@ -25,12 +26,7 @@ class ResourceManager(object):
 
     def __init__(self, resource_desc):
 
-        self._uid = ru.generate_id('radical.entk.resource_manager')
-        self._logger = ru.get_logger('radical.entk.resource_manager')
-        self._prof = ru.Profiler(name = self._uid)
-
-        self._prof.prof('create rmgr obj', uid=self._uid)
-
+        self._resource_desc = resource_desc
         self._logger.info('Resource Manager initialized')
 
         self._session       = None    
@@ -41,29 +37,16 @@ class ResourceManager(object):
         self._cpus          = 1
         self._gpus          = 0
         self._project       = None
+
         self._access_schema = None
-        self._queue         = None
+        self._queue = None
 
-        self._logger.debug('Validating resource description')
-        if self._validate_resource_desc(resource_desc):
-            self._logger.info('Resource description validated')
-            self._logger.debug('Populating resource manager object')
-            self._populate(resource_desc)
-        else:
-            self._logger.error('Could not validate resource description')
-            raise
-
-
-        self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL',None)
+        self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
             raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
 
-
         # Shared data list
         self._shared_data = list()
-
-        self._prof.prof('rmgr obj created', uid=self._uid)
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter methods
@@ -71,7 +54,6 @@ class ResourceManager(object):
 
     @property
     def pilot(self):
-
         """
         :getter: Return reference to the submitted Pilot
         """
@@ -79,7 +61,6 @@ class ResourceManager(object):
 
     @property
     def session(self):
-
         """
         :getter: Return reference to the Radical Pilot session instance currently being used
         """
@@ -87,7 +68,6 @@ class ResourceManager(object):
 
     @property
     def pmgr(self):
-
         """
         :getter: Return reference to the Radical Pilot manager currently being used
         """
@@ -95,7 +75,6 @@ class ResourceManager(object):
 
     @property
     def resource(self):
-
         """
         :getter: Return user specified resource name
         """
@@ -103,7 +82,6 @@ class ResourceManager(object):
 
     @property
     def walltime(self):
-
         """
         :getter: Return user specified walltime
         """
@@ -111,7 +89,6 @@ class ResourceManager(object):
 
     @property
     def cores(self):
-
         """
         :getter: Return user specified number of cpus
         """
@@ -119,7 +96,6 @@ class ResourceManager(object):
 
     @property
     def project(self):
-
         """
         :getter: Return user specified project ID
         """
@@ -127,7 +103,6 @@ class ResourceManager(object):
 
     @property
     def access_schema(self):
-
         """
         :getter: Return user specified access schema -- 'ssh' or 'gsissh' or None
         """
@@ -135,7 +110,6 @@ class ResourceManager(object):
 
     @property
     def queue(self):
-
         """
         :getter: Return user specified resource queue to be used
         """
@@ -143,12 +117,10 @@ class ResourceManager(object):
 
     @property
     def shared_data(self):
-
         """
         :getter: list of files to be staged to remote and that are common to multiple tasks
         """
         return self._shared_data
-
 
     @shared_data.setter
     def shared_data(self, data_list):
@@ -166,9 +138,7 @@ class ResourceManager(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-
     def get_resource_allocation_state(self):
-
         """
         **Purpose**: Get the state of the resource allocation
 
@@ -179,23 +149,19 @@ class ResourceManager(object):
         else:
             return None
 
-
     def completed_states(self):
-
         """
         **Purpose**: Test if a resouce allocation was submitted
 
         """
 
-        return [rp. CANCELED, rp.FAILED, rp.DONE]
-
+        return [rp.CANCELED, rp.FAILED, rp.DONE]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _validate_resource_desc(self, resource_desc):
-
+    def _validate_resource_desc(self, sid):
         """
         **Purpose**: Validate the resource description that was provided to ResourceManager
 
@@ -203,45 +169,45 @@ class ResourceManager(object):
         :return: boolean (valid/invalid)
         """
 
-        try:
+        self._uid = ru.generate_id('radical.entk.resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._path = os.getcwd() + '/' + sid
 
+        self._logger = ru.get_logger(self._uid, path=self._path)
+        self._prof = ru.Profiler(name=self._uid, path=self._path)
+
+        try:
+            
             self._prof.prof('validating rdesc', uid=self._uid)
 
-            if not isinstance(resource_desc, dict):
-                raise TypeError(expected_type=dict, actual_type=type(resource_desc))
+            self._logger.debug('Validating resource description')
 
+            if not isinstance(self._resource_desc, dict):
+                raise TypeError(expected_type=dict, actual_type=type(self._resource_desc))
 
             expected_keys = [   'resource',
                                 'walltime',
                                 'cpus',
-                                'project'
                             ]
 
             optional_keys = [
                                 'gpus',
                                 'access_schema',
-                                'queue'
+                                'queue',
+                                'project'
                             ]
 
             for key in expected_keys:
-                if key not in resource_desc:
-                    raise Error(text='Mandatory key %s does not exist in the resource description'%key)
+                if key not in self._resource_desc:
+                    raise Error(text='Key %s does not exist in the resource description' % key)
 
-            for key in resource_desc.keys():
-                if key not in expected_keys and key not in optional_keys:
-                    raise Error(text="Unknown key %s specified in resource description"%key)
+            if not (isinstance(resource_desc['resource'],str) and isinstance(resource_desc['resource'],unicode)):
+                raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
 
-            if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
-                raise TypeError(expected_type=str, actual_type=type(resource_desc['resource']))
-
-            if not isinstance(resource_desc['walltime'], int):
-                raise TypeError(expected_type=int, actual_type=type(resource_desc['walltime']))
+            if not isinstance(self._resource_desc['walltime'], int):
+                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
 
             if not isinstance(resource_desc['cpus'], int):
                 raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
-
-            if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
-                raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
 
             if 'gpus' in resource_desc:
                 if not isinstance(resource_desc['gpus'], int):
@@ -255,16 +221,19 @@ class ResourceManager(object):
                 if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
                     raise TypeError(expected_type=str, actual_type=type(resource_desc['queue']))
 
+            if 'project' in self._resource_desc:
+                if (not isinstance(self._resource_desc['project'],str)) and (not self._resource_desc['project']):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
+
             self._prof.prof('rdesc validated', uid=self._uid)
 
             return True
 
         except Exception, ex:
-            self._logger.error('Failed to validate resource description, error: %s'%ex)
+            self._logger.error('Failed to validate resource description, error: %s' % ex)
             raise
 
-    def _populate(self, resource_desc):
-
+    def _populate(self):
         """
         **Purpose**: Populate the ResourceManager attributes with values provided in the resource description
 
@@ -275,19 +244,23 @@ class ResourceManager(object):
 
             self._prof.prof('populating rmgr', uid=self._uid)
 
-            self._resource = str(resource_desc['resource'])
-            self._walltime = resource_desc['walltime']
+            self._logger.debug('Populating resource manager object')
+
+            self._resource = self._resource_desc['resource']
+            self._walltime = self._resource_desc['walltime']
             self._cpus = resource_desc['cpus']
-            self._project = str(resource_desc['project'])
 
             if 'gpus' in resource_desc:
                 self._gpus = resource_desc['gpus']
 
-            if 'access_schema' in resource_desc:
-                self._access_schema = str(resource_desc['access_schema'])
+            if 'project' in self._resource_desc:
+                self._project = self._resource_desc['project']
 
-            if 'queue' in resource_desc:
-                self._queue = str(resource_desc['queue'])
+            if 'access_schema' in self._resource_desc:
+                self._access_schema = self._resource_desc['access_schema']
+
+            if 'queue' in self._resource_desc:
+                self._queue = self._resource_desc['queue']
 
             self._logger.debug('Resource manager population successful')
 
@@ -295,11 +268,9 @@ class ResourceManager(object):
 
         except Exception, ex:
             self._logger.error('Resource manager population unsuccessful')
-            raise 
-
+            raise
 
     def _submit_resource_request(self):
-
         """
         **Purpose**: Function to initiate the resource request.
 
@@ -311,10 +282,13 @@ class ResourceManager(object):
             self._prof.prof('creating rreq', uid=self._uid)
 
             def _pilot_state_cb(pilot, state):
-                self._logger.info('Pilot %s state: %s'%(pilot.uid, state))
+                self._logger.info('Pilot %s state: %s' % (pilot.uid, state))
 
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
+
+                elif state == rp.DONE:
+                    self._logger.error('Pilot has completed')
 
             self._session = rp.Session(dburl=self._mlab_url)
 
@@ -333,41 +307,39 @@ class ResourceManager(object):
     
             if self._access_schema:
                 pd_init['access_schema'] = self._access_schema
-    
+
             if self._queue:
                 pd_init['queue'] = self._queue
-    
 
             # Create Compute Pilot with validated resource description
             pdesc = rp.ComputePilotDescription(pd_init)
 
             self._prof.prof('rreq created', uid=self._uid)
-    
+
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
 
             shared_staging_directives = list()
             for data in self._shared_data:
                 temp = {
-                            'source': data,
-                            'target': 'pilot:///' + os.path.basename(data)
-                        }
+                    'source': data,
+                    'target': 'pilot:///' + os.path.basename(data)
+                }
                 shared_staging_directives.append(temp)
-
 
             self._pilot.stage_in(shared_staging_directives)
 
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
-    
+
             # Wait for pilot to go active
-            self._pilot.wait([rp.ACTIVE, rp.FAILED, rp.CANCELED])
+            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED])
 
             if self._pilot.state == rp.FAILED:
                 raise Exception
 
-            self._prof.prof('resource active', uid=self._uid) 
+            self._prof.prof('resource active', uid=self._uid)
 
             self._logger.info('Pilot is now active')
 
@@ -376,14 +348,13 @@ class ResourceManager(object):
             if self._session:
                 self._session.close()
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                            'trying to exit callback thread gracefully...')
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                               'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
             self._logger.error('Resource request submission failed')
-            raise 
-
+            raise
 
     def _cancel_resource_request(self, download_rp_profile=False):
 
@@ -400,12 +371,12 @@ class ResourceManager(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), '+
-                                            'trying to exit callback thread gracefully...')
+            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                               'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not cancel resource request, error: %s'%ex)
+            self._logger.error('Could not cancel resource request, error: %s' % ex)
             raise
 
     # ------------------------------------------------------------------------------------------------------------------

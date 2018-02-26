@@ -15,22 +15,28 @@ To install the Ensemble Toolkit, we need to create a virtual environment. Open a
         source $HOME/myenv/bin/activate
 
 
-Currently, we use the devel stack of radical.utils, saga-python, radical.pilot with arch/v0.6 branch of radical.entk. To
-setup the same environment, run the following in the same terminal.
+The suggested to use is the released version of EnTK which you can install
+by executing the following command in your virtualenv:
 
 .. code-block:: bash
 
-        cd $HOME
-        git clone https://github.com/radical-cybertools/radical.utils
-        git clone https://github.com/radical-cybertools/saga-python
-        git clone https://github.com/radical-cybertools/radical.pilot
-        git clone https://github.com/vivek-bala/radical.entk.git
-        cd radical.entk
-        git checkout arch/v0.6
-        cd ..
-        pip install radical.utils/ saga-python/ radical.pilot/ radical.entk/
+        pip install radical.entk
 
-You can check the version of Ensemble MD Toolkit with the ```entk-version``` command-line tool. It should return 0.6.
+
+To install a specific branch of EnTK, you will need to clone the repository
+and checkout the branch. You can do so using the following commands:
+
+.. code-block:: bash
+
+        git clone https://github.com/radical-cybertools/radical.entk.git
+        cd radical.entk
+        git checkout <branch-name>
+        pip install .
+
+
+
+You can check the version of Ensemble MD Toolkit with the ```entk-version``` 
+command-line tool. It should return 0.6.0.
 
 .. code-block:: bash
 
@@ -43,11 +49,12 @@ Installing rabbitmq
 
 Ensemble toolkit relies on RabbitMQ for message transfers. Installation 
 instructions can be found at ```https://www.rabbitmq.com/download.html```. At 
-the end of the installation run ```rabbitmq-server``` to start the server. RabbitMQ needs to be installed
-on the same machine as where EnTK is installed.
+the end of the installation run ```rabbitmq-server``` to start the server. 
+RabbitMQ needs to be installed on the same machine as where EnTK is installed.
 
-In some cases, you might have to explicitly start the rabbitmq-server after installation. You can check if the 
-rabbitmq-server process is alive. If not, please run the following:
+In some cases, you might have to explicitly start the rabbitmq-server after 
+installation. You can check if the rabbitmq-server process is alive. If not, 
+please run the following:
 
 .. code-block:: bash
 
@@ -57,15 +64,17 @@ rabbitmq-server process is alive. If not, please run the following:
 Installing rabbitmq using docker
 --------------------------------
 
-If installing rabbitmq directly seems to be cumbersome, you can also install a docker instance of rabbitmq. Assuming
-you have docker installed, you can download and run the rabbitmq instance using the following command:
+If installing rabbitmq directly seems to be cumbersome, you can also install a 
+docker instance of rabbitmq. Assuming you have docker installed, you can 
+download and run the rabbitmq instance using the following command:
 
 .. code-block:: bash
 
         docker run -d --name <name of instance> -P rabbitmq:3
 
-The '-P' argument auto maps new ports from localhost to the ports expected by rabbitmq. This is useful if you want
-to have multiple EnTK scripts running as you would require multiple rabbitmq instances.
+The '-P' argument auto maps new ports from localhost to the ports expected by 
+rabbitmq. This is useful if you want to have multiple EnTK scripts running as
+you would require multiple rabbitmq instances.
 
 You can see the mapping of the ports running ```docker ps```.
 
@@ -78,8 +87,9 @@ You can see the mapping of the ports running ```docker ps```.
         fb8ee8bfd822        rabbitmq:3          "docker-entrypoint..."   9 seconds ago       Up 7 seconds        0.0.0.0:32777->4369/tcp, 0.0.0.0:32776->5671/tcp, 0.0.0.0:32775->5672/tcp, 0.0.0.0:32774->25672/tcp   rabbit-1
 
 
-Interactions between RabbitMQ and EnTK are done through port 5672 by default. For the above docker instance, we need to 
-use port 32775. In your EnTK scripts, while creating the AppManager, you need to specify port=32775.
+Interactions between RabbitMQ and EnTK are done through port 5672 by default. 
+For the above docker instance, we need to use port 32775. In your EnTK scripts,
+while creating the AppManager, you need to specify port=32775.
 
 
 Installation Video
@@ -94,8 +104,9 @@ Installation Video
 Preparing the Environment
 =========================
 
-Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as the runtime system. RADICAL Pilot can 
-access HPC clusters remotely via SSH and GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up 
+Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as 
+the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH and 
+GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up 
 passwordless SSH/GSISSH environment.
 
 

@@ -8,9 +8,9 @@ def transition(obj, obj_type, new_state, channel, queue, profiler, logger):
         obj.state = new_state
                                 
         if obj_type == 'Task':
-            msg = obj._parent_stage
+            msg = obj.parent_stage
         elif obj_type == 'Stage':
-            msg = obj._parent_pipeline
+            msg = obj.parent_pipeline
         else:
             msg=None
 

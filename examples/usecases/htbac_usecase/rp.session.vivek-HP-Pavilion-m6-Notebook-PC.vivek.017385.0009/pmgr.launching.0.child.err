@@ -1,1 +1,0 @@
-profile write error: AttributeError("'NoneType' object has no attribute 'write'",)

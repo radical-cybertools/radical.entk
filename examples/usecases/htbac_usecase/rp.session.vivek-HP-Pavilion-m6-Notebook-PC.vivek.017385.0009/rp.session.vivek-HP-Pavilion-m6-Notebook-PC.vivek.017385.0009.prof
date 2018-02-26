@@ -1,4 +1,0 @@
-#time,name,uid,state,event,msg
-1502147909.6257,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0009:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147909.59:1502147909.59:ntp
-1502147909.6262,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0009:MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0009,,start session,
-1502147909.8086,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0009:MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017385.0009,,configs parsed,

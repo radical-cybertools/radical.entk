@@ -3,7 +3,7 @@ from radical.entk.exceptions import *
 from radical.entk.stage.stage import Stage
 import threading
 from radical.entk import states
-
+from collections import Iterable
 
 class Pipeline(object):
 
@@ -144,18 +144,15 @@ class Pipeline(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @stages.setter
-    def stages(self, stages):
+    def stages(self, val):
             
-        self._stages = self._validate_stages(stages)
+        self._stages = self._validate_stages(val)
 
-        try:
-            self._pass_uid()
-            self._stage_count = len(self._stages)
-            if self._cur_stage == 0:
-                self._cur_stage = 1
+        self._pass_uid()
+        self._stage_count = len(self._stages)
+        if self._cur_stage == 0:
+            self._cur_stage = 1
 
-        except Exception, ex:
-            raise Error(text=ex)
 
 
     @state.setter
@@ -170,68 +167,22 @@ class Pipeline(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_stages(self, stages):
+    def add_stages(self, val):
 
         """        
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
         """
-        stages = self._validate_stages(stages)
+        stages = self._validate_stages(val)
 
-        try:
-            stages = self._pass_uid(stages)
-            self._stages.extend(stages)
-            self._stage_count = len(self._stages)
-            if self._cur_stage == 0:
-                self._cur_stage = 1
+        stages = self._pass_uid(stages)
+        self._stages.extend(stages)
+        self._stage_count = len(self._stages)
+        if self._cur_stage == 0:
+            self._cur_stage = 1
 
-        except Exception, ex:
-            raise Error(text=ex)
-
-    def remove_stages(self, stage_names):
-
-        """
-        Remove stages from the current Pipeline
-
-        :argument: List of stage names as strings
-        """
-
-        if not isinstance(stage_names, list):
-            stage_names = [stage_names]
-
-        for val in stage_names:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
-
-        try:
-
-            copy_of_existing_stages = list(self._stages)
-            copy_stage_names = list(stage_names)
-
-            for stage in self._stages:
-
-                for stage_name in stage_names:
-                
-                    if stage.name ==  stage_name:
-
-                        copy_of_existing_stages.remove(stage)
-                        copy_stage_names.remove(stage_name)
-
-                stage_names = copy_stage_names
-
-            if len(self._stages) != len(copy_of_existing_stages):
-
-                self._stages = copy_of_existing_stages
-                self._stage_count = len(self._stages)
-
-                # Current stage does not change or changes to the 'new' last stage
-                self._cur_stage = min(self._cur_stage, self._stage_count)
-
-        except Exception, ex:
-            raise Error(text=ex)
-
-
+  
     def to_dict(self):
 
 
@@ -319,11 +270,11 @@ class Pipeline(object):
 
             if stages is None:
                 for stage in self._stages:
-                    stage._parent_pipeline = self._uid
+                    stage.parent_pipeline = self._uid
                     stage._pass_uid()
             else:
                 for stage in stages:
-                    stage._parent_pipeline = self._uid
+                    stage.parent_pipeline = self._uid
                     stage._pass_uid()
 
                 return stages
@@ -371,6 +322,8 @@ class Pipeline(object):
         Details: This method is to be called before the resource request is placed. Currently, this method is called 
         when stages are added to the Pipeline.
         """
+        if not stages:
+            raise TypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]

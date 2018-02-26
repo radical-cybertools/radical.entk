@@ -1,5 +1,0 @@
-#time,name,uid,state,event,msg
-1502147910.7221,update.0.child:,,,sync abs,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1502147910.71:1502147910.72:ntp
-1502147910.7226,update.0.child:MainThread,update.0.child,,initialize,
-1502147914.9199,update.0.child:MainThread,update.0,,stopped,
-1502147914.9200,update.0.child:MainThread,,,END,
