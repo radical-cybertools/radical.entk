@@ -41,7 +41,7 @@ def test_issue_199():
 
             'resource': 'local.localhost',
             'walltime': 1,
-            'cores': 1
+            'cpus': 1
     }
 
     # Create Resource Manager object with the above resource description

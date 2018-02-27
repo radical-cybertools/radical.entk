@@ -89,7 +89,7 @@ def test_resource_manager_populate():
     os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
 
     rm = ResourceManager(res_dict)
-
+    
     with pytest.raises(Exception):
 
         rm._populate({  'resource': 'local.localhost',
@@ -118,6 +118,8 @@ def test_resource_manager_initialization():
     os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
 
     rm = ResourceManager(res_dict)
+    rm._validate_resource_desc(sid='xyz')
+    rm._populate()
 
     assert rm.resource == res_dict['resource']
     assert rm.walltime == res_dict['walltime']

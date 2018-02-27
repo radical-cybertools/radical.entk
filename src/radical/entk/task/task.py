@@ -467,7 +467,7 @@ class Task(object):
 
             expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
 
-            if set(val.keys()) <= set(['processes','threads_per_process', 'process_type','thread_type']):
+            if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
                     self._gpu_reqs['processes'] = val.get('processes')

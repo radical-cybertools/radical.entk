@@ -17,7 +17,8 @@ def test_initialization(d):
     assert rmgr._pilot == None
     assert rmgr._resource == None
     assert rmgr._walltime == None
-    assert rmgr._cores == None
+    assert rmgr._cpus == 1
+    assert rmgr._gpus == 0
     assert rmgr._project == None
     assert rmgr._access_schema == None
     assert rmgr._queue == None

@@ -44,6 +44,8 @@ def test_state_order():
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rman = ResourceManager(res_dict)
+    rman._validate_resource_desc(sid='xyz')
+    rman._populate()
 
     appman = AppManager()
     appman.resource_manager = rman

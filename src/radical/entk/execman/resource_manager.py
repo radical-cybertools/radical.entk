@@ -27,7 +27,6 @@ class ResourceManager(object):
     def __init__(self, resource_desc):
 
         self._resource_desc = resource_desc
-        self._logger.info('Resource Manager initialized')
 
         self._session       = None    
         self._pmgr          = None
@@ -88,11 +87,18 @@ class ResourceManager(object):
         return self._walltime
 
     @property
-    def cores(self):
+    def cpus(self):
         """
         :getter: Return user specified number of cpus
         """
-        return self._cores
+        return self._cpus
+
+    @property
+    def gpus(self):
+        """
+        :getter: Return user specified number of gpus
+        """
+        return self._gpus
 
     @property
     def project(self):
@@ -200,26 +206,26 @@ class ResourceManager(object):
                 if key not in self._resource_desc:
                     raise Error(text='Key %s does not exist in the resource description' % key)
 
-            if not (isinstance(resource_desc['resource'],str) and isinstance(resource_desc['resource'],unicode)):
-                raise TypeError(expected_type=str, actual_type=type(resource_desc['project']))            
+            if not (isinstance(self._resource_desc['resource'],str) and (not isinstance(self._resource_desc['resource'],unicode))):
+                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
 
             if not isinstance(self._resource_desc['walltime'], int):
                 raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
 
-            if not isinstance(resource_desc['cpus'], int):
-                raise TypeError(expected_type=int, actual_type=type(resource_desc['cores']))
+            if not isinstance(self._resource_desc['cpus'], int):
+                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
 
-            if 'gpus' in resource_desc:
-                if not isinstance(resource_desc['gpus'], int):
-                    raise TypeError(expected_type=int, actual_type=type(resource_desc['gpus']))
+            if 'gpus' in self._resource_desc:
+                if not isinstance(self._resource_desc['gpus'], int):
+                    raise TypeError(expected_type=int, actual_type=type(self._resource_desc['gpus']))
 
-            if 'access_schema' in resource_desc:
-                if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
-                    raise TypeError(expected_type=str, actual_type=type(resource_desc['access_schema']))
+            if 'access_schema' in self._resource_desc:
+                if not (isinstance(self._resource_desc['resource'],str) or isinstance(self._resource_desc['resource'],unicode)):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['access_schema']))
 
-            if 'queue' in resource_desc:
-                if not (isinstance(resource_desc['resource'],str) or isinstance(resource_desc['resource'],unicode)):
-                    raise TypeError(expected_type=str, actual_type=type(resource_desc['queue']))
+            if 'queue' in self._resource_desc:
+                if not (isinstance(self._resource_desc['resource'],str) or isinstance(self._resource_desc['resource'],unicode)):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
 
             if 'project' in self._resource_desc:
                 if (not isinstance(self._resource_desc['project'],str)) and (not self._resource_desc['project']):
@@ -248,9 +254,9 @@ class ResourceManager(object):
 
             self._resource = self._resource_desc['resource']
             self._walltime = self._resource_desc['walltime']
-            self._cpus = resource_desc['cpus']
+            self._cpus = self._resource_desc['cpus']
 
-            if 'gpus' in resource_desc:
+            if 'gpus' in self._resource_desc:
                 self._gpus = resource_desc['gpus']
 
             if 'project' in self._resource_desc:

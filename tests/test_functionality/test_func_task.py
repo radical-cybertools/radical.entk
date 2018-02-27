@@ -15,8 +15,12 @@ def test_task_to_dict():
     t1.pre_exec = ['module load gromacs']
     t1.executable = ['grompp']
     t1.arguments = ['hello']
-    t1.cores = 4
-    t1.mpi = True
+    t1.cpu_reqs = {
+                    'processes': 4,
+                    'process_type': 'MPI',
+                    'threads_per_process': 1,
+                    'thread_type': 'OpenMP'
+                }
     t1.post_exec = ['echo test']
     
     t1.upload_input_data    = ['upload_input.dat']
@@ -33,14 +37,15 @@ def test_task_to_dict():
     assert task_dict['pre_exec']                == t1.pre_exec
     assert task_dict['executable']              == t1.executable
     assert task_dict['arguments']               == t1.arguments
-    assert task_dict['cores']                   == t1.cores
-    assert task_dict['mpi']                     == t1.mpi
+    assert task_dict['cpu_reqs']                == t1.cpu_reqs
+    assert task_dict['gpu_reqs']                == t1.gpu_reqs
     assert task_dict['post_exec']               == t1.post_exec
     assert task_dict['upload_input_data']       == t1.upload_input_data
     assert task_dict['copy_input_data']         == t1.copy_input_data
     assert task_dict['link_input_data']         == t1.link_input_data
     assert task_dict['copy_output_data']        == t1.copy_output_data
     assert task_dict['download_output_data']    == t1.download_output_data
+
 
 def test_task_from_dict():
 
@@ -54,8 +59,12 @@ def test_task_from_dict():
     t1.pre_exec = ['module load gromacs']
     t1.executable = ['grompp']
     t1.arguments = ['hello']
-    t1.cores = 4
-    t1.mpi = True
+    t1.cpu_reqs = {
+                    'processes': 4,
+                    'process_type': 'MPI',
+                    'threads_per_process': 1,
+                    'thread_type': 'OpenMP'
+                }
     t1.post_exec = ['echo test']
     
     t1.upload_input_data    = ['upload_input.dat']
@@ -79,8 +88,8 @@ def test_task_from_dict():
     assert task_dict['pre_exec']                == t2.pre_exec
     assert task_dict['executable']              == t2.executable
     assert task_dict['arguments']               == t2.arguments
-    assert task_dict['cores']                   == t2.cores
-    assert task_dict['mpi']                     == t2.mpi
+    assert task_dict['cpu_reqs']                == t2.cpu_reqs
+    assert task_dict['gpu_reqs']                == t2.gpu_reqs
     assert task_dict['post_exec']               == t2.post_exec
     assert task_dict['upload_input_data']       == t2.upload_input_data
     assert task_dict['copy_input_data']         == t2.copy_input_data
