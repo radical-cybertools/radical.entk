@@ -28,21 +28,22 @@ class ResourceManager(object):
 
         self._resource_desc = resource_desc
 
-        self._session       = None    
-        self._pmgr          = None
-        self._pilot         = None
-        self._resource      = None
-        self._walltime      = None
-        self._cpus          = 1
-        self._gpus          = 0
-        self._project       = None
+        self._session = None
+        self._pmgr = None
+        self._pilot = None
+        self._resource = None
+        self._walltime = None
+        self._cpus = 1
+        self._gpus = 0
+        self._project = None
 
         self._access_schema = None
         self._queue = None
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
-            raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
+            raise Error(text='RADICAL_PILOT_DBURL not defined. '+
+                                'Please assign a valid mlab url')
 
         # Shared data list
         self._shared_data = list()
@@ -182,7 +183,7 @@ class ResourceManager(object):
         self._prof = ru.Profiler(name=self._uid, path=self._path)
 
         try:
-            
+
             self._prof.prof('validating rdesc', uid=self._uid)
 
             self._logger.debug('Validating resource description')
@@ -190,24 +191,21 @@ class ResourceManager(object):
             if not isinstance(self._resource_desc, dict):
                 raise TypeError(expected_type=dict, actual_type=type(self._resource_desc))
 
-            expected_keys = [   'resource',
-                                'walltime',
-                                'cpus',
-                            ]
+            expected_keys = ['resource',
+                             'walltime',
+                             'cpus']
 
-            optional_keys = [
-                                'gpus',
+            optional_keys = [   'gpus',
                                 'access_schema',
                                 'queue',
-                                'project'
-                            ]
+                                'project']
 
             for key in expected_keys:
                 if key not in self._resource_desc:
                     raise Error(text='Key %s does not exist in the resource description' % key)
 
-            if not (isinstance(self._resource_desc['resource'],str) and (not isinstance(self._resource_desc['resource'],unicode))):
-                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
+            if not (isinstance(self._resource_desc['resource'], str) and (not isinstance(self._resource_desc['resource'], unicode))):
+                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
 
             if not isinstance(self._resource_desc['walltime'], int):
                 raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
@@ -220,16 +218,16 @@ class ResourceManager(object):
                     raise TypeError(expected_type=int, actual_type=type(self._resource_desc['gpus']))
 
             if 'access_schema' in self._resource_desc:
-                if not (isinstance(self._resource_desc['resource'],str) or isinstance(self._resource_desc['resource'],unicode)):
+                if not (isinstance(self._resource_desc['resource'], str) or isinstance(self._resource_desc['resource'], unicode)):
                     raise TypeError(expected_type=str, actual_type=type(self._resource_desc['access_schema']))
 
             if 'queue' in self._resource_desc:
-                if not (isinstance(self._resource_desc['resource'],str) or isinstance(self._resource_desc['resource'],unicode)):
+                if not (isinstance(self._resource_desc['resource'], str) or isinstance(self._resource_desc['resource'], unicode)):
                     raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
 
             if 'project' in self._resource_desc:
-                if (not isinstance(self._resource_desc['project'],str)) and (not self._resource_desc['project']):
-                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
+                if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
 
             self._prof.prof('rdesc validated', uid=self._uid)
 
@@ -302,15 +300,15 @@ class ResourceManager(object):
             self._pmgr.register_callback(_pilot_state_cb)
 
             pd_init = {
-                    'resource'  : self._resource,
-                    'runtime'   : self._walltime,
-                    'cores'     : self._cpus,
-                    'project'   : self._project,
-                    }
+                'resource': self._resource,
+                'runtime': self._walltime,
+                'cores': self._cpus,
+                'project': self._project,
+            }
 
             if self._gpus:
                 pd_init['gpus'] = self._gpus
-    
+
             if self._access_schema:
                 pd_init['access_schema'] = self._access_schema
 
@@ -363,7 +361,6 @@ class ResourceManager(object):
             raise
 
     def _cancel_resource_request(self, download_rp_profile=False):
-
         """
         **Purpose**: Cancel the resource request
         """

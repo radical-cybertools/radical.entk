@@ -120,10 +120,9 @@ class TaskManager(object):
                                                                                         )
                                                               )
 
-
             channel = self._mq_connection.channel()
-            channel.queue_delete(queue='%s-heartbeat-req'%self._sid)
-            channel.queue_declare(queue='%s-heartbeat-req'%self._sid)
+            channel.queue_delete(queue='%s-heartbeat-req' % self._sid)
+            channel.queue_declare(queue='%s-heartbeat-req' % self._sid)
             response = True
 
             while (response and (not self._hb_alive.is_set())):
@@ -132,9 +131,9 @@ class TaskManager(object):
 
                 # Heartbeat request signal sent to task manager via rpc-queue
                 channel.basic_publish(exchange='',
-                                      routing_key='%s-heartbeat-req'%self._sid,
+                                      routing_key='%s-heartbeat-req' % self._sid,
                                       properties=pika.BasicProperties(
-                                          reply_to='%s-heartbeat-res'%self._sid,
+                                          reply_to='%s-heartbeat-res' % self._sid,
                                           correlation_id=corr_id),
                                       body='request')
 
@@ -143,7 +142,7 @@ class TaskManager(object):
                 # Ten second interval for heartbeat request to be responded to
                 time.sleep(10)
 
-                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res'%self._sid)
+                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res' % self._sid)
 
                 if body:
                     if corr_id == props.correlation_id:
@@ -237,7 +236,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.COMPLETED,
                                        channel=mq_channel,
-                                       queue='%s-cb-to-sync'%self._sid,
+                                       queue='%s-cb-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=logger)
 
@@ -254,7 +253,7 @@ class TaskManager(object):
                                            obj_type='Task',
                                            new_state=states.SCHEDULED,
                                            channel=mq_channel,
-                                           queue='%s-cb-to-sync'%self._sid,
+                                           queue='%s-cb-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=logger)
                             else:
@@ -266,7 +265,7 @@ class TaskManager(object):
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1'%self._sid,
+                                                 routing_key='%s-completedq-1' % self._sid,
                                                  body=task_as_dict
                                                  # properties=pika.BasicProperties(
                                                  # make message persistent
@@ -314,8 +313,8 @@ class TaskManager(object):
             mq_channel = self._mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_delete(queue='%s-heartbeat-res'%self._sid)
-            mq_channel.queue_declare(queue='%s-heartbeat-res'%self._sid)
+            mq_channel.queue_delete(queue='%s-heartbeat-res' % self._sid)
+            mq_channel.queue_declare(queue='%s-heartbeat-res' % self._sid)
 
             '''
             # Function to be invoked upon request message
@@ -353,7 +352,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
+                                       queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
 
@@ -368,7 +367,7 @@ class TaskManager(object):
                                            obj_type='Task',
                                            new_state=states.SCHEDULED,
                                            channel=mq_channel,
-                                           queue='%s-tmgr-to-sync'%self._sid,
+                                           queue='%s-tmgr-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=self._logger)
                             else:
@@ -385,7 +384,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTED,
                                        channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
+                                       queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
 
@@ -400,7 +399,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
+                                       queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
                             raise
@@ -414,14 +413,14 @@ class TaskManager(object):
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req'%self._sid)
+                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req' % self._sid)
 
                     if body:
 
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-heartbeat-res'%self._sid,
+                                                 routing_key='%s-heartbeat-res' % self._sid,
                                                  properties=pika.BasicProperties(correlation_id=props.correlation_id),
                                                  body='response')
 
