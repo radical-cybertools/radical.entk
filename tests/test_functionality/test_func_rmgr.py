@@ -108,7 +108,10 @@ def test_resource_manager_initialization():
                     'resource': 'local.localhost',
                     'walltime': 40,
                     'cpus': 20,
-                    'project': 'Random'
+                    'project': 'Random',
+                    'gpus': 2,
+                    'access_schema': 'gsissh',
+                    'queue': 'normal'
                 }
 
     if not os.environ.get('RADICAL_PILOT_DBURL', None):
@@ -121,10 +124,13 @@ def test_resource_manager_initialization():
     rm._validate_resource_desc(sid='xyz')
     rm._populate()
 
-    assert rm.resource == res_dict['resource']
-    assert rm.walltime == res_dict['walltime']
-    assert rm.cpus     == res_dict['cpus']
-    assert rm.project  == res_dict['project']
+    assert rm.resource          == res_dict['resource']
+    assert rm.walltime          == res_dict['walltime']
+    assert rm.cpus              == res_dict['cpus']
+    assert rm.project           == res_dict['project']
+    assert rm.gpus              == res_dict['gpus']
+    assert rm.access_schema     == res_dict['access_schema']
+    assert rm.queue             == res_dict['queue']
 
 
 def test_resource_request():

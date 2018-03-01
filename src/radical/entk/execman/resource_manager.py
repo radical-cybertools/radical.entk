@@ -257,7 +257,7 @@ class ResourceManager(object):
             self._cpus = self._resource_desc['cpus']
 
             if 'gpus' in self._resource_desc:
-                self._gpus = resource_desc['gpus']
+                self._gpus = self._resource_desc['gpus']
 
             if 'project' in self._resource_desc:
                 self._project = self._resource_desc['project']
