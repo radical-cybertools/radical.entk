@@ -7,6 +7,7 @@ import argparse
 import numpy as np
 import pprint
 import os
+from glob import glob
 
 class Profiler(object):
 
@@ -221,38 +222,47 @@ class Profiler(object):
 
 
     def _get_resource_manager_details(self):
-    
-        self._rman_df = pd.read_csv('%s/radical.entk.resource_manager.0000.prof'%self._src,skiprows=[0,1], 
-                            names=self._cols)
 
+        self._rman_df = pd.DataFrame(columns=self._cols)    
+        for f in sorted(glob('%s/radical.entk.resource_manager.*.prof'%self._src)):
+            temp_df = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            self._rman_df = pd.concat([self._rman_df, temp_df]) 
 
     def _get_app_manager_details(self):
     
-        self._aman_df = pd.read_csv('%s/radical.entk.appmanager.0000.prof'%self._src,skiprows=[0,1], 
-                            names=self._cols)
+        self._aman_df = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.appmanager.*.prof'%self._src)):
+            temp_df = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            self._aman_df = pd.concat([self._aman_df, temp_df])
     
     
     def _get_wfp_details(self):
     
-        df_obj = pd.read_csv('%s/radical.entk.wfprocessor.0000-obj.prof'%self._src,skiprows=[0,1], 
-                            names=self._cols)
-    
-        df_proc = pd.read_csv('%s/radical.entk.wfprocessor.0000-proc.prof'%self._src,skiprows=[0,1], 
-                            names=self._cols)
-    
-    
+        df_obj = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.wfprocessor.*-obj.prof'%self._src)):
+            temp_obj = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            df_obj = pd.concat([df_obj, temp_obj])
+
+        df_proc = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.wfprocessor.*-proc.prof'%self._src)):
+            temp_proc = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            df_proc = pd.concat([df_proc, temp_proc])
+        
         self._wfp_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
     
     
     def _get_task_manager_details(self):
     
-        df_obj = pd.read_csv('%s/radical.entk.task_manager.0000-obj.prof'%self._src,skiprows=[0,1], 
-                            names = self._cols)
-    
-        df_proc = pd.read_csv('%s/radical.entk.task_manager.0000-proc.prof'%self._src,skiprows=[0,1], 
-                            names = self._cols)
-    
-    
+        df_obj = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.task_manager.*-obj.prof'%self._src)):
+            temp_obj = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            df_obj = pd.concat([df_obj, temp_obj])
+
+        df_proc = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.task_manager.*-proc.prof'%self._src)):
+            temp_proc = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+            df_proc = pd.concat([df_proc, temp_proc])
+        
         self._tman_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
     
     
