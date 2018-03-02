@@ -9,6 +9,7 @@ import pprint
 import os
 from glob import glob
 
+
 class Profiler(object):
 
     """
@@ -23,7 +24,6 @@ class Profiler(object):
 
         if not src:
             src = './'
-
 
         self._src = src
 
@@ -43,7 +43,6 @@ class Profiler(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def get(self, uid=None, state=None):
-
         """
         Get a specific object as specified by the 'uid' argument or
         get a list of objects with a specific state as specified by the 'state'
@@ -56,12 +55,12 @@ class Profiler(object):
 
         if uid and not state:
 
-            data = dict()            
+            data = dict()
 
             obj_type = uid.split('.')[0]
 
             for state, object_collection in self._states_dict.iteritems():
-                
+
                 for obj, timestamp in object_collection[obj_type].iteritems():
 
                     if obj == uid:
@@ -98,9 +97,7 @@ class Profiler(object):
 
             return data
 
-
     def duration(self, objects, states=None, events=None):
-
         """
         Get the duration the list of objects spent between the list of states or 
         events specified
@@ -120,13 +117,13 @@ class Profiler(object):
             events = [events]
 
         if not isinstance(objects, list):
-            objects =[objects]
+            objects = [objects]
 
-        if len(objects)==1:
+        if len(objects) == 1:
             objects = [objects[0], objects[0]]
 
-        #pprint.pprint(self._states_dict)
-        #pprint.pprint(self._events_dict)
+        # pprint.pprint(self._states_dict)
+        # pprint.pprint(self._events_dict)
 
         # Check if objects are in accepted format
 
@@ -158,10 +155,9 @@ class Profiler(object):
                 extracted_dict[obj][states[0]] = self._states_dict[states[0]][obj.split('.')[2].strip()][obj]
                 extracted_dict[obj][states[1]] = self._states_dict[states[1]][obj.split('.')[2].strip()][obj]
 
-            #pprint.pprint(extracted_dict)
+            # pprint.pprint(extracted_dict)
 
             return self._get_Toverlap(extracted_dict, states[0], states[1])
-
 
         elif (states is None) and (events is not None):
 
@@ -169,12 +165,11 @@ class Profiler(object):
 
                 extracted_dict[obj] = {}
                 extracted_dict[obj][events[0]] = self._events_dict[events[0]][obj.split('.')[2].strip()][obj]
-                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]            
+                extracted_dict[obj][events[1]] = self._events_dict[events[1]][obj.split('.')[2].strip()][obj]
 
-            #pprint.pprint(extracted_dict)
+            # pprint.pprint(extracted_dict)
 
             return self._get_Toverlap(extracted_dict, events[0], events[1])
-
 
         elif states is not None and events is not None:
 
@@ -183,20 +178,17 @@ class Profiler(object):
 
             for obj in objects:
 
-                
                 if obj.split('.')[0].strip() in ['task', 'stage', 'pipeline']:
                     t1 = float(self._states_dict[states[0]][obj.split('.')[2].strip()][obj])
                 else:
                     t2 = float(self._events_dict[events[0]][obj.split('.')[2].strip()][obj])
 
-            if t1>t2:
+            if t1 > t2:
                 return float(t1) - float(t2)
             else:
                 return float(t2) - float(t1)
 
-
     def list_all_stateful_objects(self):
-
         """
         List all objects and the details as stored in the profiler
         """
@@ -208,7 +200,7 @@ class Profiler(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def _initialize(self):
-      
+
         self._get_resource_manager_details()
         self._get_app_manager_details()
         self._get_wfp_details()
@@ -220,75 +212,67 @@ class Profiler(object):
         self._get_states_dict()
         self._get_events_dict()
 
-
     def _get_resource_manager_details(self):
 
-        self._rman_df = pd.DataFrame(columns=self._cols)    
-        for f in sorted(glob('%s/radical.entk.resource_manager.*.prof'%self._src)):
-            temp_df = pd.read_csv(f,skiprows=[0,1], names=self._cols)
-            self._rman_df = pd.concat([self._rman_df, temp_df]) 
+        self._rman_df = pd.DataFrame(columns=self._cols)
+        for f in sorted(glob('%s/radical.entk.resource_manager.*.prof' % self._src)):
+            temp_df = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
+            self._rman_df = pd.concat([self._rman_df, temp_df])
 
     def _get_app_manager_details(self):
-    
+
         self._aman_df = pd.DataFrame(columns=self._cols)
-        for f in sorted(glob('%s/radical.entk.appmanager.*.prof'%self._src)):
-            temp_df = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+        for f in sorted(glob('%s/radical.entk.appmanager.*.prof' % self._src)):
+            temp_df = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
             self._aman_df = pd.concat([self._aman_df, temp_df])
-    
-    
+
     def _get_wfp_details(self):
-    
+
         df_obj = pd.DataFrame(columns=self._cols)
-        for f in sorted(glob('%s/radical.entk.wfprocessor.*-obj.prof'%self._src)):
-            temp_obj = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+        for f in sorted(glob('%s/radical.entk.wfprocessor.*-obj.prof' % self._src)):
+            temp_obj = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
             df_obj = pd.concat([df_obj, temp_obj])
 
         df_proc = pd.DataFrame(columns=self._cols)
-        for f in sorted(glob('%s/radical.entk.wfprocessor.*-proc.prof'%self._src)):
-            temp_proc = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+        for f in sorted(glob('%s/radical.entk.wfprocessor.*-proc.prof' % self._src)):
+            temp_proc = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
             df_proc = pd.concat([df_proc, temp_proc])
-        
-        self._wfp_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
-    
-    
+
+        self._wfp_df = pd.concat([df_obj, df_proc]).sort_values(by='timestamp')
+
     def _get_task_manager_details(self):
-    
+
         df_obj = pd.DataFrame(columns=self._cols)
-        for f in sorted(glob('%s/radical.entk.task_manager.*-obj.prof'%self._src)):
-            temp_obj = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+        for f in sorted(glob('%s/radical.entk.task_manager.*-obj.prof' % self._src)):
+            temp_obj = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
             df_obj = pd.concat([df_obj, temp_obj])
 
         df_proc = pd.DataFrame(columns=self._cols)
-        for f in sorted(glob('%s/radical.entk.task_manager.*-proc.prof'%self._src)):
-            temp_proc = pd.read_csv(f,skiprows=[0,1], names=self._cols)
+        for f in sorted(glob('%s/radical.entk.task_manager.*-proc.prof' % self._src)):
+            temp_proc = pd.read_csv(f, skiprows=[0, 1], names=self._cols)
             df_proc = pd.concat([df_proc, temp_proc])
-        
-        self._tman_df = pd.concat([df_obj,df_proc]).sort_values(by='timestamp')
-    
-    
+
+        self._tman_df = pd.concat([df_obj, df_proc]).sort_values(by='timestamp')
+
     def _get_state_details(self):
-    
-        state_df  = pd.DataFrame(columns=self._cols)
-    
+
+        state_df = pd.DataFrame(columns=self._cols)
+
         state_df = state_df.append(self._wfp_df[pd.notnull(self._wfp_df['state'])]).sort_values(by='timestamp')
         state_df = state_df.append(self._tman_df[pd.notnull(self._tman_df['state'])]).sort_values(by='timestamp')
-    
+
         self._states_df = state_df.reset_index().drop(['index'], axis=1)
-    
-    
-    
+
     def _get_event_details(self):
-    
-        event_df  = pd.DataFrame(columns=self._cols)    
+
+        event_df = pd.DataFrame(columns=self._cols)
 
         event_df = event_df.append(self._rman_df[pd.isnull(self._rman_df['state'])]).sort_values(by='timestamp')
         event_df = event_df.append(self._aman_df[pd.isnull(self._aman_df['state'])]).sort_values(by='timestamp')
         event_df = event_df.append(self._wfp_df[pd.isnull(self._wfp_df['state'])]).sort_values(by='timestamp')
         event_df = event_df.append(self._tman_df[pd.isnull(self._tman_df['state'])]).sort_values(by='timestamp')
-    
-        self._events_df = event_df.reset_index().drop(['index'], axis=1)
-    
 
+        self._events_df = event_df.reset_index().drop(['index'], axis=1)
 
     def _get_states_dict(self):
 
@@ -310,7 +294,6 @@ class Profiler(object):
                 self._states_dict[row['state']][obj_type] = dict()
 
             self._states_dict[row['state']][obj_type][obj_name] = row['timestamp']
-
 
         for row in self._states_df.iterrows():
 
@@ -342,8 +325,6 @@ class Profiler(object):
             if row['event'] not in self._events_dict:
                 self._events_dict[row['event']] = dict()
 
-
-
             if pd.notnull(row['uid']):
                 obj_type = row['uid'].split('.')[2]
                 #obj_name = ''.join([row['uid'].split('.')[2],'.',row['uid'].split('.')[3]])
@@ -354,9 +335,7 @@ class Profiler(object):
 
                 self._events_dict[row['event']][obj_type][obj_name] = row['timestamp']
 
-
-        #pprint.pprint(self._events_dict)
-
+        # pprint.pprint(self._events_dict)
 
     def _get_Toverlap(self, d, start_state, stop_state):
         '''
@@ -369,10 +348,8 @@ class Profiler(object):
         ranges = []
 
         for obj, states in d.iteritems():
-            #print states
+            # print states
             ranges.append([states[start_state], states[stop_state]])
-
-
 
         for crange in self._collapse_ranges(ranges):
             overlap += crange[1] - crange[0]
@@ -385,20 +362,20 @@ class Profiler(object):
         'start <= end'. This algorithm will then collapse that set into the
         smallest possible set of ranges which cover the same, but not more nor
         less, of the domain (floats).
-    
+
         We first sort the ranges by their starting point. We then start with the
         range with the smallest starting point [start_1, end_1], and compare to the
         next following range [start_2, end_2], where we now know that start_1 <=
         start_2. We have now two cases:
-    
+
         a) when start_2 <= end_1, then the ranges overlap, and we collapse them
         into range_1: range_1 = [start_1, max[end_1, end_2]
-    
+
         b) when start_2 > end_2, then ranges don't overlap. Importantly, none of
         the other later ranges can ever overlap range_1. So we move range_1 to
         the set of final ranges, and restart the algorithm with range_2 being
         the smallest one.
-    
+
         Termination condition is if only one range is left -- it is also moved to
         the list of final ranges then, and that list is returned.
         """
@@ -406,12 +383,12 @@ class Profiler(object):
         final = []
 
         # sort ranges into a copy list
-        _ranges = sorted (ranges, key=lambda x: x[0])
+        _ranges = sorted(ranges, key=lambda x: x[0])
 
         START = 0
         END = 1
 
-        base = _ranges[0] # smallest range
+        base = _ranges[0]  # smallest range
 
         for _range in _ranges[1:]:
 
@@ -431,6 +408,3 @@ class Profiler(object):
         final.append(base)
 
         return final
-
-
-    

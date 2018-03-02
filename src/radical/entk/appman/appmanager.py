@@ -9,6 +9,7 @@ from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
 from radical.entk.execman.resource_manager import ResourceManager
 from radical.entk.execman.task_manager import TaskManager
+from radical.entk.utils.prof_utils import write_session_description
 from wfprocessor import WFprocessor
 import sys
 import time
@@ -84,7 +85,7 @@ class AppManager(object):
         self._mqs_setup = False
         self._resource_manager = None
         self._task_manager = None
-        self._workflow  = None
+        self._workflow = None
         self._resubmit_failed = resubmit_failed
         self._reattempts = reattempts
         self._cur_attempt = 1
@@ -175,7 +176,6 @@ class AppManager(object):
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
 
- 
     def run(self):
         """
         **Purpose**: Run the application manager. Once the workflow and resource manager have been assigned. Invoking this
@@ -217,7 +217,6 @@ class AppManager(object):
 
                     self._mqs_setup = True
 
-
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
                 self._wfp = WFprocessor(sid=self._sid,
@@ -229,7 +228,6 @@ class AppManager(object):
                                         resubmit_failed=self._resubmit_failed)
                 self._wfp._validate_workflow()
                 self._workflow = self._wfp.workflow
-
 
                 # Submit resource request if not resource allocation done till now or
                 # resubmit a new one if the old one has completed
@@ -254,7 +252,6 @@ class AppManager(object):
                     self._prof.prof('starting synchronizer thread', uid=self._uid)
                     self._sync_thread.start()
 
-                
                 # Start WFprocessor
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()
@@ -278,10 +275,10 @@ class AppManager(object):
 
                 # We wait till all pipelines of the workflow are marked
                 # complete
-                while ( (active_pipe_count > 0) and
+                while ((active_pipe_count > 0) and
                         (self._wfp.workflow_incomplete()) and
                         (self._resource_manager.get_resource_allocation_state() not
-                        in self._resource_manager.completed_states())):
+                         in self._resource_manager.completed_states())):
 
                     if active_pipe_count > 0:
 
@@ -380,12 +377,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
                 if self._resource_autoterminate:
-
-                    self._logger.info('Terminating task manager process')
-                    self._task_manager.end_manager()
-                    self._task_manager.end_heartbeat()
-
-                    self._resource_manager._cancel_resource_request(self._rp_profile)
+                    self.resource_terminate()
 
                 self._prof.prof('termination done', uid=self._uid)
 
@@ -460,9 +452,12 @@ class AppManager(object):
         if self._resource_manager:
             self._resource_manager._cancel_resource_request(self._rp_profile)
 
+        if os.environ.get('RADICAL_ENTK_PROFILE', False):
+            write_session_description(self)
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------  
+    # ------------------------------------------------------------------------------------------------------------------
 
     def _setup_mqs(self):
         """
@@ -714,7 +709,7 @@ class AppManager(object):
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between tmgr Main thread and synchronizer -- only Task objects
 
-                method_frame, props, body = mq_channel.basic_get(queue='%s-tmgr-to-sync'%self._sid)
+                method_frame, props, body = mq_channel.basic_get(queue='%s-tmgr-to-sync' % self._sid)
 
                 """
                 The message received is a JSON object with the following structure:
@@ -733,14 +728,14 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-tmgr'%self._sid, props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
 
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between callback thread and synchronizer -- only Task objects
 
-                method_frame, props, body = mq_channel.basic_get(queue='%s-cb-to-sync'%self._sid)
+                method_frame, props, body = mq_channel.basic_get(queue='%s-cb-to-sync' % self._sid)
 
                 """
                 The message received is a JSON object with the following structure:
@@ -759,13 +754,13 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-cb'%self._sid, props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
 
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between enqueue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='%s-enq-to-sync'%self._sid)
+                method_frame, props, body = mq_channel.basic_get(queue='%s-enq-to-sync' % self._sid)
 
                 if body:
 
@@ -775,18 +770,18 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Stage':
-                        stage_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
+                        stage_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, '%s-sync-to-enq'%self._sid, props.correlation_id, mq_channel)
+                        pipeline_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between dequeue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='%s-deq-to-sync'%self._sid)
+                method_frame, props, body = mq_channel.basic_get(queue='%s-deq-to-sync' % self._sid)
 
                 if body:
 
@@ -796,13 +791,13 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Stage':
-                        stage_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
+                        stage_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
 
                     elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, '%s-sync-to-deq'%self._sid, props.correlation_id, mq_channel)
+                        pipeline_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
             self._prof.prof('terminating synchronizer', uid=self._uid)

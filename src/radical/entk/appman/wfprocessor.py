@@ -40,7 +40,6 @@ class WFprocessor(object):
                  port,
                  resubmit_failed):
 
-
         if isinstance(sid, str):
             self._sid = sid
         else:
@@ -56,7 +55,6 @@ class WFprocessor(object):
 
         self._workflow = workflow
         self._validate_workflow()
-
 
         if not isinstance(pending_queue, list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
@@ -79,12 +77,11 @@ class WFprocessor(object):
         self._resubmit_failed = resubmit_failed
 
         self._wfp_process = None
-        
+
         self._logger.info('Created WFProcessor object: %s' % self._uid)
 
         self._prof.prof('wfp obj created', uid=self._uid)
 
-        
     # ------------------------------------------------------------------------------------------------------------------
     # Getter
     # ------------------------------------------------------------------------------------------------------------------
@@ -287,12 +284,11 @@ class WFprocessor(object):
                                            obj_type='Pipeline',
                                            new_state=states.SCHEDULING,
                                            channel=mq_channel,
-                                           queue='%s-enq-to-sync'%self._sid,
+                                           queue='%s-enq-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=self._logger)
 
                             if pipe.stages[pipe.current_stage - 1].state in [states.INITIAL, states.SCHEDULED]:
-
 
                                 try:
 
@@ -306,7 +302,7 @@ class WFprocessor(object):
                                                    obj_type='Stage',
                                                    new_state=states.SCHEDULING,
                                                    channel=mq_channel,
-                                                   queue='%s-enq-to-sync'%self._sid,
+                                                   queue='%s-enq-to-sync' % self._sid,
                                                    profiler=local_prof,
                                                    logger=self._logger)
 
@@ -323,7 +319,7 @@ class WFprocessor(object):
                                                            obj_type='Task',
                                                            new_state=states.SCHEDULING,
                                                            channel=mq_channel,
-                                                           queue='%s-enq-to-sync'%self._sid,
+                                                           queue='%s-enq-to-sync' % self._sid,
                                                            profiler=local_prof,
                                                            logger=self._logger)
 
@@ -347,7 +343,7 @@ class WFprocessor(object):
                                                            obj_type='Task',
                                                            new_state=states.SCHEDULED,
                                                            channel=mq_channel,
-                                                           queue='%s-enq-to-sync'%self._sid,
+                                                           queue='%s-enq-to-sync' % self._sid,
                                                            profiler=local_prof,
                                                            logger=self._logger)
 
@@ -361,7 +357,7 @@ class WFprocessor(object):
                                                        obj_type='Task',
                                                        new_state=states.SCHEDULING,
                                                        channel=mq_channel,
-                                                       queue='%s-enq-to-sync'%self._sid,
+                                                       queue='%s-enq-to-sync' % self._sid,
                                                        profiler=local_prof,
                                                        logger=self._logger)
 
@@ -385,7 +381,7 @@ class WFprocessor(object):
                                                        obj_type='Task',
                                                        new_state=states.SCHEDULED,
                                                        channel=mq_channel,
-                                                       queue='%s-enq-to-sync'%self._sid,
+                                                       queue='%s-enq-to-sync' % self._sid,
                                                        profiler=local_prof,
                                                        logger=self._logger)
 
@@ -398,7 +394,7 @@ class WFprocessor(object):
                                                    obj_type='Stage',
                                                    new_state=states.SCHEDULED,
                                                    channel=mq_channel,
-                                                   queue='%s-enq-to-sync'%self._sid,
+                                                   queue='%s-enq-to-sync' % self._sid,
                                                    profiler=local_prof,
                                                    logger=self._logger)
                                 except Exception, ex:
@@ -413,7 +409,7 @@ class WFprocessor(object):
                                                obj_type='Stage',
                                                new_state=states.INITIAL,
                                                channel=mq_channel,
-                                               queue='%s-enq-to-sync'%self._sid,
+                                               queue='%s-enq-to-sync' % self._sid,
                                                profiler=local_prof,
                                                logger=self._logger)
 
@@ -486,7 +482,7 @@ class WFprocessor(object):
                                    obj_type='Task',
                                    new_state=states.DEQUEUEING,
                                    channel=mq_channel,
-                                   queue='%s-deq-to-sync'%self._sid,
+                                   queue='%s-deq-to-sync' % self._sid,
                                    profiler=local_prof,
                                    logger=self._logger)
 
@@ -510,7 +506,7 @@ class WFprocessor(object):
                                                            obj_type='Task',
                                                            new_state=states.DEQUEUED,
                                                            channel=mq_channel,
-                                                           queue='%s-deq-to-sync'%self._sid,
+                                                           queue='%s-deq-to-sync' % self._sid,
                                                            profiler=local_prof,
                                                            logger=self._logger)
 
@@ -531,7 +527,7 @@ class WFprocessor(object):
                                                                    obj_type='Task',
                                                                    new_state=task.state,
                                                                    channel=mq_channel,
-                                                                   queue='%s-deq-to-sync'%self._sid,
+                                                                   queue='%s-deq-to-sync' % self._sid,
                                                                    profiler=local_prof,
                                                                    logger=self._logger)
 
@@ -541,7 +537,7 @@ class WFprocessor(object):
                                                                        obj_type='Stage',
                                                                        new_state=states.DONE,
                                                                        channel=mq_channel,
-                                                                       queue='%s-deq-to-sync'%self._sid,
+                                                                       queue='%s-deq-to-sync' % self._sid,
                                                                        profiler=local_prof,
                                                                        logger=self._logger)
 
@@ -553,7 +549,7 @@ class WFprocessor(object):
                                                                            obj_type='Pipeline',
                                                                            new_state=states.DONE,
                                                                            channel=mq_channel,
-                                                                           queue='%s-deq-to-sync'%self._sid,
+                                                                           queue='%s-deq-to-sync' % self._sid,
                                                                            profiler=local_prof,
                                                                            logger=self._logger)
 
@@ -683,4 +679,3 @@ class WFprocessor(object):
         """
 
         return self._wfp_process.is_alive()
-

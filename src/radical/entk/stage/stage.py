@@ -4,6 +4,7 @@ from radical.entk.task.task import Task
 from radical.entk import states
 from collections import Iterable
 
+
 class Stage(object):
 
     """
@@ -11,15 +12,15 @@ class Stage(object):
     stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
     """
 
-    def __init__(self, duplicate = False):
+    def __init__(self, duplicate=False):
 
         if not duplicate:
-            self._uid       = ru.generate_id('radical.entk.stage')
-            
-        self._tasks     = set()
-        self._name      = str()
+            self._uid = ru.generate_id('radical.entk.stage')
 
-        self._state     = states.INITIAL
+        self._tasks = set()
+        self._name = str()
+
+        self._state = states.INITIAL
 
         # Keep track of states attained
         self._state_history = [states.INITIAL]
@@ -28,7 +29,7 @@ class Stage(object):
         self._task_count = len(self._tasks)
 
         # Pipeline this stage belongs to
-        self._p_pipeline = None    
+        self._p_pipeline = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -36,7 +37,6 @@ class Stage(object):
 
     @property
     def name(self):
-
         """
         Name of the stage 
 
@@ -45,10 +45,9 @@ class Stage(object):
         :type: String
         """
         return self._name
-    
+
     @property
     def tasks(self):
-
         """
         Tasks of the stage
 
@@ -60,7 +59,6 @@ class Stage(object):
 
     @property
     def state(self):
-
         """
         Current state of the stage
 
@@ -72,7 +70,6 @@ class Stage(object):
 
     @property
     def parent_pipeline(self):
-
         """
         :getter: Returns the pipeline this stage belongs to
         :setter: Assigns the pipeline uid this stage belongs to
@@ -81,7 +78,6 @@ class Stage(object):
 
     @property
     def uid(self):
-
         """
         Unique ID of the current stage
 
@@ -93,15 +89,13 @@ class Stage(object):
 
     @property
     def state_history(self):
-
         """
         Returns a list of the states obtained in temporal order
-        
+
         :return: list
         """
 
         return self._state_history
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
@@ -109,17 +103,16 @@ class Stage(object):
 
     @name.setter
     def name(self, value):
-        if isinstance(value,str):
+        if isinstance(value, str):
             self._name = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
-        
 
     @tasks.setter
-    def tasks(self, val):        
+    def tasks(self, val):
         self._tasks = self._validate_tasks(val)
         self._task_count = len(self._tasks)
-    
+
     @parent_pipeline.setter
     def parent_pipeline(self, value):
         if isinstance(value, str):
@@ -129,31 +122,27 @@ class Stage(object):
 
     @state.setter
     def state(self, value):
-        if isinstance(value,str):
+        if isinstance(value, str):
             self._state = value
             self._state_history.append(value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))        
-    
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
     def add_tasks(self, val):
-
         """
         Adds tasks to the existing set of tasks of the Stage
 
         :argument: set of tasks
         """
-        tasks =  self._validate_tasks(val)
+        tasks = self._validate_tasks(val)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
 
-
     def to_dict(self):
-
         """
         Convert current Stage into a dictionary
 
@@ -162,18 +151,16 @@ class Stage(object):
 
         stage_desc_as_dict = {
 
-                                'uid': self._uid,
-                                'name': self._name,
-                                'state': self._state,
-                                'state_history': self._state_history,
-                                'parent_pipeline': self._p_pipeline
-                        }
+            'uid': self._uid,
+            'name': self._name,
+            'state': self._state,
+            'state_history': self._state_history,
+            'parent_pipeline': self._p_pipeline
+        }
 
         return stage_desc_as_dict
 
-
     def from_dict(self, d):
-
         """
         Create a Stage from a dictionary. The change is in inplace.
 
@@ -181,10 +168,9 @@ class Stage(object):
         :return: None
         """
 
-
         if 'uid' in d:
             if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
-                self._uid   = d['uid']
+                self._uid = d['uid']
             else:
                 raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
 
@@ -203,7 +189,6 @@ class Stage(object):
         else:
             self._state = states.INITIAL
 
-
         if 'state_history' in d:
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
@@ -216,13 +201,11 @@ class Stage(object):
             else:
                 raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
 
-
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
     def _pass_uid(self, tasks=None):
-
         """
         Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
 
@@ -241,28 +224,24 @@ class Stage(object):
                 task.parent_stage = self._uid
                 task.parent_pipeline = self._p_pipeline
 
-
             return tasks
 
     def _set_tasks_state(self, value):
-
         """
         Purpose: Set state of all tasks of the current stage.
 
         :arguments: String
         """
         if value not in states.state_numbers.keys():
-            raise ValueError(   obj=self._uid, 
-                                attribute='set_tasks_state', 
-                                expected_value = states.state_numbers.keys(), 
-                                actual_value = value)
+            raise ValueError(obj=self._uid,
+                             attribute='set_tasks_state',
+                             expected_value=states.state_numbers.keys(),
+                             actual_value=value)
 
         for task in self._tasks:
             task.state = value
 
-
     def _check_stage_complete(self):
-
         """
         Purpose: Check if all tasks of the current stage have completed, i.e., are in either DONE or FAILED state.
         """
@@ -272,7 +251,7 @@ class Stage(object):
             for task in self._tasks:
                 if task.state not in [states.DONE, states.FAILED]:
                     return False
-                    
+
             return True
 
         except Exception, ex:
@@ -280,15 +259,13 @@ class Stage(object):
             print 'Task state evaluation failed'
             raise Error(text=ex)
 
-
     def _validate_tasks(self, tasks):
-
         """
         Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
 
         Details: This method is to be called before the resource request is placed. Currently, this method is called 
         when tasks are added to the stage.
-        """        
+        """
 
         if not isinstance(tasks, set):
 
@@ -310,7 +287,6 @@ class Stage(object):
         return tasks
 
     def _validate(self):
-
         """
         Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Stage contains Tasks
@@ -320,15 +296,15 @@ class Stage(object):
         """
 
         if self._state is not states.INITIAL:
-            
-            raise ValueError(   obj=self._uid, 
-                                attribute='state', 
-                                expected_value=states.INITIAL,
-                                actual_value=self._state)
+
+            raise ValueError(obj=self._uid,
+                             attribute='state',
+                             expected_value=states.INITIAL,
+                             actual_value=self._state)
 
         if not self._tasks:
 
-            raise MissingError( obj=self._uid,
-                                missing_attribute='tasks')
+            raise MissingError(obj=self._uid,
+                               missing_attribute='tasks')
 
     # ------------------------------------------------------------------------------------------------------------------

@@ -11,12 +11,13 @@ import radical.utils as ru
 import traceback
 import socket
 
+
 def read_profiles(profiles):
     """
     We read all profiles as CSV files and parse them.  For each profile,
     we back-calculate global time (epoch) from the synch timestamps.
     """
-    ret    = dict()
+    ret = dict()
     fields = ru.Profiler.fields
 
     for prof in profiles:
@@ -33,10 +34,11 @@ def read_profiles(profiles):
 
                 # store row in profile
                 rows.append(row)
-    
+
         ret[prof] = rows
 
     return ret
+
 
 def combine_profiles(profs):
     """
@@ -55,16 +57,16 @@ def combine_profiles(profs):
     # will tell us on what exact host each pilot has been running.  To do so, we
     # check for the PMGR_ACTIVE advance event in agent_0.prof, and use the NTP
     # sync info to associate a hostname.
-    # FIXME: This should be replaced by proper hostname logging in 
+    # FIXME: This should be replaced by proper hostname logging in
     #        in `pilot.resource_details`.
 
-    pd_rel   = dict() # profiles which have relative time refs
-    hostmap  = dict() # map pilot IDs to host names
+    pd_rel = dict()  # profiles which have relative time refs
+    hostmap = dict()  # map pilot IDs to host names
 
-    t_host   = dict() # time offset per host
-    p_glob   = list() # global profile
-    t_min    = None   # absolute starting point of prof session
-    c_qed    = 0      # counter for profile closing tag
+    t_host = dict()  # time offset per host
+    p_glob = list()  # global profile
+    t_min = None   # absolute starting point of prof session
+    c_qed = 0      # counter for profile closing tag
     accuracy = 0      # max uncorrected clock deviation
 
     for pname, prof in profs.iteritems():
@@ -74,7 +76,7 @@ def combine_profiles(profs):
             continue
 
         if not prof[0]['msg']:
-            # FIXME: https://github.com/radical-cybertools/radical.analytics/issues/20 
+            # FIXME: https://github.com/radical-cybertools/radical.analytics/issues/20
           # print 'unsynced profile %s' % pname
             continue
 
@@ -99,13 +101,13 @@ def combine_profiles(profs):
 
         if host_id in t_host:
 
-            accuracy = max(accuracy, t_off-t_host[host_id])
+            accuracy = max(accuracy, t_off - t_host[host_id])
 
-            if abs(t_off-t_host[host_id]) > NTP_DIFF_WARN_LIMIT:
+            if abs(t_off - t_host[host_id]) > NTP_DIFF_WARN_LIMIT:
                 print 'conflict sync   %-35s (%-35s) %6.1f : %6.1f :  %12.5f' \
-                        % (os.path.basename(pname), host_id, t_off, t_host[host_id], (t_off-t_host[host_id]))
+                    % (os.path.basename(pname), host_id, t_off, t_host[host_id], (t_off - t_host[host_id]))
 
-            continue # we always use the first match
+            continue  # we always use the first match
 
       # print 'store time sync %-35s (%-35s) %6.1f' \
       #         % (os.path.basename(pname), host_id, t_off)
@@ -123,7 +125,7 @@ def combine_profiles(profs):
         host_id = '%s:%s' % (host, ip)
       # print ' --> pname: %s [%s] : %s' % (pname, host_id, bool(host_id in t_host))
         if host_id in t_host:
-            t_off   = t_host[host_id]
+            t_off = t_host[host_id]
         else:
             unsynced.add(host_id)
             t_off = 0.0
@@ -131,12 +133,12 @@ def combine_profiles(profs):
         t_0 = prof[0]['time']
         t_0 -= t_min
 
-      # print 'correct %12.2f : %12.2f for %-30s : %-15s' % (t_min, t_off, host, pname) 
+      # print 'correct %12.2f : %12.2f for %-30s : %-15s' % (t_min, t_off, host, pname)
 
         # correct profile timestamps
         for row in prof:
 
-            t_orig = row['time'] 
+            t_orig = row['time']
 
             row['time'] -= t_min
             row['time'] -= t_off
@@ -146,8 +148,8 @@ def combine_profiles(profs):
                 c_qed += 1
 
             if 'agent_0.prof' in pname    and \
-                row['event'] == 'advance' and \
-                row['state'] == rps.PMGR_ACTIVE:
+                    row['event'] == 'advance' and \
+                    row['state'] == rps.PMGR_ACTIVE:
                 hostmap[row['uid']] = host_id
 
           # if row['event'] == 'advance' and row['uid'] == os.environ.get('FILTER'):
@@ -156,7 +158,6 @@ def combine_profiles(profs):
         # add profile to global one
         p_glob += prof
 
-
       # # Check for proper closure of profiling files
       # if c_qed == 0:
       #     print 'WARNING: profile "%s" not correctly closed.' % prof
@@ -164,15 +165,14 @@ def combine_profiles(profs):
       #     print 'WARNING: profile "%s" closed %d times.' % (prof, c_qed)
 
     # sort by time and return
-    p_glob = sorted(p_glob[:], key=lambda k: k['time']) 
+    p_glob = sorted(p_glob[:], key=lambda k: k['time'])
 
     # for event in p_glob:
     #     if event['event'] == 'advance' and event['uid'] == os.environ.get('FILTER'):
     #         print '#=- ', event
 
-
     # if unsynced:
-    #     # FIXME: https://github.com/radical-cybertools/radical.analytics/issues/20 
+    #     # FIXME: https://github.com/radical-cybertools/radical.analytics/issues/20
     #     # print 'unsynced hosts: %s' % list(unsynced)
     #     pass
 
@@ -194,26 +194,26 @@ def clean_profile(profile, sid=None):
 
     for event in profile:
 
-        uid   = event['uid']
+        uid = event['uid']
         state = event['state']
-        time  = event['time']
-        name  = event['event']
+        time = event['time']
+        name = event['event']
 
         del(event['event'])
 
-        # we derive entity_type from the uid -- but funnel 
+        # we derive entity_type from the uid -- but funnel
         # some cases into the session
         if uid:
-            event['entity_type'] = uid.split('.',1)[0]
+            event['entity_type'] = uid.split('.', 1)[0]
 
         elif uid == 'root':
             event['entity_type'] = 'session'
-            event['uid']         = sid
+            event['uid'] = sid
             uid = sid
 
         else:
             event['entity_type'] = 'session'
-            event['uid']         = sid
+            event['uid'] = sid
             uid = sid
 
         if uid not in entities:
@@ -239,8 +239,8 @@ def clean_profile(profile, sid=None):
                 # vice-versa, we will not add CANCELED if a final
                 # state already exists:
                 if state == rps.CANCELED:
-                    if any([s in entities[uid]['states'] 
-                        for s in rps.FINAL]):
+                    if any([s in entities[uid]['states']
+                            for s in rps.FINAL]):
                         skip = True
                         continue
 
@@ -258,18 +258,17 @@ def clean_profile(profile, sid=None):
             event['event_type'] = 'event'
             entities[uid]['events'].append(event)
 
-
     # we have evaluated, cleaned and sorted all events -- now we recreate
     # a clean profile out of them
     ret = list()
-    for uid,entity in entities.iteritems():
+    for uid, entity in entities.iteritems():
 
         ret += entity['events']
-        for state,event in entity['states'].iteritems():
+        for state, event in entity['states'].iteritems():
             ret.append(event)
 
     # sort by time and return
-    ret = sorted(ret[:], key=lambda k: k['time']) 
+    ret = sorted(ret[:], key=lambda k: k['time'])
 
     return ret
 
@@ -279,17 +278,16 @@ def get_profiles(src=None):
     if not src:
         src = "%s/%s" % (os.getcwd())
 
-
     if os.path.exists(src):
-        
+
         # EnTK profiles are always on localhost
-        profiles  = glob.glob("%s/*.prof"   % src)
+        profiles = glob.glob("%s/*.prof" % src)
 
     else:
-        raise Error(text='%s does not exist'%src)
+        raise Error(text='%s does not exist' % src)
 
     if len(profiles) == 0:
-        raise Error(text='No profiles found at %s'%src)
+        raise Error(text='No profiles found at %s' % src)
 
     try:
 
@@ -310,6 +308,52 @@ def get_profiles(src=None):
         raise Exception
 
 
-def get_description():
+def write_session_description(amgr):
 
-    pass
+    desc = dict()
+
+    desc['entities'] = dict()
+    desc['entities']['pipeline'] = {
+        'state_model': re._pipeline_state_values,
+        'state_values': re._pipeline_state_inv,
+        'event_model': dict(),
+    }
+
+    desc['entities']['stage'] = {
+        'state_model': re._stage_state_values,
+        'state_values': re._stage_state_inv_full,
+        'event_model': dict(),
+    }
+
+    desc['entities']['task'] = {
+        'state_model': re._task_state_values,
+        'state_values': re._task_state_inv_full,
+        'event_model': dict(),
+    }
+
+    desc['entities']['amgr'] = {
+        'state_model': None,
+        'state_values': None,
+        'event_model': dict(),
+    }
+
+    # Adding amgr to the tree
+    tree = dict()
+    tree[amgr.uid] = {'uid': amgr.uid,
+                      'etype': 'amgr',
+                      'cfg': {},
+                      'has': ['pipeline','wfp','rmgr','tmgr'],
+                      'children': list()
+                      }
+
+    # Adding wfp to the tree
+
+    # Adding rmgr to the tree
+
+    # Adding tmgr to the tree
+
+    # Adding pipelines to the tree
+
+    # Adding stages to the tree
+
+    # Adding tasks to the tree
