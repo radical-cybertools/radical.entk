@@ -43,9 +43,9 @@ state_numbers = {
 
 # States for Pipeline
 _pipeline_state_values = {
-    INITIAL,
-    SCHEDULING,
-    DONE
+    INITIAL: 1,
+    SCHEDULING: 2,
+    DONE: 11
 }
 
 _pipeline_state_inv = {}
@@ -54,10 +54,10 @@ for k, v in state_numbers.iteritems():
 
 # States for Stage
 _stage_state_values = {
-    INITIAL,
-    SCHEDULING,
-    SCHEDULED,
-    DONE
+    INITIAL: 1,
+    SCHEDULING: 2,
+    SCHEDULED: 3,
+    DONE:11
 }
 
 _stage_state_inv = {}
@@ -66,17 +66,17 @@ for k, v in state_numbers.iteritems():
 
 # States for Task
 _task_state_values = {
-    INITIAL,
-    SCHEDULING,
-    SCHEDULED,
-    SUBMITTING,
-    SUBMITTED,
-    COMPLETED,
-    DEQUEUEING,
-    DEQUEUED,
-    SYNCHRONIZING,
-    SYNCHRONIZED,
-    DONE,
+    INITIAL: 1,
+    SCHEDULING: 2,
+    SCHEDULED: 3,
+    SUBMITTING: 4,
+    SUBMITTED: 5,
+    COMPLETED: 6,
+    DEQUEUEING: 7,
+    DEQUEUED: 8,
+    SYNCHRONIZING: 9,
+    SYNCHRONIZED: 10,
+    DONE: 11
 }
 
 _task_state_inv = {}

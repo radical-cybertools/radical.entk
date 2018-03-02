@@ -4,12 +4,13 @@ import copy
 import glob
 import time
 import threading
-
+import json
 import radical.utils as ru
 
-#from radical.entk.exceptions import *
+from radical.entk.exceptions import *
 import traceback
 import socket
+from radical.entk import states as res
 
 
 def read_profiles(profiles):
@@ -273,18 +274,18 @@ def clean_profile(profile, sid=None):
     return ret
 
 
-def get_profiles(src=None):
+def get_session_profile(sid, src=None):
 
     if not src:
-        src = "%s/%s" % (os.getcwd())
+        src = os.getcwd()
 
     if os.path.exists(src):
 
         # EnTK profiles are always on localhost
-        profiles = glob.glob("%s/*.prof" % src)
+        profiles = glob.glob("%s/%s/*.prof" % (src, sid))
 
     else:
-        raise Error(text='%s does not exist' % src)
+        raise Error(text='%s/%s does not exist' % (src, sid))
 
     if len(profiles) == 0:
         raise Error(text='No profiles found at %s' % src)
@@ -314,20 +315,20 @@ def write_session_description(amgr):
 
     desc['entities'] = dict()
     desc['entities']['pipeline'] = {
-        'state_model': re._pipeline_state_values,
-        'state_values': re._pipeline_state_inv,
+        'state_model': res._pipeline_state_values,
+        'state_values': res._pipeline_state_inv,
         'event_model': dict(),
     }
 
     desc['entities']['stage'] = {
-        'state_model': re._stage_state_values,
-        'state_values': re._stage_state_inv_full,
+        'state_model': res._stage_state_values,
+        'state_values': res._stage_state_inv,
         'event_model': dict(),
     }
 
     desc['entities']['task'] = {
-        'state_model': re._task_state_values,
-        'state_values': re._task_state_inv_full,
+        'state_model': res._task_state_values,
+        'state_values': res._task_state_inv,
         'event_model': dict(),
     }
 
@@ -339,21 +340,89 @@ def write_session_description(amgr):
 
     # Adding amgr to the tree
     tree = dict()
-    tree[amgr.uid] = {'uid': amgr.uid,
-                      'etype': 'amgr',
+    tree[amgr._uid] = {'uid': amgr._uid,
+                       'etype': 'amgr',
+                       'cfg': {},
+                       'has': ['pipeline', 'wfp', 'rmgr', 'tmgr'],
+                       'children': list()
+                       }
+
+    # Adding wfp to the tree
+    wfp = amgr._wfp
+    tree[amgr._uid]['children'].append(wfp._uid)
+    tree[wfp._uid] = {'uid': wfp._uid,
+                      'etype': 'wfp',
                       'cfg': {},
-                      'has': ['pipeline','wfp','rmgr','tmgr'],
+                      'has': [],
                       'children': list()
                       }
 
-    # Adding wfp to the tree
-
     # Adding rmgr to the tree
+    rmgr = amgr.resource_manager
+    tree[amgr._uid]['children'].append(rmgr._uid)
+    tree[rmgr._uid] = {'uid': rmgr._uid,
+                       'etype': 'rmgr',
+                       'cfg': {},
+                       'has': [],
+                       'children': list()
+                       }
 
     # Adding tmgr to the tree
+    tmgr = amgr._task_manager
+    tree[amgr._uid]['children'].append(tmgr._uid)
+    tree[tmgr._uid] = {'uid': tmgr._uid,
+                       'etype': 'tmgr',
+                       'cfg': {},
+                       'has': [],
+                       'children': list()
+                       }
 
     # Adding pipelines to the tree
+    wf = amgr._workflow
+    for pipe in wf:
+        tree[amgr._uid]['children'].append(pipe._uid)
+        tree[pipe._uid] = {'uid': pipe._uid,
+                           'etype': 'pipeline',
+                           'cfg': {},
+                           'has': ['stage'],
+                           'children': list()
+                           }
+        # Adding stages to the tree
+        for stage in pipe.stages:
+            tree[pipe._uid]['children'].append(stage._uid)
+            tree[stage._uid] = {'uid': stage._uid,
+                                'etype': 'stage',
+                                'cfg': {},
+                                'has': ['task'],
+                                'children': list()
+                                }
+            # Adding tasks to the tree
+            for task in stage.tasks:
+                tree[stage._uid]['children'].append(task._uid)
+                tree[task._uid] = {'uid': task._uid,
+                                   'etype': 'task',
+                                   'cfg': {},
+                                   'has': [],
+                                   'children': list()
+                                   }
 
-    # Adding stages to the tree
+    desc['tree'] = tree
+    desc['config'] = dict()
 
-    # Adding tasks to the tree
+    ru.write_json(desc, '%s/%s.json' % (amgr._sid, amgr._sid))
+
+
+def get_session_description(sid, src=None):
+
+    if not src:
+        src = os.getcwd()
+
+    if os.path.exists(src):
+
+        # EnTK profiles are always on localhost
+        desc = ru.read_json("%s/%s/%s.json" % (src, sid, sid))
+
+    else:
+        raise Error(text='%s/%s does not exist' % (src, sid))
+
+    return desc
