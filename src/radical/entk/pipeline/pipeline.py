@@ -17,7 +17,7 @@ class Pipeline(object):
 
     def __init__(self):
 
-        self._uid = ru.generate_id('radical.entk.pipeline')
+        self._uid = ru.generate_id('pipeline')
         self._stages = list()
         self._name = str()
 

@@ -46,7 +46,7 @@ class TaskManager(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(sid))
 
-        self._uid = ru.generate_id('radical.entk.task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
         self._logger = ru.get_logger(self._uid, path=self._path)

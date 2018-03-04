@@ -7,7 +7,7 @@ import threading
 import json
 import radical.utils as ru
 
-from radical.entk.exceptions import *
+from exceptions import *
 import traceback
 import socket
 from radical.entk import states as res
@@ -123,7 +123,7 @@ def write_session_description(amgr):
         'event_model': dict(),
     }
 
-    desc['entities']['amgr'] = {
+    desc['entities']['appmanager'] = {
         'state_model': None,
         'state_values': None,
         'event_model': dict(),
@@ -132,9 +132,12 @@ def write_session_description(amgr):
     # Adding amgr to the tree
     tree = dict()
     tree[amgr._uid] = {'uid': amgr._uid,
-                       'etype': 'amgr',
+                       'etype': 'appmanager',
                        'cfg': {},
-                       'has': ['pipeline', 'wfp', 'rmgr', 'tmgr'],
+                       'has': [ 'pipeline', 
+                                'wfprocessor', 
+                                'resource_manager', 
+                                'task_manager'],
                        'children': list()
                        }
 
@@ -142,7 +145,7 @@ def write_session_description(amgr):
     wfp = amgr._wfp
     tree[amgr._uid]['children'].append(wfp._uid)
     tree[wfp._uid] = {'uid': wfp._uid,
-                      'etype': 'wfp',
+                      'etype': 'wfprocessor',
                       'cfg': {},
                       'has': [],
                       'children': list()
@@ -152,7 +155,7 @@ def write_session_description(amgr):
     rmgr = amgr.resource_manager
     tree[amgr._uid]['children'].append(rmgr._uid)
     tree[rmgr._uid] = {'uid': rmgr._uid,
-                       'etype': 'rmgr',
+                       'etype': 'resource_manager',
                        'cfg': {},
                        'has': [],
                        'children': list()
@@ -162,7 +165,7 @@ def write_session_description(amgr):
     tmgr = amgr._task_manager
     tree[amgr._uid]['children'].append(tmgr._uid)
     tree[tmgr._uid] = {'uid': tmgr._uid,
-                       'etype': 'tmgr',
+                       'etype': 'task_manager',
                        'cfg': {},
                        'has': [],
                        'children': list()

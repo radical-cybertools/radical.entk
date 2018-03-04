@@ -1,5 +1,4 @@
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__ = "MIT"
 
 import radical.utils as ru
@@ -163,7 +162,7 @@ class ResourceManager(object):
         :return: boolean (valid/invalid)
         """
 
-        self._uid = ru.generate_id('radical.entk.resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id('resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
         self._path = os.getcwd() + '/' + sid
 
         self._logger = ru.get_logger(self._uid, path=self._path)

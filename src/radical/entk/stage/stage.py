@@ -15,7 +15,7 @@ class Stage(object):
     def __init__(self, duplicate=False):
 
         if not duplicate:
-            self._uid = ru.generate_id('radical.entk.stage')
+            self._uid = ru.generate_id('stage')
 
         self._tasks = set()
         self._name = str()

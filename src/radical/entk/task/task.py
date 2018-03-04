@@ -20,7 +20,7 @@ class Task(object):
     def __init__(self, duplicate=False):
 
         if not duplicate:
-            self._uid = ru.generate_id('radical.entk.task')
+            self._uid = ru.generate_id('task')
 
         self._name = str()
 
