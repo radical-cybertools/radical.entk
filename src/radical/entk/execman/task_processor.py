@@ -5,7 +5,7 @@ import traceback
 from radical.entk.exceptions import *
 import os
 
-logger = ru.get_logger('task_processor')
+logger = ru.get_logger('radical.entk.task_processor')
 
 
 def resolve_placeholders(path, placeholder_dict):

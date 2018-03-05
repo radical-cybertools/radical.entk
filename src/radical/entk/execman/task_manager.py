@@ -49,8 +49,8 @@ class TaskManager(object):
         self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
-        self._logger = ru.get_logger(self._uid, path=self._path)
-        self._prof = ru.Profiler(name=self._uid + '-obj', path=self._path)
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
         self._prof.prof('create tmgr obj', uid=self._uid)
 
@@ -185,7 +185,7 @@ class TaskManager(object):
 
         try:
 
-            local_prof = ru.Profiler(name=self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-proc', path=self._path)
 
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
