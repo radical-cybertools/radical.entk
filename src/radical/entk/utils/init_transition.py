@@ -14,7 +14,7 @@ def transition(obj, obj_type, new_state, channel, queue, profiler, logger):
         else:
             msg = None
 
-        profiler.prof('transition',
+        profiler.prof('advance',
                       uid=obj.uid,
                       state=obj.state,
                       msg=msg)

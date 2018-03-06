@@ -102,14 +102,14 @@ if __name__ == '__main__':
     # Run the Application Manager
     appman.run()
 
-    p = generate_pipeline()
-    print p.uid
+    #p = generate_pipeline()
+    #print p.uid
 
     # Assign the workflow as a set of Pipelines to the Application Manager
-    appman.assign_workflow(set([p]))
+    #appman.assign_workflow(set([p]))
 
     # Run the Application Manager
-    appman.run()
+    #appman.run()
 
     appman.resource_terminate()
 

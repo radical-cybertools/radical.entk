@@ -45,24 +45,38 @@ state_numbers = {
 _pipeline_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
-    DONE: 11
+    DONE: 11,
+    FAILED: 11,
+    CANCELED: 11
 }
 
 _pipeline_state_inv = {}
-for k, v in state_numbers.iteritems():
-    _pipeline_state_inv[v] = k
+for k, v in _pipeline_state_values.iteritems():
+    if v in _pipeline_state_inv.keys():
+        if not isinstance(_pipeline_state_inv[v],list):
+            _pipeline_state_inv[v] = [_pipeline_state_inv[v]]
+        _pipeline_state_inv[v].append(k)
+    else:
+        _pipeline_state_inv[v] = k
 
 # States for Stage
 _stage_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
     SCHEDULED: 3,
-    DONE:11
+    DONE:11,
+    FAILED: 11,
+    CANCELED: 11
 }
 
 _stage_state_inv = {}
-for k, v in state_numbers.iteritems():
-    _stage_state_inv[v] = k
+for k, v in _stage_state_values.iteritems():
+    if v in _stage_state_inv.keys():
+        if not isinstance(_stage_state_inv[v],list):
+            _stage_state_inv[v] = [_stage_state_inv[v]]
+        _stage_state_inv[v].append(k)
+    else:
+        _stage_state_inv[v] = k
 
 # States for Task
 _task_state_values = {
@@ -76,9 +90,16 @@ _task_state_values = {
     DEQUEUED: 8,
     SYNCHRONIZING: 9,
     SYNCHRONIZED: 10,
-    DONE: 11
+    DONE: 11,
+    FAILED: 11,
+    CANCELED: 11
 }
 
 _task_state_inv = {}
-for k, v in state_numbers.iteritems():
-    _task_state_inv[v] = k
+for k, v in _task_state_values.iteritems():
+    if v in _task_state_inv.keys():
+        if not isinstance(_task_state_inv[v],list):
+            _task_state_inv[v] = [_task_state_inv[v]]
+        _task_state_inv[v].append(k)
+    else:
+        _task_state_inv[v] = k

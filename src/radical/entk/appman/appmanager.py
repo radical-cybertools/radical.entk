@@ -593,8 +593,6 @@ class AppManager(object):
                                                 if completed_task.path:
                                                     task.path = str(completed_task.path)
 
-                                                print 'Syncing task %s with state %s' % (task.uid, task.state)
-
                                                 mq_channel.basic_publish(exchange='',
                                                                          routing_key=reply_to,
                                                                          properties=pika.BasicProperties(
@@ -608,7 +606,6 @@ class AppManager(object):
 
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-                                                print 'Synced task %s with state %s' % (task.uid, task.state)
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
