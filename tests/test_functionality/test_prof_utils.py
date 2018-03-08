@@ -4,7 +4,6 @@ from pprint import pprint
 from radical.entk.exceptions import *
 import radical.utils as ru
 import os
-import yaml
 
 def test_get_session_profile():
 

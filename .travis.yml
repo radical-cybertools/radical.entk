@@ -19,4 +19,4 @@ services:
   - rabbitmq
 
 after_success:
-- codecov
+  - codecov
