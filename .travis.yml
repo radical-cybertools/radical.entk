@@ -12,7 +12,7 @@ env:
   - RP_ENABLE_OLD_DEFINES=True RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129013.mlab.com:29013/travis_tests
 
 
-script: coverage -source /home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages/radical/entk -m pytest -v /home/travis/build/radical-cybertools/radical.entk/tests
+script: coverage run --source /home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages/radical/entk -m pytest -vvv /home/travis/build/radical-cybertools/radical.entk/tests
 
 
 # rabbitmq
