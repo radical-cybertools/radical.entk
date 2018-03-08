@@ -4,7 +4,7 @@ python: "2.7.13"
 # command to install dependencies
 install: 
   - pip install .
-  - pip install pytest pytest-cov
+  - pip install pytest coverage
   - pip install codecov
 
 #env variables
@@ -12,11 +12,12 @@ env:
   - RP_ENABLE_OLD_DEFINES=True RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129013.mlab.com:29013/travis_tests
 
 
-script: python -m pytest -v /home/travis/build/radical-cybertools/radical.entk/tests --cov=./
+script: coverage -source /home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages/radical/entk -m pytest -v /home/travis/build/radical-cybertools/radical.entk/tests
+
 
 # rabbitmq
 services:
   - rabbitmq
 
 after_success:
-  - codecov
+- codecov
