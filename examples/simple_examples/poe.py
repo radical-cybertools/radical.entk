@@ -48,7 +48,6 @@ def generate_pipeline():
     # Add Stage to the Pipeline
     p.add_stages(s2)
 
-
     # Create another Stage object to hold checksum tasks
     s3 = Stage()
 

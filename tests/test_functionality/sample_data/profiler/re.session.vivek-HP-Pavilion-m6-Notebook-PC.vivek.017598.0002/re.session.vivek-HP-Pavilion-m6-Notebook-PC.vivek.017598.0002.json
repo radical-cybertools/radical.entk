@@ -1,0 +1,173 @@
+{
+    "config": {}, 
+    "entities": {
+        "appmanager": {
+            "event_model": {}, 
+            "state_model": null, 
+            "state_values": null
+        }, 
+        "pipeline": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 11, 
+                "DESCRIBED": 1, 
+                "DONE": 11, 
+                "FAILED": 11, 
+                "SCHEDULING": 2
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "11": [
+                    "DONE", 
+                    "CANCELED", 
+                    "FAILED"
+                ]
+            }
+        }, 
+        "stage": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 11, 
+                "DESCRIBED": 1, 
+                "DONE": 11, 
+                "FAILED": 11, 
+                "SCHEDULED": 3, 
+                "SCHEDULING": 2
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "3": "SCHEDULED", 
+                "11": [
+                    "FAILED", 
+                    "CANCELED", 
+                    "DONE"
+                ]
+            }
+        }, 
+        "task": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 11, 
+                "DEQUEUED": 8, 
+                "DEQUEUEING": 7, 
+                "DESCRIBED": 1, 
+                "DONE": 11, 
+                "EXECUTED": 6, 
+                "FAILED": 11, 
+                "SCHEDULED": 3, 
+                "SCHEDULING": 2, 
+                "SUBMITTED": 5, 
+                "SUBMITTING": 4, 
+                "SYNCHRONIZED": 10, 
+                "SYNCHRONIZING": 9
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "3": "SCHEDULED", 
+                "4": "SUBMITTING", 
+                "5": "SUBMITTED", 
+                "6": "EXECUTED", 
+                "7": "DEQUEUEING", 
+                "8": "DEQUEUED", 
+                "9": "SYNCHRONIZING", 
+                "10": "SYNCHRONIZED", 
+                "11": [
+                    "DONE", 
+                    "CANCELED", 
+                    "FAILED"
+                ]
+            }
+        }
+    }, 
+    "tree": {
+        "appmanager.0000": {
+            "cfg": {}, 
+            "children": [
+                "wfprocessor.0000", 
+                "resource_manager.0000", 
+                "task_manager.0000", 
+                "pipeline.0000"
+            ], 
+            "etype": "appmanager", 
+            "has": [
+                "pipeline", 
+                "wfprocessor", 
+                "resource_manager", 
+                "task_manager"
+            ], 
+            "uid": "appmanager.0000"
+        }, 
+        "pipeline.0000": {
+            "cfg": {}, 
+            "children": [
+                "stage.0000", 
+                "stage.0001"
+            ], 
+            "etype": "pipeline", 
+            "has": [
+                "stage"
+            ], 
+            "uid": "pipeline.0000"
+        }, 
+        "resource_manager.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "resource_manager", 
+            "has": [], 
+            "uid": "resource_manager.0000"
+        }, 
+        "stage.0000": {
+            "cfg": {}, 
+            "children": [
+                "task.0000"
+            ], 
+            "etype": "stage", 
+            "has": [
+                "task"
+            ], 
+            "uid": "stage.0000"
+        }, 
+        "stage.0001": {
+            "cfg": {}, 
+            "children": [
+                "task.0001"
+            ], 
+            "etype": "stage", 
+            "has": [
+                "task"
+            ], 
+            "uid": "stage.0001"
+        }, 
+        "task.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.0000"
+        }, 
+        "task.0001": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.0001"
+        }, 
+        "task_manager.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task_manager", 
+            "has": [], 
+            "uid": "task_manager.0000"
+        }, 
+        "wfprocessor.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "wfprocessor", 
+            "has": [], 
+            "uid": "wfprocessor.0000"
+        }
+    }
+}

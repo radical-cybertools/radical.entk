@@ -57,9 +57,9 @@ class AppManager(object):
         self._uid = ru.generate_id('appmanager.%(item_counter)04d',
                                    ru.ID_CUSTOM,
                                    namespace=self._sid)
-        self._logger = ru.get_logger('radical.entk.%s'%self._uid,
+        self._logger = ru.get_logger('radical.entk.%s' % self._uid,
                                      path=path)
-        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid,
+        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
                                  path=path)
 
         self._prof.prof('create amgr obj', uid=self._uid)
@@ -605,7 +605,6 @@ class AppManager(object):
                                                                 )
 
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
