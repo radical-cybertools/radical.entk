@@ -566,7 +566,7 @@ class AppManager(object):
 
             def task_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_task = Task(duplicate=True)
+                completed_task = Task()
                 completed_task.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s' % (completed_task.uid, completed_task.state))
 
@@ -576,11 +576,11 @@ class AppManager(object):
                     with pipe._stage_lock:
 
                         if not pipe.completed:
-                            if completed_task.parent_pipeline == pipe.uid:
+                            if completed_task.parent_pipeline['uid'] == pipe.uid:
 
                                 for stage in pipe.stages:
 
-                                    if completed_task.parent_stage == stage.uid:
+                                    if completed_task.parent_stage['uid'] == stage.uid:
 
                                         for task in stage.tasks:
 
@@ -608,7 +608,7 @@ class AppManager(object):
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
-                completed_stage = Stage(duplicate=True)
+                completed_stage = Stage()
                 completed_stage.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s' % (completed_stage.uid, completed_stage.state))
 
@@ -618,7 +618,7 @@ class AppManager(object):
                     with pipe._stage_lock:
 
                         if not pipe.completed:
-                            if completed_stage.parent_pipeline == pipe.uid:
+                            if completed_stage.parent_pipeline['uid'] == pipe.uid:
                                 self._logger.info('Found parent pipeline: %s' % pipe.uid)
 
                                 for stage in pipe.stages:

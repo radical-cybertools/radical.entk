@@ -54,7 +54,6 @@ class WFprocessor(object):
         self._prof.prof('create wfp obj', uid=self._uid)
 
         self._workflow = workflow
-        self._validate_workflow()
 
         if not isinstance(pending_queue, list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
@@ -112,13 +111,14 @@ class WFprocessor(object):
                 else:
                     self._workflow = set(self._workflow)
 
-            for item in self._workflow:
-                if not isinstance(item, Pipeline):
+            for p in self._workflow:
+                if not isinstance(p, Pipeline):
                     self._logger.info('workflow type incorrect')
                     raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
-                                    actual_type=type(item))
+                                    actual_type=type(p))
 
-                item._validate()
+                p._assign_uid(self._sid)
+                p._initialize(self._sid)
 
             self._prof.prof('workflow validated', uid=self._uid)
 
@@ -474,7 +474,7 @@ class WFprocessor(object):
                     if body:
 
                         # Get task from the message
-                        completed_task = Task(duplicate=True)
+                        completed_task = Task()
                         completed_task.from_dict(json.loads(body))
                         self._logger.info('Got finished task %s from queue' % (completed_task.uid))
 
@@ -493,13 +493,13 @@ class WFprocessor(object):
 
                                 if not pipe.completed:
 
-                                    if completed_task.parent_pipeline == pipe.uid:
+                                    if completed_task.parent_pipeline['uid'] == pipe.uid:
 
                                         self._logger.debug('Found parent pipeline: %s' % pipe.uid)
 
                                         for stage in pipe.stages:
 
-                                            if completed_task.parent_stage == stage.uid:
+                                            if completed_task.parent_stage['uid'] == stage.uid:
                                                 self._logger.debug('Found parent stage: %s' % (stage.uid))
 
                                                 transition(obj=completed_task,

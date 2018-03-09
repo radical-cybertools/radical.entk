@@ -17,7 +17,7 @@ class Pipeline(object):
 
     def __init__(self):
 
-        self._uid = ru.generate_id('pipeline')
+        self._uid = None
         self._stages = list()
         self._name = str()
 
@@ -138,9 +138,8 @@ class Pipeline(object):
     @stages.setter
     def stages(self, val):
 
-        self._stages = self._validate_stages(val)
+        self._stages = self._validate_entities(val)
 
-        self._pass_uid()
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
             self._cur_stage = 1
@@ -163,9 +162,8 @@ class Pipeline(object):
 
         :argument: List of Stage objects
         """
-        stages = self._validate_stages(val)
+        stages = self._validate_entities(val)
 
-        stages = self._pass_uid(stages)
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
@@ -198,16 +196,12 @@ class Pipeline(object):
         """
 
         if 'uid' in d:
-            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
+            if d['uid']:
                 self._uid = d['uid']
-            else:
-                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
 
         if 'name' in d:
-            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+            if d['name']:
                 self._name = d['name']
-            else:
-                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
@@ -235,6 +229,9 @@ class Pipeline(object):
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
+    def _assign_uid(self, sid):
+        self._uid = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+
     def _pass_uid(self, stages=None):
         """
         Purpose: Pass current Pipeline's uid to all Stages. 
@@ -249,11 +246,13 @@ class Pipeline(object):
 
             if stages is None:
                 for stage in self._stages:
-                    stage.parent_pipeline = self._uid
+                    stage.parent_pipeline['uid'] = self._uid
+                    stage.parent_pipeline['name'] = self._name
                     stage._pass_uid()
             else:
                 for stage in stages:
-                    stage.parent_pipeline = self._uid
+                    stage.parent_pipeline['uid'] = self._uid
+                    stage.parent_pipeline['name'] = self._name
                     stage._pass_uid()
 
                 return stages
@@ -290,7 +289,7 @@ class Pipeline(object):
         except Exception, ex:
             raise Error(text=ex)
 
-    def _validate_stages(self, stages):
+    def _validate_entities(self, stages):
         """
         Purpose: Validate whether the 'stages' is of type list. Validate the description of each Stage.
 
@@ -307,11 +306,9 @@ class Pipeline(object):
             if not isinstance(val, Stage):
                 raise TypeError(expected_type=Stage, actual_type=type(val))
 
-            val._validate()
-
         return stages
 
-    def _validate(self):
+    def _initialize(self, sid):
         """
         Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Pipeline contains Stages.
@@ -331,4 +328,10 @@ class Pipeline(object):
 
             raise MissingError(object=self._uid,
                                missing_attribute='stages')
+
+        for stage in self._stages:
+            stage._assign_uid(sid)
+            stage._initialize(sid)
+
+        self._pass_uid()
     # ------------------------------------------------------------------------------------------------------------------

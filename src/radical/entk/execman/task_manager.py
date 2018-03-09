@@ -194,8 +194,8 @@ class TaskManager(object):
 
             def load_placeholder(task):
 
-                parent_pipeline = str(task.parent_pipeline)
-                parent_stage = str(task.parent_stage)
+                parent_pipeline = str(task.parent_pipeline['name'])
+                parent_stage = str(task.parent_stage['name'])
 
                 if parent_pipeline not in placeholder_dict:
                     placeholder_dict[parent_pipeline] = dict()
@@ -203,7 +203,8 @@ class TaskManager(object):
                 if parent_stage not in placeholder_dict[parent_pipeline]:
                     placeholder_dict[parent_pipeline][parent_stage] = dict()
 
-                placeholder_dict[parent_pipeline][parent_stage][str(task.uid)] = str(task.path)
+                if None not in [parent_pipeline, parent_stage, task.name]:
+                    placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
 
             def unit_state_cb(unit, state):
 
@@ -345,7 +346,7 @@ class TaskManager(object):
                         try:
 
                             task = None
-                            task = Task(duplicate=True)
+                            task = Task()
                             task.from_dict(json.loads(body))
 
                             transition(obj=task,

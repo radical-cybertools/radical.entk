@@ -17,12 +17,10 @@ class Task(object):
     the profiling if not taken care.
     """
 
-    def __init__(self, duplicate=False):
+    def __init__(self):        
 
-        if not duplicate:
-            self._uid = ru.generate_id('task')
-
-        self._name = str()
+        self._uid = None
+        self._name = None
 
         self._state = states.INITIAL
 
@@ -49,9 +47,9 @@ class Task(object):
 
         # The following help in updation
         # Stage this task belongs to
-        self._p_stage = None
+        self._p_stage = {'uid':None, 'name': None}
         # Pipeline this task belongs to
-        self._p_pipeline = None
+        self._p_pipeline = {'uid':None, 'name': None}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -65,9 +63,7 @@ class Task(object):
         :getter: Returns the unique id of the current task
         :type: String
         """
-
-        if hasattr(self, '_uid'):
-            return self._uid
+        return self._uid
 
     @property
     def name(self):
@@ -454,16 +450,12 @@ class Task(object):
         """
 
         if 'uid' in d:
-            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
+            if d['uid']:
                 self._uid = d['uid']
-            else:
-                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
 
         if 'name' in d:
-            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+            if d['name']:
                 self._name = d['name']
-            else:
-                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
@@ -560,22 +552,26 @@ class Task(object):
                     raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
 
         if 'parent_stage' in d:
-            if isinstance(d['parent_stage'], str) or isinstance(d['parent_stage'], unicode):
+            if isinstance(d['parent_stage'], dict):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(entity='parent_stage', expected_type=str, actual_type=type(d['parent_stage']))
+                raise TypeError(entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str) or isinstance(d['parent_pipeline'], unicode):
+            if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _validate(self):
+    def _assign_uid(self, sid):
+        self._uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+
+
+    def _initialize(self):
         """
         Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the 
         task. 

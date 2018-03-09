@@ -12,14 +12,12 @@ class Stage(object):
     stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
     """
 
-    def __init__(self, duplicate=False):
+    def __init__(self):
 
-        if not duplicate:
-            self._uid = ru.generate_id('stage')
+        self._uid = None
+        self._name = None
 
-        self._tasks = set()
-        self._name = str()
-
+        self._tasks = set()        
         self._state = states.INITIAL
 
         # Keep track of states attained
@@ -29,7 +27,7 @@ class Stage(object):
         self._task_count = len(self._tasks)
 
         # Pipeline this stage belongs to
-        self._p_pipeline = None
+        self._p_pipeline = {'uid':None, 'name': None}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -110,7 +108,7 @@ class Stage(object):
 
     @tasks.setter
     def tasks(self, val):
-        self._tasks = self._validate_tasks(val)
+        self._tasks = self._validate_entities(val)
         self._task_count = len(self._tasks)
 
     @parent_pipeline.setter
@@ -138,7 +136,7 @@ class Stage(object):
 
         :argument: set of tasks
         """
-        tasks = self._validate_tasks(val)
+        tasks = self._validate_entities(val)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
 
@@ -169,16 +167,12 @@ class Stage(object):
         """
 
         if 'uid' in d:
-            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
+            if d['uid']:
                 self._uid = d['uid']
-            else:
-                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
 
         if 'name' in d:
-            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+            if d['name']:
                 self._name = d['name']
-            else:
-                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
@@ -196,14 +190,17 @@ class Stage(object):
                 raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str) or isinstance(d['parent_pipeline'], unicode):
+            if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
+
+    def _assign_uid(self, sid):
+        self._uid = ru.generate_id('stage.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
 
     def _pass_uid(self, tasks=None):
         """
@@ -217,12 +214,16 @@ class Stage(object):
 
         if tasks is None:
             for task in self._tasks:
-                task.parent_stage = self._uid
-                task.parent_pipeline = self._p_pipeline
+                task.parent_stage['uid'] = self._uid
+                task.parent_stage['name'] = self._name
+                task.parent_pipeline['uid'] = self._p_pipeline['uid']
+                task.parent_pipeline['name'] = self._p_pipeline['name']
         else:
             for task in tasks:
-                task.parent_stage = self._uid
-                task.parent_pipeline = self._p_pipeline
+                task.parent_stage['uid'] = self._uid
+                task.parent_stage['name'] = self._name
+                task.parent_pipeline['uid'] = self._p_pipeline['uid']
+                task.parent_pipeline['name'] = self._p_pipeline['name']
 
             return tasks
 
@@ -259,7 +260,7 @@ class Stage(object):
             print 'Task state evaluation failed'
             raise Error(text=ex)
 
-    def _validate_tasks(self, tasks):
+    def _validate_entities(self, tasks):
         """
         Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
 
@@ -282,11 +283,10 @@ class Stage(object):
             if not isinstance(t, Task):
                 raise TypeError(expected_type=Task, actual_type=type(t))
 
-            t._validate()
-
         return tasks
 
-    def _validate(self):
+
+    def _initialize(self, sid):
         """
         Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Stage contains Tasks
@@ -307,4 +307,7 @@ class Stage(object):
             raise MissingError(obj=self._uid,
                                missing_attribute='tasks')
 
+        for task in self._tasks:
+            task._assign_uid(sid)
+            task._initialize()
     # ------------------------------------------------------------------------------------------------------------------

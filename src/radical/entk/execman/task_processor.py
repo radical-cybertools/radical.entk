@@ -54,11 +54,21 @@ def resolve_placeholders(path, placeholder_dict):
                 expected_value='$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
                 actual_value=broken_placeholder)
 
-        pipeline_uid = broken_placeholder[1]
-        stage_uid = broken_placeholder[3]
-        task_uid = broken_placeholder[5]
+        pipeline_name = broken_placeholder[1]
+        stage_name = broken_placeholder[3]
+        task_name = broken_placeholder[5]
 
-        resolved_placeholder = path.replace(placeholder, placeholder_dict[pipeline_uid][stage_uid][task_uid])
+        if pipeline_name in placeholder_dict.keys():
+            if stage_name in placeholder_dict[pipeline_name].keys():
+                if task_name in placeholder_dict[pipeline_name][stage_name].keys():
+                    resolved_placeholder = path.replace(placeholder, placeholder_dict[pipeline_name][stage_name][task_name])
+                else:
+                    logger.warning('%s not assigned to any task in Stage %s Pipeline %s'%(task_name, stage_name, pipeline_name))
+            else:
+                logger.warning('%s not assigned to any Stage in Pipeline %s'%(stage_name, pipeline_name))
+        else:
+            logger.warning('%s not assigned to any Pipeline'%(pipeline_name))
+
 
         return resolved_placeholder
 
@@ -246,7 +256,9 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
             prof.prof('cud from task - create', uid=task.uid)
 
         cud = rp.ComputeUnitDescription()
-        cud.name = '%s,%s,%s' % (task.uid, task.parent_stage, task.parent_pipeline)
+        cud.name = '%s,%s,%s,%s,%s,%s' % (  task.uid, task.name,
+                                            task.parent_stage['uid'], task.parent_stage['name'],
+                                            task.parent_pipeline['uid'], task.parent_pipeline['name'])
         cud.pre_exec = task.pre_exec
         cud.executable = task.executable
         cud.arguments = task.arguments
@@ -292,10 +304,13 @@ def create_task_from_cu(cu, prof=None):
         if prof:
             prof.prof('task from cu - create', uid=cu.name.split(',')[0].strip())
 
-        task = Task(duplicate=True)
+        task = Task()
         task.uid = cu.name.split(',')[0].strip()
-        task.parent_stage = cu.name.split(',')[1].strip()
-        task.parent_pipeline = cu.name.split(',')[2].strip()
+        task.name = cu.name.split(',')[1].strip()
+        task.parent_stage['uid'] = cu.name.split(',')[2].strip()
+        task.parent_stage['name'] = cu.name.split(',')[3].strip()
+        task.parent_pipeline['uid'] = cu.name.split(',')[4].strip()
+        task.parent_pipeline['name'] = cu.name.split(',')[5].strip()
 
         if cu.exit_code is not None:
             task.exit_code = cu.exit_code
