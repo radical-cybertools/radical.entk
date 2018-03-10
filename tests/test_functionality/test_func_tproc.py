@@ -15,9 +15,9 @@ def test_input_list_from_task():
     when given a Task
     """
 
-    pipeline = str(ru.generate_id('radical.entk.pipeline'))
-    stage = str(ru.generate_id('radical.entk.stage'))
-    task = str(ru.generate_id('radical.entk.task'))
+    pipeline = str(ru.generate_id('pipeline'))
+    stage = str(ru.generate_id('stage'))
+    task = str(ru.generate_id('task'))
 
     placeholder_dict = {
         pipeline: {
@@ -91,9 +91,9 @@ def test_output_list_from_task():
     when given a Task
     """
 
-    pipeline = str(ru.generate_id('radical.entk.pipeline'))
-    stage = str(ru.generate_id('radical.entk.stage'))
-    task = str(ru.generate_id('radical.entk.task'))
+    pipeline = str(ru.generate_id('pipeline'))
+    stage = str(ru.generate_id('stage'))
+    task = str(ru.generate_id('task'))
 
     placeholder_dict = {
         pipeline: {
@@ -150,9 +150,9 @@ def test_create_cud_from_task():
     Task description
     """
 
-    pipeline = str(ru.generate_id('radical.entk.pipeline'))
-    stage = str(ru.generate_id('radical.entk.stage'))
-    task = str(ru.generate_id('radical.entk.task'))
+    pipeline = 'p1'
+    stage = 's1'
+    task = 't1'
 
     placeholder_dict = {
         pipeline: {
@@ -163,7 +163,7 @@ def test_create_cud_from_task():
     }
 
     t1 = Task()
-    t1.name = 'simulation'
+    t1.name = 't1'
     t1.pre_exec = ['module load gromacs']
     t1.executable = ['grompp']
     t1.arguments = ['hello']
@@ -178,14 +178,19 @@ def test_create_cud_from_task():
     t1.download_output_data = ['download_output.dat']
 
     p = Pipeline()
+    p.name = 'p1'
     s = Stage()
+    s.name = 's1'
     s.tasks = t1
     p.stages = s
-    
+
+    p._initialize('temp')    
 
     cud = create_cud_from_task(t1, placeholder_dict)
 
-    assert cud.name == '%s,%s,%s' % (t1.uid, t1.parent_stage, t1.parent_pipeline)
+    assert cud.name == '%s,%s,%s,%s,%s,%s' % (  t1.uid, t1.name, 
+                                                t1.parent_stage['uid'], t1.parent_stage['name'],
+                                                t1.parent_pipeline['uid'], t1.parent_pipeline['name'])
     assert cud.pre_exec == t1.pre_exec
 
     # rp returns executable as a string regardless of whether assignment was using string or list
@@ -211,7 +216,7 @@ def test_create_task_from_cu():
     session = rp.Session(dburl='mongodb://user:user@ds129013.mlab.com:29013/travis_tests')
     umgr = rp.UnitManager(session=session)
     cud = rp.ComputeUnitDescription()
-    cud.name = 'uid, parent_stage, parent_pipeline'
+    cud.name = 'uid, name, parent_stage_uid, parent_stage_name, parent_pipeline_uid, parent_pipeline_name'
     cud.executable = '/bin/echo'
 
     cu = rp.ComputeUnit(umgr, cud)
@@ -219,8 +224,11 @@ def test_create_task_from_cu():
     t = create_task_from_cu(cu)
 
     assert t.uid == 'uid'
-    assert t.parent_stage == 'parent_stage'
-    assert t.parent_pipeline == 'parent_pipeline'
+    assert t.name == 'name'
+    assert t.parent_stage['uid'] == 'parent_stage_uid'
+    assert t.parent_stage['name'] == 'parent_stage_name'
+    assert t.parent_pipeline['uid'] == 'parent_pipeline_uid'
+    assert t.parent_pipeline['name'] == 'parent_pipeline_name'
 
 
 def test_resolve_placeholder():
@@ -229,9 +237,9 @@ def test_resolve_placeholder():
     placeholders are used to refer to files in different task folders.
     """
 
-    pipeline = str(ru.generate_id('radical.entk.pipeline'))
-    stage = str(ru.generate_id('radical.entk.stage'))
-    task = str(ru.generate_id('radical.entk.task'))
+    pipeline = str(ru.generate_id('pipeline'))
+    stage = str(ru.generate_id('stage'))
+    task = str(ru.generate_id('task'))
 
     placeholder_dict = {
         pipeline: {

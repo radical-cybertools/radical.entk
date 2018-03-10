@@ -18,8 +18,9 @@ class Pipeline(object):
     def __init__(self):
 
         self._uid = None
-        self._stages = list()
-        self._name = str()
+        self._name = None
+
+        self._stages = list()        
 
         self._state = states.INITIAL
 

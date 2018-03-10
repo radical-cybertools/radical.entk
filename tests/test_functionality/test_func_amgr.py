@@ -89,6 +89,7 @@ def test_synchronizer():
         s.add_tasks(t)
 
     p.add_stages(s)
+    p._initialize(amgr._sid)
 
     amgr.assign_workflow(set([p]))
 

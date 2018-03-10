@@ -3,24 +3,6 @@ from radical.entk import states
 from radical.entk.exceptions import *
 import pytest, threading
 
-def test_pipeline_initialization():
-
-    """
-    ***Purpose***: Test if pipeline attributes are correctly initialized upon creation
-    """
-
-    p = Pipeline()
-
-    assert type(p._uid) == str
-    assert type(p.stages) == list
-    assert type(p.name) == str
-    assert type(p.state) == str
-    assert p.state == states.INITIAL
-    assert p._stage_count == 0
-    assert p._cur_stage == 0
-    assert type(p._stage_lock) == type(threading.Lock())
-    assert p._completed_flag.is_set() == False
-
 def test_assignment_exceptions():
 
     """
@@ -166,5 +148,7 @@ def test_uid_passing():
     t.executable = ['/bin/date']
     s.tasks = t
     p.stages    = s
+    p._initialize('temp')
 
-    assert s.parent_pipeline == p.uid
+    assert s.parent_pipeline['uid'] == p.uid
+    assert t.parent_pipeline['uid'] == p.uid
