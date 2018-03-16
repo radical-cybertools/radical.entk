@@ -3,6 +3,8 @@ import pytest
 from radical.entk.exceptions import *
 import os
 
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = os.environ.get('RMQ_PORT',5672)
 
 def test_state_order():
 
@@ -45,7 +47,8 @@ def test_state_order():
 
     rman = ResourceManager(res_dict)
 
-    appman = AppManager()
+    appman = AppManager(hostname=hostname, port=port)
+
     appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
     appman.run()

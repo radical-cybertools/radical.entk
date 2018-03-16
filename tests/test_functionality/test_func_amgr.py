@@ -7,6 +7,9 @@ from threading import Event, Thread
 from multiprocessing import Process
 from radical.entk.utils.sync_initiator import sync_with_master
 
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = os.environ.get('RMQ_PORT',5672)
+
 def test_sid_in_mqs():
 
     """
@@ -29,7 +32,11 @@ def test_sid_in_mqs():
                     '%s-sync-to-deq' % sid
                 ]
 
-    mq_connection = pika.BlockingConnection(pika.ConnectionParameters())
+    mq_connection = pika.BlockingConnection(
+                        pika.ConnectionParameters(
+                            host=hostname,
+                            port=port)
+                        )
     mq_channel = mq_connection.channel()
 
     def callback():
@@ -47,7 +54,11 @@ def func_for_process(sid, p, mq_channel, logger, profiler):
 
     try:
 
-        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        mq_connection = pika.BlockingConnection(
+                        pika.ConnectionParameters(
+                            host=hostname,
+                            port=port)
+                        )
         mq_channel = mq_connection.channel()
 
         for t in p.stages[0].tasks:
@@ -72,7 +83,13 @@ def test_synchronizer():
     logger = ru.get_logger('radical.entk.temp_logger')
     profiler = ru.Profiler(name = 'radical.entk.temp')
     amgr = AppManager()
-    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    
+    mq_connection = pika.BlockingConnection(
+                        pika.ConnectionParameters(
+                            host=hostname,
+                            port=port)
+                        )
+
     mq_channel = mq_connection.channel()
 
     amgr._setup_mqs()

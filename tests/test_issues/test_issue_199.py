@@ -10,6 +10,9 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 if not os.environ.get('RADICAL_PILOT_DBURL'):
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = os.environ.get('RMQ_PORT',5672)
+
 def generate_pipeline():
     
     # Create a Pipeline object
@@ -48,7 +51,7 @@ def test_issue_199():
     rman = ResourceManager(res_dict)
 
     # Create Application Manager
-    appman = AppManager()
+    appman = AppManager(hostname=hostname, port=port)
 
     # Assign resource manager to the Application Manager
     appman.resource_manager = rman
