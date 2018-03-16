@@ -6,6 +6,7 @@ import radical.utils as ru
 from threading import Event, Thread
 from multiprocessing import Process
 from radical.entk.utils.sync_initiator import sync_with_master
+import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = os.environ.get('RMQ_PORT',5672)
