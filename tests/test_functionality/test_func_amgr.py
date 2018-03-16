@@ -18,7 +18,7 @@ def test_sid_in_mqs():
     id derived from the session ID of the AppManager
     """
 
-    appman = AppManager()
+    appman = AppManager(hostname=hostname, port=port)
     appman._setup_mqs()
     sid = appman._sid
 
@@ -83,7 +83,7 @@ def test_synchronizer():
 
     logger = ru.get_logger('radical.entk.temp_logger')
     profiler = ru.Profiler(name = 'radical.entk.temp')
-    amgr = AppManager()
+    amgr = AppManager(hostname=hostname, port=port)
     
     mq_connection = pika.BlockingConnection(
                         pika.ConnectionParameters(
