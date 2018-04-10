@@ -19,6 +19,7 @@ import json
 from threading import Thread, Event
 import traceback
 from radical.entk import states
+import pprint
 
 
 class AppManager(object):
@@ -96,6 +97,12 @@ class AppManager(object):
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
 
+        # json data 
+
+        self._data = {}
+        self._data['pipelines'] = [] 
+        self._data['dictionary'] = []
+ 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -129,7 +136,8 @@ class AppManager(object):
         :getter: Returns the resource manager object being used
         :setter: Assigns a resource manager
         """
-
+    
+        pprint.pprint(self._resource_manager)
         return self._resource_manager
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -159,7 +167,7 @@ class AppManager(object):
             else:
                 self._logger.error('Could not validate resource description')
                 raise
-
+        
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
@@ -173,6 +181,47 @@ class AppManager(object):
 
         self._prof.prof('assigning workflow', uid=self._uid)
         self._workflow = workflow
+       
+        pipelines = list(self._workflow)
+        self._data['pipelines'].append({'Total pipeline(s)': len(pipelines)})
+
+        for i in range(len(pipelines)):
+            pipeline = pipelines[i]
+            stages = list(pipeline.stages)
+
+            self._data['pipelines'].append({'pipeline': i, 
+                                      'pipeline name' : pipeline.name,
+                                      'pipelines uid' : pipeline.uid, 
+                                      'total stages': len(stages)})
+
+            pprint.pprint('Pipeline {0}, {1} contains {2} stage(s)'.format(
+                i, 
+                pipeline.name, 
+                len(stages)))
+
+            for j in range(len(stages)):
+                tasks = list(stages[j].tasks)
+
+                self._data['pipelines'].append({'stage': j, 
+                                      'stage name' : stages[j].name,
+                                      'stage uid'  : stages[j].uid, 
+                                      'total tasks': len(tasks)})
+
+                pprint.pprint('Stage {0}, {1} contains {2} task(s)'.format(
+                    j,
+                    stages[j].name, 
+                    len(tasks)))
+                
+
+                for k in range(len(tasks)): 
+                    self._data['pipelines'].append({'task': k, 
+                                      'task name' : tasks[k].name,
+                                      'task uid': tasks[k].uid})
+                    pprint.pprint('Tasks: {0}'.format(tasks[k].name))
+
+        pprint.pprint(self._data) 
+        with open('entk_{}.json'.format(self._uid), 'w') as outfile:  
+            json.dump(self._data, outfile)
         self._logger.info('Workflow assigned to Application Manager')
 
  
@@ -203,7 +252,11 @@ class AppManager(object):
 
             else:
 
+                with open('entk_{}.json'.format(self._uid), 'w') as outfile:  
+                    json.dump(self._data['resource dictionary'].append(self._resource_manager), outfile)
+
                 self._prof.prof('amgr run started', uid=self._uid)
+                self._resource_manager
 
                 # Setup rabbitmq stuff
                 if not self._mqs_setup:
