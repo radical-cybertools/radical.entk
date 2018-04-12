@@ -345,32 +345,37 @@ class TaskManager(object):
 
                         try:
 
-                            task = None
-                            task = Task()
-                            task.from_dict(json.loads(body))
+                            bulk_tasks = list()
+                            bulk_cuds = list()
+                            for task in body:
+                                t = Task()
+                                t.from_dict(json.loads(task))                                
+                                bulk_tasks.append(t)
+                                bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-
-                        except Exception, ex:
-
-                            # Rollback and pass exception
-                            if task:
-                                self._logger.error(
-                                    'Task %s preparation for submission failed, error: %s' % (task.uid, ex))
-                                task.state = states.SCHEDULED
-                                transition(obj=task,
+                                transition(obj=t,
                                            obj_type='Task',
-                                           new_state=states.SCHEDULED,
+                                           new_state=states.SUBMITTING,
                                            channel=mq_channel,
                                            queue='%s-tmgr-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=self._logger)
+
+                        except Exception, ex:
+
+                            # Rollback and pass exception
+                            if bulk_tasks:
+                                for task in bulk_tasks:                                    
+                                    task.state = states.SCHEDULED
+                                    transition( obj=task,
+                                                obj_type='Task',
+                                                new_state=states.SCHEDULED,
+                                                channel=mq_channel,
+                                                queue='%s-tmgr-to-sync' % self._sid,
+                                                profiler=local_prof,
+                                                logger=self._logger)
+                                self._logger.error(
+                                        'Task preparation for submission failed, error: %s' % (ex))
                             else:
                                 self._logger.error('Task preparation for submission failed, error: %s' % ex)
 
@@ -378,31 +383,40 @@ class TaskManager(object):
 
                         try:
 
-                            umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
-                            self._logger.info('Task %s, %s; submitted to RTS' % (task.uid, task.state))
+                            umgr.submit_units(bulk_cuds)
+                            
+                            for task in bulk_tasks:
 
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTED,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
+                                transition( obj=task,
+                                            obj_type='Task',
+                                            new_state=states.SUBMITTED,
+                                            channel=mq_channel,
+                                            queue='%s-tmgr-to-sync' % self._sid,
+                                            profiler=local_prof,
+                                            logger=self._logger)
+                                self._logger.info('Tasks %s submitted to RTS' % (task.uid))
 
                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                         except Exception, ex:
 
-                            # Rollback and pass exception
-                            self._logger.error('Task %s submission failed, error: %s' % (task.uid, ex))
-                            task.state = states.SUBMITTING
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
+                            # Rollback and pass exception                          
+                            if bulk_tasks:
+                                for task in bulk_tasks:                                    
+                                    
+                                    task.state = states.SUBMITTING
+                                    transition(obj=task,
+                                               obj_type='Task',
+                                               new_state=states.SUBMITTING,
+                                               channel=mq_channel,
+                                               queue='%s-tmgr-to-sync' % self._sid,
+                                               profiler=local_prof,
+                                               logger=self._logger)
+
+                                self._logger.error('Task %s submission failed, error: %s' % (task.uid, ex))
+                            else:
+                                self._logger.error('Task submission failed, error: %s' %ex)
+                                
                             raise
 
                 except Exception, ex:

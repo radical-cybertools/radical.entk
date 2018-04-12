@@ -267,6 +267,14 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
+                '''
+                We iterate through all pipelines to collect tasks from 
+                stages that are pending scheduling. Once collected, these tasks
+                will be communicated to the tmgr in bulk.
+                '''
+
+                workload = []
+                
                 for pipe in self._workflow:
 
                     with pipe._stage_lock:
@@ -288,13 +296,14 @@ class WFprocessor(object):
                                            profiler=local_prof,
                                            logger=self._logger)
 
-                            if pipe.stages[pipe.current_stage - 1].state in [states.INITIAL, states.SCHEDULED]:
+                            executable_stage = pipe.stages[pipe.current_stage - 1]
+
+                            if executable_stage.state in [states.INITIAL, states.SCHEDULED]:
 
                                 try:
 
                                     # Starting scheduling of tasks of current stage, so set state of stage to
-                                    # SCHEDULING
-                                    executable_stage = pipe.stages[pipe.current_stage - 1]
+                                    # SCHEDULING                                    
 
                                     if executable_stage.state == states.INITIAL:
 
@@ -307,85 +316,49 @@ class WFprocessor(object):
                                                    logger=self._logger)
 
                                     executable_tasks = executable_stage.tasks
+                                    
+                                    bulk_tasks = list()
 
                                     for executable_task in executable_tasks:
 
-                                        if self._resubmit_failed:
-
-                                            if executable_task.state in [states.INITIAL, states.FAILED]:
-
-                                                # Set state of Tasks in current Stage to SCHEDULING
-                                                transition(obj=executable_task,
-                                                           obj_type='Task',
-                                                           new_state=states.SCHEDULING,
-                                                           channel=mq_channel,
-                                                           queue='%s-enq-to-sync' % self._sid,
-                                                           profiler=local_prof,
-                                                           logger=self._logger)
-
-                                                task_as_dict = json.dumps(executable_task.to_dict())
-
-                                                self._logger.debug('Publishing task %s to %s'
-                                                                   % (executable_task.uid,
-                                                                      self._pending_queue[0]))
-
-                                                # Put the task on one of the pending_queues
-                                                mq_channel.basic_publish(exchange='',
-                                                                         routing_key=self._pending_queue[0],
-                                                                         body=task_as_dict
-                                                                         # properties=pika.BasicProperties(
-                                                                         # make message persistent
-                                                                         # delivery_mode = 2)
-                                                                         )
-
-                                                # Set state of Tasks in current Stage to SCHEDULED
-                                                transition(obj=executable_task,
-                                                           obj_type='Task',
-                                                           new_state=states.SCHEDULED,
-                                                           channel=mq_channel,
-                                                           queue='%s-enq-to-sync' % self._sid,
-                                                           profiler=local_prof,
-                                                           logger=self._logger)
-
-                                                tasks_submitted = True
-                                                self._logger.debug('Task %s published to queue' % executable_task.uid)
-
-                                        if executable_task.state == states.INITIAL:
+                                        if (executable_task.state==states.INITIAL)or
+                                            ((executable_task.state==states.FAILED)and(self._resubmit_failed)):
 
                                             # Set state of Tasks in current Stage to SCHEDULING
-                                            transition(obj=executable_task,
-                                                       obj_type='Task',
-                                                       new_state=states.SCHEDULING,
-                                                       channel=mq_channel,
-                                                       queue='%s-enq-to-sync' % self._sid,
-                                                       profiler=local_prof,
-                                                       logger=self._logger)
+                                            transition( obj=executable_task,
+                                                        obj_type='Task',
+                                                        new_state=states.SCHEDULING,
+                                                        channel=mq_channel,
+                                                        queue='%s-enq-to-sync' % self._sid,
+                                                        profiler=local_prof,
+                                                        logger=self._logger)
 
                                             task_as_dict = json.dumps(executable_task.to_dict())
+                                            bulk_tasks.append(task_as_dict)
 
-                                            self._logger.debug('Publishing task %s to %s'
-                                                               % (executable_task.uid,
-                                                                  self._pending_queue[0]))
+                                    # Put the task on one of the pending_queues
+                                    mq_channel.basic_publish(exchange='',
+                                                             routing_key=self._pending_queue[0],
+                                                             body=bulk_tasks
+                                                             # properties=pika.BasicProperties(
+                                                                # make message persistent
+                                                                # delivery_mode = 2)
+                                                            )
 
-                                            # Put the task on one of the pending_queues
-                                            mq_channel.basic_publish(exchange='',
-                                                                     routing_key=self._pending_queue[0],
-                                                                     body=task_as_dict
-                                                                     # properties=pika.BasicProperties(
-                                                                     # make message persistent
-                                                                     # delivery_mode = 2)
-                                                                     )
+                                    for executable_task in executable_tasks:
 
-                                            # Set state of Tasks in current Stage to SCHEDULED
-                                            transition(obj=executable_task,
-                                                       obj_type='Task',
-                                                       new_state=states.SCHEDULED,
-                                                       channel=mq_channel,
-                                                       queue='%s-enq-to-sync' % self._sid,
-                                                       profiler=local_prof,
-                                                       logger=self._logger)
+                                        # Set state of Tasks in current Stage to SCHEDULED
+                                        transition( obj=executable_task,
+                                                    obj_type='Task',
+                                                    new_state=states.SCHEDULED,
+                                                    channel=mq_channel,
+                                                    queue='%s-enq-to-sync' % self._sid,
+                                                    profiler=local_prof,
+                                                    logger=self._logger)
 
-                                            self._logger.debug('Task %s published to queue' % executable_task.uid)
+                                        tasks_submitted = True
+                                        self._logger.debug('Task %s published to pending queue' % executable_task.uid)
+
 
                                     if executable_stage.state == states.SCHEDULING:
                                         # All tasks of current stage scheduled, so set state of stage to
@@ -397,6 +370,7 @@ class WFprocessor(object):
                                                    queue='%s-enq-to-sync' % self._sid,
                                                    profiler=local_prof,
                                                    logger=self._logger)
+
                                 except Exception, ex:
 
                                     # If there is an error, explicitly switching the state of Stage to INITIAL
