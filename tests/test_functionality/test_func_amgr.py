@@ -131,3 +131,30 @@ def test_synchronizer():
 
     amgr._end_sync.set()
     sync_thread.join()
+
+def test_mq_cleanup():
+
+    amgr = AppManager(hostname=hostname, port=port)
+    sid = amgr._sid
+
+    amgr._setup_mqs()
+    amgr._cleanup_mqs()
+
+    mq_connection = pika.BlockingConnection(
+                        pika.ConnectionParameters(host=hostname, port=port))
+
+    qs = [  '%s-tmgr-to-sync' % sid, 
+            '%s-cb-to-sync' % sid,
+            '%s-enq-to-sync' % sid,
+            '%s-deq-to-sync' % sid,
+            '%s-sync-to-tmgr' % sid,
+            '%s-sync-to-cb' % sid,
+            '%s-sync-to-enq' % sid,
+            '%s-sync-to-deq' % sid,
+            '%s-pendingq-1' % sid,
+            '%s-completedq-1' % sid]
+            
+    for q in qs:
+        with pytest.raises(pika.exceptions.ChannelClosed):
+            mq_channel = mq_connection.channel()
+            mq_channel.queue_purge(q)

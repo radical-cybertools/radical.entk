@@ -455,6 +455,8 @@ class AppManager(object):
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
 
+        self._cleanup_mqs()
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
@@ -500,14 +502,12 @@ class AppManager(object):
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
                 self._pending_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
                 # Durable Qs will not be lost if rabbitmq server crashes
                 self._mq_channel.queue_declare(queue=queue_name, durable=True)
 
             for i in range(1, self._num_completed_qs + 1):
                 queue_name = '%s-completedq-%s' % (self._sid, i)
                 self._completed_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
                 # Durable Qs will not be lost if rabbitmq server crashes
                 self._mq_channel.queue_declare(queue=queue_name, durable=True)
 
@@ -515,23 +515,15 @@ class AppManager(object):
             # self._mq_channel.queue_declare(queue='sync-to-master')
 
             # Queues to send messages from the threads/procs to master
-            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
             self._mq_channel.queue_declare(queue='%s-tmgr-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
             self._mq_channel.queue_declare(queue='%s-cb-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
             self._mq_channel.queue_declare(queue='%s-enq-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
             self._mq_channel.queue_declare(queue='%s-deq-to-sync' % self._sid)
 
             # Queues to send messages from master to threads/procs
-            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
             self._mq_channel.queue_declare(queue='%s-sync-to-tmgr' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
             self._mq_channel.queue_declare(queue='%s-sync-to-cb' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
             self._mq_channel.queue_declare(queue='%s-sync-to-enq' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
             self._mq_channel.queue_declare(queue='%s-sync-to-deq' % self._sid)
             # Durable Qs will not be lost if rabbitmq server crashes
 
@@ -544,6 +536,33 @@ class AppManager(object):
 
             self._logger.error('Error setting RabbitMQ system: %s' % ex)
             raise
+
+
+    def _cleanup_mqs(self):
+
+        try:
+
+            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
+
+            for i in range(1, self._num_pending_qs + 1):
+                queue_name = '%s-pendingq-%s' % (self._sid, i)
+                self._mq_channel.queue_delete(queue=queue_name)
+
+            for i in range(1, self._num_completed_qs + 1):
+                queue_name = '%s-completedq-%s' % (self._sid, i)
+                self._mq_channel.queue_delete(queue=queue_name)
+
+        except Exception as ex:
+            self._logger.exception('Message queues not deleted, error: %s'%ex)
+
+
 
     def _synchronizer(self):
         """
