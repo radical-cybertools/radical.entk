@@ -494,38 +494,36 @@ class AppManager(object):
                                                               )
 
             self._mq_channel = self._mq_connection.channel()
-
             self._logger.debug('Connection and channel setup successful')
-
             self._logger.debug('Setting up all exchanges and queues')
+
+            qs =    [
+                    '%s-tmgr-to-sync' % sid,
+                    '%s-cb-to-sync' % sid,
+                    '%s-enq-to-sync' % sid,
+                    '%s-deq-to-sync' % sid,
+                    '%s-sync-to-tmgr' % sid,
+                    '%s-sync-to-cb' % sid,
+                    '%s-sync-to-enq' % sid,
+                    '%s-sync-to-deq' % sid
+                ]
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
                 self._pending_queue.append(queue_name)
-                # Durable Qs will not be lost if rabbitmq server crashes
-                self._mq_channel.queue_declare(queue=queue_name, durable=True)
+                qs.append(queue_name)
 
             for i in range(1, self._num_completed_qs + 1):
                 queue_name = '%s-completedq-%s' % (self._sid, i)
                 self._completed_queue.append(queue_name)
+                qs.append(queue_name)
+
+            f = open('.%s.txt'%self._sid,'w')
+            for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
-                self._mq_channel.queue_declare(queue=queue_name, durable=True)
-
-            # self._mq_channel.queue_delete(queue='sync-to-master')
-            # self._mq_channel.queue_declare(queue='sync-to-master')
-
-            # Queues to send messages from the threads/procs to master
-            self._mq_channel.queue_declare(queue='%s-tmgr-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-cb-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-enq-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-deq-to-sync' % self._sid)
-
-            # Queues to send messages from master to threads/procs
-            self._mq_channel.queue_declare(queue='%s-sync-to-tmgr' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-cb' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-enq' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-deq' % self._sid)
-            # Durable Qs will not be lost if rabbitmq server crashes
+                self._mq_channel.queue_declare(queue=q, durable=True)
+                f.write(q + '\n')
+            f.close()
 
             self._logger.debug('All exchanges and queues are setup')
             self._prof.prof('mqs setup done', uid=self._uid)
