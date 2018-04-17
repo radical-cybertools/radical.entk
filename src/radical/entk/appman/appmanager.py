@@ -19,7 +19,6 @@ import json
 from threading import Thread, Event
 import traceback
 from radical.entk import states
-import pprint
 
 
 class AppManager(object):
@@ -137,7 +136,6 @@ class AppManager(object):
         :setter: Assigns a resource manager
         """
     
-        pprint.pprint(self._resource_manager)
         return self._resource_manager
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -189,39 +187,26 @@ class AppManager(object):
             pipeline = pipelines[i]
             stages = list(pipeline.stages)
 
-            self._data['pipelines'].append({'pipeline': i, 
-                                      'pipeline name' : pipeline.name,
-                                      'pipelines uid' : pipeline.uid, 
-                                      'total stages': len(stages)})
+            self._data['pipelines'].append( {'pipeline name'  : pipeline.name,
+                                             'pipeline uid'   : pipeline.uid,
+                                             'stages': len(stages)
+                                            })
 
-            pprint.pprint('Pipeline {0}, {1} contains {2} stage(s)'.format(
-                i, 
-                pipeline.name, 
-                len(stages)))
+
 
             for j in range(len(stages)):
                 tasks = list(stages[j].tasks)
 
-                self._data['pipelines'].append({'stage': j, 
-                                      'stage name' : stages[j].name,
+                self._data['pipelines'].append({'stage name' : stages[j].name,
                                       'stage uid'  : stages[j].uid, 
                                       'total tasks': len(tasks)})
 
-                pprint.pprint('Stage {0}, {1} contains {2} task(s)'.format(
-                    j,
-                    stages[j].name, 
-                    len(tasks)))
-                
 
                 for k in range(len(tasks)): 
-                    self._data['pipelines'].append({'task': k, 
-                                      'task name' : tasks[k].name,
-                                      'task uid': tasks[k].uid})
-                    pprint.pprint('Tasks: {0}'.format(tasks[k].name))
-
-        pprint.pprint(self._data) 
-        with open('entk_{}.json'.format(self._uid), 'w') as outfile:  
-            json.dump(self._data, outfile)
+                    self._data['pipelines'].append({'task name' : tasks[k].name,
+                                                    'task uid': tasks[k].uid})
+                     
+        ru.write_json(self._data, 'entk_%s.json' % self._uid)
         self._logger.info('Workflow assigned to Application Manager')
 
  
@@ -252,8 +237,7 @@ class AppManager(object):
 
             else:
 
-                with open('entk_{}.json'.format(self._uid), 'w') as outfile:  
-                    json.dump(self._data['resource dictionary'].append(self._resource_manager), outfile)
+                ru.write_json(self._data['resource dictionary'], 'entk_%s.json' % self._uid)
 
                 self._prof.prof('amgr run started', uid=self._uid)
                 self._resource_manager
