@@ -360,7 +360,6 @@ class TaskManager(object):
                                        queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
-                            print bulk_cuds[0].as_dict()
 
                         umgr.submit_units(bulk_cuds)
                         
