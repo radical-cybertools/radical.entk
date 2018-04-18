@@ -637,5 +637,5 @@ class WFprocessor(object):
         """
         **Purpose**: Method to check if the wfp process is alive
         """
-
-        return self._wfp_process.is_alive()
+        if self._wfp_process:
+            return self._wfp_process.is_alive()

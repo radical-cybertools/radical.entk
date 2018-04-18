@@ -498,14 +498,14 @@ class AppManager(object):
             self._logger.debug('Setting up all exchanges and queues')
 
             qs =    [
-                    '%s-tmgr-to-sync' % sid,
-                    '%s-cb-to-sync' % sid,
-                    '%s-enq-to-sync' % sid,
-                    '%s-deq-to-sync' % sid,
-                    '%s-sync-to-tmgr' % sid,
-                    '%s-sync-to-cb' % sid,
-                    '%s-sync-to-enq' % sid,
-                    '%s-sync-to-deq' % sid
+                    '%s-tmgr-to-sync' % self._sid,
+                    '%s-cb-to-sync' % self._sid,
+                    '%s-enq-to-sync' % self._sid,
+                    '%s-deq-to-sync' % self._sid,
+                    '%s-sync-to-tmgr' % self._sid,
+                    '%s-sync-to-cb' % self._sid,
+                    '%s-sync-to-enq' % self._sid,
+                    '%s-sync-to-deq' % self._sid
                 ]
 
             for i in range(1, self._num_pending_qs + 1):
