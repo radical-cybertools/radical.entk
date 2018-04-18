@@ -226,7 +226,7 @@ class TaskManager(object):
                                                                       )
                     mq_channel = self._mq_connection.channel()
 
-                    if unit.state in [rp.DONE, rp.FAILED]:
+                    if unit.state in rp.FINAL:
 
                         try:
 
