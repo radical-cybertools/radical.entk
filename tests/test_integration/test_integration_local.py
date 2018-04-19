@@ -4,7 +4,7 @@ from radical.entk.exceptions import *
 import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = os.environ.get('RMQ_PORT',5672)
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def test_integration_local():
 

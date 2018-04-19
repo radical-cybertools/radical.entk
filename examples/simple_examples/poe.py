@@ -109,7 +109,6 @@ if __name__ == '__main__':
     appman.run()
 
     p = generate_pipeline()
-    #print p.uid
 
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.assign_workflow(set([p]))

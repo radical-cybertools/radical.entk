@@ -226,7 +226,7 @@ class TaskManager(object):
                                                                       )
                     mq_channel = self._mq_connection.channel()
 
-                    if unit.state in [rp.DONE, rp.FAILED]:
+                    if unit.state in rp.FINAL:
 
                         try:
 
@@ -343,13 +343,17 @@ class TaskManager(object):
 
                     if body:
 
-                        try:
+                        body = json.loads(body)
+                        bulk_tasks = list()
+                        bulk_cuds = list()
 
-                            task = None
-                            task = Task()
-                            task.from_dict(json.loads(body))
+                        for task in body:
+                            t = Task()
+                            t.from_dict(task)                                
+                            bulk_tasks.append(t)
+                            bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
-                            transition(obj=task,
+                            transition(obj=t,
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
@@ -357,58 +361,24 @@ class TaskManager(object):
                                        profiler=local_prof,
                                        logger=self._logger)
 
-                        except Exception, ex:
+                        umgr.submit_units(bulk_cuds)
+                        
+                        for task in bulk_tasks:
 
-                            # Rollback and pass exception
-                            if task:
-                                self._logger.error(
-                                    'Task %s preparation for submission failed, error: %s' % (task.uid, ex))
-                                task.state = states.SCHEDULED
-                                transition(obj=task,
-                                           obj_type='Task',
-                                           new_state=states.SCHEDULED,
-                                           channel=mq_channel,
-                                           queue='%s-tmgr-to-sync' % self._sid,
-                                           profiler=local_prof,
-                                           logger=self._logger)
-                            else:
-                                self._logger.error('Task preparation for submission failed, error: %s' % ex)
+                            transition( obj=task,
+                                        obj_type='Task',
+                                        new_state=states.SUBMITTED,
+                                        channel=mq_channel,
+                                        queue='%s-tmgr-to-sync' % self._sid,
+                                        profiler=local_prof,
+                                        logger=self._logger)
+                            self._logger.info('Task %s submitted to RTS' % (task.uid))
 
-                            raise
+                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-                        try:
-
-                            umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
-                            self._logger.info('Task %s, %s; submitted to RTS' % (task.uid, task.state))
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTED,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-
-                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                        except Exception, ex:
-
-                            # Rollback and pass exception
-                            self._logger.error('Task %s submission failed, error: %s' % (task.uid, ex))
-                            task.state = states.SUBMITTING
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-                            raise
 
                 except Exception, ex:
-
-                    # Rollback and pass exception
-                    logger.error('Error in task execution')
+                    logger.exception('Error in task execution: %s'%ex)
                     raise
 
                 try:
@@ -429,13 +399,11 @@ class TaskManager(object):
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 except Exception, ex:
-
-                    logger.error('Failed to respond to heartbeat request, error: %s' % ex)
+                    logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
                     raise
 
             local_prof.prof('terminating tmgr process', uid=uid)
             self._mq_connection.close()
-            # umgr.unregister_callback(unit_state_cb)
             local_prof.close()
 
         except KeyboardInterrupt:

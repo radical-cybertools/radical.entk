@@ -11,7 +11,7 @@ if not os.environ.get('RADICAL_PILOT_DBURL'):
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = os.environ.get('RMQ_PORT',5672)
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def generate_pipeline():
     

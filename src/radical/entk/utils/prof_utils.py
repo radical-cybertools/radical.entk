@@ -220,3 +220,42 @@ def get_session_description(sid, src=None):
         raise Error(text='%s/%s does not exist' % (src, sid))
 
     return desc
+
+
+
+def write_workflow(workflow, uid):
+
+    try:
+        os.mkdir(uid)
+    except:
+        pass
+
+    data = list()
+    if os.path.isfile('%s/entk_workflow.json'%uid):
+        data = ru.read_json('%s/entk_workflow.json'%uid)
+
+    for pipe in workflow:                   
+
+        p = dict()
+        p['uid'] = pipe.uid
+        p['name'] = pipe.name
+        p['state_history'] = pipe.state_history
+        p['stages'] = list()
+
+        for stage in pipe.stages:
+
+            s = dict()
+            s['uid'] = stage.uid
+            s['name'] = stage.name
+            s['state_history'] = stage.state_history
+            s['tasks'] = list()
+
+            for task in stage.tasks:
+                s['tasks'].append(task.to_dict())
+
+            p['stages'].append(s)
+
+        data.append(p)
+    
+    ru.write_json(data, '%s/entk_workflow.json' % uid)
+

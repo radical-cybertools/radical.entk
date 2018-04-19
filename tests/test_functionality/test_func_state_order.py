@@ -4,7 +4,7 @@ from radical.entk.exceptions import *
 import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = os.environ.get('RMQ_PORT',5672)
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def test_state_order():
 
@@ -16,8 +16,7 @@ def test_state_order():
 
         t1 = Task()
         t1.name = 'simulation'
-        t1.executable = ['/bin/echo']
-        t1.arguments = ['hello']
+        t1.executable = ['/bin/date']
         t1.copy_input_data = []
         t1.copy_output_data = []
 
@@ -52,6 +51,8 @@ def test_state_order():
     appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
     appman.run()
+
+    print p1.state
 
     p_state_hist = p1.state_history
     assert p_state_hist == ['DESCRIBED', 'SCHEDULING', 'DONE']

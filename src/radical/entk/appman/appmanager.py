@@ -10,6 +10,7 @@ from radical.entk.task.task import Task
 from radical.entk.execman.resource_manager import ResourceManager
 from radical.entk.execman.task_manager import TaskManager
 from radical.entk.utils.prof_utils import write_session_description
+from radical.entk.utils.prof_utils import write_workflow
 from wfprocessor import WFprocessor
 import sys
 import time
@@ -42,27 +43,28 @@ class AppManager(object):
                  port=5672,
                  reattempts=3,
                  resubmit_failed=False,
-                 autoterminate=True):
+                 autoterminate=True,
+                 write_workflow=False):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
 
         # Create a folder for each session to hold EnTK profiles
         path = os.getcwd() + '/' + self._sid
-        if not os.path.exists(path):
-            os.makedirs(path)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         self._uid = ru.generate_id('appmanager.%(item_counter)04d',
-                                   ru.ID_CUSTOM,
-                                   namespace=self._sid)
+                                    ru.ID_CUSTOM,
+                                    namespace=self._sid)
         self._logger = ru.get_logger('radical.entk.%s' % self._uid,
-                                     path=path)
+                                    path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                 path=path)
-
+                                    path=path)
+        self._report = ru.LogReporter(name='radical.entk.%s' % self._uid)
+        self._report.info('EnTK session: %s\n'%self._sid)
         self._prof.prof('create amgr obj', uid=self._uid)
+        self._report.info('Creating AppManager')
 
         self._name = str()
 
@@ -90,13 +92,16 @@ class AppManager(object):
         self._reattempts = reattempts
         self._cur_attempt = 1
         self._resource_autoterminate = autoterminate
+        self._write_workflow = write_workflow
 
         # Check if RP Profiler is set
         self._rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
+        self._report.ok('>>ok\n')
 
+ 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -130,7 +135,7 @@ class AppManager(object):
         :getter: Returns the resource manager object being used
         :setter: Assigns a resource manager
         """
-
+    
         return self._resource_manager
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -153,6 +158,7 @@ class AppManager(object):
             raise TypeError(expected_type=ResourceManager,
                             actual_type=type(value))
         else:
+            self._report.info('Validating and assigning resource manager')
             self._resource_manager = value
 
             if self._resource_manager._validate_resource_desc(self._sid):
@@ -160,6 +166,8 @@ class AppManager(object):
             else:
                 self._logger.error('Could not validate resource description')
                 raise
+            self._report.ok('>>ok\n')
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -173,7 +181,7 @@ class AppManager(object):
         """
 
         self._prof.prof('assigning workflow', uid=self._uid)
-        self._workflow = workflow
+        self._workflow = workflow        
         self._logger.info('Workflow assigned to Application Manager')
 
     def run(self):
@@ -190,7 +198,7 @@ class AppManager(object):
             self._sync_thread = None
             self._end_sync = Event()
             self._resubmit_failed = False
-            self._cur_attempt = 1
+            self._cur_attempt = 1            
 
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please check your script')
@@ -208,6 +216,7 @@ class AppManager(object):
                 # Setup rabbitmq stuff
                 if not self._mqs_setup:
 
+                    self._report.info('Setting up RabbitMQ system')
                     self._logger.info('Setting up RabbitMQ system')
                     setup = self._setup_mqs()
 
@@ -216,6 +225,9 @@ class AppManager(object):
                         raise Error(text="RabbitMQ setup failed")
 
                     self._mqs_setup = True
+
+                    self._report.ok('>>ok\n')
+
 
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
@@ -255,6 +267,8 @@ class AppManager(object):
                 # Start WFprocessor
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()
+
+                self._report.ok('All components created\n')
 
                 # Create tmgr object only if it does not already exist
                 if not self._task_manager:
@@ -379,7 +393,11 @@ class AppManager(object):
                 if self._resource_autoterminate:
                     self.resource_terminate()
 
-                self._prof.prof('termination done', uid=self._uid)
+                if self._write_workflow:
+                    write_workflow(self._workflow, self._sid)
+
+
+                self._prof.prof('termination done', uid=self._uid)                
 
         except KeyboardInterrupt:
 
@@ -455,6 +473,10 @@ class AppManager(object):
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
 
+        self._cleanup_mqs()
+
+        self._report.info('All components terminated\n')
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
@@ -492,48 +514,36 @@ class AppManager(object):
                                                               )
 
             self._mq_channel = self._mq_connection.channel()
-
             self._logger.debug('Connection and channel setup successful')
-
             self._logger.debug('Setting up all exchanges and queues')
+
+            qs =    [
+                    '%s-tmgr-to-sync' % self._sid,
+                    '%s-cb-to-sync' % self._sid,
+                    '%s-enq-to-sync' % self._sid,
+                    '%s-deq-to-sync' % self._sid,
+                    '%s-sync-to-tmgr' % self._sid,
+                    '%s-sync-to-cb' % self._sid,
+                    '%s-sync-to-enq' % self._sid,
+                    '%s-sync-to-deq' % self._sid
+                ]
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
                 self._pending_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
-                # Durable Qs will not be lost if rabbitmq server crashes
-                self._mq_channel.queue_declare(queue=queue_name, durable=True)
+                qs.append(queue_name)
 
             for i in range(1, self._num_completed_qs + 1):
                 queue_name = '%s-completedq-%s' % (self._sid, i)
                 self._completed_queue.append(queue_name)
-                self._mq_channel.queue_delete(queue=queue_name)
+                qs.append(queue_name)
+
+            f = open('.%s.txt'%self._sid,'w')
+            for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
-                self._mq_channel.queue_declare(queue=queue_name, durable=True)
-
-            # self._mq_channel.queue_delete(queue='sync-to-master')
-            # self._mq_channel.queue_declare(queue='sync-to-master')
-
-            # Queues to send messages from the threads/procs to master
-            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-tmgr-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-cb-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-enq-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-deq-to-sync' % self._sid)
-
-            # Queues to send messages from master to threads/procs
-            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-tmgr' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-cb' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-enq' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
-            self._mq_channel.queue_declare(queue='%s-sync-to-deq' % self._sid)
-            # Durable Qs will not be lost if rabbitmq server crashes
+                self._mq_channel.queue_declare(queue=q, durable=True)
+                f.write(q + '\n')
+            f.close()
 
             self._logger.debug('All exchanges and queues are setup')
             self._prof.prof('mqs setup done', uid=self._uid)
@@ -544,6 +554,33 @@ class AppManager(object):
 
             self._logger.error('Error setting RabbitMQ system: %s' % ex)
             raise
+
+
+    def _cleanup_mqs(self):
+
+        try:
+
+            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
+            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
+
+            for i in range(1, self._num_pending_qs + 1):
+                queue_name = '%s-pendingq-%s' % (self._sid, i)
+                self._mq_channel.queue_delete(queue=queue_name)
+
+            for i in range(1, self._num_completed_qs + 1):
+                queue_name = '%s-completedq-%s' % (self._sid, i)
+                self._mq_channel.queue_delete(queue=queue_name)
+
+        except Exception as ex:
+            self._logger.exception('Message queues not deleted, error: %s'%ex)
+
+
 
     def _synchronizer(self):
         """
@@ -605,6 +642,8 @@ class AppManager(object):
                                                                 )
 
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                                self._report.ok('Update: ')
+                                                self._report.info('Task %s in state %s\n'%(task.uid, task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -641,6 +680,8 @@ class AppManager(object):
                                                         )
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                        self._report.ok('Update: ')
+                                        self._report.info('Stage %s in state %s\n'%(stage.uid, stage.state))
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
 
@@ -684,6 +725,8 @@ class AppManager(object):
                                 # and profiling
                                 if completed_pipeline.completed:
                                     pipe._completed_flag.set()
+                                self._report.ok('Update: ')
+                                self._report.info('Pipeline %s in state %s\n'%(pipe.uid, pipe.state))
 
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753

@@ -4,10 +4,10 @@ from radical.entk.exceptions import *
 import pytest
 import os
 
-hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = int(os.environ.get('RMQ_PORT',5672))
+hostname = 'two.radical-project.org'
+port = 33142
 
-def test_issue_26():
+def test_diff_rmq():
 
     def create_pipeline():
 
@@ -42,26 +42,9 @@ def test_issue_26():
 
     rman = ResourceManager(res_dict)
 
-    appman = AppManager(hostname=hostname, port=port,autoterminate=False)
+    appman = AppManager(hostname=hostname, port=port)
     appman.resource_manager = rman
     p1 = create_pipeline()
     print p1.uid, p1.stages[0].uid
     appman.assign_workflow(p1)
     appman.run()
-
-    p2 = create_pipeline()
-    print p2.uid, p2.stages[0].uid
-    appman.assign_workflow(p2)
-    appman.run()
-
-    appman.resource_terminate()
-
-    lhs = int(p1.stages[0].uid.split('.')[-1]) + 1 
-    rhs = int(p2.stages[0].uid.split('.')[-1])
-    assert lhs == rhs
-
-    for t in p1.stages[0].tasks:
-        for tt in p2.stages[0].tasks:
-            lhs = int(t.uid.split('.')[-1]) + 1 
-            rhs = int(tt.uid.split('.')[-1])
-            assert lhs == rhs
