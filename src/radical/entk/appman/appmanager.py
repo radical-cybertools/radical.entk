@@ -49,20 +49,20 @@ class AppManager(object):
 
         # Create a folder for each session to hold EnTK profiles
         path = os.getcwd() + '/' + self._sid
-        if not os.path.exists(path):
-            os.makedirs(path)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         self._uid = ru.generate_id('appmanager.%(item_counter)04d',
-                                   ru.ID_CUSTOM,
-                                   namespace=self._sid)
+                                    ru.ID_CUSTOM,
+                                    namespace=self._sid)
         self._logger = ru.get_logger('radical.entk.%s' % self._uid,
-                                     path=path)
+                                    path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                 path=path)
-
+                                    path=path)
+        self._report = ru.LogReporter(name='radical.entk.%s' % self._uid)
+        self._report.info('EnTK session: %s\n'%self._sid)
         self._prof.prof('create amgr obj', uid=self._uid)
+        self._report.info('Creating AppManager')
 
         self._name = str()
 
@@ -96,6 +96,7 @@ class AppManager(object):
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
+        self._report.ok('>>ok\n')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -153,6 +154,7 @@ class AppManager(object):
             raise TypeError(expected_type=ResourceManager,
                             actual_type=type(value))
         else:
+            self._report.info('Validating and assigning resource manager')
             self._resource_manager = value
 
             if self._resource_manager._validate_resource_desc(self._sid):
@@ -160,6 +162,7 @@ class AppManager(object):
             else:
                 self._logger.error('Could not validate resource description')
                 raise
+            self._report.ok('>>ok\n')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -190,7 +193,7 @@ class AppManager(object):
             self._sync_thread = None
             self._end_sync = Event()
             self._resubmit_failed = False
-            self._cur_attempt = 1
+            self._cur_attempt = 1            
 
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please check your script')
@@ -208,6 +211,7 @@ class AppManager(object):
                 # Setup rabbitmq stuff
                 if not self._mqs_setup:
 
+                    self._report.info('Setting up RabbitMQ system')
                     self._logger.info('Setting up RabbitMQ system')
                     setup = self._setup_mqs()
 
@@ -216,6 +220,9 @@ class AppManager(object):
                         raise Error(text="RabbitMQ setup failed")
 
                     self._mqs_setup = True
+
+                    self._report.ok('>>ok\n')
+
 
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
@@ -255,6 +262,8 @@ class AppManager(object):
                 # Start WFprocessor
                 self._logger.info('Starting WFProcessor process from AppManager')
                 self._wfp.start_processor()
+
+                self._report.ok('All components created\n')
 
                 # Create tmgr object only if it does not already exist
                 if not self._task_manager:
@@ -379,7 +388,7 @@ class AppManager(object):
                 if self._resource_autoterminate:
                     self.resource_terminate()
 
-                self._prof.prof('termination done', uid=self._uid)
+                self._prof.prof('termination done', uid=self._uid)                
 
         except KeyboardInterrupt:
 
@@ -456,6 +465,8 @@ class AppManager(object):
             write_session_description(self)
 
         self._cleanup_mqs()
+
+        self._report.info('All components terminated\n')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -622,6 +633,8 @@ class AppManager(object):
                                                                 )
 
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                                self._report.ok('Update: ')
+                                                self._report.info('Task %s in state %s\n'%(task.uid, task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -658,6 +671,8 @@ class AppManager(object):
                                                         )
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                        self._report.ok('Update: ')
+                                        self._report.info('Stage %s in state %s\n'%(stage.uid, stage.state))
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
 
@@ -701,6 +716,8 @@ class AppManager(object):
                                 # and profiling
                                 if completed_pipeline.completed:
                                     pipe._completed_flag.set()
+                                self._report.ok('Update: ')
+                                self._report.info('Pipeline %s in state %s\n'%(pipe.uid, pipe.state))
 
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753
