@@ -11,7 +11,8 @@ def test_initialization():
 
     amgr = Amgr()
 
-    assert 'radical.entk.appmanager.' in amgr._uid
+    assert len(amgr._uid.split('.'))==2
+    assert 'appmanager' == amgr._uid.split('.')[0]
     assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
     assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
     assert isinstance(amgr.name, str)

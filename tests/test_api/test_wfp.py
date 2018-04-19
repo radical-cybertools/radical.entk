@@ -27,7 +27,8 @@ def test_initialization(s, i, b, l):
                       port=567,
                       resubmit_failed=True)
 
-    assert 'radical.entk.wfprocessor' in wfp._uid
+    assert len(wfp._uid.split('.'))==2
+    assert 'wfprocessor' == wfp._uid.split('.')[0]
     assert wfp._pending_queue == ['pending']
     assert wfp._completed_queue == ['completed']
     assert wfp._mq_hostname == 'hostname'

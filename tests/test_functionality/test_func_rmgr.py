@@ -120,7 +120,7 @@ def test_resource_request():
 
     rm._submit_resource_request()
 
-    assert rm.pilot.state == rp.ACTIVE
+    assert rm.pilot.state == rp.PMGR_ACTIVE
 
     rm._cancel_resource_request()
 

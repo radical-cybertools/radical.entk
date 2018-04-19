@@ -163,14 +163,14 @@ class ResourceManager(object):
         :return: boolean (valid/invalid)
         """
 
-        self._uid = ru.generate_id('radical.entk.resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id('resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
         self._path = os.getcwd() + '/' + sid
 
-        self._logger = ru.get_logger(self._uid, path=self._path)
-        self._prof = ru.Profiler(name=self._uid, path=self._path)
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid, path=self._path)
 
         try:
-            
+
             self._prof.prof('validating rdesc', uid=self._uid)
 
             self._logger.debug('Validating resource description')
@@ -178,10 +178,10 @@ class ResourceManager(object):
             if not isinstance(self._resource_desc, dict):
                 raise TypeError(expected_type=dict, actual_type=type(self._resource_desc))
 
-            expected_keys = [   'resource',
-                                'walltime',
-                                'cores'
-                            ]
+            expected_keys = ['resource',
+                             'walltime',
+                             'cores'
+                             ]
 
             for key in expected_keys:
                 if key not in self._resource_desc:
@@ -197,8 +197,8 @@ class ResourceManager(object):
                 raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
 
             if 'project' in self._resource_desc:
-                if (not isinstance(self._resource_desc['project'],str)) and (not self._resource_desc['project']):
-                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))            
+                if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
+                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
 
             if 'access_schema' in self._resource_desc:
                 if not isinstance(self._resource_desc['access_schema'], str):
@@ -336,17 +336,18 @@ class ResourceManager(object):
             raise
 
     def _cancel_resource_request(self, download_rp_profile=False):
-
         """
         **Purpose**: Cancel the resource request
         """
 
         try:
 
-            self._prof.prof('canceling resource allocation', uid=self._uid)
-            self._pilot.cancel()
-            self._session.close(cleanup=False, download=download_rp_profile)
-            self._prof.prof('resource allocation cancelled', uid=self._uid)
+            if self._pilot:
+
+                self._prof.prof('canceling resource allocation', uid=self._uid)
+                self._pilot.cancel()
+                self._session.close(cleanup=False, download=download_rp_profile)
+                self._prof.prof('resource allocation cancelled', uid=self._uid)
 
         except KeyboardInterrupt:
 

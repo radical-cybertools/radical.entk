@@ -40,23 +40,20 @@ class WFprocessor(object):
                  port,
                  resubmit_failed):
 
-
         if isinstance(sid, str):
             self._sid = sid
         else:
             raise TypeError(expected_type=str, actual_type=type(sid))
 
-        self._uid = ru.generate_id('radical.entk.wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
-        self._logger = ru.get_logger(self._uid, path=self._path)
-        self._prof = ru.Profiler(name=self._uid + '-obj', path=self._path)
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
 
         self._workflow = workflow
-        self._validate_workflow()
-
 
         if not isinstance(pending_queue, list):
             raise TypeError(expected_type=list, actual_type=type(pending_queue))
@@ -79,12 +76,11 @@ class WFprocessor(object):
         self._resubmit_failed = resubmit_failed
 
         self._wfp_process = None
-        
+
         self._logger.info('Created WFProcessor object: %s' % self._uid)
 
         self._prof.prof('wfp obj created', uid=self._uid)
 
-        
     # ------------------------------------------------------------------------------------------------------------------
     # Getter
     # ------------------------------------------------------------------------------------------------------------------
@@ -115,13 +111,14 @@ class WFprocessor(object):
                 else:
                     self._workflow = set(self._workflow)
 
-            for item in self._workflow:
-                if not isinstance(item, Pipeline):
+            for p in self._workflow:
+                if not isinstance(p, Pipeline):
                     self._logger.info('workflow type incorrect')
                     raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
-                                    actual_type=type(item))
+                                    actual_type=type(p))
 
-                item._validate()
+                p._assign_uid(self._sid)
+                p._initialize(self._sid)
 
             self._prof.prof('workflow validated', uid=self._uid)
 
@@ -142,7 +139,7 @@ class WFprocessor(object):
 
         try:
 
-            local_prof = ru.Profiler(name=self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-proc', path=self._path)
 
             local_prof.prof('wfp process started', uid=self._uid)
 
@@ -270,6 +267,15 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
+                '''
+                We iterate through all pipelines to collect tasks from 
+                stages that are pending scheduling. Once collected, these tasks
+                will be communicated to the tmgr in bulk.
+                '''
+
+                workload = []
+                scheduled_stages = []
+
                 for pipe in self._workflow:
 
                     with pipe._stage_lock:
@@ -287,18 +293,13 @@ class WFprocessor(object):
                                            obj_type='Pipeline',
                                            new_state=states.SCHEDULING,
                                            channel=mq_channel,
-                                           queue='%s-enq-to-sync'%self._sid,
+                                           queue='%s-enq-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=self._logger)
 
-                            if pipe.stages[pipe.current_stage - 1].state in [states.INITIAL, states.SCHEDULED]:
+                            executable_stage = pipe.stages[pipe.current_stage - 1]
 
-
-                                try:
-
-                                    # Starting scheduling of tasks of current stage, so set state of stage to
-                                    # SCHEDULING
-                                    executable_stage = pipe.stages[pipe.current_stage - 1]
+                            if executable_stage.state in [states.INITIAL, states.SCHEDULED]:                           
 
                                     if executable_stage.state == states.INITIAL:
 
@@ -306,118 +307,73 @@ class WFprocessor(object):
                                                    obj_type='Stage',
                                                    new_state=states.SCHEDULING,
                                                    channel=mq_channel,
-                                                   queue='%s-enq-to-sync'%self._sid,
+                                                   queue='%s-enq-to-sync' % self._sid,
                                                    profiler=local_prof,
                                                    logger=self._logger)
 
                                     executable_tasks = executable_stage.tasks
-
+                                    
                                     for executable_task in executable_tasks:
 
-                                        if self._resubmit_failed:
-
-                                            if executable_task.state in [states.INITIAL, states.FAILED]:
-
-                                                # Set state of Tasks in current Stage to SCHEDULING
-                                                transition(obj=executable_task,
-                                                           obj_type='Task',
-                                                           new_state=states.SCHEDULING,
-                                                           channel=mq_channel,
-                                                           queue='%s-enq-to-sync'%self._sid,
-                                                           profiler=local_prof,
-                                                           logger=self._logger)
-
-                                                task_as_dict = json.dumps(executable_task.to_dict())
-
-                                                self._logger.debug('Publishing task %s to %s'
-                                                                   % (executable_task.uid,
-                                                                      self._pending_queue[0]))
-
-                                                # Put the task on one of the pending_queues
-                                                mq_channel.basic_publish(exchange='',
-                                                                         routing_key=self._pending_queue[0],
-                                                                         body=task_as_dict
-                                                                         # properties=pika.BasicProperties(
-                                                                         # make message persistent
-                                                                         # delivery_mode = 2)
-                                                                         )
-
-                                                # Set state of Tasks in current Stage to SCHEDULED
-                                                transition(obj=executable_task,
-                                                           obj_type='Task',
-                                                           new_state=states.SCHEDULED,
-                                                           channel=mq_channel,
-                                                           queue='%s-enq-to-sync'%self._sid,
-                                                           profiler=local_prof,
-                                                           logger=self._logger)
-
-                                                tasks_submitted = True
-                                                self._logger.debug('Task %s published to queue' % executable_task.uid)
-
-                                        if executable_task.state == states.INITIAL:
+                                        if (executable_task.state==states.INITIAL)or \
+                                            ((executable_task.state==states.FAILED)and(self._resubmit_failed)):
 
                                             # Set state of Tasks in current Stage to SCHEDULING
-                                            transition(obj=executable_task,
-                                                       obj_type='Task',
-                                                       new_state=states.SCHEDULING,
-                                                       channel=mq_channel,
-                                                       queue='%s-enq-to-sync'%self._sid,
-                                                       profiler=local_prof,
-                                                       logger=self._logger)
+                                            transition( obj=executable_task,
+                                                        obj_type='Task',
+                                                        new_state=states.SCHEDULING,
+                                                        channel=mq_channel,
+                                                        queue='%s-enq-to-sync' % self._sid,
+                                                        profiler=local_prof,
+                                                        logger=self._logger)
 
-                                            task_as_dict = json.dumps(executable_task.to_dict())
+                                            # task_as_dict = json.dumps(executable_task.to_dict())
+                                            workload.append(executable_task)
 
-                                            self._logger.debug('Publishing task %s to %s'
-                                                               % (executable_task.uid,
-                                                                  self._pending_queue[0]))
+                                            if executable_stage not in scheduled_stages:
+                                                scheduled_stages.append(executable_stage)
 
-                                            # Put the task on one of the pending_queues
-                                            mq_channel.basic_publish(exchange='',
-                                                                     routing_key=self._pending_queue[0],
-                                                                     body=task_as_dict
-                                                                     # properties=pika.BasicProperties(
-                                                                     # make message persistent
-                                                                     # delivery_mode = 2)
-                                                                     )
+                if workload:
 
-                                            # Set state of Tasks in current Stage to SCHEDULED
-                                            transition(obj=executable_task,
-                                                       obj_type='Task',
-                                                       new_state=states.SCHEDULED,
-                                                       channel=mq_channel,
-                                                       queue='%s-enq-to-sync'%self._sid,
-                                                       profiler=local_prof,
-                                                       logger=self._logger)
+                    # Put the task on one of the pending_queues
+                    workload_as_dict = list()
+                    for task in workload:
+                        workload_as_dict.append(task.to_dict())
+                    workload_as_dict = json.dumps(workload_as_dict)
 
-                                            self._logger.debug('Task %s published to queue' % executable_task.uid)
+                    mq_channel.basic_publish(exchange='',
+                                            routing_key=self._pending_queue[0],
+                                            body=workload_as_dict
+                                            # properties=pika.BasicProperties(
+                                            # make message persistent
+                                            # delivery_mode = 2)
+                                        )
 
-                                    if executable_stage.state == states.SCHEDULING:
-                                        # All tasks of current stage scheduled, so set state of stage to
-                                        # SCHEDULED
-                                        transition(obj=executable_stage,
-                                                   obj_type='Stage',
-                                                   new_state=states.SCHEDULED,
-                                                   channel=mq_channel,
-                                                   queue='%s-enq-to-sync'%self._sid,
-                                                   profiler=local_prof,
-                                                   logger=self._logger)
-                                except Exception, ex:
+                    for task in workload:
 
-                                    # If there is an error, explicitly switching the state of Stage to INITIAL
-                                    self._logger.error('Error while updating stage ' +
-                                                       'state, rolling back. Error: %s' % ex)
+                        # Set state of Tasks in current Stage to SCHEDULED
+                        transition( obj=task,
+                                    obj_type='Task',
+                                    new_state=states.SCHEDULED,
+                                    channel=mq_channel,
+                                    queue='%s-enq-to-sync' % self._sid,
+                                    profiler=local_prof,
+                                    logger=self._logger)
 
-                                    executable_stage = pipe.stages[pipe.current_stage - 1]
+                        self._logger.debug('Task %s published to pending queue' % task.uid)
 
-                                    transition(obj=executable_stage,
-                                               obj_type='Stage',
-                                               new_state=states.INITIAL,
-                                               channel=mq_channel,
-                                               queue='%s-enq-to-sync'%self._sid,
-                                               profiler=local_prof,
-                                               logger=self._logger)
 
-                                    raise
+                if scheduled_stages:
+                    for executable_stage in scheduled_stages:
+                        
+                        transition( obj=executable_stage,
+                                    obj_type='Stage',
+                                    new_state=states.SCHEDULED,
+                                    channel=mq_channel,
+                                    queue='%s-enq-to-sync' % self._sid,
+                                    profiler=local_prof,
+                                    logger=self._logger)
+
 
             self._logger.info('Enqueue thread terminated')
             self._mq_connection.close()
@@ -478,7 +434,7 @@ class WFprocessor(object):
                     if body:
 
                         # Get task from the message
-                        completed_task = Task(duplicate=True)
+                        completed_task = Task()
                         completed_task.from_dict(json.loads(body))
                         self._logger.info('Got finished task %s from queue' % (completed_task.uid))
 
@@ -486,7 +442,7 @@ class WFprocessor(object):
                                    obj_type='Task',
                                    new_state=states.DEQUEUEING,
                                    channel=mq_channel,
-                                   queue='%s-deq-to-sync'%self._sid,
+                                   queue='%s-deq-to-sync' % self._sid,
                                    profiler=local_prof,
                                    logger=self._logger)
 
@@ -497,20 +453,20 @@ class WFprocessor(object):
 
                                 if not pipe.completed:
 
-                                    if completed_task.parent_pipeline == pipe.uid:
+                                    if completed_task.parent_pipeline['uid'] == pipe.uid:
 
                                         self._logger.debug('Found parent pipeline: %s' % pipe.uid)
 
                                         for stage in pipe.stages:
 
-                                            if completed_task.parent_stage == stage.uid:
+                                            if completed_task.parent_stage['uid'] == stage.uid:
                                                 self._logger.debug('Found parent stage: %s' % (stage.uid))
 
                                                 transition(obj=completed_task,
                                                            obj_type='Task',
                                                            new_state=states.DEQUEUED,
                                                            channel=mq_channel,
-                                                           queue='%s-deq-to-sync'%self._sid,
+                                                           queue='%s-deq-to-sync' % self._sid,
                                                            profiler=local_prof,
                                                            logger=self._logger)
 
@@ -531,7 +487,7 @@ class WFprocessor(object):
                                                                    obj_type='Task',
                                                                    new_state=task.state,
                                                                    channel=mq_channel,
-                                                                   queue='%s-deq-to-sync'%self._sid,
+                                                                   queue='%s-deq-to-sync' % self._sid,
                                                                    profiler=local_prof,
                                                                    logger=self._logger)
 
@@ -541,7 +497,7 @@ class WFprocessor(object):
                                                                        obj_type='Stage',
                                                                        new_state=states.DONE,
                                                                        channel=mq_channel,
-                                                                       queue='%s-deq-to-sync'%self._sid,
+                                                                       queue='%s-deq-to-sync' % self._sid,
                                                                        profiler=local_prof,
                                                                        logger=self._logger)
 
@@ -553,7 +509,7 @@ class WFprocessor(object):
                                                                            obj_type='Pipeline',
                                                                            new_state=states.DONE,
                                                                            channel=mq_channel,
-                                                                           queue='%s-deq-to-sync'%self._sid,
+                                                                           queue='%s-deq-to-sync' % self._sid,
                                                                            profiler=local_prof,
                                                                            logger=self._logger)
 
@@ -681,6 +637,5 @@ class WFprocessor(object):
         """
         **Purpose**: Method to check if the wfp process is alive
         """
-
-        return self._wfp_process.is_alive()
-
+        if self._wfp_process:
+            return self._wfp_process.is_alive()

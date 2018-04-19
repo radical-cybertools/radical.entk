@@ -1,5 +1,6 @@
 import radical.utils as _ru
 import os
+from prof_utils import *
 
 _pwd   = os.path.dirname (__file__)
 _root  = "%s/.." % _pwd

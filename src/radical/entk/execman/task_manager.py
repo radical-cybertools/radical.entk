@@ -46,11 +46,11 @@ class TaskManager(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(sid))
 
-        self._uid = ru.generate_id('radical.entk.task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
-        self._logger = ru.get_logger(self._uid, path=self._path)
-        self._prof = ru.Profiler(name=self._uid + '-obj', path=self._path)
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
         self._prof.prof('create tmgr obj', uid=self._uid)
 
@@ -121,8 +121,8 @@ class TaskManager(object):
                                                               )
 
             channel = self._mq_connection.channel()
-            channel.queue_delete(queue='%s-heartbeat-req'%self._sid)
-            channel.queue_declare(queue='%s-heartbeat-req'%self._sid)
+            channel.queue_delete(queue='%s-heartbeat-req' % self._sid)
+            channel.queue_declare(queue='%s-heartbeat-req' % self._sid)
             response = True
 
             while (response and (not self._hb_alive.is_set())):
@@ -131,9 +131,9 @@ class TaskManager(object):
 
                 # Heartbeat request signal sent to task manager via rpc-queue
                 channel.basic_publish(exchange='',
-                                      routing_key='%s-heartbeat-req'%self._sid,
+                                      routing_key='%s-heartbeat-req' % self._sid,
                                       properties=pika.BasicProperties(
-                                          reply_to='%s-heartbeat-res'%self._sid,
+                                          reply_to='%s-heartbeat-res' % self._sid,
                                           correlation_id=corr_id),
                                       body='request')
 
@@ -142,7 +142,7 @@ class TaskManager(object):
                 # Ten second interval for heartbeat request to be responded to
                 time.sleep(10)
 
-                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res'%self._sid)
+                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res' % self._sid)
 
                 if body:
                     if corr_id == props.correlation_id:
@@ -185,7 +185,7 @@ class TaskManager(object):
 
         try:
 
-            local_prof = ru.Profiler(name=self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-proc', path=self._path)
 
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
@@ -194,8 +194,8 @@ class TaskManager(object):
 
             def load_placeholder(task):
 
-                parent_pipeline = str(task.parent_pipeline)
-                parent_stage = str(task.parent_stage)
+                parent_pipeline = str(task.parent_pipeline['name'])
+                parent_stage = str(task.parent_stage['name'])
 
                 if parent_pipeline not in placeholder_dict:
                     placeholder_dict[parent_pipeline] = dict()
@@ -203,7 +203,8 @@ class TaskManager(object):
                 if parent_stage not in placeholder_dict[parent_pipeline]:
                     placeholder_dict[parent_pipeline][parent_stage] = dict()
 
-                placeholder_dict[parent_pipeline][parent_stage][str(task.uid)] = str(task.path)
+                if None not in [parent_pipeline, parent_stage, task.name]:
+                    placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
 
             def unit_state_cb(unit, state):
 
@@ -225,7 +226,7 @@ class TaskManager(object):
                                                                       )
                     mq_channel = self._mq_connection.channel()
 
-                    if unit.state in [rp.DONE, rp.FAILED]:
+                    if unit.state in rp.FINAL:
 
                         try:
 
@@ -236,7 +237,7 @@ class TaskManager(object):
                                        obj_type='Task',
                                        new_state=states.COMPLETED,
                                        channel=mq_channel,
-                                       queue='%s-cb-to-sync'%self._sid,
+                                       queue='%s-cb-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=logger)
 
@@ -253,7 +254,7 @@ class TaskManager(object):
                                            obj_type='Task',
                                            new_state=states.SCHEDULED,
                                            channel=mq_channel,
-                                           queue='%s-cb-to-sync'%self._sid,
+                                           queue='%s-cb-to-sync' % self._sid,
                                            profiler=local_prof,
                                            logger=logger)
                             else:
@@ -265,7 +266,7 @@ class TaskManager(object):
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1'%self._sid,
+                                                 routing_key='%s-completedq-1' % self._sid,
                                                  body=task_as_dict
                                                  # properties=pika.BasicProperties(
                                                  # make message persistent
@@ -313,8 +314,8 @@ class TaskManager(object):
             mq_channel = self._mq_connection.channel()
 
             # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_delete(queue='%s-heartbeat-res'%self._sid)
-            mq_channel.queue_declare(queue='%s-heartbeat-res'%self._sid)
+            mq_channel.queue_delete(queue='%s-heartbeat-res' % self._sid)
+            mq_channel.queue_declare(queue='%s-heartbeat-res' % self._sid)
 
             '''
             # Function to be invoked upon request message
@@ -342,85 +343,55 @@ class TaskManager(object):
 
                     if body:
 
-                        try:
+                        body = json.loads(body)
+                        bulk_tasks = list()
+                        bulk_cuds = list()
 
-                            task = None
-                            task = Task(duplicate=True)
-                            task.from_dict(json.loads(body))
+                        for task in body:
+                            t = Task()
+                            t.from_dict(task)                                
+                            bulk_tasks.append(t)
+                            bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
-                            transition(obj=task,
+                            transition(obj=t,
                                        obj_type='Task',
                                        new_state=states.SUBMITTING,
                                        channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
+                                       queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
 
-                        except Exception, ex:
+                        umgr.submit_units(bulk_cuds)
+                        
+                        for task in bulk_tasks:
 
-                            # Rollback and pass exception
-                            if task:
-                                self._logger.error(
-                                    'Task %s preparation for submission failed, error: %s' % (task.uid, ex))
-                                task.state = states.SCHEDULED
-                                transition(obj=task,
-                                           obj_type='Task',
-                                           new_state=states.SCHEDULED,
-                                           channel=mq_channel,
-                                           queue='%s-tmgr-to-sync'%self._sid,
-                                           profiler=local_prof,
-                                           logger=self._logger)
-                            else:
-                                self._logger.error('Task preparation for submission failed, error: %s' % ex)
+                            transition( obj=task,
+                                        obj_type='Task',
+                                        new_state=states.SUBMITTED,
+                                        channel=mq_channel,
+                                        queue='%s-tmgr-to-sync' % self._sid,
+                                        profiler=local_prof,
+                                        logger=self._logger)
+                            self._logger.info('Task %s submitted to RTS' % (task.uid))
 
-                            raise
+                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-                        try:
-
-                            umgr.submit_units(create_cud_from_task(task, placeholder_dict, local_prof))
-                            self._logger.info('Task %s, %s; submitted to RTS' % (task.uid, task.state))
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTED,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-
-                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                        except Exception, ex:
-
-                            # Rollback and pass exception
-                            self._logger.error('Task %s submission failed, error: %s' % (task.uid, ex))
-                            task.state = states.SUBMITTING
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync'%self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-                            raise
 
                 except Exception, ex:
-
-                    # Rollback and pass exception
-                    logger.error('Error in task execution')
+                    logger.exception('Error in task execution: %s'%ex)
                     raise
 
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req'%self._sid)
+                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req' % self._sid)
 
                     if body:
 
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-heartbeat-res'%self._sid,
+                                                 routing_key='%s-heartbeat-res' % self._sid,
                                                  properties=pika.BasicProperties(correlation_id=props.correlation_id),
                                                  body='response')
 
@@ -428,13 +399,11 @@ class TaskManager(object):
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 except Exception, ex:
-
-                    logger.error('Failed to respond to heartbeat request, error: %s' % ex)
+                    logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
                     raise
 
             local_prof.prof('terminating tmgr process', uid=uid)
             self._mq_connection.close()
-            # umgr.unregister_callback(unit_state_cb)
             local_prof.close()
 
         except KeyboardInterrupt:

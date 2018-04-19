@@ -1,18 +1,19 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
-import pytest
+from radical.entk import Pipeline, Stage, Task, ResourceManager, AppManager
+from radical.entk import states
 from radical.entk.exceptions import *
+import pytest
 import os
 
-hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = int(os.environ.get('RMQ_PORT',5672))
+hostname = 'two.radical-project.org'
+port = 33142
 
-def test_integration_local():
+def test_diff_rmq():
 
-    """
-    **Purpose**: Run an EnTK application on localhost
-    """
+    def create_pipeline():
 
-    def create_single_task():
+        p = Pipeline()
+
+        s = Stage()
 
         t1 = Task()
         t1.name = 'simulation'
@@ -21,17 +22,12 @@ def test_integration_local():
         t1.copy_input_data = []
         t1.copy_output_data = []
 
-        return t1
+        s.add_tasks(t1)
 
-    p1 = Pipeline()
-    p1.name = 'p1'
+        p.add_stages(s)
 
-    s = Stage()
-    s.name = 's1'
-    s.tasks = create_single_task()
-    s.add_tasks(create_single_task())
-
-    p1.add_stages(s)
+        return p
+    
 
     res_dict = {
 
@@ -48,5 +44,7 @@ def test_integration_local():
 
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_manager = rman
-    appman.assign_workflow(set([p1]))
+    p1 = create_pipeline()
+    print p1.uid, p1.stages[0].uid
+    appman.assign_workflow(p1)
     appman.run()
