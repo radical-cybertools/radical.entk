@@ -97,10 +97,7 @@ class AppManager(object):
         self._prof.prof('amgr obj created', uid=self._uid)
 
         # json data 
-
         self._data = {}
-        self._data['pipelines'] = [] 
-        self._data['dictionary'] = []
  
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -178,16 +175,15 @@ class AppManager(object):
         """
 
         self._prof.prof('assigning workflow', uid=self._uid)
-        self._workflow = workflow
-       
-        pipelines = list(self._workflow)
-        self._data['pipelines'].append({'Total pipeline(s)': len(pipelines)})
+        self._workflow = workflow        
+        self._logger.info('Workflow assigned to Application Manager')
 
-        for i in range(len(pipelines)):
-            pipeline = pipelines[i]
-            stages = list(pipeline.stages)
+ 
+    def write_workflow(self):
 
-            self._data['pipelines'].append( {'pipeline name'  : pipeline.name,
+        for pipe in self._workflow:                   
+
+            self._data['pipeline'].append( {'pipeline name'  : pipeline.name,
                                              'pipeline uid'   : pipeline.uid,
                                              'stages': len(stages)
                                             })
@@ -207,9 +203,8 @@ class AppManager(object):
                                                     'task uid': tasks[k].uid})
                      
         ru.write_json(self._data, 'entk_%s.json' % self._uid)
-        self._logger.info('Workflow assigned to Application Manager')
 
- 
+
     def run(self):
         """
         **Purpose**: Run the application manager. Once the workflow and resource manager have been assigned. Invoking this
@@ -240,7 +235,6 @@ class AppManager(object):
                 ru.write_json(self._data['resource dictionary'], 'entk_%s.json' % self._uid)
 
                 self._prof.prof('amgr run started', uid=self._uid)
-                self._resource_manager
 
                 # Setup rabbitmq stuff
                 if not self._mqs_setup:
