@@ -250,3 +250,10 @@ setup_args = {
 }
 
 setup (**setup_args)
+
+
+'''
+To publish to pypi:
+python setup.py sdist
+twine upload --skip-existing dist/<tarball name>
+'''

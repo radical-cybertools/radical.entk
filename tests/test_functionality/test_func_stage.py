@@ -106,3 +106,89 @@ def test_check_stage_complete():
     assert s._check_stage_complete() == False
     s._set_tasks_state(states.DONE)
     assert s._check_stage_complete() == True
+
+
+def test_from_dict():
+    s1 = Stage()
+    s1.name = ['test']
+    s1._assign_uid('s1')
+    p = Pipeline()
+    p.add_stages(s1)
+    p._assign_uid('p1')
+    p._pass_uid()
+
+    stage_dict = s1.to_dict()
+    s2 = Stage()
+    s2.from_dict(stage_dict)
+
+    assert s1.uid == s2.uid
+    assert s1.name == s2.name
+    assert s1.state == s2.state
+    assert s1.state_history == s2.state_history
+    assert s1.parent_pipeline == s2.parent_pipeline
+
+
+def test_to_dict():
+    s = Stage()
+    s.name = ['test']
+    s._assign_uid('s1')
+    p = Pipeline()
+    p.add_stages(s)
+    p._assign_uid('p1')
+    p._pass_uid()
+
+    stage_dict = s.to_dict()
+    assert stage_dict['uid'] == s.uid
+    assert stage_dict['name'] == s.name
+    assert stage_dict['state'] == s.state
+    assert stage_dict['state_history'] == s.state_history
+    assert stage_dict['parent_pipeline'] == s.parent_pipeline
+
+@given(s=st.text(), l=st.lists(st.text()), i=st.integers().filter(lambda x: type(x) == int), b=st.booleans())
+def test_task_from_dict_exceptions(s,l,i,b):
+    ## Check exceptions
+
+    s = Stage()
+    s.name = ['test']
+    s._assign_uid('s1')
+    p = Pipeline()
+    p.add_stages(s)
+    p._assign_uid('p1')
+    p._pass_uid()
+
+    stage_dict = s.to_dict()
+    
+    data_type = [s,l,i,b]
+
+    for data in data_type:
+
+        stage_dict_copy = stage_dict
+
+        if not isinstance(data,str):
+
+            stage_dict_copy['uid'] = data
+            s1 = Stage()
+            with pytest.raises(TypeError):
+                s1.from_dict(stage_dict_copy)
+
+            stage_dict_copy['name'] = data
+            s1 = Stage()
+            with pytest.raises(TypeError):
+                s1.from_dict(stage_dict_copy)
+
+            stage_dict_copy['state'] = data
+            s1 = Stage()
+            with pytest.raises(TypeError):
+                s1.from_dict(stage_dict_copy)
+
+            task_dict_copy['state_history'] = data
+            s1 = Stage()
+            with pytest.raises(TypeError):
+                s1.from_dict(stage_dict_copy)
+
+            task_dict_copy['parent_pipeline'] = data
+            s1 = Stage()
+            with pytest.raises(TypeError):
+                s1.from_dict(stage_dict_copy)
+
+        

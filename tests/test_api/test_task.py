@@ -58,6 +58,15 @@ def test_task_exceptions(s,l,i,b):
             with pytest.raises(TypeError):
                 t.name = data
 
+            with pytest.raises(TypeError):
+                t.path = data
+
+            with pytest.raises(TypeError):
+                t.parent_stage = data
+
+            with pytest.raises(TypeError):
+                t.parent_pipeline = data
+
         if not isinstance(data,list):
 
             with pytest.raises(TypeError):
@@ -85,7 +94,7 @@ def test_task_exceptions(s,l,i,b):
                 t.copy_output_data = data
 
             with pytest.raises(TypeError):
-                t.download_output_data = data
+                t.download_output_data = data            
 
         if not isinstance(data, bool):
 

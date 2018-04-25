@@ -2,6 +2,8 @@ from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
+from hypothesis import given
+import hypothesis.strategies as st
 
 def test_task_to_dict():
 
@@ -64,6 +66,8 @@ def test_task_from_dict():
     t1.copy_output_data     = ['copy_output.dat']
     t1.download_output_data = ['download_output.dat']
 
+    t1._assign_uid('sid')
+
     p = Pipeline()
     s = Stage()
     s.tasks = t1
@@ -87,3 +91,127 @@ def test_task_from_dict():
     assert task_dict['link_input_data']         == t2.link_input_data
     assert task_dict['copy_output_data']        == t2.copy_output_data
     assert task_dict['download_output_data']    == t2.download_output_data
+    assert task_dict['exit_code']               == t2.exit_code
+    assert task_dict['path']                    == t2.path
+    assert task_dict['parent_stage']            == t2.parent_stage
+    assert task_dict['parent_pipeline']         == t2.parent_pipeline
+
+
+@given(s=st.text(), l=st.lists(st.text()), i=st.integers().filter(lambda x: type(x) == int), b=st.booleans())
+def test_task_from_dict_exceptions(s,l,i,b):
+    ## Check exceptions
+
+    t = Task()
+    t.name = 'simulation'
+    t.pre_exec = ['module load gromacs']
+    t.executable = ['grompp']
+    t.arguments = ['hello']
+    t.cores = 4
+    t.mpi = True
+    t.post_exec = ['echo test']
+    
+    t.upload_input_data    = ['upload_input.dat']
+    t.copy_input_data      = ['copy_input.dat']
+    t.link_input_data      = ['link_input.dat']
+    t.copy_output_data     = ['copy_output.dat']
+    t.download_output_data = ['download_output.dat']
+
+    t._assign_uid('sid')
+
+    task_dict = t.to_dict()
+    
+    data_type = [s,l,i,b]
+
+    for data in data_type:
+
+        task_dict_copy = task_dict
+
+        if not isinstance(data,str):
+            task_dict_copy['state'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy)
+
+            task_dict_copy['path'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy)
+
+            task_dict_copy['parent_stage'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['parent_pipeline'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy)
+
+        if not isinstance(data, list):
+            task_dict_copy['state_history'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['pre_exec'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['executable'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['arguments'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['post_exec'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['upload_input_data'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['copy_input_data'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['link_input_data'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy)
+
+            task_dict_copy['copy_output_data'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['download_output_data'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['cores'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+            task_dict_copy['exit_code'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+        if not isinstance(data, bool):
+            task_dict_copy['mpi'] = data
+            t1 = Task()
+            with pytest.raises(TypeError):
+                t1.from_dict(task_dict_copy) 
+
+

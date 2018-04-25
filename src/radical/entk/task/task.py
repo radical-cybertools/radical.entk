@@ -552,16 +552,16 @@ class Task(object):
                     raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
 
         if 'parent_stage' in d:
-            if isinstance(d['parent_stage'], dict):
+            if isinstance(d['parent_stage'], str):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
+                raise TypeError(entity='parent_stage', expected_type=str, actual_type=type(d['parent_stage']))
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], dict):
+            if isinstance(d['parent_pipeline'], str):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
