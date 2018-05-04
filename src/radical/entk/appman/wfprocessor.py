@@ -501,6 +501,32 @@ class WFprocessor(object):
                                                                        profiler=local_prof,
                                                                        logger=self._logger)
 
+                                                            ## Check if Stage has a post-exec that needs to be
+                                                            ## executed                                           
+
+                                                            if stage.post_exec:
+
+                                                                try:
+
+                                                                    self._logger.info('Executing post-exec for stage %s'%stage.uid)
+                                                                    self._prof.prof('executing post-exec for stage %s'%stage.uid, uid=self._uid)
+
+                                                                    func_condition = stage.post_exec['condition']
+                                                                    func_on_true = stage.post_exec['on_true']
+                                                                    func_on_false = stage.post_exec['on_false']
+                                                                    if func_condition():
+                                                                        func_on_true()
+                                                                    else:
+                                                                        func_on_false()                     
+
+                                                                    self._logger.info('Post-exec executed for stage %s'%stage.uid)                 
+                                                                    self._prof.prof('post-exec executed for stage %s'%stage.uid, uid=self._uid)
+
+                                                                except Exception, ex:
+                                                                    self._logger.exception('Execution failed in post_exec of stage %s'%stage.uid)
+                                                                    raise
+
+
                                                             pipe._increment_stage()
 
                                                             if pipe.completed:

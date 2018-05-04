@@ -91,3 +91,8 @@ docs/_build/
 # pypi files
 ./src/radical.entk.egg-info
 ./dist
+
+# local RE files
+.re.*
+./.hypothesis/
+./.pytest_cache/

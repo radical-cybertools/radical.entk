@@ -95,6 +95,29 @@ class Stage(object):
 
         return self._state_history
 
+
+    @property
+    def post_exec(self):
+
+        '''
+        The post_exec property enables adaptivity in EnTK. A function, func_1,
+        is evaluated to produce a boolean result. Function func_2 is executed
+        if the result is True and func_3 is executed if the result is False.
+        Following is the expected structure:
+        self._post_exec = {
+                            'condition' : func_1,
+                            'on_true'   : {
+                                            'operation' : 'skip',
+                                            'operand'   : 2
+                                        },
+                            'on_false'  : {
+                                            'operation' : 'append',
+                                            'operand'   : Stage
+                                        }                            
+                        }
+        '''
+        return self._post_exec
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -125,6 +148,57 @@ class Stage(object):
             self._state_history.append(value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
+
+    @post_exec.setter
+    def post_exec(self, val):
+
+        if isinstance(val, dict):
+            self._post_exec = val            
+        else:
+            raise TypeError(expected_type=dict, actual_type=type(val))  
+
+
+        if set(['condition', 'on_true', 'on_false']) != set(val.keys()):
+            raise ValueError(   obj=self._uid, 
+                                attribute='post_exec', 
+                                expected_value="'condition', 'on_true', 'on_false'",
+                                actual_value='%s'%val.keys())
+
+
+        condition   = self._post_exec['condition']
+        on_true     = self._post_exec['on_true']
+        on_false    = self._post_exec['on_false']
+
+        import types
+
+        if not isinstance(condition, types.FunctionType):
+
+            raise TypeError(entity='stage %s branch'%self._uid, 
+                            expected_type=types.FunctionType, 
+                            actual_type=type(condition)
+                        )
+
+        self._condition = condition
+
+
+        if not isinstance(on_true, types.FunctionType):
+
+            raise TypeError(entity='stage %s on_true'%self._uid, 
+                            expected_type=types.FunctionType, 
+                            actual_type=type(on_true)
+                        )
+
+        self._on_true = on_true
+
+
+        if not isinstance(on_false, types.FunctionType):
+
+            raise TypeError(entity='stage %s on_false'%self._uid, 
+                            expected_type=types.FunctionType, 
+                            actual_type=type(on_false)
+                        )
+
+        self._on_false = on_false
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
