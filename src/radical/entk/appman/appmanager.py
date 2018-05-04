@@ -57,11 +57,11 @@ class AppManager(object):
         self._uid = ru.generate_id('appmanager.%(item_counter)04d',
                                     ru.ID_CUSTOM,
                                     namespace=self._sid)
-        self._logger = ru.get_logger('radical.entk.%s' % self._uid,
+        self._logger = ru.Logger('radical.entk.%s' % self._uid,
                                     path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
                                     path=path)
-        self._report = ru.LogReporter(name='radical.entk.%s' % self._uid)
+        self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
         self._report.info('EnTK session: %s\n'%self._sid)
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')

@@ -166,7 +166,7 @@ class ResourceManager(object):
         self._uid = ru.generate_id('resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
         self._path = os.getcwd() + '/' + sid
 
-        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._logger = ru.Logger('radical.entk.%s'%self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s'%self._uid, path=self._path)
 
         try:
