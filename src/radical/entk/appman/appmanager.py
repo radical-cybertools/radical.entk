@@ -607,6 +607,8 @@ class AppManager(object):
                 completed_task.from_dict(msg['object'])
                 self._logger.info('Received %s with state %s' % (completed_task.uid, completed_task.state))
 
+                found_task = False
+
                 # Traverse the entire workflow to find the correct task
                 for pipe in self._workflow:
 
@@ -644,6 +646,38 @@ class AppManager(object):
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                                 self._report.ok('Update: ')
                                                 self._report.info('Task %s in state %s\n'%(task.uid, task.state))
+
+                                                found_task = True
+
+                                        if not found_task:
+
+                                            # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
+                                            # means that this was a Stage that was added during runtime and the AppManager does not 
+                                            # know about it. The current solution is going to be: add it to the workflow object in the 
+                                            # AppManager via the synchronizer.
+
+                                            self._prof.prof('adding new task %s'%(completed_task.uid))
+
+                                            self._logger.info('Adding new task %s to parent stage: %s'%(completed_task.uid, 
+                                                                                                    stage.uid))
+
+                                            stage.add_tasks(completed_task)
+                                            mq_channel.basic_publish(   exchange='',
+                                                                        routing_key=reply_to,
+                                                                        properties=pika.BasicProperties(
+                                                                        correlation_id = corr_id),
+                                                                        body='%s-ack'%completed_task.uid)
+
+
+                                            self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                            msg['object']['state'], 
+                                                                            uid=msg['object']['uid']
+                                                                        )
+
+                                            mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+                                            self._report.ok('Update: ')
+                                            self._report.info('Task %s in state %s\n'%(completed_task.uid, completed_task.state))
+
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -688,32 +722,32 @@ class AppManager(object):
                                         found_stage = True
 
 
-                                        if not found_stage:
+                                if not found_stage:
 
-                                            # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                            # means that this was a Stage that was added during runtime and the AppManager does not 
-                                            # know about it. The current solution is going to be: add it to the workflow object in the 
-                                            # AppManager via the synchronizer.
+                                    # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
+                                    # means that this was a Stage that was added during runtime and the AppManager does not 
+                                    # know about it. The current solution is going to be: add it to the workflow object in the 
+                                    # AppManager via the synchronizer.
 
-                                            self._prof.prof('adding new stage %s'%(completed_stage.uid))
+                                    self._prof.prof('adding new stage %s'%(completed_stage.uid))
 
-                                            self._logger.info('Adding new stage %s to parent pipeline: %s'%(completed_stage.uid, 
-                                                                                                    pipe.uid))
+                                    self._logger.info('Adding new stage %s to parent pipeline: %s'%(completed_stage.uid, 
+                                                                                            pipe.uid))
 
-                                            pipe.add_stages(completed_stage)
-                                            mq_channel.basic_publish(   exchange='',
-                                                                        routing_key=reply_to,
-                                                                        properties=pika.BasicProperties(
-                                                                        correlation_id = corr_id),
-                                                                        body='%s-ack'%completed_stage.uid)
+                                    pipe.add_stages(completed_stage)
+                                    mq_channel.basic_publish(   exchange='',
+                                                                routing_key=reply_to,
+                                                                properties=pika.BasicProperties(
+                                                                correlation_id = corr_id),
+                                                                body='%s-ack'%completed_stage.uid)
 
 
-                                            self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                            msg['object']['state'], 
-                                                                            uid=msg['object']['uid']
-                                                                        )
+                                    self._prof.prof('publishing sync ack for obj with state %s'%
+                                                                    msg['object']['state'], 
+                                                                    uid=msg['object']['uid']
+                                                                )
 
-                                            mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+                                    mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
 
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
@@ -799,6 +833,9 @@ class AppManager(object):
                     self._prof.prof('received obj with state %s for sync' %
                                     msg['object']['state'], uid=msg['object']['uid'])
 
+                    self._logger.debug('received %s with state %s for sync' %
+                                    (msg['object']['uid'], msg['object']['state']))
+
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
 
@@ -825,6 +862,9 @@ class AppManager(object):
                     self._prof.prof('received obj with state %s for sync' %
                                     msg['object']['state'], uid=msg['object']['uid'])
 
+                    self._logger.debug('received %s with state %s for sync' %
+                                    (msg['object']['uid'], msg['object']['state']))
+
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
 
@@ -840,6 +880,9 @@ class AppManager(object):
 
                     self._prof.prof('received obj with state %s for sync' %
                                     msg['object']['state'], uid=msg['object']['uid'])
+
+                    self._logger.debug('received %s with state %s for sync' %
+                                    (msg['object']['uid'], msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
@@ -862,6 +905,9 @@ class AppManager(object):
                     self._prof.prof('received obj with state %s for sync' %
                                     msg['object']['state'], uid=msg['object']['uid'])
 
+                    self._logger.debug('received %s with state %s for sync' %
+                                    (msg['object']['uid'], msg['object']['state']))
+
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
 
@@ -873,6 +919,8 @@ class AppManager(object):
                 #-------------------------------------------------------------------------------------------------------
 
             self._prof.prof('terminating synchronizer', uid=self._uid)
+
+            print 'return sync'
 
         except KeyboardInterrupt:
 

@@ -299,6 +299,14 @@ class WFprocessor(object):
 
                             executable_stage = pipe.stages[pipe.current_stage - 1]
 
+                            if not executable_stage.uid:
+                                executable_stage.parent_pipeline['uid'] = pipe.uid
+                                executable_stage.parent_pipeline['name'] = pipe.name
+                                executable_stage._assign_uid(self._sid)
+                                print 'Enqueuer: ', executable_stage.uid
+                                executable_stage._initialize(self._sid)
+                                executable_stage._pass_uid()
+
                             if executable_stage.state in [states.INITIAL, states.SCHEDULED]:                           
 
                                     if executable_stage.state == states.INITIAL:
@@ -312,7 +320,7 @@ class WFprocessor(object):
                                                    logger=self._logger)
 
                                     executable_tasks = executable_stage.tasks
-                                    
+                                 
                                     for executable_task in executable_tasks:
 
                                         if (executable_task.state==states.INITIAL)or \
@@ -517,7 +525,10 @@ class WFprocessor(object):
                                                                     if func_condition():
                                                                         func_on_true()
                                                                     else:
-                                                                        func_on_false()                     
+                                                                        func_on_false()  
+
+                                                                    for s in pipe.stages:
+                                                                        print s.uid           
 
                                                                     self._logger.info('Post-exec executed for stage %s'%stage.uid)                 
                                                                     self._prof.prof('post-exec executed for stage %s'%stage.uid, uid=self._uid)
@@ -526,9 +537,8 @@ class WFprocessor(object):
                                                                     self._logger.exception('Execution failed in post_exec of stage %s'%stage.uid)
                                                                     raise
 
-
                                                             pipe._increment_stage()
-
+                                                        
                                                             if pipe.completed:
 
                                                                 transition(obj=pipe,
