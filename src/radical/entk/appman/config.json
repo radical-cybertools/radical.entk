@@ -1,0 +1,21 @@
+{    
+    // AppManager defaults
+    "AppManager": {
+                    "hostname": "localhost",
+                    "port": 5672,
+                    "reattempts": 3,
+                    "resubmit_failed": false,
+                    "autoterminate": true,
+                    "write_workflow": false
+                },
+
+    //WFProcessor defaults
+    "WFProcessor": {},
+
+    // TaskManager defaults
+    "TaskManager": {},
+
+    // ResourceManager defaults
+    "ResourceManager": {}
+
+}

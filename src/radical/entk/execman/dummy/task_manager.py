@@ -18,15 +18,15 @@ import os
 import radical.pilot as rp
 from task_processor import create_cud_from_task, create_task_from_cu
 import uuid
+from ..base.task_manager import TaskManager
 
 
-class TaskManager(object):
+class Dummy_TaskManager(TaskManager):
 
     """
-    A Task Manager takes the responsibility of dispatching tasks it receives from a queue for execution on to 
-    the available resources using a runtime system. In this case, the runtime system being used RADICAL Pilot. Once 
-    the tasks have completed execution, they are pushed on to another queue for other components of EnTK to access.
-
+    A Task Manager takes the responsibility of dispatching tasks it receives from a pending_queue for execution on to 
+    the available resources using a runtime system. Once the tasks have completed execution, they are pushed on to 
+    the completed_queue for other components of EnTK to process.
 
     :arguments:
         :pending_queue: List of queue(s) with tasks ready to be executed. Currently, only one queue.
@@ -41,52 +41,20 @@ class TaskManager(object):
 
     def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
 
-        if isinstance(sid, str):
-            self._sid = sid
-        else:
-            raise TypeError(expected_type=str, actual_type=type(sid))
+
+        super(Dummy_TaskManager, self).__init__(   sid, 
+                                                pending_queue, 
+                                                completed_queue, 
+                                                mq_hostname, 
+                                                port,
+                                                rts_type='dummy')
 
         self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-
         self._logger = ru.Logger('radical.entk.%s'%self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
-        self._prof.prof('create tmgr obj', uid=self._uid)
-
-        if isinstance(pending_queue, list):
-            self._pending_queue = pending_queue
-        else:
-            raise TypeError(expected_type=str, actual_type=type(pending_queue))
-
-        if isinstance(completed_queue, list):
-            self._completed_queue = completed_queue
-        else:
-            raise TypeError(expected_type=str, actual_type=type(completed_queue))
-
-        if isinstance(mq_hostname, str):
-            self._mq_hostname = mq_hostname
-        else:
-            raise TypeError(expected_type=str, actual_type=type(mq_hostname))
-
-        if isinstance(port, int):
-            self._port = port
-        else:
-            raise TypeError(expected_type=int, actual_type=type(port))
-
-        if isinstance(rmgr, ResourceManager):
-            self._rmgr = rmgr
-        else:
-            raise TypeError(expected_type=ResourceManager, actual_type=type(rmgr))
-
-        self._tmgr_process = None
-        self._tmgr_terminate = None
-        self._hb_thread = None
-        self._hb_alive = None
-        self._umgr = None
-
         self._logger.info('Created task manager object: %s' % self._uid)
-
         self._prof.prof('tmgr obj created', uid=self._uid)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -167,7 +135,7 @@ class TaskManager(object):
 
             self._prof.prof('terminating heartbeat thread', uid=self._uid)
 
-    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
+    def _tmgr(self, uid, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
         """
         **Purpose**: Method to be run by the tmgr process. This method receives a Task from the pending_queue
         and submits it to the RTS. Currently, it also converts Tasks into CUDs and CUs into (partially described) Tasks.
@@ -205,100 +173,7 @@ class TaskManager(object):
 
                 if None not in [parent_pipeline, parent_stage, task.name]:
                     placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
-
-            def unit_state_cb(unit, state):
-
-                try:
-
-                    logger.debug('Unit %s in state %s' % (unit.uid, unit.state))
-
-                    # Thread should run till terminate condtion is encountered
-                    if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port,
-                                                                                                heartbeat=0
-                                                                                                )
-                                                                      )
-                    else:
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port
-                                                                                                )
-                                                                      )
-                    mq_channel = self._mq_connection.channel()
-
-                    if unit.state in rp.FINAL:
-
-                        try:
-
-                            task = None
-                            task = create_task_from_cu(unit, local_prof)
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.COMPLETED,
-                                       channel=mq_channel,
-                                       queue='%s-cb-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=logger)
-
-                            load_placeholder(task)
-
-                        except Exception, ex:
-
-                            # Rollback and pass exception
-                            if task:
-                                self._logger.error('Task %s creation for completed cu %s failed, error: %s' %
-                                                   (task.uid, unit.uid, ex))
-                                task.state = states.SCHEDULED
-                                transition(obj=task,
-                                           obj_type='Task',
-                                           new_state=states.SCHEDULED,
-                                           channel=mq_channel,
-                                           queue='%s-cb-to-sync' % self._sid,
-                                           profiler=local_prof,
-                                           logger=logger)
-                            else:
-                                self._logger.error(
-                                    'Task creation from completed cu %s failed, error: %s' % (unit.uid, ex))
-
-                            raise
-
-                        task_as_dict = json.dumps(task.to_dict())
-
-                        mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1' % self._sid,
-                                                 body=task_as_dict
-                                                 # properties=pika.BasicProperties(
-                                                 # make message persistent
-                                                 #    delivery_mode = 2,
-                                                 #)
-                                                 )
-
-                        logger.info('Pushed task %s with state %s to completed queue %s' % (
-                            task.uid,
-                            task.state,
-                            completed_queue[0])
-                        )
-
-                    self._mq_connection.close()
-
-                except KeyboardInterrupt:
-                    self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                                       'trying to exit callback thread gracefully...')
-
-                    raise KeyboardInterrupt
-
-                except Exception, ex:
-
-                    self._logger.error('Error in RP callback thread: %s' % ex)
-                    print traceback.format_exc()
-                    # raise      # Not necessary to raise the callback thread, we don't want RP to react
-
-            if not umgr:
-                umgr = rp.UnitManager(session=rmgr._session)
-                umgr.add_pilots(rmgr.pilot)
-                umgr.register_callback(unit_state_cb)
-
+       
             # Thread should run till terminate condtion is encountered
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
@@ -316,22 +191,6 @@ class TaskManager(object):
             # To respond to heartbeat - get request from rpc_queue
             mq_channel.queue_delete(queue='%s-heartbeat-res' % self._sid)
             mq_channel.queue_declare(queue='%s-heartbeat-res' % self._sid)
-
-            '''
-            # Function to be invoked upon request message
-            def on_request(ch, method, props, body):
-
-                self._logger.info('Received heartbeat request')
-
-                ch.basic_publish(   exchange='',
-                                    routing_key=props.reply_to,
-                                    properties=pika.BasicProperties(correlation_id = props.correlation_id),
-                                    body='response')
-
-                self._logger.info('Sent heartbeat response')
-
-                ch.basic_ack(delivery_tag = method.delivery_tag)
-            '''
 
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
@@ -351,7 +210,6 @@ class TaskManager(object):
                             t = Task()
                             t.from_dict(task)                                
                             bulk_tasks.append(t)
-                            bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
                             transition(obj=t,
                                        obj_type='Task',
@@ -360,9 +218,7 @@ class TaskManager(object):
                                        queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
-
-                        umgr.submit_units(bulk_cuds)
-                        
+                       
                         for task in bulk_tasks:
 
                             transition( obj=task,
@@ -377,9 +233,32 @@ class TaskManager(object):
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
 
-                except Exception, ex:
-                    logger.exception('Error in task execution: %s'%ex)
-                    raise
+                        for task in bulk_tasks:
+
+                            transition(obj=task,
+                                       obj_type='Task',
+                                       new_state=states.COMPLETED,
+                                       channel=mq_channel,
+                                       queue='%s-cb-to-sync' % self._sid,
+                                       profiler=local_prof,
+                                       logger=logger)
+
+                            task_as_dict = json.dumps(task.to_dict())
+
+                            mq_channel.basic_publish(exchange='',
+                                                     routing_key='%s-completedq-1' % self._sid,
+                                                     body=task_as_dict
+                                                     # properties=pika.BasicProperties(
+                                                     # make message persistent
+                                                     #    delivery_mode = 2,
+                                                     #)
+                                                     )
+
+                            logger.info('Pushed task %s with state %s to completed queue %s' % (
+                                task.uid,
+                                task.state,
+                                completed_queue[0])
+                            )
 
                 try:
 
@@ -450,7 +329,7 @@ class TaskManager(object):
         else:
             self._logger.warn('Heartbeat thread already running, but attempted to restart!')
 
-    def end_heartbeat(self):
+    def terminate_heartbeat(self):
         """
         **Purpose**: Method to terminate the heartbeat thread. This method is 
         blocking as it waits for the heartbeat thread to terminate (aka join).
@@ -522,7 +401,7 @@ class TaskManager(object):
         else:
             self._logger.warn('tmgr process already running, but attempted to restart!')
 
-    def end_manager(self):
+    def terminate_manager(self):
         """
         **Purpose**: Method to terminate the tmgr process. This method is 
         blocking as it waits for the tmgr process to terminate (aka join).
@@ -546,7 +425,7 @@ class TaskManager(object):
             self._logger.error('Could not terminate task manager process')
             raise
 
-    def check_alive(self):
+    def check_tmgr(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """

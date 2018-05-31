@@ -55,14 +55,14 @@ class AppManager(object):
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         self._uid = ru.generate_id('appmanager.%(item_counter)04d',
-                                    ru.ID_CUSTOM,
-                                    namespace=self._sid)
+                                   ru.ID_CUSTOM,
+                                   namespace=self._sid)
         self._logger = ru.Logger('radical.entk.%s' % self._uid,
-                                    path=path)
+                                 path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                    path=path)
+                                 path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
-        self._report.info('EnTK session: %s\n'%self._sid)
+        self._report.info('EnTK session: %s\n' % self._sid)
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')
 
@@ -101,7 +101,6 @@ class AppManager(object):
         self._prof.prof('amgr obj created', uid=self._uid)
         self._report.ok('>>ok\n')
 
- 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -135,7 +134,7 @@ class AppManager(object):
         :getter: Returns the resource manager object being used
         :setter: Assigns a resource manager
         """
-    
+
         return self._resource_manager
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -168,7 +167,6 @@ class AppManager(object):
                 raise
             self._report.ok('>>ok\n')
 
-
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
@@ -181,7 +179,7 @@ class AppManager(object):
         """
 
         self._prof.prof('assigning workflow', uid=self._uid)
-        self._workflow = workflow        
+        self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
 
     def run(self):
@@ -198,7 +196,7 @@ class AppManager(object):
             self._sync_thread = None
             self._end_sync = Event()
             self._resubmit_failed = False
-            self._cur_attempt = 1            
+            self._cur_attempt = 1
 
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please check your script')
@@ -217,7 +215,6 @@ class AppManager(object):
                 if not self._mqs_setup:
 
                     self._report.info('Setting up RabbitMQ system')
-                    self._logger.info('Setting up RabbitMQ system')
                     setup = self._setup_mqs()
 
                     if not setup:
@@ -227,7 +224,6 @@ class AppManager(object):
                     self._mqs_setup = True
 
                     self._report.ok('>>ok\n')
-
 
                 # Create WFProcessor object
                 self._prof.prof('creating wfp obj', uid=self._uid)
@@ -317,7 +313,7 @@ class AppManager(object):
 
                         self._cur_attempt += 1
 
-                    if (not self._wfp.check_alive()) and (self._cur_attempt <= self._reattempts):
+                    if (not self._wfp.check_wfp()) and (self._cur_attempt <= self._reattempts):
 
                         """
                         If WFP dies, both child threads are also cleaned out.
@@ -340,7 +336,7 @@ class AppManager(object):
 
                         self._cur_attempt += 1
 
-                    if (not self._task_manager.check_alive()) and (self._cur_attempt <= self._reattempts):
+                    if (not self._task_manager.check_tmgr()) and (self._cur_attempt <= self._reattempts):
 
                         """
                         If the tmgr process dies, we simply start a new process
@@ -383,7 +379,7 @@ class AppManager(object):
 
                 # Terminate threads in following order: wfp, helper, synchronizer
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
                 self._logger.info('Terminating synchronizer thread')
                 self._end_sync.set()
@@ -396,8 +392,7 @@ class AppManager(object):
                 if self._write_workflow:
                     write_workflow(self._workflow, self._sid)
 
-
-                self._prof.prof('termination done', uid=self._uid)                
+                self._prof.prof('termination done', uid=self._uid)
 
         except KeyboardInterrupt:
 
@@ -409,12 +404,12 @@ class AppManager(object):
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
-                self._task_manager.end_manager()
-                self._task_manager.end_heartbeat()
+                self._task_manager.terminate_manager()
+                self._task_manager.terminate_heartbeat()
 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')
@@ -440,12 +435,12 @@ class AppManager(object):
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
-                self._task_manager.end_manager()
-                self._task_manager.end_heartbeat()
+                self._task_manager.terminate_manager()
+                self._task_manager.terminate_heartbeat()
 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')
@@ -464,8 +459,8 @@ class AppManager(object):
 
         if self._task_manager:
             self._logger.info('Terminating task manager process')
-            self._task_manager.end_manager()
-            self._task_manager.end_heartbeat()
+            self._task_manager.terminate_manager()
+            self._task_manager.terminate_heartbeat()
 
         if self._resource_manager:
             self._resource_manager._cancel_resource_request(self._rp_profile)
@@ -517,16 +512,16 @@ class AppManager(object):
             self._logger.debug('Connection and channel setup successful')
             self._logger.debug('Setting up all exchanges and queues')
 
-            qs =    [
-                    '%s-tmgr-to-sync' % self._sid,
-                    '%s-cb-to-sync' % self._sid,
-                    '%s-enq-to-sync' % self._sid,
-                    '%s-deq-to-sync' % self._sid,
-                    '%s-sync-to-tmgr' % self._sid,
-                    '%s-sync-to-cb' % self._sid,
-                    '%s-sync-to-enq' % self._sid,
-                    '%s-sync-to-deq' % self._sid
-                ]
+            qs = [
+                '%s-tmgr-to-sync' % self._sid,
+                '%s-cb-to-sync' % self._sid,
+                '%s-enq-to-sync' % self._sid,
+                '%s-deq-to-sync' % self._sid,
+                '%s-sync-to-tmgr' % self._sid,
+                '%s-sync-to-cb' % self._sid,
+                '%s-sync-to-enq' % self._sid,
+                '%s-sync-to-deq' % self._sid
+            ]
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
@@ -538,7 +533,7 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-            f = open('.%s.txt'%self._sid,'w')
+            f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 self._mq_channel.queue_declare(queue=q, durable=True)
@@ -554,7 +549,6 @@ class AppManager(object):
 
             self._logger.error('Error setting RabbitMQ system: %s' % ex)
             raise
-
 
     def _cleanup_mqs(self):
 
@@ -578,9 +572,7 @@ class AppManager(object):
                 self._mq_channel.queue_delete(queue=queue_name)
 
         except Exception as ex:
-            self._logger.exception('Message queues not deleted, error: %s'%ex)
-
-
+            self._logger.exception('Message queues not deleted, error: %s' % ex)
 
     def _synchronizer(self):
         """
@@ -643,7 +635,7 @@ class AppManager(object):
 
                                                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                                 self._report.ok('Update: ')
-                                                self._report.info('Task %s in state %s\n'%(task.uid, task.state))
+                                                self._report.info('Task %s in state %s\n' % (task.uid, task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -681,7 +673,7 @@ class AppManager(object):
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                         self._report.ok('Update: ')
-                                        self._report.info('Stage %s in state %s\n'%(stage.uid, stage.state))
+                                        self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
 
@@ -726,7 +718,7 @@ class AppManager(object):
                                 if completed_pipeline.completed:
                                     pipe._completed_flag.set()
                                 self._report.ok('Update: ')
-                                self._report.info('Pipeline %s in state %s\n'%(pipe.uid, pipe.state))
+                                self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
 
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753
