@@ -6,10 +6,10 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import radical.pilot as rp
 import os
-from ..base.resource_manager import ResourceManager
+from ..base.resource_manager import Base_ResourceManager
 
 
-class RP_ResourceManager(ResourceManager):
+class ResourceManager(Base_ResourceManager):
 
     """
     A resource manager takes the responsibility of placing resource requests on 
@@ -27,18 +27,18 @@ class RP_ResourceManager(ResourceManager):
                                 }
     """
 
-    def __init__(self, resource_desc):
+    def __init__(self, resource_desc, sid):      
 
-        self._resource_desc = resource_desc
-        super(RP_ResourceManager, self).__init__(resource_desc=resource_desc,
-                                                 rts_type='radical.pilot')
+        super(ResourceManager, self).__init__(  resource_desc=resource_desc,
+                                                sid=sid,
+                                                rts='radical.pilot')
+
 
         # RP specific parameters
         self._session = None
         self._pmgr = None
         self._pilot = None
         self._download_rp_profile = False
-        self._sid = None
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
@@ -277,7 +277,8 @@ class RP_ResourceManager(ResourceManager):
 
                 self._prof.prof('canceling resource allocation', uid=self._uid)
                 self._pilot.cancel()
-                self._session.close(cleanup=False, download=self._download_rp_profile)
+                download_rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
+                self._session.close(cleanup=False, download=download_rp_profile)
                 self._prof.prof('resource allocation cancelled', uid=self._uid)
 
         except KeyboardInterrupt:

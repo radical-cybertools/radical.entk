@@ -13,9 +13,9 @@ import pika
 import traceback
 import os
 import uuid
+from resource_manager import Base_ResourceManager
 
-
-class TaskManager(object):
+class Base_TaskManager(object):
 
     """
     A Task Manager takes the responsibility of dispatching tasks it receives from a pending_queue for execution on to 
@@ -33,7 +33,8 @@ class TaskManager(object):
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
-    def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port, rts_type):
+    def __init__(self, sid, pending_queue, completed_queue,
+                 rmgr, mq_hostname, port, rts):
 
         if isinstance(sid, str):
             self._sid = sid
@@ -60,18 +61,18 @@ class TaskManager(object):
         else:
             raise TypeError(expected_type=int, actual_type=type(port))
 
-        if isinstance(rmgr, ResourceManager):
+        if isinstance(rmgr, Base_ResourceManager):
             self._rmgr = rmgr
         else:
             raise TypeError(expected_type=ResourceManager, actual_type=type(rmgr))
 
-        self._rts_type = rts_type
+        self._rts = rts
 
         # Utility parameters
-        self._uid = None
-        self._path = None
-        self._logger = None
-        self._prof = None
+        self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._path = os.getcwd() + '/' + self._sid
+        self._logger = ru.get_logger('radical.entk.%s' % self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
         self._tmgr_process = None
         self._tmgr_terminate = None
@@ -125,7 +126,7 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='start_heartbeat() method ' +
-                                        'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     def terminate_heartbeat(self):
         """
@@ -137,7 +138,7 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='terminate_heartbeat() method ' +
-                                        'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     def start_manager(self):
         """
@@ -147,7 +148,7 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='start_manager() method ' +
-                                        'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     def terminate_manager(self):
         """
@@ -156,7 +157,7 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='terminate_manager() method ' +
-                                        'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     def check_tmgr(self):
         """
@@ -164,7 +165,7 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='check_tmgr() method ' +
-                                    'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     def check_heartbeat(self):
         """
@@ -172,6 +173,6 @@ class TaskManager(object):
         """
 
         raise NotImplementedError(msg='check_heartbeat() method ' +
-                                        'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts_type)
 
     # ------------------------------------------------------------------------------------------------------------------

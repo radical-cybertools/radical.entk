@@ -6,9 +6,9 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import radical.pilot as rp
 import os
-from ..base.resource_manager import ResourceManager
+from ..base.resource_manager import Base_ResourceManager
 
-class Dummy_ResourceManager(ResourceManager):
+class ResourceManager(Base_ResourceManager):
 
     """
     A resource manager takes the responsibility of placing resource requests on 
@@ -26,11 +26,11 @@ class Dummy_ResourceManager(ResourceManager):
                                 }
     """
 
-    def __init__(self, resource_desc={}):
+    def __init__(self, sid, resource_desc={}):
 
-        self._resource_desc = resource_desc
-        super(RP_ResourceManager, self).__init__(resource_desc=resource_desc,
-                                                 rts_type='dummy')
+        super(ResourceManager, self).__init__(  resource_desc=resource_desc,
+                                                sid=sid,
+                                                rts='dummy')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods

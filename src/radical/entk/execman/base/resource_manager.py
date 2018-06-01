@@ -8,7 +8,7 @@ import radical.pilot as rp
 import os
 
 
-class ResourceManager(object):
+class Base_ResourceManager(object):
 
     """
     A resource manager takes the responsibility of placing resource requests on 
@@ -25,14 +25,15 @@ class ResourceManager(object):
                                 }
     """
 
-    def __init__(self, resource_desc, rts_type):
+    def __init__(self, resource_desc, sid, rts):
 
         if not isinstance(resource_desc, dict):
             raise TypeError(expected_type=dict, actual_type=type(resource_desc))
 
         self._resource_desc = resource_desc
-        self._rts_type = rts_type
-
+        self._sid = sid
+        self._rts = rts
+        
         # Resource reservation related parameters
         self._resource = None
         self._walltime = None
@@ -42,9 +43,12 @@ class ResourceManager(object):
         self._queue = None
 
         # Utility parameters
-        self._uid = None
-        self._logger = None
-        self._prof = None
+        self._uid = ru.generate_id( 'resource_manager.%(item_counter)04d', 
+                                    ru.ID_CUSTOM, 
+                                    namespace=self._sid)
+        self._path = os.getcwd() + '/' + self._sid
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid, path=self._path)
 
         # Shared data list
         self._shared_data = list()

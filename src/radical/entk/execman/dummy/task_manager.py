@@ -8,20 +8,16 @@ import threading
 from multiprocessing import Process, Event
 import Queue
 from radical.entk import states, Task
-from radical.entk.execman.resource_manager import ResourceManager
-from radical.entk.utils.init_transition import transition
 import time
 import json
 import pika
 import traceback
 import os
-import radical.pilot as rp
-from task_processor import create_cud_from_task, create_task_from_cu
 import uuid
-from ..base.task_manager import TaskManager
+from ..base.task_manager import Base_TaskManager
 
 
-class Dummy_TaskManager(TaskManager):
+class TaskManager(Base_TaskManager):
 
     """
     A Task Manager takes the responsibility of dispatching tasks it receives from a pending_queue for execution on to 
@@ -42,17 +38,13 @@ class Dummy_TaskManager(TaskManager):
     def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
 
 
-        super(Dummy_TaskManager, self).__init__(   sid, 
-                                                pending_queue, 
-                                                completed_queue, 
-                                                mq_hostname, 
-                                                port,
-                                                rts_type='dummy')
-
-        self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s'%self._uid, path=self._path)
-        self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
+        super(TaskManager, self).__init__(  sid, 
+                                            pending_queue, 
+                                            completed_queue, 
+                                            rmgr,
+                                            mq_hostname, 
+                                            port,
+                                            rts='dummy')      
 
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)
@@ -259,6 +251,8 @@ class Dummy_TaskManager(TaskManager):
                                 task.state,
                                 completed_queue[0])
                             )
+                except:
+                    pass
 
                 try:
 

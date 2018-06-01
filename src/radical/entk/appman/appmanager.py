@@ -7,8 +7,6 @@ from radical.entk.exceptions import *
 from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
-from radical.entk.execman.resource_manager import ResourceManager
-from radical.entk.execman.task_manager import TaskManager
 from radical.entk.utils.prof_utils import write_session_description
 from radical.entk.utils.prof_utils import write_workflow
 from wfprocessor import WFprocessor
@@ -17,9 +15,7 @@ import time
 import os
 import Queue
 import pika
-import json
 from threading import Thread, Event
-import traceback
 from radical.entk import states
 
 
@@ -38,68 +34,58 @@ class AppManager(object):
         :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
     """
 
-    def __init__(self,
-                 hostname='localhost',
-                 port=5672,
-                 reattempts=3,
-                 resubmit_failed=False,
-                 autoterminate=True,
-                 write_workflow=False):
+    def __init__(self, config_path = None):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
-
-        # Create a folder for each session to hold EnTK profiles
-        path = os.getcwd() + '/' + self._sid
+        self._read_config(config_path)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
-        self._uid = ru.generate_id('appmanager.%(item_counter)04d',
-                                   ru.ID_CUSTOM,
-                                   namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid,
-                                 path=path)
-        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                 path=path)
+        path = os.getcwd() + '/' + self._sid
+        self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
+        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
+
         self._report.info('EnTK session: %s\n' % self._sid)
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')
 
         self._name = str()
 
-        # RabbitMQ inits
-        self._mq_hostname = hostname
-        self._port = port
-
         # RabbitMQ Queues
-        self._num_pending_qs = 1
-        self._num_completed_qs = 1
         self._pending_queue = list()
         self._completed_queue = list()
 
-        # Threads and procs counts
-        self._num_push_threads = 1
-        self._num_pull_threads = 1
-        self._num_sync_threads = 1
-
         # Global parameters to have default values
         self._mqs_setup = False
-        self._resource_manager = None
+        self._resource_desc = None
         self._task_manager = None
         self._workflow = None
-        self._resubmit_failed = resubmit_failed
-        self._reattempts = reattempts
-        self._cur_attempt = 1
-        self._resource_autoterminate = autoterminate
-        self._write_workflow = write_workflow
-
-        # Check if RP Profiler is set
-        self._rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
+        self._cur_attempt = 1      
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
         self._report.ok('>>ok\n')
+
+    def _read_config(self, config_path):
+
+        if not config_path:
+            config_path = os.dirname(os.path.abspath(__file__))
+
+        config = ru.read_json(config_path + 'config.json')['AppManager']
+
+        self._hostname = config['hostname'],
+        self._port = config['port'],
+        self._reattempts = config['reattempts'],
+        self._resubmit_failed = config['resubmit_failed'],
+        self._autoterminate = config['autoterminate'],
+        self._write_workflow = config['write_workflow'],
+        self._rts_type = config['rts']
+        self._num_pending_qs = config['pending_qs']
+        self._num_completed_qs = config['completed_qs']
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -129,13 +115,13 @@ class AppManager(object):
         return self._sid
 
     @property
-    def resource_manager(self):
+    def resource_desc(self):
         """
-        :getter: Returns the resource manager object being used
-        :setter: Assigns a resource manager
+        :getter: Returns the resource description
+        :setter: Assigns a resource description
         """
 
-        return self._resource_manager
+        return self._resource_desc
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
@@ -150,22 +136,26 @@ class AppManager(object):
         else:
             self._name = value
 
-    @resource_manager.setter
-    def resource_manager(self, value):
+    @resource_desc.setter
+    def resource_desc(self, value):
 
-        if not isinstance(value, ResourceManager):
-            raise TypeError(expected_type=ResourceManager,
-                            actual_type=type(value))
+        if self._rts_type == 'radical.pilot':
+            from radical.entk.execman.rp import ResourceManager
+        elif self._rts_type == 'dummy':
+            from radical.entk.execman.dummy import ResourceManager
+
+        self._report.info('Validating and assigning resource manager')
+        self._resource_manager = ResourceManager(value)
+
+        self._report.info('Validating and assigning resource manager')
+        self._resource_manager = value
+
+        if self._resource_manager._validate_resource_desc(self._sid):
+            self._resource_manager._populate()
         else:
-            self._report.info('Validating and assigning resource manager')
-            self._resource_manager = value
-
-            if self._resource_manager._validate_resource_desc(self._sid):
-                self._resource_manager._populate()
-            else:
-                self._logger.error('Could not validate resource description')
-                raise
-            self._report.ok('>>ok\n')
+            self._logger.error('Could not validate resource description')
+            raise
+        self._report.ok('>>ok\n')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -336,45 +326,29 @@ class AppManager(object):
 
                         self._cur_attempt += 1
 
-                    if (not self._task_manager.check_tmgr()) and (self._cur_attempt <= self._reattempts):
+                    if (not self._task_manager.check_tmgr() or 
+                            not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                         """
-                        If the tmgr process dies, we simply start a new process
-                        using the start_manager method. We do not need to create
-                        a new instance of the TaskManager object itself. We stop
-                        and start a new isntance of the heartbeat thread as well.
+                        If the tmgr process or heartbeat dies, we simply start a 
+                        new process using the start_manager method. We do not 
+                        need to create a new instance of the TaskManager object 
+                        itself. We stop and start a new instance of the 
+                        heartbeat thread as well.
                         """
-                        self._prof.prof('restarting tmgr process', uid=self._uid)
+                        self._prof.prof('restarting tmgr process and heartbeat', uid=self._uid)
 
-                        self._logger.info('Terminating heartbeat thread from AppManager')
-                        self._task_manager.end_heartbeat()
-                        self._logger.info('Restarting task manager process from AppManager')
+                        self._logger.info('Terminating heartbeat thread')
+                        self._task_manager.terminate_heartbeat()
+                        self._logger.info('Terminating tmgr process')
+                        self._task_manager.terminate_manager()
+                        self._logger.info('Restarting task manager process')
                         self._task_manager.start_manager()
-                        self._logger.info('Restarting heartbeat thread from AppManager')
+                        self._logger.info('Restarting heartbeat thread')
                         self._task_manager.start_heartbeat()
 
                         self._cur_attempt += 1
-
-                    if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
-
-                        """
-                        If the heartbeat thread dies, we simply start a new thread
-                        using the start_heartbeat method. We do not need to create
-                        a new instance of the TaskManager object itself. We stop
-                        and start a new isntance of the tmgr process as well
-                        """
-
-                        self._prof.prof('restarting heartbeat thread', uid=self._uid)
-
-                        self._logger.info('Terminating tmgr process from AppManager')
-                        self._task_manager.end_manager()
-                        self._logger.info('Restarting task manager process from AppManager')
-                        self._task_manager.start_manager()
-                        self._logger.info('Restarting heartbeat thread from AppManager')
-                        self._task_manager.start_heartbeat()
-
-                        self._cur_attempt += 1
-
+                    
                 self._prof.prof('start termination', uid=self._uid)
 
                 # Terminate threads in following order: wfp, helper, synchronizer
@@ -386,7 +360,7 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-                if self._resource_autoterminate:
+                if self._autoterminate:
                     self.resource_terminate()
 
                 if self._write_workflow:

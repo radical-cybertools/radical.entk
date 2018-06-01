@@ -6,7 +6,6 @@ from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
 
 from radical.entk.appman.appmanager import AppManager
-from radical.entk.execman.resource_manager import ResourceManager
 import states
 
 # from radical.entk.utils.profiler import Profiler
