@@ -74,10 +74,15 @@ class Base_TaskManager(object):
         self._logger = ru.get_logger('radical.entk.%s' % self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
+
+        self._hb_request_q = '%s-hb-request' % self._sid
+        self._hb_response_q = '%s-hb-response' % self._sid
+
         self._tmgr_process = None
         self._tmgr_terminate = None
         self._hb_thread = None
         self._hb_terminate = None
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods

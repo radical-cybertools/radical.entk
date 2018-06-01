@@ -35,7 +35,8 @@ class TaskManager(Base_TaskManager):
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
-    def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
+    def __init__(self, sid, pending_queue, completed_queue,
+                 rmgr, mq_hostname, port):
 
 
         super(TaskManager, self).__init__(  sid, 
@@ -81,8 +82,8 @@ class TaskManager(Base_TaskManager):
                                                               )
 
             channel = self._mq_connection.channel()
-            channel.queue_delete(queue='%s-heartbeat-req' % self._sid)
-            channel.queue_declare(queue='%s-heartbeat-req' % self._sid)
+            channel.queue_delete(queue=self._hb_request_q)
+            channel.queue_declare(queue=self._hb_request_q)
             response = True
 
             while (response and (not self._hb_alive.is_set())):
@@ -91,9 +92,9 @@ class TaskManager(Base_TaskManager):
 
                 # Heartbeat request signal sent to task manager via rpc-queue
                 channel.basic_publish(exchange='',
-                                      routing_key='%s-heartbeat-req' % self._sid,
+                                      routing_key=self._hb_request_q,
                                       properties=pika.BasicProperties(
-                                          reply_to='%s-heartbeat-res' % self._sid,
+                                          reply_to=self._hb_response_q,
                                           correlation_id=corr_id),
                                       body='request')
 
@@ -102,7 +103,7 @@ class TaskManager(Base_TaskManager):
                 # Ten second interval for heartbeat request to be responded to
                 time.sleep(10)
 
-                method_frame, props, body = channel.basic_get(queue='%s-heartbeat-res' % self._sid)
+                method_frame, props, body = channel.basic_get(queue=self._hb_response_q)
 
                 if body:
                     if corr_id == props.correlation_id:
@@ -118,7 +119,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as ex:
             self._logger.error('Heartbeat failed with error: %s' % ex)
-            raise
+            raise 
 
         finally:
 

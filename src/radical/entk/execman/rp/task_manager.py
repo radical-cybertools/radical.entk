@@ -39,7 +39,8 @@ class TaskManager(Base_TaskManager):
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
-    def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname, port):
+    def __init__(self, sid, pending_queue, completed_queue,
+                 rmgr, mq_hostname, port):
 
 
         super(TaskManager, self).__init__(  sid, 
@@ -53,7 +54,7 @@ class TaskManager(Base_TaskManager):
         self._umgr = None
 
         self._logger.info('Created task manager object: %s' % self._uid)
-        self._prof.prof('tmgr obj created', uid=self._uid)
+        self._prof.prof('tmgr obj created', uid=self._uid)    
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods

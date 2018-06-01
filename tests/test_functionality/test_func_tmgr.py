@@ -1,5 +1,9 @@
-from radical.entk.execman.task_manager import TaskManager
-from radical.entk import ResourceManager
+from radical.entk.execman.base.resource_manager import Base_ResourceManager as BaseRmgr
+from radical.entk.execman.rp.resource_manager import ResourceManager as RPRmgr
+from radical.entk.execman.dummy.resource_manager import ResourceManager as DummyRmgr
+from radical.entk.execman.base.task_manager import Base_TaskManager as BaseTmgr
+from radical.entk.execman.rp.task_manager import TaskManager as RPTmgr
+from radical.entk.execman.dummy.task_manager import TaskManager as DummyTmgr
 import pytest
 from radical.entk.exceptions import *
 import os

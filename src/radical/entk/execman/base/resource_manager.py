@@ -41,6 +41,7 @@ class Base_ResourceManager(object):
         self._project = None
         self._access_schema = None
         self._queue = None
+        self._validated = False
 
         # Utility parameters
         self._uid = ru.generate_id( 'resource_manager.%(item_counter)04d', 
@@ -144,8 +145,44 @@ class Base_ResourceManager(object):
         **Purpose**: Validate the resource description provided to the ResourceManager
         """
 
-        raise NotImplementedError(msg='_validate_resource_desc() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        self._prof.prof('validating rdesc', uid=self._uid)
+        self._logger.debug('Validating resource description')
+
+        expected_keys = ['resource',
+                         'walltime',
+                         'cores']
+
+        for key in expected_keys:
+            if key not in self._resource_desc:
+                raise Error(text='Mandatory key %s does not exist in the resource description' % key)
+
+        if not isinstance(self._resource_desc['resource'], str):
+            raise TypeError(expected_type=str, actual_type=type(self._resource_desc['resource']))
+
+        if not isinstance(self._resource_desc['walltime'], int):
+            raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
+
+        if not isinstance(self._resource_desc['cores'], int):
+            raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
+
+        if 'project' in self._resource_desc:
+            if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
+                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
+
+        if 'access_schema' in self._resource_desc:
+            if not isinstance(self._resource_desc['access_schema'], str):
+                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['access_schema']))
+
+        if 'queue' in self._resource_desc:
+            if not isinstance(self._resource_desc['queue'], str):
+                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
+
+        self._validated = True
+
+        self._logger.info('Resource description validated')
+        self._prof.prof('rdesc validated', uid=self._uid)
+
+        return self._validated
 
     def _populate(self):
         """
@@ -153,8 +190,30 @@ class Base_ResourceManager(object):
                         resource description
         """
 
-        raise NotImplementedError(msg='_populate() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        if self._validated:
+
+            self._prof.prof('populating rmgr', uid=self._uid)
+            self._logger.debug('Populating resource manager object')
+
+            self._resource = self._resource_desc['resource']
+            self._walltime = self._resource_desc['walltime']
+            self._cores = self._resource_desc['cores']
+
+            if 'project' in self._resource_desc:
+                self._project = self._resource_desc['project']
+
+            if 'access_schema' in self._resource_desc:
+                self._access_schema = self._resource_desc['access_schema']
+
+            if 'queue' in self._resource_desc:
+                self._queue = self._resource_desc['queue']
+
+            self._logger.debug('Resource manager population successful')
+            self._prof.prof('rmgr populated', uid=self._uid)
+        
+        else:
+            raise EnTKError('Resource description not validated')
+            
 
     def _submit_resource_request(self):
         """

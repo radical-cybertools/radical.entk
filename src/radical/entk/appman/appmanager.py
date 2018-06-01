@@ -74,7 +74,7 @@ class AppManager(object):
         if not config_path:
             config_path = os.dirname(os.path.abspath(__file__))
 
-        config = ru.read_json(config_path + 'config.json')['AppManager']
+        config = ru.read_json(os.path.join(config_path, 'config.json'))
 
         self._hostname = config['hostname'],
         self._port = config['port'],

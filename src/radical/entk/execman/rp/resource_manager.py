@@ -103,90 +103,7 @@ class ResourceManager(Base_ResourceManager):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def _validate_resource_desc(self):
-        """
-        **Purpose**: Validate the resource description that was provided to ResourceManager
-
-        :arguments: 
-            :sid: session id of the current run
-        :return: boolean (valid/invalid)
-        """
-
-        self._uid = ru.generate_id('resource_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
-        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=self._path)
-
-        try:
-
-            self._prof.prof('validating rdesc', uid=self._uid)
-
-            self._logger.debug('Validating resource description')
-
-            expected_keys = ['resource',
-                             'walltime',
-                             'cores']
-
-            for key in expected_keys:
-                if key not in self._resource_desc:
-                    raise Error(text='Mandatory key %s does not exist in the resource description' % key)
-
-            if not isinstance(self._resource_desc['resource'], str):
-                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['resource']))
-
-            if not isinstance(self._resource_desc['walltime'], int):
-                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
-
-            if not isinstance(self._resource_desc['cores'], int):
-                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
-
-            if 'project' in self._resource_desc:
-                if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
-                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
-
-            if 'access_schema' in self._resource_desc:
-                if not isinstance(self._resource_desc['access_schema'], str):
-                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['access_schema']))
-
-            if 'queue' in self._resource_desc:
-                if not isinstance(self._resource_desc['queue'], str):
-                    raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
-
-            self._logger.info('Resource description validated')
-
-            self._prof.prof('rdesc validated', uid=self._uid)
-
-            return True
-
-        except Exception, ex:
-            self._logger.error('Failed to validate resource description, error: %s' % ex)
-            raise
-
-    def _populate(self):
-        """
-        **Purpose**: Populate the RP_ResourceManager attributes with values provided in the resource description
-        """
-
-        self._prof.prof('populating rmgr', uid=self._uid)
-        self._logger.debug('Populating resource manager object')
-
-        self._resource = self._resource_desc['resource']
-        self._walltime = self._resource_desc['walltime']
-        self._cores = self._resource_desc['cores']
-
-        if 'project' in self._resource_desc:
-            self._project = self._resource_desc['project']
-
-        if 'access_schema' in self._resource_desc:
-            self._access_schema = self._resource_desc['access_schema']
-
-        if 'queue' in self._resource_desc:
-            self._queue = self._resource_desc['queue']
-
-        self._logger.debug('Resource manager population successful')
-        self._prof.prof('rmgr populated', uid=self._uid)
+    # ------------------------------------------------------------------------------------------------------------------      
 
     def _submit_resource_request(self):
         """
@@ -265,6 +182,7 @@ class ResourceManager(Base_ResourceManager):
         except Exception, ex:
             self._logger.error('Resource request submission failed')
             raise
+
 
     def _cancel_resource_request(self):
         """
