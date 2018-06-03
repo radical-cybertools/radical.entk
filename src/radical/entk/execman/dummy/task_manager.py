@@ -372,7 +372,6 @@ class TaskManager(Base_TaskManager):
                                              name='task-manager',
                                              args=(
                                                  self._uid,
-                                                 self._umgr,
                                                  self._rmgr,
                                                  self._logger,
                                                  self._mq_hostname,
@@ -390,7 +389,7 @@ class TaskManager(Base_TaskManager):
             except Exception, ex:
 
                 self._logger.error('Task manager not started, error: %s' % ex)
-                self.end_manager()
+                self.terminate_manager()
                 raise
 
         else:
@@ -420,7 +419,7 @@ class TaskManager(Base_TaskManager):
             self._logger.error('Could not terminate task manager process')
             raise
 
-    def check_tmgr(self):
+    def check_manager(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """

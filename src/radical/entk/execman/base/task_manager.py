@@ -79,10 +79,7 @@ class Base_TaskManager(object):
         self._hb_response_q = '%s-hb-response' % self._sid
 
         self._tmgr_process = None
-        self._tmgr_terminate = None
         self._hb_thread = None
-        self._hb_terminate = None
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
@@ -164,7 +161,7 @@ class Base_TaskManager(object):
         raise NotImplementedError(msg='terminate_manager() method ' +
                                   'not implemented in TaskManager for %s' % self._rts_type)
 
-    def check_tmgr(self):
+    def check_manager(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """

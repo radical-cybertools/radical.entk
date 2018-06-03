@@ -36,9 +36,8 @@ def test_base_initialization(s, l, i):
     assert tmgr._rts == None
 
     assert tmgr._tmgr_process == None
-    assert tmgr._tmgr_terminate == None
     assert tmgr._hb_thread == None
-    assert tmgr._hb_terminate == None
+
 
 
 @given(s=st.text(),
@@ -96,9 +95,8 @@ def test_dummy_initialization(s, l, i):
     assert tmgr._rts == 'dummy'
 
     assert tmgr._tmgr_process == None
-    assert tmgr._tmgr_terminate == None
     assert tmgr._hb_thread == None
-    assert tmgr._hb_terminate == None
+
 
 
 @given(s=st.characters(),

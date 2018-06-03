@@ -15,6 +15,7 @@ import time
 import os
 import Queue
 import pika
+import json
 from threading import Thread, Event
 from radical.entk import states
 
@@ -44,7 +45,7 @@ class AppManager(object):
         # namespace
         path = os.getcwd() + '/' + self._sid
         self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
+        self._logger = ru.get_logger('radical.entk.%s' % self._uid, path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -53,7 +54,7 @@ class AppManager(object):
         self._report.info('Creating AppManager')
 
         self._name = str()
-
+        self._resource_manager = None
         # RabbitMQ Queues
         self._pending_queue = list()
         self._completed_queue = list()
@@ -72,11 +73,15 @@ class AppManager(object):
     def _read_config(self, config_path):
 
         if not config_path:
-            config_path = os.dirname(os.path.abspath(__file__))
+            config_path = os.path.dirname(os.path.abspath(__file__))
 
-        config = ru.read_json(os.path.join(config_path, 'config.json'))
+        with open(os.path.join(config_path, 'config.json'),'r') as fp:
+            config = json.load(fp)
 
-        self._hostname = config['hostname'],
+        print config
+
+        self._mq_hostname = config['hostname'],
+        print 'Here: ', self._mq_hostname
         self._port = config['port'],
         self._reattempts = config['reattempts'],
         self._resubmit_failed = config['resubmit_failed'],
@@ -149,9 +154,8 @@ class AppManager(object):
                                                     sid = self._sid)
 
         self._report.info('Validating and assigning resource manager')
-        self._resource_manager = value
 
-        if self._resource_manager._validate_resource_desc(self._sid):
+        if self._resource_manager._validate_resource_desc():
             self._resource_manager._populate()
         else:
             self._logger.error('Could not validate resource description')
@@ -256,6 +260,11 @@ class AppManager(object):
             self._report.ok('All components created\n')
 
             # Create tmgr object only if it does not already exist
+            if self._rts == 'radical.pilot':
+                from radical.entk.execman.rp import TaskManager
+            elif self._rts == 'dummy':
+                from radical.entk.execman.dummy import TaskManager
+
             if not self._task_manager:
                 self._prof.prof('creating tmgr obj', uid=self._uid)
                 self._task_manager = TaskManager(sid=self._sid,
@@ -325,7 +334,7 @@ class AppManager(object):
 
                     self._cur_attempt += 1
 
-                if (not self._task_manager.check_tmgr() or 
+                if (not self._task_manager.check_manager() or 
                         not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                     """
@@ -391,7 +400,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request(self._rp_profile)
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -401,9 +410,7 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.error('Error in AppManager')
-
-            print traceback.format_exc()
+            self._logger.exception('Error in AppManager: %s'%ex)
 
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
@@ -422,7 +429,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request(self._rp_profile)
+                self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -436,7 +443,7 @@ class AppManager(object):
             self._task_manager.terminate_heartbeat()
 
         if self._resource_manager:
-            self._resource_manager._cancel_resource_request(self._rp_profile)
+            self._resource_manager._cancel_resource_request()
 
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
@@ -816,8 +823,7 @@ class AppManager(object):
 
         except Exception, ex:
 
-            self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
-            print traceback.format_exc()
+            self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
             self._end_sync.set()
             raise Error(text=ex)
 

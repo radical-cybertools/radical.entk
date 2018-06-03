@@ -56,6 +56,8 @@ class TaskManager(Base_TaskManager):
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)    
 
+
+
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
     # ------------------------------------------------------------------------------------------------------------------
@@ -132,6 +134,8 @@ class TaskManager(Base_TaskManager):
             if self._hb_thread.is_alive():
                 self._hb_alive.set()
 
+            self._mq_connection.close()
+
             self._prof.prof('terminating heartbeat thread', uid=self._uid)
 
     def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
@@ -180,17 +184,17 @@ class TaskManager(Base_TaskManager):
                     logger.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
                     # Thread should run till terminate condtion is encountered
-                    if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port,
-                                                                                                heartbeat=0
-                                                                                                )
-                                                                      )
-                    else:
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port
-                                                                                                )
-                                                                      )
+                    # if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                    #     self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                    #                                                                             port=port,
+                    #                                                                             heartbeat=0
+                    #                                                                             )
+                    #                                                   )
+                    # else:
+                    #     self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                    #                                                                             port=port
+                    #                                                                             )
+                    #                                                   )
                     mq_channel = self._mq_connection.channel()
 
                     if unit.state in rp.FINAL:
@@ -247,7 +251,7 @@ class TaskManager(Base_TaskManager):
                             completed_queue[0])
                         )
 
-                    self._mq_connection.close()
+                    # self._mq_connection.close()
 
                 except KeyboardInterrupt:
                     self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -513,7 +517,7 @@ class TaskManager(Base_TaskManager):
             self._logger.error('Could not terminate task manager process')
             raise
 
-    def check_tmgr(self):
+    def check_manager(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """
