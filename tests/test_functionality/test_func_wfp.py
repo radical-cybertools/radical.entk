@@ -124,6 +124,6 @@ def test_wfp_process():
                     resubmit_failed = False)
 
     p.start_processor()
-    assert p.check_alive() == True
-    p.end_processor()
-    assert p.check_alive() == False
+    assert p.check_processor() == True
+    p.terminate_processor()
+    assert p.check_processor() == False

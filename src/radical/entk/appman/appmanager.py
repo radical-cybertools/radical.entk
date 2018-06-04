@@ -35,11 +35,22 @@ class AppManager(object):
         :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
     """
 
-    def __init__(self, config_path = None):
+    def __init__(self,
+                 config_path=None,
+                 hostname=None,
+                 port=None,
+                 reattempts=None,
+                 resubmit_failed=None,
+                 autoterminate=None,
+                 write_workflow=None,
+                 rts=None):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
-        self._read_config(config_path)
+        self._read_config(config_path, hostname, port, reattempts,
+                          resubmit_failed, autoterminate, write_workflow,
+                          rts)
+
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
@@ -64,33 +75,34 @@ class AppManager(object):
         self._resource_desc = None
         self._task_manager = None
         self._workflow = None
-        self._cur_attempt = 1      
+        self._cur_attempt = 1
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
         self._report.ok('>>ok\n')
 
-    def _read_config(self, config_path):
+    def _read_config(self, config_path, hostname, port, reattempts,
+                     resubmit_failed, autoterminate, write_workflow,
+                     rts):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
 
-        with open(os.path.join(config_path, 'config.json'),'r') as fp:
-            config = json.load(fp)
+        # with open(os.path.join(config_path, 'config.json'),'r') as fp:
+        #     config = json.load(fp)
 
-        print config
+        config = ru.read_json(os.path.join(config_path, 'config.json'))
 
-        self._mq_hostname = config['hostname'],
-        print 'Here: ', self._mq_hostname
-        self._port = config['port'],
-        self._reattempts = config['reattempts'],
-        self._resubmit_failed = config['resubmit_failed'],
-        self._autoterminate = config['autoterminate'],
-        self._write_workflow = config['write_workflow'],
-        self._rts = config['rts']
+        self._mq_hostname = hostname if hostname else str(config['hostname'])
+        self._port = port if port else config['port']
+        self._reattempts = reattempts if reattempts else config['reattempts']
+        self._resubmit_failed = resubmit_failed if resubmit_failed else config['resubmit_failed']
+        self._autoterminate = autoterminate if autoterminate else config['autoterminate']
+        self._write_workflow = write_workflow if write_workflow else config['write_workflow']
+        self._rts = rts if rts else str(config['rts'])
+
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -150,8 +162,8 @@ class AppManager(object):
             from radical.entk.execman.dummy import ResourceManager
 
         self._report.info('Validating and assigning resource manager')
-        self._resource_manager = ResourceManager(   resource_desc=value,
-                                                    sid = self._sid)
+        self._resource_manager = ResourceManager(resource_desc=value,
+                                                 sid=self._sid)
 
         self._report.info('Validating and assigning resource manager')
 
@@ -311,7 +323,7 @@ class AppManager(object):
 
                     self._cur_attempt += 1
 
-                if (not self._wfp.check_wfp()) and (self._cur_attempt <= self._reattempts):
+                if (not self._wfp.check_processor()) and (self._cur_attempt <= self._reattempts):
 
                     """
                     If WFP dies, both child threads are also cleaned out.
@@ -334,7 +346,7 @@ class AppManager(object):
 
                     self._cur_attempt += 1
 
-                if (not self._task_manager.check_manager() or 
+                if (not self._task_manager.check_manager() or
                         not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                     """
@@ -356,7 +368,7 @@ class AppManager(object):
                     self._task_manager.start_heartbeat()
 
                     self._cur_attempt += 1
-                
+
             self._prof.prof('start termination', uid=self._uid)
 
             # Terminate threads in following order: wfp, helper, synchronizer
@@ -410,7 +422,7 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.exception('Error in AppManager: %s'%ex)
+            self._logger.exception('Error in AppManager: %s' % ex)
 
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:

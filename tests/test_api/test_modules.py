@@ -10,5 +10,4 @@ def test_user_module_loads():
     from radical.entk import Pipeline
     from radical.entk import AppManager
     from radical.entk import states
-    from radical.entk import ResourceManager
 

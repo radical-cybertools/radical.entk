@@ -67,9 +67,7 @@ def test_rp_initialization(s, l, i):
     assert tmgr._umgr == None
 
     assert tmgr._tmgr_process == None
-    assert tmgr._tmgr_terminate == None
     assert tmgr._hb_thread == None
-    assert tmgr._hb_terminate == None
 
 
 @given(s=st.text(),

@@ -42,21 +42,18 @@ class TaskManager(Base_TaskManager):
     def __init__(self, sid, pending_queue, completed_queue,
                  rmgr, mq_hostname, port):
 
-
-        super(TaskManager, self).__init__(  sid, 
-                                            pending_queue, 
-                                            completed_queue, 
-                                            rmgr,
-                                            mq_hostname, 
-                                            port,
-                                            rts='radical.pilot')
+        super(TaskManager, self).__init__(sid,
+                                          pending_queue,
+                                          completed_queue,
+                                          rmgr,
+                                          mq_hostname,
+                                          port,
+                                          rts='radical.pilot')
 
         self._umgr = None
 
         self._logger.info('Created task manager object: %s' % self._uid)
-        self._prof.prof('tmgr obj created', uid=self._uid)    
-
-
+        self._prof.prof('tmgr obj created', uid=self._uid)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
@@ -94,7 +91,7 @@ class TaskManager(Base_TaskManager):
             channel.queue_declare(queue='%s-heartbeat-req' % self._sid)
             response = True
 
-            while (response and (not self._hb_alive.is_set())):
+            while (response and (not self._hb_terminate.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
 
@@ -156,7 +153,7 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            local_prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-proc', path=self._path)
 
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
@@ -320,7 +317,7 @@ class TaskManager(Base_TaskManager):
 
                         for task in body:
                             t = Task()
-                            t.from_dict(task)                                
+                            t.from_dict(task)
                             bulk_tasks.append(t)
                             bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
@@ -333,23 +330,22 @@ class TaskManager(Base_TaskManager):
                                        logger=self._logger)
 
                         umgr.submit_units(bulk_cuds)
-                        
+
                         for task in bulk_tasks:
 
-                            transition( obj=task,
-                                        obj_type='Task',
-                                        new_state=states.SUBMITTED,
-                                        channel=mq_channel,
-                                        queue='%s-tmgr-to-sync' % self._sid,
-                                        profiler=local_prof,
-                                        logger=self._logger)
+                            transition(obj=task,
+                                       obj_type='Task',
+                                       new_state=states.SUBMITTED,
+                                       channel=mq_channel,
+                                       queue='%s-tmgr-to-sync' % self._sid,
+                                       profiler=local_prof,
+                                       logger=self._logger)
                             self._logger.info('Task %s submitted to RTS' % (task.uid))
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-
                 except Exception, ex:
-                    logger.exception('Error in task execution: %s'%ex)
+                    logger.exception('Error in task execution: %s' % ex)
                     raise
 
                 try:
@@ -405,8 +401,10 @@ class TaskManager(Base_TaskManager):
 
                 self._logger.info('Starting heartbeat thread')
                 self._prof.prof('creating heartbeat thread', uid=self._uid)
+                self._hb_terminate = threading.Event()
+
                 self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
-                self._hb_alive = threading.Event()
+
                 self._prof.prof('starting heartbeat thread', uid=self._uid)
                 self._hb_thread.start()
 
@@ -434,8 +432,9 @@ class TaskManager(Base_TaskManager):
 
             if self._hb_thread:
 
-                if self._hb_thread.is_alive():
-                    self._hb_alive.set()
+                self._hb_terminate.set()
+
+                if self.check_heartbeat():                    
                     self._hb_thread.join()
 
                 self._logger.info('Hearbeat thread terminated')
@@ -503,10 +502,11 @@ class TaskManager(Base_TaskManager):
 
             if self._tmgr_process:
 
-                if not self._tmgr_terminate.is_set():
-                    self._tmgr_terminate.set()
+                self._tmgr_terminate.set()
+                
+                if self.check_manager():
+                    self._tmgr_process.join()
 
-                self._tmgr_process.join()
                 self._logger.info('Task manager process closed')
 
                 self._prof.prof('tmgr process terminated', uid=self._uid)
