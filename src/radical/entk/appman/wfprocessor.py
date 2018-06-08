@@ -590,7 +590,7 @@ class WFprocessor(object):
         else:
             self._logger.warn('Wfp process already running, attempted to restart!')
 
-    def end_processor(self):
+    def terminate_processor(self):
         """
         **Purpose**: Method to terminate the wfp process. This method is 
         blocking as it waits for the wfp process to terminate (aka join).
@@ -633,7 +633,7 @@ class WFprocessor(object):
             self._logger.error('Could not check if workflow is incomplete, error:%s' % ex)
             raise
 
-    def check_alive(self):
+    def check_processor(self):
         """
         **Purpose**: Method to check if the wfp process is alive
         """

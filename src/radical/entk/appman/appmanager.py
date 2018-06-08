@@ -317,7 +317,7 @@ class AppManager(object):
 
                         self._cur_attempt += 1
 
-                    if (not self._wfp.check_alive()) and (self._cur_attempt <= self._reattempts):
+                    if (not self._wfp.check_processor()) and (self._cur_attempt <= self._reattempts):
 
                         """
                         If WFP dies, both child threads are also cleaned out.
@@ -326,6 +326,8 @@ class AppManager(object):
                         """
 
                         self._prof.prof('recreating wfp obj', uid=self._uid)
+                        self._wfp.terminate_processor()
+
                         self._wfp = WFProcessor(
                             sid=self._sid,
                             workflow=self._workflow,
@@ -340,50 +342,35 @@ class AppManager(object):
 
                         self._cur_attempt += 1
 
-                    if (not self._task_manager.check_alive()) and (self._cur_attempt <= self._reattempts):
+                    if (not self._task_manager.check_manager() or
+                            not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                         """
-                        If the tmgr process dies, we simply start a new process
-                        using the start_manager method. We do not need to create
-                        a new instance of the TaskManager object itself. We stop
-                        and start a new isntance of the heartbeat thread as well.
+                        If the tmgr process or heartbeat dies, we simply start a 
+                        new process using the start_manager method. We do not 
+                        need to create a new instance of the TaskManager object 
+                        itself. We stop and start a new instance of the 
+                        heartbeat thread as well.
                         """
-                        self._prof.prof('restarting tmgr process', uid=self._uid)
-
-                        self._logger.info('Terminating heartbeat thread from AppManager')
-                        self._task_manager.end_heartbeat()
-                        self._logger.info('Restarting task manager process from AppManager')
+                        self._prof.prof('restarting tmgr process and heartbeat', uid=self._uid)
+    
+                        self._logger.info('Terminating heartbeat thread')
+                        self._task_manager.terminate_heartbeat()
+                        self._logger.info('Terminating tmgr process')
+                        self._task_manager.terminate_manager()
+                        self._logger.info('Restarting task manager process')
                         self._task_manager.start_manager()
-                        self._logger.info('Restarting heartbeat thread from AppManager')
+                        self._logger.info('Restarting heartbeat thread')
                         self._task_manager.start_heartbeat()
 
                         self._cur_attempt += 1
 
-                    if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
-
-                        """
-                        If the heartbeat thread dies, we simply start a new thread
-                        using the start_heartbeat method. We do not need to create
-                        a new instance of the TaskManager object itself. We stop
-                        and start a new isntance of the tmgr process as well
-                        """
-
-                        self._prof.prof('restarting heartbeat thread', uid=self._uid)
-
-                        self._logger.info('Terminating tmgr process from AppManager')
-                        self._task_manager.end_manager()
-                        self._logger.info('Restarting task manager process from AppManager')
-                        self._task_manager.start_manager()
-                        self._logger.info('Restarting heartbeat thread from AppManager')
-                        self._task_manager.start_heartbeat()
-
-                        self._cur_attempt += 1
 
                 self._prof.prof('start termination', uid=self._uid)
 
                 # Terminate threads in following order: wfp, helper, synchronizer
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
                 self._logger.info('Terminating synchronizer thread')
                 self._end_sync.set()

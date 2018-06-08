@@ -80,9 +80,7 @@ class TaskManager(object):
             raise TypeError(expected_type=ResourceManager, actual_type=type(rmgr))
 
         self._tmgr_process = None
-        self._tmgr_terminate = None
         self._hb_thread = None
-        self._hb_alive = None
         self._umgr = None
 
         self._logger.info('Created task manager object: %s' % self._uid)
@@ -212,18 +210,6 @@ class TaskManager(object):
 
                     logger.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
-                    # Thread should run till terminate condtion is encountered
-                    if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port,
-                                                                                                heartbeat=0
-                                                                                                )
-                                                                      )
-                    else:
-                        self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                port=port
-                                                                                                )
-                                                                      )
                     mq_channel = self._mq_connection.channel()
 
                     if unit.state in rp.FINAL:
@@ -279,8 +265,6 @@ class TaskManager(object):
                             task.state,
                             completed_queue[0])
                         )
-
-                    self._mq_connection.close()
 
                 except KeyboardInterrupt:
                     self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -434,8 +418,8 @@ class TaskManager(object):
 
                 self._logger.info('Starting heartbeat thread')
                 self._prof.prof('creating heartbeat thread', uid=self._uid)
+                self._hb_terminate = threading.Event()
                 self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
-                self._hb_alive = threading.Event()
                 self._prof.prof('starting heartbeat thread', uid=self._uid)
                 self._hb_thread.start()
 
@@ -444,13 +428,13 @@ class TaskManager(object):
             except Exception, ex:
 
                 self._logger.error('Heartbeat not started, error: %s' % ex)
-                self.end_heartbeat()
+                self.terminate_heartbeat()
                 raise
 
         else:
             self._logger.warn('Heartbeat thread already running, but attempted to restart!')
 
-    def end_heartbeat(self):
+    def terminate_heartbeat(self):
         """
         **Purpose**: Method to terminate the heartbeat thread. This method is 
         blocking as it waits for the heartbeat thread to terminate (aka join).
@@ -463,8 +447,9 @@ class TaskManager(object):
 
             if self._hb_thread:
 
-                if self._hb_thread.is_alive():
-                    self._hb_alive.set()
+                self._hb_terminate.set()
+
+                if self.check_heartbeat():
                     self._hb_thread.join()
 
                 self._logger.info('Hearbeat thread terminated')
@@ -516,13 +501,13 @@ class TaskManager(object):
             except Exception, ex:
 
                 self._logger.error('Task manager not started, error: %s' % ex)
-                self.end_manager()
+                self.terminate_manager()
                 raise
 
         else:
             self._logger.warn('tmgr process already running, but attempted to restart!')
 
-    def end_manager(self):
+    def terminate_manager(self):
         """
         **Purpose**: Method to terminate the tmgr process. This method is 
         blocking as it waits for the tmgr process to terminate (aka join).
@@ -532,10 +517,11 @@ class TaskManager(object):
 
             if self._tmgr_process:
 
-                if not self._tmgr_terminate.is_set():
-                    self._tmgr_terminate.set()
+                self._tmgr_terminate.set()
 
-                self._tmgr_process.join()
+                if not self.check_manager():
+                    self._tmgr_process.join()
+
                 self._logger.info('Task manager process closed')
 
                 self._prof.prof('tmgr process terminated', uid=self._uid)
@@ -546,7 +532,7 @@ class TaskManager(object):
             self._logger.error('Could not terminate task manager process')
             raise
 
-    def check_alive(self):
+    def check_manager(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """
