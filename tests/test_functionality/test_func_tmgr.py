@@ -3,6 +3,7 @@ from radical.entk import ResourceManager
 import pytest
 from radical.entk.exceptions import *
 import os
+from time import sleep
 
 def test_tmgr_process():
 
@@ -28,9 +29,10 @@ def test_tmgr_process():
                         mq_hostname = 'localhost', 
                         port = 5672)
     t.start_manager()
-    assert t.check_alive() == True
-    t.end_manager()
-    assert t.check_alive() == False
+    assert t.check_manager() == True
+    t.terminate_manager()
+    sleep(10)
+    assert t.check_manager() == False
 
 
 def test_heartbeat():
@@ -59,5 +61,5 @@ def test_heartbeat():
 
     t.start_heartbeat()
     assert t.check_heartbeat() == True
-    t.end_heartbeat()
+    t.terminate_heartbeat()
     assert t.check_heartbeat() == False

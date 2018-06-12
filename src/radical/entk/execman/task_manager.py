@@ -123,7 +123,7 @@ class TaskManager(object):
             channel.queue_declare(queue='%s-heartbeat-req' % self._sid)
             response = True
 
-            while (response and (not self._hb_alive.is_set())):
+            while (response and (not self._hb_terminate.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
 
@@ -161,7 +161,7 @@ class TaskManager(object):
         finally:
 
             if self._hb_thread.is_alive():
-                self._hb_alive.set()
+                self._hb_terminate.set()
 
             self._prof.prof('terminating heartbeat thread', uid=self._uid)
 

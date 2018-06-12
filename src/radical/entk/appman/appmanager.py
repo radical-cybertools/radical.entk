@@ -196,7 +196,7 @@ class AppManager(object):
             # Set None objects local to each run
             self._wfp = None
             self._sync_thread = None
-            self._end_sync = Event()
+            self._terminate_sync = Event()
             self._resubmit_failed = False
             self._cur_attempt = 1            
 
@@ -373,7 +373,7 @@ class AppManager(object):
                 self._wfp.terminate_processor()
 
                 self._logger.info('Terminating synchronizer thread')
-                self._end_sync.set()
+                self._terminate_sync.set()
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
@@ -396,16 +396,16 @@ class AppManager(object):
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
-                self._task_manager.end_manager()
-                self._task_manager.end_heartbeat()
+                self._task_manager.terminate_manager()
+                self._task_manager.terminate_heartbeat()
 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')
-                self._end_sync.set()
+                self._terminate_sync.set()
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
@@ -427,16 +427,16 @@ class AppManager(object):
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
                 self._logger.info('Terminating WFprocessor')
-                self._wfp.end_processor()
+                self._wfp.terminate_processor()
 
             if self._task_manager:
                 self._logger.info('Terminating task manager process')
-                self._task_manager.end_manager()
-                self._task_manager.end_heartbeat()
+                self._task_manager.terminate_manager()
+                self._task_manager.terminate_heartbeat()
 
             if self._sync_thread:
                 self._logger.info('Terminating synchronizer thread')
-                self._end_sync.set()
+                self._terminate_sync.set()
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
@@ -451,8 +451,8 @@ class AppManager(object):
 
         if self._task_manager:
             self._logger.info('Terminating task manager process')
-            self._task_manager.end_manager()
-            self._task_manager.end_heartbeat()
+            self._task_manager.terminate_manager()
+            self._task_manager.terminate_heartbeat()
 
         if self._resource_manager:
             self._resource_manager._cancel_resource_request(self._rp_profile)
@@ -730,7 +730,7 @@ class AppManager(object):
                                                               )
             mq_channel = self._mq_connection.channel()
 
-            while not self._end_sync.is_set():
+            while not self._terminate_sync.is_set():
 
                 #-------------------------------------------------------------------------------------------------------
                 # Messages between tmgr Main thread and synchronizer -- only Task objects
@@ -833,14 +833,14 @@ class AppManager(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to terminate synchronizer thread gracefully...')
 
-            self._end_sync.set()
+            self._terminate_sync.set()
             raise KeyboardInterrupt
 
         except Exception, ex:
 
             self._logger.error('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
             print traceback.format_exc()
-            self._end_sync.set()
+            self._terminate_sync.set()
             raise Error(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------

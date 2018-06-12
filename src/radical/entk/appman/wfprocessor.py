@@ -600,8 +600,9 @@ class WFprocessor(object):
 
             self._logger.debug('Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
 
-            if self.check_alive():
-                self._wfp_terminate.set()
+            self._wfp_terminate.set()
+
+            if self.check_processor():
                 self._wfp_process.join()
                 self._logger.debug('WFprocessor process terminated')
             else:
