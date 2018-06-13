@@ -48,7 +48,7 @@ class WFprocessor(object):
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
-        self._logger = ru.Logger('radical.entk.%s'%self._uid, path=self._path)
+        self._logger = ru.get_logger('radical.entk.%s'%self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
@@ -600,9 +600,9 @@ class WFprocessor(object):
 
             self._logger.debug('Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
 
-            self._wfp_terminate.set()
 
             if self.check_processor():
+                self._wfp_terminate.set()
                 self._wfp_process.join()
                 self._logger.debug('WFprocessor process terminated')
             else:
