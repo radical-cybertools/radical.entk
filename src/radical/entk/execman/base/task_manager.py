@@ -75,8 +75,31 @@ class Base_TaskManager(object):
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
 
+        # Thread should run till terminate condtion is encountered
+        if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                                                                                    port=port,
+                                                                                    heartbeat=0
+                                                                                    )
+                                                          )
+        else:
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                                                                                    port=port
+                                                                                    )
+                                                          )
+
         self._hb_request_q = '%s-hb-request' % self._sid
         self._hb_response_q = '%s-hb-response' % self._sid
+
+        mq_channel = mq_connection.channel()
+
+        # To respond to heartbeat - get request from rpc_queue
+        mq_channel.queue_delete(queue=self._hb_response_q)
+        mq_channel.queue_declare(queue=self._hb_response_q)
+
+        # To respond to heartbeat - get request from rpc_queue
+        mq_channel.queue_delete(queue=self._hb_request_q)
+        mq_channel.queue_declare(queue=self._hb_request_q)
 
         self._tmgr_process = None
         self._hb_thread = None

@@ -15,7 +15,7 @@ import traceback
 import os
 import uuid
 from ..base.task_manager import Base_TaskManager
-
+from radical.entk.utils.init_transition import transition
 
 class TaskManager(Base_TaskManager):
 
@@ -46,9 +46,12 @@ class TaskManager(Base_TaskManager):
                                             mq_hostname, 
                                             port,
                                             rts='dummy')      
+        
+        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)
+        
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
@@ -70,22 +73,21 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('heartbeat thread started', uid=self._uid)
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port
                                                                                         )
                                                               )
 
-            channel = self._mq_connection.channel()
-            channel.queue_delete(queue=self._hb_request_q)
-            channel.queue_declare(queue=self._hb_request_q)
+            channel = mq_connection.channel()
             response = True
 
+            last = time.time()
             while (response and (not self._hb_alive.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
@@ -112,6 +114,12 @@ class TaskManager(Base_TaskManager):
 
                         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
+                # Appease pika cos it thinks the connection is dead
+                now =  time.time()
+                if now - last >= self._rmq_ping_interval:
+                    mq_connection.process_data_events()
+                    now = last
+
         except KeyboardInterrupt:
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
@@ -123,8 +131,10 @@ class TaskManager(Base_TaskManager):
 
         finally:
 
-            if self._hb_thread.is_alive():
-                self._hb_alive.set()
+            try:
+                mq_connection.close()
+            except:
+                self._logger.warning('mq_connection not created')
 
             self._prof.prof('terminating heartbeat thread', uid=self._uid)
 
@@ -169,23 +179,21 @@ class TaskManager(Base_TaskManager):
        
             # Thread should run till terminate condtion is encountered
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
                                                                                         port=port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
                                                                                         port=port
                                                                                         )
                                                               )
-            mq_channel = self._mq_connection.channel()
-
-            # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_delete(queue='%s-heartbeat-res' % self._sid)
-            mq_channel.queue_declare(queue='%s-heartbeat-res' % self._sid)
+            mq_channel = mq_connection.channel()            
 
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
+
+            last = time.time()
 
             while not self._tmgr_terminate.is_set():
 
@@ -252,20 +260,28 @@ class TaskManager(Base_TaskManager):
                                 task.state,
                                 completed_queue[0])
                             )
-                except:
-                    pass
+
+                    # Appease pika cos it thinks the connection is dead
+                    now =  time.time()
+                    if now - last >= self._rmq_ping_interval:
+                        mq_connection.process_data_events()
+                        now = last
+
+                except Exception as ex:
+                    logger.exception('Error in tmgr: %s' % ex)
+                    raise
 
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue='%s-heartbeat-req' % self._sid)
+                    method_frame, props, body = mq_channel.basic_get(queue=self._hb_request_q)
 
                     if body:
 
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-heartbeat-res' % self._sid,
+                                                 routing_key=self._hb_response_q,
                                                  properties=pika.BasicProperties(correlation_id=props.correlation_id),
                                                  body='response')
 
@@ -276,9 +292,8 @@ class TaskManager(Base_TaskManager):
                     logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
                     raise
 
-            local_prof.prof('terminating tmgr process', uid=uid)
-            self._mq_connection.close()
-            local_prof.close()
+            
+            mq_connection.close()            
 
         except KeyboardInterrupt:
 
@@ -290,6 +305,16 @@ class TaskManager(Base_TaskManager):
 
             print traceback.format_exc()
             raise Error(text=ex)
+
+        finally:
+
+            try:
+                mq_connection.close()
+            except:
+                self._logger.warning('mq_connection not created')
+
+            local_prof.prof('terminating tmgr process', uid=uid)
+            local_prof.close()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods

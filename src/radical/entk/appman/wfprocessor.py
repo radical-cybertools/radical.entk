@@ -15,6 +15,7 @@ import pika
 import traceback
 import os
 import uuid
+import time
 
 
 class WFprocessor(object):
@@ -80,6 +81,8 @@ class WFprocessor(object):
         self._logger.info('Created WFProcessor object: %s' % self._uid)
 
         self._prof.prof('wfp obj created', uid=self._uid)
+
+        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter
@@ -253,18 +256,19 @@ class WFprocessor(object):
             self._logger.info('enqueue-thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port
                                                                                         )
                                                               )
-            mq_channel = self._mq_connection.channel()
+            mq_channel = mq_connection.channel()
 
+            last = time.time()
             while not self._enqueue_thread_terminate.is_set():
 
                 '''
@@ -374,9 +378,15 @@ class WFprocessor(object):
                                     profiler=local_prof,
                                     logger=self._logger)
 
+                # Appease pika cos it thinks the connection is dead
+                now =  time.time()
+                if now - last >= self._rmq_ping_interval:
+                    mq_connection.process_data_events()
+                    now = last
+
 
             self._logger.info('Enqueue thread terminated')
-            self._mq_connection.close()
+            mq_connection.close()
 
             local_prof.prof('terminating enqueue-thread', uid=self._uid)
 
@@ -385,16 +395,19 @@ class WFprocessor(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
-            self._mq_connection.close()
+            mq_connection.close()
 
             raise KeyboardInterrupt
 
         except Exception, ex:
 
-            self._logger.error('Error in enqueue-thread: %s' % ex)
-            print traceback.format_exc()
+            self._logger.exception('Error in enqueue-thread: %s' % ex)
+            try:
+                mq_connection.close()
+            except:
+                self._logger.warning('mq_connection not created')
 
-            raise Error(text=ex)
+            raise
 
     def _dequeue(self, local_prof):
         """
@@ -413,17 +426,19 @@ class WFprocessor(object):
             self._logger.info('Dequeue thread started')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port
                                                                                         )
                                                               )
-            mq_channel = self._mq_connection.channel()
+            mq_channel = mq_connection.channel()
+
+            last = time.time()
 
             while not self._dequeue_thread_terminate.is_set():
 
@@ -525,12 +540,19 @@ class WFprocessor(object):
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
+
+                    # Appease pika cos it thinks the connection is dead
+                    now =  time.time()
+                    if now - last >= self._rmq_ping_interval:
+                        mq_connection.process_data_events()
+                        now = last
+
                 except Exception, ex:
                     self._logger.error('Unable to receive message from completed queue: %s' % ex)
                     raise
 
             self._logger.info('Terminated dequeue thread')
-            self._mq_connection.close()
+            mq_connection.close()
 
             local_prof.prof('terminating dequeue-thread', uid=self._uid)
 
@@ -539,15 +561,17 @@ class WFprocessor(object):
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit gracefully...')
 
-            self._mq_connection.close()
+            mq_connection.close()
 
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Error in dequeue-thread: %s' % ex)
-            print traceback.format_exc()
+            self._logger.exception('Error in dequeue-thread: %s' % ex)
 
-            self._mq_connection.close()
+            try:
+                mq_connection.close()
+            except:
+                self._logger.warning('mq_connection not created')
 
             raise Error(text=ex)
 

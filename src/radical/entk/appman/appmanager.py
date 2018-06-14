@@ -43,13 +43,14 @@ class AppManager(object):
                  resubmit_failed=None,
                  autoterminate=None,
                  write_workflow=None,
-                 rts=None):
+                 rts=None,
+                 cleanup=None):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
-                          rts)
+                          rts, cleanup)
 
 
         # Create an uid + logger + profiles for AppManager, under the sid
@@ -77,13 +78,15 @@ class AppManager(object):
         self._workflow = None
         self._cur_attempt = 1
 
+        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr obj created', uid=self._uid)
         self._report.ok('>>ok\n')
 
     def _read_config(self, config_path, hostname, port, reattempts,
                      resubmit_failed, autoterminate, write_workflow,
-                     rts):
+                     rts, cleanup):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -99,7 +102,10 @@ class AppManager(object):
         self._resubmit_failed = resubmit_failed if resubmit_failed else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate else config['autoterminate']
         self._write_workflow = write_workflow if write_workflow else config['write_workflow']
+        if rts not in ['radical.pilot','dummy']:
+            raise Error("RTS %s is not supported. Only 'radical.pilot' and 'dummy' are supported"%rts)
         self._rts = rts if rts else str(config['rts'])
+        self._rmq_cleanup = cleanup if cleanup else config['cleanup']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -160,6 +166,7 @@ class AppManager(object):
             from radical.entk.execman.rp import ResourceManager
         elif self._rts == 'dummy':
             from radical.entk.execman.dummy import ResourceManager
+
 
         self._report.info('Validating and assigning resource manager')
         self._resource_manager = ResourceManager(resource_desc=value,
@@ -377,7 +384,7 @@ class AppManager(object):
             self._wfp.terminate_processor()
 
             self._logger.info('Terminating synchronizer thread')
-            self._end_sync.set()
+            self._terminate_sync.set()
             self._sync_thread.join()
             self._logger.info('Synchronizer thread terminated')
 
@@ -461,7 +468,8 @@ class AppManager(object):
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
 
-        self._cleanup_mqs()
+        if self._rmq_cleanup:
+            self._cleanup_mqs()
 
         self._report.info('All components terminated\n')
 
@@ -490,18 +498,18 @@ class AppManager(object):
             self._logger.debug('Setting up mq connection and channel')
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port
                                                                                         )
                                                               )
 
-            self._mq_channel = self._mq_connection.channel()
+            mq_channel = mq_connection.channel()
             self._logger.debug('Connection and channel setup successful')
             self._logger.debug('Setting up all exchanges and queues')
 
@@ -529,7 +537,7 @@ class AppManager(object):
             f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
-                self._mq_channel.queue_declare(queue=q, durable=True)
+                mq_channel.queue_declare(queue=q)
                 f.write(q + '\n')
             f.close()
 
@@ -547,22 +555,36 @@ class AppManager(object):
 
         try:
 
-            self._mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
-            self._mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
+            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                                                                                        port=self._port,
+                                                                                        heartbeat=0
+                                                                                        )
+                                                              )
+            else:
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                                                                                        port=self._port
+                                                                                        )
+                                                              )
+
+            mq_channel = mq_connection.channel()
+
+            mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
+            mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
+            mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
+            mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
+            mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
+            mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
+            mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
+            mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
-                self._mq_channel.queue_delete(queue=queue_name)
+                mq_channel.queue_delete(queue=queue_name)
 
             for i in range(1, self._num_completed_qs + 1):
                 queue_name = '%s-completedq-%s' % (self._sid, i)
-                self._mq_channel.queue_delete(queue=queue_name)
+                mq_channel.queue_delete(queue=queue_name)
 
         except Exception as ex:
             self._logger.exception('Message queues not deleted, error: %s' % ex)
@@ -716,17 +738,19 @@ class AppManager(object):
             # Disable heartbeat for long running jobs since that might load the TCP channel
             # https://github.com/pika/pika/issues/753
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port,
                                                                                         heartbeat=0
                                                                                         )
                                                               )
             else:
-                self._mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
                                                                                         port=self._port
                                                                                         )
                                                               )
-            mq_channel = self._mq_connection.channel()
+            mq_channel = mq_connection.channel()
+
+            last = time.time()
 
             while not self._terminate_sync.is_set():
 
@@ -824,6 +848,13 @@ class AppManager(object):
                         pipeline_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
+
+                # Appease pika cos it thinks the connection is dead
+                now =  time.time()
+                if now - last >= self._rmq_ping_interval:
+                    mq_connection.process_data_events()
+                    now = last
+
             self._prof.prof('terminating synchronizer', uid=self._uid)
 
         except KeyboardInterrupt:
@@ -837,7 +868,7 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
-            self._end_sync.set()
+            self._terminate_sync.set()
             raise Error(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------

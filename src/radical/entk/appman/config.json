@@ -7,5 +7,6 @@
     "write_workflow": false,
     "rts": "radical.pilot",
     "pending_qs": 1,
-    "completed_qs": 1
+    "completed_qs": 1,
+    "cleanup": true
 }
