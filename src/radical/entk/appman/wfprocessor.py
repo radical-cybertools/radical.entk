@@ -390,7 +390,7 @@ class WFprocessor(object):
                 now =  time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
-                    now = last
+                    last = now
 
 
             self._logger.info('Enqueue thread terminated')
@@ -537,13 +537,12 @@ class WFprocessor(object):
                                                                     func_condition = stage.post_exec['condition']
                                                                     func_on_true = stage.post_exec['on_true']
                                                                     func_on_false = stage.post_exec['on_false']
+                                                                    
                                                                     if func_condition():
                                                                         func_on_true()
                                                                     else:
                                                                         func_on_false()  
-
-                                                                    for s in pipe.stages:
-                                                                        print s.uid           
+     
 
                                                                     self._logger.info('Post-exec executed for stage %s'%stage.uid)                 
                                                                     self._prof.prof('post-exec executed for stage %s'%stage.uid, uid=self._uid)
@@ -581,7 +580,7 @@ class WFprocessor(object):
                     now =  time.time()
                     if now - last >= self._rmq_ping_interval:
                         mq_connection.process_data_events()
-                        now = last
+                        last = now
 
                 except Exception, ex:
                     self._logger.error('Unable to receive message from completed queue: %s' % ex)

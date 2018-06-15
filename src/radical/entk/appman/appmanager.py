@@ -932,24 +932,20 @@ class AppManager(object):
                 now =  time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
-                    now = last
+                    last = now
 
             self._prof.prof('terminating synchronizer', uid=self._uid)
-
-            print 'return sync'
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to terminate synchronizer thread gracefully...')
 
-            self._terminate_sync.set()
             raise KeyboardInterrupt
 
         except Exception, ex:
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
-            self._terminate_sync.set()
             raise Error(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------
