@@ -124,7 +124,7 @@ class TaskManager(Base_TaskManager):
                 now =  time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
-                    now = last
+                    last = now
 
         except KeyboardInterrupt:
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -201,7 +201,7 @@ class TaskManager(Base_TaskManager):
                                                                                                 port=port
                                                                                                 )
                                                                       )
-                    mq_channel = self._mq_connection.channel()
+                    mq_channel = mq_connection.channel()
 
                     if unit.state in rp.FINAL:
 
@@ -257,7 +257,7 @@ class TaskManager(Base_TaskManager):
                             completed_queue[0])
                         )
 
-                    # self._mq_connection.close()
+                    # mq_connection.close()
 
                 except KeyboardInterrupt:
                     self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -359,7 +359,7 @@ class TaskManager(Base_TaskManager):
                     now =  time.time()
                     if now - last >= self._rmq_ping_interval:
                         mq_connection.process_data_events()
-                        now = last
+                        last = now
 
                 except Exception, ex:
                     logger.exception('Error in task execution: %s' % ex)
@@ -387,7 +387,7 @@ class TaskManager(Base_TaskManager):
                     raise
 
             local_prof.prof('terminating tmgr process', uid=uid)
-            self._mq_connection.close()
+            mq_connection.close()
             local_prof.close()
 
         except KeyboardInterrupt:
