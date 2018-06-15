@@ -453,6 +453,8 @@ class TaskManager(Base_TaskManager):
                 if self.check_heartbeat():                    
                     self._hb_thread.join()
 
+                self._hb_thread = None
+
                 self._logger.info('Hearbeat thread terminated')
 
                 self._prof.prof('heartbeat thread terminated', uid=self._uid)
@@ -522,6 +524,8 @@ class TaskManager(Base_TaskManager):
                 
                 if self.check_manager():
                     self._tmgr_process.join()
+
+                self._tmgr_process = None
 
                 self._logger.info('Task manager process closed')
 
