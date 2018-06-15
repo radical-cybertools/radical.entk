@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, ResourceManager, AppManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
@@ -40,19 +40,19 @@ def test_issue_26():
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
-    rman = ResourceManager(res_dict)
-
     appman = AppManager(hostname=hostname, port=port,autoterminate=False)
-    appman.resource_manager = rman
+    appman.resource_desc = res_dict
+
+
     p1 = create_pipeline()
-    print p1.uid, p1.stages[0].uid
     appman.assign_workflow(p1)
     appman.run()
+    print p1.uid, p1.stages[0].uid
 
-    p2 = create_pipeline()
-    print p2.uid, p2.stages[0].uid
+    p2 = create_pipeline()    
     appman.assign_workflow(p2)
     appman.run()
+    print p2.uid, p2.stages[0].uid
 
     appman.resource_terminate()
 

@@ -5,6 +5,7 @@ from radical.entk.exceptions import *
 import radical.utils as ru
 import os
 from radical.entk import Pipeline, Stage, Task
+from glob import glob
 
 def test_get_session_profile():
 
@@ -82,6 +83,9 @@ def test_write_workflow():
     wf = list()
     wf.append(generate_pipeline(1))
     wf.append(generate_pipeline(2))
+    
+    for f in glob('test/*'):
+        os.remove(f)
 
     write_workflow(wf,'test')
 

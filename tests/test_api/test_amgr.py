@@ -27,45 +27,13 @@ def test_initialization():
     assert isinstance(amgr._pending_queue, list)
     assert isinstance(amgr._completed_queue, list)
 
-    # Threads and procs counts
-    assert amgr._num_push_threads == 1
-    assert amgr._num_pull_threads == 1
-    assert amgr._num_sync_threads == 1
-
     # Global parameters to have default values
     assert amgr._mqs_setup == False
-    assert amgr._resource_manager == None
+    assert amgr._resource_desc == None
     assert amgr._task_manager == None
     assert amgr._workflow  == None
     assert amgr._resubmit_failed == False
     assert amgr._reattempts == 3
     assert amgr._cur_attempt == 1
-    assert amgr._resource_autoterminate == True
+    assert amgr._autoterminate == True
 
-    # Check if RP Profiler is set
-    assert amgr._rp_profile == False
-
-
-@given(t=st.text(),
-       l=st.lists(st.text()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans(),
-       se=st.sets(st.text()),
-       d=st.dictionaries(st.text(),st.text()))
-def test_assignment_exceptions(t,l,i,b,se,d):
-    
-
-    amgr = Amgr()
-
-    data_type = [t,l,i,b,se,d]
-
-    for data in data_type:
-
-        print 'Using: %s, %s'%(data, type(data))
-
-        with pytest.raises(TypeError):
-            amgr.resource_manager = data
-
-        if not isinstance(data,str):
-            with pytest.raises(TypeError):
-                amgr.name = data

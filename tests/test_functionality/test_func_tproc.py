@@ -1,4 +1,4 @@
-from radical.entk.execman.task_processor import *
+from radical.entk.execman.rp.task_processor import *
 from radical.entk.exceptions import *
 from radical.entk import Task, Stage, Pipeline
 import radical.pilot as rp
