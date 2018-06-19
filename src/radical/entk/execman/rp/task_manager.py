@@ -107,8 +107,8 @@ class TaskManager(Base_TaskManager):
 
                 self._logger.info('Sent heartbeat request')
 
-                # Ten second interval for heartbeat request to be responded to
-                time.sleep(10)
+                # 60 second interval for heartbeat request to be responded to
+                time.sleep(60)
 
                 method_frame, props, body = channel.basic_get(queue=self._hb_response_q)
 
@@ -118,7 +118,6 @@ class TaskManager(Base_TaskManager):
                         response = True
 
                         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
 
                 # Appease pika cos it thinks the connection is dead
                 now =  time.time()
