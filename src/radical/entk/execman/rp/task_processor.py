@@ -5,7 +5,7 @@ import traceback
 from radical.entk.exceptions import *
 import os
 
-logger = ru.get_logger('radical.entk.task_processor')
+logger = ru.Logger('radical.entk.task_processor')
 
 
 def resolve_placeholders(path, placeholder_dict):
@@ -259,15 +259,22 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.name = '%s,%s,%s,%s,%s,%s' % (  task.uid, task.name,
                                             task.parent_stage['uid'], task.parent_stage['name'],
                                             task.parent_pipeline['uid'], task.parent_pipeline['name'])
-        cud.pre_exec = task.pre_exec
-        cud.executable = task.executable
-        cud.arguments = task.arguments
-        cud.post_exec = task.post_exec
-        cud.cores = task.cores
-        cud.mpi = task.mpi
+        cud.pre_exec    = task.pre_exec
+        cud.executable  = task.executable
+        cud.arguments   = task.arguments
+        cud.post_exec   = task.post_exec
+        
+        cud.cpu_processes    = task.cpu_reqs['processes']
+        cud.cpu_threads      = task.cpu_reqs['threads_per_process']
+        cud.cpu_process_type = task.cpu_reqs['process_type']
+        cud.cpu_thread_type  = task.cpu_reqs['thread_type']
+        cud.gpu_processes    = task.gpu_reqs['processes']
+        cud.gpu_threads      = task.gpu_reqs['threads_per_process']
+        cud.gpu_process_type = task.gpu_reqs['process_type']
+        cud.gpu_thread_type  = task.gpu_reqs['thread_type']
 
-        cud.input_staging = get_input_list_from_task(task, placeholder_dict)
-        cud.output_staging = get_output_list_from_task(task, placeholder_dict)
+        cud.input_staging   = get_input_list_from_task(task, placeholder_dict)
+        cud.output_staging  = get_output_list_from_task(task, placeholder_dict)
 
         if prof:
             prof.prof('cud from task - done', uid=task.uid)

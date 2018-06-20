@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 # ------------------------------------------------------------------------------
@@ -44,17 +44,14 @@ def test_issue_199():
 
             'resource': 'local.localhost',
             'walltime': 1,
-            'cores': 1
+            'cpus': 1
     }
-
-    # Create Resource Manager object with the above resource description
-    rman = ResourceManager(res_dict)
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)
 
     # Assign resource manager to the Application Manager
-    appman.resource_manager = rman
+    appman.resource_desc = res_dict
 
     p = generate_pipeline()
     

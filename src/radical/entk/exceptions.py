@@ -103,3 +103,11 @@ class Error(EnTKError):
     def __init__(self, text):
         msg = 'Error: %s' % text
         super(Error, self).__init__(msg)
+
+class NotImplementedError(EnTKError):
+    """
+    Error to be raised when a method is not implemented in inherited classes
+    """
+
+    def __init__(self, msg):
+        super(Error, self).__init__(msg)

@@ -115,7 +115,7 @@ def test_synchronizer():
         assert t.state == states.INITIAL
 
     # Start the synchronizer method in a thread
-    amgr._end_sync = Event()
+    amgr._terminate_sync = Event()
     sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
     sync_thread.start()        
 
@@ -129,7 +129,7 @@ def test_synchronizer():
     for t in p.stages[0].tasks:
         assert t.state == states.SCHEDULING
 
-    amgr._end_sync.set()
+    amgr._terminate_sync.set()
     sync_thread.join()
 
 def test_mq_cleanup():

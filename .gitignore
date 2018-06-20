@@ -87,7 +87,15 @@ docs/_build/
 ./.pytest_cache
 ./.cache
 ./.travis.yml
+./tests/__pycache__
+./tests/.hypothesis
 
 # pypi files
 ./src/radical.entk.egg-info
 ./dist
+
+# local RE files
+.re.*
+./.hypothesis/
+./.pytest_cache/
+./src/radical/entk/SDIST

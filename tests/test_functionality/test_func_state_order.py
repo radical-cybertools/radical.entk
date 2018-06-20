@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import pytest
 from radical.entk.exceptions import *
 import os
@@ -36,7 +36,7 @@ def test_state_order():
 
             'resource': 'local.localhost',
             'walltime': 5,
-            'cores': 1,
+            'cpus': 1,
             'project': ''
 
     }
@@ -44,11 +44,9 @@ def test_state_order():
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    rman = ResourceManager(res_dict)
-
     appman = AppManager(hostname=hostname, port=port)
+    appman.resource_desc = res_dict
 
-    appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
     appman.run()
 

@@ -1,4 +1,4 @@
-from radical.entk.execman.task_processor import *
+from radical.entk.execman.rp.task_processor import *
 from radical.entk.exceptions import *
 from radical.entk import Task, Stage, Pipeline
 import radical.pilot as rp
@@ -167,8 +167,16 @@ def test_create_cud_from_task():
     t1.pre_exec = ['module load gromacs']
     t1.executable = ['grompp']
     t1.arguments = ['hello']
-    t1.cores = 4
-    t1.mpi = True
+    t1.cpu_reqs = { 'processes': 4, 
+                    'process_type': 'MPI', 
+                    'threads_per_process': 1, 
+                    'thread_type': 'OpenMP'
+                }
+    t1.gpu_reqs = { 'processes': 4, 
+                    'process_type': 'MPI', 
+                    'threads_per_process':2, 
+                    'thread_type': 'OpenMP'
+                }
     t1.post_exec = ['echo test']
 
     t1.upload_input_data = ['upload_input.dat']
@@ -196,8 +204,14 @@ def test_create_cud_from_task():
     # rp returns executable as a string regardless of whether assignment was using string or list
     assert cud.executable == t1.executable[0]
     assert cud.arguments == t1.arguments
-    assert cud.cores == t1.cores
-    assert cud.mpi == t1.mpi
+    assert cud.cpu_processes    == t1.cpu_reqs['processes']
+    assert cud.cpu_threads      == t1.cpu_reqs['threads_per_process']
+    assert cud.cpu_process_type == t1.cpu_reqs['process_type']
+    assert cud.cpu_thread_type  == t1.cpu_reqs['thread_type']
+    assert cud.gpu_processes    == t1.gpu_reqs['processes']
+    assert cud.gpu_threads      == t1.gpu_reqs['threads_per_process']
+    assert cud.gpu_process_type == t1.gpu_reqs['process_type']
+    assert cud.gpu_thread_type  == t1.gpu_reqs['thread_type']
     assert cud.post_exec == t1.post_exec
 
     assert {'source': 'upload_input.dat', 'target': 'upload_input.dat'} in cud.input_staging

@@ -19,8 +19,14 @@ def test_initialization():
     assert t.executable == list()
     assert t.arguments == list()
     assert t.post_exec == list()
-    assert t.cores == 1
-    assert t.mpi == False
+    assert t.cpu_reqs['processes'] == 1
+    assert t.cpu_reqs['process_type'] == None
+    assert t.cpu_reqs['threads_per_process'] == 1
+    assert t.cpu_reqs['thread_type'] == None
+    assert t.gpu_reqs['processes'] == 0
+    assert t.gpu_reqs['process_type'] == None
+    assert t.gpu_reqs['threads_per_process'] == 0
+    assert t.gpu_reqs['thread_type'] == None
     assert t.upload_input_data == list()
     assert t.copy_input_data == list()
     assert t.link_input_data == list()
@@ -96,16 +102,60 @@ def test_task_exceptions(s,l,i,b):
             with pytest.raises(TypeError):
                 t.download_output_data = data            
 
-        if not isinstance(data, bool):
+        if not isinstance(data, str) and not isinstance(data, unicode):
 
-            with pytest.raises(TypeError):
-                t.mpi = data
+            with pytest.raises(ValueError):
+                t.cpu_reqs = {
+                                'processes': 1,
+                                'process_type': data,
+                                'threads_per_process': 1,
+                                'thread_type': None
+                            }
+                t.cpu_reqs = {
+                                'processes': 1,
+                                'process_type': None,
+                                'threads_per_process': 1,
+                                'thread_type': data
+                            }
+                t.gpu_reqs = {
+                                'processes': 1,
+                                'process_type': data,
+                                'threads_per_process': 1,
+                                'thread_type': None
+                            }
+                t.gpu_reqs = {
+                                'processes': 1,
+                                'process_type': None,
+                                'threads_per_process': 1,
+                                'thread_type': data
+                            }
+                
 
         if not isinstance(data, int):
 
             with pytest.raises(TypeError):
-                t.cores = data
+                t.cpu_reqs = {
+                                'processes': data,
+                                'process_type': None,
+                                'threads_per_process': 1,
+                                'thread_type': None
+                            }
+                t.cpu_reqs = {
+                                'processes': 1,
+                                'process_type': None,
+                                'threads_per_process': data,
+                                'thread_type': None
+                            }
+                t.gpu_reqs = {
+                                'processes': data,
+                                'process_type': None,
+                                'threads_per_process': 1,
+                                'thread_type': None
+                            }
+                t.gpu_reqs = {
+                                'processes': 1,
+                                'process_type': None,
+                                'threads_per_process': data,
+                                'thread_type': None
+                            }
 
-    if i <=0:
-        with pytest.raises(ValueError):
-            t.cores = i
