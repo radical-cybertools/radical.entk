@@ -2,8 +2,8 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk import states
 
-class Task(object):
 
+class Task(object):
 
     """
     A Task is an abstraction of a computational unit. In this case, a Task 
@@ -17,14 +17,12 @@ class Task(object):
     the profiling if not taken care.
     """
 
-    def __init__(self, duplicate = False):
+    def __init__(self):        
 
-        if not duplicate:
-            self._uid       = ru.generate_id('radical.entk.task')
+        self._uid = None
+        self._name = None
 
-        self._name      = str()
-
-        self._state     = states.INITIAL
+        self._state = states.INITIAL
 
         # Attributes necessary for execution
         self._pre_exec      = list()
@@ -43,11 +41,11 @@ class Task(object):
                             }
 
         # Data staging attributes
-        self._upload_input_data     = list()
-        self._copy_input_data       = list()
-        self._link_input_data       = list()
-        self._copy_output_data      = list()
-        self._download_output_data  = list()
+        self._upload_input_data = list()
+        self._copy_input_data = list()
+        self._link_input_data = list()
+        self._copy_output_data = list()
+        self._download_output_data = list()
 
         self._path = None
         self._exit_code = None
@@ -55,13 +53,11 @@ class Task(object):
         # Keep track of states attained
         self._state_history = [states.INITIAL]
 
-        ## The following help in updation
+        # The following help in updation
         # Stage this task belongs to
-        self._p_stage = None
+        self._p_stage = {'uid':None, 'name': None}
         # Pipeline this task belongs to
-        self._p_pipeline = None
-
-
+        self._p_pipeline = {'uid':None, 'name': None}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -69,20 +65,16 @@ class Task(object):
 
     @property
     def uid(self):
-
         """
         Unique ID of the current task
 
         :getter: Returns the unique id of the current task
         :type: String
         """
-
-        if hasattr(self, '_uid'):
-            return self._uid
+        return self._uid
 
     @property
     def name(self):
-
         """
         Name of the task
 
@@ -92,10 +84,9 @@ class Task(object):
         """
 
         return self._name
-    
+
     @property
     def state(self):
-
         """
         Current state of the task
 
@@ -104,10 +95,9 @@ class Task(object):
         """
 
         return self._state
-    
+
     @property
     def pre_exec(self):
-
         """
         List of commands to be executed prior to the executable
 
@@ -116,10 +106,9 @@ class Task(object):
         :arguments: list of strings
         """
         return self._pre_exec
-    
+
     @property
     def executable(self):
-
         """
         A unix-based kernel to be executed
 
@@ -128,10 +117,9 @@ class Task(object):
         :arguments: string
         """
         return self._executable
-    
+
     @property
     def arguments(self):
-
         """
         List of arguments to be supplied to the executable
 
@@ -140,10 +128,9 @@ class Task(object):
         :arguments: list of strings
         """
         return self._arguments
-    
+
     @property
     def post_exec(self):
-
         """
         List of commands to be executed post executable
 
@@ -233,7 +220,6 @@ class Task(object):
 
     @property
     def upload_input_data(self):
-
         """
         List of files to be transferred from local machine to the location of the current task
         on the remote machine
@@ -244,10 +230,9 @@ class Task(object):
         """
 
         return self._upload_input_data
-    
+
     @property
     def copy_input_data(self):
-
         """
         List of files to be copied from a location on the remote machine to the location of 
         current task on the remote machine
@@ -258,10 +243,9 @@ class Task(object):
         """
 
         return self._copy_input_data
-    
+
     @property
     def link_input_data(self):
-
         """
         List of files to be linked from a location on the remote machine to the location of 
         current task on the remote machine
@@ -272,10 +256,9 @@ class Task(object):
         """
 
         return self._link_input_data
-    
+
     @property
     def copy_output_data(self):
-
         """
         List of files to be copied from the location of the current task to another location
         on the remote machine
@@ -286,10 +269,9 @@ class Task(object):
         """
 
         return self._copy_output_data
-    
+
     @property
     def download_output_data(self):
-
         """
         List of files to be downloaded from the location of the current task to a location
         on the local machine.
@@ -302,7 +284,6 @@ class Task(object):
 
     @property
     def exit_code(self):
-
         """
         Get the exit code for DONE tasks. 0 for successful tasks, 1 for failed tasks.
 
@@ -310,10 +291,8 @@ class Task(object):
         """
         return self._exit_code
 
-
     @property
     def path(self):
-
         """
         Get the path of the task on the remote machine. Useful to reference files
         generated in the current task.
@@ -325,34 +304,30 @@ class Task(object):
 
     @property
     def parent_stage(self):
-
         """
         :getter: Returns the stage this task belongs to
         :setter: Assigns the stage uid this task belongs to
         """
         return self._p_stage
-    
+
     @property
     def parent_pipeline(self):
-
         """
         :getter: Returns the pipeline this task belongs to
         :setter: Assigns the pipeline uid this task belongs to
         """
 
-        return self._p_pipeline    
+        return self._p_pipeline
 
     @property
     def state_history(self):
-
         """
         Returns a list of the states obtained in temporal order
-        
+
         :return: list
         """
 
         return self._state_history
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
@@ -367,14 +342,14 @@ class Task(object):
 
     @name.setter
     def name(self, val):
-        if isinstance(val,str):
+        if isinstance(val, str):
             self._name = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
     @state.setter
     def state(self, val):
-        if isinstance(val,str):
+        if isinstance(val, str):
             self._state = val
             self._state_history.append(val)
         else:
@@ -386,7 +361,6 @@ class Task(object):
             self._pre_exec = val
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
-
 
     @executable.setter
     def executable(self, val):
@@ -403,7 +377,6 @@ class Task(object):
             self._arguments = val
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
-
 
     @post_exec.setter
     def post_exec(self, val):
@@ -453,13 +426,9 @@ class Task(object):
                                         obj='cpu_reqs', 
                                         attribute='thread_type'
                                     )
+
             else:
-
                 raise MissingError(obj='cpu_reqs', missing_attribute= expected_keys - set(val.keys()))
-
-        else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
-
 
     @gpu_reqs.setter
     def gpu_reqs(self, val):
@@ -506,9 +475,6 @@ class Task(object):
             else:
                 raise MissingError(obj='gpu_reqs', missing_attribute= expected_keys - set(val.keys()))
 
-        else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
-
 
     @upload_input_data.setter
     def upload_input_data(self, val):
@@ -552,7 +518,6 @@ class Task(object):
         else:
             raise TypeError(entity='exit_code', expected_type=int, actual_type=type(val))
 
-
     @path.setter
     def path(self, val):
         if isinstance(val, str):
@@ -562,26 +527,23 @@ class Task(object):
 
     @parent_stage.setter
     def parent_stage(self, val):
-        if isinstance(val,str):
+        if isinstance(val, str):
             self._p_stage = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
     @parent_pipeline.setter
     def parent_pipeline(self, val):
-        if isinstance(val,str):
+        if isinstance(val, str):
             self._p_pipeline = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
-
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_dict(self):
-
         """
         Convert current Task into a dictionary
 
@@ -615,11 +577,8 @@ class Task(object):
                     }
 
         return task_desc_as_dict
-        
-
 
     def from_dict(self, d):
-
         """
         Create a Task from a dictionary. The change is in inplace.
 
@@ -628,16 +587,12 @@ class Task(object):
         """
 
         if 'uid' in d:
-            if isinstance(d['uid'], str) or isinstance(d['uid'], unicode):
-                self._uid   = d['uid']
-            else:
-                raise TypeError(entity='uid', expected_type=str, actual_type=type(d['uid']))
+            if d['uid']:
+                self._uid = d['uid']
 
         if 'name' in d:
-            if isinstance(d['name'], str) or isinstance(d['name'], unicode):
+            if d['name']:
                 self._name = d['name']
-            else:
-                raise TypeError(entity='name', expected_type=str, actual_type=type(d['name']))
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
@@ -647,13 +602,11 @@ class Task(object):
         else:
             self._state = states.INITIAL
 
-
         if 'state_history' in d:
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
                 raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
-
 
         if 'pre_exec' in d:
             if isinstance(d['pre_exec'], list):
@@ -685,13 +638,11 @@ class Task(object):
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['cpu_reqs']))
 
-
         if 'gpu_reqs' in d:
             if isinstance(d['gpu_reqs'], dict):
                 self._gpu_reqs = d['gpu_reqs']
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
-
             
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
@@ -704,7 +655,6 @@ class Task(object):
                 self._copy_input_data = d['copy_input_data']
             else:
                 raise TypeError(expected_type=list, actual_type=type(d['copy_input_data']))
-            
 
         if 'link_input_data' in d:
             if isinstance(d['link_input_data'], list):
@@ -736,38 +686,41 @@ class Task(object):
                 if isinstance(d['path'], str) or isinstance(d['path'], unicode):
                     self._path = d['path']
                 else:
-                    raise TypeError(entity='path',expected_type=str, actual_type=type(d['path']))
+                    raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
 
         if 'parent_stage' in d:
-            if isinstance(d['parent_stage'], str) or isinstance(d['parent_stage'], unicode):
+            if isinstance(d['parent_stage'], dict):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(entity='parent_stage', expected_type=str, actual_type=type(d['parent_stage']))            
+                raise TypeError(entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str) or isinstance(d['parent_pipeline'], unicode):
+            if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _validate(self):
+    def _assign_uid(self, sid):
+        self._uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
 
+
+    def _initialize(self):
         """
         Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the 
         task. 
         """
 
         if self._state is not states.INITIAL:
-            raise ValueError(   obj=self._uid, 
-                                attribute='state', 
-                                expected_value=states.INITIAL,
-                                actual_value=self._state)
+            raise ValueError(obj=self._uid,
+                             attribute='state',
+                             expected_value=states.INITIAL,
+                             actual_value=self._state)
 
         if not self._executable:
-            raise MissingError( obj=self._uid,
-                                missing_attribute='executable')
+            raise MissingError(obj=self._uid,
+                               missing_attribute='executable')
     # ------------------------------------------------------------------------------------------------------------------

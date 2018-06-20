@@ -14,9 +14,9 @@ def test_initialization():
 
     p = Pipeline()
 
-    assert type(p._uid) == str
-    assert p.stages == list()
-    assert p.name == str()
+    assert p.uid == None
+    assert p.name == None
+    assert p.stages == list()    
     assert p.state == states.INITIAL
     assert p._stage_count == 0
     assert p._cur_stage == 0
@@ -24,6 +24,12 @@ def test_initialization():
     assert type(p._completed_flag) == type(threading.Event())
     assert p._completed_flag.is_set() == False
 
+
+def test_stage_uid():
+
+    p = Pipeline()
+    p._assign_uid('temp')
+    assert isinstance(p.uid, str)
 
 @given(t=st.text(),
        l=st.lists(st.text()),

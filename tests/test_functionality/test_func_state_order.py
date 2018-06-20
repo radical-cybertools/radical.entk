@@ -1,8 +1,10 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import pytest
 from radical.entk.exceptions import *
 import os
 
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def test_state_order():
 
@@ -14,8 +16,7 @@ def test_state_order():
 
         t1 = Task()
         t1.name = 'simulation'
-        t1.executable = ['/bin/echo']
-        t1.arguments = ['hello']
+        t1.executable = ['/bin/date']
         t1.copy_input_data = []
         t1.copy_output_data = []
 
@@ -43,14 +44,13 @@ def test_state_order():
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    rman = ResourceManager(res_dict)
-    rman._validate_resource_desc(sid='xyz')
-    rman._populate()
+    appman = AppManager(hostname=hostname, port=port)
+    appman.resource_desc = res_dict
 
-    appman = AppManager()
-    appman.resource_manager = rman
     appman.assign_workflow(set([p1]))
     appman.run()
+
+    print p1.state
 
     p_state_hist = p1.state_history
     assert p_state_hist == ['DESCRIBED', 'SCHEDULING', 'DONE']

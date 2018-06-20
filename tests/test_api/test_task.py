@@ -12,8 +12,8 @@ def test_initialization():
     """
 
     t = Task()
-    assert type(t._uid) == str
-    assert t.name == str()
+    assert t._uid == None
+    assert t.name == None
     assert t.state == states.INITIAL
     assert t.pre_exec == list()
     assert t.executable == list()
@@ -35,36 +35,16 @@ def test_initialization():
     assert t.exit_code == None
     assert t.path == None
     assert t.state_history == [states.INITIAL]
-    assert t.parent_pipeline == None
-    assert t.parent_stage == None
+    assert t.parent_pipeline['uid'] == None
+    assert t.parent_pipeline['name'] == None
+    assert t.parent_stage['uid'] == None
+    assert t.parent_stage['name'] == None
 
+def test_task_uid():
 
-    t = Task(duplicate=True)
-    assert not hasattr(t, '_uid')
-    assert t.name == str()
-    assert t.state == states.INITIAL
-    assert t.pre_exec == list()
-    assert t.executable == list()
-    assert t.arguments == list()
-    assert t.post_exec == list()
-    assert t.cpu_reqs['processes'] == 1
-    assert t.cpu_reqs['process_type'] == None
-    assert t.cpu_reqs['threads_per_process'] == 1
-    assert t.cpu_reqs['thread_type'] == None
-    assert t.gpu_reqs['processes'] == 0
-    assert t.gpu_reqs['process_type'] == None
-    assert t.gpu_reqs['threads_per_process'] == 0
-    assert t.gpu_reqs['thread_type'] == None
-    assert t.upload_input_data == list()
-    assert t.copy_input_data == list()
-    assert t.link_input_data == list()
-    assert t.copy_output_data == list()
-    assert t.download_output_data == list()
-    assert t.exit_code == None
-    assert t.path == None
-    assert t.state_history == [states.INITIAL]
-    assert t.parent_pipeline == None
-    assert t.parent_stage == None
+    t = Task()
+    t._assign_uid('temp')
+    assert isinstance(t.uid, str)
 
 @given(s=st.text(), l=st.lists(st.text()), i=st.integers().filter(lambda x: type(x) == int), b=st.booleans())
 def test_task_exceptions(s,l,i,b):

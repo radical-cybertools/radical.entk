@@ -1,8 +1,10 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import pytest
 from radical.entk.exceptions import *
 import os
 
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def test_integration_local():
 
@@ -42,9 +44,7 @@ def test_integration_local():
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
-    rman = ResourceManager(res_dict)
-
     appman = AppManager()
-    appman.resource_manager = rman
+    appman.resource_desc = res_dict
     appman.assign_workflow(set([p1]))
     appman.run()

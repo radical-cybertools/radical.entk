@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 # ------------------------------------------------------------------------------
@@ -9,6 +9,9 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 
 if not os.environ.get('RADICAL_PILOT_DBURL'):
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+
+hostname = os.environ.get('RMQ_HOSTNAME','localhost')
+port = int(os.environ.get('RMQ_PORT',5672))
 
 def generate_pipeline():
     
@@ -44,14 +47,11 @@ def test_issue_199():
             'cpus': 1
     }
 
-    # Create Resource Manager object with the above resource description
-    rman = ResourceManager(res_dict)
-
     # Create Application Manager
-    appman = AppManager()
+    appman = AppManager(hostname=hostname, port=port)
 
     # Assign resource manager to the Application Manager
-    appman.resource_manager = rman
+    appman.resource_desc = res_dict
 
     p = generate_pipeline()
     

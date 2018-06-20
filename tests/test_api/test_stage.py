@@ -13,13 +13,20 @@ def test_initialization():
 
     s = Stage()
 
-    assert type(s._uid) == str
-    assert s.tasks == set()
-    assert s.name == str()
+    assert s.uid == None
+    assert s.name == None
+    assert s.tasks == set()    
     assert s.state == states.INITIAL
     assert s._task_count == 0
-    assert s.parent_pipeline == None
+    assert s.parent_pipeline['uid'] == None
+    assert s.parent_pipeline['name'] == None
 
+
+def test_stage_uid():
+
+    s = Stage()
+    s._assign_uid('temp')
+    assert isinstance(s.uid, str)
 
 @given(t=st.text(),
        l=st.lists(st.text()),

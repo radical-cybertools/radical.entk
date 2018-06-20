@@ -65,9 +65,11 @@ def test_uid_passing():
     s.tasks = t
     p.stages = s
 
-    assert s.parent_pipeline == p.uid
-    assert t.parent_pipeline == s.parent_pipeline
-    assert t.parent_stage == s.uid
+    p._initialize('temp')
+
+    assert s.parent_pipeline['uid'] == p.uid
+    assert t.parent_pipeline['uid'] == s.parent_pipeline['uid']
+    assert t.parent_stage['uid'] == s.uid
 
 def test_task_set_state():
 
