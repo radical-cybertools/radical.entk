@@ -303,6 +303,14 @@ class WFprocessor(object):
 
                             executable_stage = pipe.stages[pipe.current_stage - 1]
 
+                            if not executable_stage.uid:
+                                executable_stage.parent_pipeline['uid'] = pipe.uid
+                                executable_stage.parent_pipeline['name'] = pipe.name
+                                executable_stage._assign_uid(self._sid)
+                                print 'Enqueuer: ', executable_stage.uid
+                                executable_stage._initialize(self._sid)
+                                executable_stage._pass_uid()
+
                             if executable_stage.state in [states.INITIAL, states.SCHEDULED]:                           
 
                                     if executable_stage.state == states.INITIAL:
@@ -316,7 +324,7 @@ class WFprocessor(object):
                                                    logger=self._logger)
 
                                     executable_tasks = executable_stage.tasks
-                                    
+                                 
                                     for executable_task in executable_tasks:
 
                                         if (executable_task.state==states.INITIAL)or \
@@ -382,7 +390,7 @@ class WFprocessor(object):
                 now =  time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
-                    now = last
+                    last = now
 
 
             self._logger.info('Enqueue thread terminated')
@@ -516,8 +524,35 @@ class WFprocessor(object):
                                                                        profiler=local_prof,
                                                                        logger=self._logger)
 
-                                                            pipe._increment_stage()
+                                                            ## Check if Stage has a post-exec that needs to be
+                                                            ## executed                                           
 
+                                                            if stage.post_exec:
+
+                                                                try:
+
+                                                                    self._logger.info('Executing post-exec for stage %s'%stage.uid)
+                                                                    self._prof.prof('executing post-exec for stage %s'%stage.uid, uid=self._uid)
+
+                                                                    func_condition = stage.post_exec['condition']
+                                                                    func_on_true = stage.post_exec['on_true']
+                                                                    func_on_false = stage.post_exec['on_false']
+                                                                    
+                                                                    if func_condition():
+                                                                        func_on_true()
+                                                                    else:
+                                                                        func_on_false()  
+     
+
+                                                                    self._logger.info('Post-exec executed for stage %s'%stage.uid)                 
+                                                                    self._prof.prof('post-exec executed for stage %s'%stage.uid, uid=self._uid)
+
+                                                                except Exception, ex:
+                                                                    self._logger.exception('Execution failed in post_exec of stage %s'%stage.uid)
+                                                                    raise
+
+                                                            pipe._increment_stage()
+                                                        
                                                             if pipe.completed:
 
                                                                 transition(obj=pipe,
@@ -545,7 +580,7 @@ class WFprocessor(object):
                     now =  time.time()
                     if now - last >= self._rmq_ping_interval:
                         mq_connection.process_data_events()
-                        now = last
+                        last = now
 
                 except Exception, ex:
                     self._logger.error('Unable to receive message from completed queue: %s' % ex)

@@ -118,7 +118,7 @@ class TaskManager(Base_TaskManager):
                 now =  time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
-                    now = last
+                    last = now
 
         except KeyboardInterrupt:
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -265,7 +265,7 @@ class TaskManager(Base_TaskManager):
                     now =  time.time()
                     if now - last >= self._rmq_ping_interval:
                         mq_connection.process_data_events()
-                        now = last
+                        last = now
 
                 except Exception as ex:
                     logger.exception('Error in tmgr: %s' % ex)
@@ -366,6 +366,8 @@ class TaskManager(Base_TaskManager):
                     self._hb_alive.set()
                     self._hb_thread.join()
 
+                self._hb_thread = None
+
                 self._logger.info('Hearbeat thread terminated')
 
                 self._prof.prof('heartbeat thread terminated', uid=self._uid)
@@ -434,6 +436,7 @@ class TaskManager(Base_TaskManager):
                     self._tmgr_terminate.set()
 
                 self._tmgr_process.join()
+                self._tmgr_process = None
                 self._logger.info('Task manager process closed')
 
                 self._prof.prof('tmgr process terminated', uid=self._uid)
