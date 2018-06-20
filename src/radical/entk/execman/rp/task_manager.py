@@ -52,6 +52,7 @@ class TaskManager(Base_TaskManager):
 
         self._umgr = None
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._hb_interval = os.getenv('ENTK_RP_HB_INTERVAL',300)
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)
 
@@ -111,7 +112,7 @@ class TaskManager(Base_TaskManager):
                 # We ping the rmq server every 10 seconds to not lose
                 # the connection
                 i=0                
-                while (i<30):                    
+                while (i<self._hb_interval/10):                    
                     time.sleep(10)
                     # Appease pika cos it thinks the connection is dead
                     now =  time.time()                    
@@ -185,6 +186,30 @@ class TaskManager(Base_TaskManager):
 
                 if None not in [parent_pipeline, parent_stage, task.name]:
                     placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
+
+
+            def heartbeat_response(mq_channel):
+
+                try:
+
+                    # Get request from heartbeat-req for heartbeat response
+                    hb_method_frame, hb_props, hb_body = mq_channel.basic_get(queue=self._hb_request_q)
+
+                    if hb_body:
+
+                        logger.info('Received heartbeat request')
+
+                        mq_channel.basic_publish(exchange='',
+                                                 routing_key=self._hb_response_q,
+                                                 properties=pika.BasicProperties(correlation_id=hb_props.correlation_id),
+                                                 body='response')
+
+                        logger.info('Sent heartbeat response')
+                        mq_channel.basic_ack(delivery_tag=hb_method_frame.delivery_tag)
+
+                except Exception, ex:
+                    logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
+                    raise
 
             def unit_state_cb(unit, state):
 
@@ -282,26 +307,9 @@ class TaskManager(Base_TaskManager):
             mq_channel.queue_delete(queue=self._hb_response_q)
             mq_channel.queue_declare(queue=self._hb_response_q)
 
-            '''
-            # Function to be invoked upon request message
-            def on_request(ch, method, props, body):
-
-                self._logger.info('Received heartbeat request')
-
-                ch.basic_publish(   exchange='',
-                                    routing_key=props.reply_to,
-                                    properties=pika.BasicProperties(correlation_id = props.correlation_id),
-                                    body='response')
-
-                self._logger.info('Sent heartbeat response')
-
-                ch.basic_ack(delivery_tag = method.delivery_tag)
-            '''
-
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
             last = time.time()
-
             while not self._tmgr_terminate.is_set():
 
                 try:
@@ -328,36 +336,14 @@ class TaskManager(Base_TaskManager):
                                        profiler=local_prof,
                                        logger=self._logger)
 
+                            heartbeat_response(mq_channel)
+
+                            now =  time.time()
+                            if now - last >= self._rmq_ping_interval:
+                                mq_connection.process_data_events()
+                                last = now
+
                         umgr.submit_units(bulk_cuds)
-
-                except Exception, ex:
-                    logger.exception('Error in task execution: %s' % ex)
-                    raise
-
-                try:
-
-                    # Get request from heartbeat-req for heartbeat response
-                    hb_method_frame, hb_props, hb_body = mq_channel.basic_get(queue=self._hb_request_q)
-
-                    if hb_body:
-
-                        logger.info('Received heartbeat request')
-
-                        mq_channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(correlation_id=hb_props.correlation_id),
-                                                 body='response')
-
-                        logger.info('Sent heartbeat response')
-                        mq_channel.basic_ack(delivery_tag=hb_method_frame.delivery_tag)
-
-                except Exception, ex:
-                    logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
-                    raise
-
-                try:
-
-                    if body:
 
                         for task in bulk_tasks:
 
@@ -370,13 +356,15 @@ class TaskManager(Base_TaskManager):
                                        logger=self._logger)
                             self._logger.info('Task %s submitted to RTS' % (task.uid))
 
-                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                            heartbeat_response(mq_channel)
 
-                    # Appease pika cos it thinks the connection is dead
-                    now =  time.time()
-                    if now - last >= self._rmq_ping_interval:
-                        mq_connection.process_data_events()
-                        last = now
+                            # Appease pika cos it thinks the connection is dead
+                            now =  time.time()
+                            if now - last >= self._rmq_ping_interval:
+                                mq_connection.process_data_events()
+                                last = now
+
+                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)                    
 
                 except Exception, ex:
                     logger.exception('Error in task execution: %s' % ex)
