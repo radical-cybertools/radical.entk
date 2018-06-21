@@ -102,8 +102,6 @@ class AppManager(object):
         self._resubmit_failed = resubmit_failed if resubmit_failed else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate else config['autoterminate']
         self._write_workflow = write_workflow if write_workflow else config['write_workflow']
-        if rts not in ['radical.pilot','dummy']:
-            raise Error("RTS %s is not supported. Only 'radical.pilot' and 'dummy' are supported"%rts)
         self._rts = rts if rts else str(config['rts'])
         self._rmq_cleanup = cleanup if cleanup else config['cleanup']
 

@@ -15,7 +15,8 @@ def test_base_initialization(d):
     assert rmgr._resource_desc == d
     assert rmgr._resource == None
     assert rmgr._walltime == None
-    assert rmgr._cores == None
+    assert rmgr._cpus == 1
+    assert rmgr._gpus == 0
     assert rmgr._project == None
     assert rmgr._access_schema == None
     assert rmgr._queue == None
@@ -35,7 +36,8 @@ def test_rp_initialization(d):
     assert rmgr._resource_desc == d
     assert rmgr._resource == None
     assert rmgr._walltime == None
-    assert rmgr._cores == None
+    assert rmgr._cpus == 1
+    assert rmgr._gpus == 0
     assert rmgr._project == None
     assert rmgr._access_schema == None
     assert rmgr._queue == None
