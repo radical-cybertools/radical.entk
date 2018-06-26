@@ -21,15 +21,18 @@ import time
 class WFprocessor(object):
 
     """
-    An WFProcessor (workflow processor) takes the responsibility of dispatching tasks from the various pipelines of the
+    An WFprocessor (workflow processor) takes the responsibility of dispatching tasks from the various pipelines of the
     workflow according to their relative order to the TaskManager. All state updates are communicated to the AppManager.
+    The WFprocessor also retrieves completed tasks from the TaskManager and updates states of PST accordingly.
 
     :Arguments:
+        :sid: session id to be used by the profiler and loggers
         :workflow: COPY of the entire workflow existing in the AppManager 
-        :pending_qs: number of queues to hold pending tasks
-        :completed_qs: number of queues to hold completed tasks
-        :mq_hostname: hostname where the RabbitMQ is live
-        :port: port at which rabbitmq can be accessed
+        :pending_queue: number of queues to hold pending tasks
+        :completed_queue: number of queues to hold completed tasks
+        :mq_hostname: hostname where the RabbitMQ is alive
+        :port: port at which RabbitMQ can be accessed
+        :resubmit_failed: True if failed tasks need to be resubmitted automatically 
     """
 
     def __init__(self,
@@ -41,19 +44,17 @@ class WFprocessor(object):
                  port,
                  resubmit_failed):
 
-        if isinstance(sid, str):
-            self._sid = sid
-        else:
-            raise TypeError(expected_type=str, actual_type=type(sid))
-
+        self._sid = sid
+        
+        # Create logger and profiler at their specific locations using the sid
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-
         self._logger = ru.Logger('radical.entk.%s'%self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
 
+        
         self._workflow = workflow
 
         if not isinstance(pending_queue, list):
@@ -255,17 +256,8 @@ class WFprocessor(object):
             local_prof.prof('enqueue-thread started', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
+            # Acquire a connection+channel to the rmq server
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
@@ -307,7 +299,6 @@ class WFprocessor(object):
                                 executable_stage.parent_pipeline['uid'] = pipe.uid
                                 executable_stage.parent_pipeline['name'] = pipe.name
                                 executable_stage._assign_uid(self._sid)
-                                print 'Enqueuer: ', executable_stage.uid
                                 executable_stage._initialize(self._sid)
                                 executable_stage._pass_uid()
 

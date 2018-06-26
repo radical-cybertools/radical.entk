@@ -75,30 +75,26 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('heartbeat thread started', uid=self._uid)
 
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
+            # Acquire a connection to the rmq server
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
 
+            # Make sure the heartbeat request queue is empty
             channel = mq_connection.channel()
             channel.queue_delete(queue=self._hb_request_q)
-            channel.queue_declare(queue=self._hb_request_q)
+            channel.queue_declare(queue=self._hb_request_q)            
+            mq_connection.close()
+
             response = True
-
-
             last = time.time()
             while (response and (not self._hb_terminate.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
 
-                # Heartbeat request signal sent to task manager via rpc-queue
+                # Acquire a connection+channel to the rmq server
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+                channel = mq_connection.channel()
+
+                # Heartbeat request signal sent to task manager via request-queue
                 channel.basic_publish(exchange='',
                                       routing_key=self._hb_request_q,
                                       properties=pika.BasicProperties(
@@ -108,18 +104,16 @@ class TaskManager(Base_TaskManager):
 
                 self._logger.info('Sent heartbeat request')
 
-                # 300 second interval for heartbeat request to be responded to
-                # We ping the rmq server every 10 seconds to not lose
-                # the connection
-                i=0                
-                while (i<self._hb_interval/10):                    
-                    time.sleep(10)
-                    # Appease pika cos it thinks the connection is dead
-                    now =  time.time()                    
-                    if now - last >= self._rmq_ping_interval:
-                        mq_connection.process_data_events()
-                        last = now
-                    i+=1
+                # Close connection after sending msg
+                mq_connection.close()
+
+                # Sleep for hb_interval and then check if tmgr responded
+                time.sleep(self._hb_interval)
+
+
+                # Acquire a connection+channel to the rmq server
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+                channel = mq_connection.channel()
 
                 method_frame, props, body = channel.basic_get(queue=self._hb_response_q)
 
@@ -130,14 +124,16 @@ class TaskManager(Base_TaskManager):
 
                         channel.basic_ack(delivery_tag=method_frame.delivery_tag)             
 
+                # Close connection after sending ack
+                mq_connection.close()
+
         except KeyboardInterrupt:
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
             raise KeyboardInterrupt
 
         except Exception as ex:
-            self._logger.error('Heartbeat failed with error: %s' % ex)
-            raise
+            self._logger.exception('Heartbeat failed with error: %s' % ex)
 
         finally:
 
@@ -156,8 +152,8 @@ class TaskManager(Base_TaskManager):
         are then pushed to the completed_queue. At all state transititons, they are synced (blocking) with the AppManager
         in the master process.
 
-        In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-req queue. It responds with a
-        'response' message to the 'heartbeart-res' queue.
+        In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-request queue. It responds with a
+        'response' message to the heartbeart-response queue.
 
         **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is 
         still incomplete. There is also population of a dictionary, placeholder_dict, which stores the path of each of
@@ -220,90 +216,60 @@ class TaskManager(Base_TaskManager):
 
                     if unit.state in rp.FINAL:
 
+                        # Acquire a connection+channel to the rmq server
+                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+                        mq_channel = mq_connection.channel()                                            
 
-                        try:
+                        task = None
+                        task = create_task_from_cu(unit, local_prof)
 
-                            # Thread should run till terminate condtion is encountered
-                            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                        port=port,
-                                                                                                        heartbeat=0
-                                                                                                        )
-                                                                              )
-                            else:
-                                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                                        port=port
-                                                                                                        )
-                                                                              )
-                            mq_channel = mq_connection.channel()                                            
+                        transition(obj=task,
+                                   obj_type='Task',
+                                   new_state=states.COMPLETED,
+                                   channel=mq_channel,
+                                   queue='%s-cb-to-sync' % self._sid,
+                                   profiler=local_prof,
+                                   logger=logger)
 
-                            task = None
-                            task = create_task_from_cu(unit, local_prof)
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.COMPLETED,
-                                       channel=mq_channel,
-                                       queue='%s-cb-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=logger)
-
-                            load_placeholder(task)
+                        load_placeholder(task)
 
 
-                            task_as_dict = json.dumps(task.to_dict())
+                        task_as_dict = json.dumps(task.to_dict())
 
-                            mq_channel.basic_publish(exchange='',
-                                                     routing_key='%s-completedq-1' % self._sid,
-                                                     body=task_as_dict
-                                                     # properties=pika.BasicProperties(
-                                                     # make message persistent
-                                                     #    delivery_mode = 2,
-                                                     #)
-                                                     )
+                        mq_channel.basic_publish(exchange='',
+                                                 routing_key='%s-completedq-1' % self._sid,
+                                                 body=task_as_dict
+                                                 # properties=pika.BasicProperties(
+                                                 # make message persistent
+                                                 #    delivery_mode = 2,
+                                                 #)
+                                                 )
 
-                            logger.info('Pushed task %s with state %s to completed queue %s' % (
-                                task.uid,
-                                task.state,
-                                completed_queue[0]))
+                        logger.info('Pushed task %s with state %s to completed queue %s' % (task.uid, task.state,
+                                                                                            completed_queue[0]))
 
-                            mq_connection.close()
-
-                        except Exception, ex:
-                            self._logger.error('RP Callback update failed, error: %s' % (unit.uid, ex))
-                            raise                        
+                        mq_connection.close()     
                         
 
                 except KeyboardInterrupt:
-                    self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                    self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                        'trying to exit callback thread gracefully...')
 
                     raise KeyboardInterrupt
 
                 except Exception, ex:
                     self._logger.exception('Error in RP callback thread: %s' % ex)
-                    # raise      # Not necessary to raise the callback thread, we don't want RP to react
 
             if not umgr:
                 umgr = rp.UnitManager(session=rmgr._session)
                 umgr.add_pilots(rmgr.pilot)
                 umgr.register_callback(unit_state_cb)
 
-            # Thread should run till terminate condtion is encountered
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                        port=port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                        port=port
-                                                                                        )
-                                                              )
+            # Acquire a connection+channel to the rmq server
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
             mq_channel = mq_connection.channel()
 
-            # To respond to heartbeat - get request from rpc_queue
+            # Make sure the heartbeat response queue is empty
             mq_channel.queue_delete(queue=self._hb_response_q)
             mq_channel.queue_declare(queue=self._hb_response_q)
 
@@ -314,6 +280,7 @@ class TaskManager(Base_TaskManager):
 
                 try:
 
+                    # Get tasks from the pending queue
                     method_frame, header_frame, body = mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
