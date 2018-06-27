@@ -350,8 +350,14 @@ class Task(object):
     @state.setter
     def state(self, val):
         if isinstance(val, str):
-            self._state = val
-            self._state_history.append(val)
+            if value in states._task_state_values.keys():
+                self._state = val
+                self._state_history.append(val)
+            else:
+                raise ValueError(obj=self._uid,
+                                 attribute='state',
+                                 expected_value=states._task_state_values.keys(),
+                                 actual_value=value)            
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
@@ -689,16 +695,16 @@ class Task(object):
                     raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
 
         if 'parent_stage' in d:
-            if isinstance(d['parent_stage'], str):
+            if isinstance(d['parent_stage'], dict):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(entity='parent_stage', expected_type=str, actual_type=type(d['parent_stage']))
+                raise TypeError(entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
 
         if 'parent_pipeline' in d:
-            if isinstance(d['parent_pipeline'], str):
+            if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=str, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods

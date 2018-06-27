@@ -5,7 +5,7 @@ import pytest
 from hypothesis import given
 import hypothesis.strategies as st
 
-def test_initialization():
+def test_task_initialization():
 
     """
     **Purpose**: Test if the task attributes have, thus expect, the correct data types
@@ -39,12 +39,6 @@ def test_initialization():
     assert t.parent_pipeline['name'] == None
     assert t.parent_stage['uid'] == None
     assert t.parent_stage['name'] == None
-
-def test_task_uid():
-
-    t = Task()
-    t._assign_uid('temp')
-    assert isinstance(t.uid, str)
 
 @given(s=st.text(), l=st.lists(st.text()), i=st.integers().filter(lambda x: type(x) == int), b=st.booleans())
 def test_task_exceptions(s,l,i,b):
@@ -158,4 +152,132 @@ def test_task_exceptions(s,l,i,b):
                                 'threads_per_process': data,
                                 'thread_type': None
                             }
+
+def test_task_to_dict():
+
+    """
+    **Purpose**: Test if the 'to_dict' function of Task class converts all expected attributes of the Task into a
+    dictionary
+    """
+
+    t1 = Task()
+
+    d = t1.to_dict()
+
+    assert d == {   'uid': None,
+                    'name': None,
+                    'state': states.INITIAL,
+                    'state_history': [states.INITIAL],
+                    'pre_exec': [],
+                    'executable': [],
+                    'arguments': [],
+                    'post_exec': [],
+                    'cpu_reqs': { 'processes': 1, 
+                                'process_type': None, 
+                                'threads_per_process': 1, 
+                                'thread_type': None
+                                },
+                    'gpu_reqs': { 'processes': 0, 
+                                'process_type': None, 
+                                'threads_per_process': 0, 
+                                'thread_type': None
+                                },
+                    'upload_input_data': [],
+                    'copy_input_data': [],
+                    'link_input_data': [],
+                    'copy_output_data': [],
+                    'download_output_data': [],
+                    'exit_code': None,
+                    'path': None,
+                    'parent_stage': {'uid':None, 'name': None},
+                    'parent_pipeline': {'uid':None, 'name': None}}
+
+
+def test_task_from_dict():
+
+    """
+    **Purpose**: Test if the 'from_dict' function of Task class converts a dictionary into a Task correctly with all
+    the expected attributes
+    """
+
+    d = {   'uid': 're.Task.0000',
+            'name': 't1',
+            'state': states.DONE,
+            'state_history': [states.INITIAL, states.DONE],
+            'pre_exec': [],
+            'executable': [],
+            'arguments': [],
+            'post_exec': [],
+            'cpu_reqs': { 'processes': 1, 
+                        'process_type': None, 
+                        'threads_per_process': 1, 
+                        'thread_type': None
+                        },
+            'gpu_reqs': { 'processes': 0, 
+                        'process_type': None, 
+                        'threads_per_process': 0, 
+                        'thread_type': None
+                        },
+            'upload_input_data': [],
+            'copy_input_data': [],
+            'link_input_data': [],
+            'copy_output_data': [],
+            'download_output_data': [],
+            'exit_code': 555,
+            'path': 'here/it/is',
+            'parent_stage': {'uid': 's1', 'name': 'stage1'},
+            'parent_pipeline': {'uid': 'p1', 'name': 'pipe1'}}
+
+    t = Task()
+    t.from_dict(d)
+
+    assert t._uid                  == d['uid']
+    assert t.name                  == d['name']
+    assert t.state                 == d['state']
+    assert t.state_history         == d['state_history']
+    assert t.pre_exec              == d['pre_exec']                
+    assert t.executable            == d['executable']              
+    assert t.arguments             == d['arguments']               
+    assert t.post_exec             == d['post_exec']  
+    assert t.cpu_reqs              == d['cpu_reqs']                
+    assert t.gpu_reqs              == d['gpu_reqs']                 
+    assert t.upload_input_data     == d['upload_input_data']       
+    assert t.copy_input_data       == d['copy_input_data']         
+    assert t.link_input_data       == d['link_input_data']         
+    assert t.copy_output_data      == d['copy_output_data']        
+    assert t.download_output_data  == d['download_output_data']    
+    assert t.exit_code             == d['exit_code']               
+    assert t.path                  == d['path']                    
+    assert t.parent_stage          == d['parent_stage']            
+    assert t.parent_pipeline       == d['parent_pipeline']         
+
+
+def test_task_assign_uid():
+    
+    t = Task()
+    try:
+        import glob
+        import shutil
+        import os
+        home = os.environ.get('HOME','/home')
+        test_fold = glob.glob('%s/.radical/utils/test*'%home)
+        for f in test_fold:
+            shutil.rmtree(f)
+    except:
+        pass
+    t._assign_uid('test')
+    assert t.uid == 'task.0000'
+
+
+def test_task_validate():
+    
+    t = Task()
+    t._state = 'test'
+    with pytest.raises(ValueError):
+        t._validate()
+
+    t = Task()
+    with pytest.raises(MissingError):
+        t._validate()
+
 

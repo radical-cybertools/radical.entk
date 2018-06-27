@@ -17,7 +17,7 @@ class Stage(object):
         self._uid = None
         self._name = None
 
-        self._tasks = set()        
+        self._tasks = set()
         self._state = states.INITIAL
 
         # Keep track of states attained
@@ -27,9 +27,11 @@ class Stage(object):
         self._task_count = len(self._tasks)
 
         # Pipeline this stage belongs to
-        self._p_pipeline = {'uid':None, 'name': None}
+        self._p_pipeline = {'uid': None, 'name': None}
 
-        self._post_exec = None
+        self._post_exec = {'condition': None,
+                           'on_true': None,
+                           'on_false': None}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -97,10 +99,8 @@ class Stage(object):
 
         return self._state_history
 
-
     @property
     def post_exec(self):
-
         '''
         The post_exec property enables adaptivity in EnTK. A function, func_1,
         is evaluated to produce a boolean result. Function func_2 is executed
@@ -146,8 +146,14 @@ class Stage(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            self._state = value
-            self._state_history.append(value)
+            if value in states._stage_state_values.keys():
+                self._state = value
+                self._state_history.append(value)
+            else:
+                raise ValueError(obj=self._uid,
+                                 attribute='state',
+                                 expected_value=states._stage_state_values.keys(),
+                                 actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
@@ -155,50 +161,46 @@ class Stage(object):
     def post_exec(self, val):
 
         if isinstance(val, dict):
-            self._post_exec = val            
+            self._post_exec = val
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))  
-
+            raise TypeError(expected_type=dict, actual_type=type(val))
 
         if set(['condition', 'on_true', 'on_false']) != set(val.keys()):
-            raise ValueError(   obj=self._uid, 
-                                attribute='post_exec', 
-                                expected_value="'condition', 'on_true', 'on_false'",
-                                actual_value='%s'%val.keys())
+            raise ValueError(obj=self._uid,
+                             attribute='post_exec',
+                             expected_value="'condition', 'on_true', 'on_false'",
+                             actual_value='%s' % val.keys())
 
-
-        condition   = self._post_exec['condition']
-        on_true     = self._post_exec['on_true']
-        on_false    = self._post_exec['on_false']
+        condition = self._post_exec['condition']
+        on_true = self._post_exec['on_true']
+        on_false = self._post_exec['on_false']
 
         import types
 
         if not isinstance(condition, types.FunctionType):
 
-            raise TypeError(entity='stage %s branch'%self._uid, 
-                            expected_type=types.FunctionType, 
+            raise TypeError(entity='stage %s branch' % self._uid,
+                            expected_type=types.FunctionType,
                             actual_type=type(condition)
-                        )
+                            )
 
         self._condition = condition
 
-
         if not isinstance(on_true, types.FunctionType):
 
-            raise TypeError(entity='stage %s on_true'%self._uid, 
-                            expected_type=types.FunctionType, 
+            raise TypeError(entity='stage %s on_true' % self._uid,
+                            expected_type=types.FunctionType,
                             actual_type=type(on_true)
-                        )
+                            )
 
         self._on_true = on_true
 
-
         if not isinstance(on_false, types.FunctionType):
 
-            raise TypeError(entity='stage %s on_false'%self._uid, 
-                            expected_type=types.FunctionType, 
+            raise TypeError(entity='stage %s on_false' % self._uid,
+                            expected_type=types.FunctionType,
                             actual_type=type(on_false)
-                        )
+                            )
 
         self._on_false = on_false
 
@@ -252,7 +254,13 @@ class Stage(object):
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
-                self._state = d['state']
+                if d['state'] in states._stage_state_values.keys():
+                    self._state = d['state']
+                else:
+                    raise ValueError(obj=self._uid,
+                                    attribute='state',
+                                    expected_value=states._stage_state_values.keys(),
+                                    actual_value=value)
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
@@ -313,15 +321,15 @@ class Stage(object):
         Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
         """
 
+        if not tasks:
+            raise TypeError(expected_type=Task, actual_type=type(tasks))
+
         if not isinstance(tasks, set):
 
             if not isinstance(tasks, list):
                 tasks = set([tasks])
             else:
-                tasks = set(tasks)
-
-        if not tasks:
-            raise TypeError(expected_type=Task, actual_type=type(tasks))
+                tasks = set(tasks)        
 
         for t in tasks:
 
@@ -330,7 +338,7 @@ class Stage(object):
 
         return tasks
 
-    def _validate(self, sid):
+    def _validate(self):
         """
         Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Stage contains Tasks
@@ -362,7 +370,7 @@ class Stage(object):
 
         self._pass_uid()
 
-    def _pass_uid(self, tasks=None):
+    def _pass_uid(self):
         """
         Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
 
@@ -370,11 +378,9 @@ class Stage(object):
         :return: list of updated Tasks
         """
 
-        for task in tasks:
+        for task in self._tasks:
             task.parent_stage['uid'] = self._uid
             task.parent_stage['name'] = self._name
             task.parent_pipeline['uid'] = self._p_pipeline['uid']
             task.parent_pipeline['name'] = self._p_pipeline['name']
-
-        return tasks
     # ------------------------------------------------------------------------------------------------------------------

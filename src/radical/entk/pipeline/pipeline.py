@@ -20,7 +20,7 @@ class Pipeline(object):
         self._uid = None
         self._name = None
 
-        self._stages = list()        
+        self._stages = list()
 
         self._state = states.INITIAL
 
@@ -86,7 +86,7 @@ class Pipeline(object):
         return self._uid
 
     @property
-    def _stage_lock(self):
+    def lock(self):
         """
         Returns the lock over the current Pipeline
 
@@ -148,8 +148,14 @@ class Pipeline(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            self._state = value
-            self._state_history.append(value)
+            if value in states._pipeline_state_values.keys():
+                self._state = value
+                self._state_history.append(value)
+            else:
+                raise ValueError(obj=self._uid, 
+                                attribute = 'state',
+                                expected_value=states._pipeline_state_values.keys(),
+                                actual_value = value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
@@ -206,7 +212,13 @@ class Pipeline(object):
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
-                self._state = d['state']
+                if d['state'] in states._pipeline_state_values.keys():
+                    self._state = d['state']
+                else:
+                    raise ValueError(obj=self._uid,
+                                    attribute='state',
+                                    expected_value=states._pipeline_state_values.keys(),
+                                    actual_value=value)
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
@@ -285,19 +297,18 @@ class Pipeline(object):
 
         if self._state is not states.INITIAL:
 
-            raise ValueError(object=self._uid,
+            raise ValueError(obj=self._uid,
                              attribute='state',
                              expected_value=states.INITIAL,
                              actual_value=self._state)
 
-        if self._stages is None:
+        if not self._stages:
 
-            raise MissingError(object=self._uid,
+            raise MissingError(obj=self._uid,
                                missing_attribute='stages')
 
         for stage in self._stages:
-            stage._validate()        
-
+            stage._validate()
 
     def _assign_uid(self, sid):
         """
@@ -315,13 +326,10 @@ class Pipeline(object):
         Purpose: Pass current Pipeline's uid to all Stages. 
 
         :argument: List of Stage objects (optional)
-        :return: List of updated Stage objects
         """
 
-        for stage in stages:
+        for stage in self._stages:
             stage.parent_pipeline['uid'] = self._uid
             stage.parent_pipeline['name'] = self._name
             stage._pass_uid()
-
-        return stages
     # ------------------------------------------------------------------------------------------------------------------
