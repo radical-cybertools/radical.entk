@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager as Amgr
+from radical.entk import  AppManager as Amgr
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
@@ -11,10 +11,10 @@ def test_initialization():
 
     amgr = Amgr()
 
-    assert len(amgr._uid.split('.'))==2
-    assert 'appmanager' == amgr._uid.split('.')[0]
+    assert len(amgr._uid.split('.'))==['appmanager','0000']
     assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
     assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
+    assert type(amgr._report) == type(ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits

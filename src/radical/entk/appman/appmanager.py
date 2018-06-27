@@ -191,6 +191,14 @@ class AppManager(object):
         """
 
         self._prof.prof('assigning workflow', uid=self._uid)
+        
+        for p in workflow:
+            if not isinstance(p, Pipeline):
+                self._logger.info('workflow type incorrect')
+                raise TypeError(expected_type=['Pipeline', 'set of Pipelines'], actual_type=type(p))
+
+            p._validate()
+
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
 
@@ -474,6 +482,41 @@ class AppManager(object):
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
+
+    def _validate_workflow(self):
+        """
+        **Purpose**: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
+
+        Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
+        Pipelines themselves remain to be validated before execution.
+        """
+
+        try:
+
+            self._prof.prof('validating workflow', uid=self._uid)
+
+            if not isinstance(self._workflow, set):
+
+                if not isinstance(self._workflow, list):
+                    self._workflow = set([self._workflow])
+                else:
+                    self._workflow = set(self._workflow)
+
+            for p in self._workflow:
+                if not isinstance(p, Pipeline):
+                    self._logger.info('workflow type incorrect')
+                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
+                                    actual_type=type(p))
+
+                p._validate(self._sid)
+
+            self._prof.prof('workflow validated', uid=self._uid)
+
+        except Exception, ex:
+
+            self._logger.exception('Fatal error while adding workflow to Appmanager: %s' % ex)
+            raise
+
 
     def _setup_mqs(self):
         """

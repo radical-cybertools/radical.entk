@@ -705,10 +705,13 @@ class Task(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def _assign_uid(self, sid):
+        """
+        Purpose: Assign a uid to the current object based on the sid passed
+        """
         self._uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
 
 
-    def _initialize(self):
+    def _validate(self):
         """
         Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the 
         task. 

@@ -172,7 +172,7 @@ class Pipeline(object):
 
     def to_dict(self):
         """
-        Convert current Pipeline into a dictionary
+        Convert current Pipeline (i.e. its attributes) into a dictionary
 
         :return: python dictionary
         """
@@ -230,37 +230,6 @@ class Pipeline(object):
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _assign_uid(self, sid):
-        self._uid = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
-
-    def _pass_uid(self, stages=None):
-        """
-        Purpose: Pass current Pipeline's uid to all Stages. 
-
-        Details: This allows us to trace the correct Pipeline if only the Stage is given.
-
-        :argument: List of Stage objects (optional)
-        :return: List of updated Stage objects
-        """
-
-        try:
-
-            if stages is None:
-                for stage in self._stages:
-                    stage.parent_pipeline['uid'] = self._uid
-                    stage.parent_pipeline['name'] = self._name
-                    stage._pass_uid()
-            else:
-                for stage in stages:
-                    stage.parent_pipeline['uid'] = self._uid
-                    stage.parent_pipeline['name'] = self._name
-                    stage._pass_uid()
-
-                return stages
-
-        except Exception, ex:
-            raise Error(text=ex)
-
     def _increment_stage(self):
         """
         Purpose: Increment stage pointer. Also check if Pipeline has completed.
@@ -278,7 +247,7 @@ class Pipeline(object):
 
     def _decrement_stage(self):
         """
-        Purpose: Decrement stage pointer 
+        Purpose: Decrement stage pointer. Reset completed flag.
         """
 
         try:
@@ -292,10 +261,9 @@ class Pipeline(object):
 
     def _validate_entities(self, stages):
         """
-        Purpose: Validate whether the 'stages' is of type list. Validate the description of each Stage.
+        Purpose: Validate whether the argument 'stages' is of list of Stage objects
 
-        Details: This method is to be called before the resource request is placed. Currently, this method is called 
-        when stages are added to the Pipeline.
+        :argument: list of Stage objects
         """
         if not stages:
             raise TypeError(expected_type=Stage, actual_type=type(stages))
@@ -309,13 +277,10 @@ class Pipeline(object):
 
         return stages
 
-    def _initialize(self, sid):
+    def _validate(self):
         """
         Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Pipeline contains Stages.
-
-        Details: This method is to be called before the resource request is placed. Currently, this method is called
-        when the entire workflow is validated (in the AppManager).
         """
 
         if self._state is not states.INITIAL:
@@ -331,8 +296,32 @@ class Pipeline(object):
                                missing_attribute='stages')
 
         for stage in self._stages:
+            stage._validate()        
+
+
+    def _assign_uid(self, sid):
+        """
+        Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
+        current object
+        """
+        self._uid = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        for stage in self._stages:
             stage._assign_uid(sid)
-            stage._initialize(sid)
 
         self._pass_uid()
+
+    def _pass_uid(self):
+        """
+        Purpose: Pass current Pipeline's uid to all Stages. 
+
+        :argument: List of Stage objects (optional)
+        :return: List of updated Stage objects
+        """
+
+        for stage in stages:
+            stage.parent_pipeline['uid'] = self._uid
+            stage.parent_pipeline['name'] = self._name
+            stage._pass_uid()
+
+        return stages
     # ------------------------------------------------------------------------------------------------------------------

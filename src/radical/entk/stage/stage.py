@@ -275,34 +275,6 @@ class Stage(object):
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _assign_uid(self, sid):
-        self._uid = ru.generate_id('stage.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
-
-    def _pass_uid(self, tasks=None):
-        """
-        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
-
-        Details: This lets us trace the Stage and Pipeline if only the Task is provided.
-
-        :arguments: set of Tasks (optional)
-        :return: list of updated Tasks
-        """
-
-        if tasks is None:
-            for task in self._tasks:
-                task.parent_stage['uid'] = self._uid
-                task.parent_stage['name'] = self._name
-                task.parent_pipeline['uid'] = self._p_pipeline['uid']
-                task.parent_pipeline['name'] = self._p_pipeline['name']
-        else:
-            for task in tasks:
-                task.parent_stage['uid'] = self._uid
-                task.parent_stage['name'] = self._name
-                task.parent_pipeline['uid'] = self._p_pipeline['uid']
-                task.parent_pipeline['name'] = self._p_pipeline['name']
-
-            return tasks
-
     def _set_tasks_state(self, value):
         """
         Purpose: Set state of all tasks of the current stage.
@@ -339,9 +311,6 @@ class Stage(object):
     def _validate_entities(self, tasks):
         """
         Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
-
-        Details: This method is to be called before the resource request is placed. Currently, this method is called 
-        when tasks are added to the stage.
         """
 
         if not isinstance(tasks, set):
@@ -361,14 +330,10 @@ class Stage(object):
 
         return tasks
 
-
-    def _initialize(self, sid):
+    def _validate(self, sid):
         """
         Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
         validate that the current Stage contains Tasks
-
-        Details: This method is to be called before the resource request is placed. Currently, this method is called
-        when the parent Pipeline is validated.
         """
 
         if self._state is not states.INITIAL:
@@ -384,6 +349,32 @@ class Stage(object):
                                missing_attribute='tasks')
 
         for task in self._tasks:
+            task._validate()
+
+    def _assign_uid(self, sid):
+        """
+        Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
+        current object
+        """
+        self._uid = ru.generate_id('stage.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        for task in self._tasks:
             task._assign_uid(sid)
-            task._initialize()
+
+        self._pass_uid()
+
+    def _pass_uid(self, tasks=None):
+        """
+        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
+
+        :arguments: set of Tasks (optional)
+        :return: list of updated Tasks
+        """
+
+        for task in tasks:
+            task.parent_stage['uid'] = self._uid
+            task.parent_stage['name'] = self._name
+            task.parent_pipeline['uid'] = self._p_pipeline['uid']
+            task.parent_pipeline['name'] = self._p_pipeline['name']
+
+        return tasks
     # ------------------------------------------------------------------------------------------------------------------
