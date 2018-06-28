@@ -30,7 +30,7 @@ def transition(obj, obj_type, new_state, channel, queue, profiler, logger):
 
     except Exception, ex:
 
-        logger.error('Transition of %s to %s state failed, error: %s' % (obj.uid, new_state, ex))
+        logger.exception('Transition of %s to %s state failed, error: %s' % (obj.uid, new_state, ex))
         obj.state = old_state
         sync_with_master(obj=obj,
                          obj_type=obj_type,

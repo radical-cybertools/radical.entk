@@ -118,8 +118,8 @@ def test_pipeline_from_dict():
 
     d = {'uid': 're.Pipeline.0000',
          'name': 'p1',
-         'state': 'Test2',
-         'state_history': ['Test1', 'Test2'],
+         'state': states.DONE,
+         'state_history': [states.INITIAL, states.DONE],
          'completed': True}
 
     p = Pipeline()

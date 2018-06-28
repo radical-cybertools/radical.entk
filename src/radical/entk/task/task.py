@@ -348,11 +348,11 @@ class Task(object):
             raise TypeError(expected_type=str, actual_type=type(val))
 
     @state.setter
-    def state(self, val):
-        if isinstance(val, str):
+    def state(self, value):
+        if isinstance(value, str):
             if value in states._task_state_values.keys():
-                self._state = val
-                self._state_history.append(val)
+                self._state = value
+                self._state_history.append(value)
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',

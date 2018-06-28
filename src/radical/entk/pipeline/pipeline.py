@@ -218,7 +218,7 @@ class Pipeline(object):
                     raise ValueError(obj=self._uid,
                                     attribute='state',
                                     expected_value=states._pipeline_state_values.keys(),
-                                    actual_value=value)
+                                    actual_value=d['state'])
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
