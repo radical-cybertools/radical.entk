@@ -52,7 +52,6 @@ class AppManager(object):
                           resubmit_failed, autoterminate, write_workflow,
                           rts, cleanup)
 
-
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         path = os.getcwd() + '/' + self._sid
@@ -165,7 +164,6 @@ class AppManager(object):
         elif self._rts == 'dummy':
             from radical.entk.execman.dummy import ResourceManager
 
-
         self._report.info('Validating and assigning resource manager')
         self._resource_manager = ResourceManager(resource_desc=value,
                                                  sid=self._sid)
@@ -191,7 +189,7 @@ class AppManager(object):
         """
 
         self._prof.prof('assigning workflow', uid=self._uid)
-        
+
         for p in workflow:
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
@@ -382,7 +380,6 @@ class AppManager(object):
 
                     self._cur_attempt += 1
 
-
             self._prof.prof('start termination', uid=self._uid)
 
             # Terminate threads in following order: wfp, helper, synchronizer
@@ -517,7 +514,6 @@ class AppManager(object):
             self._logger.exception('Fatal error while adding workflow to Appmanager: %s' % ex)
             raise
 
-
     def _setup_mqs(self):
         """
         **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
@@ -540,15 +536,15 @@ class AppManager(object):
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
+                                                                                  port=self._port,
+                                                                                  heartbeat=0
+                                                                                  )
+                                                        )
             else:
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
+                                                                                  port=self._port
+                                                                                  )
+                                                        )
 
             mq_channel = mq_connection.channel()
             self._logger.debug('Connection and channel setup successful')
@@ -598,15 +594,15 @@ class AppManager(object):
 
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
+                                                                                  port=self._port,
+                                                                                  heartbeat=0
+                                                                                  )
+                                                        )
             else:
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
+                                                                                  port=self._port
+                                                                                  )
+                                                        )
 
             mq_channel = mq_connection.channel()
 
@@ -700,32 +696,31 @@ class AppManager(object):
                                         if not found_task:
 
                                             # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                            # means that this was a Stage that was added during runtime and the AppManager does not 
-                                            # know about it. The current solution is going to be: add it to the workflow object in the 
+                                            # means that this was a Stage that was added during runtime and the AppManager does not
+                                            # know about it. The current solution is going to be: add it to the workflow object in the
                                             # AppManager via the synchronizer.
 
-                                            self._prof.prof('adding new task %s'%(completed_task.uid))
+                                            self._prof.prof('adding new task %s' % (completed_task.uid))
 
-                                            self._logger.info('Adding new task %s to parent stage: %s'%(completed_task.uid, 
-                                                                                                    stage.uid))
+                                            self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
+                                                                                                          stage.uid))
 
                                             stage.add_tasks(completed_task)
-                                            mq_channel.basic_publish(   exchange='',
-                                                                        routing_key=reply_to,
-                                                                        properties=pika.BasicProperties(
-                                                                        correlation_id = corr_id),
-                                                                        body='%s-ack'%completed_task.uid)
+                                            mq_channel.basic_publish(exchange='',
+                                                                     routing_key=reply_to,
+                                                                     properties=pika.BasicProperties(
+                                                                         correlation_id=corr_id),
+                                                                     body='%s-ack' % completed_task.uid)
 
+                                            self._prof.prof('publishing sync ack for obj with state %s' %
+                                                            msg['object']['state'],
+                                                            uid=msg['object']['uid']
+                                                            )
 
-                                            self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                            msg['object']['state'], 
-                                                                            uid=msg['object']['uid']
-                                                                        )
-
-                                            mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
+                                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                             self._report.ok('Update: ')
-                                            self._report.info('Task %s in state %s\n'%(completed_task.uid, completed_task.state))
-
+                                            self._report.info('Task %s in state %s\n' %
+                                                              (completed_task.uid, completed_task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -769,34 +764,31 @@ class AppManager(object):
 
                                         found_stage = True
 
-
                                 if not found_stage:
 
                                     # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                    # means that this was a Stage that was added during runtime and the AppManager does not 
-                                    # know about it. The current solution is going to be: add it to the workflow object in the 
+                                    # means that this was a Stage that was added during runtime and the AppManager does not
+                                    # know about it. The current solution is going to be: add it to the workflow object in the
                                     # AppManager via the synchronizer.
 
-                                    self._prof.prof('adding new stage %s'%(completed_stage.uid))
+                                    self._prof.prof('adding new stage %s' % (completed_stage.uid))
 
-                                    self._logger.info('Adding new stage %s to parent pipeline: %s'%(completed_stage.uid, 
-                                                                                            pipe.uid))
+                                    self._logger.info('Adding new stage %s to parent pipeline: %s' % (completed_stage.uid,
+                                                                                                      pipe.uid))
 
                                     pipe.add_stages(completed_stage)
-                                    mq_channel.basic_publish(   exchange='',
-                                                                routing_key=reply_to,
-                                                                properties=pika.BasicProperties(
-                                                                correlation_id = corr_id),
-                                                                body='%s-ack'%completed_stage.uid)
+                                    mq_channel.basic_publish(exchange='',
+                                                             routing_key=reply_to,
+                                                             properties=pika.BasicProperties(
+                                                                 correlation_id=corr_id),
+                                                             body='%s-ack' % completed_stage.uid)
 
+                                    self._prof.prof('publishing sync ack for obj with state %s' %
+                                                    msg['object']['state'],
+                                                    uid=msg['object']['uid']
+                                                    )
 
-                                    self._prof.prof('publishing sync ack for obj with state %s'%
-                                                                    msg['object']['state'], 
-                                                                    uid=msg['object']['uid']
-                                                                )
-
-                                    mq_channel.basic_ack(delivery_tag = method_frame.delivery_tag)
-
+                                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
 
@@ -847,15 +839,15 @@ class AppManager(object):
             # https://github.com/pika/pika/issues/753
             if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
+                                                                                  port=self._port,
+                                                                                  heartbeat=0
+                                                                                  )
+                                                        )
             else:
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
+                                                                                  port=self._port
+                                                                                  )
+                                                        )
             mq_channel = mq_connection.channel()
 
             last = time.time()
@@ -884,7 +876,7 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' %
-                                    (msg['object']['uid'], msg['object']['state']))
+                                       (msg['object']['uid'], msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
@@ -913,7 +905,7 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' %
-                                    (msg['object']['uid'], msg['object']['state']))
+                                       (msg['object']['uid'], msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
@@ -932,7 +924,7 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' %
-                                    (msg['object']['uid'], msg['object']['state']))
+                                       (msg['object']['uid'], msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
@@ -956,7 +948,7 @@ class AppManager(object):
                                     msg['object']['state'], uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' %
-                                    (msg['object']['uid'], msg['object']['state']))
+                                       (msg['object']['uid'], msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
@@ -968,9 +960,8 @@ class AppManager(object):
                         pipeline_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
-
                 # Appease pika cos it thinks the connection is dead
-                now =  time.time()
+                now = time.time()
                 if now - last >= self._rmq_ping_interval:
                     mq_connection.process_data_events()
                     last = now
