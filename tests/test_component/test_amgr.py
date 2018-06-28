@@ -263,21 +263,20 @@ def func_for_synchronizer_test(sid, p, logger, profiler):
                          local_prof=profiler)
 
     p.stages[0].state = states.SCHEDULING
-    sync_with_master(   obj=p.stages[0],
-                        obj_type='Stage',
-                        channel=mq_channel,
-                        queue='%s-enq-to-sync' % sid,
-                        logger=logger,
-                        local_prof=profiler)
+    sync_with_master(obj=p.stages[0],
+                     obj_type='Stage',
+                     channel=mq_channel,
+                     queue='%s-enq-to-sync' % sid,
+                     logger=logger,
+                     local_prof=profiler)
 
     p.state = states.SCHEDULING
-    sync_with_master(   obj=p,
-                        obj_type='Pipeline',
-                        channel=mq_channel,
-                        queue='%s-deq-to-sync' % sid,
-                        logger=logger,
-                        local_prof=profiler)
-
+    sync_with_master(obj=p,
+                     obj_type='Pipeline',
+                     channel=mq_channel,
+                     queue='%s-deq-to-sync' % sid,
+                     logger=logger,
+                     local_prof=profiler)
 
 
 def test_amgr_synchronizer():
