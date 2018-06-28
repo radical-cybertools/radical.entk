@@ -603,61 +603,29 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct task
                 for pipe in self._workflow:
 
-                    with pipe.lock:
+                    if not pipe.completed:
+                        if completed_task.parent_pipeline['uid'] == pipe.uid:
 
-                        if not pipe.completed:
-                            if completed_task.parent_pipeline['uid'] == pipe.uid:
+                            for stage in pipe.stages:
 
-                                for stage in pipe.stages:
+                                if completed_task.parent_stage['uid'] == stage.uid:
 
-                                    if completed_task.parent_stage['uid'] == stage.uid:
+                                    for task in stage.tasks:
 
-                                        for task in stage.tasks:
+                                        if (completed_task.uid == task.uid)and(completed_task.state != task.state):
 
-                                            if (completed_task.uid == task.uid)and(completed_task.state != task.state):
+                                            task.state = str(completed_task.state)
+                                            self._logger.debug('Found task %s with state %s' %
+                                                               (task.uid, task.state))
 
-                                                task.state = str(completed_task.state)
-                                                self._logger.debug('Found task %s with state %s' %
-                                                                   (task.uid, task.state))
+                                            if completed_task.path:
+                                                task.path = str(completed_task.path)
 
-                                                if completed_task.path:
-                                                    task.path = str(completed_task.path)
-
-                                                mq_channel.basic_publish(exchange='',
-                                                                         routing_key=reply_to,
-                                                                         properties=pika.BasicProperties(
-                                                                             correlation_id=corr_id),
-                                                                         body='%s-ack' % task.uid)
-
-                                                self._prof.prof('publishing sync ack for obj with state %s' %
-                                                                msg['object']['state'],
-                                                                uid=msg['object']['uid']
-                                                                )
-
-                                                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                                                self._report.ok('Update: ')
-                                                self._report.info('Task %s in state %s\n' % (task.uid, task.state))
-
-                                                found_task = True
-
-                                        if not found_task:
-
-                                            # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                            # means that this was a Stage that was added during runtime and the AppManager does not
-                                            # know about it. The current solution is going to be: add it to the workflow object in the
-                                            # AppManager via the synchronizer.
-
-                                            self._prof.prof('adding new task %s' % (completed_task.uid))
-
-                                            self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
-                                                                                                          stage.uid))
-
-                                            stage.add_tasks(completed_task)
                                             mq_channel.basic_publish(exchange='',
                                                                      routing_key=reply_to,
                                                                      properties=pika.BasicProperties(
                                                                          correlation_id=corr_id),
-                                                                     body='%s-ack' % completed_task.uid)
+                                                                     body='%s-ack' % task.uid)
 
                                             self._prof.prof('publishing sync ack for obj with state %s' %
                                                             msg['object']['state'],
@@ -666,8 +634,38 @@ class AppManager(object):
 
                                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                             self._report.ok('Update: ')
-                                            self._report.info('Task %s in state %s\n' %
-                                                              (completed_task.uid, completed_task.state))
+                                            self._report.info('Task %s in state %s\n' % (task.uid, task.state))
+
+                                            found_task = True
+
+                                    if not found_task:
+
+                                        # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
+                                        # means that this was a Stage that was added during runtime and the AppManager does not
+                                        # know about it. The current solution is going to be: add it to the workflow object in the
+                                        # AppManager via the synchronizer.
+
+                                        self._prof.prof('adding new task %s' % (completed_task.uid))
+
+                                        self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
+                                                                                                      stage.uid))
+
+                                        stage.add_tasks(completed_task)
+                                        mq_channel.basic_publish(exchange='',
+                                                                 routing_key=reply_to,
+                                                                 properties=pika.BasicProperties(
+                                                                     correlation_id=corr_id),
+                                                                 body='%s-ack' % completed_task.uid)
+
+                                        self._prof.prof('publishing sync ack for obj with state %s' %
+                                                        msg['object']['state'],
+                                                        uid=msg['object']['uid']
+                                                        )
+
+                                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                        self._report.ok('Update: ')
+                                        self._report.info('Task %s in state %s\n' %
+                                                          (completed_task.uid, completed_task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -680,55 +678,24 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct stage
                 for pipe in self._workflow:
 
-                    with pipe.lock:
+                    if not pipe.completed:
 
-                        if not pipe.completed:
-                            if completed_stage.parent_pipeline['uid'] == pipe.uid:
-                                self._logger.info('Found parent pipeline: %s' % pipe.uid)
+                        if completed_stage.parent_pipeline['uid'] == pipe.uid:
+                            self._logger.info('Found parent pipeline: %s' % pipe.uid)
 
-                                for stage in pipe.stages:
+                            for stage in pipe.stages:
 
-                                    if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):
+                                if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):
 
-                                        self._logger.debug('Found stage %s' % stage.uid)
+                                    self._logger.debug('Found stage %s' % stage.uid)
 
-                                        stage.state = str(completed_stage.state)
+                                    stage.state = str(completed_stage.state)
 
-                                        mq_channel.basic_publish(exchange='',
-                                                                 routing_key=reply_to,
-                                                                 properties=pika.BasicProperties(
-                                                                     correlation_id=corr_id),
-                                                                 body='%s-ack' % stage.uid)
-
-                                        self._prof.prof('publishing sync ack for obj with state %s' %
-                                                        msg['object']['state'],
-                                                        uid=msg['object']['uid']
-                                                        )
-
-                                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                                        self._report.ok('Update: ')
-                                        self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
-
-                                        found_stage = True
-
-                                if not found_stage:
-
-                                    # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                    # means that this was a Stage that was added during runtime and the AppManager does not
-                                    # know about it. The current solution is going to be: add it to the workflow object in the
-                                    # AppManager via the synchronizer.
-
-                                    self._prof.prof('adding new stage %s' % (completed_stage.uid))
-
-                                    self._logger.info('Adding new stage %s to parent pipeline: %s' % (completed_stage.uid,
-                                                                                                      pipe.uid))
-
-                                    pipe.add_stages(completed_stage)
                                     mq_channel.basic_publish(exchange='',
                                                              routing_key=reply_to,
                                                              properties=pika.BasicProperties(
                                                                  correlation_id=corr_id),
-                                                             body='%s-ack' % completed_stage.uid)
+                                                             body='%s-ack' % stage.uid)
 
                                     self._prof.prof('publishing sync ack for obj with state %s' %
                                                     msg['object']['state'],
@@ -736,6 +703,36 @@ class AppManager(object):
                                                     )
 
                                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                                    self._report.ok('Update: ')
+                                    self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
+
+                                    found_stage = True
+
+                            if not found_stage:
+
+                                # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
+                                # means that this was a Stage that was added during runtime and the AppManager does not
+                                # know about it. The current solution is going to be: add it to the workflow object in the
+                                # AppManager via the synchronizer.
+
+                                self._prof.prof('adding new stage %s' % (completed_stage.uid))
+
+                                self._logger.info('Adding new stage %s to parent pipeline: %s' % (completed_stage.uid,
+                                                                                                  pipe.uid))
+
+                                pipe.add_stages(completed_stage)
+                                mq_channel.basic_publish(exchange='',
+                                                         routing_key=reply_to,
+                                                         properties=pika.BasicProperties(
+                                                             correlation_id=corr_id),
+                                                         body='%s-ack' % completed_stage.uid)
+
+                                self._prof.prof('publishing sync ack for obj with state %s' %
+                                                msg['object']['state'],
+                                                uid=msg['object']['uid']
+                                                )
+
+                                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
             def pipeline_update(msg, reply_to, corr_id, mq_channel):
 
@@ -747,40 +744,38 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct pipeline
                 for pipe in self._workflow:
 
-                    with pipe.lock:
+                    if not pipe.completed:
 
-                        if not pipe.completed:
+                        if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
 
-                            if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
+                            pipe.state = str(completed_pipeline.state)
 
-                                pipe.state = str(completed_pipeline.state)
+                            self._logger.info('Found pipeline %s, state %s, completed %s' % (pipe.uid,
+                                                                                             pipe.state,
+                                                                                             pipe.completed)
+                                              )
 
-                                self._logger.info('Found pipeline %s, state %s, completed %s' % (pipe.uid,
-                                                                                                 pipe.state,
-                                                                                                 pipe.completed)
-                                                  )
+                            # Reply with ack msg to the sender
+                            mq_channel.basic_publish(exchange='',
+                                                     routing_key=reply_to,
+                                                     properties=pika.BasicProperties(
+                                                         correlation_id=corr_id),
+                                                     body='%s-ack' % pipe.uid)
 
-                                # Reply with ack msg to the sender
-                                mq_channel.basic_publish(exchange='',
-                                                         routing_key=reply_to,
-                                                         properties=pika.BasicProperties(
-                                                             correlation_id=corr_id),
-                                                         body='%s-ack' % pipe.uid)
+                            self._prof.prof('publishing sync ack for obj with state %s' %
+                                            msg['object']['state'],
+                                            uid=msg['object']['uid']
+                                            )
 
-                                self._prof.prof('publishing sync ack for obj with state %s' %
-                                                msg['object']['state'],
-                                                uid=msg['object']['uid']
-                                                )
+                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-                                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                                # Keep the assignment of the completed flag after sending the acknowledgment
-                                # back. Otherwise the MainThread takes lock over the pipeline because of logging
-                                # and profiling
-                                if completed_pipeline.completed:
-                                    pipe._completed_flag.set()
-                                self._report.ok('Update: ')
-                                self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
+                            # Keep the assignment of the completed flag after sending the acknowledgment
+                            # back. Otherwise the MainThread takes lock over the pipeline because of logging
+                            # and profiling
+                            if completed_pipeline.completed:
+                                pipe._completed_flag.set()
+                            self._report.ok('Update: ')
+                            self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
