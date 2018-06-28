@@ -365,7 +365,7 @@ class WFprocessor(object):
                                                             # Check if Stage has a post-exec that needs to be
                                                             # executed
 
-                                                            if stage.post_exec:
+                                                            if stage.post_exec['condition']:
 
                                                                 try:
 
@@ -610,6 +610,7 @@ class WFprocessor(object):
             if self.check_processor():
                 self._wfp_terminate.set()
                 self._wfp_process.join()
+                self._wfp_process = None
                 self._logger.debug('WFprocessor process terminated')
             else:
                 self._logger.debug('WFprocessor process already terminated')

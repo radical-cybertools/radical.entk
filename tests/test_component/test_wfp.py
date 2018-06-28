@@ -156,16 +156,17 @@ def func_for_dequeue_test(wfp):
     while True:
         if (p.state == states.DONE) and (p.stages[0].state == states.DONE):
             for t in p.stages[0].tasks:
-                if t.state == states.DEQUEUED:
+                if t.state == states.DONE:
                     flag = True
         if flag:
             break
 
-    wfp._enqueue_thread_terminate.set()
+    wfp._dequeue_thread_terminate.set()
     thread.join()
 
+
 def test_wfp_dequeue():
-    
+
     p = Pipeline()
     s = Stage()
     t = Task()
@@ -180,8 +181,8 @@ def test_wfp_dequeue():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname='localhost',
-                      port=5672,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
                       resubmit_failed=False)
 
     wfp._initialize_workflow()
@@ -189,11 +190,25 @@ def test_wfp_dequeue():
     amgr.workflow = [p]
     profiler = ru.Profiler(name='radical.entk.temp')
 
+    assert p.stages[0].state == states.INITIAL
+    assert p.state == states.INITIAL
     for t in p.stages[0].tasks:
         assert t.state == states.INITIAL
 
-    assert p.stages[0].state == states.INITIAL
-    assert p.state == states.INITIAL
+    p.stages[0].state == states.SCHEDULING
+    p.state == states.SCHEDULED
+    for t in p.stages[0].tasks:
+        t.state = states.COMPLETED
+
+    import json
+    import pika
+
+    task_as_dict = json.dumps(t.to_dict())
+    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=amgr._mq_hostname, port=amgr._port))
+    mq_channel = mq_connection.channel()
+    mq_channel.basic_publish(exchange='',
+                             routing_key='%s-completedq-1' % amgr._sid,
+                             body=task_as_dict)
 
     amgr._terminate_sync = Event()
     sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
@@ -207,128 +222,148 @@ def test_wfp_dequeue():
     sync_thread.join()
 
     for t in p.stages[0].tasks:
-        assert t.state == states.DEQUEUED
+        assert t.state == states.DONE
 
     assert p.stages[0].state == states.DONE
     assert p.state == states.DONE
 
 
 def test_wfp_start_processor():
-    pass
+
+    p = Pipeline()
+    s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.add_tasks(t)
+    p.add_stages(s)
+
+    amgr = Amgr()
+    amgr._setup_mqs()
+
+    wfp = WFprocessor(sid=amgr._sid,
+                      workflow=[p],
+                      pending_queue=amgr._pending_queue,
+                      completed_queue=amgr._completed_queue,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
+                      resubmit_failed=False)
+
+    assert wfp.start_processor()
+    assert not wfp._enqueue_thread
+    assert not wfp._dequeue_thread
+    assert not wfp._enqueue_thread_terminate.is_set()
+    assert not wfp._dequeue_thread_terminate.is_set()
+    assert not wfp._wfp_terminate.is_set()
+    assert wfp._wfp_process.is_alive()
+
+    wfp._wfp_terminate.set()
+    wfp._wfp_process.join()
 
 
 def test_wfp_terminate_processor():
-    pass
+
+    p = Pipeline()
+    s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.add_tasks(t)
+    p.add_stages(s)
+
+    amgr = Amgr()
+    amgr._setup_mqs()
+
+    wfp = WFprocessor(sid=amgr._sid,
+                      workflow=[p],
+                      pending_queue=amgr._pending_queue,
+                      completed_queue=amgr._completed_queue,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
+                      resubmit_failed=False)
+
+    wfp.start_processor()
+    wfp.terminate_processor()
+
+    assert not wfp._wfp_process
 
 
 def test_wfp_workflow_incomplete():
-    pass
+
+    p = Pipeline()
+    s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.add_tasks(t)
+    p.add_stages(s)
+
+    amgr = Amgr()
+    amgr._setup_mqs()
+
+    wfp = WFprocessor(sid=amgr._sid,
+                      workflow=[p],
+                      pending_queue=amgr._pending_queue,
+                      completed_queue=amgr._completed_queue,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
+                      resubmit_failed=False)
+
+    wfp._initialize_workflow()
+
+    assert wfp.workflow_incomplete()
+
+    amgr.workflow = [p]
+    profiler = ru.Profiler(name='radical.entk.temp')
+
+    p.stages[0].state == states.SCHEDULING
+    p.state == states.SCHEDULED
+    for t in p.stages[0].tasks:
+        t.state = states.COMPLETED
+
+    import json
+    import pika
+
+    task_as_dict = json.dumps(t.to_dict())
+    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=amgr._mq_hostname, port=amgr._port))
+    mq_channel = mq_connection.channel()
+    mq_channel.basic_publish(exchange='',
+                             routing_key='%s-completedq-1' % amgr._sid,
+                             body=task_as_dict)
+
+    amgr._terminate_sync = Event()
+    sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
+    sync_thread.start()
+
+    proc = Process(target=func_for_dequeue_test, name='temp-proc', args=(wfp,))
+    proc.start()
+    proc.join()
+
+    amgr._terminate_sync.set()
+    sync_thread.join()
+
+    assert not wfp.workflow_incomplete()
 
 
 def test_wfp_check_processor():
-    pass
 
+    p = Pipeline()
+    s = Stage()
+    t = Task()
+    t.executable = ['/bin/date']
+    s.add_tasks(t)
+    p.add_stages(s)
 
-def test_wfp_attributes():
+    amgr = Amgr()
+    amgr._setup_mqs()
 
-    def create_single_task():
+    wfp = WFprocessor(sid=amgr._sid,
+                      workflow=[p],
+                      pending_queue=amgr._pending_queue,
+                      completed_queue=amgr._completed_queue,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
+                      resubmit_failed=False)
 
-        t1 = Task()
-        t1.environment = ['module load gromacs']
-        t1.executable = ['gmx mdrun']
-        t1.arguments = ['a', 'b', 'c']
-        t1.copy_input_data = []
-        t1.copy_output_data = []
+    wfp.start_processor()
+    assert wfp.check_processor()
 
-        return t1
-
-    queue_type = [1, 'a', True, set([1])]
-
-    p1 = Pipeline()
-    stages = 3
-
-    for cnt in range(stages):
-        s = Stage()
-        s.name = 's%s' % cnt
-        s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
-
-        p1.add_stages(s)
-
-    for queue in queue_type:
-
-        with pytest.raises(TypeError):
-            p = WFprocessor(sid='xyz',
-                            workflow=p1,
-                            pending_queue=queue,
-                            completed_queue=queue,
-                            mq_hostname='localhost',
-                            port=5672,
-                            resubmit_failed=False)
-
-    queue = ['test']
-    hostname_type = [1, True, set([1])]
-
-    p1 = Pipeline()
-    stages = 3
-
-    for cnt in range(stages):
-        s = Stage()
-        s.name = 's%s' % cnt
-        s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
-
-        p1.add_stages(s)
-
-    for hostname in hostname_type:
-
-        with pytest.raises(TypeError):
-            p = WFprocessor(sid='xyz',
-                            workflow=p1,
-                            pending_queue=queue,
-                            completed_queue=queue,
-                            mq_hostname=hostname,
-                            port=5672,
-                            resubmit_failed=False)
-
-
-def test_wfp_process():
-    """
-    **Purpose**: Test the functions to start and terminate the WFP process
-    """
-
-    def create_single_task():
-
-        t1 = Task()
-        t1.environment = ['module load gromacs']
-        t1.executable = ['gmx mdrun']
-        t1.arguments = ['a', 'b', 'c']
-        t1.copy_input_data = []
-        t1.copy_output_data = []
-
-        return t1
-
-    q = Queue()
-    p1 = Pipeline()
-    stages = 3
-
-    for cnt in range(stages):
-        s = Stage()
-        s.name = 's%s' % cnt
-        s.tasks = create_single_task()
-        s.add_tasks(create_single_task())
-
-        p1.add_stages(s)
-
-    p = WFprocessor(sid='xyz',
-                    workflow=p1,
-                    pending_queue=['pendingq'],
-                    completed_queue=['completedq'],
-                    mq_hostname='localhost',
-                    port=5672,
-                    resubmit_failed=False)
-
-    p.start_processor()
-    assert p.check_processor() == True
-    p.terminate_processor()
-    assert p.check_processor() == False
+    wfp.terminate_processor()
+    assert not wfp.check_processor()
