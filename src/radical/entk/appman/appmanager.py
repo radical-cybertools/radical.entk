@@ -44,13 +44,13 @@ class AppManager(object):
                  autoterminate=None,
                  write_workflow=None,
                  rts=None,
-                 cleanup=None):
+                 rmq_cleanup=None):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
-                          rts, cleanup)
+                          rts, rmq_cleanup)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
@@ -85,13 +85,10 @@ class AppManager(object):
 
     def _read_config(self, config_path, hostname, port, reattempts,
                      resubmit_failed, autoterminate, write_workflow,
-                     rts, cleanup):
+                     rts, rmq_cleanup):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
-
-        # with open(os.path.join(config_path, 'config.json'),'r') as fp:
-        #     config = json.load(fp)
 
         config = ru.read_json(os.path.join(config_path, 'config.json'))
 
@@ -101,8 +98,8 @@ class AppManager(object):
         self._resubmit_failed = resubmit_failed if resubmit_failed else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate else config['autoterminate']
         self._write_workflow = write_workflow if write_workflow else config['write_workflow']
-        self._rts = rts if rts else str(config['rts'])
-        self._rmq_cleanup = cleanup if cleanup else config['cleanup']
+        self._rts = rts if rts in ['radical.pilot', 'dummy'] else str(config['rts'])
+        self._rmq_cleanup = rmq_cleanup if rmq_cleanup else config['rmq_cleanup']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -143,6 +140,15 @@ class AppManager(object):
 
         return self._resource_desc
 
+    @property
+    def workflow(self):
+        """
+        :getter: Return the workflow assigned for execution
+        :setter: Assign workflow to be executed
+        """
+
+        return self._workflow
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -177,16 +183,8 @@ class AppManager(object):
             raise
         self._report.ok('>>ok\n')
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def assign_workflow(self, workflow):
-        """
-        **Purpose**: Assign workflow to the application manager to be executed
-
-        :arguments: set of Pipelines
-        """
+    @workflow.setter
+    def workflow(self, workflow):
 
         self._prof.prof('assigning workflow', uid=self._uid)
 
@@ -199,6 +197,10 @@ class AppManager(object):
 
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------------------------
 
     def run(self):
         """
@@ -315,7 +317,7 @@ class AppManager(object):
 
                     for pipe in self._workflow:
 
-                        with pipe._stage_lock:
+                        with pipe.lock:
 
                             if (pipe.completed) and (pipe.uid not in finished_pipe_uids):
 
@@ -455,8 +457,7 @@ class AppManager(object):
                 self._resource_manager._cancel_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
-
-            raise Error(text=ex)
+            raise
 
     def resource_terminate(self):
 
@@ -480,40 +481,6 @@ class AppManager(object):
     # Private methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _validate_workflow(self):
-        """
-        **Purpose**: Validate whether the workflow consists of a set of Pipelines and validate each Pipeline. 
-
-        Details: Tasks are validated when being added to Stage. Stages are validated when being added to Pipelines. Only
-        Pipelines themselves remain to be validated before execution.
-        """
-
-        try:
-
-            self._prof.prof('validating workflow', uid=self._uid)
-
-            if not isinstance(self._workflow, set):
-
-                if not isinstance(self._workflow, list):
-                    self._workflow = set([self._workflow])
-                else:
-                    self._workflow = set(self._workflow)
-
-            for p in self._workflow:
-                if not isinstance(p, Pipeline):
-                    self._logger.info('workflow type incorrect')
-                    raise TypeError(expected_type=['Pipeline', 'set of Pipeline'],
-                                    actual_type=type(p))
-
-                p._validate(self._sid)
-
-            self._prof.prof('workflow validated', uid=self._uid)
-
-        except Exception, ex:
-
-            self._logger.exception('Fatal error while adding workflow to Appmanager: %s' % ex)
-            raise
-
     def _setup_mqs(self):
         """
         **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
@@ -534,17 +501,7 @@ class AppManager(object):
 
             self._logger.debug('Setting up mq connection and channel')
 
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port,
-                                                                                  heartbeat=0
-                                                                                  )
-                                                        )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port
-                                                                                  )
-                                                        )
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
 
             mq_channel = mq_connection.channel()
             self._logger.debug('Connection and channel setup successful')
@@ -592,18 +549,7 @@ class AppManager(object):
 
         try:
 
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port,
-                                                                                  heartbeat=0
-                                                                                  )
-                                                        )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port
-                                                                                  )
-                                                        )
-
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
@@ -625,6 +571,7 @@ class AppManager(object):
 
         except Exception as ex:
             self._logger.exception('Message queues not deleted, error: %s' % ex)
+            raise
 
     def _synchronizer(self):
         """
@@ -656,7 +603,7 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct task
                 for pipe in self._workflow:
 
-                    with pipe._stage_lock:
+                    with pipe.lock:
 
                         if not pipe.completed:
                             if completed_task.parent_pipeline['uid'] == pipe.uid:
@@ -733,7 +680,7 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct stage
                 for pipe in self._workflow:
 
-                    with pipe._stage_lock:
+                    with pipe.lock:
 
                         if not pipe.completed:
                             if completed_stage.parent_pipeline['uid'] == pipe.uid:
@@ -800,7 +747,7 @@ class AppManager(object):
                 # Traverse the entire workflow to find the correct pipeline
                 for pipe in self._workflow:
 
-                    with pipe._stage_lock:
+                    with pipe.lock:
 
                         if not pipe.completed:
 
@@ -835,19 +782,7 @@ class AppManager(object):
                                 self._report.ok('Update: ')
                                 self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
 
-            # Disable heartbeat for long running jobs since that might load the TCP channel
-            # https://github.com/pika/pika/issues/753
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port,
-                                                                                  heartbeat=0
-                                                                                  )
-                                                        )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                  port=self._port
-                                                                                  )
-                                                        )
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
@@ -978,6 +913,6 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
-            raise Error(text=ex)
+            raise 
 
     # ------------------------------------------------------------------------------------------------------------------

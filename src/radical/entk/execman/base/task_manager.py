@@ -76,17 +76,7 @@ class Base_TaskManager(object):
 
 
         # Thread should run till terminate condtion is encountered
-        if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                    port=port,
-                                                                                    heartbeat=0
-                                                                                    )
-                                                          )
-        else:
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                    port=port
-                                                                                    )
-                                                          )
+        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,port=port))
 
         self._hb_request_q = '%s-hb-request' % self._sid
         self._hb_response_q = '%s-hb-response' % self._sid
