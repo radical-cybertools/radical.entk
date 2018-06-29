@@ -55,88 +55,7 @@ class TaskManager(Base_TaskManager):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def _heartbeat(self):
-        """
-        **Purpose**: Method to be executed in the heartbeat thread. This method sends a 'request' to the
-        heartbeat-req queue. It expects a 'response' message from the 'heartbeart-res' queue within 10 seconds. This
-        message should contain the same correlation id. If no message if received in 10 seconds, the tmgr is assumed
-        dead. The end_manager() is called to cleanly terminate tmgr process and the heartbeat thread is also 
-        terminated.
-
-        **Details**: The AppManager can re-invoke both if the execution is still not complete.
-        """
-
-        try:
-
-            self._prof.prof('heartbeat thread started', uid=self._uid)
-
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,
-                                                                                        port=self._port
-                                                                                        )
-                                                              )
-
-            channel = mq_connection.channel()
-            response = True
-
-            last = time.time()
-            while (response and (not self._hb_alive.is_set())):
-                response = False
-                corr_id = str(uuid.uuid4())
-
-                # Heartbeat request signal sent to task manager via rpc-queue
-                channel.basic_publish(exchange='',
-                                      routing_key=self._hb_request_q,
-                                      properties=pika.BasicProperties(
-                                          reply_to=self._hb_response_q,
-                                          correlation_id=corr_id),
-                                      body='request')
-
-                self._logger.info('Sent heartbeat request')
-
-                # Ten second interval for heartbeat request to be responded to
-                time.sleep(10)
-
-                method_frame, props, body = channel.basic_get(queue=self._hb_response_q)
-
-                if body:
-                    if corr_id == props.correlation_id:
-                        self._logger.info('Received heartbeat response')
-                        response = True
-
-                        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                # Appease pika cos it thinks the connection is dead
-                now =  time.time()
-                if now - last >= self._rmq_ping_interval:
-                    mq_connection.process_data_events()
-                    last = now
-
-        except KeyboardInterrupt:
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to cancel tmgr process gracefully...')
-            raise KeyboardInterrupt
-
-        except Exception as ex:
-            self._logger.error('Heartbeat failed with error: %s' % ex)
-            raise 
-
-        finally:
-
-            try:
-                mq_connection.close()
-            except:
-                self._logger.warning('mq_connection not created')
-
-            self._prof.prof('terminating heartbeat thread', uid=self._uid)
+    # ------------------------------------------------------------------------------------------------------------------      
 
     def _tmgr(self, uid, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
         """
@@ -178,23 +97,12 @@ class TaskManager(Base_TaskManager):
                     placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
        
             # Thread should run till terminate condtion is encountered
-            if os.environ.get('DISABLE_RMQ_HEARTBEAT', None):
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                        port=port,
-                                                                                        heartbeat=0
-                                                                                        )
-                                                              )
-            else:
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,
-                                                                                        port=port
-                                                                                        )
-                                                              )
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,port=port))
             mq_channel = mq_connection.channel()            
 
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
             last = time.time()
-
             while not self._tmgr_terminate.is_set():
 
                 try:
@@ -318,68 +226,7 @@ class TaskManager(Base_TaskManager):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def start_heartbeat(self):
-        """
-        **Purpose**: Method to start the heartbeat thread. The heartbeat function
-        is not to be accessed directly. The function is started in a separate
-        thread using this method.
-        """
-
-        if not self._hb_thread:
-
-            try:
-
-                self._logger.info('Starting heartbeat thread')
-                self._prof.prof('creating heartbeat thread', uid=self._uid)
-                self._hb_thread = threading.Thread(target=self._heartbeat, name='heartbeat')
-                self._hb_alive = threading.Event()
-                self._prof.prof('starting heartbeat thread', uid=self._uid)
-                self._hb_thread.start()
-
-                return True
-
-            except Exception, ex:
-
-                self._logger.error('Heartbeat not started, error: %s' % ex)
-                self.end_heartbeat()
-                raise
-
-        else:
-            self._logger.warn('Heartbeat thread already running, but attempted to restart!')
-
-    def terminate_heartbeat(self):
-        """
-        **Purpose**: Method to terminate the heartbeat thread. This method is 
-        blocking as it waits for the heartbeat thread to terminate (aka join).
-
-        This is the last method that is executed from the TaskManager and
-        hence closes the profiler.
-        """
-
-        try:
-
-            if self._hb_thread:
-
-                if self._hb_thread.is_alive():
-                    self._hb_alive.set()
-                    self._hb_thread.join()
-
-                self._hb_thread = None
-
-                self._logger.info('Hearbeat thread terminated')
-
-                self._prof.prof('heartbeat thread terminated', uid=self._uid)
-
-                # We close in the heartbeat because it ends after the tmgr process
-                self._prof.close()
-
-                return True
-
-        except Exception, ex:
-            self._logger.error('Could not terminate heartbeat thread')
-            raise
+    # ------------------------------------------------------------------------------------------------------------------    
 
     def start_manager(self):
         """
@@ -420,45 +267,6 @@ class TaskManager(Base_TaskManager):
                 raise
 
         else:
-            self._logger.warn('tmgr process already running, but attempted to restart!')
-
-    def terminate_manager(self):
-        """
-        **Purpose**: Method to terminate the tmgr process. This method is 
-        blocking as it waits for the tmgr process to terminate (aka join).
-        """
-
-        try:
-
-            if self._tmgr_process:
-
-                if not self._tmgr_terminate.is_set():
-                    self._tmgr_terminate.set()
-
-                self._tmgr_process.join()
-                self._tmgr_process = None
-                self._logger.info('Task manager process closed')
-
-                self._prof.prof('tmgr process terminated', uid=self._uid)
-
-                return True
-
-        except Exception, ex:
-            self._logger.error('Could not terminate task manager process')
-            raise
-
-    def check_manager(self):
-        """
-        **Purpose**: Check if the tmgr process is alive and running
-        """
-
-        return self._tmgr_process.is_alive()
-
-    def check_heartbeat(self):
-        """
-        **Purpose**: Check if the heartbeat thread is alive and running
-        """
-
-        return self._hb_thread.is_alive()
+            self._logger.warn('tmgr process already running, but attempted to restart!') 
 
     # ------------------------------------------------------------------------------------------------------------------

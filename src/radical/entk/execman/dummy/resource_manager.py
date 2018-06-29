@@ -26,7 +26,7 @@ class ResourceManager(Base_ResourceManager):
                                 }
     """
 
-    def __init__(self, sid, resource_desc={}):
+    def __init__(self, resource_desc, sid):
 
         super(ResourceManager, self).__init__(  resource_desc=resource_desc,
                                                 sid=sid,
@@ -43,7 +43,7 @@ class ResourceManager(Base_ResourceManager):
         """
         return None
 
-    def completed_states(self):
+    def get_completed_states(self):
         """
         **Purpose**: Test if a resource allocation was submitted
 
@@ -76,7 +76,7 @@ class ResourceManager(Base_ResourceManager):
 
         return None
 
-    def _cancel_resource_request(self):
+    def _terminate_resource_request(self):
         """
         **Purpose**: Cancel the RADICAL Pilot Job
         """

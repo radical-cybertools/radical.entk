@@ -37,7 +37,8 @@ class Base_ResourceManager(object):
         # Resource reservation related parameters
         self._resource = None
         self._walltime = None
-        self._cores = None
+        self._cpus = 1
+        self._gpus = 0
         self._project = None
         self._access_schema = None
         self._queue = None
@@ -69,11 +70,19 @@ class Base_ResourceManager(object):
         return self._walltime
 
     @property
-    def cores(self):
+    def cpus(self):
         """
         :getter: Return user specified number of cpus
         """
-        return self._cores
+        return self._cpus
+
+
+    @property
+    def gpus(self):
+        """
+        :getter: Return user specified number of gpus
+        """
+        return self._gpus
 
     @property
     def project(self):
@@ -125,16 +134,16 @@ class Base_ResourceManager(object):
         """
         **Purpose**: Get the state of the resource allocation
         """
-        raise NotImplementedError(msg='get_resource_allocation_state() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        raise NotImplementedError('get_resource_allocation_state() method ' +
+                                  'not implemented in ResourceManager for %s' % self._rts)
 
-    def completed_states(self):
+    def get_completed_states(self):
         """
         **Purpose**: Test if a resource allocation was submitted
         """
 
-        raise NotImplementedError(msg='completed_states() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        raise NotImplementedError('completed_states() method ' +
+                                  'not implemented in ResourceManager for %s' % self._rts)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -150,11 +159,11 @@ class Base_ResourceManager(object):
 
         expected_keys = ['resource',
                          'walltime',
-                         'cores']
+                         'cpus']
 
         for key in expected_keys:
             if key not in self._resource_desc:
-                raise Error(text='Mandatory key %s does not exist in the resource description' % key)
+                raise MissingError(obj = 'resource description', missing_attribute=key)
 
         if not isinstance(self._resource_desc['resource'], str):
             raise TypeError(expected_type=str, actual_type=type(self._resource_desc['resource']))
@@ -162,8 +171,12 @@ class Base_ResourceManager(object):
         if not isinstance(self._resource_desc['walltime'], int):
             raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
 
-        if not isinstance(self._resource_desc['cores'], int):
+        if not isinstance(self._resource_desc['cpus'], int):
             raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cores']))
+
+        if 'gpus' in self._resource_desc:
+            if (not isinstance(self._resource_desc['gpus'], int)):
+                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['project']))
 
         if 'project' in self._resource_desc:
             if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
@@ -197,16 +210,11 @@ class Base_ResourceManager(object):
 
             self._resource = self._resource_desc['resource']
             self._walltime = self._resource_desc['walltime']
-            self._cores = self._resource_desc['cores']
-
-            if 'project' in self._resource_desc:
-                self._project = self._resource_desc['project']
-
-            if 'access_schema' in self._resource_desc:
-                self._access_schema = self._resource_desc['access_schema']
-
-            if 'queue' in self._resource_desc:
-                self._queue = self._resource_desc['queue']
+            self._cores = self._resource_desc['cpus']
+            self._gpus = self._resource_desc.get('gpus',0)
+            self._project = self._resource_desc.get('project',None)
+            self._access_schema = self._resource_desc.get('access_schema',None)
+            self._queue = self._resource_desc.get('queue',None)
 
             self._logger.debug('Resource manager population successful')
             self._prof.prof('rmgr populated', uid=self._uid)
@@ -220,14 +228,14 @@ class Base_ResourceManager(object):
         **Purpose**:    Submit resource request as per the description provided by the user
         """
 
-        raise NotImplementedError(msg='_submit_resource_request() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        raise NotImplementedError('_submit_resource_request() method ' +
+                                  'not implemented in ResourceManager for %s' % self._rts)
 
-    def _cancel_resource_request(self):
+    def _terminate_resource_request(self):
         """
         **Purpose**:    Cancel resource request by terminating any reservation on any acquired
                         resources or resources pending acquisition
         """
 
-        raise NotImplementedError(msg='_cancel_resource_request() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts_type)
+        raise NotImplementedError('_terminate_resource_request() method ' +
+                                  'not implemented in ResourceManager for %s' % self._rts)
