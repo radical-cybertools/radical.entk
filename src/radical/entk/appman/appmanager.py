@@ -252,7 +252,6 @@ class AppManager(object):
                                     mq_hostname=self._mq_hostname,
                                     port=self._port,
                                     resubmit_failed=self._resubmit_failed)
-            self._wfp._validate_workflow()
             self._workflow = self._wfp.workflow
 
             # Submit resource request if not resource allocation done till now or
@@ -311,7 +310,7 @@ class AppManager(object):
             while ((active_pipe_count > 0) and
                     (self._wfp.workflow_incomplete()) and
                     (self._resource_manager.get_resource_allocation_state() not
-                     in self._resource_manager.completed_states())):
+                     in self._resource_manager.get_completed_states())):
 
                 if active_pipe_count > 0:
 
@@ -425,7 +424,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._terminate_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -454,7 +453,7 @@ class AppManager(object):
                 self._logger.info('Synchronizer thread terminated')
 
             if self._resource_manager:
-                self._resource_manager._cancel_resource_request()
+                self._resource_manager._terminate_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
             raise
@@ -467,7 +466,7 @@ class AppManager(object):
             self._task_manager.terminate_heartbeat()
 
         if self._resource_manager:
-            self._resource_manager._cancel_resource_request()
+            self._resource_manager._terminate_resource_request()
 
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)

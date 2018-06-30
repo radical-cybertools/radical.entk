@@ -52,7 +52,6 @@ class TaskManager(Base_TaskManager):
 
         self._umgr = None
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
-        self._hb_interval = os.getenv('ENTK_RP_HB_INTERVAL',300)
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)
 
@@ -244,18 +243,7 @@ class TaskManager(Base_TaskManager):
                             if now - last >= self._rmq_ping_interval:
                                 mq_connection.process_data_events()
                                 last = now
-
-                            # Rollback and pass exception
-                            self._logger.error('Task %s submission failed, error: %s' % (task.uid, ex))
-                            task.state = states.SUBMITTING
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-
+                                
                             heartbeat_response(mq_channel)
 
 

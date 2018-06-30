@@ -103,7 +103,7 @@ def test_amgr_resource_description_assignment():
 
         'resource': 'xsede.supermic',
         'walltime': 30,
-        'cores': 1000,
+        'cpus': 1000,
         'project': 'TG-MCB090174'
 
     }
@@ -163,7 +163,7 @@ def test_amgr_resource_terminate():
 
         'resource': 'xsede.supermic',
         'walltime': 30,
-        'cores': 1000,
+        'cpus': 20,
         'project': 'TG-MCB090174'
 
     }
@@ -407,8 +407,8 @@ def test_state_order():
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
-
-    appman = AppManager(hostname=hostname, port=port)
+    
+    appman = Amgr(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
     appman.workflow = [p1]

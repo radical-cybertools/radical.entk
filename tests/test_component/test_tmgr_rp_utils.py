@@ -192,7 +192,7 @@ def test_create_cud_from_task():
     s.tasks = t1
     p.stages = s
 
-    p._initialize('temp')    
+    p._assign_uid('test')    
 
     cud = create_cud_from_task(t1, placeholder_dict)
 

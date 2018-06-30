@@ -99,6 +99,7 @@ class Base_TaskManager(object):
 
         self._tmgr_process = None
         self._hb_thread = None
+        self._hb_interval = os.getenv('ENTK_HB_INTERVAL',180)
 
         mq_connection.close()
 
@@ -120,15 +121,13 @@ class Base_TaskManager(object):
         try:
 
             self._prof.prof('heartbeat thread started', uid=self._uid)
-            
+           
             response = True
-            while (response and (not self._hb_alive.is_set())):
+            while (response and (not self._hb_terminate.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
 
                 mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,port=self._port))
-                mq_channel.queue_delete(queue=self._hb_request_q)
-                mq_channel.queue_declare(queue=self._hb_request_q)            
                 mq_channel = mq_connection.channel()
 
                 # Heartbeat request signal sent to task manager via rpc-queue
@@ -258,8 +257,6 @@ class Base_TaskManager(object):
                 # We close in the heartbeat because it ends after the tmgr process
                 self._prof.close()
 
-                return True
-
         except Exception, ex:
             self._logger.error('Could not terminate heartbeat thread')
             raise
@@ -273,7 +270,7 @@ class Base_TaskManager(object):
         """
 
         raise NotImplementedError('start_manager() method ' +
-                                  'not implemented in TaskManager for %s' % self._rts_type)
+                                  'not implemented in TaskManager for %s' % self._rts)
 
     def terminate_manager(self):
         """
@@ -296,11 +293,20 @@ class Base_TaskManager(object):
 
                 self._prof.prof('tmgr process terminated', uid=self._uid)
 
-                return True
-
         except Exception, ex:
             self._logger.error('Could not terminate task manager process')
             raise  
+
+        finally:
+
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_channel = mq_connection.channel()
+
+            # To respond to heartbeat - get request from rpc_queue
+            mq_channel.queue_delete(queue=self._hb_response_q)
+            mq_channel.queue_delete(queue=self._hb_request_q)
+
+            mq_connection.close()
 
     def check_heartbeat(self):
         """

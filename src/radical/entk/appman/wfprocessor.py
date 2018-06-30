@@ -158,8 +158,6 @@ class WFprocessor(object):
                                 executable_stage.parent_pipeline['uid'] = pipe.uid
                                 executable_stage.parent_pipeline['name'] = pipe.name
                                 executable_stage._assign_uid(self._sid)
-                                executable_stage._initialize(self._sid)
-                                executable_stage._pass_uid()
 
                             if executable_stage.state in [states.INITIAL, states.SCHEDULED]:
 
