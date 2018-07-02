@@ -18,16 +18,17 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
     corr_id = str(uuid.uuid4())
 
     logger.debug('Attempting to sync %s with state %s with AppManager' % (obj.uid, obj.state))
-    channel.basic_publish(  exchange='',
-                            routing_key=queue,
-                            body=json.dumps(object_as_dict),
-                            properties=pika.BasicProperties(correlation_id=corr_id)
-                        )
+    channel.basic_publish(exchange='',
+                          routing_key=queue,
+                          body=json.dumps(object_as_dict),
+                          properties=pika.BasicProperties(correlation_id=corr_id)
+                          )
 
     if obj_type == 'Task':
         local_prof.prof('publishing obj with state %s for sync' % obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
     elif obj_type == 'Stage':
-        local_prof.prof('publishing obj with state %s for sync' % obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
+        local_prof.prof('publishing obj with state %s for sync' %
+                        obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
     else:
         local_prof.prof('publishing obj with state %s for sync' % obj.state, uid=obj.uid)
 
@@ -47,9 +48,11 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
                 # print 'acknowledged: ', obj.uid, obj.state
                 if obj_type == 'Task':
-                    local_prof.prof('obj with state %s synchronized' % obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
+                    local_prof.prof('obj with state %s synchronized' %
+                                    obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
                 elif obj_type == 'Stage':
-                    local_prof.prof('obj with state %s synchronized' % obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
+                    local_prof.prof('obj with state %s synchronized' %
+                                    obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
                 else:
                     local_prof.prof('obj with state %s synchronized' % obj.state, uid=obj.uid)
 

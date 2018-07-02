@@ -134,10 +134,10 @@ def write_session_description(amgr):
     tree[amgr._uid] = {'uid': amgr._uid,
                        'etype': 'appmanager',
                        'cfg': {},
-                       'has': [ 'pipeline', 
-                                'wfprocessor', 
-                                'resource_manager', 
-                                'task_manager'],
+                       'has': ['pipeline',
+                               'wfprocessor',
+                               'resource_manager',
+                               'task_manager'],
                        'children': list()
                        }
 
@@ -222,7 +222,6 @@ def get_session_description(sid, src=None):
     return desc
 
 
-
 def write_workflow(workflow, uid):
 
     try:
@@ -231,10 +230,10 @@ def write_workflow(workflow, uid):
         pass
 
     data = list()
-    if os.path.isfile('%s/entk_workflow.json'%uid):
-        data = ru.read_json('%s/entk_workflow.json'%uid)
+    if os.path.isfile('%s/entk_workflow.json' % uid):
+        data = ru.read_json('%s/entk_workflow.json' % uid)
 
-    for pipe in workflow:                   
+    for pipe in workflow:
 
         p = dict()
         p['uid'] = pipe.uid
@@ -256,6 +255,5 @@ def write_workflow(workflow, uid):
             p['stages'].append(s)
 
         data.append(p)
-    
-    ru.write_json(data, '%s/entk_workflow.json' % uid)
 
+    ru.write_json(data, '%s/entk_workflow.json' % uid)

@@ -38,19 +38,17 @@ Design
 
 
 Ensemble toolkit consists of several components that serve different purposes. 
-There are four user level components, namely, Resource Manager, Pipeline, Stage
-and Task, that are used directly by the user. The **Resource Manager** is used
-to describe the resource to be used for execution of the application. The 
-**Pipeline**, **Stage** and **Task** are components used to create the 
-application by describing its task graph. We will soon take a look into how 
-these can be used to create an application.
+There are three user level components, namely, Pipeline, Stage and Task, that 
+are used directly by the user. The **Pipeline**, **Stage** and **Task** are 
+components used to create the application by describing its task graph. We will 
+soon take a look into how these can be used to create an application.
 
 The **Application Manager** is an internal components, that takes the workflow 
 described by the user and converts them into a set of **workloads**, i.e. tasks
 with no dependencies by parsing through the workflow and identifying, during 
 runtime, tasks with equivalent or no dependencies. 
 
-The **Task Execution Manager** is the last component in Ensemble Toolkit. It 
+The **Execution Manager** is the last component in Ensemble Toolkit. It 
 accepts the workload prepared by the Application Manager and executes them on 
 the specified resource using a Runtime system.
 
@@ -112,21 +110,27 @@ capabilities (even on your personal PC)!
 
 Some of our current users are mentioned below.
 
-+------------------------+------------+
-| User Groups            |   Domain   |
-+========================+============+
-| University of Colorado,|  Molecular |
-| Denver                 |  Dynamics  |
-+------------------------+------------+
-| Penn State University  | Climate    |
-|                        | Science    |
-+------------------------+------------+
-| Princeton University   | Seismology |
-+------------------------+------------+
-| University College of  | Molecular  |
-| London                 | Dynamics,  |
-|                        | Medicine   |
-+------------------------+------------+
-| Rice University        | Molecular  |
-|                        | Dynamics   |
-+------------------------+------------+
++------------------------+---------------+
+| User Groups            |   Domain      |
++========================+===============+
+| University of Colorado,| Biochemistry/ |
+| Denver                 | Biophysics    |
++------------------------+---------------+
+| Penn State University  | Climate       |
+|                        | Science       |
++------------------------+---------------+
+| Princeton University   | Seismology    |
++------------------------+---------------+
+| University College of  | Biochemistry/ |
+| London                 | Biophysics    |
+|                        | Medicine      |
++------------------------+---------------+
+| Rice University        | Biochemistry/ |
+|                        | Biophysics    |
++------------------------+---------------+
+| Stony Brook University | Polar         |
+|                        | Science       |
++------------------------+---------------+
+| Northern Arizona       | Polar         |
+| University             | Science       |
++------------------------+---------------+

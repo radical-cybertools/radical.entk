@@ -98,7 +98,6 @@ class TaskManager(Base_TaskManager):
                 if None not in [parent_pipeline, parent_stage, task.name]:
                     placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
 
-
             def heartbeat_response(mq_channel):
 
                 try:
@@ -112,7 +111,8 @@ class TaskManager(Base_TaskManager):
 
                         mq_channel.basic_publish(exchange='',
                                                  routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(correlation_id=hb_props.correlation_id),
+                                                 properties=pika.BasicProperties(
+                                                     correlation_id=hb_props.correlation_id),
                                                  body='response')
 
                         logger.info('Sent heartbeat response')
@@ -128,12 +128,11 @@ class TaskManager(Base_TaskManager):
 
                     logger.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
-
                     if unit.state in rp.FINAL:
 
                         # Acquire a connection+channel to the rmq server
                         mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
-                        mq_channel = mq_connection.channel()                                            
+                        mq_channel = mq_connection.channel()
 
                         task = None
                         task = create_task_from_cu(unit, local_prof)
@@ -162,11 +161,11 @@ class TaskManager(Base_TaskManager):
                         logger.info('Pushed task %s with state %s to completed queue %s' % (task.uid, task.state,
                                                                                             completed_queue[0]))
 
-                        mq_connection.close()     
+                        mq_connection.close()
 
                 except KeyboardInterrupt:
                     self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                                       'trying to exit callback thread gracefully...')
+                                           'trying to exit callback thread gracefully...')
 
                     raise KeyboardInterrupt
 
@@ -218,7 +217,7 @@ class TaskManager(Base_TaskManager):
 
                             heartbeat_response(mq_channel)
 
-                            now =  time.time()
+                            now = time.time()
                             if now - last >= self._rmq_ping_interval:
                                 mq_connection.process_data_events()
                                 last = now
@@ -239,15 +238,14 @@ class TaskManager(Base_TaskManager):
                             heartbeat_response(mq_channel)
 
                             # Appease pika cos it thinks the connection is dead
-                            now =  time.time()
+                            now = time.time()
                             if now - last >= self._rmq_ping_interval:
                                 mq_connection.process_data_events()
                                 last = now
-                                
+
                             heartbeat_response(mq_channel)
 
-
-                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)                    
+                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 except Exception, ex:
                     logger.exception('Error in task execution: %s' % ex)
@@ -270,7 +268,7 @@ class TaskManager(Base_TaskManager):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
-    # ------------------------------------------------------------------------------------------------------------------   
+    # ------------------------------------------------------------------------------------------------------------------
 
     def start_manager(self):
         """

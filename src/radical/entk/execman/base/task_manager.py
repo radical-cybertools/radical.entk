@@ -99,7 +99,7 @@ class Base_TaskManager(object):
 
         self._tmgr_process = None
         self._hb_thread = None
-        self._hb_interval = os.getenv('ENTK_HB_INTERVAL',180)
+        self._hb_interval = os.getenv('ENTK_HB_INTERVAL', 30)
 
         mq_connection.close()
 
@@ -121,31 +121,32 @@ class Base_TaskManager(object):
         try:
 
             self._prof.prof('heartbeat thread started', uid=self._uid)
-           
+
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_channel = mq_connection.channel()
+
             response = True
             while (response and (not self._hb_terminate.is_set())):
                 response = False
                 corr_id = str(uuid.uuid4())
 
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,port=self._port))
-                mq_channel = mq_connection.channel()
-
                 # Heartbeat request signal sent to task manager via rpc-queue
                 mq_channel.basic_publish(exchange='',
-                                      routing_key=self._hb_request_q,
-                                      properties=pika.BasicProperties(
-                                          reply_to=self._hb_response_q,
-                                          correlation_id=corr_id),
-                                      body='request')
+                                         routing_key=self._hb_request_q,
+                                         properties=pika.BasicProperties(
+                                             reply_to=self._hb_response_q,
+                                             correlation_id=corr_id),
+                                         body='request')
                 self._logger.info('Sent heartbeat request')
 
-                mq_connection.close()
+                # mq_connection.close()
 
                 # Sleep for hb_interval and then check if tmgr responded
-                time.sleep(self._hb_interval)
+                mq_connection.sleep(self._hb_interval)
 
-                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,port=self._port))
-                mq_channel = mq_connection.channel()
+                # mq_connection = pika.BlockingConnection(
+                #     pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+                # mq_channel = mq_connection.channel()
 
                 method_frame, props, body = mq_channel.basic_get(queue=self._hb_response_q)
 
@@ -157,8 +158,7 @@ class Base_TaskManager(object):
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 # Appease pika cos it thinks the connection is dead
-                mq_connection.close()
-
+                # mq_connection.close()
 
         except KeyboardInterrupt:
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
@@ -167,7 +167,7 @@ class Base_TaskManager(object):
 
         except Exception as ex:
             self._logger.exception('Heartbeat failed with error: %s' % ex)
-            raise 
+            raise
 
         finally:
 
@@ -229,7 +229,6 @@ class Base_TaskManager(object):
         else:
             self._logger.warn('Heartbeat thread already running, but attempted to restart!')
 
-    
     def terminate_heartbeat(self):
         """
         **Purpose**: Method to terminate the heartbeat thread. This method is 
@@ -245,7 +244,7 @@ class Base_TaskManager(object):
 
                 self._hb_terminate.set()
 
-                if self.check_heartbeat():                    
+                if self.check_heartbeat():
                     self._hb_thread.join()
 
                 self._hb_thread = None
@@ -261,6 +260,18 @@ class Base_TaskManager(object):
             self._logger.error('Could not terminate heartbeat thread')
             raise
 
+        finally:
+
+            if not (self.check_heartbeat() or self.check_manager()):
+
+                mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+                mq_channel = mq_connection.channel()
+
+                # To respond to heartbeat - get request from rpc_queue
+                mq_channel.queue_delete(queue=self._hb_response_q)
+                mq_channel.queue_delete(queue=self._hb_request_q)
+
+                mq_connection.close()
 
     def start_manager(self):
         """
@@ -287,7 +298,7 @@ class Base_TaskManager(object):
 
                 if self.check_manager():
                     self._tmgr_process.join()
-                    
+
                 self._tmgr_process = None
                 self._logger.info('Task manager process closed')
 
@@ -295,32 +306,27 @@ class Base_TaskManager(object):
 
         except Exception, ex:
             self._logger.error('Could not terminate task manager process')
-            raise  
+            raise
 
-        finally:
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
-            mq_channel = mq_connection.channel()
-
-            # To respond to heartbeat - get request from rpc_queue
-            mq_channel.queue_delete(queue=self._hb_response_q)
-            mq_channel.queue_delete(queue=self._hb_request_q)
-
-            mq_connection.close()
 
     def check_heartbeat(self):
         """
         **Purpose**: Check if the heartbeat thread is alive and running
         """
-
-        return self._hb_thread.is_alive()
+        if self._hb_thread:
+            return self._hb_thread.is_alive()
+        else:
+            return None
 
     def check_manager(self):
         """
         **Purpose**: Check if the tmgr process is alive and running
         """
 
-        return self._tmgr_process.is_alive()
+        if self._tmgr_process:
+            return self._tmgr_process.is_alive()
+        else:
+            return None
 
-    
     # ------------------------------------------------------------------------------------------------------------------

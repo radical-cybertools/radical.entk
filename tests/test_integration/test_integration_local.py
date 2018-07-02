@@ -46,5 +46,5 @@ def test_integration_local():
 
     appman = AppManager()
     appman.resource_desc = res_dict
-    appman.assign_workflow(set([p1]))
+    appman.workflow = [p1]
     appman.run()

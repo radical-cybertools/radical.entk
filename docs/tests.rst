@@ -16,94 +16,50 @@ All tests are run on Travis CI. The current build status:
 Click the above to look at the test logs. The following are tests are performed
 at every commit in every branch.
 
-API tests
-=========
+Component tests
+===============
 
-.. automodule:: tests.test_api.test_amgr
+.. automodule:: tests.test_component.test_amgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_modules
+.. automodule:: tests.test_component.test_modules
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_pipeline
+.. automodule:: tests.test_component.test_pipeline
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_rmgr
+.. automodule:: tests.test_component.test_rmgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_stage
+.. automodule:: tests.test_component.test_stage
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_task
+.. automodule:: tests.test_component.test_task
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_tmgr
+.. automodule:: tests.test_component.test_tmgr
     :members:
     :undoc-members:
     :noindex:
 
-.. automodule:: tests.test_api.test_wfp
+.. automodule:: tests.test_component.test_tmgr_rp_utils
     :members:
     :undoc-members:
     :noindex:
 
-
-Functional tests
-================
-
-.. automodule:: tests.test_functionality.test_func_amgr
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_pipeline
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_rmgr
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_stage
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_state_order
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_task
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_tmgr
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_tproc
-    :members:
-    :undoc-members:
-    :noindex:
-
-.. automodule:: tests.test_functionality.test_func_wfp
+.. automodule:: tests.test_component.test_wfp
     :members:
     :undoc-members:
     :noindex:

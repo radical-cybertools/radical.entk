@@ -106,17 +106,13 @@ class Stage(object):
         is evaluated to produce a boolean result. Function func_2 is executed
         if the result is True and func_3 is executed if the result is False.
         Following is the expected structure:
+        
         self._post_exec = {
-                            'condition' : func_1,
-                            'on_true'   : {
-                                            'operation' : 'skip',
-                                            'operand'   : 2
-                                        },
-                            'on_false'  : {
-                                            'operation' : 'append',
-                                            'operand'   : Stage
-                                        }                            
+                            |  'condition' : func_1,
+                            |  'on_true'   : func_2,
+                            |  'on_false'  : func_3                            
                         }
+        
         '''
         return self._post_exec
 
@@ -190,8 +186,7 @@ class Stage(object):
 
             raise TypeError(entity='stage %s on_true' % self._uid,
                             expected_type=types.FunctionType,
-                            actual_type=type(on_true)
-                            )
+                            actual_type=type(on_true))
 
         self._on_true = on_true
 
@@ -199,8 +194,7 @@ class Stage(object):
 
             raise TypeError(entity='stage %s on_false' % self._uid,
                             expected_type=types.FunctionType,
-                            actual_type=type(on_false)
-                            )
+                            actual_type=type(on_false))
 
         self._on_false = on_false
 
@@ -258,9 +252,9 @@ class Stage(object):
                     self._state = d['state']
                 else:
                     raise ValueError(obj=self._uid,
-                                    attribute='state',
-                                    expected_value=states._stage_state_values.keys(),
-                                    actual_value=value)
+                                     attribute='state',
+                                     expected_value=states._stage_state_values.keys(),
+                                     actual_value=value)
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
@@ -329,7 +323,7 @@ class Stage(object):
             if not isinstance(tasks, list):
                 tasks = set([tasks])
             else:
-                tasks = set(tasks)        
+                tasks = set(tasks)
 
         for t in tasks:
 

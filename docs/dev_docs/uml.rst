@@ -40,8 +40,8 @@ State Diagram
 The stateful objects Pipeline, Stage and Task undergo several state transition during the execution of a workflow. We 
 document them in the following figure:
 
-.. image:: ../figures/entk_state_diagram.jpg
-   :target: ../figures/entk_state_diagram.jpg
+.. image:: ../figures/entk_state_diagram.png
+   :target: ../figures/entk_state_diagram.png
 
 
 

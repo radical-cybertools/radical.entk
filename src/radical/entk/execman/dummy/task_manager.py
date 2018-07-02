@@ -17,6 +17,7 @@ import uuid
 from ..base.task_manager import Base_TaskManager
 from radical.entk.utils.init_transition import transition
 
+
 class TaskManager(Base_TaskManager):
 
     """
@@ -38,24 +39,22 @@ class TaskManager(Base_TaskManager):
     def __init__(self, sid, pending_queue, completed_queue,
                  rmgr, mq_hostname, port):
 
+        super(TaskManager, self).__init__(sid,
+                                          pending_queue,
+                                          completed_queue,
+                                          rmgr,
+                                          mq_hostname,
+                                          port,
+                                          rts='dummy')
 
-        super(TaskManager, self).__init__(  sid, 
-                                            pending_queue, 
-                                            completed_queue, 
-                                            rmgr,
-                                            mq_hostname, 
-                                            port,
-                                            rts='dummy')      
-        
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
         self._logger.info('Created task manager object: %s' % self._uid)
         self._prof.prof('tmgr obj created', uid=self._uid)
-        
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
-    # ------------------------------------------------------------------------------------------------------------------      
+    # ------------------------------------------------------------------------------------------------------------------
 
     def _tmgr(self, uid, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
         """
@@ -75,7 +74,7 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            local_prof = ru.Profiler(name='radical.entk.%s'%self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-proc', path=self._path)
 
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
@@ -95,10 +94,10 @@ class TaskManager(Base_TaskManager):
 
                 if None not in [parent_pipeline, parent_stage, task.name]:
                     placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
-       
+
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname,port=port))
-            mq_channel = mq_connection.channel()            
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+            mq_channel = mq_connection.channel()
 
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
@@ -117,7 +116,7 @@ class TaskManager(Base_TaskManager):
 
                         for task in body:
                             t = Task()
-                            t.from_dict(task)                                
+                            t.from_dict(task)
                             bulk_tasks.append(t)
 
                             transition(obj=t,
@@ -127,20 +126,19 @@ class TaskManager(Base_TaskManager):
                                        queue='%s-tmgr-to-sync' % self._sid,
                                        profiler=local_prof,
                                        logger=self._logger)
-                       
+
                         for task in bulk_tasks:
 
-                            transition( obj=task,
-                                        obj_type='Task',
-                                        new_state=states.SUBMITTED,
-                                        channel=mq_channel,
-                                        queue='%s-tmgr-to-sync' % self._sid,
-                                        profiler=local_prof,
-                                        logger=self._logger)
+                            transition(obj=task,
+                                       obj_type='Task',
+                                       new_state=states.SUBMITTED,
+                                       channel=mq_channel,
+                                       queue='%s-tmgr-to-sync' % self._sid,
+                                       profiler=local_prof,
+                                       logger=self._logger)
                             self._logger.info('Task %s submitted to RTS' % (task.uid))
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
 
                         for task in bulk_tasks:
 
@@ -170,7 +168,7 @@ class TaskManager(Base_TaskManager):
                             )
 
                     # Appease pika cos it thinks the connection is dead
-                    now =  time.time()
+                    now = time.time()
                     if now - last >= self._rmq_ping_interval:
                         mq_connection.process_data_events()
                         last = now
@@ -200,8 +198,7 @@ class TaskManager(Base_TaskManager):
                     logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
                     raise
 
-            
-            mq_connection.close()            
+            mq_connection.close()
 
         except KeyboardInterrupt:
 
@@ -226,7 +223,7 @@ class TaskManager(Base_TaskManager):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
-    # ------------------------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------------------------------------------------------------
 
     def start_manager(self):
         """
@@ -267,6 +264,6 @@ class TaskManager(Base_TaskManager):
                 raise
 
         else:
-            self._logger.warn('tmgr process already running, but attempted to restart!') 
+            self._logger.warn('tmgr process already running, but attempted to restart!')
 
     # ------------------------------------------------------------------------------------------------------------------

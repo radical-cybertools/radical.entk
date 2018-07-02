@@ -414,8 +414,6 @@ def test_state_order():
     appman.workflow = [p1]
     appman.run()
 
-    print p1.state
-
     p_state_hist = p1.state_history
     assert p_state_hist == ['DESCRIBED', 'SCHEDULING', 'DONE']
 

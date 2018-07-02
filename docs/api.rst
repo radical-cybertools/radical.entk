@@ -9,5 +9,3 @@ API Reference for Users
 
    ./api/app_create
    ./api/appman
-   ./api/res_manager
-   ./api/profiler

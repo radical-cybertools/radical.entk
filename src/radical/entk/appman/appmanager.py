@@ -251,8 +251,10 @@ class AppManager(object):
                                     completed_queue=self._completed_queue,
                                     mq_hostname=self._mq_hostname,
                                     port=self._port,
-                                    resubmit_failed=self._resubmit_failed)
+                                    resubmit_failed=self._resubmit_failed)            
+            self._wfp._initialize_workflow()
             self._workflow = self._wfp.workflow
+
 
             # Submit resource request if not resource allocation done till now or
             # resubmit a new one if the old one has completed
@@ -358,8 +360,7 @@ class AppManager(object):
 
                     self._cur_attempt += 1
 
-                if (not self._task_manager.check_manager() or
-                        not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
+                if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                     """
                     If the tmgr process or heartbeat dies, we simply start a 
@@ -907,6 +908,6 @@ class AppManager(object):
         except Exception, ex:
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
-            raise 
+            raise
 
     # ------------------------------------------------------------------------------------------------------------------

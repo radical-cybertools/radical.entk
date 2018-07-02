@@ -152,10 +152,10 @@ class Pipeline(object):
                 self._state = value
                 self._state_history.append(value)
             else:
-                raise ValueError(obj=self._uid, 
-                                attribute = 'state',
-                                expected_value=states._pipeline_state_values.keys(),
-                                actual_value = value)
+                raise ValueError(obj=self._uid,
+                                 attribute='state',
+                                 expected_value=states._pipeline_state_values.keys(),
+                                 actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
@@ -216,9 +216,9 @@ class Pipeline(object):
                     self._state = d['state']
                 else:
                     raise ValueError(obj=self._uid,
-                                    attribute='state',
-                                    expected_value=states._pipeline_state_values.keys(),
-                                    actual_value=d['state'])
+                                     attribute='state',
+                                     expected_value=states._pipeline_state_values.keys(),
+                                     actual_value=d['state'])
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 

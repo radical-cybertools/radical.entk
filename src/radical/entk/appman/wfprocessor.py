@@ -279,7 +279,7 @@ class WFprocessor(object):
             local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname,port=self._port))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()

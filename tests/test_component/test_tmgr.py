@@ -127,7 +127,7 @@ def test_tmgr_base_heartbeat():
     sid = 'test.0000'
     rmgr = BaseRmgr({}, sid, None)
 
-    os.environ['ENTK_HB_INTERVAL'] = 30
+    os.environ['ENTK_HB_INTERVAL'] = '30'
 
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -156,7 +156,7 @@ def test_tmgr_base_start_heartbeat():
     sid = 'test.0000'
     rmgr = BaseRmgr({}, sid, None)
 
-    os.environ['ENTK_HB_INTERVAL'] = 30
+    os.environ['ENTK_HB_INTERVAL'] = '30'
 
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -179,7 +179,7 @@ def test_tmgr_base_terminate_heartbeat():
 
     sid = 'test.0000'
     rmgr = BaseRmgr({}, sid, None)
-    os.environ['ENTK_HB_INTERVAL'] = 30
+    os.environ['ENTK_HB_INTERVAL'] = '30'
 
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -226,7 +226,7 @@ def test_tmgr_base_check_heartbeat():
     sid = 'test.0000'
     rmgr = BaseRmgr({}, sid, None)
 
-    os.environ['ENTK_HB_INTERVAL'] = 30
+    os.environ['ENTK_HB_INTERVAL'] = '30'
 
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -372,7 +372,7 @@ def test_tmgr_dummy_tmgr():
     }
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
-    os.environ['ENTK_HB_INTERVAL'] = 30
+    os.environ['ENTK_HB_INTERVAL'] = '30'
 
     rmgr = DummyRmgr(resource_desc=res_dict, sid='test.0000')
 
@@ -429,8 +429,8 @@ def test_tmgr_rp_tmgr():
 
     db_url = 'mongodb://138.201.86.166:27017/ee_exp_4c'
     os.environ['RADICAL_PILOT_DBURL'] = db_url
-    os.environ['ENTK_HB_INTERVAL'] = 30
-    
+    os.environ['ENTK_HB_INTERVAL'] = '30'
+
     res_dict = {
         'resource': 'local.localhost',
                     'walltime': 40,

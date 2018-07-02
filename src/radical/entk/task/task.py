@@ -17,7 +17,7 @@ class Task(object):
     the profiling if not taken care.
     """
 
-    def __init__(self):        
+    def __init__(self):
 
         self._uid = None
         self._name = None
@@ -25,20 +25,20 @@ class Task(object):
         self._state = states.INITIAL
 
         # Attributes necessary for execution
-        self._pre_exec      = list()
-        self._executable    = list()
-        self._arguments     = list()
-        self._post_exec     = list()
-        self._cpu_reqs      = { 'processes': 1, 
-                                'process_type': None, 
-                                'threads_per_process': 1, 
-                                'thread_type': None
-                            }
-        self._gpu_reqs      = { 'processes': 0, 
-                                'process_type': None, 
-                                'threads_per_process': 0, 
-                                'thread_type': None
-                            }
+        self._pre_exec = list()
+        self._executable = list()
+        self._arguments = list()
+        self._post_exec = list()
+        self._cpu_reqs = {'processes': 1,
+                          'process_type': None,
+                          'threads_per_process': 1,
+                          'thread_type': None
+                          }
+        self._gpu_reqs = {'processes': 0,
+                          'process_type': None,
+                          'threads_per_process': 0,
+                          'thread_type': None
+                          }
 
         # Data staging attributes
         self._upload_input_data = list()
@@ -55,9 +55,9 @@ class Task(object):
 
         # The following help in updation
         # Stage this task belongs to
-        self._p_stage = {'uid':None, 'name': None}
+        self._p_stage = {'uid': None, 'name': None}
         # Pipeline this task belongs to
-        self._p_pipeline = {'uid':None, 'name': None}
+        self._p_pipeline = {'uid': None, 'name': None}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -143,17 +143,17 @@ class Task(object):
 
     @property
     def cpu_reqs(self):
-
         """
         **Purpose:** The CPU requirements of the current Task. 
 
         The requirements are described in terms of the number of processes and threads to 
         be run in this Task. The expected format is:
 
-        task.cpu_reqs = {   'processes': X, 
-                            'process_type': None/MPI,       # Currently only two options
-                            'threads_per_process': Y, 
-                            'thread_type': None/OpenMP      # Currently only two options
+        task.cpu_reqs = {   
+                            |  'processes': X,
+                            |  'process_type': None/MPI,
+                            |  'threads_per_process': Y,
+                            |  'thread_type': None/OpenMP
                         }
 
         This description means that the Task is going to spawn X processes and Y threads
@@ -164,10 +164,11 @@ class Task(object):
 
         The default value is:
 
-        task.cpu_reqs = {   'processes': 1, 
-                            'process_type': None,       
-                            'threads_per_process': 1, 
-                            'thread_type': None
+        task.cpu_reqs = {   
+                            |  'processes': 1,
+                            |  'process_type': None,
+                            |  'threads_per_process': 1,
+                            |  'thread_type': None
                         }
 
         This description requests 1 core and expected the executable to non-MPI and
@@ -176,23 +177,24 @@ class Task(object):
         :getter: return the cpu requirement of the current Task
         :setter: assign the cpu requirement of the current Task
         :arguments: dict
+
         """
 
         return self._cpu_reqs
 
     @property
     def gpu_reqs(self):
-
         """
         **Purpose:** The GPU requirements of the current Task.
 
         The requirements are described in terms of the number of processes and threads to 
         be run in this Task. The expected format is:
 
-        task.gpu_reqs = {   'processes': X, 
-                            'process_type': None/MPI,       # Currently only two options
-                            'threads_per_process': Y, 
-                            'thread_type': None/OpenMP      # Currently only two options
+        task.gpu_reqs = {   
+                            |  'processes': X, 
+                            |  'process_type': None/MPI,
+                            |  'threads_per_process': Y, 
+                            |  'thread_type': None/OpenMP
                         }
 
         This description means that the Task is going to spawn X processes and Y threads
@@ -203,10 +205,11 @@ class Task(object):
 
         The default value is:
 
-        task.gpu_reqs = {   'processes': 0, 
-                            'process_type': None,       
-                            'threads_per_process': 0, 
-                            'thread_type': None
+        task.gpu_reqs = {   
+                            |  'processes': 0, 
+                            |  'process_type': None,       
+                            |  'threads_per_process': 0, 
+                            |  'thread_type': None
                         }
 
         This description requests 0 gpus as not all machines have GPUs.
@@ -214,6 +217,7 @@ class Task(object):
         :getter: return the gpu requirement of the current Task
         :setter: assign the gpu requirement of the current Task
         :arguments: dict
+
         """
 
         return self._gpu_reqs
@@ -357,7 +361,7 @@ class Task(object):
                 raise ValueError(obj=self._uid,
                                  attribute='state',
                                  expected_value=states._task_state_values.keys(),
-                                 actual_value=value)            
+                                 actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
@@ -395,92 +399,91 @@ class Task(object):
     def cpu_reqs(self, val):
         if isinstance(val, dict):
 
-            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
+            expected_keys = set(['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
                     self._cpu_reqs['processes'] = val.get('processes')
                 else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('processes')), 
-                                        entity='processes'
+                    raise TypeError(expected_type=int,
+                                    actual_type=type(val.get('processes')),
+                                    entity='processes'
                                     )
 
                 if val.get('process_type') in [None, 'MPI']:
                     self._cpu_reqs['process_type'] = val.get('process_type')
                 else:
-                    raise ValueError(   expected_value='None or MPI', 
-                                        actual_value=val.get('process_type'), 
-                                        obj='cpu_reqs', 
-                                        attribute='process_type'
-                                    )
+                    raise ValueError(expected_value='None or MPI',
+                                     actual_value=val.get('process_type'),
+                                     obj='cpu_reqs',
+                                     attribute='process_type'
+                                     )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process')                
+                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process')
                 else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('threads_per_process')), 
-                                        entity='threads_per_process'
+                    raise TypeError(expected_type=int,
+                                    actual_type=type(val.get('threads_per_process')),
+                                    entity='threads_per_process'
                                     )
 
                 if val.get('thread_type') in [None, 'OpenMP']:
                     self._cpu_reqs['thread_type'] = val.get('thread_type')
                 else:
-                    raise ValueError(   expected_value='None or OpenMP', 
-                                        actual_value=val.get('thread_type'), 
-                                        obj='cpu_reqs', 
-                                        attribute='thread_type'
-                                    )
+                    raise ValueError(expected_value='None or OpenMP',
+                                     actual_value=val.get('thread_type'),
+                                     obj='cpu_reqs',
+                                     attribute='thread_type'
+                                     )
 
             else:
-                raise MissingError(obj='cpu_reqs', missing_attribute= expected_keys - set(val.keys()))
+                raise MissingError(obj='cpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
     @gpu_reqs.setter
     def gpu_reqs(self, val):
         if isinstance(val, dict):
 
-            expected_keys = set(['processes','threads_per_process', 'process_type','thread_type'])
+            expected_keys = set(['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
                     self._gpu_reqs['processes'] = val.get('processes')
                 else:
-                    raise TypeError(    expected_type=dict, 
-                                        actual_type=type(val.get('processes')), 
-                                        entity='processes'
+                    raise TypeError(expected_type=dict,
+                                    actual_type=type(val.get('processes')),
+                                    entity='processes'
                                     )
 
                 if val.get('process_type') in [None, 'MPI']:
                     self._gpu_reqs['process_type'] = val.get('process_type')
                 else:
-                    raise ValueError(   expected_value='None or MPI', 
-                                        actual_value=val.get('process_type'), 
-                                        obj='gpu_reqs', 
-                                        attribute='process_type'
-                                    )
+                    raise ValueError(expected_value='None or MPI',
+                                     actual_value=val.get('process_type'),
+                                     obj='gpu_reqs',
+                                     attribute='process_type'
+                                     )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process')                
+                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process')
                 else:
-                    raise TypeError(    expected_type=int, 
-                                        actual_type=type(val.get('threads_per_process')), 
-                                        entity='threads_per_process'
+                    raise TypeError(expected_type=int,
+                                    actual_type=type(val.get('threads_per_process')),
+                                    entity='threads_per_process'
                                     )
 
                 if val.get('thread_type') in [None, 'OpenMP']:
                     self._gpu_reqs['thread_type'] = val.get('thread_type')
                 else:
-                    raise ValueError(   expected_value='None or OpenMP', 
-                                        actual_value=val.get('thread_type'), 
-                                        obj='gpu_reqs', 
-                                        attribute='thread_type'
-                                    )
+                    raise ValueError(expected_value='None or OpenMP',
+                                     actual_value=val.get('thread_type'),
+                                     obj='gpu_reqs',
+                                     attribute='thread_type'
+                                     )
 
             else:
-                raise MissingError(obj='gpu_reqs', missing_attribute= expected_keys - set(val.keys()))
-
+                raise MissingError(obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
     @upload_input_data.setter
     def upload_input_data(self, val):
@@ -557,30 +560,30 @@ class Task(object):
         """
 
         task_desc_as_dict = {
-                        'uid': self._uid,
-                        'name': self._name,
-                        'state': self._state,
-                        'state_history': self._state_history,
+            'uid': self._uid,
+            'name': self._name,
+            'state': self._state,
+            'state_history': self._state_history,
 
-                        'pre_exec': self._pre_exec,
-                        'executable': self._executable,
-                        'arguments': self._arguments,
-                        'post_exec': self._post_exec,
-                        'cpu_reqs': self._cpu_reqs,
-                        'gpu_reqs': self._gpu_reqs,
+            'pre_exec': self._pre_exec,
+            'executable': self._executable,
+            'arguments': self._arguments,
+            'post_exec': self._post_exec,
+            'cpu_reqs': self._cpu_reqs,
+            'gpu_reqs': self._gpu_reqs,
 
-                        'upload_input_data': self._upload_input_data,
-                        'copy_input_data': self._copy_input_data,
-                        'link_input_data': self._link_input_data,
-                        'copy_output_data': self._copy_output_data,
-                        'download_output_data': self._download_output_data,
+            'upload_input_data': self._upload_input_data,
+            'copy_input_data': self._copy_input_data,
+            'link_input_data': self._link_input_data,
+            'copy_output_data': self._copy_output_data,
+            'download_output_data': self._download_output_data,
 
-                        'exit_code': self._exit_code,
-                        'path': self._path,
+            'exit_code': self._exit_code,
+            'path': self._path,
 
-                        'parent_stage': self._p_stage,
-                        'parent_pipeline': self._p_pipeline,
-                    }
+            'parent_stage': self._p_stage,
+            'parent_pipeline': self._p_pipeline,
+        }
 
         return task_desc_as_dict
 
@@ -649,7 +652,7 @@ class Task(object):
                 self._gpu_reqs = d['gpu_reqs']
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
-            
+
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
                 self._upload_input_data = d['upload_input_data']
@@ -715,7 +718,6 @@ class Task(object):
         Purpose: Assign a uid to the current object based on the sid passed
         """
         self._uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
-
 
     def _validate(self):
         """

@@ -8,6 +8,7 @@ import radical.pilot as rp
 import os
 from ..base.resource_manager import Base_ResourceManager
 
+
 class ResourceManager(Base_ResourceManager):
 
     """
@@ -28,9 +29,9 @@ class ResourceManager(Base_ResourceManager):
 
     def __init__(self, resource_desc, sid):
 
-        super(ResourceManager, self).__init__(  resource_desc=resource_desc,
-                                                sid=sid,
-                                                rts='dummy')
+        super(ResourceManager, self).__init__(resource_desc=resource_desc,
+                                              sid=sid,
+                                              rts='dummy')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -65,7 +66,7 @@ class ResourceManager(Base_ResourceManager):
         """
         **Purpose**: Populate the RP_ResourceManager attributes with values provided in the resource description
         """
-        
+
         return None
 
     def _submit_resource_request(self):

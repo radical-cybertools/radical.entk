@@ -14,5 +14,4 @@ API Reference for Developers
    ./dev_api/task
    ./dev_api/task_manager
    ./dev_api/wfprocessor
-   ./dev_api/profiler
 
