@@ -2,6 +2,7 @@
 
 ## Changelog for 0.7.0
 
+* Issues as part of 0.7.0 milestone: https://github.com/radical-cybertools/radical.entk/milestone/8
 * API Changes:
     * 'cores' attribute of task changed to `cpu_reqs` and `gpu_reqs` which are 
     dictionaries with the following structure:
