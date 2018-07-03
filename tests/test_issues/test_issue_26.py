@@ -33,7 +33,7 @@ def test_issue_26():
 
             'resource': 'local.localhost',
             'walltime': 5,
-            'cores': 1,
+            'cpus': 1,
             'project': ''
 
     }
@@ -45,12 +45,12 @@ def test_issue_26():
 
 
     p1 = create_pipeline()
-    appman.assign_workflow(p1)
+    appman.workflow = [p1]
     appman.run()
     print p1.uid, p1.stages[0].uid
 
     p2 = create_pipeline()    
-    appman.assign_workflow(p2)
+    appman.workflow = [p2]
     appman.run()
     print p2.uid, p2.stages[0].uid
 

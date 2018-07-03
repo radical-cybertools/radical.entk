@@ -40,7 +40,7 @@ class Stage(object):
     @property
     def name(self):
         """
-        Name of the stage 
+        Name of the stage. Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the current stage
         :setter: Assigns the name of the current stage
@@ -123,7 +123,10 @@ class Stage(object):
     @name.setter
     def name(self, value):
         if isinstance(value, str):
-            self._name = value
+            if ',' in val:
+                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+            else:
+                self._name = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 

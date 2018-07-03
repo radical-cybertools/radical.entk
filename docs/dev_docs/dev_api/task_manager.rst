@@ -1,5 +1,14 @@
 .. _dev_task_man:
 
+********************
+Base TaskManager API
+********************
+
+.. autoclass:: radical.entk.execman.base.task_manager.Base_TaskManager
+    :members:
+    :undoc-members:
+    :private-members:
+
 ******************
 RP TaskManager API
 ******************

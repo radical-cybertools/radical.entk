@@ -1,5 +1,7 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
+from glob import glob
+import shutil
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -12,6 +14,7 @@ if not os.environ.get('RADICAL_PILOT_DBURL'):
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def generate_pipeline():
     
@@ -23,8 +26,9 @@ def generate_pipeline():
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()    
-    t1.executable = ['/bin/sleep']   
-    t1.arguments = ['300'] 
+    t1.executable = ['mv']
+    t1.arguments = ['temp','/tmp/'] 
+    t1.upload_input_data = ['%s/temp'%cur_dir]
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -34,7 +38,21 @@ def generate_pipeline():
 
     return p   
 
-def test_issue_199():
+def test_issue_236():
+
+    '''
+    Create folder temp to transfer as input to task:
+    .
+    ./temp
+    ./temp/dir1
+    ./temp/dir1/file2.txt
+    ./temp/file1.txt
+    '''
+
+    os.makedirs('%s/temp' %cur_dir)
+    os.makedirs('%s/temp/dir1' %cur_dir)
+    os.system('echo "Hello world" > %s/temp/file1.txt' %cur_dir)
+    os.system('echo "Hello world" > %s/temp/dir1/file2.txt' %cur_dir)
 
 
     # Create a dictionary describe four mandatory keys:
@@ -60,3 +78,13 @@ def test_issue_199():
 
     # Run the Application Manager
     appman.run()
+
+    # Assert folder movement
+    assert len(glob('/tmp/temp*')) >=1
+    assert len(glob('/tmp/temp/dir*')) ==1
+    assert len(glob('/tmp/temp/*.txt')) ==1
+    assert len(glob('/tmp/temp/dir1/*.txt')) ==1
+
+    # Cleanup
+    shutil.rmtree('%s/temp' %cur_dir)
+    shutil.rmtree('/tmp/temp')

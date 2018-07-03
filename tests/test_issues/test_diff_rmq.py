@@ -33,8 +33,7 @@ def test_diff_rmq():
 
             'resource': 'local.localhost',
             'walltime': 5,
-            'cores': 1,
-            'project': ''
+            'cpus': 1,
 
     }
 
@@ -44,5 +43,5 @@ def test_diff_rmq():
 
     p1 = create_pipeline()
     print p1.uid, p1.stages[0].uid
-    appman.assign_workflow(p1)
+    appman.workflow = [p1]
     appman.run()

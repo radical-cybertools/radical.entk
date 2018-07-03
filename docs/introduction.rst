@@ -29,7 +29,7 @@ understand how an application is created and executed.
 Design
 ------
 
-.. figure:: figures/design-high-level.jpg
+.. figure:: figures/design-high-level.png
    :width: 500pt
    :align: center
    :alt: Ensemble Toolkit Design - high level
@@ -46,11 +46,18 @@ soon take a look into how these can be used to create an application.
 The **Application Manager** is an internal components, that takes the workflow 
 described by the user and converts them into a set of **workloads**, i.e. tasks
 with no dependencies by parsing through the workflow and identifying, during 
-runtime, tasks with equivalent or no dependencies. 
+runtime, tasks with equivalent or no dependencies. The Application Manager
+also accepts the description of the resource request (with resource
+label, walltime, cpus, gpus, user credentials) to be created.
 
 The **Execution Manager** is the last component in Ensemble Toolkit. It 
 accepts the workload prepared by the Application Manager and executes them on 
-the specified resource using a Runtime system.
+the specified resource using a Runtime system (RTS). Internally, it consists of 
+two subcomponents: ResourceManager and TaskManager, that are responsible for the
+allocation, management, and deallocation of resources, and execution management
+of tasks respectively. The Execution Manager is currently configured to use
+`RADICAL Pilot (RP) <http://radicalpilot.readthedocs.org>`_ as the runtime 
+system, but can be extended to other RTS.
 
 Ensemble Toolkit uses a runtime system as a framework to simply execute tasks 
 on computing infrastructures (CIs). The runtime system is expected to manage 
@@ -88,8 +95,8 @@ Five steps to create an application
 -----------------------------------
 
 1. Use the Pipeline, Stage and Task components to create the workflow
-2. Describe the CI to be used via the Resource Manager
-3. Create an Application Manager object and assign the Resource Manager and the workflow to it.
+2. Create an Application Manager (Amgr) object with required parameters/configurations.
+3. Describe the resource request to be created. Assign resource request description and workflow to the Amgr.
 4. Run the Application Manager
 5. Sit back and relax!
 

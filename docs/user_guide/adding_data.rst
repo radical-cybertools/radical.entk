@@ -28,7 +28,7 @@ statements that perform these operations.
 
 .. literalinclude:: ../../examples/user_guide/add_data.py
     :language: python
-    :lines: 38-41
+    :lines: 46-49
     :dedent: 4
 
 

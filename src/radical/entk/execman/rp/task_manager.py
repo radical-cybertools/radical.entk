@@ -215,12 +215,13 @@ class TaskManager(Base_TaskManager):
                                        profiler=local_prof,
                                        logger=self._logger)
 
-                            heartbeat_response(mq_channel)
+                        # To accommodate long cud creation times
+                        heartbeat_response(mq_channel)
 
-                            now = time.time()
-                            if now - last >= self._rmq_ping_interval:
-                                mq_connection.process_data_events()
-                                last = now
+                        now = time.time()
+                        if now - last >= self._rmq_ping_interval:
+                            mq_connection.process_data_events()
+                            last = now
 
                         umgr.submit_units(bulk_cuds)
 
@@ -235,17 +236,19 @@ class TaskManager(Base_TaskManager):
                                        logger=self._logger)
                             self._logger.info('Task %s submitted to RTS' % (task.uid))
 
-                            heartbeat_response(mq_channel)
 
-                            # Appease pika cos it thinks the connection is dead
-                            now = time.time()
-                            if now - last >= self._rmq_ping_interval:
-                                mq_connection.process_data_events()
-                                last = now
+                        # To accommodate long cud submission times
+                        heartbeat_response(mq_channel)
 
-                            heartbeat_response(mq_channel)
+                        # Appease pika cos it thinks the connection is dead
+                        now = time.time()
+                        if now - last >= self._rmq_ping_interval:
+                            mq_connection.process_data_events()
+                            last = now
 
                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+
+                    heartbeat_response(mq_channel)
 
                 except Exception, ex:
                     logger.exception('Error in task execution: %s' % ex)

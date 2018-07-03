@@ -71,34 +71,21 @@ Stage and adding the Stage to the Pipeline.
     :lineno-start: 25
 
 
-Creating the Resource Manager
-=============================
-
+Creating the AppManager 
+=======================
 
 Now that our workflow is created, we need to specify where the it needs to be executed. For this example, we will 
-simply execute the workflow locally. We describe a resource request for 1 core for 10 minutes on localhost, i.e. your
-local machine. With this description, we create the Resource Manager object.
+simply execute the workflow locally. We create an AppManager object, describe a resource request for 1 core for 10 
+minutes on localhost, i.e. your local machine. We assign the resource request description and the workflow to the
+AppManager and ``run`` our application.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 32-44
+    :lines: 31-52
     :linenos:
     :lineno-start: 31
 
 
-Creating the Application Manager
-================================
-
-Next, we create the Application Manager object and assign the workflow and the resource manager to it. Notice how we 
-assign the workflow as a set of Pipelines, in this case just one Pipeline. We then run our workflow locally by calling 
-the run() method of the Application Manager.
-
-
-.. literalinclude:: ../../examples/user_guide/get_started.py
-    :language: python
-    :lines: 46-56
-    :linenos:
-    :lineno-start: 46
 
 To run the script, simply execute the following from the command line:
 

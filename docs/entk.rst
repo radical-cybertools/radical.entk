@@ -61,7 +61,7 @@ EnTK sits between the user and the CI, abstracting resource management
 and execution management from the user. 
 
 .. figure:: figures/entk_exec_model.png
- :width: 400pt
+ :width: 600pt
  :align: center
  :alt: Ensemble Toolkit Architecture and Execution Model
 

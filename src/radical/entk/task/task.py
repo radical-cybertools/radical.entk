@@ -76,7 +76,7 @@ class Task(object):
     @property
     def name(self):
         """
-        Name of the task
+        Name of the task. Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the current task
         :setter: Assigns the name of the current task
@@ -347,7 +347,10 @@ class Task(object):
     @name.setter
     def name(self, val):
         if isinstance(val, str):
-            self._name = val
+            if ',' in val:
+                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+            else:
+                self._name = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
@@ -404,7 +407,7 @@ class Task(object):
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
-                    self._cpu_reqs['processes'] = val.get('processes')
+                    self._cpu_reqs['processes'] = val.get('processes',1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(val.get('processes')),
@@ -421,7 +424,7 @@ class Task(object):
                                      )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process')
+                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process',1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(val.get('threads_per_process')),
@@ -449,7 +452,7 @@ class Task(object):
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
-                    self._gpu_reqs['processes'] = val.get('processes')
+                    self._gpu_reqs['processes'] = val.get('processes',1)
                 else:
                     raise TypeError(expected_type=dict,
                                     actual_type=type(val.get('processes')),
@@ -466,7 +469,7 @@ class Task(object):
                                      )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process')
+                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process',1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(val.get('threads_per_process')),

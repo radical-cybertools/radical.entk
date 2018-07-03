@@ -28,11 +28,15 @@ class AppManager(object):
     running in the main process and is designed to recover from errors from all other objects, threads and processes.
 
     :Arguments:
+        :config_path: Url to config path to be read for AppManager
         :hostname: host rabbitmq server is running
         :port: port at which rabbitmq can be accessed
         :reattempts: number of attempts to re-invoke any failed EnTK components
         :resubmit_failed: resubmit failed tasks (True/False)
         :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
+        :write_workflow: write workflow and mapping to rts entities to a file (post-termination)
+        :rts: Specify RTS to use. Current options: 'dummy', 'radical.pilot' (default if unspecified)
+        :rmq_cleanup: Cleanup all queues created in RabbitMQ server for current execution (default is True)
     """
 
     def __init__(self,

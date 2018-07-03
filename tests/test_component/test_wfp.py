@@ -9,6 +9,8 @@ import radical.utils as ru
 from threading import Event, Thread
 from multiprocessing import Process
 
+hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+port = os.environ.get('RMQ_PORT', 5672)
 
 @given(s=st.characters(),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -27,16 +29,16 @@ def test_wfp_initialization(s, i, b, l):
                       workflow=set([p]),
                       pending_queue=['pending'],
                       completed_queue=['completed'],
-                      mq_hostname='hostname',
-                      port=567,
+                      mq_hostname=hostname,
+                      port=port,
                       resubmit_failed=True)
 
     assert len(wfp._uid.split('.')) == 2
     assert 'wfprocessor' == wfp._uid.split('.')[0]
     assert wfp._pending_queue == ['pending']
     assert wfp._completed_queue == ['completed']
-    assert wfp._mq_hostname == 'hostname'
-    assert wfp._port == 567
+    assert wfp._mq_hostname == hostname
+    assert wfp._port == port
     assert wfp._wfp_process == None
     assert wfp._workflow == set([p])
 
@@ -63,8 +65,8 @@ def test_wfp_initialize_workflow():
                       workflow=[p],
                       pending_queue=list(),
                       completed_queue=list(),
-                      mq_hostname='localhost',
-                      port=5672,
+                      mq_hostname=hostname,
+                      port=port,
                       resubmit_failed=False)
 
     wfp._initialize_workflow()
@@ -104,15 +106,15 @@ def test_wfp_enqueue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname='localhost',
-                      port=5672,
+                      mq_hostname=amgr._mq_hostname,
+                      port=amgr._port,
                       resubmit_failed=False)
 
     wfp._initialize_workflow()
@@ -174,7 +176,7 @@ def test_wfp_dequeue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -237,7 +239,7 @@ def test_wfp_start_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -269,7 +271,7 @@ def test_wfp_terminate_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -295,7 +297,7 @@ def test_wfp_workflow_incomplete():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -351,7 +353,7 @@ def test_wfp_check_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,

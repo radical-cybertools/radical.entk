@@ -13,8 +13,6 @@ SUBMITTED = 'SUBMITTED'
 COMPLETED = 'EXECUTED'
 DEQUEUEING = 'DEQUEUEING'
 DEQUEUED = 'DEQUEUED'
-SYNCHRONIZING = 'SYNCHRONIZING'
-SYNCHRONIZED = 'SYNCHRONIZED'
 DONE = 'DONE'
 FAILED = 'FAILED'
 CANCELED = 'CANCELED'
@@ -33,11 +31,9 @@ state_numbers = {
     COMPLETED: 6,
     DEQUEUEING: 7,
     DEQUEUED: 8,
-    SYNCHRONIZING: 9,
-    SYNCHRONIZED: 10,
-    DONE: 11,
-    FAILED: 11,
-    CANCELED: 11
+    DONE: 9,
+    FAILED: 9,
+    CANCELED: 9
 }
 
 
@@ -45,9 +41,9 @@ state_numbers = {
 _pipeline_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
-    DONE: 11,
-    FAILED: 11,
-    CANCELED: 11
+    DONE: 9,
+    FAILED: 9,
+    CANCELED: 9
 }
 
 _pipeline_state_inv = {}
@@ -64,9 +60,9 @@ _stage_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
     SCHEDULED: 3,
-    DONE: 11,
-    FAILED: 11,
-    CANCELED: 11
+    DONE: 9,
+    FAILED: 9,
+    CANCELED: 9
 }
 
 _stage_state_inv = {}
@@ -88,11 +84,9 @@ _task_state_values = {
     COMPLETED: 6,
     DEQUEUEING: 7,
     DEQUEUED: 8,
-    SYNCHRONIZING: 9,
-    SYNCHRONIZED: 10,
-    DONE: 11,
-    FAILED: 11,
-    CANCELED: 11
+    DONE: 9,
+    FAILED: 9,
+    CANCELED: 9
 }
 
 _task_state_inv = {}

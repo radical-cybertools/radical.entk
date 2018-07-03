@@ -1,11 +1,19 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
     os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+
+
+# Description of how the RabbitMQ process is accessible
+# No need to change/set any variables if you installed RabbitMQ has a system
+# process. If you are running RabbitMQ under a docker container or another
+# VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running
+# this script.
+hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+port = os.environ.get('RMQ_PORT', 5672)
 
 if __name__ == '__main__':
 
@@ -36,7 +44,7 @@ if __name__ == '__main__':
     t2.executable = ['/bin/bash']    
     t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']  
     # Copy data from the task in the first stage to the current task's location
-    t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt'%(p.uid, s1.uid, t1.uid)]
+    t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'%(p.uid, s1.uid, t1.uid)]
     # Download the output of the current task to the current location
     t2.download_output_data = ['ccount.txt']
 
@@ -46,29 +54,24 @@ if __name__ == '__main__':
     # Add Stage to the Pipeline
     p.add_stages(s2)
 
+    # Create Application Manager
+    appman = AppManager(hostname=hostname, port=port)
+
+    # Assign the workflow as a set or list of Pipelines to the Application Manager
+    appman.workflow = set([p])
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, cores and project
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-            'resource': 'local.localhost',
-            'walltime': 10,
-            'cores': 1,
-            'project': '',
+        'resource': 'local.localhost',
+        'walltime': 10,
+        'cpus': 1
     }
 
-    # Create Resource Manager object with the above resource description
-    rman = ResourceManager(res_dict)
-
-    # Create Application Manager
-    appman = AppManager()
-
-    # Assign resource manager to the Application Manager
-    appman.resource_manager = rman
-
-    # Assign the workflow as a set of Pipelines to the Application Manager
-    appman.assign_workflow(set([p]))
+    # Assign resource request description to the Application Manager
+    appman.resource_desc = res_dict
 
     # Run the Application Manager
     appman.run()

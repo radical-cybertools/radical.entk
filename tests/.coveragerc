@@ -1,0 +1,9 @@
+# .coveragerc to control coverage.py
+[run]
+concurrency = multiprocessing
+source = /home/vivek/Research/ves/test-dev-entk/lib/python2.7/site-packages/radical/entk
+parallel = True
+
+# $ coverage run -m pytest -vvv test_*
+# $ coverage combine
+# $ coverage html

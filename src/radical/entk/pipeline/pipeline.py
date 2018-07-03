@@ -44,7 +44,8 @@ class Pipeline(object):
     @property
     def name(self):
         """
-        Name of the pipeline useful for bookkeeping and to refer to this pipeline while data staging
+        Name of the pipeline useful for bookkeeping and to refer to this pipeline while data staging.
+        Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the pipeline
         :setter: Assigns the name of the pipeline
@@ -131,7 +132,10 @@ class Pipeline(object):
     @name.setter
     def name(self, value):
         if isinstance(value, str):
-            self._name = value
+            if ',' in val:
+                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+            else:
+                self._name = value
 
         else:
             raise TypeError(expected_type=str, actual_type=type(value))

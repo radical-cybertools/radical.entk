@@ -1,6 +1,7 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
+
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
@@ -12,6 +13,7 @@ if not os.environ.get('RADICAL_PILOT_DBURL'):
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+sleep = os.environ.get('TEST_214_SLEEP_DURATION',300)
 
 def generate_pipeline():
     
@@ -23,8 +25,8 @@ def generate_pipeline():
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()    
-    t1.executable = ['/bin/sleep']   
-    t1.arguments = ['300'] 
+    t1.executable = ['/bin/sleep']
+    t1.arguments = [sleep] 
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -34,8 +36,7 @@ def generate_pipeline():
 
     return p   
 
-def test_issue_199():
-
+def test_issue_214():
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, cores and project
@@ -43,7 +44,7 @@ def test_issue_199():
     res_dict = {
 
             'resource': 'local.localhost',
-            'walltime': 1,
+            'walltime': int(sleep)+5,
             'cpus': 1
     }
 

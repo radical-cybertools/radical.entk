@@ -36,16 +36,19 @@ and checkout the branch. You can do so using the following commands:
 
 
 You can check the version of Ensemble MD Toolkit with the ```entk-version``` 
-command-line tool. It should return 0.6.0.
+command-line tool. The current version should be printed.
 
 .. code-block:: bash
 
         entk-version
-        0.6.0
+        0.7.0
 
 
 Installing rabbitmq
 ===================
+
+Installing rabbitmq as a system process (sudo privileges required)
+------------------------------------------------------------------
 
 Ensemble toolkit relies on RabbitMQ for message transfers. Installation 
 instructions can be found at ```https://www.rabbitmq.com/download.html```. At 
@@ -98,7 +101,7 @@ Installation Video
 
 .. raw:: html
 
-        <video controls src="_static/entk_installation_get_started.mp4"></video> 
+        <video controls width="850" src="_static/entk_installation_get_started.mp4"></video> 
 
 
 Preparing the Environment

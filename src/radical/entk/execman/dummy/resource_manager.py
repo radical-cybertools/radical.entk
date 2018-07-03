@@ -18,12 +18,13 @@ class ResourceManager(Base_ResourceManager):
 
     :arguments: 
         :resource_desc: dictionary with details of the resource request + access credentials of the user 
-        :example: resource_desc = { 'resource'      : 'xsede.stampede', 
-                                    'walltime'      : 120, 
-                                    'cores'         : 64, 
-                                    'project'       : 'TG-abcxyz',
-                                    'queue'         : 'abc',    # optional
-                                    'access_schema' : 'ssh'  # optional
+        :example: resource_desc = { 
+                                    |  'resource'      : 'xsede.stampede', 
+                                    |  'walltime'      : 120, 
+                                    |  'cpus'         : 64, 
+                                    |  'project'       : 'TG-abcxyz',
+                                    |  'queue'         : 'abc',    # optional
+                                    |  'access_schema' : 'ssh'  # optional
                                 }
     """
 

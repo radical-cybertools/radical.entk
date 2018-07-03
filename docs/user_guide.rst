@@ -4,6 +4,10 @@
 User Guide
 **********
 
+The following list of examples will guide you step-by-step to create your
+own entire application. Please read both the description in the website as
+well as comments made in the python scripts.
+
 .. toctree::
    :maxdepth: 1
 

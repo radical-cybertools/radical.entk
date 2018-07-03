@@ -5,14 +5,16 @@
 Adding Pipelines
 ****************
 
-In this section, we will take a look at how we can add more pipelines to our script from the :ref:`Adding Stages <uguide_add_stages>` section.
+In this section, we will take a look at how we can add more pipelines to our script from the 
+:ref:`Adding Stages <uguide_add_stages>` section.
 
-.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
+.. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the 
+    :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
-You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_pipelines.py>` or find it in 
-your virtualenv under ``share/radical.entk/user_guide/scripts``.
+You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_pipelines.py>`
+or find it in your virtualenv under ``share/radical.entk/user_guide/scripts``.
         
 
 Below, you can see the code snippet that shows how you can create a workflow with two Pipelines. You simple create more 
@@ -21,7 +23,7 @@ and assign them to the Application Manager.
 
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
     :language: python
-    :lines: 45-46, 69-70
+    :lines: 56-61
     :dedent: 4
 
 To keep the script shorter, we created a function that creates, populates and returns a Pipeline. The code snippet 
@@ -29,7 +31,7 @@ of this function is as follows.
 
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
     :language: python
-    :lines: 11-37
+    :lines: 19-45
 
 To run the script, simply execute the following from the command line:
 
