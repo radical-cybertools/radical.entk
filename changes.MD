@@ -1,16 +1,78 @@
 # Changelog for each release
 
-## Changelog for 0.6.0
+## Changelog for 0.7.0
 
-* ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
-changed to ```parent_pipeline``` and ```parent_stage```.
+* Issues as part of 0.7.0 milestone: https://github.com/radical-cybertools/radical.entk/milestone/8
+* API Changes:
+    * 'cores' attribute of task changed to `cpu_reqs` and `gpu_reqs` which are 
+    dictionaries with the following structure:
+    ```
+    task.cpu_reqs =     {
+                            'processes': 1,
+                            'process_type': None/MPI,
+                            'threads_per_process': 1,
+                            'thread_type': None/OpenMP
+                        }
 
-## Changelog for 0.6.1
+    task.gpu_reqs =     {
+                            'processes': 1,
+                            'process_type': None/MPI,
+                            'threads_per_process': 1,
+                            'thread_type': None/OpenMP
+                        }
+    ```
+    * ResourceManager object is not exposed to the user. The resource 
+    description is to be provided to the AppManager using the 'resource_desc'
+    attribute
+    ```
+    amgr = AppManager()
+    amgr.resource_desc = {
+        'resource': 'local.localhost',
+        'walltime': 10,
+        'cpus': 1}
+    ```
+    * AppManager does not have assign_workflow() method. Instead you assign the
+    workflow using the assignment operator (similar to resource desc) to the 
+    workflow attribute.
+    ```
+    amgr = AppManager()
+    amgr.workflow = pipelines
+    ```
+      Note: `pipelines` can be a list or a set of Pipeline objects but there are
+      no guarantees of order
+    * AppManager has two important additional arguments:
+        * write_workflow (True/False) to write the executed workflow to a file post-termination
+        * rmq_cleanup (True/False) to cleanup the rabbitmq queues post-execution
+    * AppManager reads default values from a JSON config file. Expected config file structure:
+    ```
+    {    
+    "hostname": "localhost",
+    "port": 5672,
+    "reattempts": 3,
+    "resubmit_failed": false,
+    "autoterminate": true,
+    "write_workflow": false,
+    "rts": "radical.pilot",
+    "pending_qs": 1,
+    "completed_qs": 1,
+    "rmq_cleanup": true
+    }
+    ```
+    
+    
 
-* Multiple bug fixes
 
 ## Changelog for 0.6.2
 
 * Several [issues](https://github.com/radical-cybertools/radical.entk/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22Release+0.6.2%22) addressed
 * Bulk submission of tasks across entire set of pipelines 
 * Write workflow structure post-execution upon 'write_workflow=True' argument to AppManager
+
+## Changelog for 0.6.1
+
+* Multiple bug fixes
+
+## Changelog for 0.6.0
+
+* ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
+changed to ```parent_pipeline``` and ```parent_stage```.
