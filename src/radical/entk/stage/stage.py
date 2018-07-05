@@ -123,7 +123,7 @@ class Stage(object):
     @name.setter
     def name(self, value):
         if isinstance(value, str):
-            if ',' in val:
+            if ',' in value:
                 raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value

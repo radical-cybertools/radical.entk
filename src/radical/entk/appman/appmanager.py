@@ -99,14 +99,16 @@ class AppManager(object):
         self._mq_hostname = hostname if hostname else str(config['hostname'])
         self._port = port if port else config['port']
         self._reattempts = reattempts if reattempts else config['reattempts']
-        self._resubmit_failed = resubmit_failed if resubmit_failed else config['resubmit_failed']
-        self._autoterminate = autoterminate if autoterminate else config['autoterminate']
-        self._write_workflow = write_workflow if write_workflow else config['write_workflow']
+        self._resubmit_failed = resubmit_failed if resubmit_failed is not None else config['resubmit_failed']
+        self._autoterminate = autoterminate if autoterminate is not None else config['autoterminate']
+        self._write_workflow = write_workflow if write_workflow is not None else config['write_workflow']
         self._rts = rts if rts in ['radical.pilot', 'dummy'] else str(config['rts'])
-        self._rmq_cleanup = rmq_cleanup if rmq_cleanup else config['rmq_cleanup']
+        self._rmq_cleanup = rmq_cleanup if rmq_cleanup is not None else config['rmq_cleanup']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
+
+        print 'Autoterminate: ', self._autoterminate
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -264,7 +266,7 @@ class AppManager(object):
             # resubmit a new one if the old one has completed
             if self._resource_manager:
                 res_alloc_state = self._resource_manager.get_resource_allocation_state()
-                if (not res_alloc_state) or (res_alloc_state in self._resource_manager.completed_states()):
+                if (not res_alloc_state) or (res_alloc_state in self._resource_manager.get_completed_states()):
 
                     self._logger.info('Starting resource request submission')
                     self._prof.prof('init rreq submission', uid=self._uid)

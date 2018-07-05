@@ -40,7 +40,7 @@ def test_issue_26():
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
-    appman = AppManager(hostname=hostname, port=port,autoterminate=False)
+    appman = AppManager(hostname=hostname, port=port, autoterminate=False)
     appman.resource_desc = res_dict
 
 

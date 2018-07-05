@@ -345,14 +345,14 @@ class Task(object):
             raise TypeError(expected_type=str, actual_type=type(val))
 
     @name.setter
-    def name(self, val):
-        if isinstance(val, str):
-            if ',' in val:
+    def name(self, value):
+        if isinstance(value, str):
+            if ',' in value:
                 raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
             else:
-                self._name = val
+                self._name = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @state.setter
     def state(self, value):
