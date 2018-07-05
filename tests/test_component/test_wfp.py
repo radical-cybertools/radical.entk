@@ -10,7 +10,7 @@ from threading import Event, Thread
 from multiprocessing import Process
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT', 5672)
+port = int(os.environ.get('RMQ_PORT', 5672))
 
 @given(s=st.characters(),
        i=st.integers().filter(lambda x: type(x) == int),

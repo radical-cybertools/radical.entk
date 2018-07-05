@@ -18,7 +18,7 @@ from multiprocessing import Process, Event
 import json
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT', 5672)
+port = int(os.environ.get('RMQ_PORT', 5672))
 
 
 @given(s=st.text(),

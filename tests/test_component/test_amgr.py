@@ -12,7 +12,7 @@ from multiprocessing import Process
 import os
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT', 5672)
+port = int(os.environ.get('RMQ_PORT', 5672))
 
 
 def test_amgr_initialization():
