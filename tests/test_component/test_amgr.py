@@ -17,7 +17,7 @@ port = os.environ.get('RMQ_PORT', 5672)
 
 def test_amgr_initialization():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
 
     assert amgr._uid.split('.') == ['appmanager', '0000']
     assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
@@ -26,8 +26,8 @@ def test_amgr_initialization():
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
-    assert amgr._mq_hostname == 'localhost'
-    assert amgr._port == 5672
+    assert amgr._mq_hostname == hostname
+    assert amgr._port == port
 
     # RabbitMQ Queues
     assert amgr._num_pending_qs == 1
@@ -170,7 +170,7 @@ def test_amgr_resource_terminate():
 
     from radical.entk.execman.rp import TaskManager
 
-    amgr = Amgr(rts='radical.pilot')
+    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
     amgr.resource_desc = res_dict
     amgr._setup_mqs()
     amgr._rmq_cleanup = True
@@ -179,7 +179,7 @@ def test_amgr_resource_terminate():
                                      completed_queue=list(),
                                      mq_hostname='localhost',
                                      rmgr=amgr._resource_manager,
-                                     port=5672
+                                     port=amgr._port
                                      )
 
     amgr.resource_terminate()
@@ -187,7 +187,7 @@ def test_amgr_resource_terminate():
 
 def test_amgr_setup_mqs():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
     assert amgr._setup_mqs() == True
 
     assert len(amgr._pending_queue) == 1
@@ -405,7 +405,7 @@ def test_state_order():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
     
     appman = Amgr(hostname=hostname, port=port)

@@ -83,7 +83,7 @@ def test_stage_post_exec():
             'cpus': 1,
     }
 
-    appman = AppManager(rts='radical.pilot')
+    appman = AppManager(rts='radical.pilot', hostname=hostname, port=port)
     appman.resource_desc = res_dict
     appman.workflow = [p1]
     appman.run()

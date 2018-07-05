@@ -44,7 +44,7 @@ def test_integration_local():
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
 
-    appman = AppManager()
+    appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
     appman.workflow = [p1]
     appman.run()
