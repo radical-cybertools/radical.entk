@@ -37,7 +37,7 @@ def test_diff_rmq():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 

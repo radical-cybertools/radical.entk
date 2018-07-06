@@ -7,6 +7,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 import os
 
+os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_base_initialization(d):
@@ -281,8 +282,6 @@ def test_rmgr_dummy_methods():
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_rp_initialization(d):
-
-    db_url = 'mongodb://138.201.86.166:27017/ee_exp_4c'
     
     env_var = os.environ.get('RADICAL_PILOT_DBURL', None)
     if env_var:
@@ -303,7 +302,7 @@ def test_rmgr_rp_initialization(d):
         pass
 
 
-    os.environ['RADICAL_PILOT_DBURL'] = db_url
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     rmgr = RPRmgr(d, 'test.0000')    
 
     assert rmgr._resource_desc == d
@@ -345,7 +344,7 @@ def test_rmgr_rp_resource_request():
                     'project': ''
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rmgr = RPRmgr(res_dict, sid='test.0000')
@@ -375,7 +374,7 @@ def test_rmgr_rp_get_resource_allocation_state():
                     'project': ''
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
 
     rmgr = RPRmgr(res_dict, sid='test.0000')
     
@@ -391,16 +390,9 @@ def test_rmgr_rp_get_resource_allocation_state():
 
 def test_rmgr_rp_completed_states():
     
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     rmgr = RPRmgr({}, sid='test.0000')
 
     import radical.pilot as rp
     assert rmgr.get_completed_states() == [rp.CANCELED, rp.FAILED, rp.DONE]
 
-
-def test_rmgr_rp_submit_resource_request():
-    pass
-
-
-def test_rmgr_rp_terminate_resource_request():
-    pass

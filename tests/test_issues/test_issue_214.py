@@ -8,9 +8,6 @@ import os
 if not os.environ.get('RADICAL_ENTK_VERBOSE'):
     os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
-if not os.environ.get('RADICAL_PILOT_DBURL'):
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://user:user@ds129013.mlab.com:29013/travis_tests'
-
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 sleep = os.environ.get('TEST_214_SLEEP_DURATION',300)
@@ -47,6 +44,8 @@ def test_issue_214():
             'walltime': int(sleep)+5,
             'cpus': 1
     }
+
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)

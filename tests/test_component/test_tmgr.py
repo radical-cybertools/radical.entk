@@ -401,8 +401,7 @@ def test_tmgr_dummy_tmgr():
 def test_tmgr_rp_initialization(s, l, i):
 
     sid = 'test.0000'
-    db_url = 'mongodb://138.201.86.166:27017/ee_exp_4c'
-    os.environ['RADICAL_PILOT_DBURL'] = db_url
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
 
     rmgr = RPRmgr({}, sid)
 
@@ -427,8 +426,7 @@ def test_tmgr_rp_initialization(s, l, i):
 
 def test_tmgr_rp_tmgr():
 
-    db_url = 'mongodb://138.201.86.166:27017/ee_exp_4c'
-    os.environ['RADICAL_PILOT_DBURL'] = db_url
+    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
     os.environ['ENTK_HB_INTERVAL'] = '30'
 
     res_dict = {
