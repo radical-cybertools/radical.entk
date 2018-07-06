@@ -8,10 +8,12 @@ Unit tests & Integration tests
 Following are the unit tests and functional tests currently covered in 
 Ensemble Toolkit.
 
-All tests are run on Travis CI. The current build status:
+All tests are run on a Jenkins VM. Tests are run using pytest and test coverage
+is measured using `coverage <https://coverage.readthedocs.io/en/coverage-4.5.1a/index.html>`_ and reported using `codecov <https://codecov.io>`_ .
 
-.. image:: https://travis-ci.org/vivek-bala/radical.entk.svg?branch=arch%2Fv0.6
-    :target: https://travis-ci.org/vivek-bala/radical.entk
+Build status: [![Build Status](https://jenkins.radical-project.org/job/radical.entk/badge/icon)](https://jenkins.radical-project.org/job/radical.entk/)
+
+Test coverage: [![codecov](https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg)](https://codecov.io/gh/radical-cybertools/radical.entk)
 
 Click the above to look at the test logs. The following are tests are performed
 at every commit in every branch.
