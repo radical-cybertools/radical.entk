@@ -58,6 +58,12 @@
     "rmq_cleanup": true
     }
     ```
+    * The ``shared_data`` attribute is part of the AppManager object now (since the resource manager is not exposed to
+    the user anymore).
+    ```
+    amgr = AppManager()
+    amgr.shared_data = ['file1.txt','/tmp/file2.txt']
+    ```
     
     
 ## Changelog for 0.6.3
