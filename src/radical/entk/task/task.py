@@ -39,6 +39,7 @@ class Task(object):
                           'threads_per_process': 0,
                           'thread_type': None
                           }
+        self._lfs = None
 
         # Data staging attributes
         self._upload_input_data = list()
@@ -49,6 +50,7 @@ class Task(object):
 
         self._path = None
         self._exit_code = None
+        self._tag = None
 
         # Keep track of states attained
         self._state_history = [states.INITIAL]
@@ -223,6 +225,13 @@ class Task(object):
         return self._gpu_reqs
 
     @property
+    def lfs(self):
+        """
+        Set the amount of local file-storage space required by the task
+        """
+        return self._lfs
+
+    @property
     def upload_input_data(self):
         """
         List of files to be transferred from local machine to the location of the current task
@@ -306,6 +315,17 @@ class Task(object):
 
         return self._path
 
+
+    @property
+    def tag(self):
+        """
+        Set the tag for the task that can be used while scheduling by the RTS
+
+        :getter: return the tag of the current task
+        """
+
+        return self._path
+
     @property
     def parent_stage(self):
         """
@@ -348,7 +368,7 @@ class Task(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise Error("Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -488,6 +508,14 @@ class Task(object):
             else:
                 raise MissingError(obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
+
+    @lfs.setter
+    def lfs(self, val):
+        if isinstance(val, int):
+            self._lfs = val
+        else:
+            raise TypeError(expected_type=int, actual_value=type(val))
+
     @upload_input_data.setter
     def upload_input_data(self, val):
         if isinstance(val, list):
@@ -536,6 +564,15 @@ class Task(object):
             self._path = val
         else:
             raise TypeError(entity='path', expected_type=str, actual_type=type(val))
+
+
+    @tag.setter
+    def tag(self, val):
+        if isinstance(val, str):
+            self._tag = val
+        else:
+            raise TypeError(entity='tag', expected_type=str, actual_type=type(val))
+
 
     @parent_stage.setter
     def parent_stage(self, val):

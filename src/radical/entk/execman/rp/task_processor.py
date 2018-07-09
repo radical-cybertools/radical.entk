@@ -62,7 +62,7 @@ def resolve_placeholders(path, placeholder_dict):
             if stage_name in placeholder_dict[pipeline_name].keys():
                 if task_name in placeholder_dict[pipeline_name][stage_name].keys():
                     resolved_placeholder = path.replace(placeholder, placeholder_dict[
-                                                        pipeline_name][stage_name][task_name])
+                                                        pipeline_name][stage_name][task_name]['path'])
                 else:
                     logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
                                    (task_name, stage_name, pipeline_name))
@@ -77,6 +77,24 @@ def resolve_placeholders(path, placeholder_dict):
 
         logger.error('Failed to resolve placeholder %s, error: %s' % (path, ex))
         raise
+
+
+def get_resolve_tags(tag, parent_pipeline, placeholder_dict):
+
+    # Check self pipeline first
+    for s in placeholder_dict[parent_pipeline].keys():
+        for t in placeholder_dict[parent_pipeline][s].keys():
+            if tag == t.name:
+                return placeholder_dict[pipeline_name][stage_name][task_name]['rts_uid']
+
+    for p in placeholder_dict.keys():
+        if p != parent_pipeline:
+            for s in placeholder_dict[p].keys():
+                for t in placeholder_dict[p][s].keys():
+                    if tag == t.name:
+                        return placeholder_dict[pipeline_name][stage_name][task_name]['rts_uid']
+
+    raise Error(msg="Tag %s cannot be used as no previous task with name %s is found" %tag)
 
 
 def get_input_list_from_task(task, placeholder_dict):
@@ -264,6 +282,8 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.executable = task.executable
         cud.arguments = task.arguments
         cud.post_exec = task.post_exec
+        if task.tag:
+            cud.tag = resolve_tags(task.tag, task.parent_pipeline['name'],  placeholder_dict)
 
         cud.cpu_processes = task.cpu_reqs['processes']
         cud.cpu_threads = task.cpu_reqs['threads_per_process']
@@ -273,6 +293,7 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.gpu_threads = task.gpu_reqs['threads_per_process']
         cud.gpu_process_type = task.gpu_reqs['process_type']
         cud.gpu_thread_type = task.gpu_reqs['thread_type']
+        cud.lfs_per_process = task.lfs
 
         cud.input_staging = get_input_list_from_task(task, placeholder_dict)
         cud.output_staging = get_output_list_from_task(task, placeholder_dict)
