@@ -44,6 +44,7 @@ def test_amgr_initialization():
     assert amgr._reattempts == 3
     assert amgr._cur_attempt == 1
     assert amgr._autoterminate == True
+    assert isinstance(amgr.shared_data, list)
 
 
 def test_amgr_read_config():
@@ -135,6 +136,27 @@ def test_amgr_assign_workflow():
 
     amgr._workflow = [p1, p2, p3]
     amgr._workflow = set([p1, p2, p3])
+
+
+def test_amgr_assign_shared_data():
+    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+
+    res_dict = {
+
+        'resource': 'xsede.supermic',
+        'walltime': 30,
+        'cpus': 20,
+        'project': 'TG-MCB090174'
+
+    }
+
+    amgr.resource_desc = res_dict
+
+    with pytest.raises(TypeError):
+        amgr.shared_data = 1
+
+    amgr.shared_data = ['file1.txt','file2.txt']
+    assert amgr._resource_manager.shared_data == ['file1.txt','file2.txt'] 
 
 
 def test_amgr_run():

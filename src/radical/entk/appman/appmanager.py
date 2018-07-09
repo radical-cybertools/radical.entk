@@ -80,6 +80,7 @@ class AppManager(object):
         self._task_manager = None
         self._workflow = None
         self._cur_attempt = 1
+        self._shared_data = list()
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
@@ -155,6 +156,15 @@ class AppManager(object):
 
         return self._workflow
 
+    @property
+    def shared_data(self):
+        """
+        :getter: Return list of filenames that are shared between multiple tasks of the application
+        :setter: Assign a list of names of files that need to be staged to the remote machine
+        """
+
+        return self._shared_data
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -184,6 +194,7 @@ class AppManager(object):
 
         if self._resource_manager._validate_resource_desc():
             self._resource_manager._populate()
+            self._resource_manager.shared_data = self._shared_data
         else:
             self._logger.error('Could not validate resource description')
             raise
@@ -203,6 +214,20 @@ class AppManager(object):
 
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
+
+    @shared_data.setter
+    def shared_data(self, data):
+
+        if not isinstance(data, list):
+            data = [data]
+
+        for val in data:
+            if not isinstance(val, str):
+                raise TypeError(expected_type=str, actual_type=type(val))
+
+        if self._resource_manager:
+            self._resource_manager.shared_data = data
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods

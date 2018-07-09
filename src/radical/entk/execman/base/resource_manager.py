@@ -117,13 +117,6 @@ class Base_ResourceManager(object):
     @shared_data.setter
     def shared_data(self, data_list):
 
-        if not isinstance(data_list, list):
-            data_list = [data_list]
-
-        for val in data_list:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
-
         self._shared_data = data_list
 
     # ------------------------------------------------------------------------------------------------------------------
