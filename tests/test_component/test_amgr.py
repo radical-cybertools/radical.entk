@@ -138,7 +138,11 @@ def test_amgr_assign_workflow():
     amgr._workflow = set([p1, p2, p3])
 
 
-def test_amgr_assign_shared_data():
+@given(s=st.characters(),
+       i=st.integers().filter(lambda x: type(x) == int),
+       b=st.booleans(),
+       se=st.sets(st.text()))
+def test_amgr_assign_shared_data(s,i,b,se):
     amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
 
     res_dict = {
@@ -152,8 +156,11 @@ def test_amgr_assign_shared_data():
 
     amgr.resource_desc = res_dict
 
-    with pytest.raises(TypeError):
-        amgr.shared_data = 1
+    data = [s, i, b, se]
+
+    for d in data:
+        with pytest.raises(TypeError):
+            amgr.shared_data = d
 
     amgr.shared_data = ['file1.txt','file2.txt']
     assert amgr._resource_manager.shared_data == ['file1.txt','file2.txt'] 

@@ -59,25 +59,6 @@ def test_rmgr_base_assignment_exception(s, l, i, b, se):
             rmgr = BaseRmgr(d, 'test.0000', None)
 
 
-@given(s=st.characters(),
-       l=st.lists(st.characters()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans(),
-       se=st.sets(st.text()))
-def test_rmgr_base_shared_data_assignment(s, l, i, b, se):
-
-    rmgr = BaseRmgr({}, 'test.0000', None)
-
-    data = [s, i, b, se]
-
-    for d in data:
-
-        with pytest.raises(TypeError):
-            rmgr.shared_data = d
-
-    if isinstance(l, str):
-        rmgr.shared_data = l
-
 
 def test_rmgr_base_get_resource_allocation_state():
 
