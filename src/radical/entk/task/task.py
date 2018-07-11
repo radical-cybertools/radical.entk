@@ -159,7 +159,7 @@ class Task(object):
         This description means that the Task is going to spawn X processes and Y threads
         per each of these processes to run on CPUs. Hence, the total number of cpus required by the
         Task is X*Y for all the processes and threads to execute concurrently. The 
-        same assumption is made in implementation and X*Y cores are requested for this
+        same assumption is made in implementation and X*Y cpus are requested for this
         Task.
 
         The default value is:

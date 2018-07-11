@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
         'resource': 'xsede.comet',
         'walltime': 10,
-        'cores': 16,
+        'cpus': 16,
         'project': 'unc100',
         'schema': 'gsissh'
 

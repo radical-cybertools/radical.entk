@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 
     # Create a dictionary describe four mandatory keys:
-    # resource, walltime, cores and project
+    # resource, walltime, cpus and project
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
