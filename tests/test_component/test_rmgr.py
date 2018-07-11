@@ -199,6 +199,30 @@ def test_rmgr_base_populate(t, i):
         rm._populate()
 
 
+    res_dict = {
+        'resource': 'local.localhost',
+                    'walltime': 40,
+                    'cpus': 100,
+                    'gpus': 25,
+                    'project': 'new',
+                    'queue': 'high',
+                    'access_schema': 'gsissh'
+    }
+
+    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None)
+    rmgr._validate_resource_desc()
+    rmgr._populate()
+
+    assert rmgr._sid == 'test.0000'
+    assert rmgr._resource == 'local.localhost'
+    assert rmgr._walltime == 40
+    assert rmgr._cpus == 100
+    assert rmgr._gpus == 25
+    assert rmgr._project == 'new'
+    assert rmgr._access_schema == 'gsissh'
+    assert rmgr._queue == 'high'
+    assert rmgr._validated == True
+
 def test_rmgr_base_submit_resource_request():
 
     rmgr = BaseRmgr({}, 'test.0000', None)
