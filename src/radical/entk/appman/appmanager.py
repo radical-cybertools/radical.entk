@@ -48,10 +48,16 @@ class AppManager(object):
                  autoterminate=None,
                  write_workflow=None,
                  rts=None,
-                 rmq_cleanup=None):
+                 rmq_cleanup=None,
+                 name=None):
 
         # Create a session for each EnTK script execution
-        self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
+        if name not None:
+            self._name = name
+            self._sid = name
+        else:
+            self._name= None
+            self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
                           rts, rmq_cleanup)
@@ -68,7 +74,6 @@ class AppManager(object):
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')
 
-        self._name = str()
         self._resource_manager = None
         # RabbitMQ Queues
         self._pending_queue = list()
