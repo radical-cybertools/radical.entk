@@ -203,7 +203,7 @@ class Base_ResourceManager(object):
 
             self._resource = self._resource_desc['resource']
             self._walltime = self._resource_desc['walltime']
-            self._cores = self._resource_desc['cpus']
+            self._cpus = self._resource_desc['cpus']
             self._gpus = self._resource_desc.get('gpus', 0)
             self._project = self._resource_desc.get('project', None)
             self._access_schema = self._resource_desc.get('access_schema', None)
