@@ -198,6 +198,7 @@ class WFprocessor(object):
                     # Put the task on one of the pending_queues
                     workload_as_dict = list()
                     for task in workload:
+                        print 'Enqueue: Task %s with tag %s' %(task.uid, task.tag)
                         workload_as_dict.append(task.to_dict())
                     workload_as_dict = json.dumps(workload_as_dict)
 

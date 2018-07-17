@@ -324,7 +324,7 @@ class Task(object):
         :getter: return the tag of the current task
         """
 
-        return self._path
+        return self._tag
 
     @property
     def parent_stage(self):
@@ -611,6 +611,7 @@ class Task(object):
             'post_exec': self._post_exec,
             'cpu_reqs': self._cpu_reqs,
             'gpu_reqs': self._gpu_reqs,
+            'lfs': self._lfs,
 
             'upload_input_data': self._upload_input_data,
             'copy_input_data': self._copy_input_data,
@@ -620,6 +621,7 @@ class Task(object):
 
             'exit_code': self._exit_code,
             'path': self._path,
+            'tag': self._tag,
 
             'parent_stage': self._p_stage,
             'parent_pipeline': self._p_pipeline,
@@ -693,6 +695,13 @@ class Task(object):
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
 
+        if 'lfs' in d:
+            if d['lfs']:
+                if isinstance(d['lfs'], int):
+                    self._lfs = d['lfs']
+                else:
+                    raise TypeError(expected_type=int, actual_type=type(d['lfs']))
+
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
                 self._upload_input_data = d['upload_input_data']
@@ -736,6 +745,13 @@ class Task(object):
                     self._path = d['path']
                 else:
                     raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
+
+        if 'tag' in d:
+            if d['tag']:
+                if isinstance(d['tag'], str) or isinstance(d['tag'], unicode):
+                    self._tag = str(d['tag'])
+                else:
+                    raise TypeError(expected_type=str, actual_type=type(d['tag']))
 
         if 'parent_stage' in d:
             if isinstance(d['parent_stage'], dict):

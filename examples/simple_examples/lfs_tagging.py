@@ -24,7 +24,7 @@ if __name__ == '__main__':
         t.arguments = ['>','hostname_%s.txt'%x,'|', 'sleep', '30']
         t.cpu_reqs['processes'] = 1
         t.cpu_reqs['threads_per_process'] = 16
-        t.lfs = 10
+        # t.lfs = 10
         t.download_output_data = ['hostname_%s.txt > s1_t%s_hostname_%s.txt'%(x,x,x)]
 
         s1.add_tasks(t)

@@ -94,12 +94,3 @@ class MatchError(EnTKError):
             str(par2)
         )
         super(MatchError, self).__init__(msg)
-
-
-class Error(EnTKError):
-    """Error is raised for all other exceptions that cannot be categorized.
-    The 'text' describes the actual error"""
-
-    def __init__(self, text):
-        msg = 'Error: %s' % text
-        super(Error, self).__init__(msg)
