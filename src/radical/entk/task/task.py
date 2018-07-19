@@ -434,7 +434,7 @@ class Task(object):
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI']:
+                if val.get('process_type') in [None, 'MPI', '']:
                     self._cpu_reqs['process_type'] = val.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
@@ -451,7 +451,7 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP']:
+                if val.get('thread_type') in [None, 'OpenMP', '']:
                     self._cpu_reqs['thread_type'] = val.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',
@@ -479,7 +479,7 @@ class Task(object):
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI']:
+                if val.get('process_type') in [None, 'MPI', '']:
                     self._gpu_reqs['process_type'] = val.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
@@ -496,7 +496,7 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP']:
+                if val.get('thread_type') in [None, 'OpenMP', '']:
                     self._gpu_reqs['thread_type'] = val.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',

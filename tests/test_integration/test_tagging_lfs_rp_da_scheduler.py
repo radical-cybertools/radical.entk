@@ -2,11 +2,12 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 import pytest
 from radical.entk.exceptions import *
 import os
+from glob import glob
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 
-if __name__ == '__main__':
+def test_rp_da_scheduler_bw():
 
     """
     **Purpose**: Run an EnTK application on localhost
@@ -69,8 +70,7 @@ if __name__ == '__main__':
     appman.run()
 
     for i in range(n):
-        print 's1_t%s: '%i, open('s1_t%s_hostname.txt'%i,'r').readline().strip() 
-        print 's2_t%s: '%i, open('s2_t%s_hostname.txt'%i,'r').readline().strip()
+        assert open('s1_t%s_hostname.txt'%i,'r').readline().strip() == open('s2_t%s_hostname.txt'%i,'r').readline().strip()
 
 
     txts = glob('%s/*.txt' % os.getcwd())
