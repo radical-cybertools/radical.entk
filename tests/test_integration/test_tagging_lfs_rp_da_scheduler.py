@@ -29,7 +29,7 @@ def test_rp_da_scheduler_bw():
         t.cpu_reqs['threads_per_process'] = 16
         t.cpu_reqs['thread_type'] = ''
         t.cpu_reqs['process_type'] = ''
-        t.lfs = 10
+        t.lfs_per_process = 10
         t.download_output_data = ['hostname.txt > s1_t%s_hostname.txt'%(x)]
 
         s1.add_tasks(t)

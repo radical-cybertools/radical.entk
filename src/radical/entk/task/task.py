@@ -39,7 +39,7 @@ class Task(object):
                           'threads_per_process': 0,
                           'thread_type': None
                           }
-        self._lfs = None
+        self._lfs_per_process = None
 
         # Data staging attributes
         self._upload_input_data = list()
@@ -225,11 +225,11 @@ class Task(object):
         return self._gpu_reqs
 
     @property
-    def lfs(self):
+    def lfs_per_process(self):
         """
         Set the amount of local file-storage space required by the task
         """
-        return self._lfs
+        return self._lfs_per_process
 
     @property
     def upload_input_data(self):
@@ -509,10 +509,10 @@ class Task(object):
                 raise MissingError(obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
 
-    @lfs.setter
-    def lfs(self, val):
+    @lfs_per_process.setter
+    def lfs_per_process(self, val):
         if isinstance(val, int):
-            self._lfs = val
+            self._lfs_per_process = val
         else:
             raise TypeError(expected_type=int, actual_value=type(val))
 
@@ -611,7 +611,7 @@ class Task(object):
             'post_exec': self._post_exec,
             'cpu_reqs': self._cpu_reqs,
             'gpu_reqs': self._gpu_reqs,
-            'lfs': self._lfs,
+            'lfs_per_process': self._lfs_per_process,
 
             'upload_input_data': self._upload_input_data,
             'copy_input_data': self._copy_input_data,
@@ -695,12 +695,12 @@ class Task(object):
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
 
-        if 'lfs' in d:
-            if d['lfs']:
-                if isinstance(d['lfs'], int):
-                    self._lfs = d['lfs']
+        if 'lfs_per_process' in d:
+            if d['lfs_per_process']:
+                if isinstance(d['lfs_per_process'], int):
+                    self._lfs_per_process = d['lfs_per_process']
                 else:
-                    raise TypeError(expected_type=int, actual_type=type(d['lfs']))
+                    raise TypeError(expected_type=int, actual_type=type(d['lfs_per_process']))
 
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
