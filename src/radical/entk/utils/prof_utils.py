@@ -7,7 +7,7 @@ import threading
 import json
 import radical.utils as ru
 
-from exceptions import *
+from radical.entk.exceptions import *
 import traceback
 import socket
 from radical.entk import states as res
@@ -71,10 +71,10 @@ def get_session_profile(sid, src=None):
         profiles = glob.glob("%s/%s/*.prof" % (src, sid))
 
     else:
-        raise EnTKError(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError('%s/%s does not exist' % (src, sid))
 
     if len(profiles) == 0:
-        raise EnTKError(text='No profiles found at %s' % src)
+        raise EnTKError('No profiles found at %s' % src)
 
     try:
 
@@ -217,7 +217,7 @@ def get_session_description(sid, src=None):
         desc = ru.read_json("%s/%s/%s.json" % (src, sid, sid))
 
     else:
-        raise EnTKError(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError('%s/%s does not exist' % (src, sid))
 
     return desc
 

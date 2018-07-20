@@ -5,11 +5,14 @@ from radical.entk.exceptions import *
 import radical.utils as ru
 import os
 from radical.entk import Pipeline, Stage, Task, AppManager
+from radical.entk.appman.wfprocessor import WFprocessor
+from radical.entk.execman.rp import TaskManager
 from glob import glob
+import shutil
 
 def test_get_session_profile():
 
-    sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002'
+    sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
     curdir = os.path.dirname(os.path.abspath(__file__))
     src = '%s/sample_data/profiler' % curdir
     profile, acc, hostmap = get_session_profile(sid=sid, src=src)
@@ -25,24 +28,286 @@ def test_write_session_description():
 
     amgr = AppManager()
     amgr.resource_desc = {
-                            'resource': 'xsede.stampede',
-                            'walltime': 60,
-                            'cpus': 128,
-                            'gpus': 64,
-                            'project': 'xyz',
-                            'queue': 'high'
-                        }
+        'resource': 'xsede.stampede',
+        'walltime': 60,
+        'cpus': 128,
+        'gpus': 64,
+        'project': 'xyz',
+        'queue': 'high'
+    }
 
     workflow = [generate_pipeline(1), generate_pipeline(2)]
     amgr.workflow = workflow
 
+    amgr._wfp = WFprocessor(sid=amgr._sid,
+                            workflow=amgr._workflow,
+                            pending_queue=amgr._pending_queue,
+                            completed_queue=amgr._completed_queue,
+                            mq_hostname=amgr._mq_hostname,
+                            port=amgr._port,
+                            resubmit_failed=amgr._resubmit_failed)
+    amgr._wfp._initialize_workflow()
+    amgr._workflow = amgr._wfp.workflow
 
+    amgr._task_manager = TaskManager(sid=amgr._sid,
+                                     pending_queue=amgr._pending_queue,
+                                     completed_queue=amgr._completed_queue,
+                                     mq_hostname=amgr._mq_hostname,
+                                     rmgr=amgr._resource_manager,
+                                     port=amgr._port
+                                     )
 
+    os.mkdir(amgr._sid)
+
+    write_session_description(amgr)
+
+    desc = ru.read_json('%s/%s.json' % (amgr._sid, amgr._sid))
+
+    assert desc == {'config': {},
+                    'entities': {'appmanager': {'event_model': {},
+                                                'state_model': None,
+                                                'state_values': None},
+                                 'pipeline': {'event_model': {},
+                                              'state_model': {'CANCELED': 9,
+                                                              'DESCRIBED': 1,
+                                                              'DONE': 9,
+                                                              'FAILED': 9,
+                                                              'SCHEDULING': 2},
+                                              'state_values': {'1': 'DESCRIBED',
+                                                               '2': 'SCHEDULING',
+                                                               '9': ['DONE',
+                                                                     'CANCELED',
+                                                                     'FAILED']}},
+                                 'stage': {'event_model': {},
+                                           'state_model': {'CANCELED': 9,
+                                                           'DESCRIBED': 1,
+                                                           'DONE': 9,
+                                                           'FAILED': 9,
+                                                           'SCHEDULED': 3,
+                                                           'SCHEDULING': 2},
+                                           'state_values': {'1': 'DESCRIBED',
+                                                            '2': 'SCHEDULING',
+                                                            '3': 'SCHEDULED',
+                                                                 '9': ['FAILED',
+                                                                       'CANCELED',
+                                                                       'DONE']}},
+                                 'task': {'event_model': {},
+                                          'state_model': {'CANCELED': 9,
+                                                          'DEQUEUED': 8,
+                                                          'DEQUEUEING': 7,
+                                                          'DESCRIBED': 1,
+                                                          'DONE': 9,
+                                                          'EXECUTED': 6,
+                                                          'FAILED': 9,
+                                                          'SCHEDULED': 3,
+                                                          'SCHEDULING': 2,
+                                                          'SUBMITTED': 5,
+                                                          'SUBMITTING': 4},
+                                          'state_values': {'1': 'DESCRIBED',
+                                                           '2': 'SCHEDULING',
+                                                           '3': 'SCHEDULED',
+                                                           '4': 'SUBMITTING',
+                                                           '5': 'SUBMITTED',
+                                                           '6': 'EXECUTED',
+                                                           '7': 'DEQUEUEING',
+                                                           '8': 'DEQUEUED',
+                                                           '9': ['DONE',
+                                                                 'CANCELED',
+                                                                 'FAILED']}}},
+                    'tree': {'appmanager.0000': {'cfg': {},
+                                                 'children': ['wfprocessor.0000',
+                                                              'resource_manager.0000',
+                                                              'task_manager.0000',
+                                                              'pipeline.0000',
+                                                              'pipeline.0001'],
+                                                 'etype': 'appmanager',
+                                                 'has': ['pipeline',
+                                                         'wfprocessor',
+                                                         'resource_manager',
+                                                         'task_manager'],
+                                                 'uid': 'appmanager.0000'},
+                             'pipeline.0000': {'cfg': {},
+                                               'children': ['stage.0000', 
+                                                            'stage.0001'],
+                                               'etype': 'pipeline',
+                                               'has': ['stage'],
+                                               'uid': 'pipeline.0000'},
+                             'pipeline.0001': {'cfg': {},
+                                               'children': ['stage.0002', 
+                                                            'stage.0003'],
+                                               'etype': 'pipeline',
+                                               'has': ['stage'],
+                                               'uid': 'pipeline.0001'},
+                             'resource_manager.0000': {'cfg': {},
+                                                       'children': [],
+                                                       'etype': 'resource_manager',
+                                                       'has': [],
+                                                       'uid': 'resource_manager.0000'},
+                             'stage.0000': {'cfg': {},
+                                            'children': ['task.0000'],
+                                            'etype': 'stage',
+                                            'has': ['task'],
+                                            'uid': 'stage.0000'},
+                             'stage.0001': {'cfg': {},
+                                            'children': ['task.0001',
+                                                         'task.0002',
+                                                         'task.0003',
+                                                         'task.0004',
+                                                         'task.0005',
+                                                         'task.0006',
+                                                         'task.0007',
+                                                         'task.0008',
+                                                         'task.0009',
+                                                         'task.0010'],
+                                            'etype': 'stage',
+                                            'has': ['task'],
+                                            'uid': 'stage.0001'},
+                             'stage.0002': {'cfg': {},
+                                            'children': ['task.0011'],
+                                            'etype': 'stage',
+                                            'has': ['task'],
+                                            'uid': 'stage.0002'},
+                             'stage.0003': {'cfg': {},
+                                            'children': ['task.0012',
+                                                         'task.0013',
+                                                         'task.0014',
+                                                         'task.0015',
+                                                         'task.0016',
+                                                         'task.0017',
+                                                         'task.0018',
+                                                         'task.0019',
+                                                         'task.0020',
+                                                         'task.0021'],
+                                            'etype': 'stage',
+                                            'has': ['task'],
+                                            'uid': 'stage.0003'},
+                             'task.0000': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0000'},
+                             'task.0001': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0001'},
+                             'task.0002': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0002'},
+                             'task.0003': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0003'},
+                             'task.0004': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0004'},
+                             'task.0005': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0005'},
+                             'task.0006': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0006'},
+                             'task.0007': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0007'},
+                             'task.0008': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0008'},
+                             'task.0009': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0009'},
+                             'task.0010': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0010'},
+                             'task.0011': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0011'},
+                             'task.0012': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0012'},
+                             'task.0013': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0013'},
+                             'task.0014': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0014'},
+                             'task.0015': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0015'},
+                             'task.0016': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0016'},
+                             'task.0017': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0017'},
+                             'task.0018': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0018'},
+                             'task.0019': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0019'},
+                             'task.0020': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0020'},
+                             'task.0021': {'cfg': {},
+                                           'children': [],
+                                           'etype': 'task',
+                                           'has': [],
+                                           'uid': 'task.0021'},
+                             'task_manager.0000': {'cfg': {},
+                                                   'children': [],
+                                                   'etype': 'task_manager',
+                                                   'has': [],
+                                                   'uid': 'task_manager.0000'},
+                             'wfprocessor.0000': {'cfg': {},
+                                                  'children': [],
+                                                  'etype': 'wfprocessor',
+                                                  'has': [],
+                                                  'uid': 'wfprocessor.0000'}}}
+
+    shutil.rmtree(amgr._sid)
 
 
 def test_get_session_description():
 
-    sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002'
+    sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
     curdir = os.path.dirname(os.path.abspath(__file__))
     src = '%s/sample_data/profiler' % curdir
     desc = get_session_description(sid=sid, src=src)
@@ -102,11 +367,20 @@ def test_write_workflow():
     wf = list()
     wf.append(generate_pipeline(1))
     wf.append(generate_pipeline(2))
-    
-    for f in glob('test/*'):
-        os.remove(f)
 
-    write_workflow(wf,'test')
+    amgr = AppManager()
+    amgr.workflow = wf
+    amgr._wfp = WFprocessor(sid=amgr._sid,
+                            workflow=amgr._workflow,
+                            pending_queue=amgr._pending_queue,
+                            completed_queue=amgr._completed_queue,
+                            mq_hostname=amgr._mq_hostname,
+                            port=amgr._port,
+                            resubmit_failed=amgr._resubmit_failed)
+    amgr._wfp._initialize_workflow()  
+    wf = amgr._wfp.workflow
+
+    write_workflow(wf, 'test')
 
     data = ru.read_json('test/entk_workflow.json')
     assert len(data) == len(wf)
@@ -125,3 +399,6 @@ def test_write_workflow():
                 assert t.to_dict() in s['tasks']
             s_cnt += 1
         p_cnt += 1
+
+
+    shutil.rmtree('test')

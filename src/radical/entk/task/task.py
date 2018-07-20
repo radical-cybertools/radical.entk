@@ -39,7 +39,7 @@ class Task(object):
                           'threads_per_process': 0,
                           'thread_type': None
                           }
-        self._lfs_per_process = None
+        self._lfs_per_process = 0
 
         # Data staging attributes
         self._upload_input_data = list()
