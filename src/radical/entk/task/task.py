@@ -39,6 +39,7 @@ class Task(object):
                           'threads_per_process': 0,
                           'thread_type': None
                           }
+        self._lfs_per_process = None
 
         # Data staging attributes
         self._upload_input_data = list()
@@ -49,6 +50,7 @@ class Task(object):
 
         self._path = None
         self._exit_code = None
+        self._tag = None
 
         # Keep track of states attained
         self._state_history = [states.INITIAL]
@@ -223,6 +225,13 @@ class Task(object):
         return self._gpu_reqs
 
     @property
+    def lfs_per_process(self):
+        """
+        Set the amount of local file-storage space required by the task
+        """
+        return self._lfs_per_process
+
+    @property
     def upload_input_data(self):
         """
         List of files to be transferred from local machine to the location of the current task
@@ -306,6 +315,17 @@ class Task(object):
 
         return self._path
 
+
+    @property
+    def tag(self):
+        """
+        Set the tag for the task that can be used while scheduling by the RTS
+
+        :getter: return the tag of the current task
+        """
+
+        return self._tag
+
     @property
     def parent_stage(self):
         """
@@ -348,7 +368,7 @@ class Task(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise Error("Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -414,7 +434,7 @@ class Task(object):
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI']:
+                if val.get('process_type') in [None, 'MPI', '']:
                     self._cpu_reqs['process_type'] = val.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
@@ -431,7 +451,7 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP']:
+                if val.get('thread_type') in [None, 'OpenMP', '']:
                     self._cpu_reqs['thread_type'] = val.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',
@@ -459,7 +479,7 @@ class Task(object):
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI']:
+                if val.get('process_type') in [None, 'MPI', '']:
                     self._gpu_reqs['process_type'] = val.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
@@ -476,7 +496,7 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP']:
+                if val.get('thread_type') in [None, 'OpenMP', '']:
                     self._gpu_reqs['thread_type'] = val.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',
@@ -487,6 +507,14 @@ class Task(object):
 
             else:
                 raise MissingError(obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
+
+
+    @lfs_per_process.setter
+    def lfs_per_process(self, val):
+        if isinstance(val, int):
+            self._lfs_per_process = val
+        else:
+            raise TypeError(expected_type=int, actual_value=type(val))
 
     @upload_input_data.setter
     def upload_input_data(self, val):
@@ -537,6 +565,15 @@ class Task(object):
         else:
             raise TypeError(entity='path', expected_type=str, actual_type=type(val))
 
+
+    @tag.setter
+    def tag(self, val):
+        if isinstance(val, str):
+            self._tag = val
+        else:
+            raise TypeError(entity='tag', expected_type=str, actual_type=type(val))
+
+
     @parent_stage.setter
     def parent_stage(self, val):
         if isinstance(val, str):
@@ -574,6 +611,7 @@ class Task(object):
             'post_exec': self._post_exec,
             'cpu_reqs': self._cpu_reqs,
             'gpu_reqs': self._gpu_reqs,
+            'lfs_per_process': self._lfs_per_process,
 
             'upload_input_data': self._upload_input_data,
             'copy_input_data': self._copy_input_data,
@@ -583,6 +621,7 @@ class Task(object):
 
             'exit_code': self._exit_code,
             'path': self._path,
+            'tag': self._tag,
 
             'parent_stage': self._p_stage,
             'parent_pipeline': self._p_pipeline,
@@ -656,6 +695,13 @@ class Task(object):
             else:
                 raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
 
+        if 'lfs_per_process' in d:
+            if d['lfs_per_process']:
+                if isinstance(d['lfs_per_process'], int):
+                    self._lfs_per_process = d['lfs_per_process']
+                else:
+                    raise TypeError(expected_type=int, actual_type=type(d['lfs_per_process']))
+
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
                 self._upload_input_data = d['upload_input_data']
@@ -699,6 +745,13 @@ class Task(object):
                     self._path = d['path']
                 else:
                     raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
+
+        if 'tag' in d:
+            if d['tag']:
+                if isinstance(d['tag'], str) or isinstance(d['tag'], unicode):
+                    self._tag = str(d['tag'])
+                else:
+                    raise TypeError(expected_type=str, actual_type=type(d['tag']))
 
         if 'parent_stage' in d:
             if isinstance(d['parent_stage'], dict):

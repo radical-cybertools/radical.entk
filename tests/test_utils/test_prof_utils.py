@@ -1,10 +1,10 @@
 import pytest
-from radical.entk.utils import get_session_profile, get_session_description, write_workflow
+from radical.entk.utils import get_session_profile, get_session_description, write_session_description, write_workflow
 from pprint import pprint
 from radical.entk.exceptions import *
 import radical.utils as ru
 import os
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import Pipeline, Stage, Task, AppManager
 from glob import glob
 
 def test_get_session_profile():
@@ -19,6 +19,25 @@ def test_get_session_profile():
         assert len(item) == 8
     assert isinstance(acc, float)
     assert isinstance(hostmap, dict)
+
+
+def test_write_session_description():
+
+    amgr = AppManager()
+    amgr.resource_desc = {
+                            'resource': 'xsede.stampede',
+                            'walltime': 60,
+                            'cpus': 128,
+                            'gpus': 64,
+                            'project': 'xyz',
+                            'queue': 'high'
+                        }
+
+    workflow = [generate_pipeline(1), generate_pipeline(2)]
+    amgr.workflow = workflow
+
+
+
 
 
 def test_get_session_description():
@@ -66,7 +85,7 @@ def generate_pipeline(nid):
         t2.executable = ['/bin/echo']
         t2.arguments = ['world']
         # Copy data from the task in the first stage to the current task's location
-        t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
+        t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
 
         # Add the Task to the Stage
         s2.add_tasks(t2)
