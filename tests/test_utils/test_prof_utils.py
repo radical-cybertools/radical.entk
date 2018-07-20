@@ -10,6 +10,8 @@ from radical.entk.execman.rp import TaskManager
 from glob import glob
 import shutil
 
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+
 def test_get_session_profile():
 
     sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'

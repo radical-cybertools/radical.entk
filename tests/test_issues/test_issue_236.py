@@ -12,6 +12,7 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 def generate_pipeline():
     
@@ -62,7 +63,7 @@ def test_issue_236():
             'cpus': 1
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)

@@ -5,6 +5,8 @@ import radical.utils as ru
 import os
 from threading import Thread
 
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+
 def syncer(obj, obj_type, queue1, logger, profiler):
 
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')

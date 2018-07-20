@@ -6,6 +6,7 @@ import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 def test_issue_26():
 
@@ -38,7 +39,7 @@ def test_issue_26():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     appman = AppManager(hostname=hostname, port=port, autoterminate=False)
     appman.resource_desc = res_dict

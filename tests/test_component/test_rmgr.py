@@ -7,7 +7,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 import os
 
-os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_base_initialization(d):
@@ -307,7 +307,7 @@ def test_rmgr_rp_initialization(d):
         pass
 
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     rmgr = RPRmgr(d, 'test.0000')    
 
     assert rmgr._resource_desc == d
@@ -349,7 +349,7 @@ def test_rmgr_rp_resource_request():
                     'project': ''
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     rmgr = RPRmgr(res_dict, sid='test.0000')
@@ -379,7 +379,7 @@ def test_rmgr_rp_get_resource_allocation_state():
                     'project': ''
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     rmgr = RPRmgr(res_dict, sid='test.0000')
     
@@ -395,7 +395,7 @@ def test_rmgr_rp_get_resource_allocation_state():
 
 def test_rmgr_rp_completed_states():
     
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     rmgr = RPRmgr({}, sid='test.0000')
 
     import radical.pilot as rp

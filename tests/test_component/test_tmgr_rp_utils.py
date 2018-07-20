@@ -8,6 +8,7 @@ import shutil
 import glob
 import radical.utils as ru
 
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 def test_input_list_from_task():
     """
@@ -227,7 +228,7 @@ def test_create_task_from_cu():
     parent_pipeline from a RP ComputeUnit
     """
 
-    session = rp.Session(dburl='mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release')
+    session = rp.Session(dburl=MLAB)
     umgr = rp.UnitManager(session=session)
     cud = rp.ComputeUnitDescription()
     cud.name = 'uid, name, parent_stage_uid, parent_stage_name, parent_pipeline_uid, parent_pipeline_name'

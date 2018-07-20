@@ -7,6 +7,8 @@ from threading import Thread
 import json
 from radical.entk import states
 
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+
 def func(obj, obj_type, new_state, queue1, logger, profiler):
 
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')

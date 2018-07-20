@@ -6,6 +6,8 @@ import os
 
 hostname = 'two.radical-project.org'
 port = 33142
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+
 
 def test_diff_rmq():
 
@@ -37,7 +39,7 @@ def test_diff_rmq():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
