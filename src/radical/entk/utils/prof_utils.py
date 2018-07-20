@@ -71,10 +71,10 @@ def get_session_profile(sid, src=None):
         profiles = glob.glob("%s/%s/*.prof" % (src, sid))
 
     else:
-        raise Error(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError(text='%s/%s does not exist' % (src, sid))
 
     if len(profiles) == 0:
-        raise Error(text='No profiles found at %s' % src)
+        raise EnTKError(text='No profiles found at %s' % src)
 
     try:
 
@@ -152,7 +152,7 @@ def write_session_description(amgr):
                       }
 
     # Adding rmgr to the tree
-    rmgr = amgr.resource_manager
+    rmgr = amgr._resource_manager
     tree[amgr._uid]['children'].append(rmgr._uid)
     tree[rmgr._uid] = {'uid': rmgr._uid,
                        'etype': 'resource_manager',
@@ -217,7 +217,7 @@ def get_session_description(sid, src=None):
         desc = ru.read_json("%s/%s/%s.json" % (src, sid, sid))
 
     else:
-        raise Error(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError(text='%s/%s does not exist' % (src, sid))
 
     return desc
 
