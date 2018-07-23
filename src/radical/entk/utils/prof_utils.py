@@ -71,10 +71,10 @@ def get_session_profile(sid, src=None):
         profiles = glob.glob("%s/%s/*.prof" % (src, sid))
 
     else:
-        raise Error(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError('%s/%s does not exist' % (src, sid))
 
     if len(profiles) == 0:
-        raise Error(text='No profiles found at %s' % src)
+        raise EnTKError('No profiles found at %s' % src)
 
     try:
 
@@ -217,7 +217,7 @@ def get_session_description(sid, src=None):
         desc = ru.read_json("%s/%s/%s.json" % (src, sid, sid))
 
     else:
-        raise Error(text='%s/%s does not exist' % (src, sid))
+        raise EnTKError('%s/%s does not exist' % (src, sid))
 
     return desc
 
