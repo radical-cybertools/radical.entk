@@ -123,7 +123,10 @@ class AppManager(object):
     @property
     def name(self):
         """
-        Name for the application manager 
+        Name for the application manager. Allows the user to setup the name of 
+        the application manager, as well as, its session ID. This name should be
+        unique between different EnTK executions, otherwise it will produce an 
+        error.
 
         :getter: Returns the name of the application manager
         :setter: Assigns the name of the application manager
