@@ -1,0 +1,10 @@
+#time,event,comp,thread,uid,state,msg
+1533140828.4960,sync_abs,radical.entk.wfprocessor.0000-obj,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533140828.44:1533140828.47:ntp
+1533140828.4960,create wfp obj,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533140828.4963,wfp obj created,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533140828.4964,initializing workflow,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533140828.4985,workflow initialized,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533140952.0219,creating wfp process,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533140952.0246,starting wfp process,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533141192.3960,wfp process terminated,radical.entk.wfprocessor.0000-obj,MainThread,wfprocessor.0000,,
+1533141192.3961,END,radical.entk.wfprocessor.0000-obj,MainThread,,,

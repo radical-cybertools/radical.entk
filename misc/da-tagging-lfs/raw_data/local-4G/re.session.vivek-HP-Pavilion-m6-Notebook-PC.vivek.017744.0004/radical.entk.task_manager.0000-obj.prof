@@ -1,0 +1,12 @@
+#time,event,comp,thread,uid,state,msg
+1533138746.4252,sync_abs,radical.entk.task_manager.0000-obj,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533138746.37:1533138746.41:ntp
+1533138746.4689,tmgr obj created,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533138746.4690,creating tmgr process,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533138746.4696,starting tmgr process,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533138746.4731,creating heartbeat thread,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533138746.4734,starting heartbeat thread,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533138746.4903,heartbeat thread started,radical.entk.task_manager.0000-obj,heartbeat,task_manager.0000,,
+1533139486.8660,tmgr process terminated,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533139496.6222,terminating heartbeat thread,radical.entk.task_manager.0000-obj,heartbeat,task_manager.0000,,
+1533139496.6227,heartbeat thread terminated,radical.entk.task_manager.0000-obj,MainThread,task_manager.0000,,
+1533139496.6227,END,radical.entk.task_manager.0000-obj,MainThread,,,
