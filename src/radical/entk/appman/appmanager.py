@@ -37,6 +37,7 @@ class AppManager(object):
         :write_workflow: write workflow and mapping to rts entities to a file (post-termination)
         :rts: Specify RTS to use. Current options: 'dummy', 'radical.pilot' (default if unspecified)
         :rmq_cleanup: Cleanup all queues created in RabbitMQ server for current execution (default is True)
+        :name: Name of the Application. It should be unique between executions. (default is randomly assigned)
     """
 
     def __init__(self,
