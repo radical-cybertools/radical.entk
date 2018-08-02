@@ -84,7 +84,7 @@ class TaskManager(Base_TaskManager):
 
             placeholder_dict = dict()
 
-            def load_placeholder(task):
+            def load_placeholder(task, rts_uid):
 
                 parent_pipeline = str(task.parent_pipeline['name'])
                 parent_stage = str(task.parent_stage['name'])
@@ -96,7 +96,8 @@ class TaskManager(Base_TaskManager):
                     placeholder_dict[parent_pipeline][parent_stage] = dict()
 
                 if None not in [parent_pipeline, parent_stage, task.name]:
-                    placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
+                    placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = {'path': str(task.path),
+                                                                                        'rts_uid': rts_uid}
 
             def heartbeat_response(mq_channel):
 
@@ -145,7 +146,7 @@ class TaskManager(Base_TaskManager):
                                    profiler=local_prof,
                                    logger=logger)
 
-                        load_placeholder(task)
+                        load_placeholder(task, unit.uid)
 
                         task_as_dict = json.dumps(task.to_dict())
 

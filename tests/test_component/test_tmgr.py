@@ -19,7 +19,7 @@ import json
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 @given(s=st.text(),
        l=st.lists(st.characters()),
@@ -401,7 +401,7 @@ def test_tmgr_dummy_tmgr():
 def test_tmgr_rp_initialization(s, l, i):
 
     sid = 'test.0000'
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     rmgr = RPRmgr({}, sid)
 
@@ -426,7 +426,7 @@ def test_tmgr_rp_initialization(s, l, i):
 
 def test_tmgr_rp_tmgr():
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release'
+    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['ENTK_HB_INTERVAL'] = '30'
 
     res_dict = {

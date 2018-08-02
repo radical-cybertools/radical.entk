@@ -1,0 +1,13 @@
+#time,event,comp,thread,uid,state,msg
+1533065437.4378,sync_abs,pmgr.0000.launching.0.child,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533065437.4:1533065437.4:ntp
+1533065437.4831,component_init,pmgr.0000.launching.0.child,MainThread,,,
+1533065440.0345,get,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1533065440.0346,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1533065440.0347,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1533065441.7317,staging_in_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533065448.5385,staging_in_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533065448.5386,submission_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533065452.8990,submission_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533065452.8993,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1533065452.8997,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1533065669.2135,flush,pmgr.0000.launching.0.child,MainThread,,,

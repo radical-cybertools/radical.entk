@@ -8,6 +8,7 @@ import shutil
 import glob
 import radical.utils as ru
 
+MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 def test_input_list_from_task():
     """
@@ -167,16 +168,16 @@ def test_create_cud_from_task():
     t1.pre_exec = ['module load gromacs']
     t1.executable = ['grompp']
     t1.arguments = ['hello']
-    t1.cpu_reqs = { 'processes': 4, 
-                    'process_type': 'MPI', 
-                    'threads_per_process': 1, 
-                    'thread_type': 'OpenMP'
-                }
-    t1.gpu_reqs = { 'processes': 4, 
-                    'process_type': 'MPI', 
-                    'threads_per_process':2, 
-                    'thread_type': 'OpenMP'
-                }
+    t1.cpu_reqs = {'processes': 4,
+                   'process_type': 'MPI',
+                   'threads_per_process': 1,
+                   'thread_type': 'OpenMP'
+                   }
+    t1.gpu_reqs = {'processes': 4,
+                   'process_type': 'MPI',
+                   'threads_per_process': 2,
+                   'thread_type': 'OpenMP'
+                   }
     t1.post_exec = ['echo test']
 
     t1.upload_input_data = ['upload_input.dat']
@@ -192,26 +193,26 @@ def test_create_cud_from_task():
     s.tasks = t1
     p.stages = s
 
-    p._assign_uid('test')    
+    p._assign_uid('test')
 
     cud = create_cud_from_task(t1, placeholder_dict)
 
-    assert cud.name == '%s,%s,%s,%s,%s,%s' % (  t1.uid, t1.name, 
-                                                t1.parent_stage['uid'], t1.parent_stage['name'],
-                                                t1.parent_pipeline['uid'], t1.parent_pipeline['name'])
+    assert cud.name == '%s,%s,%s,%s,%s,%s' % (t1.uid, t1.name,
+                                              t1.parent_stage['uid'], t1.parent_stage['name'],
+                                              t1.parent_pipeline['uid'], t1.parent_pipeline['name'])
     assert cud.pre_exec == t1.pre_exec
 
     # rp returns executable as a string regardless of whether assignment was using string or list
     assert cud.executable == t1.executable[0]
     assert cud.arguments == t1.arguments
-    assert cud.cpu_processes    == t1.cpu_reqs['processes']
-    assert cud.cpu_threads      == t1.cpu_reqs['threads_per_process']
+    assert cud.cpu_processes == t1.cpu_reqs['processes']
+    assert cud.cpu_threads == t1.cpu_reqs['threads_per_process']
     assert cud.cpu_process_type == t1.cpu_reqs['process_type']
-    assert cud.cpu_thread_type  == t1.cpu_reqs['thread_type']
-    assert cud.gpu_processes    == t1.gpu_reqs['processes']
-    assert cud.gpu_threads      == t1.gpu_reqs['threads_per_process']
+    assert cud.cpu_thread_type == t1.cpu_reqs['thread_type']
+    assert cud.gpu_processes == t1.gpu_reqs['processes']
+    assert cud.gpu_threads == t1.gpu_reqs['threads_per_process']
     assert cud.gpu_process_type == t1.gpu_reqs['process_type']
-    assert cud.gpu_thread_type  == t1.gpu_reqs['thread_type']
+    assert cud.gpu_thread_type == t1.gpu_reqs['thread_type']
     assert cud.post_exec == t1.post_exec
 
     assert {'source': 'upload_input.dat', 'target': 'upload_input.dat'} in cud.input_staging
@@ -227,7 +228,7 @@ def test_create_task_from_cu():
     parent_pipeline from a RP ComputeUnit
     """
 
-    session = rp.Session(dburl='mongodb://entk:entk123@ds227821.mlab.com:27821/entk_0_7_0_release')
+    session = rp.Session(dburl=MLAB)
     umgr = rp.UnitManager(session=session)
     cud = rp.ComputeUnitDescription()
     cud.name = 'uid, name, parent_stage_uid, parent_stage_name, parent_pipeline_uid, parent_pipeline_name'
@@ -258,7 +259,10 @@ def test_resolve_placeholder():
     placeholder_dict = {
         pipeline: {
             stage: {
-                task: '/home/vivek'
+                task: {
+                    'path': '/home/vivek',
+                    'rts_uid': 'unit.0002'
+                }
             }
         }
     }
@@ -299,3 +303,66 @@ def test_resolve_placeholder():
     raw_path = '$Task_2'
     with pytest.raises(ValueError):
         resolve_placeholders(raw_path, placeholder_dict)
+
+
+def test_resolve_tags():
+
+    placeholder_dict = {
+        'pipeline.0000': {
+            'stage.0000': {
+                'task.0000': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0000'
+                },
+                'task.0001': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0001'
+                }
+            },
+            'stage.0001': {
+                'task.0002': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0002'
+                },
+                'task.0003': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0003'
+                }
+            }
+        },
+        'pipeline.0001': {
+            'stage.0002': {
+                'task.0004': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0004'
+                },
+                'task.0005': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0005'
+                }
+            },
+            'stage.0003': {
+                'task.0006': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0006'
+                },
+                'task.0007': {
+                    'path': '/tmp',
+                    'rts_uid': 'unit.0007'
+                }
+            }
+        }
+
+    }
+
+    with pytest.raises(MatchError):
+        resolve_tags('task.0010', placeholder_dict)
+
+    assert resolve_tags('task.0000', placeholder_dict) == 'unit.0000'
+    assert resolve_tags('task.0001', placeholder_dict) == 'unit.0001'
+    assert resolve_tags('task.0002', placeholder_dict) == 'unit.0002'
+    assert resolve_tags('task.0003', placeholder_dict) == 'unit.0003'
+    assert resolve_tags('task.0004', placeholder_dict) == 'unit.0004'
+    assert resolve_tags('task.0005', placeholder_dict) == 'unit.0005'
+    assert resolve_tags('task.0006', placeholder_dict) == 'unit.0006'
+    assert resolve_tags('task.0007', placeholder_dict) == 'unit.0007'

@@ -114,8 +114,6 @@ class AppManager(object):
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
 
-        print 'Autoterminate: ', self._autoterminate
-
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
     # ------------------------------------------------------------------------------------------------------------------
