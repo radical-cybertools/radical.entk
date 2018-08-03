@@ -1,0 +1,15 @@
+#time,event,comp,thread,uid,state,msg
+1533312518.0900,sync_abs,radical.entk.resource_manager.0000,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533312518.03:1533312517.74:ntp
+1533312518.0905,rmgr obj created,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312518.0906,validating rdesc,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312518.0909,rdesc validated,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312518.0909,populating rmgr,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312518.0909,rmgr populated,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312518.2356,creating rreq,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312520.6125,rreq created,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312526.2492,rreq submitted,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312526.2504,shared data staging initiated,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312572.4206,resource active,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312842.6278,canceling resource allocation,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312878.7065,resource allocation cancelled,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1533312878.7707,END,radical.entk.resource_manager.0000,Dummy-1,,,

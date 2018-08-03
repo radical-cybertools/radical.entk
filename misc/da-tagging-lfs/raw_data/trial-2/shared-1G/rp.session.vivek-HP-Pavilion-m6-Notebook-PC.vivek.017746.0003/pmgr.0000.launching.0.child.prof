@@ -1,0 +1,17 @@
+#time,event,comp,thread,uid,state,msg
+1533309040.5664,sync_abs,pmgr.0000.launching.0.child,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533309040.51:1533309040.43:ntp
+1533309040.6409,component_init,pmgr.0000.launching.0.child,MainThread,,,
+1533309051.5838,get,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1533309051.5842,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1533309051.5853,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1533309053.2563,staging_in_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533309071.4252,staging_in_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533309071.4253,submission_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533309077.8662,submission_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1533309077.8665,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1533309077.8673,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1533309323.3747,advance,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.idler._pilot_watcher_cb,pilot.0000,DONE,
+1533309323.3751,publish,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.idler._pilot_watcher_cb,pilot.0000,DONE,
+1533309324.2704,flush,pmgr.0000.launching.0.child,MainThread,,,
+1533309324.6555,component_final,pmgr.0000.launching.0.child,MainThread,,,
+1533309324.6555,END,pmgr.0000.launching.0.child,MainThread,,,

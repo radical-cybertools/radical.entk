@@ -1,7 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1532965432.3297,sync_abs,update.0,MainThread,,,nid25430:10.128.100.31:1532965432.3:1532965432.29:ntp
-1532965432.4139,END,update.0,MainThread,,,
-1532965432.7040,component_init,update.0,MainThread,,,
-1532965863.3142,flush,update.0,agent_0.idler._check_units_cb,,,
-1532965863.3861,component_final,update.0,agent_0.idler._check_units_cb,,,
-1532965863.3862,END,update.0,agent_0.idler._check_units_cb,,,

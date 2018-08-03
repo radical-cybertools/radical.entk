@@ -1,0 +1,112 @@
+2018-08-03 10:00:16,780: radical.saga        : MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.10 (default, Feb 1 2016, 14:30:50) [GCC 4.9.2]
+2018-08-03 10:00:16,780: radical.saga        : MainProcess                     : MainThread     : INFO    :                      pid/tid: 25211/MainThread
+2018-08-03 10:00:16,780: radical.saga        : MainProcess                     : MainThread     : INFO    : radical.saga         version: 0.47.6-v0.47.6-35-gf578245@devel
+2018-08-03 10:00:17,043: radical.saga        : MainProcess                     : MainThread     : WARNING : ru.get_logger() is deprecated, use ru.Logger()
+2018-08-03 10:00:17,044: radical.saga        : MainProcess                     : MainThread     : WARNING : ru.get_logger() is deprecated, use ru.Logger()
+2018-08-03 10:00:17,044: radical.saga        : MainProcess                     : MainThread     : DEBUG   : listing  adaptor registry: ['saga.adaptors.context.myproxy', 'saga.adaptors.context.x509', 'saga.adaptors.context.ssh', 'saga.adaptors.context.userpass', 'saga.adaptors.shell.shell_job', 'saga.adaptors.shell.shell_file', 'saga.adaptors.shell.shell_resource', 'saga.adaptors.redis.redis_advert', 'saga.adaptors.sge.sgejob', 'saga.adaptors.pbs.pbsjob', 'saga.adaptors.lsf.lsfjob', 'saga.adaptors.condor.condorjob', 'saga.adaptors.slurm.slurm_job', 'saga.adaptors.http.http_file', 'saga.adaptors.aws.ec2_resource', 'saga.adaptors.loadl.loadljob', 'saga.adaptors.globus_online.go_file', 'saga.adaptors.torque.torquejob', 'saga.adaptors.pbspro.pbsprojob', 'saga.adaptors.srm.srmfile', 'saga.adaptors.cobalt.cobaltjob']
+2018-08-03 10:00:17,044: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.context.myproxy
+2018-08-03 10:00:17,053: radical.saga.api    : MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.10 (default, Feb 1 2016, 14:30:50) [GCC 4.9.2]
+2018-08-03 10:00:17,053: radical.saga.api    : MainProcess                     : MainThread     : INFO    :                      pid/tid: 25211/MainThread
+2018-08-03 10:00:17,053: radical.saga        : MainProcess                     : MainThread     : WARNING : Skipping adaptor saga.adaptors.context.myproxy: loading failed: ''Adaptor' object has no attribute 'opts''
+2018-08-03 10:00:17,053: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.context.x509
+2018-08-03 10:00:17,054: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.context.x509 for saga.Context API with URL scheme(s) ['x509://']
+2018-08-03 10:00:17,055: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.context.ssh
+2018-08-03 10:00:17,056: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.context.ssh for saga.Context API with URL scheme(s) ['ssh://']
+2018-08-03 10:00:17,056: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.context.userpass
+2018-08-03 10:00:17,057: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.context.userpass for saga.Context API with URL scheme(s) ['userpass://']
+2018-08-03 10:00:17,057: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.shell.shell_job
+2018-08-03 10:00:17,073: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_job for saga.job.Service API with URL scheme(s) ['fork://', 'local://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,073: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_job for saga.job.Job API with URL scheme(s) ['fork://', 'local://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,073: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.shell.shell_file
+2018-08-03 10:00:17,083: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_file for saga.namespace.Directory API with URL scheme(s) ['file://', 'local://', 'sftp://', 'gsisftp://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,083: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_file for saga.namespace.Entry API with URL scheme(s) ['file://', 'local://', 'sftp://', 'gsisftp://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,083: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_file for saga.filesystem.Directory API with URL scheme(s) ['file://', 'local://', 'sftp://', 'gsisftp://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,083: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.shell.shell_file for saga.filesystem.File API with URL scheme(s) ['file://', 'local://', 'sftp://', 'gsisftp://', 'ssh://', 'gsissh://']
+2018-08-03 10:00:17,084: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.shell.shell_resource
+2018-08-03 10:00:17,089: radical.saga        : MainProcess                     : MainThread     : WARNING : Skipping adaptor saga.adaptors.shell.shell_resource: beta versions are disabled (v0.1.beta)
+2018-08-03 10:00:17,089: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.redis.redis_advert
+2018-08-03 10:00:17,105: radical.saga        : MainProcess                     : MainThread     : WARNING : Skipping adaptor saga.adaptors.redis.redis_advert 1: module loading failed: No module named redis
+2018-08-03 10:00:17,105: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.sge.sgejob
+2018-08-03 10:00:17,129: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.sge.sgejob for saga.job.Service API with URL scheme(s) ['sge://', 'sge+ssh://', 'sge+gsissh://']
+2018-08-03 10:00:17,129: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.sge.sgejob for saga.job.Job API with URL scheme(s) ['sge://', 'sge+ssh://', 'sge+gsissh://']
+2018-08-03 10:00:17,130: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.pbs.pbsjob
+2018-08-03 10:00:17,137: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.pbs.pbsjob for saga.job.Service API with URL scheme(s) ['pbs://', 'pbs+ssh://', 'pbs+gsissh://']
+2018-08-03 10:00:17,137: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.pbs.pbsjob for saga.job.Job API with URL scheme(s) ['pbs://', 'pbs+ssh://', 'pbs+gsissh://']
+2018-08-03 10:00:17,137: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.lsf.lsfjob
+2018-08-03 10:00:17,145: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.lsf.lsfjob for saga.job.Service API with URL scheme(s) ['lsf://', 'lsf+ssh://', 'lsf+gsissh://']
+2018-08-03 10:00:17,145: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.lsf.lsfjob for saga.job.Job API with URL scheme(s) ['lsf://', 'lsf+ssh://', 'lsf+gsissh://']
+2018-08-03 10:00:17,145: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.condor.condorjob
+2018-08-03 10:00:17,152: radical.saga.api    : MainProcess                     : MainThread     : INFO    : use condor_history: False
+2018-08-03 10:00:17,153: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.condor.condorjob for saga.job.Service API with URL scheme(s) ['condor://', 'condor+ssh://', 'condor+gsissh://']
+2018-08-03 10:00:17,153: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.condor.condorjob for saga.job.Job API with URL scheme(s) ['condor://', 'condor+ssh://', 'condor+gsissh://']
+2018-08-03 10:00:17,153: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.slurm.slurm_job
+2018-08-03 10:00:17,160: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.slurm.slurm_job for saga.job.Service API with URL scheme(s) ['slurm://', 'slurm+ssh://', 'slurm+gsissh://']
+2018-08-03 10:00:17,160: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.slurm.slurm_job for saga.job.Job API with URL scheme(s) ['slurm://', 'slurm+ssh://', 'slurm+gsissh://']
+2018-08-03 10:00:17,160: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.http.http_file
+2018-08-03 10:00:17,165: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.http.http_file for saga.namespace.Entry API with URL scheme(s) ['http://', 'https://']
+2018-08-03 10:00:17,165: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.http.http_file for saga.filesystem.File API with URL scheme(s) ['http://', 'https://']
+2018-08-03 10:00:17,165: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.aws.ec2_resource
+2018-08-03 10:00:17,260: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.aws.ec2_resource for saga.Context API with URL scheme(s) ['ec2://', 'ec2_keypair://', 'openstack://', 'eucalyptus://', 'euca://', 'aws://', 'amazon://', 'http://', 'https://']
+2018-08-03 10:00:17,260: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.aws.ec2_resource for saga.resource.Manager API with URL scheme(s) ['ec2://', 'ec2_keypair://', 'openstack://', 'eucalyptus://', 'euca://', 'aws://', 'amazon://', 'http://', 'https://']
+2018-08-03 10:00:17,260: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.aws.ec2_resource for saga.resource.Compute API with URL scheme(s) ['ec2://', 'ec2_keypair://', 'openstack://', 'eucalyptus://', 'euca://', 'aws://', 'amazon://', 'http://', 'https://']
+2018-08-03 10:00:17,260: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.loadl.loadljob
+2018-08-03 10:00:17,267: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.loadl.loadljob for saga.job.Service API with URL scheme(s) ['loadl://', 'loadl+ssh://', 'loadl+gsissh://']
+2018-08-03 10:00:17,267: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.loadl.loadljob for saga.job.Job API with URL scheme(s) ['loadl://', 'loadl+ssh://', 'loadl+gsissh://']
+2018-08-03 10:00:17,267: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.globus_online.go_file
+2018-08-03 10:00:17,273: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.globus_online.go_file for saga.namespace.Directory API with URL scheme(s) ['go://']
+2018-08-03 10:00:17,273: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.globus_online.go_file for saga.namespace.Entry API with URL scheme(s) ['go://']
+2018-08-03 10:00:17,273: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.globus_online.go_file for saga.filesystem.Directory API with URL scheme(s) ['go://']
+2018-08-03 10:00:17,273: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.globus_online.go_file for saga.filesystem.File API with URL scheme(s) ['go://']
+2018-08-03 10:00:17,273: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.torque.torquejob
+2018-08-03 10:00:17,280: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.torque.torquejob for saga.job.Service API with URL scheme(s) ['torque://', 'torque+ssh://', 'torque+gsissh://']
+2018-08-03 10:00:17,280: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.torque.torquejob for saga.job.Job API with URL scheme(s) ['torque://', 'torque+ssh://', 'torque+gsissh://']
+2018-08-03 10:00:17,280: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.pbspro.pbsprojob
+2018-08-03 10:00:17,287: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.pbspro.pbsprojob for saga.job.Service API with URL scheme(s) ['pbspro://', 'pbspro+ssh://', 'pbspro+gsissh://']
+2018-08-03 10:00:17,287: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.pbspro.pbsprojob for saga.job.Job API with URL scheme(s) ['pbspro://', 'pbspro+ssh://', 'pbspro+gsissh://']
+2018-08-03 10:00:17,287: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.srm.srmfile
+2018-08-03 10:00:17,295: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.srm.srmfile for saga.namespace.Directory API with URL scheme(s) ['srm://']
+2018-08-03 10:00:17,295: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.srm.srmfile for saga.namespace.Entry API with URL scheme(s) ['srm://']
+2018-08-03 10:00:17,296: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.srm.srmfile for saga.filesystem.Directory API with URL scheme(s) ['srm://']
+2018-08-03 10:00:17,296: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.srm.srmfile for saga.filesystem.File API with URL scheme(s) ['srm://']
+2018-08-03 10:00:17,296: radical.saga        : MainProcess                     : MainThread     : INFO    : loading  adaptor saga.adaptors.cobalt.cobaltjob
+2018-08-03 10:00:17,303: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.cobalt.cobaltjob for saga.job.Service API with URL scheme(s) ['cobalt://', 'cobalt+ssh://', 'cobalt+gsissh://']
+2018-08-03 10:00:17,303: radical.saga        : MainProcess                     : MainThread     : INFO    : Register adaptor saga.adaptors.cobalt.cobaltjob for saga.job.Job API with URL scheme(s) ['cobalt://', 'cobalt+ssh://', 'cobalt+gsissh://']
+2018-08-03 10:00:17,304: radical.utils       : MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.10 (default, Feb 1 2016, 14:30:50) [GCC 4.9.2]
+2018-08-03 10:00:17,304: radical.utils       : MainProcess                     : MainThread     : INFO    : radical.utils        version: 0.50.1-v0.50.1-1-gce60836@devel
+2018-08-03 10:00:17,304: radical.utils       : MainProcess                     : MainThread     : INFO    :                      pid/tid: 25211/MainThread
+2018-08-03 10:00:17,304: radical.utils       : MainProcess                     : MainThread     : DEBUG   : lm new manager
+2018-08-03 10:00:17,306: radical.saga.api    : MainProcess                     : MainThread     : INFO    : ignore ssh key at /home/vivek91/.ssh/known_hosts (no public key: /home/vivek91/.ssh/known_hosts.pub)
+2018-08-03 10:00:17,321: radical.saga.cpi    : MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.10 (default, Feb 1 2016, 14:30:50) [GCC 4.9.2]
+2018-08-03 10:00:17,321: radical.saga.cpi    : MainProcess                     : MainThread     : INFO    :                      pid/tid: 25211/MainThread
+2018-08-03 10:00:17,322: radical.saga.api    : MainProcess                     : MainThread     : INFO    : default ssh key at /home/vivek91/.ssh/id_rsa
+2018-08-03 10:00:17,322: radical.saga.api    : MainProcess                     : MainThread     : INFO    : ignore ssh key at /home/vivek91/.ssh/authorized_users (no public key: /home/vivek91/.ssh/authorized_users.pub)
+2018-08-03 10:00:17,322: radical.saga.api    : MainProcess                     : MainThread     : INFO    : ignore ssh key at /home/vivek91/.ssh/authorized_keys (no public key: /home/vivek91/.ssh/authorized_keys.pub)
+2018-08-03 10:00:17,331: radical.saga.cpi    : MainProcess                     : MainThread     : INFO    : init SSH context for key  at '/home/vivek91/.ssh/id_rsa' done
+2018-08-03 10:00:17,331: radical.saga        : MainProcess                     : MainThread     : DEBUG   : default context [saga.adaptor.ssh    ] : {'LifeTime' : '-1', 'Type' : 'ssh', 'UserCert' : '/home/vivek91/.ssh/id_rsa.pub', 'UserKey' : '/home/vivek91/.ssh/id_rsa'}
+2018-08-03 10:00:17,333: radical.saga        : MainProcess                     : MainThread     : WARNING : cannot initialize context - no session: {'LifeTime' : '-1', 'Type' : 'ssh', 'UserCert' : '/home/vivek91/.ssh/id_rsa.pub', 'UserKey' : '/home/vivek91/.ssh/id_rsa'}
+2018-08-03 10:00:18,627: radical.util.threads: MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.10 (default, Feb 1 2016, 14:30:50) [GCC 4.9.2]
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : MainThread     : INFO    :                      pid/tid: 25211/MainThread
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : MainThread     : DEBUG   : parent name: DVMWatcher
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : MainThread     : DEBUG   : start thread
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : DEBUG   : child name: DVMWatcher.thread
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : INFO    : child (me) initializing
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : DEBUG   : ru_initialize_common (NOOP)
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : DEBUG   : ru_initialize_child (NOOP)
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : INFO    : send alive
+2018-08-03 10:00:18,628: radical.util.threads: MainProcess                     : DVMWatcher     : INFO    : put message: [DVMWatcher.thread] alive
+2018-08-03 10:00:18,629: radical.util.threads: MainProcess                     : MainThread     : INFO    : get msg: alive
+2018-08-03 10:00:18,629: radical.util.threads: MainProcess                     : MainThread     : DEBUG   : ru_initialize_common (NOOP)
+2018-08-03 10:00:18,629: radical.util.threads: MainProcess                     : MainThread     : DEBUG   : ru_initialize_parent (NOOP)
+2018-08-03 10:00:18,630: radical.util.threads: MainProcess                     : MainThread     : DEBUG   : child thread DVMWatcher started
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : MainThread     : DEBUG   : parent name: Watcher
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : MainThread     : DEBUG   : start thread
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : DEBUG   : child name: Watcher.thread
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : INFO    : child (me) initializing
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : DEBUG   : ru_initialize_common (NOOP)
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : DEBUG   : ru_initialize_child (NOOP)
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : INFO    : send alive
+2018-08-03 10:00:23,601: radical.util.threads: agent_0.executing.0             : Watcher        : INFO    : put message: [Watcher.thread] alive
+2018-08-03 10:00:23,602: radical.util.threads: agent_0.executing.0             : MainThread     : INFO    : get msg: alive
+2018-08-03 10:00:23,602: radical.util.threads: agent_0.executing.0             : MainThread     : DEBUG   : ru_initialize_common (NOOP)
+2018-08-03 10:00:23,602: radical.util.threads: agent_0.executing.0             : MainThread     : DEBUG   : ru_initialize_parent (NOOP)
+2018-08-03 10:00:23,602: radical.util.threads: agent_0.executing.0             : MainThread     : DEBUG   : child thread Watcher started

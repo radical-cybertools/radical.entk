@@ -3,12 +3,13 @@ import pytest
 from radical.entk.exceptions import *
 import os
 import sys
+import argparse
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 
 
-def get_pipeline(shared_fs=False):
+def get_pipeline(shared_fs=False, size=1):
 
     p = Pipeline()
     p.name = 'p'
@@ -26,9 +27,9 @@ def get_pipeline(shared_fs=False):
         t.executable = ['dd']
 
         if not shared_fs:
-            t.arguments = ['if=/dev/urandom','bs=8G', 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]
+            t.arguments = ['if=/dev/urandom','bs=%sG'%size, 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]
         else:
-            t.arguments = ['if=/dev/urandom','bs=8G', 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
+            t.arguments = ['if=/dev/urandom','bs=%sG'%size, 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
 
         t.cpu_reqs['processes'] = 1        
         t.cpu_reqs['threads_per_process'] = 24
@@ -47,9 +48,9 @@ def get_pipeline(shared_fs=False):
         t.executable = ['dd']
 
         if not shared_fs:
-            t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=8G', 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]
+            t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=%sG'%size, 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]
         else:
-            t.arguments = ['if=/home/vivek91/s1_t%s.txt'%x,'bs=8G', 'count=1', 'of=/home/vivek91/s2_t%s.txt'%x]
+            t.arguments = ['if=/home/vivek91/s1_t%s.txt'%x,'bs=%sG'%size, 'count=1', 'of=/home/vivek91/s2_t%s.txt'%x]
 
         t.cpu_reqs['processes'] = 1
         t.cpu_reqs['threads_per_process'] = 24
@@ -68,13 +69,18 @@ def get_pipeline(shared_fs=False):
 
 if __name__ == '__main__':
 
-    try:
-        if sys.argv[1]:
-            shared_fs = True 
-    except:
-        shared_fs = False
+    args = argparse.ArgumentParser()
+    args.add_argument('sharedfs')
+    args.add_argument('size')
 
-    print 'SharedFS: ', shared_fs
+    args = args.parse_args()
+    if args.sharedfs == 'shared':
+        shared_fs = True
+    else:
+        shared_fs = False
+    size = args.size
+
+    print 'SharedFS: ', shared_fs, size
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds159631.mlab.com:59631/da-lfs-test'
 
@@ -90,6 +96,6 @@ if __name__ == '__main__':
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
-    p = get_pipeline(shared_fs=shared_fs)
+    p = get_pipeline(shared_fs=shared_fs, size=size)
     appman.workflow = [p]
     appman.run()    
