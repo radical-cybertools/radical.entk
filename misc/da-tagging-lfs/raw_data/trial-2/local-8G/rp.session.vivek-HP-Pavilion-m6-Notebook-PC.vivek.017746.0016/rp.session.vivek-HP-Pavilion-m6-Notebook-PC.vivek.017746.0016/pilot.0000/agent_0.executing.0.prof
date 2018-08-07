@@ -1,7 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1533312566.7856,sync_abs,agent_0.executing.0,MainThread,,,comet-27-39.sdsc.edu:10.21.249.24:1533312566.78:1533312566.78:ntp
-1533312566.8042,END,agent_0.executing.0,MainThread,,,
-1533312566.8749,component_init,agent_0.executing.0,MainThread,,,
-1533312844.2314,flush,agent_0.executing.0,agent_0.idler._check_units_cb,,,
-1533312844.2352,component_final,agent_0.executing.0,agent_0.idler._check_units_cb,,,
-1533312844.2353,END,agent_0.executing.0,agent_0.idler._check_units_cb,,,

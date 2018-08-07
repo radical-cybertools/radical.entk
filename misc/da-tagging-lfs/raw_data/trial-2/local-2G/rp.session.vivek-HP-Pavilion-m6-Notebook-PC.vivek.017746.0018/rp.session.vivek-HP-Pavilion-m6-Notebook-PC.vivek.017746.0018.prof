@@ -1,8 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1533313054.4503,sync_abs,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533313054.38:1533313054.46:ntp
-1533313054.5390,session_start,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,,
-1533313054.5391,config_parser_start,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,,
-1533313054.8165,config_parser_stop,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,,
-1533313399.0210,session_close,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,,
-1533313404.9566,session_stop,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,,
-1533313404.9567,END,rp.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017746.0018,MainThread,,,

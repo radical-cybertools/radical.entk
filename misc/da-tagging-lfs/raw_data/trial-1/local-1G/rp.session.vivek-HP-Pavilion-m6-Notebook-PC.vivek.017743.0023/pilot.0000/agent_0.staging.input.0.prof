@@ -1,4 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1533066887.1588,sync_abs,agent_0.staging.input.0,MainThread,,,comet-04-32.sdsc.edu:10.21.255.7:1533066887.12:1533066887.12:ntp
-1533066887.2513,END,agent_0.staging.input.0,MainThread,,,
-1533066887.2926,component_init,agent_0.staging.input.0,MainThread,,,

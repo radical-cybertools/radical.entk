@@ -79,17 +79,6 @@ def resolve_placeholders(path, placeholder_dict):
         raise
 
 
-def resolve_tags(tag, placeholder_dict):
-
-    for p in placeholder_dict.keys():
-        for s in placeholder_dict[p].keys():
-            for t in placeholder_dict[p][s].keys():
-                if tag == t:
-                    return placeholder_dict[p][s][t]['rts_uid']
-
-    raise MatchError(par1=tag,par2='previous tasks of the application')
-
-
 def get_input_list_from_task(task, placeholder_dict):
     """
     Purpose: Parse a Task object to extract the files to be staged as the output. 
@@ -275,10 +264,6 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.executable = task.executable
         cud.arguments = task.arguments
         cud.post_exec = task.post_exec
-        if task.tag:
-            cud.tag = resolve_tags(task.tag, placeholder_dict)
-
-        print 'T-proc: Cud tag %s for Task %s with tag %s' %(cud.tag, task.uid, task.tag)
 
         cud.cpu_processes = task.cpu_reqs['processes']
         cud.cpu_threads = task.cpu_reqs['threads_per_process']
@@ -288,7 +273,6 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.gpu_threads = task.gpu_reqs['threads_per_process']
         cud.gpu_process_type = task.gpu_reqs['process_type']
         cud.gpu_thread_type = task.gpu_reqs['thread_type']
-        cud.lfs_per_process = task.lfs_per_process
 
         cud.input_staging = get_input_list_from_task(task, placeholder_dict)
         cud.output_staging = get_output_list_from_task(task, placeholder_dict)
@@ -335,6 +319,7 @@ def create_task_from_cu(cu, prof=None):
         task.parent_stage['name'] = cu.name.split(',')[3].strip()
         task.parent_pipeline['uid'] = cu.name.split(',')[4].strip()
         task.parent_pipeline['name'] = cu.name.split(',')[5].strip()
+        task.rts_uid = cu.uid
 
         if cu.exit_code is not None:
             task.exit_code = cu.exit_code

@@ -1,7 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1533313913.0647,sync_abs,update.0,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533313913.01:1533313913.01:ntp
-1533313913.1679,END,update.0,MainThread,,,
-1533313918.6038,component_init,update.0,MainThread,,,
-1533314320.1251,flush,update.0,MainThread,,,
-1533314320.1338,component_final,update.0,MainThread,,,
-1533314320.1338,END,update.0,MainThread,,,

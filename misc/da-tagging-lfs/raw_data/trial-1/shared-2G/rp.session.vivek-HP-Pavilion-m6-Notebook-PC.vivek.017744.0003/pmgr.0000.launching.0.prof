@@ -1,7 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1533137430.0417,sync_abs,pmgr.0000.launching.0,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533137430.01:1533137430.03:ntp
-1533137430.1577,END,pmgr.0000.launching.0,MainThread,,,
-1533137430.2069,component_init,pmgr.0000.launching.0,MainThread,,,
-1533138570.2606,flush,pmgr.0000.launching.0,MainThread,,,
-1533138570.2665,component_final,pmgr.0000.launching.0,MainThread,,,
-1533138570.2665,END,pmgr.0000.launching.0,MainThread,,,
