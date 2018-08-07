@@ -27,9 +27,9 @@ def get_pipeline(shared_fs=False, size=1):
         t.executable = ['dd']
 
         if not shared_fs:
-            t.arguments = ['if=/dev/urandom','bs=%sG'%size, 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]
+            t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]
         else:
-            t.arguments = ['if=/dev/urandom','bs=%sG'%size, 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
+            t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
 
         t.cpu_reqs['processes'] = 1        
         t.cpu_reqs['threads_per_process'] = 24
@@ -48,9 +48,9 @@ def get_pipeline(shared_fs=False, size=1):
         t.executable = ['dd']
 
         if not shared_fs:
-            t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=%sG'%size, 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]
+            t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]
         else:
-            t.arguments = ['if=/home/vivek91/s1_t%s.txt'%x,'bs=%sG'%size, 'count=1', 'of=/home/vivek91/s2_t%s.txt'%x]
+            t.arguments = ['if=/home/vivek91/s1_t%s.txt'%x,'bs=%sM'%size, 'count=1', 'of=/home/vivek91/s2_t%s.txt'%x]
 
         t.cpu_reqs['processes'] = 1
         t.cpu_reqs['threads_per_process'] = 24
