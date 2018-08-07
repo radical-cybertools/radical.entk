@@ -198,7 +198,6 @@ class WFprocessor(object):
                     # Put the task on one of the pending_queues
                     workload_as_dict = list()
                     for task in workload:
-                        print 'Enqueue: Task %s with tag %s' %(task.uid, task.tag)
                         workload_as_dict.append(task.to_dict())
                     workload_as_dict = json.dumps(workload_as_dict)
 
@@ -448,7 +447,7 @@ class WFprocessor(object):
             except:
                 self._logger.warning('mq_connection not created')
 
-            raise Error(text=ex)
+            raise EnTKError(text=ex)
 
     def _wfp(self):
         """
@@ -555,7 +554,7 @@ class WFprocessor(object):
             self._logger.info('WFprocessor process terminated')
 
             print traceback.format_exc()
-            raise Error(text=ex)
+            raise EnTKError(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods

@@ -27,7 +27,6 @@ def test_task_initialization():
     assert t.gpu_reqs['process_type'] == None
     assert t.gpu_reqs['threads_per_process'] == 0
     assert t.gpu_reqs['thread_type'] == None
-    assert t.lfs_per_process == 0
     assert t.upload_input_data == list()
     assert t.copy_input_data == list()
     assert t.link_input_data == list()
@@ -154,8 +153,6 @@ def test_task_exceptions(s,l,i,b):
                                 'thread_type': None
                             }
 
-                t.lfs_per_process = data
-
 def test_task_to_dict():
 
     """
@@ -184,7 +181,6 @@ def test_task_to_dict():
                                 'threads_per_process': 0, 
                                 'thread_type': None
                                 },
-                    'lfs_per_process': 0,
                     'upload_input_data': [],
                     'copy_input_data': [],
                     'link_input_data': [],
@@ -192,7 +188,6 @@ def test_task_to_dict():
                     'download_output_data': [],
                     'exit_code': None,
                     'path': None,
-                    'tag': None,
                     'parent_stage': {'uid':None, 'name': None},
                     'parent_pipeline': {'uid':None, 'name': None}}
 
@@ -207,7 +202,6 @@ def test_task_to_dict():
     t.cpu_reqs['threads_per_process'] = 2
     t.gpu_reqs['processes'] = 5
     t.gpu_reqs['threads_per_process'] = 3
-    t.lfs_per_process = 64
     t.upload_input_data = ['test1']
     t.copy_input_data = ['test2']
     t.link_input_data = ['test3']
@@ -215,7 +209,6 @@ def test_task_to_dict():
     t.download_output_data = ['test5']
     t.exit_code = 1
     t.path = 'a/b/c'
-    t.tag = 'unit1'
     t.parent_stage = {'uid': 's1', 'name': 'stage1'}
     t.parent_pipeline = {'uid': 'p1', 'name': 'pipeline1'}
 
@@ -239,7 +232,6 @@ def test_task_to_dict():
                                 'threads_per_process': 3, 
                                 'thread_type': None
                                 },
-                    'lfs_per_process': 64,
                     'upload_input_data': ['test1'],
                     'copy_input_data': ['test2'],
                     'link_input_data': ['test3'],
@@ -247,7 +239,6 @@ def test_task_to_dict():
                     'download_output_data': ['test5'],
                     'exit_code': 1,
                     'path': 'a/b/c',
-                    'tag': 'unit1',
                     'parent_stage': {'uid': 's1', 'name': 'stage1'},
                     'parent_pipeline': {'uid': 'p1', 'name': 'pipeline1'}}
 
@@ -277,7 +268,6 @@ def test_task_from_dict():
                         'threads_per_process': 0, 
                         'thread_type': None
                         },
-            'lfs_per_process': 1024,
             'upload_input_data': [],
             'copy_input_data': [],
             'link_input_data': [],
@@ -285,7 +275,6 @@ def test_task_from_dict():
             'download_output_data': [],
             'exit_code': 555,
             'path': 'here/it/is',
-            'tag': 'task.0004',
             'parent_stage': {'uid': 's1', 'name': 'stage1'},
             'parent_pipeline': {'uid': 'p1', 'name': 'pipe1'}}
 
@@ -302,7 +291,6 @@ def test_task_from_dict():
     assert t.post_exec             == d['post_exec']  
     assert t.cpu_reqs              == d['cpu_reqs']                
     assert t.gpu_reqs              == d['gpu_reqs']                 
-    assert t.lfs_per_process       == d['lfs_per_process']
     assert t.upload_input_data     == d['upload_input_data']       
     assert t.copy_input_data       == d['copy_input_data']         
     assert t.link_input_data       == d['link_input_data']         
@@ -310,7 +298,6 @@ def test_task_from_dict():
     assert t.download_output_data  == d['download_output_data']    
     assert t.exit_code             == d['exit_code']               
     assert t.path                  == d['path']                    
-    assert t.tag                   == d['tag']
     assert t.parent_stage          == d['parent_stage']            
     assert t.parent_pipeline       == d['parent_pipeline']         
 
@@ -343,14 +330,3 @@ def test_task_validate():
     with pytest.raises(MissingError):
         t._validate()
 
-
-def test_task_tagging():
-
-    t = Task()
-    t.tag = 'task.0004'
-
-    d = t.to_dict()
-    t = Task()
-    t.from_dict(d)
-
-    assert t.tag == 'task.0004'

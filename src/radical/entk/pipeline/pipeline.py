@@ -133,7 +133,7 @@ class Pipeline(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise Error("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise EnTKError("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
 
@@ -259,7 +259,7 @@ class Pipeline(object):
                 self._completed_flag.set()
 
         except Exception, ex:
-            raise Error(text=ex)
+            raise EnTKError(text=ex)
 
     def _decrement_stage(self):
         """
@@ -273,7 +273,7 @@ class Pipeline(object):
                 self._completed_flag = threading.Event()  # reset
 
         except Exception, ex:
-            raise Error(text=ex)
+            raise EnTKError(text=ex)
 
     def _validate_entities(self, stages):
         """

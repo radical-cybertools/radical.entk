@@ -268,7 +268,7 @@ class TaskManager(Base_TaskManager):
         except Exception, ex:
 
             print traceback.format_exc()
-            raise Error(text=ex)
+            raise EnTKError(text=ex)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods

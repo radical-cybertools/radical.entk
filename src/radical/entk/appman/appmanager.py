@@ -266,7 +266,7 @@ class AppManager(object):
 
                 if not setup:
                     self._logger.error('RabbitMQ system not available')
-                    raise Error(text="RabbitMQ setup failed")
+                    raise EnTKError(text="RabbitMQ setup failed")
 
                 self._mqs_setup = True
 
@@ -299,7 +299,7 @@ class AppManager(object):
 
                 self._logger.error(
                     'Cannot run without resource manager, please create and assign a resource manager')
-                raise Error(text='Missing resource manager')
+                raise EnTKError(text='Missing resource manager')
 
             # Start synchronizer thread
             if not self._sync_thread:

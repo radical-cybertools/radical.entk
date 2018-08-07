@@ -359,7 +359,7 @@ class Task(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise Error("Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
+                raise EnTKError("Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -558,14 +558,14 @@ class Task(object):
 
     @parent_stage.setter
     def parent_stage(self, val):
-        if isinstance(val, str):
+        if isinstance(val, dict):
             self._p_stage = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))
 
     @parent_pipeline.setter
     def parent_pipeline(self, val):
-        if isinstance(val, str):
+        if isinstance(val, dict):
             self._p_pipeline = val
         else:
             raise TypeError(expected_type=str, actual_type=type(val))

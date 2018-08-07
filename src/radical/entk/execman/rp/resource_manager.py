@@ -42,7 +42,7 @@ class ResourceManager(Base_ResourceManager):
 
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
-            raise Error(text='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
+            raise EnTKError('RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
 
         self._logger.info('Created resource manager object: %s' % self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
