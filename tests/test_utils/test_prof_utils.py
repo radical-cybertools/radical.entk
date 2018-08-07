@@ -11,6 +11,8 @@ from glob import glob
 import shutil
 
 MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+port = int(os.environ.get('RMQ_PORT', 5672))
 
 def test_get_session_profile():
 
@@ -28,7 +30,7 @@ def test_get_session_profile():
 
 def test_write_session_description():
 
-    amgr = AppManager()
+    amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {
         'resource': 'xsede.stampede',
         'walltime': 60,
@@ -370,7 +372,7 @@ def test_write_workflow():
     wf.append(generate_pipeline(1))
     wf.append(generate_pipeline(2))
 
-    amgr = AppManager()
+    amgr = AppManager(hostname=hostname, port=port)
     amgr.workflow = wf
     amgr._wfp = WFprocessor(sid=amgr._sid,
                             workflow=amgr._workflow,
