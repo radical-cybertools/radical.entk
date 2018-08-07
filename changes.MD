@@ -1,5 +1,17 @@
 # Changelog for each release
 
+## Changelog for 0.7.4
+
+* Bug fixes
+* Improved documentation
+* Improved test coverage
+
+## Changelog for 0.7.3
+
+* Bug fixes
+* Improved documentation
+* Improved test coverage
+
 ## Changelog for 0.7.0
 
 * Issues as part of 0.7.0 milestone: https://github.com/radical-cybertools/radical.entk/milestone/8
