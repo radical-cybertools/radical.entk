@@ -278,8 +278,6 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         if task.tag:
             cud.tag = resolve_tags(task.tag, placeholder_dict)
 
-        print 'T-proc: Cud tag %s for Task %s with tag %s' %(cud.tag, task.uid, task.tag)
-
         cud.cpu_processes = task.cpu_reqs['processes']
         cud.cpu_threads = task.cpu_reqs['threads_per_process']
         cud.cpu_process_type = task.cpu_reqs['process_type']
