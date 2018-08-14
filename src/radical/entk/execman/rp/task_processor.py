@@ -286,7 +286,8 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.gpu_threads = task.gpu_reqs['threads_per_process']
         cud.gpu_process_type = task.gpu_reqs['process_type']
         cud.gpu_thread_type = task.gpu_reqs['thread_type']
-        cud.lfs_per_process = task.lfs_per_process
+        if task.lfs_per_process:
+            cud.lfs_per_process = task.lfs_per_process
 
         cud.input_staging = get_input_list_from_task(task, placeholder_dict)
         cud.output_staging = get_output_list_from_task(task, placeholder_dict)
