@@ -1,4 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1532965441.5588,sync_abs,umgr.0000.staging.input.0,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1532965441.52:1532965441.52:ntp
-1532965441.6211,END,umgr.0000.staging.input.0,MainThread,,,
-1532965441.7212,component_init,umgr.0000.staging.input.0,MainThread,,,

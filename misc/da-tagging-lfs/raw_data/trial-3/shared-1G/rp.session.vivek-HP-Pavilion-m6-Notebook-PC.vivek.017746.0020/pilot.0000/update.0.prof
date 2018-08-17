@@ -1,0 +1,4 @@
+#time,event,comp,thread,uid,state,msg
+1533313680.0345,sync_abs,update.0,MainThread,,,comet-18-68.sdsc.edu:10.21.251.59:1533313680.01:1533313680.01:ntp
+1533313680.0998,END,update.0,MainThread,,,
+1533313680.5055,component_init,update.0,MainThread,,,

@@ -1,7 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1532965431.2652,sync_abs,agent_0.staging.output.0,MainThread,,,nid25430:10.128.100.31:1532965431.23:1532965431.23:ntp
-1532965431.3446,END,agent_0.staging.output.0,MainThread,,,
-1532965431.5216,component_init,agent_0.staging.output.0,MainThread,,,
-1532965862.6472,flush,agent_0.staging.output.0,agent_0.idler._check_units_cb,,,
-1532965862.7500,component_final,agent_0.staging.output.0,agent_0.idler._check_units_cb,,,
-1532965862.7500,END,agent_0.staging.output.0,agent_0.idler._check_units_cb,,,

@@ -1,0 +1,17 @@
+#time,event,comp,thread,uid,state,msg
+1533311661.3247,sync_abs,pmgr.0000,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1533311661.27:1533311661.03:ntp
+1533311661.6481,component_init,pmgr.0000,MainThread,,,
+1533311661.7599,setup_done,pmgr.0000,MainThread,pmgr.0000,,
+1533311669.4716,advance,pmgr.0000,MainThread,pilot.0000,NEW,
+1533311669.5358,advance,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1533311669.5362,publish,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1533311669.5366,put,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,pmgr.launching.queue.input.0000
+1533311669.5403,advance,pmgr.0000,pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_LAUNCHING,
+1533311705.6585,advance,pmgr.0000,pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_ACTIVE_PENDING,
+1533311732.1065,advance,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,
+1533311732.1070,publish,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,
+1533312075.9072,advance,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,CANCELED,
+1533312075.9076,publish,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,CANCELED,
+1533312076.0483,flush,pmgr.0000,MainThread,,,
+1533312079.0178,component_final,pmgr.0000,MainThread,,,
+1533312079.0179,END,pmgr.0000,MainThread,,,
