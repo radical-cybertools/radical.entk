@@ -116,7 +116,7 @@ class AppManager(object):
     @property
     def name(self):
         """
-        Name for the application manager 
+        Name for the application manager
 
         :getter: Returns the name of the application manager
         :setter: Assigns the name of the application manager
@@ -280,7 +280,7 @@ class AppManager(object):
                                     completed_queue=self._completed_queue,
                                     mq_hostname=self._mq_hostname,
                                     port=self._port,
-                                    resubmit_failed=self._resubmit_failed)            
+                                    resubmit_failed=self._resubmit_failed)
             self._wfp._initialize_workflow()
             self._workflow = self._wfp.workflow
 
@@ -392,10 +392,10 @@ class AppManager(object):
                 if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
                     """
-                    If the tmgr process or heartbeat dies, we simply start a 
-                    new process using the start_manager method. We do not 
-                    need to create a new instance of the TaskManager object 
-                    itself. We stop and start a new instance of the 
+                    If the tmgr process or heartbeat dies, we simply start a
+                    new process using the start_manager method. We do not
+                    need to create a new instance of the TaskManager object
+                    itself. We stop and start a new instance of the
                     heartbeat thread as well.
                     """
                     self._prof.prof('restarting tmgr process and heartbeat', uid=self._uid)
@@ -512,15 +512,15 @@ class AppManager(object):
 
     def _setup_mqs(self):
         """
-        **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication 
+        **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication
         between the enqueuer thread and the task manager process. We instantiate queue(s) 'completedq-*' for
-        communication between the task manager and dequeuer thread. We instantiate queue 'sync-to-master' for 
+        communication between the task manager and dequeuer thread. We instantiate queue 'sync-to-master' for
         communication from enqueuer/dequeuer/task_manager to the synchronizer thread. We instantiate queue
         'sync-ack' for communication from synchronizer thread to enqueuer/dequeuer/task_manager.
 
         Details: All queues are durable: Even if the RabbitMQ server goes down, the queues are saved to disk and can
         be retrieved. This also means that after an erroneous run the queues might still have unacknowledged messages
-        and will contain messages from that run. Hence, in every new run, we first delete the queue and create a new 
+        and will contain messages from that run. Hence, in every new run, we first delete the queue and create a new
         one.
         """
 
@@ -604,15 +604,15 @@ class AppManager(object):
 
     def _synchronizer(self):
         """
-        **Purpose**: Thread in the master process to keep the workflow data 
-        structure in appmanager up to date. We receive pipelines, stages and 
-        tasks objects directly. The respective object is updated in this master 
-        process. 
+        **Purpose**: Thread in the master process to keep the workflow data
+        structure in appmanager up to date. We receive pipelines, stages and
+        tasks objects directly. The respective object is updated in this master
+        process.
 
         Details: Important to note that acknowledgements of the type
         channel.basic_ack() is an acknowledgement to the server that the msg
-        was received. This is not to be confused with the Ack sent to the 
-        enqueuer/dequeuer/task_manager through the sync-ack queue. 
+        was received. This is not to be confused with the Ack sent to the
+        enqueuer/dequeuer/task_manager through the sync-ack queue.
         """
 
         try:
@@ -674,7 +674,7 @@ class AppManager(object):
                                         # know about it. The current solution is going to be: add it to the workflow object in the
                                         # AppManager via the synchronizer.
 
-                                        self._prof.prof('adding new task %s' % (completed_task.uid))
+                                        self._prof.prof('Adap: adding new task')
 
                                         self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
                                                                                                       stage.uid))
@@ -685,6 +685,8 @@ class AppManager(object):
                                                                  properties=pika.BasicProperties(
                                                                      correlation_id=corr_id),
                                                                  body='%s-ack' % completed_task.uid)
+
+                                        self._prof.prof('Adap: added new task')
 
                                         self._prof.prof('publishing sync ack for obj with state %s' %
                                                         msg['object']['state'],
@@ -744,7 +746,7 @@ class AppManager(object):
                                 # know about it. The current solution is going to be: add it to the workflow object in the
                                 # AppManager via the synchronizer.
 
-                                self._prof.prof('adding new stage %s' % (completed_stage.uid))
+                                self._prof.prof('Adap: adding new stage', uid=self._uid)
 
                                 self._logger.info('Adding new stage %s to parent pipeline: %s' % (completed_stage.uid,
                                                                                                   pipe.uid))
@@ -755,6 +757,8 @@ class AppManager(object):
                                                          properties=pika.BasicProperties(
                                                              correlation_id=corr_id),
                                                          body='%s-ack' % completed_stage.uid)
+
+                                self._prof.prof('Adap: adding new stage', uid=self._uid)
 
                                 self._prof.prof('publishing sync ack for obj with state %s' %
                                                 msg['object']['state'],
