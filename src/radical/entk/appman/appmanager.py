@@ -53,7 +53,7 @@ class AppManager(object):
                  name=None):
 
         # Create a session for each EnTK script execution
-        if name not None:
+        if name:
             self._name = name
             self._sid = name
         else:
