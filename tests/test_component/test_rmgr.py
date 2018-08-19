@@ -1,3 +1,4 @@
+import radical.utils as ru
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk.execman.dummy import ResourceManager as DummyRmgr
@@ -294,7 +295,8 @@ def test_rmgr_rp_initialization(d):
         del os.environ['RADICAL_PILOT_DBURL']
 
     with pytest.raises(Error):
-        rmgr = RPRmgr(d, 'test.0000')
+        rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+        rmgr = RPRmgr(d, rmgr_id)
 
 
     try:
@@ -356,7 +358,7 @@ def test_rmgr_rp_resource_request():
 
 
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr = RPRmgr(d, rmgr_id)
+    rmgr = RPRmgr(res_dict, rmgr_id)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -386,7 +388,7 @@ def test_rmgr_rp_get_resource_allocation_state():
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr = RPRmgr(d, rmgr_id)
+    rmgr = RPRmgr(res_dict, rmgr_id)
 
     assert not rmgr.get_resource_allocation_state()
 
