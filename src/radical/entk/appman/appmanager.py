@@ -57,7 +57,7 @@ class AppManager(object):
             self._name = name
             self._sid = name
         else:
-            self._name= None
+            self._name= str()
             self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
