@@ -16,11 +16,11 @@ port = int(os.environ.get('RMQ_PORT', 5672))
 MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 
 def test_amgr_initialization():
+    amgr_name = ru.generate_id('test.appmanager.%(item_counter)04d', ru.ID_CUSTOM)
+    amgr = Amgr(hostname=hostname, port=port,name=amgr_name)
 
-    amgr = Amgr(hostname=hostname, port=port,name='test.appmanager')
-
-    assert amgr._name.split('.') == ['test','appmanager']
-    assert amgr._sid.split('.') == ['test','appmanager']
+    assert amgr._name.split('.') == amgr_name.split('.')
+    assert amgr._sid.split('.') == amgr_name.split('.')
     assert amgr._uid.split('.') == ['appmanager', '0000']
     assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
     assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
