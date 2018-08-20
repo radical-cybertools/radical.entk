@@ -292,7 +292,7 @@ def test_rmgr_rp_initialization(d):
     if env_var:
         del os.environ['RADICAL_PILOT_DBURL']
 
-    with pytest.raises(Error):
+    with pytest.raises(EnTKError):
         rmgr = RPRmgr(d, 'test.0000')
 
 
