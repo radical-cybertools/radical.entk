@@ -294,8 +294,7 @@ def test_rmgr_rp_initialization(d):
     if env_var:
         del os.environ['RADICAL_PILOT_DBURL']
 
-    with pytest.raises(Error):
-        rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    with pytest.raises(EnTKError):
         rmgr = RPRmgr(d, rmgr_id)
 
 
