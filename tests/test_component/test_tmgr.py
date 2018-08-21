@@ -306,7 +306,7 @@ def test_tmgr_mock_initialization(s, l, i):
         pass
 
     sid = 'test.0000'
-    rmgr = MockRmgr(resource_desc={}, sid=sid, config)
+    rmgr = MockRmgr(resource_desc={}, sid=sid)
 
     tmgr = MockTmgr(sid=sid,
                      pending_queue=['pending'],
