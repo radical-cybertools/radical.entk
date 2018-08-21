@@ -298,6 +298,9 @@ def test_rmgr_mock_methods():
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_rp_initialization(d):
 
+    with pytest.raises(ValueError):
+        rmgr = RPRmgr(d, 'test.0000', config={})
+
     env_var = os.environ.get('RADICAL_PILOT_DBURL', None)
     if env_var:
         del os.environ['RADICAL_PILOT_DBURL']
@@ -306,8 +309,7 @@ def test_rmgr_rp_initialization(d):
     with pytest.raises(EnTKError):
         rmgr = RPRmgr(d, 'test.0000', config)
 
-    with pytest.raises(ValueError):
-        rmgr = RPRmgr(d, 'test.0000', config={})
+
 
     try:
         import glob
