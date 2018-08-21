@@ -68,7 +68,7 @@ def test_amgr_read_config():
          "resubmit_failed": True,
          "autoterminate": False,
          "write_workflow": True,
-         "rts": "dummy",
+         "rts": "mock",
          "pending_qs": 2,
          "completed_qs": 3,
          "rmq_cleanup": False}
@@ -114,9 +114,9 @@ def test_amgr_resource_description_assignment():
     from radical.entk.execman.rp import ResourceManager
     assert isinstance(amgr._resource_manager, ResourceManager)
 
-    amgr = Amgr(rts='dummy')
+    amgr = Amgr(rts='mock')
     amgr.resource_desc = res_dict
-    from radical.entk.execman.dummy import ResourceManager
+    from radical.entk.execman.mock import ResourceManager
     assert isinstance(amgr._resource_manager, ResourceManager)
 
 

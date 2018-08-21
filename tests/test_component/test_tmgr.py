@@ -2,8 +2,8 @@ from radical.entk.execman.base import Base_TaskManager as BaseTmgr
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import TaskManager as RPTmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
-from radical.entk.execman.dummy import TaskManager as DummyTmgr
-from radical.entk.execman.dummy import ResourceManager as DummyRmgr
+from radical.entk.execman.mock import TaskManager as MockTmgr
+from radical.entk.execman.mock import ResourceManager as MockRmgr
 from radical.entk import Task, states
 from radical.entk.exceptions import *
 import pytest
@@ -292,7 +292,7 @@ def test_tmgr_base_methods():
 @given(s=st.text(),
        l=st.lists(st.characters()),
        i=st.integers())
-def test_tmgr_dummy_initialization(s, l, i):
+def test_tmgr_mock_initialization(s, l, i):
 
     try:
         import glob
@@ -306,9 +306,9 @@ def test_tmgr_dummy_initialization(s, l, i):
         pass
 
     sid = 'test.0000'
-    rmgr = DummyRmgr(resource_desc={}, sid=sid)
+    rmgr = MockRmgr(resource_desc={}, sid=sid)
 
-    tmgr = DummyTmgr(sid=sid,
+    tmgr = MockTmgr(sid=sid,
                      pending_queue=['pending'],
                      completed_queue=['completed'],
                      rmgr=rmgr,
@@ -320,7 +320,7 @@ def test_tmgr_dummy_initialization(s, l, i):
     assert tmgr._completed_queue == ['completed']
     assert tmgr._mq_hostname == hostname
     assert tmgr._port == port
-    assert tmgr._rts == 'dummy'
+    assert tmgr._rts == 'mock'
 
     assert tmgr._logger
     assert tmgr._prof
@@ -331,7 +331,7 @@ def test_tmgr_dummy_initialization(s, l, i):
     assert tmgr._rmq_ping_interval == 10
 
 
-def func_for_dummy_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
+def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
     mq_channel = mq_connection.channel()
@@ -362,7 +362,7 @@ def func_for_dummy_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
     mq_connection.close()
 
 
-def test_tmgr_dummy_tmgr():
+def test_tmgr_mock_tmgr():
 
     res_dict = {
         'resource': 'local.localhost',
@@ -374,9 +374,9 @@ def test_tmgr_dummy_tmgr():
     os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
     os.environ['ENTK_HB_INTERVAL'] = '30'
 
-    rmgr = DummyRmgr(resource_desc=res_dict, sid='test.0000')
+    rmgr = MockRmgr(resource_desc=res_dict, sid='test.0000')
 
-    tmgr = DummyTmgr(sid='test.0000',
+    tmgr = MockTmgr(sid='test.0000',
                      pending_queue=['pendingq-1'],
                      completed_queue=['completedq-1'],
                      rmgr=rmgr,
@@ -385,7 +385,7 @@ def test_tmgr_dummy_tmgr():
 
     tmgr.start_manager()
 
-    proc = Process(target=func_for_dummy_tmgr_test, args=(hostname,
+    proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
                                                           port,
                                                           tmgr._pending_queue[0],
                                                           tmgr._completed_queue[0]))
@@ -449,7 +449,7 @@ def test_tmgr_rp_tmgr():
 
     tmgr.start_manager()
 
-    proc = Process(target=func_for_dummy_tmgr_test, args=(hostname,
+    proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
                                                           port,
                                                           tmgr._pending_queue[0],
                                                           tmgr._completed_queue[0]))

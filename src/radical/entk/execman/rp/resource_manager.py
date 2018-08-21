@@ -12,27 +12,28 @@ from ..base.resource_manager import Base_ResourceManager
 class ResourceManager(Base_ResourceManager):
 
     """
-    A resource manager takes the responsibility of placing resource requests on 
+    A resource manager takes the responsibility of placing resource requests on
     different, possibly multiple, DCIs. This ResourceManager uses the RADICAL
     Pilot as the underlying runtime system.
 
-    :arguments: 
-        :resource_desc: dictionary with details of the resource request + access credentials of the user 
-        :example: resource_desc = { 
-                                    |  'resource'      : 'xsede.stampede', 
-                                    |  'walltime'      : 120, 
-                                    |  'cpus'         : 64, 
+    :arguments:
+        :resource_desc: dictionary with details of the resource request + access credentials of the user
+        :example: resource_desc = {
+                                    |  'resource'      : 'xsede.stampede',
+                                    |  'walltime'      : 120,
+                                    |  'cpus'         : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
                                     |  'access_schema' : 'ssh'  # optional
                                 }
     """
 
-    def __init__(self, resource_desc, sid):
+    def __init__(self, resource_desc, sid, config):
 
         super(ResourceManager, self).__init__(resource_desc=resource_desc,
                                               sid=sid,
-                                              rts='radical.pilot')
+                                              rts='radical.pilot',
+                                              rts_config=config)
 
         # RP specific parameters
         self._session = None
@@ -43,6 +44,12 @@ class ResourceManager(Base_ResourceManager):
         self._mlab_url = os.environ.get('RADICAL_PILOT_DBURL', None)
         if not self._mlab_url:
             raise EnTKError(msg='RADICAL_PILOT_DBURL not defined. Please assign a valid mlab url')
+
+        if (not "sandbox_cleanup" in self._rts_config.keys()) or (not "db_cleanup" in self._rts_config.keys()):
+            raise ValueError(obj=self._uid,
+                             attribute='config',
+                             expected_value={"sandbox_cleanup": False, "db_cleanup": False},
+                             actual_value=self._rts_config)
 
         self._logger.info('Created resource manager object: %s' % self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
@@ -99,7 +106,7 @@ class ResourceManager(Base_ResourceManager):
 
     def _submit_resource_request(self):
         """
-        **Purpose**: Create and submits a RADICAL Pilot Job as per the user 
+        **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
         """
 
@@ -135,6 +142,9 @@ class ResourceManager(Base_ResourceManager):
 
             if self._queue:
                 pd_init['queue'] = self._queue
+
+            if self._rts_config.get('sandbox_cleanup', None):
+                pd_init['cleanup'] = True
 
             # Create Compute Pilot with validated resource description
             pdesc = rp.ComputePilotDescription(pd_init)
@@ -190,8 +200,9 @@ class ResourceManager(Base_ResourceManager):
                 self._prof.prof('canceling resource allocation', uid=self._uid)
                 self._pilot.cancel()
                 download_rp_profile = os.environ.get('RADICAL_PILOT_PROFILE', False)
-                self._session.close(cleanup=False, download=download_rp_profile)
-                self._prof.prof('resource allocation cancelled', uid=self._uid)
+                self._session.close(cleanup=self._rts_config.get('db_cleanup', False),
+                                    download=download_rp_profile)
+                self._prof.prof('resource allocation canceled', uid=self._uid)
 
         except KeyboardInterrupt:
 
