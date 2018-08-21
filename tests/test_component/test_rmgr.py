@@ -23,12 +23,12 @@ def test_rmgr_base_initialization(d):
     except:
         pass
 
-    rmgr = BaseRmgr(d, 'test.0000', None)
+    rmgr = BaseRmgr(d, 'test.0000', None, {})
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == 'test.0000'
     assert rmgr._rts == None
-    assert rmgr._rts_config == None
+    assert rmgr._rts_config == {}
     assert rmgr.resource == None
     assert rmgr.walltime == None
     assert rmgr.cpus == 1
@@ -57,20 +57,20 @@ def test_rmgr_base_assignment_exception(s, l, i, b, se):
 
     for d in data:
         with pytest.raises(TypeError):
-            rmgr = BaseRmgr(d, 'test.0000', None)
+            rmgr = BaseRmgr(d, 'test.0000', None, {})
 
 
 
 def test_rmgr_base_get_resource_allocation_state():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr.get_resource_allocation_state()
 
 
 def test_rmgr_base_completed_states():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr.get_completed_states()
 
@@ -78,7 +78,7 @@ def test_rmgr_base_completed_states():
 @given(t=st.text(), i=st.integers())
 def test_rmgr_base_validate_resource_desc(t, i):
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(MissingError):
         rmgr._validate_resource_desc()
 
@@ -90,10 +90,6 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'cpus': 20,
         }
 
-    rmgr = BaseRmgr(res_dict, 'test.0000', None)
-    with pytest.raises(TypeError):
-        rmgr._validate_resource_desc()
-
     with pytest.raises(TypeError):
 
         res_dict = {
@@ -101,7 +97,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': t,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -111,7 +107,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': t,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -121,7 +117,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': i,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -132,7 +128,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'cpus': i,
             'gpus': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -144,7 +140,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'gpus': i,
             'project': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -157,7 +153,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'project': t,
             'access_schema': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -171,7 +167,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'access_schema': t,
             'queue': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     if isinstance(t, str):
@@ -184,7 +180,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'access_schema': t,
             'queue': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         assert rm._validate_resource_desc()
 
 
@@ -204,7 +200,7 @@ def test_rmgr_base_populate(t, i):
             'access_schema': t,
             'queue': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
 
         with pytest.raises(EnTKError):
             rm._populate()
@@ -223,7 +219,7 @@ def test_rmgr_base_populate(t, i):
                     'access_schema': 'gsissh'
     }
 
-    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None)
+    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None, rts_config={})
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -239,14 +235,14 @@ def test_rmgr_base_populate(t, i):
 
 def test_rmgr_base_submit_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr._submit_resource_request()
 
 
 def test_rmgr_base_terminate_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr._terminate_resource_request()
 

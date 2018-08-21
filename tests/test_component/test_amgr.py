@@ -61,6 +61,7 @@ def test_amgr_read_config():
     assert amgr._num_pending_qs == 1
     assert amgr._num_completed_qs == 1
     assert amgr._rmq_cleanup == True
+    assert amgr._rts_config == { "sandbox_cleanup": False, "db_cleanup": False}
 
     d = {"hostname": "radical.two",
          "port": 25672,
@@ -69,6 +70,7 @@ def test_amgr_read_config():
          "autoterminate": False,
          "write_workflow": True,
          "rts": "mock",
+         "rts_config": { "sandbox_cleanup": True, "db_cleanup": True},
          "pending_qs": 2,
          "completed_qs": 3,
          "rmq_cleanup": False}
@@ -82,7 +84,8 @@ def test_amgr_read_config():
                       autoterminate=None,
                       write_workflow=None,
                       rts=None,
-                      rmq_cleanup=None)
+                      rmq_cleanup=None,
+                      rts_config=None)
 
     assert amgr._mq_hostname == d['hostname']
     assert amgr._port == d['port']
@@ -91,6 +94,7 @@ def test_amgr_read_config():
     assert amgr._autoterminate == d['autoterminate']
     assert amgr._write_workflow == d['write_workflow']
     assert amgr._rts == d['rts']
+    assert amgr._rts_config == d['rts_config']
     assert amgr._num_pending_qs == d['pending_qs']
     assert amgr._num_completed_qs == d['completed_qs']
     assert amgr._rmq_cleanup == d['rmq_cleanup']
