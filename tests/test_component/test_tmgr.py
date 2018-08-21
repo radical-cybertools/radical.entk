@@ -178,7 +178,7 @@ def test_tmgr_base_start_heartbeat():
 def test_tmgr_base_terminate_heartbeat():
 
     sid = 'test.0000'
-    rmgr = BaseRmgr({}, sid, None. {})
+    rmgr = BaseRmgr({}, sid, None, {})
     os.environ['ENTK_HB_INTERVAL'] = '30'
 
     tmgr = BaseTmgr(sid=sid,
