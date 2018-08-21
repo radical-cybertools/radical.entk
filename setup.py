@@ -238,7 +238,7 @@ setup_args = {
 
     #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
     'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot',
-                            'autodoc','pytest','hypothesis','sphinx'],
+                             'pytest','hypothesis','sphinx'],
 
     'zip_safe'          : False,
     
