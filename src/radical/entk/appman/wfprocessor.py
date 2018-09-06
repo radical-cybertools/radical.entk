@@ -58,7 +58,8 @@ class WFprocessor(object):
         # Create logger and profiler at their specific locations using the sid
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
+        self._logger = ru.Logger('radical.entk.%s' %
+                                 self._uid, path=self._path, targets=['2', '.'])
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
