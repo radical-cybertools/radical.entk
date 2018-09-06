@@ -1,3 +1,4 @@
+import radical.utils as ru
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk.execman.dummy import ResourceManager as DummyRmgr
@@ -22,11 +23,11 @@ def test_rmgr_base_initialization(d):
             shutil.rmtree(f)
     except:
         pass
-
-    rmgr = BaseRmgr(d, 'test.0000', None)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = BaseRmgr(d, rmgr_id, None)
 
     assert rmgr._resource_desc == d
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._rts == None
     assert rmgr.resource == None
     assert rmgr.walltime == None
@@ -209,11 +210,12 @@ def test_rmgr_base_populate(t, i):
                     'access_schema': 'gsissh'
     }
 
-    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = BaseRmgr(res_dict, sid=rmgr_id, rts=None)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._resource == 'local.localhost'
     assert rmgr._walltime == 40
     assert rmgr._cpus == 100
@@ -293,7 +295,8 @@ def test_rmgr_rp_initialization(d):
         del os.environ['RADICAL_PILOT_DBURL']
 
     with pytest.raises(EnTKError):
-        rmgr = RPRmgr(d, 'test.0000')
+        rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+        rmgr = RPRmgr(d, rmgr_id)
 
 
     try:
@@ -308,10 +311,11 @@ def test_rmgr_rp_initialization(d):
 
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    rmgr = RPRmgr(d, 'test.0000')    
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(d, rmgr_id)
 
     assert rmgr._resource_desc == d
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._rts == 'radical.pilot'
     assert rmgr._resource == None
     assert rmgr._walltime == None
@@ -352,7 +356,9 @@ def test_rmgr_rp_resource_request():
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    rmgr = RPRmgr(res_dict, sid='test.0000')
+
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(res_dict, rmgr_id)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -381,8 +387,9 @@ def test_rmgr_rp_get_resource_allocation_state():
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
-    rmgr = RPRmgr(res_dict, sid='test.0000')
-    
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(res_dict, rmgr_id)
+
     assert not rmgr.get_resource_allocation_state()
 
     rmgr._validate_resource_desc()
@@ -396,7 +403,8 @@ def test_rmgr_rp_get_resource_allocation_state():
 def test_rmgr_rp_completed_states():
     
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    rmgr = RPRmgr({}, sid='test.0000')
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr({}, rmgr_id)
 
     import radical.pilot as rp
     assert rmgr.get_completed_states() == [rp.CANCELED, rp.FAILED, rp.DONE]
