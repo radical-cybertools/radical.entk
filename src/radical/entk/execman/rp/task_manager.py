@@ -1,5 +1,5 @@
 __copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__author__ = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __license__ = "MIT"
 
 import radical.utils as ru
@@ -40,15 +40,15 @@ class TaskManager(Base_TaskManager):
     """
 
     def __init__(self, sid, pending_queue, completed_queue,
-                 rmgr, mq_hostname, port):
+                rmgr, mq_hostname, port):
 
         super(TaskManager, self).__init__(sid,
-                                          pending_queue,
-                                          completed_queue,
-                                          rmgr,
-                                          mq_hostname,
-                                          port,
-                                          rts='radical.pilot')
+                                        pending_queue,
+                                        completed_queue,
+                                        rmgr,
+                                        mq_hostname,
+                                        port,
+                                        rts='radical.pilot')
 
         self._umgr = None
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
@@ -111,10 +111,9 @@ class TaskManager(Base_TaskManager):
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(
-                                                     correlation_id=hb_props.correlation_id),
-                                                 body='response')
+                                                routing_key=self._hb_response_q,
+                                                properties=pika.BasicProperties(correlation_id=hb_props.correlation_id),
+                                                body='response')
 
                         logger.info('Sent heartbeat response')
                         mq_channel.basic_ack(delivery_tag=hb_method_frame.delivery_tag)
@@ -139,25 +138,25 @@ class TaskManager(Base_TaskManager):
                         task = create_task_from_cu(unit, local_prof)
 
                         transition(obj=task,
-                                   obj_type='Task',
-                                   new_state=states.COMPLETED,
-                                   channel=mq_channel,
-                                   queue='%s-cb-to-sync' % self._sid,
-                                   profiler=local_prof,
-                                   logger=logger)
+                                obj_type='Task',
+                                new_state=states.COMPLETED,
+                                channel=mq_channel,
+                                queue='%s-cb-to-sync' % self._sid,
+                                profiler=local_prof,
+                                logger=logger)
 
                         load_placeholder(task, unit.uid)
 
                         task_as_dict = json.dumps(task.to_dict())
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1' % self._sid,
-                                                 body=task_as_dict
-                                                 # properties=pika.BasicProperties(
-                                                 # make message persistent
-                                                 #    delivery_mode = 2,
-                                                 #)
-                                                 )
+                                                routing_key='%s-completedq-1' % self._sid,
+                                                body=task_as_dict
+                                                # properties=pika.BasicProperties(
+                                                # make message persistent
+                                                #    delivery_mode = 2,
+                                                #)
+                                                )
 
                         logger.info('Pushed task %s with state %s to completed queue %s' % (task.uid, task.state,
                                                                                             completed_queue[0]))
@@ -166,7 +165,7 @@ class TaskManager(Base_TaskManager):
 
                 except KeyboardInterrupt:
                     self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                                           'trying to exit callback thread gracefully...')
+                                            'trying to exit callback thread gracefully...')
 
                     raise KeyboardInterrupt
 
@@ -209,12 +208,12 @@ class TaskManager(Base_TaskManager):
                             bulk_cuds.append(create_cud_from_task(t, placeholder_dict, local_prof))
 
                             transition(obj=t,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
+                                    obj_type='Task',
+                                    new_state=states.SUBMITTING,
+                                    channel=mq_channel,
+                                    queue='%s-tmgr-to-sync' % self._sid,
+                                    profiler=local_prof,
+                                    logger=self._logger)
 
                         # To accommodate long cud creation times
                         heartbeat_response(mq_channel)
@@ -229,12 +228,12 @@ class TaskManager(Base_TaskManager):
                         for task in bulk_tasks:
 
                             transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTED,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
+                                    obj_type='Task',
+                                    new_state=states.SUBMITTED,
+                                    channel=mq_channel,
+                                    queue='%s-tmgr-to-sync' % self._sid,
+                                    profiler=local_prof,
+                                    logger=self._logger)
                             self._logger.info('Task %s submitted to RTS' % (task.uid))
 
 
@@ -262,13 +261,13 @@ class TaskManager(Base_TaskManager):
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to cancel tmgr process gracefully...')
+                                'trying to cancel tmgr process gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
 
             print traceback.format_exc()
-            raise EnTKError(text=ex)
+            raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
@@ -289,17 +288,17 @@ class TaskManager(Base_TaskManager):
                 self._tmgr_terminate = Event()
 
                 self._tmgr_process = Process(target=self._tmgr,
-                                             name='task-manager',
-                                             args=(
-                                                 self._uid,
-                                                 self._umgr,
-                                                 self._rmgr,
-                                                 self._logger,
-                                                 self._mq_hostname,
-                                                 self._port,
-                                                 self._pending_queue,
-                                                 self._completed_queue)
-                                             )
+                                            name='task-manager',
+                                            args=(
+                                                self._uid,
+                                                self._umgr,
+                                                self._rmgr,
+                                                self._logger,
+                                                self._mq_hostname,
+                                                self._port,
+                                                self._pending_queue,
+                                                self._completed_queue)
+                                            )
 
                 self._logger.info('Starting task manager process')
                 self._prof.prof('starting tmgr process', uid=self._uid)
