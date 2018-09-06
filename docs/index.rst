@@ -45,6 +45,7 @@ More details about the science enabled by EnTK can be found in the following pub
    install
    user_guide
    examples
+   advanced_examples
    api
    tests
    exceptions

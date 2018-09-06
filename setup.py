@@ -245,7 +245,8 @@ setup_args = {
     'data_files'        : [
                             makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
                             makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples'),
-                            makeDataFiles('share/radical.entk/analytics/scripts/','examples/analytics')
+                            makeDataFiles('share/radical.entk/analytics/scripts/','examples/analytics'),
+                            makeDataFiles('share/radical.entk/advanced_examples/scripts/','examples/advanced_examples')
                         ],
 
 }
