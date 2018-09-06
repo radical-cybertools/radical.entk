@@ -23,7 +23,7 @@ RP ResourceManager API
 Dummy ResourceManager API
 *************************
 
-.. autoclass:: radical.entk.execman.dummy.resource_manager.ResourceManager
+.. autoclass:: radical.entk.execman.mock.resource_manager.ResourceManager
     :members:
     :undoc-members:
     :private-members:

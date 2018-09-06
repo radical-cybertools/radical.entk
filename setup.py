@@ -182,7 +182,7 @@ def isbad(name):
 def isgood(name):
     """ Whether name should be installed """
     if not isbad(name):
-        if name.endswith('.py') or name.endswith('.json'):
+        if name.endswith('.py') or name.endswith('.json') or name.endswith('.tar'):
             return True
     return False
 
@@ -238,14 +238,15 @@ setup_args = {
 
     #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
     'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot',
-                             'pytest','hypothesis','sphinx'],
+                            'pytest','hypothesis','sphinx'],
 
     'zip_safe'          : False,
 
     'data_files'        : [
-                                    makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
-                                    makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
-                            ],
+                            makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
+                            makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples'),
+                            makeDataFiles('share/radical.entk/analytics/scripts/','examples/analytics')
+                        ],
 
 }
 

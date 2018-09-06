@@ -1,4 +1,4 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
+from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 # ------------------------------------------------------------------------------

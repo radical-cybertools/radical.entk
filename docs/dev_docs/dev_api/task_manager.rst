@@ -23,7 +23,7 @@ RP TaskManager API
 Dummy TaskManager API
 *********************
 
-.. autoclass:: radical.entk.execman.dummy.task_manager.TaskManager
+.. autoclass:: radical.entk.execman.mock.task_manager.TaskManager
     :members:
     :undoc-members:
     :private-members:
