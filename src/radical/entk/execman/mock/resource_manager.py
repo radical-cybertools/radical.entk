@@ -12,16 +12,16 @@ from ..base.resource_manager import Base_ResourceManager
 class ResourceManager(Base_ResourceManager):
 
     """
-    A resource manager takes the responsibility of placing resource requests on 
+    A resource manager takes the responsibility of placing resource requests on
     different, possibly multiple, DCIs. This ResourceManager uses the RADICAL
     Pilot as the underlying runtime system.
 
-    :arguments: 
-        :resource_desc: dictionary with details of the resource request + access credentials of the user 
-        :example: resource_desc = { 
-                                    |  'resource'      : 'xsede.stampede', 
-                                    |  'walltime'      : 120, 
-                                    |  'cpus'         : 64, 
+    :arguments:
+        :resource_desc: dictionary with details of the resource request + access credentials of the user
+        :example: resource_desc = {
+                                    |  'resource'      : 'xsede.stampede',
+                                    |  'walltime'      : 120,
+                                    |  'cpus'         : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
                                     |  'access_schema' : 'ssh'  # optional
@@ -32,7 +32,8 @@ class ResourceManager(Base_ResourceManager):
 
         super(ResourceManager, self).__init__(resource_desc=resource_desc,
                                               sid=sid,
-                                              rts='dummy')
+                                              rts='mock',
+                                              rts_config={})
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -72,7 +73,7 @@ class ResourceManager(Base_ResourceManager):
 
     def _submit_resource_request(self):
         """
-        **Purpose**: Create and submits a RADICAL Pilot Job as per the user 
+        **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
         """
 

@@ -45,7 +45,7 @@ class TaskManager(Base_TaskManager):
                                           rmgr,
                                           mq_hostname,
                                           port,
-                                          rts='dummy')
+                                          rts='mock')
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 

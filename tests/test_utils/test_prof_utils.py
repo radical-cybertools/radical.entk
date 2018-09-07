@@ -30,6 +30,9 @@ def test_get_session_profile():
 
 def test_write_session_description():
 
+
+    hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+    port = int(os.environ.get('RMQ_PORT', 5672))
     amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {
         'resource': 'xsede.stampede',

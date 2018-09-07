@@ -101,7 +101,7 @@ def set_version(mod_root):
                         '%s/%s'   % (mod_root, sdist_name))  # copy into tree
             shutil.move("VERSION.bak", "VERSION")            # restore version
 
-        with open(path + "/SDIST", "w") as f: 
+        with open(path + "/SDIST", "w") as f:
             f.write(sdist_name + "\n")
 
         return version_base, version_detail, sdist_name
@@ -182,7 +182,7 @@ def isbad(name):
 def isgood(name):
     """ Whether name should be installed """
     if not isbad(name):
-        if name.endswith('.py') or name.endswith('.json'):
+        if name.endswith('.py') or name.endswith('.json') or name.endswith('.tar'):
             return True
     return False
 
@@ -232,20 +232,22 @@ setup_args = {
     'package_dir'       : {'': 'src'},
 
     'scripts'           : ['bin/entk-version'],
-                           
+
 
     'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
 
     #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
     'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot',
-                            'autodoc','pytest','hypothesis','sphinx'],
+                            'pytest','hypothesis','sphinx'],
 
     'zip_safe'          : False,
-    
+
     'data_files'        : [
-                                    makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
-                                    makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples')
-                            ],
+                            makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
+                            makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples'),
+                            makeDataFiles('share/radical.entk/analytics/scripts/','examples/analytics'),
+                            makeDataFiles('share/radical.entk/advanced_examples/scripts/','examples/advanced_examples')
+                        ],
 
 }
 

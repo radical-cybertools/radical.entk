@@ -561,14 +561,14 @@ class Task(object):
         if isinstance(val, dict):
             self._p_stage = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(val))
 
     @parent_pipeline.setter
     def parent_pipeline(self, val):
         if isinstance(val, dict):
             self._p_pipeline = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(val))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods

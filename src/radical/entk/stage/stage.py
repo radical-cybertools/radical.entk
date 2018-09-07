@@ -137,10 +137,10 @@ class Stage(object):
 
     @parent_pipeline.setter
     def parent_pipeline(self, value):
-        if isinstance(value, str):
+        if isinstance(value, dict):
             self._p_pipeline = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=dict, actual_type=type(value))
 
     @state.setter
     def state(self, value):

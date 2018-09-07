@@ -1,6 +1,6 @@
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
-from radical.entk.execman.dummy import ResourceManager as DummyRmgr
+from radical.entk.execman.mock import ResourceManager as MockRmgr
 import pytest
 from radical.entk.exceptions import *
 from hypothesis import given
@@ -23,11 +23,12 @@ def test_rmgr_base_initialization(d):
     except:
         pass
 
-    rmgr = BaseRmgr(d, 'test.0000', None)
+    rmgr = BaseRmgr(d, 'test.0000', None, {})
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == 'test.0000'
     assert rmgr._rts == None
+    assert rmgr._rts_config == {}
     assert rmgr.resource == None
     assert rmgr.walltime == None
     assert rmgr.cpus == 1
@@ -56,20 +57,20 @@ def test_rmgr_base_assignment_exception(s, l, i, b, se):
 
     for d in data:
         with pytest.raises(TypeError):
-            rmgr = BaseRmgr(d, 'test.0000', None)
+            rmgr = BaseRmgr(d, 'test.0000', None, {})
 
 
 
 def test_rmgr_base_get_resource_allocation_state():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr.get_resource_allocation_state()
 
 
 def test_rmgr_base_completed_states():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr.get_completed_states()
 
@@ -77,11 +78,17 @@ def test_rmgr_base_completed_states():
 @given(t=st.text(), i=st.integers())
 def test_rmgr_base_validate_resource_desc(t, i):
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(MissingError):
         rmgr._validate_resource_desc()
 
     sid = 'test.0000'
+
+    res_dict = {
+            'resource': 'local.localhost',
+            'walltime': 30,
+            'cpus': 20,
+        }
 
     with pytest.raises(TypeError):
 
@@ -90,7 +97,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': t,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -100,7 +107,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': t,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -110,7 +117,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'walltime': i,
             'cpus': t,
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -121,7 +128,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'cpus': i,
             'gpus': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -133,7 +140,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'gpus': i,
             'project': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -146,7 +153,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'project': t,
             'access_schema': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     with pytest.raises(TypeError):
@@ -160,7 +167,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'access_schema': t,
             'queue': i
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
     if isinstance(t, str):
@@ -173,8 +180,11 @@ def test_rmgr_base_validate_resource_desc(t, i):
             'access_schema': t,
             'queue': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         assert rm._validate_resource_desc()
+
+
+
 
 
 @given(t=st.text(), i=st.integers())
@@ -190,7 +200,7 @@ def test_rmgr_base_populate(t, i):
             'access_schema': t,
             'queue': t
         }
-        rm = BaseRmgr(res_dict, sid=sid, rts=None)
+        rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
 
         with pytest.raises(EnTKError):
             rm._populate()
@@ -209,7 +219,7 @@ def test_rmgr_base_populate(t, i):
                     'access_schema': 'gsissh'
     }
 
-    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None)
+    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None, rts_config={})
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -225,20 +235,20 @@ def test_rmgr_base_populate(t, i):
 
 def test_rmgr_base_submit_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr._submit_resource_request()
 
 
 def test_rmgr_base_terminate_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None)
+    rmgr = BaseRmgr({}, 'test.0000', None, {})
     with pytest.raises(NotImplementedError):
         rmgr._terminate_resource_request()
 
 
 @given(d=st.dictionaries(st.text(), st.text()))
-def test_rmgr_dummy_initialization(d):
+def test_rmgr_mock_initialization(d):
 
     try:
         import glob
@@ -251,11 +261,11 @@ def test_rmgr_dummy_initialization(d):
     except:
         pass
 
-    rmgr = DummyRmgr(resource_desc=d, sid='test.0000')
+    rmgr = MockRmgr(resource_desc=d, sid='test.0000')
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == 'test.0000'
-    assert rmgr._rts == 'dummy'
+    assert rmgr._rts == 'mock'
     assert rmgr._resource == None
     assert rmgr._walltime == None
     assert rmgr._cpus == 1
@@ -273,9 +283,9 @@ def test_rmgr_dummy_initialization(d):
     assert isinstance(rmgr.shared_data, list)
 
 
-def test_rmgr_dummy_methods():
-    
-    rmgr = DummyRmgr(resource_desc={}, sid='test.0000')
+def test_rmgr_mock_methods():
+
+    rmgr = MockRmgr(resource_desc={}, sid='test.0000')
 
     assert not rmgr.get_resource_allocation_state()
     assert not rmgr.get_completed_states()
@@ -287,13 +297,18 @@ def test_rmgr_dummy_methods():
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_rp_initialization(d):
-    
+
+    with pytest.raises(ValueError):
+        rmgr = RPRmgr(d, 'test.0000', config={})
+
     env_var = os.environ.get('RADICAL_PILOT_DBURL', None)
     if env_var:
         del os.environ['RADICAL_PILOT_DBURL']
 
+    config={ "sandbox_cleanup": False,"db_cleanup": False}
     with pytest.raises(EnTKError):
-        rmgr = RPRmgr(d, 'test.0000')
+        rmgr = RPRmgr(d, 'test.0000', config)
+
 
 
     try:
@@ -308,11 +323,12 @@ def test_rmgr_rp_initialization(d):
 
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    rmgr = RPRmgr(d, 'test.0000')    
+    rmgr = RPRmgr(d, 'test.0000', config)
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == 'test.0000'
     assert rmgr._rts == 'radical.pilot'
+    assert rmgr._rts_config == config
     assert rmgr._resource == None
     assert rmgr._walltime == None
     assert rmgr._cpus == 1
@@ -338,7 +354,7 @@ def test_rmgr_rp_initialization(d):
 
 def test_rmgr_rp_resource_request():
     """
-    ***Purpose***: Test the submission and cancelation of a resource request. Check states that pilot starts and 
+    ***Purpose***: Test the submission and cancelation of a resource request. Check states that pilot starts and
     ends with.
     """
 
@@ -352,7 +368,8 @@ def test_rmgr_rp_resource_request():
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    rmgr = RPRmgr(res_dict, sid='test.0000')
+    config={ "sandbox_cleanup": False,"db_cleanup": False}
+    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -371,7 +388,7 @@ def test_rmgr_rp_resource_request():
 
 
 def test_rmgr_rp_get_resource_allocation_state():
-    
+
     res_dict = {
         'resource': 'local.localhost',
                     'walltime': 40,
@@ -381,8 +398,9 @@ def test_rmgr_rp_get_resource_allocation_state():
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
-    rmgr = RPRmgr(res_dict, sid='test.0000')
-    
+    config={ "sandbox_cleanup": False,"db_cleanup": False}
+    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
+
     assert not rmgr.get_resource_allocation_state()
 
     rmgr._validate_resource_desc()
@@ -394,9 +412,10 @@ def test_rmgr_rp_get_resource_allocation_state():
 
 
 def test_rmgr_rp_completed_states():
-    
+
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    rmgr = RPRmgr({}, sid='test.0000')
+    config={ "sandbox_cleanup": False,"db_cleanup": False}
+    rmgr = RPRmgr({}, sid='test.0000', config=config)
 
     import radical.pilot as rp
     assert rmgr.get_completed_states() == [rp.CANCELED, rp.FAILED, rp.DONE]

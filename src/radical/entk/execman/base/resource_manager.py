@@ -11,22 +11,22 @@ import os
 class Base_ResourceManager(object):
 
     """
-    A resource manager takes the responsibility of placing resource requests on 
-    different, possibly multiple, DCIs. 
+    A resource manager takes the responsibility of placing resource requests on
+    different, possibly multiple, DCIs.
 
-    :arguments: 
-        :resource_desc: dictionary with details of the resource request + access credentials of the user 
-        :example: resource_desc = { 
-                                    |  'resource'      : 'xsede.stampede', 
-                                    |  'walltime'      : 120, 
-                                    |  'cpus'         : 64, 
+    :arguments:
+        :resource_desc: dictionary with details of the resource request + access credentials of the user
+        :example: resource_desc = {
+                                    |  'resource'      : 'xsede.stampede',
+                                    |  'walltime'      : 120,
+                                    |  'cpus'         : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
                                     |  'access_schema' : 'ssh'  # optional
                                 }
     """
 
-    def __init__(self, resource_desc, sid, rts):
+    def __init__(self, resource_desc, sid, rts, rts_config):
 
         if not isinstance(resource_desc, dict):
             raise TypeError(expected_type=dict, actual_type=type(resource_desc))
@@ -34,6 +34,7 @@ class Base_ResourceManager(object):
         self._resource_desc = resource_desc
         self._sid = sid
         self._rts = rts
+        self._rts_config = rts_config
 
         # Resource reservation related parameters
         self._resource = None
@@ -50,7 +51,8 @@ class Base_ResourceManager(object):
                                    ru.ID_CUSTOM,
                                    namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
+        self._logger = ru.Logger('radical.entk.%s' %
+                                 self._uid, path=self._path, targets=['2', '.'])
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=self._path)
 
         # Shared data list
@@ -94,7 +96,7 @@ class Base_ResourceManager(object):
     @property
     def access_schema(self):
         """
-        :getter:    Return user specified access schema -- 'ssh' or 'gsissh' or 
+        :getter:    Return user specified access schema -- 'ssh' or 'gsissh' or
                     None
         """
         return self._access_schema
@@ -109,7 +111,7 @@ class Base_ResourceManager(object):
     @property
     def shared_data(self):
         """
-        :getter:    list of files to be staged to remote and that are common to 
+        :getter:    list of files to be staged to remote and that are common to
                     multiple tasks
         """
         return self._shared_data
@@ -182,6 +184,9 @@ class Base_ResourceManager(object):
         if 'queue' in self._resource_desc:
             if not isinstance(self._resource_desc['queue'], str):
                 raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
+
+        if not isinstance(self._rts_config, dict):
+            raise TypeError(expected_type=dict, actual_type=type(self._rts_config))
 
         self._validated = True
 

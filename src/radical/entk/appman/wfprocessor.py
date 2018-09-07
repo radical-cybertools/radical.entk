@@ -27,12 +27,12 @@ class WFprocessor(object):
 
     :Arguments:
         :sid: (str) session id to be used by the profiler and loggers
-        :workflow: (set) COPY of the entire workflow existing in the AppManager 
+        :workflow: (set) COPY of the entire workflow existing in the AppManager
         :pending_queue: (list) queues to hold pending tasks
         :completed_queue: (list) queues to hold completed tasks
         :mq_hostname: (str) hostname where the RabbitMQ is alive
         :port: (int) port at which RabbitMQ can be accessed
-        :resubmit_failed: (bool) True if failed tasks need to be resubmitted automatically 
+        :resubmit_failed: (bool) True if failed tasks need to be resubmitted automatically
     """
 
     def __init__(self,
@@ -58,7 +58,8 @@ class WFprocessor(object):
         # Create logger and profiler at their specific locations using the sid
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
+        self._logger = ru.Logger('radical.entk.%s' %
+                                 self._uid, path=self._path, targets=['2', '.'])
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
@@ -101,7 +102,7 @@ class WFprocessor(object):
 
     def _enqueue(self, local_prof):
         """
-        **Purpose**: This is the function that is run in the enqueue thread. This function extracts Tasks from the 
+        **Purpose**: This is the function that is run in the enqueue thread. This function extracts Tasks from the
         copy of workflow that exists in the WFprocessor object and pushes them to the queues in the pending_q list.
         Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
         communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
@@ -123,7 +124,7 @@ class WFprocessor(object):
             while not self._enqueue_thread_terminate.is_set():
 
                 '''
-                We iterate through all pipelines to collect tasks from 
+                We iterate through all pipelines to collect tasks from
                 stages that are pending scheduling. Once collected, these tasks
                 will be communicated to the tmgr in bulk.
                 '''
@@ -265,7 +266,7 @@ class WFprocessor(object):
 
     def _dequeue(self, local_prof):
         """
-        **Purpose**: This is the function that is run in the dequeue thread. This function extracts Tasks from the 
+        **Purpose**: This is the function that is run in the dequeue thread. This function extracts Tasks from the
         completed queus and updates the copy of workflow that exists in the WFprocessor object.
         Since this thread works on the copy of the workflow, every state update to the Task, Stage and Pipeline is
         communicated back to the AppManager (master process) via the 'sync_with_master' function that has dedicated
@@ -597,15 +598,14 @@ class WFprocessor(object):
 
     def terminate_processor(self):
         """
-        **Purpose**: Method to terminate the wfp process. This method is 
+        **Purpose**: Method to terminate the wfp process. This method is
         blocking as it waits for the wfp process to terminate (aka join).
         """
 
         try:
 
-            self._logger.debug('Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
-
             if self.check_processor():
+                self._logger.debug('Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
                 self._wfp_terminate.set()
                 self._wfp_process.join()
                 self._wfp_process = None

@@ -5,7 +5,7 @@ import os
 # Set default verbosity
 
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
-    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+    os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 # Description of how the RabbitMQ process is accessible
 # No need to change/set any variables if you installed RabbitMQ has a system

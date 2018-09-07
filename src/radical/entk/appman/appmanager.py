@@ -35,8 +35,9 @@ class AppManager(object):
         :resubmit_failed: resubmit failed tasks (True/False)
         :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
         :write_workflow: write workflow and mapping to rts entities to a file (post-termination)
-        :rts: Specify RTS to use. Current options: 'dummy', 'radical.pilot' (default if unspecified)
+        :rts: Specify RTS to use. Current options: 'mock', 'radical.pilot' (default if unspecified)
         :rmq_cleanup: Cleanup all queues created in RabbitMQ server for current execution (default is True)
+        :rts_config: Configuration for the RTS, accepts {"sandbox_cleanup": True/False,"db_cleanup": True/False} when RTS is RP
     """
 
     def __init__(self,
@@ -48,19 +49,20 @@ class AppManager(object):
                  autoterminate=None,
                  write_workflow=None,
                  rts=None,
-                 rmq_cleanup=None):
+                 rmq_cleanup=None,
+                 rts_config=None):
 
         # Create a session for each EnTK script execution
         self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
-                          rts, rmq_cleanup)
+                          rts, rmq_cleanup, rts_config)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         path = os.getcwd() + '/' + self._sid
         self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path, targets=['2','.'])
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -90,7 +92,7 @@ class AppManager(object):
 
     def _read_config(self, config_path, hostname, port, reattempts,
                      resubmit_failed, autoterminate, write_workflow,
-                     rts, rmq_cleanup):
+                     rts, rmq_cleanup, rts_config):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -103,8 +105,9 @@ class AppManager(object):
         self._resubmit_failed = resubmit_failed if resubmit_failed is not None else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate is not None else config['autoterminate']
         self._write_workflow = write_workflow if write_workflow is not None else config['write_workflow']
-        self._rts = rts if rts in ['radical.pilot', 'dummy'] else str(config['rts'])
+        self._rts = rts if rts in ['radical.pilot', 'mock'] else str(config['rts'])
         self._rmq_cleanup = rmq_cleanup if rmq_cleanup is not None else config['rmq_cleanup']
+        self._rts_config = rts_config if rts_config is not None else config['rts_config']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -181,12 +184,13 @@ class AppManager(object):
 
         if self._rts == 'radical.pilot':
             from radical.entk.execman.rp import ResourceManager
-        elif self._rts == 'dummy':
-            from radical.entk.execman.dummy import ResourceManager
-
-        self._report.info('Validating and assigning resource manager')
-        self._resource_manager = ResourceManager(resource_desc=value,
-                                                 sid=self._sid)
+            self._resource_manager = ResourceManager(resource_desc=value,
+                                                     sid=self._sid,
+                                                     config=self._rts_config)
+        elif self._rts == 'mock':
+            from radical.entk.execman.mock import ResourceManager
+            self._resource_manager = ResourceManager(resource_desc=value,
+                                                     sid=self._sid)
 
         self._report.info('Validating and assigning resource manager')
 
@@ -317,8 +321,8 @@ class AppManager(object):
             # Create tmgr object only if it does not already exist
             if self._rts == 'radical.pilot':
                 from radical.entk.execman.rp import TaskManager
-            elif self._rts == 'dummy':
-                from radical.entk.execman.dummy import TaskManager
+            elif self._rts == 'mock':
+                from radical.entk.execman.mock import TaskManager
 
             if not self._task_manager:
                 self._prof.prof('creating tmgr obj', uid=self._uid)
