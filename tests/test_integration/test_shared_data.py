@@ -12,7 +12,7 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 
 def generate_pipeline():

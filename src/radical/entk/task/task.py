@@ -6,13 +6,13 @@ from radical.entk import states
 class Task(object):
 
     """
-    A Task is an abstraction of a computational unit. In this case, a Task 
-    consists of its executable along with its required software environment, 
+    A Task is an abstraction of a computational unit. In this case, a Task
+    consists of its executable along with its required software environment,
     files to be staged as input and output.
 
-    At the user level a Task is to be populated by assigning attributes. 
+    At the user level a Task is to be populated by assigning attributes.
     Internally, an empty Task is created and population using the `from_dict`
-    function. This is to avoid creating Tasks with new `uid` as tasks with new 
+    function. This is to avoid creating Tasks with new `uid` as tasks with new
     `uid` offset the uid count file in radical.utils and can potentially affect
     the profiling if not taken care.
     """
@@ -115,7 +115,7 @@ class Task(object):
         A unix-based kernel to be executed
 
         :getter: returns the executable of the current task
-        :setter: assigns the executable for the current task    
+        :setter: assigns the executable for the current task
         :arguments: string
         """
         return self._executable
@@ -146,12 +146,12 @@ class Task(object):
     @property
     def cpu_reqs(self):
         """
-        **Purpose:** The CPU requirements of the current Task. 
+        **Purpose:** The CPU requirements of the current Task.
 
-        The requirements are described in terms of the number of processes and threads to 
+        The requirements are described in terms of the number of processes and threads to
         be run in this Task. The expected format is:
 
-        task.cpu_reqs = {   
+        task.cpu_reqs = {
                             |  'processes': X,
                             |  'process_type': None/MPI,
                             |  'threads_per_process': Y,
@@ -160,13 +160,13 @@ class Task(object):
 
         This description means that the Task is going to spawn X processes and Y threads
         per each of these processes to run on CPUs. Hence, the total number of cpus required by the
-        Task is X*Y for all the processes and threads to execute concurrently. The 
+        Task is X*Y for all the processes and threads to execute concurrently. The
         same assumption is made in implementation and X*Y cpus are requested for this
         Task.
 
         The default value is:
 
-        task.cpu_reqs = {   
+        task.cpu_reqs = {
                             |  'processes': 1,
                             |  'process_type': None,
                             |  'threads_per_process': 1,
@@ -189,28 +189,28 @@ class Task(object):
         """
         **Purpose:** The GPU requirements of the current Task.
 
-        The requirements are described in terms of the number of processes and threads to 
+        The requirements are described in terms of the number of processes and threads to
         be run in this Task. The expected format is:
 
-        task.gpu_reqs = {   
-                            |  'processes': X, 
+        task.gpu_reqs = {
+                            |  'processes': X,
                             |  'process_type': None/MPI,
-                            |  'threads_per_process': Y, 
+                            |  'threads_per_process': Y,
                             |  'thread_type': None/OpenMP
                         }
 
         This description means that the Task is going to spawn X processes and Y threads
         per each of these processes to run on GPUs. Hence, the total number of gpus required by the
-        Task is X*Y for all the processes and threads to execute concurrently. The 
+        Task is X*Y for all the processes and threads to execute concurrently. The
         same assumption is made in implementation and X*Y gpus are requested for this
         Task.
 
         The default value is:
 
-        task.gpu_reqs = {   
-                            |  'processes': 0, 
-                            |  'process_type': None,       
-                            |  'threads_per_process': 0, 
+        task.gpu_reqs = {
+                            |  'processes': 0,
+                            |  'process_type': None,
+                            |  'threads_per_process': 0,
                             |  'thread_type': None
                         }
 
@@ -247,7 +247,7 @@ class Task(object):
     @property
     def copy_input_data(self):
         """
-        List of files to be copied from a location on the remote machine to the location of 
+        List of files to be copied from a location on the remote machine to the location of
         current task on the remote machine
 
         :getter: return the list of files
@@ -260,7 +260,7 @@ class Task(object):
     @property
     def link_input_data(self):
         """
-        List of files to be linked from a location on the remote machine to the location of 
+        List of files to be linked from a location on the remote machine to the location of
         current task on the remote machine
 
         :getter: return the list of files
@@ -584,17 +584,17 @@ class Task(object):
 
     @parent_stage.setter
     def parent_stage(self, val):
-        if isinstance(val, str):
+        if isinstance(val, dict):
             self._p_stage = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(val))
 
     @parent_pipeline.setter
     def parent_pipeline(self, val):
-        if isinstance(val, str):
+        if isinstance(val, dict):
             self._p_pipeline = val
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(val))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -805,8 +805,8 @@ class Task(object):
 
     def _validate(self):
         """
-        Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the 
-        task. 
+        Purpose: Validate that the state of the task is 'DESCRIBED' and that an executable has been specified for the
+        task.
         """
 
         if self._state is not states.INITIAL:
