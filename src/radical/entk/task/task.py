@@ -39,6 +39,7 @@ class Task(object):
                           'threads_per_process': 0,
                           'thread_type': None
                           }
+        self._lfs_per_process = 0
 
         # Data staging attributes
         self._upload_input_data = list()
@@ -49,7 +50,7 @@ class Task(object):
 
         self._path = None
         self._exit_code = None
-        self._rts_uid = None
+        self._tag = None
 
         # Keep track of states attained
         self._state_history = [states.INITIAL]
@@ -224,6 +225,13 @@ class Task(object):
         return self._gpu_reqs
 
     @property
+    def lfs_per_process(self):
+        """
+        Set the amount of local file-storage space required by the task
+        """
+        return self._lfs_per_process
+
+    @property
     def upload_input_data(self):
         """
         List of files to be transferred from local machine to the location of the current task
@@ -308,14 +316,14 @@ class Task(object):
         return self._path
 
     @property
-    def rts_uid(self):
+    def tag(self):
         """
-        Get the uid of the rts-specific object that the task is converted to
+        Set the tag for the task that can be used while scheduling by the RTS
 
-        :getter: return the uid of the rts-specific task object
+        :getter: return the tag of the current task
         """
 
-        return self._rts_uid
+        return self._tag
 
     @property
     def parent_stage(self):
@@ -359,7 +367,8 @@ class Task(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError("Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
+                raise Error(
+                    "Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -413,12 +422,13 @@ class Task(object):
     def cpu_reqs(self, val):
         if isinstance(val, dict):
 
-            expected_keys = set(['processes', 'threads_per_process', 'process_type', 'thread_type'])
+            expected_keys = set(
+                ['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
-                    self._cpu_reqs['processes'] = val.get('processes',1)
+                    self._cpu_reqs['processes'] = val.get('processes', 1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(val.get('processes')),
@@ -435,10 +445,12 @@ class Task(object):
                                      )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._cpu_reqs['threads_per_process'] = val.get('threads_per_process',1)
+                    self._cpu_reqs['threads_per_process'] = val.get(
+                        'threads_per_process', 1)
                 else:
                     raise TypeError(expected_type=int,
-                                    actual_type=type(val.get('threads_per_process')),
+                                    actual_type=type(
+                                        val.get('threads_per_process')),
                                     entity='threads_per_process'
                                     )
 
@@ -452,18 +464,20 @@ class Task(object):
                                      )
 
             else:
-                raise MissingError(obj='cpu_reqs', missing_attribute=expected_keys - set(val.keys()))
+                raise MissingError(
+                    obj='cpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
     @gpu_reqs.setter
     def gpu_reqs(self, val):
         if isinstance(val, dict):
 
-            expected_keys = set(['processes', 'threads_per_process', 'process_type', 'thread_type'])
+            expected_keys = set(
+                ['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
             if set(val.keys()) <= expected_keys:
 
                 if type(val.get('processes')) in [type(None), int]:
-                    self._gpu_reqs['processes'] = val.get('processes',1)
+                    self._gpu_reqs['processes'] = val.get('processes', 1)
                 else:
                     raise TypeError(expected_type=dict,
                                     actual_type=type(val.get('processes')),
@@ -480,10 +494,12 @@ class Task(object):
                                      )
 
                 if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._gpu_reqs['threads_per_process'] = val.get('threads_per_process',1)
+                    self._gpu_reqs['threads_per_process'] = val.get(
+                        'threads_per_process', 1)
                 else:
                     raise TypeError(expected_type=int,
-                                    actual_type=type(val.get('threads_per_process')),
+                                    actual_type=type(
+                                        val.get('threads_per_process')),
                                     entity='threads_per_process'
                                     )
 
@@ -497,8 +513,15 @@ class Task(object):
                                      )
 
             else:
-                raise MissingError(obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
+                raise MissingError(
+                    obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
 
+    @lfs_per_process.setter
+    def lfs_per_process(self, val):
+        if isinstance(val, int):
+            self._lfs_per_process = val
+        else:
+            raise TypeError(expected_type=int, actual_value=type(val))
 
     @upload_input_data.setter
     def upload_input_data(self, val):
@@ -540,35 +563,38 @@ class Task(object):
         if isinstance(val, int):
             self._exit_code = val
         else:
-            raise TypeError(entity='exit_code', expected_type=int, actual_type=type(val))
+            raise TypeError(entity='exit_code',
+                            expected_type=int, actual_type=type(val))
 
     @path.setter
     def path(self, val):
         if isinstance(val, str):
             self._path = val
         else:
-            raise TypeError(entity='path', expected_type=str, actual_type=type(val))
+            raise TypeError(entity='path', expected_type=str,
+                            actual_type=type(val))
 
-    @rts_uid.setter
-    def rts_uid(self, val):
+    @tag.setter
+    def tag(self, val):
         if isinstance(val, str):
-            self._rts_uid = val
+            self._tag = val
         else:
-            raise TypeError(entity='rts_uid', expected_type=str, actual_type=type(val))            
+            raise TypeError(entity='tag', expected_type=str,
+                            actual_type=type(val))
 
     @parent_stage.setter
     def parent_stage(self, val):
-        if isinstance(val, dict):
+        if isinstance(val, str):
             self._p_stage = val
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     @parent_pipeline.setter
     def parent_pipeline(self, val):
-        if isinstance(val, dict):
+        if isinstance(val, str):
             self._p_pipeline = val
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(val))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -593,6 +619,7 @@ class Task(object):
             'post_exec': self._post_exec,
             'cpu_reqs': self._cpu_reqs,
             'gpu_reqs': self._gpu_reqs,
+            'lfs_per_process': self._lfs_per_process,
 
             'upload_input_data': self._upload_input_data,
             'copy_input_data': self._copy_input_data,
@@ -602,6 +629,7 @@ class Task(object):
 
             'exit_code': self._exit_code,
             'path': self._path,
+            'tag': self._tag,
 
             'parent_stage': self._p_stage,
             'parent_pipeline': self._p_pipeline,
@@ -629,7 +657,8 @@ class Task(object):
             if isinstance(d['state'], str) or isinstance(d['state'], unicode):
                 self._state = d['state']
             else:
-                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+                raise TypeError(entity='state', expected_type=str,
+                                actual_type=type(d['state']))
         else:
             self._state = states.INITIAL
 
@@ -637,99 +666,131 @@ class Task(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+                raise TypeError(entity='state_history', expected_type=list, actual_type=type(
+                    d['state_history']))
 
         if 'pre_exec' in d:
             if isinstance(d['pre_exec'], list):
                 self._pre_exec = d['pre_exec']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['pre_exec']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
             if isinstance(d['executable'], list):
                 self._executable = d['executable']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['executable']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['executable']))
 
         if 'arguments' in d:
             if isinstance(d['arguments'], list):
                 self._arguments = d['arguments']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['arguments']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['arguments']))
 
         if 'post_exec' in d:
             if isinstance(d['post_exec'], list):
                 self._post_exec = d['post_exec']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['post_exec']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['post_exec']))
 
         if 'cpu_reqs' in d:
             if isinstance(d['cpu_reqs'], dict):
                 self._cpu_reqs = d['cpu_reqs']
             else:
-                raise TypeError(expected_type=dict, actual_type=type(d['cpu_reqs']))
+                raise TypeError(expected_type=dict,
+                                actual_type=type(d['cpu_reqs']))
 
         if 'gpu_reqs' in d:
             if isinstance(d['gpu_reqs'], dict):
                 self._gpu_reqs = d['gpu_reqs']
             else:
-                raise TypeError(expected_type=dict, actual_type=type(d['gpu_reqs']))
+                raise TypeError(expected_type=dict,
+                                actual_type=type(d['gpu_reqs']))
+
+        if 'lfs_per_process' in d:
+            if d['lfs_per_process']:
+                if isinstance(d['lfs_per_process'], int):
+                    self._lfs_per_process = d['lfs_per_process']
+                else:
+                    raise TypeError(expected_type=int,
+                                    actual_type=type(d['lfs_per_process']))
 
         if 'upload_input_data' in d:
             if isinstance(d['upload_input_data'], list):
                 self._upload_input_data = d['upload_input_data']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['upload_input_data']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['upload_input_data']))
 
         if 'copy_input_data' in d:
             if isinstance(d['copy_input_data'], list):
                 self._copy_input_data = d['copy_input_data']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['copy_input_data']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['copy_input_data']))
 
         if 'link_input_data' in d:
             if isinstance(d['link_input_data'], list):
                 self._link_input_data = d['link_input_data']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['link_input_data']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['link_input_data']))
 
         if 'copy_output_data' in d:
             if isinstance(d['copy_output_data'], list):
                 self._copy_output_data = d['copy_output_data']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['copy_output_data']))
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['copy_output_data']))
 
         if 'download_output_data' in d:
             if isinstance(d['download_output_data'], list):
                 self._download_output_data = d['download_output_data']
             else:
-                raise TypeError(expected_type=list, actual_type=type(d['download_output_data']))
+                raise TypeError(expected_type=list, actual_type=type(
+                    d['download_output_data']))
 
         if 'exit_code' in d:
             if d['exit_code']:
                 if isinstance(d['exit_code'], int):
                     self._exit_code = d['exit_code']
                 else:
-                    raise TypeError(entity='exit_code', expected_type=int, actual_type=type(d['exit_code']))
+                    raise TypeError(
+                        entity='exit_code', expected_type=int, actual_type=type(d['exit_code']))
 
         if 'path' in d:
             if d['path']:
                 if isinstance(d['path'], str) or isinstance(d['path'], unicode):
                     self._path = d['path']
                 else:
-                    raise TypeError(entity='path', expected_type=str, actual_type=type(d['path']))
+                    raise TypeError(entity='path', expected_type=str,
+                                    actual_type=type(d['path']))
+
+        if 'tag' in d:
+            if d['tag']:
+                if isinstance(d['tag'], str) or isinstance(d['tag'], unicode):
+                    self._tag = str(d['tag'])
+                else:
+                    raise TypeError(expected_type=str,
+                                    actual_type=type(d['tag']))
 
         if 'parent_stage' in d:
             if isinstance(d['parent_stage'], dict):
                 self._p_stage = d['parent_stage']
             else:
-                raise TypeError(entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
+                raise TypeError(
+                    entity='parent_stage', expected_type=dict, actual_type=type(d['parent_stage']))
 
         if 'parent_pipeline' in d:
             if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
+                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(
+                    d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -739,7 +800,8 @@ class Task(object):
         """
         Purpose: Assign a uid to the current object based on the sid passed
         """
-        self._uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id(
+            'task.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
 
     def _validate(self):
         """

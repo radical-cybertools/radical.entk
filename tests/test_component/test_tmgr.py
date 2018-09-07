@@ -19,7 +19,8 @@ import json
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+# MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 @given(s=st.text(),
        l=st.lists(st.characters()),

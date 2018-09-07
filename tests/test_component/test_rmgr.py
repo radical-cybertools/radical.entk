@@ -7,7 +7,8 @@ from hypothesis import given
 import hypothesis.strategies as st
 import os
 
-MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+# MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_base_initialization(d):

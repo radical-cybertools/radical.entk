@@ -8,7 +8,8 @@ import shutil
 import glob
 import radical.utils as ru
 
-MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+# MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
+MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def test_input_list_from_task():
     """
