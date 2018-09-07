@@ -4,8 +4,8 @@ import os, sys
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
-if not os.environ.get('RADICAL_ENTK_VERBOSE'):
-    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+    os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
 CUR_NEW_STAGE=0

@@ -35,13 +35,13 @@ and checkout the branch. You can do so using the following commands:
 
 
 
-You can check the version of Ensemble MD Toolkit with the ```entk-version``` 
+You can check the version of Ensemble MD Toolkit with the ```entk-version```
 command-line tool. The current version should be printed.
 
 .. code-block:: bash
 
         entk-version
-        0.7.0
+        0.7.5
 
 
 Installing rabbitmq
@@ -50,13 +50,13 @@ Installing rabbitmq
 Installing rabbitmq as a system process (sudo privileges required)
 ------------------------------------------------------------------
 
-Ensemble toolkit relies on RabbitMQ for message transfers. Installation 
-instructions can be found at ```https://www.rabbitmq.com/download.html```. At 
-the end of the installation run ```rabbitmq-server``` to start the server. 
+Ensemble toolkit relies on RabbitMQ for message transfers. Installation
+instructions can be found at ```https://www.rabbitmq.com/download.html```. At
+the end of the installation run ```rabbitmq-server``` to start the server.
 RabbitMQ needs to be installed on the same machine as where EnTK is installed.
 
-In some cases, you might have to explicitly start the rabbitmq-server after 
-installation. You can check if the rabbitmq-server process is alive. If not, 
+In some cases, you might have to explicitly start the rabbitmq-server after
+installation. You can check if the rabbitmq-server process is alive. If not,
 please run the following:
 
 .. code-block:: bash
@@ -67,15 +67,15 @@ please run the following:
 Installing rabbitmq using docker
 --------------------------------
 
-If installing rabbitmq directly seems to be cumbersome, you can also install a 
-docker instance of rabbitmq. Assuming you have docker installed, you can 
+If installing rabbitmq directly seems to be cumbersome, you can also install a
+docker instance of rabbitmq. Assuming you have docker installed, you can
 download and run the rabbitmq instance using the following command:
 
 .. code-block:: bash
 
         docker run -d --name <name of instance> -P rabbitmq:3
 
-The '-P' argument auto maps new ports from localhost to the ports expected by 
+The '-P' argument auto maps new ports from localhost to the ports expected by
 rabbitmq. This is useful if you want to have multiple EnTK scripts running as
 you would require multiple rabbitmq instances.
 
@@ -90,7 +90,7 @@ You can see the mapping of the ports running ```docker ps```.
         fb8ee8bfd822        rabbitmq:3          "docker-entrypoint..."   9 seconds ago       Up 7 seconds        0.0.0.0:32777->4369/tcp, 0.0.0.0:32776->5671/tcp, 0.0.0.0:32775->5672/tcp, 0.0.0.0:32774->25672/tcp   rabbit-1
 
 
-Interactions between RabbitMQ and EnTK are done through port 5672 by default. 
+Interactions between RabbitMQ and EnTK are done through port 5672 by default.
 For the above docker instance, we need to use port 32775. In your EnTK scripts,
 while creating the AppManager, you need to specify port=32775.
 
@@ -101,15 +101,15 @@ Installation Video
 
 .. raw:: html
 
-        <video controls width="850" src="_static/entk_installation_get_started.mp4"></video> 
+        <video controls width="800" src="_static/entk_installation_get_started.mp4"></video>
 
 
 Preparing the Environment
 =========================
 
-Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as 
-the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH and 
-GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up 
+Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as
+the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH and
+GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up
 passwordless SSH/GSISSH environment.
 
 
@@ -168,7 +168,7 @@ and paste the public key into the `authorizes_users` list on the remote machine.
 `This <http://linuxproblem.org/art_9.html>`_ is a recommended tutorial to create password ssh access.
 
 An easy way to setup SSH access to multiple remote machines is to create a file ``~/.ssh/config``.
-Suppose the url used to access a specific machine is ``foo@machine.example.com``. You can create an entry in this 
+Suppose the url used to access a specific machine is ``foo@machine.example.com``. You can create an entry in this
 config file as follows:
 
 .. code-block:: bash
@@ -188,13 +188,13 @@ Setup GSISSH Access to a machine
 ---------------------------------
 
 Setting up GSISSH access to a machine is a bit more complicated. We have documented the steps to setup GSISSH on
-`Ubuntu <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_stampede_ubuntu_xenial.sh>`_ (tested for 
-trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute 
+`Ubuntu <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_stampede_ubuntu_xenial.sh>`_ (tested for
+trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute
 all the commands, see comments for details.
 
 The above links document the overall procedure and get certificates to access XSEDE machines. Depending on the machine
 you want to access, you will have to get the certificates from the corresponding locations. In most cases, this
-information is available in their user guide. 
+information is available in their user guide.
 
 
 Troubleshooting
