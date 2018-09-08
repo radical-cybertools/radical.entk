@@ -79,7 +79,7 @@ def test_rmgr_base_completed_states():
 @given(t=st.text(), i=st.integers())
 def test_rmgr_base_validate_resource_desc(t, i):
 
-    rmgr = BaseRmgr({}, 'test.0000', None, {})
+    rmgr = BaseRmgr({}, sid='test.0000', rts=None, rts_config={})
     with pytest.raises(MissingError):
         rmgr._validate_resource_desc()
 
@@ -183,9 +183,6 @@ def test_rmgr_base_validate_resource_desc(t, i):
         }
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         assert rm._validate_resource_desc()
-
-
-
 
 
 @given(t=st.text(), i=st.integers())
@@ -353,63 +350,7 @@ def test_rmgr_rp_initialization(d):
     assert rmgr._mlab_url
 
 
-def test_rmgr_rp_resource_request():
-    """
-    ***Purpose***: Test the submission and cancelation of a resource request. Check states that pilot starts and
-    ends with.
-    """
 
-    res_dict = {
-        'resource': 'local.localhost',
-                    'walltime': 40,
-                    'cpus': 1,
-                    'project': ''
-    }
-
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
-
-    config={ "sandbox_cleanup": False,"db_cleanup": False}
-    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
-    rmgr._validate_resource_desc()
-    rmgr._populate()
-
-    rmgr._submit_resource_request()
-
-    import radical.pilot as rp
-    assert rmgr.get_resource_allocation_state() == rp.PMGR_ACTIVE
-
-    rmgr._terminate_resource_request()
-
-    # State transition seems to be taking some time. So sleep
-    from time import sleep
-    sleep(30)
-
-    assert rmgr.get_resource_allocation_state() == rp.CANCELED or rm.pilot.state == rp.DONE
-
-
-def test_rmgr_rp_get_resource_allocation_state():
-
-    res_dict = {
-        'resource': 'local.localhost',
-                    'walltime': 40,
-                    'cpus': 1,
-                    'project': ''
-    }
-
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
-
-    config={ "sandbox_cleanup": False,"db_cleanup": False}
-    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
-
-    assert not rmgr.get_resource_allocation_state()
-
-    rmgr._validate_resource_desc()
-    rmgr._populate()
-    rmgr._submit_resource_request()
-
-    import radical.pilot as rp
-    assert rmgr.get_resource_allocation_state() in [rp.PMGR_ACTIVE, rp.FAILED]
 
 
 def test_rmgr_rp_completed_states():

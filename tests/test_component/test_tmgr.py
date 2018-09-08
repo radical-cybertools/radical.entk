@@ -426,37 +426,37 @@ def test_tmgr_rp_initialization(s, l, i):
     assert tmgr._hb_thread == None
 
 
-def test_tmgr_rp_tmgr():
+# def test_tmgr_rp_tmgr():
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    os.environ['ENTK_HB_INTERVAL'] = '30'
+#     os.environ['RADICAL_PILOT_DBURL'] = MLAB
+#     os.environ['ENTK_HB_INTERVAL'] = '30'
 
-    res_dict = {
-        'resource': 'local.localhost',
-                    'walltime': 40,
-                    'cpus': 20,
-    }
-    config={ "sandbox_cleanup": False,"db_cleanup": False}
-    rmgr = RPRmgr(resource_desc=res_dict, sid='test.0000', config=config)
-    rmgr._validate_resource_desc()
-    rmgr._populate()
-    rmgr._submit_resource_request()
+#     res_dict = {
+#         'resource': 'local.localhost',
+#                     'walltime': 40,
+#                     'cpus': 20,
+#     }
+#     config={ "sandbox_cleanup": False,"db_cleanup": False}
+#     rmgr = RPRmgr(resource_desc=res_dict, sid='test.0000', config=config)
+#     rmgr._validate_resource_desc()
+#     rmgr._populate()
+#     rmgr._submit_resource_request()
 
-    tmgr = RPTmgr(sid='test.0000',
-                     pending_queue=['pendingq-1'],
-                     completed_queue=['completedq-1'],
-                     rmgr=rmgr,
-                     mq_hostname=hostname,
-                     port=port)
+#     tmgr = RPTmgr(sid='test.0000',
+#                      pending_queue=['pendingq-1'],
+#                      completed_queue=['completedq-1'],
+#                      rmgr=rmgr,
+#                      mq_hostname=hostname,
+#                      port=port)
 
-    tmgr.start_manager()
+#     tmgr.start_manager()
 
-    proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
-                                                          port,
-                                                          tmgr._pending_queue[0],
-                                                          tmgr._completed_queue[0]))
-    proc.start()
+#     proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
+#                                                           port,
+#                                                           tmgr._pending_queue[0],
+#                                                           tmgr._completed_queue[0]))
+#     proc.start()
 
-    proc.join()
-    tmgr.terminate_manager()
-    rmgr._terminate_resource_request()
+#     proc.join()
+#     tmgr.terminate_manager()
+#     rmgr._terminate_resource_request()
