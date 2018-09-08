@@ -64,7 +64,7 @@ def test_write_session_description():
                                      port=amgr._port
                                      )
 
-    os.mkdir(amgr._sid)
+    # os.mkdir(amgr._sid)
 
     write_session_description(amgr)
 

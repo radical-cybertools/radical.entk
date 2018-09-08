@@ -27,12 +27,14 @@ def test_task_initialization():
     assert t.gpu_reqs['process_type'] == None
     assert t.gpu_reqs['threads_per_process'] == 0
     assert t.gpu_reqs['thread_type'] == None
+    assert t.lfs_per_process == 0
     assert t.upload_input_data == list()
     assert t.copy_input_data == list()
     assert t.link_input_data == list()
     assert t.copy_output_data == list()
     assert t.download_output_data == list()
     assert t.exit_code == None
+    assert t.tag == None
     assert t.path == None
     assert t.state_history == [states.INITIAL]
     assert t.parent_pipeline['uid'] == None
@@ -94,7 +96,7 @@ def test_task_exceptions(s,l,i,b):
                 t.copy_output_data = data
 
             with pytest.raises(TypeError):
-                t.download_output_data = data            
+                t.download_output_data = data
 
         if not isinstance(data, str) and not isinstance(data, unicode):
 
@@ -123,7 +125,7 @@ def test_task_exceptions(s,l,i,b):
                                 'threads_per_process': 1,
                                 'thread_type': data
                             }
-                
+
 
         if not isinstance(data, int):
 
@@ -171,16 +173,17 @@ def test_task_to_dict():
                     'executable': [],
                     'arguments': [],
                     'post_exec': [],
-                    'cpu_reqs': { 'processes': 1, 
-                                'process_type': None, 
-                                'threads_per_process': 1, 
+                    'cpu_reqs': { 'processes': 1,
+                                'process_type': None,
+                                'threads_per_process': 1,
                                 'thread_type': None
                                 },
-                    'gpu_reqs': { 'processes': 0, 
-                                'process_type': None, 
-                                'threads_per_process': 0, 
+                    'gpu_reqs': { 'processes': 0,
+                                'process_type': None,
+                                'threads_per_process': 0,
                                 'thread_type': None
                                 },
+                    'lfs_per_process': 0,
                     'upload_input_data': [],
                     'copy_input_data': [],
                     'link_input_data': [],
@@ -188,6 +191,7 @@ def test_task_to_dict():
                     'download_output_data': [],
                     'exit_code': None,
                     'path': None,
+                    'tag': None,
                     'parent_stage': {'uid':None, 'name': None},
                     'parent_pipeline': {'uid':None, 'name': None}}
 
@@ -202,6 +206,7 @@ def test_task_to_dict():
     t.cpu_reqs['threads_per_process'] = 2
     t.gpu_reqs['processes'] = 5
     t.gpu_reqs['threads_per_process'] = 3
+    t.lfs_per_process = 1024
     t.upload_input_data = ['test1']
     t.copy_input_data = ['test2']
     t.link_input_data = ['test3']
@@ -209,6 +214,7 @@ def test_task_to_dict():
     t.download_output_data = ['test5']
     t.exit_code = 1
     t.path = 'a/b/c'
+    t.tag = 'task.0010'
     t.parent_stage = {'uid': 's1', 'name': 'stage1'}
     t.parent_pipeline = {'uid': 'p1', 'name': 'pipeline1'}
 
@@ -222,16 +228,17 @@ def test_task_to_dict():
                     'executable': ['sleep'],
                     'arguments': ['10'],
                     'post_exec': [],
-                    'cpu_reqs': { 'processes': 10, 
-                                'process_type': None, 
-                                'threads_per_process': 2, 
+                    'cpu_reqs': { 'processes': 10,
+                                'process_type': None,
+                                'threads_per_process': 2,
                                 'thread_type': None
                                 },
-                    'gpu_reqs': { 'processes': 5, 
-                                'process_type': None, 
-                                'threads_per_process': 3, 
+                    'gpu_reqs': { 'processes': 5,
+                                'process_type': None,
+                                'threads_per_process': 3,
                                 'thread_type': None
                                 },
+                    'lfs_per_process': 1024,
                     'upload_input_data': ['test1'],
                     'copy_input_data': ['test2'],
                     'link_input_data': ['test3'],
@@ -239,6 +246,7 @@ def test_task_to_dict():
                     'download_output_data': ['test5'],
                     'exit_code': 1,
                     'path': 'a/b/c',
+                    'tag': 'task.0010',
                     'parent_stage': {'uid': 's1', 'name': 'stage1'},
                     'parent_pipeline': {'uid': 'p1', 'name': 'pipeline1'}}
 
@@ -258,16 +266,17 @@ def test_task_from_dict():
             'executable': [],
             'arguments': [],
             'post_exec': [],
-            'cpu_reqs': { 'processes': 1, 
-                        'process_type': None, 
-                        'threads_per_process': 1, 
+            'cpu_reqs': { 'processes': 1,
+                        'process_type': None,
+                        'threads_per_process': 1,
                         'thread_type': None
                         },
-            'gpu_reqs': { 'processes': 0, 
-                        'process_type': None, 
-                        'threads_per_process': 0, 
+            'gpu_reqs': { 'processes': 0,
+                        'process_type': None,
+                        'threads_per_process': 0,
                         'thread_type': None
                         },
+            'lfs_per_process': 1024,
             'upload_input_data': [],
             'copy_input_data': [],
             'link_input_data': [],
@@ -275,6 +284,7 @@ def test_task_from_dict():
             'download_output_data': [],
             'exit_code': 555,
             'path': 'here/it/is',
+            'tag': 'task.0010',
             'parent_stage': {'uid': 's1', 'name': 'stage1'},
             'parent_pipeline': {'uid': 'p1', 'name': 'pipe1'}}
 
@@ -285,25 +295,27 @@ def test_task_from_dict():
     assert t.name                  == d['name']
     assert t.state                 == d['state']
     assert t.state_history         == d['state_history']
-    assert t.pre_exec              == d['pre_exec']                
-    assert t.executable            == d['executable']              
-    assert t.arguments             == d['arguments']               
-    assert t.post_exec             == d['post_exec']  
-    assert t.cpu_reqs              == d['cpu_reqs']                
-    assert t.gpu_reqs              == d['gpu_reqs']                 
-    assert t.upload_input_data     == d['upload_input_data']       
-    assert t.copy_input_data       == d['copy_input_data']         
-    assert t.link_input_data       == d['link_input_data']         
-    assert t.copy_output_data      == d['copy_output_data']        
-    assert t.download_output_data  == d['download_output_data']    
-    assert t.exit_code             == d['exit_code']               
-    assert t.path                  == d['path']                    
-    assert t.parent_stage          == d['parent_stage']            
-    assert t.parent_pipeline       == d['parent_pipeline']         
+    assert t.pre_exec              == d['pre_exec']
+    assert t.executable            == d['executable']
+    assert t.arguments             == d['arguments']
+    assert t.post_exec             == d['post_exec']
+    assert t.cpu_reqs              == d['cpu_reqs']
+    assert t.gpu_reqs              == d['gpu_reqs']
+    assert t.lfs_per_process       == d['lfs_per_process']
+    assert t.upload_input_data     == d['upload_input_data']
+    assert t.copy_input_data       == d['copy_input_data']
+    assert t.link_input_data       == d['link_input_data']
+    assert t.copy_output_data      == d['copy_output_data']
+    assert t.download_output_data  == d['download_output_data']
+    assert t.exit_code             == d['exit_code']
+    assert t.path                  == d['path']
+    assert t.tag                   == d['tag']
+    assert t.parent_stage          == d['parent_stage']
+    assert t.parent_pipeline       == d['parent_pipeline']
 
 
 def test_task_assign_uid():
-    
+
     t = Task()
     try:
         import glob
@@ -320,7 +332,7 @@ def test_task_assign_uid():
 
 
 def test_task_validate():
-    
+
     t = Task()
     t._state = 'test'
     with pytest.raises(ValueError):
