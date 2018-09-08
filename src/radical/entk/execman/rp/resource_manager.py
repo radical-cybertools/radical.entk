@@ -123,7 +123,7 @@ class ResourceManager(Base_ResourceManager):
                 elif state == rp.DONE:
                     self._logger.error('Pilot has completed')
 
-            self._session = rp.Session(dburl=self._mlab_url)
+            self._session = rp.Session(dburl=self._mlab_url,uid=self._sid)
             self._pmgr = rp.PilotManager(session=self._session)
             self._pmgr.register_callback(_pilot_state_cb)
 

@@ -1,3 +1,4 @@
+import radical.utils as ru
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk.execman.mock import ResourceManager as MockRmgr
@@ -23,11 +24,11 @@ def test_rmgr_base_initialization(d):
             shutil.rmtree(f)
     except:
         pass
-
-    rmgr = BaseRmgr(d, 'test.0000', None, {})
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = BaseRmgr(d, rmgr_id, None)
 
     assert rmgr._resource_desc == d
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._rts == None
     assert rmgr._rts_config == {}
     assert rmgr.resource == None
@@ -217,11 +218,12 @@ def test_rmgr_base_populate(t, i):
                     'access_schema': 'gsissh'
     }
 
-    rmgr = BaseRmgr(res_dict, sid='test.0000', rts=None, rts_config={})
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = BaseRmgr(res_dict, sid=rmgr_id, rts=None)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._resource == 'local.localhost'
     assert rmgr._walltime == 40
     assert rmgr._cpus == 100
@@ -305,8 +307,8 @@ def test_rmgr_rp_initialization(d):
 
     config={ "sandbox_cleanup": False,"db_cleanup": False}
     with pytest.raises(EnTKError):
-        rmgr = RPRmgr(d, 'test.0000', config)
-
+        rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+        rmgr = RPRmgr(d, rmgr_id)
 
 
     try:
@@ -321,10 +323,11 @@ def test_rmgr_rp_initialization(d):
 
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    rmgr = RPRmgr(d, 'test.0000', config)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(d, rmgr_id)
 
     assert rmgr._resource_desc == d
-    assert rmgr._sid == 'test.0000'
+    assert rmgr._sid == rmgr_id
     assert rmgr._rts == 'radical.pilot'
     assert rmgr._rts_config == config
     assert rmgr._resource == None
@@ -348,7 +351,6 @@ def test_rmgr_rp_initialization(d):
     assert not rmgr.pilot
     assert rmgr._download_rp_profile == False
     assert rmgr._mlab_url
-
 
 
 

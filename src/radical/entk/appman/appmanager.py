@@ -38,6 +38,7 @@ class AppManager(object):
         :rts: Specify RTS to use. Current options: 'mock', 'radical.pilot' (default if unspecified)
         :rmq_cleanup: Cleanup all queues created in RabbitMQ server for current execution (default is True)
         :rts_config: Configuration for the RTS, accepts {"sandbox_cleanup": True/False,"db_cleanup": True/False} when RTS is RP
+        :name: Name of the Application. It should be unique between executions. (default is randomly assigned)
     """
 
     def __init__(self,
@@ -50,10 +51,17 @@ class AppManager(object):
                  write_workflow=None,
                  rts=None,
                  rmq_cleanup=None,
-                 rts_config=None):
+                 rts_config=None,
+                 name=None):
 
         # Create a session for each EnTK script execution
-        self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
+        if name:
+            self._name = name
+            self._sid = name
+        else:
+            self._name= str()
+            self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
+            
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
                           rts, rmq_cleanup, rts_config)
@@ -70,7 +78,6 @@ class AppManager(object):
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')
 
-        self._name = str()
         self._resource_manager = None
         # RabbitMQ Queues
         self._pending_queue = list()
@@ -119,7 +126,10 @@ class AppManager(object):
     @property
     def name(self):
         """
-        Name for the application manager
+        Name for the application manager. Allows the user to setup the name of 
+        the application manager, as well as, its session ID. This name should be
+        unique between different EnTK executions, otherwise it will produce an 
+        error.
 
         :getter: Returns the name of the application manager
         :setter: Assigns the name of the application manager
