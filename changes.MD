@@ -1,5 +1,11 @@
 # Changelog for each release
 
+## Changelog for 0.7.5
+
+* Issues as part of 0.7.5 milestone: https://github.com/radical-cybertools/radical.entk/milestone/9
+* Documentation improved with more examples
+* Bug fixes
+
 ## Changelog for 0.7.4
 
 * Bug fixes
