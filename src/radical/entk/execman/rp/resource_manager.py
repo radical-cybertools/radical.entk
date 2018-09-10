@@ -28,12 +28,12 @@ class ResourceManager(Base_ResourceManager):
                                 }
     """
 
-    def __init__(self, resource_desc, sid, config):
+    def __init__(self, resource_desc, sid, rts_config):
 
         super(ResourceManager, self).__init__(resource_desc=resource_desc,
                                               sid=sid,
                                               rts='radical.pilot',
-                                              rts_config=config)
+                                              rts_config=rts_config)
 
         # RP specific parameters
         self._session = None
@@ -123,7 +123,7 @@ class ResourceManager(Base_ResourceManager):
                 elif state == rp.DONE:
                     self._logger.error('Pilot has completed')
 
-            self._session = rp.Session(dburl=self._mlab_url,uid=self._sid)
+            self._session = rp.Session(dburl=self._mlab_url, uid=self._sid)
             self._pmgr = rp.PilotManager(session=self._session)
             self._pmgr.register_callback(_pilot_state_cb)
 

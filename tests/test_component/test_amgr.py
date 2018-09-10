@@ -241,7 +241,7 @@ def test_amgr_resource_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname='localhost',
+                                     mq_hostname=amgr._mq_hostname,
                                      rmgr=amgr._resource_manager,
                                      port=amgr._port
                                      )

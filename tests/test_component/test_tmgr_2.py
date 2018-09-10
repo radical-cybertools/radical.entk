@@ -16,6 +16,7 @@ import threading
 import pika
 from multiprocessing import Process, Event
 import json
+import radical.utils as ru
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
@@ -65,12 +66,13 @@ def test_tmgr_rp_tmgr():
                     'cpus': 20,
     }
     config={ "sandbox_cleanup": False,"db_cleanup": False}
-    rmgr = RPRmgr(resource_desc=res_dict, sid='test.0000', config=config)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
     rmgr._validate_resource_desc()
     rmgr._populate()
     rmgr._submit_resource_request()
 
-    tmgr = RPTmgr(sid='test.0000',
+    tmgr = RPTmgr(sid=rmgr_id,
                      pending_queue=['pendingq-1'],
                      completed_queue=['completedq-1'],
                      rmgr=rmgr,

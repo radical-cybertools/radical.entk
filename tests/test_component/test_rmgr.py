@@ -25,7 +25,7 @@ def test_rmgr_base_initialization(d):
     except:
         pass
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr = BaseRmgr(d, rmgr_id, None)
+    rmgr = BaseRmgr(d, rmgr_id, None, {})
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == rmgr_id
@@ -219,7 +219,7 @@ def test_rmgr_base_populate(t, i):
     }
 
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr = BaseRmgr(res_dict, sid=rmgr_id, rts=None)
+    rmgr = BaseRmgr(res_dict, sid=rmgr_id, rts=None, rts_config={})
     rmgr._validate_resource_desc()
     rmgr._populate()
 
@@ -299,7 +299,7 @@ def test_rmgr_mock_methods():
 def test_rmgr_rp_initialization(d):
 
     with pytest.raises(ValueError):
-        rmgr = RPRmgr(d, 'test.0000', config={})
+        rmgr = RPRmgr(d, 'test.0000', rts_config={})
 
     env_var = os.environ.get('RADICAL_PILOT_DBURL', None)
     if env_var:
@@ -308,7 +308,7 @@ def test_rmgr_rp_initialization(d):
     config={ "sandbox_cleanup": False,"db_cleanup": False}
     with pytest.raises(EnTKError):
         rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-        rmgr = RPRmgr(d, rmgr_id)
+        rmgr = RPRmgr(d, rmgr_id, {})
 
 
     try:
@@ -324,7 +324,7 @@ def test_rmgr_rp_initialization(d):
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr = RPRmgr(d, rmgr_id)
+    rmgr = RPRmgr(d, rmgr_id, {'db_cleanup': False, 'sandbox_cleanup': False})
 
     assert rmgr._resource_desc == d
     assert rmgr._sid == rmgr_id
@@ -359,7 +359,7 @@ def test_rmgr_rp_completed_states():
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     config={ "sandbox_cleanup": False,"db_cleanup": False}
-    rmgr = RPRmgr({}, sid='test.0000', config=config)
+    rmgr = RPRmgr({}, sid='test.0000', rts_config=config)
 
     import radical.pilot as rp
     assert rmgr.get_completed_states() == [rp.CANCELED, rp.FAILED, rp.DONE]

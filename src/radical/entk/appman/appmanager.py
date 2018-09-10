@@ -196,7 +196,7 @@ class AppManager(object):
             from radical.entk.execman.rp import ResourceManager
             self._resource_manager = ResourceManager(resource_desc=value,
                                                      sid=self._sid,
-                                                     config=self._rts_config)
+                                                     rts_config=self._rts_config)
         elif self._rts == 'mock':
             from radical.entk.execman.mock import ResourceManager
             self._resource_manager = ResourceManager(resource_desc=value,

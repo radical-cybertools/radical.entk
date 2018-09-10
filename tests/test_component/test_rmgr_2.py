@@ -6,6 +6,7 @@ from radical.entk.exceptions import *
 from hypothesis import given
 import hypothesis.strategies as st
 import os
+import radical.utils as ru
 
 # MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
@@ -22,7 +23,8 @@ def test_rmgr_rp_get_resource_allocation_state():
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     config = {"sandbox_cleanup": False, "db_cleanup": False}
-    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(res_dict, sid=rmgr_id, rts_config=config)
 
     assert not rmgr.get_resource_allocation_state()
 
@@ -51,7 +53,8 @@ def test_rmgr_rp_resource_request():
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
     config = {"sandbox_cleanup": False, "db_cleanup": False}
-    rmgr = RPRmgr(res_dict, sid='test.0000', config=config)
+    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr = RPRmgr(res_dict, sid=rmgr_id, rts_config=config)
     rmgr._validate_resource_desc()
     rmgr._populate()
 
