@@ -27,7 +27,7 @@ def generate_pipeline():
         global CUR_NEW_STAGE
         CUR_NEW_STAGE += 1
 
-        shuffle(p.stages[CUR_NEW_STAGE:]):
+        shuffle(p.stages[CUR_NEW_STAGE:])
 
     def func_on_false():
         print 'Done'
