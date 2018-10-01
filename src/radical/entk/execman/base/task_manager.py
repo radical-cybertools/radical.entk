@@ -100,7 +100,7 @@ class Base_TaskManager(object):
 
         self._tmgr_process = None
         self._hb_thread = None
-        self._hb_interval = os.getenv('ENTK_HB_INTERVAL', 30)
+        self._hb_interval = int(os.getenv('ENTK_HB_INTERVAL', 30))
 
         mq_connection.close()
 
