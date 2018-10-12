@@ -68,7 +68,7 @@ def test_write_session_description():
 
     write_session_description(amgr)
 
-    desc = ru.read_json('%s/%s.json' % (amgr._sid, amgr._sid))
+    desc = ru.read_json('%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
 
     assert desc == {'config': {},
                     'entities': {'appmanager': {'event_model': {},
