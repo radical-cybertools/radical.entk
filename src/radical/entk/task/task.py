@@ -45,7 +45,9 @@ class Task(object):
         self._upload_input_data = list()
         self._copy_input_data = list()
         self._link_input_data = list()
+        self._move_input_data = list()
         self._copy_output_data = list()
+        self._move_output_data = list()
         self._download_output_data = list()
 
         self._path = None
@@ -270,6 +272,20 @@ class Task(object):
 
         return self._link_input_data
 
+
+    @property
+    def move_input_data(self):
+        """
+        List of files to be move from a location on the remote machine to the location of
+        current task on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
+        return self._move_input_data
+
     @property
     def copy_output_data(self):
         """
@@ -282,6 +298,20 @@ class Task(object):
         """
 
         return self._copy_output_data
+
+
+    @property
+    def move_output_data(self):
+        """
+        List of files to be copied from the location of the current task to another location
+        on the remote machine
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        """
+
+        return self._move_output_data
 
     @property
     def download_output_data(self):
@@ -537,6 +567,14 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
 
+
+    @move_input_data.setter
+    def move_input_data(self, val):
+        if isinstance(val, list):
+            self._move_input_data = val
+        else:
+            raise TypeError(expected_type=list, actual_type=type(val))
+
     @link_input_data.setter
     def link_input_data(self, val):
         if isinstance(val, list):
@@ -548,6 +586,14 @@ class Task(object):
     def copy_output_data(self, val):
         if isinstance(val, list):
             self._copy_output_data = val
+        else:
+            raise TypeError(expected_type=list, actual_type=type(val))
+
+
+    @move_output_data.setter
+    def move_output_data(self, val):
+        if isinstance(val, list):
+            self._move_output_data = val
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
 
@@ -624,7 +670,9 @@ class Task(object):
             'upload_input_data': self._upload_input_data,
             'copy_input_data': self._copy_input_data,
             'link_input_data': self._link_input_data,
+            'move_input_data': self._move_input_data,
             'copy_output_data': self._copy_output_data,
+            'move_output_data': self._move_output_data,
             'download_output_data': self._download_output_data,
 
             'exit_code': self._exit_code,
@@ -740,12 +788,27 @@ class Task(object):
                 raise TypeError(expected_type=list,
                                 actual_type=type(d['link_input_data']))
 
+        if 'move_input_data' in d:
+            if isinstance(d['move_input_data'], list):
+                self._move_input_data = d['move_input_data']
+            else:
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['move_input_data']))
+
+
         if 'copy_output_data' in d:
             if isinstance(d['copy_output_data'], list):
                 self._copy_output_data = d['copy_output_data']
             else:
                 raise TypeError(expected_type=list,
                                 actual_type=type(d['copy_output_data']))
+
+        if 'move_output_data' in d:
+            if isinstance(d['move_output_data'], list):
+                self._move_output_data = d['move_output_data']
+            else:
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['move_output_data']))
 
         if 'download_output_data' in d:
             if isinstance(d['download_output_data'], list):
