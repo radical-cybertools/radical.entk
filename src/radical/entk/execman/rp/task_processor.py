@@ -67,7 +67,8 @@ def resolve_placeholders(path, placeholder_dict):
                     logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
                                    (task_name, stage_name, pipeline_name))
             else:
-                logger.warning('%s not assigned to any Stage in Pipeline %s' % (stage_name, pipeline_name))
+                logger.warning('%s not assigned to any Stage in Pipeline %s' % (
+                    stage_name, pipeline_name))
         else:
             logger.warning('%s not assigned to any Pipeline' % (pipeline_name))
 
@@ -75,8 +76,50 @@ def resolve_placeholders(path, placeholder_dict):
 
     except Exception, ex:
 
-        logger.error('Failed to resolve placeholder %s, error: %s' % (path, ex))
+        logger.error('Failed to resolve placeholder %s, error: %s' %
+                     (path, ex))
         raise
+
+
+def resolve_arguments(args, placeholder_dict):
+
+    resolved_args = list()
+
+    for entry in args:
+
+        # If entry starts with $, it has a placeholder
+        # and needs to be resolved based after a lookup in
+        # the placeholder_dict
+        if entry.startswith('$'):
+
+            placeholder = entry.split('/')[0]
+
+            if placeholder == "$SHARED":
+                entry = entry.replace(placeholder, '$RP_PILOT_STAGING')
+
+            else:
+                broken_placeholder = placeholder.split('_')
+
+                if not len(broken_placeholder) == 6:
+                    raise ValueError(
+                        obj='placeholder',
+                        attribute='length',
+                        expected_value='$Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid} or $SHARED',
+                        actual_value=broken_placeholder)
+
+                pipeline_name = broken_placeholder[1]
+                stage_name = broken_placeholder[3]
+                task_name = broken_placeholder[5]
+
+                try:
+                    entry = entry.replace(
+                        placeholder, placeholder_dict[pipeline_name][stage_name][task_name]['path'])
+
+                except Exception as ex:
+                    logger.warning('Argument parsing failed. Task %s of Stage %s in Pipeline %s does not exist' %
+                                   (task_name, stage_name, pipeline_name))
+
+        resolved_args.append(entry)
 
 
 def get_input_list_from_task(task, placeholder_dict):
@@ -165,7 +208,8 @@ def get_input_list_from_task(task, placeholder_dict):
 
     except Exception, ex:
 
-        logger.error('Failed to get input list of files from task, error: %s' % ex)
+        logger.error(
+            'Failed to get input list of files from task, error: %s' % ex)
         raise
 
 
@@ -234,7 +278,8 @@ def get_output_list_from_task(task, placeholder_dict):
         return output_data
 
     except Exception, ex:
-        logger.error('Failed to get output list of files from task, error: %s' % ex)
+        logger.error(
+            'Failed to get output list of files from task, error: %s' % ex)
         raise
 
 
@@ -262,7 +307,7 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
                                           task.parent_pipeline['uid'], task.parent_pipeline['name'])
         cud.pre_exec = task.pre_exec
         cud.executable = task.executable
-        cud.arguments = task.arguments
+        cud.arguments = resolve_arguments(task.arguments, placeholder_dict)
         cud.post_exec = task.post_exec
         if task.tag:
             cud.tag = resolve_tags(task.tag, placeholder_dict)
@@ -314,7 +359,8 @@ def create_task_from_cu(cu, prof=None):
         logger.debug('Create Task from CU %s' % cu.name)
 
         if prof:
-            prof.prof('task from cu - create', uid=cu.name.split(',')[0].strip())
+            prof.prof('task from cu - create',
+                      uid=cu.name.split(',')[0].strip())
 
         task = Task()
         task.uid = cu.name.split(',')[0].strip()
