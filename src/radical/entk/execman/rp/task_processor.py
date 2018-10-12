@@ -204,6 +204,28 @@ def get_input_list_from_task(task, placeholder_dict):
                     }
                 input_data.append(temp)
 
+        if task.move_input_data:
+
+            for path in task.move_input_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': path.split('>')[1].strip(),
+                        'action': rp.MOVE
+                    }
+                else:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': os.path.basename(path.split('>')[0].strip()),
+                        'action': rp.MOVE
+                    }
+
+                input_data.append(temp)
+
         return input_data
 
     except Exception, ex:
@@ -274,6 +296,29 @@ def get_output_list_from_task(task, placeholder_dict):
                         'target': os.path.basename(path.split('>')[0].strip())
                     }
                 output_data.append(temp)
+
+        if task.move_output_data:
+
+            for path in task.copy_output_data:
+
+                path = resolve_placeholders(path, placeholder_dict)
+
+                if len(path.split('>')) > 1:
+
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': path.split('>')[1].strip(),
+                        'action': rp.MOVE
+                    }
+                else:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': os.path.basename(path.split('>')[0].strip()),
+                        'action': rp.MOVE
+                    }
+                    
+                output_data.append(temp)
+
 
         return output_data
 
