@@ -203,7 +203,7 @@ def write_session_description(amgr):
     desc['tree'] = tree
     desc['config'] = dict()
 
-    ru.write_json(desc, '%s/%s.json' % (amgr._sid, amgr._sid))
+    ru.write_json(desc, '%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
 
 
 def get_session_description(sid, src=None):
