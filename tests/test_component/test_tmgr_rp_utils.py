@@ -68,6 +68,24 @@ def test_input_list_from_task():
     assert ip_list[0]['action'] == rp.COPY
     assert ip_list[0]['target'] == os.path.basename(t.copy_input_data[0].split('>')[1].strip())
 
+
+    # Test move input data
+    t = Task()
+    t.move_input_data = ['/home/vivek/test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
+
+    assert ip_list[0]['source'] == t.copy_input_data[0]
+    assert ip_list[0]['action'] == rp.MOVE
+    assert ip_list[0]['target'] == os.path.basename(t.move_input_data[0])
+
+    t = Task()
+    t.move_input_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_input_list_from_task(t, placeholder_dict)
+
+    assert ip_list[0]['source'] == t.move_input_data[0].split('>')[0].strip()
+    assert ip_list[0]['action'] == rp.MOVE
+    assert ip_list[0]['target'] == os.path.basename(t.move_input_data[0].split('>')[1].strip())
+
     # Test upload input data
 
     t = Task()
@@ -126,6 +144,25 @@ def test_output_list_from_task():
     assert ip_list[0]['source'] == t.copy_output_data[0].split('>')[0].strip()
     assert ip_list[0]['action'] == rp.COPY
     assert ip_list[0]['target'] == os.path.basename(t.copy_output_data[0].split('>')[1].strip())
+
+
+    # Test move output data
+    t = Task()
+    t.move_output_data = ['/home/vivek/test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
+
+    assert ip_list[0]['source'] == t.move_output_data[0]
+    assert ip_list[0]['action'] == rp.MOVE
+    assert ip_list[0]['target'] == os.path.basename(t.move_output_data[0])
+
+    t = Task()
+    t.move_output_data = ['/home/vivek/test.dat > new_test.dat']
+    ip_list = get_output_list_from_task(t, placeholder_dict)
+
+    assert ip_list[0]['source'] == t.move_output_data[0].split('>')[0].strip()
+    assert ip_list[0]['action'] == rp.MOVE
+    assert ip_list[0]['target'] == os.path.basename(t.move_output_data[0].split('>')[1].strip())
+
 
     # Test download input data
 
