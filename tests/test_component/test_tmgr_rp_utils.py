@@ -74,7 +74,7 @@ def test_input_list_from_task():
     t.move_input_data = ['/home/vivek/test.dat']
     ip_list = get_input_list_from_task(t, placeholder_dict)
 
-    assert ip_list[0]['source'] == t.copy_input_data[0]
+    assert ip_list[0]['source'] == t.move_input_data[0]
     assert ip_list[0]['action'] == rp.MOVE
     assert ip_list[0]['target'] == os.path.basename(t.move_input_data[0])
 

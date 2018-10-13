@@ -121,6 +121,8 @@ def resolve_arguments(args, placeholder_dict):
 
         resolved_args.append(entry)
 
+    return resolved_args
+
 
 def get_input_list_from_task(task, placeholder_dict):
     """
@@ -299,7 +301,7 @@ def get_output_list_from_task(task, placeholder_dict):
 
         if task.move_output_data:
 
-            for path in task.copy_output_data:
+            for path in task.move_output_data:
 
                 path = resolve_placeholders(path, placeholder_dict)
 

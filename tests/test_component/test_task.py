@@ -31,7 +31,9 @@ def test_task_initialization():
     assert t.upload_input_data == list()
     assert t.copy_input_data == list()
     assert t.link_input_data == list()
+    assert t.move_input_data == list()
     assert t.copy_output_data == list()
+    assert t.move_input_data == list()
     assert t.download_output_data == list()
     assert t.exit_code == None
     assert t.tag == None
@@ -93,10 +95,16 @@ def test_task_exceptions(s,l,i,b):
                 t.link_input_data = data
 
             with pytest.raises(TypeError):
+                t.move_input_data = data
+
+            with pytest.raises(TypeError):
                 t.copy_output_data = data
 
             with pytest.raises(TypeError):
                 t.download_output_data = data
+
+            with pytest.raises(TypeError):
+                t.move_output_data = data
 
         if not isinstance(data, str) and not isinstance(data, unicode):
 
@@ -187,7 +195,9 @@ def test_task_to_dict():
                     'upload_input_data': [],
                     'copy_input_data': [],
                     'link_input_data': [],
+                    'move_input_data': [],
                     'copy_output_data': [],
+                    'move_output_data': [],
                     'download_output_data': [],
                     'exit_code': None,
                     'path': None,
@@ -210,8 +220,10 @@ def test_task_to_dict():
     t.upload_input_data = ['test1']
     t.copy_input_data = ['test2']
     t.link_input_data = ['test3']
-    t.copy_output_data = ['test4']
-    t.download_output_data = ['test5']
+    t.move_input_data = ['test4']
+    t.copy_output_data = ['test5']
+    t.move_output_data = ['test6']
+    t.download_output_data = ['test7']
     t.exit_code = 1
     t.path = 'a/b/c'
     t.tag = 'task.0010'
@@ -242,8 +254,10 @@ def test_task_to_dict():
                     'upload_input_data': ['test1'],
                     'copy_input_data': ['test2'],
                     'link_input_data': ['test3'],
-                    'copy_output_data': ['test4'],
-                    'download_output_data': ['test5'],
+                    'move_input_data': ['test4'],
+                    'copy_output_data': ['test5'],
+                    'move_output_data': ['test6'],
+                    'download_output_data': ['test7'],
                     'exit_code': 1,
                     'path': 'a/b/c',
                     'tag': 'task.0010',
@@ -280,7 +294,9 @@ def test_task_from_dict():
             'upload_input_data': [],
             'copy_input_data': [],
             'link_input_data': [],
+            'move_input_data': [],
             'copy_output_data': [],
+            'move_output_data': [],
             'download_output_data': [],
             'exit_code': 555,
             'path': 'here/it/is',
@@ -305,7 +321,9 @@ def test_task_from_dict():
     assert t.upload_input_data     == d['upload_input_data']
     assert t.copy_input_data       == d['copy_input_data']
     assert t.link_input_data       == d['link_input_data']
+    assert t.move_input_data       == d['move_input_data']
     assert t.copy_output_data      == d['copy_output_data']
+    assert t.move_output_data      == d['move_output_data']
     assert t.download_output_data  == d['download_output_data']
     assert t.exit_code             == d['exit_code']
     assert t.path                  == d['path']
