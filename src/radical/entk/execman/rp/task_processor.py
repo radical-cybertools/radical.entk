@@ -90,7 +90,7 @@ def resolve_arguments(args, placeholder_dict):
         # If entry starts with $, it has a placeholder
         # and needs to be resolved based after a lookup in
         # the placeholder_dict
-        if entry.startswith('$'):
+        if isinstance(entry, str) and entry.startswith('$'):
 
             placeholder = entry.split('/')[0]
 
