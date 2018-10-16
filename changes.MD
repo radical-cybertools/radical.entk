@@ -1,5 +1,14 @@
 # Changelog for each release
 
+## Changelog for 0.7.7
+
+* Issues as part of 0.7.7 milestone: https://github.com/radical-cybertools/radical.entk/milestone/10
+* Improved test coverage
+
+## Changelog for 0.7.6
+
+* Minor fixes to be able to upload to conda repo
+
 ## Changelog for 0.7.5
 
 * Issues as part of 0.7.5 milestone: https://github.com/radical-cybertools/radical.entk/milestone/9
