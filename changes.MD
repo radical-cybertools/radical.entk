@@ -1,5 +1,9 @@
 # Changelog for each release
 
+## Changelog for 0.7.8
+
+* Hotfix for issue 259
+
 ## Changelog for 0.7.7
 
 * Issues as part of 0.7.7 milestone: https://github.com/radical-cybertools/radical.entk/milestone/10
