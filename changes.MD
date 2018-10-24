@@ -6,7 +6,7 @@
 
 ## Changelog for 0.7.7
 
-* Issues as part of 0.7.7 milestone: https://github.com/radical-cybertools/radical.entk/milestone/10
+* Issues as part of 0.7.7 milestone: <https://github.com/radical-cybertools/radical.entk/milestone/10/>
 * Improved test coverage
 
 ## Changelog for 0.7.6
@@ -15,7 +15,7 @@
 
 ## Changelog for 0.7.5
 
-* Issues as part of 0.7.5 milestone: https://github.com/radical-cybertools/radical.entk/milestone/9
+* Issues as part of 0.7.5 milestone: <https://github.com/radical-cybertools/radical.entk/milestone/9/>
 * Documentation improved with more examples
 * Bug fixes
 
@@ -33,11 +33,11 @@
 
 ## Changelog for 0.7.0
 
-* Issues as part of 0.7.0 milestone: https://github.com/radical-cybertools/radical.entk/milestone/8
+* Issues as part of 0.7.0 milestone: <https://github.com/radical-cybertools/radical.entk/milestone/8/>
 * API Changes:
-    * 'cores' attribute of task changed to `cpu_reqs` and `gpu_reqs` which are 
+  * 'cores' attribute of task changed to `cpu_reqs` and `gpu_reqs` which are
     dictionaries with the following structure:
-    ```
+    ```python
     task.cpu_reqs =     {
                             'processes': 1,
                             'process_type': None/MPI,
@@ -52,10 +52,10 @@
                             'thread_type': None/OpenMP
                         }
     ```
-    * ResourceManager object is not exposed to the user. The resource 
+    * ResourceManager object is not exposed to the user. The resource
     description is to be provided to the AppManager using the 'resource_desc'
     attribute
-    ```
+    ```python
     amgr = AppManager()
     amgr.resource_desc = {
         'resource': 'local.localhost',
@@ -63,20 +63,20 @@
         'cpus': 1}
     ```
     * AppManager does not have assign_workflow() method. Instead you assign the
-    workflow using the assignment operator (similar to resource desc) to the 
+    workflow using the assignment operator (similar to resource desc) to the
     workflow attribute.
-    ```
+    ```python
     amgr = AppManager()
     amgr.workflow = pipelines
     ```
       Note: `pipelines` can be a list or a set of Pipeline objects but there are
       no guarantees of order
     * AppManager has two important additional arguments:
-        * write_workflow (True/False) to write the executed workflow to a file post-termination
-        * rmq_cleanup (True/False) to cleanup the rabbitmq queues post-execution
+      * write_workflow (True/False) to write the executed workflow to a file post-termination
+      * rmq_cleanup (True/False) to cleanup the rabbitmq queues post-execution
     * AppManager reads default values from a JSON config file. Expected config file structure:
-    ```
-    {    
+    ```json
+    {
     "hostname": "localhost",
     "port": 5672,
     "reattempts": 3,
@@ -91,12 +91,11 @@
     ```
     * The ``shared_data`` attribute is part of the AppManager object now (since the resource manager is not exposed to
     the user anymore).
-    ```
+    ```python
     amgr = AppManager()
     amgr.shared_data = ['file1.txt','/tmp/file2.txt']
     ```
-    
-    
+
 ## Changelog for 0.6.3
 
 * Added some more tests
@@ -104,9 +103,8 @@
 ## Changelog for 0.6.2
 
 * Several [issues](https://github.com/radical-cybertools/radical.entk/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22Release+0.6.2%22) addressed
-* Bulk submission of tasks across entire set of pipelines 
+* Bulk submission of tasks across entire set of pipelines
 * Write workflow structure post-execution upon 'write_workflow=True' argument to AppManager
-
 
 ## Changelog for 0.6.1
 
@@ -114,6 +112,4 @@
 
 ## Changelog for 0.6.0
 
-* ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
-changed to ```parent_pipeline``` and ```parent_stage```.
-
+* ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects changed to ```parent_pipeline``` and ```parent_stage```.
