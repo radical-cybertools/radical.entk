@@ -6,7 +6,6 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 from multiprocessing import Process, Event
-import Queue
 from radical.entk import states, Task
 import time
 import json

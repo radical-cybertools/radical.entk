@@ -10,7 +10,6 @@ import Queue
 import time
 import json
 import pika
-import traceback
 import os
 import uuid
 from resource_manager import Base_ResourceManager

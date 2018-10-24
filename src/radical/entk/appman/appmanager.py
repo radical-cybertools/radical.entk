@@ -10,7 +10,6 @@ from radical.entk.task.task import Task
 from radical.entk.utils.prof_utils import write_session_description
 from radical.entk.utils.prof_utils import write_workflow
 from wfprocessor import WFprocessor
-import sys
 import time
 import os
 import Queue

@@ -99,3 +99,4 @@ src/radical/entk/SDIST
 .re.*
 .hypothesis
 .pytest_cache
+.sftp-config.json

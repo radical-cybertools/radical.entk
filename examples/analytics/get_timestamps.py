@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
-import glob
 import pprint
 import radical.utils as ru
 import radical.entk as re

@@ -6,17 +6,14 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import threading
 from multiprocessing import Process, Event
-import Queue
 from radical.entk import states, Task
 from radical.entk.utils.init_transition import transition
 import time
 import json
 import pika
-import traceback
 import os
 import radical.pilot as rp
 from task_processor import create_cud_from_task, create_task_from_cu
-import uuid
 from ..base.task_manager import Base_TaskManager
 
 
