@@ -22,7 +22,7 @@ def test_rmgr_base_initialization(d):
         test_fold = glob.glob('%s/.radical/utils/test.*' % home)
         for f in test_fold:
             shutil.rmtree(f)
-    except:
+    except Exception, ex:
         pass
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
     rmgr = BaseRmgr(d, rmgr_id, None, {})

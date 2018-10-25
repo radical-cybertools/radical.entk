@@ -15,17 +15,17 @@ MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 
 def generate_pipeline():
-    
+
     # Create a Pipeline object
     p = Pipeline()
 
-    # Create a Stage object 
+    # Create a Stage object
     s1 = Stage()
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
-    t1 = Task()    
+    t1 = Task()
     t1.executable = ['/bin/sleep']
-    t1.arguments = [sleep] 
+    t1.arguments = [sleep]
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -33,7 +33,7 @@ def generate_pipeline():
     # Add Stage to the Pipeline
     p.add_stages(s1)
 
-    return p   
+    return p
 
 def test_issue_214():
 
@@ -56,7 +56,7 @@ def test_issue_214():
     appman.resource_desc = res_dict
 
     p = generate_pipeline()
-    
+
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.workflow = [p]
 

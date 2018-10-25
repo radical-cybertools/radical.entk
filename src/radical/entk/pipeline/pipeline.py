@@ -168,7 +168,7 @@ class Pipeline(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def add_stages(self, val):
-        """        
+        """
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
@@ -286,6 +286,7 @@ class Pipeline(object):
         except Exception, ex:
             raise EnTKError(text=ex)
 
+    @classmethod
     def _validate_entities(self, stages):
         """
         Purpose: Validate whether the argument 'stages' is of list of Stage objects
@@ -306,7 +307,7 @@ class Pipeline(object):
 
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also 
+        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also
         validate that the current Pipeline contains Stages.
         """
 
@@ -338,7 +339,7 @@ class Pipeline(object):
 
     def _pass_uid(self):
         """
-        Purpose: Pass current Pipeline's uid to all Stages. 
+        Purpose: Pass current Pipeline's uid to all Stages.
 
         :argument: List of Stage objects (optional)
         """

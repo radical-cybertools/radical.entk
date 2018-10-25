@@ -29,7 +29,7 @@ def test_issue_26():
         p.add_stages(s)
 
         return p
-    
+
 
     res_dict = {
 
@@ -51,19 +51,19 @@ def test_issue_26():
     appman.run()
     print p1.uid, p1.stages[0].uid
 
-    p2 = create_pipeline()    
+    p2 = create_pipeline()
     appman.workflow = [p2]
     appman.run()
     print p2.uid, p2.stages[0].uid
 
     appman.resource_terminate()
 
-    lhs = int(p1.stages[0].uid.split('.')[-1]) + 1 
+    lhs = int(p1.stages[0].uid.split('.')[-1]) + 1
     rhs = int(p2.stages[0].uid.split('.')[-1])
     assert lhs == rhs
 
     for t in p1.stages[0].tasks:
         for tt in p2.stages[0].tasks:
-            lhs = int(t.uid.split('.')[-1]) + 1 
+            lhs = int(t.uid.split('.')[-1]) + 1
             rhs = int(tt.uid.split('.')[-1])
             assert lhs == rhs

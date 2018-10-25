@@ -25,7 +25,7 @@ def generate_pipeline(name, stages):
 
     for s_cnt in range(stages):
 
-        # Create a Stage object 
+        # Create a Stage object
         s = Stage()
         s.name = 'Stage %s'%s_cnt
 
@@ -34,9 +34,9 @@ def generate_pipeline(name, stages):
             # Create a Task object
             t = Task()
             t.name = 'my-task'        # Assign a name to the task (optional)
-            t.executable = ['/bin/echo']   # Assign executable to the task   
+            t.executable = ['/bin/echo']   # Assign executable to the task
             # Assign arguments for the task executable
-            t.arguments = ['I am task %s in %s in %s'%(t_cnt, s_cnt, name)]  
+            t.arguments = ['I am task %s in %s in %s'%(t_cnt, s_cnt, name)]
 
             # Add the Task to the Stage
             s.add_tasks(t)

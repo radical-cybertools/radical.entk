@@ -16,17 +16,17 @@ MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 
 def generate_pipeline():
-    
+
     # Create a Pipeline object
     p = Pipeline()
 
-    # Create a Stage object 
+    # Create a Stage object
     s1 = Stage()
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
-    t1 = Task()    
+    t1 = Task()
     t1.executable = ['cat']
-    t1.arguments = ['file1.txt','file2.txt','>','output.txt'] 
+    t1.arguments = ['file1.txt','file2.txt','>','output.txt']
     t1.copy_input_data = ['$SHARED/file1.txt', '$SHARED/file2.txt']
     t1.download_output_data = ['output.txt > %s/output.txt' %cur_dir]
 
@@ -36,7 +36,7 @@ def generate_pipeline():
     # Add Stage to the Pipeline
     p.add_stages(s1)
 
-    return p   
+    return p
 
 def test_shared_data():
 
@@ -67,7 +67,7 @@ def test_shared_data():
     appman.shared_data = ['%s/file1.txt' %cur_dir, '%s/file2.txt' %cur_dir]
 
     p = generate_pipeline()
-    
+
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.workflow = [p]
 

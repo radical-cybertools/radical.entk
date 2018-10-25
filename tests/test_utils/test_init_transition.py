@@ -17,12 +17,12 @@ def func(obj, obj_type, new_state, queue1, logger, profiler):
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname, port=port))
     mq_channel = mq_connection.channel()
 
-    transition( obj, 
-                obj_type, 
-                new_state, 
-                mq_channel, 
-                queue1, 
-                profiler, 
+    transition( obj,
+                obj_type,
+                new_state,
+                mq_channel,
+                queue1,
+                profiler,
                 logger)
 
     mq_connection.close()
@@ -38,7 +38,7 @@ def master(obj, obj_type, new_state):
 
     queue1 = 'test-1-2-3'       # Expected queue name structure 'X-A-B-C'
     queue2 = 'test-3-2-1'       # Expected queue name structure 'X-C-B-A'
-    mq_channel.queue_declare(queue=queue1)    
+    mq_channel.queue_declare(queue=queue1)
     mq_channel.queue_declare(queue=queue2)
 
     logger = ru.Logger('radical.entk.test')
@@ -68,14 +68,13 @@ def master(obj, obj_type, new_state):
 def test_utils_sync_with_master():
 
     obj = Task()
-    obj_type = 'Task'    
+    obj_type = 'Task'
     master(obj, obj_type, states.DONE)
 
     obj = Stage()
-    obj_type = 'Stage'    
+    obj_type = 'Stage'
     master(obj, obj_type, states.DONE)
 
     obj = Pipeline()
-    obj_type = 'Pipeline'    
+    obj_type = 'Pipeline'
     master(obj, obj_type, states.DONE)
-    

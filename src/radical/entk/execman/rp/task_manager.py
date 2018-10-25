@@ -20,8 +20,8 @@ from ..base.task_manager import Base_TaskManager
 class TaskManager(Base_TaskManager):
 
     """
-    A Task Manager takes the responsibility of dispatching tasks it receives from a queue for execution on to 
-    the available resources using a runtime system. In this case, the runtime system being used RADICAL Pilot. Once 
+    A Task Manager takes the responsibility of dispatching tasks it receives from a queue for execution on to
+    the available resources using a runtime system. In this case, the runtime system being used RADICAL Pilot. Once
     the tasks have completed execution, they are pushed on to another queue for other components of EnTK to access.
 
 
@@ -32,7 +32,7 @@ class TaskManager(Base_TaskManager):
         :mq_hostname: Name of the host where RabbitMQ is running
         :port: port at which rabbitMQ can be accessed
 
-    Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of 
+    Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of
     queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
     """
 
@@ -67,9 +67,9 @@ class TaskManager(Base_TaskManager):
         In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-request queue. It responds with a
         'response' message to the heartbeart-response queue.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is 
+        **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is
         still incomplete. There is also population of a dictionary, placeholder_dict, which stores the path of each of
-        the tasks on the remote machine. 
+        the tasks on the remote machine.
         """
 
         try:

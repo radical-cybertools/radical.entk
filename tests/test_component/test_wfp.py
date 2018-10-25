@@ -15,7 +15,7 @@ port = int(os.environ.get('RMQ_PORT', 5672))
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 @given(s=st.characters(),
-       i=st.integers().filter(lambda x: type(x) == int),
+       i=st.integers().filter(lambda x: isinstance(x,int)),
        b=st.booleans(),
        l=st.lists(st.characters()))
 def test_wfp_initialization(s, i, b, l):
