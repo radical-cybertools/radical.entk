@@ -2,7 +2,6 @@ __copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
 __author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__ = "MIT"
 
-import radical.utils as ru
 from radical.entk.exceptions import *
 import radical.pilot as rp
 import os

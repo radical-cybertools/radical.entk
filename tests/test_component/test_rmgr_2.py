@@ -1,7 +1,6 @@
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk.execman.mock import ResourceManager as MockRmgr
-import pytest
 from radical.entk.exceptions import *
 from hypothesis import given
 import hypothesis.strategies as st

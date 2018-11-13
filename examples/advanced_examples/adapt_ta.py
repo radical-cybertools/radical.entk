@@ -41,7 +41,7 @@ def generate_pipeline():
         # Create a Stage object
         s1 = Stage()
 
-        for i in range(CUR_TASKS):
+        for _ in range(CUR_TASKS):
 
             t1 = Task()
             t1.executable = ['sleep']

@@ -11,7 +11,7 @@ class EnTKError(Exception):
 
 
 class TypeError(EnTKError):
-    """TypeError is raised if value of a wrong type is passed to a function or 
+    """TypeError is raised if value of a wrong type is passed to a function or
     assigned as an attribute of an object"""
 
     def __init__(self, expected_type, actual_type, entity=None):
@@ -33,7 +33,7 @@ class TypeError(EnTKError):
 class ValueError(EnTKError):
 
     """
-    ValueError is raised if a value that is unacceptable is passed to a 
+    ValueError is raised if a value that is unacceptable is passed to a
     function or assigned as an attribute of an object"""
 
     def __init__(self, obj, attribute, expected_value, actual_value):
@@ -73,8 +73,8 @@ class MissingError(EnTKError):
 
 
 class ExistsError(EnTKError):
-    """ExistsError is raised when there is an attempt to add or assign an 
-    object with a particular uid to another parent object which already 
+    """ExistsError is raised when there is an attempt to add or assign an
+    object with a particular uid to another parent object which already
     contains an object with the same uid"""
 
     def __init__(self, item, parent):

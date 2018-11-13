@@ -1,5 +1,4 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
-import pytest
 from radical.entk.exceptions import *
 import os
 import sys

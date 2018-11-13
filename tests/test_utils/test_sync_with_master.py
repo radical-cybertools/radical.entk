@@ -15,11 +15,11 @@ def syncer(obj, obj_type, queue1, logger, profiler):
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname, port=port))
     mq_channel = mq_connection.channel()
 
-    sync_with_master(obj, 
-                     obj_type, 
+    sync_with_master(obj,
+                     obj_type,
                      mq_channel,
-                     queue1, 
-                     logger, 
+                     queue1,
+                     logger,
                      profiler)
 
     mq_connection.close()
@@ -35,7 +35,7 @@ def master(obj, obj_type):
 
     queue1 = 'test-1-2-3'       # Expected queue name structure 'X-A-B-C'
     queue2 = 'test-3-2-1'       # Expected queue name structure 'X-C-B-A'
-    mq_channel.queue_declare(queue=queue1)    
+    mq_channel.queue_declare(queue=queue1)
     mq_channel.queue_declare(queue=queue2)
 
     logger = ru.Logger('radical.entk.test')
@@ -63,14 +63,13 @@ def master(obj, obj_type):
 def test_utils_sync_with_master():
 
     obj = Task()
-    obj_type = 'Task'    
+    obj_type = 'Task'
     master(obj, obj_type)
 
     obj = Stage()
-    obj_type = 'Stage'    
+    obj_type = 'Stage'
     master(obj, obj_type)
 
     obj = Pipeline()
-    obj_type = 'Pipeline'    
+    obj_type = 'Pipeline'
     master(obj, obj_type)
-    

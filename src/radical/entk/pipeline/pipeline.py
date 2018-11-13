@@ -181,6 +181,17 @@ class Pipeline(object):
         if self._cur_stage == 0:
             self._cur_stage = 1
 
+    def rerun(self):
+
+        """
+        Rerun sets the state of the Pipeline to scheduling so that the Pipeline
+        can be checked for new stages
+        """
+
+        self._state = states.SCHEDULING
+        self._completed_flag = threading.Event()
+        print 'Pipeline %s in %s state'%(self._uid, self._state)
+
     def to_dict(self):
         """
         Convert current Pipeline (i.e. its attributes) into a dictionary
@@ -295,6 +306,7 @@ class Pipeline(object):
         except Exception, ex:
             raise EnTKError(text=ex)
 
+    @classmethod
     def _validate_entities(self, stages):
         """
         Purpose: Validate whether the argument 'stages' is of list of Stage objects

@@ -265,8 +265,8 @@ class WFprocessor(object):
             self._logger.exception('Error in enqueue-thread: %s' % ex)
             try:
                 mq_connection.close()
-            except:
-                self._logger.warning('mq_connection not created')
+            except Exception as ex:
+                self._logger.warning('mq_connection not created, %s'%ex)
 
             raise
 
@@ -383,7 +383,11 @@ class WFprocessor(object):
                                                                     self._logger.info(
                                                                         'Executing post-exec for stage %s' % stage.uid)
                                                                     self._prof.prof('Adap: executing post-exec',
+<<<<<<< HEAD
                                                                                     uid=self._uid)
+=======
+                                                                        uid=self._uid)
+>>>>>>> fix/code_quality
 
                                                                     func_condition = stage.post_exec['condition']
                                                                     func_on_true = stage.post_exec['on_true']

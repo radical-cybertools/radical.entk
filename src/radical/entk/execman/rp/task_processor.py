@@ -1,7 +1,6 @@
 import radical.pilot as rp
 from radical.entk import Task
 import radical.utils as ru
-import traceback
 from radical.entk.exceptions import *
 import os
 

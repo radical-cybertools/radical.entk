@@ -84,6 +84,6 @@ def test_issue_259():
     # Run the Application Manager
     appman.run()
 
-    # assert 
+    # assert
     with open('output.txt','r') as f:
         assert '"Hello World"' == f.readlines()[0].strip()

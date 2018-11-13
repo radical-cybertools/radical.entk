@@ -11,11 +11,8 @@ import radical.utils as ru
 import radical.entk as re
 import radical.analytics as ra
 
-"""
-This example illustrates hoq to obtain durations for arbitrary (non-state)
-profile events.
-Modified from examples under RADICAL Analytics
-"""
+"""This example illustrates hoq to obtain durations for arbitrary (non-state)
+profile events. Modified from examples under RADICAL Analytics"""
 
 # ------------------------------------------------------------------------------
 #

@@ -277,8 +277,8 @@ def test_amgr_setup_mqs():
     with open('.%s.txt' % amgr._sid, 'r') as fp:
         lines = fp.readlines()
 
-    for i in range(len(lines)):
-        lines[i] = lines[i].strip()
+    for ind, val in enumerate(lines):
+        lines[ind] = val.strip()
 
     assert set(qs) < set(lines)
 
@@ -348,9 +348,6 @@ def test_amgr_synchronizer():
     logger = ru.get_logger('radical.entk.temp_logger')
     profiler = ru.Profiler(name='radical.entk.temp')
     amgr = Amgr(hostname=hostname, port=port)
-
-    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname, port=port))
-    mq_channel = mq_connection.channel()
 
     amgr._setup_mqs()
 

@@ -15,17 +15,17 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def generate_pipeline():
-    
+
     # Create a Pipeline object
     p = Pipeline()
 
-    # Create a Stage object 
+    # Create a Stage object
     s1 = Stage()
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
-    t1 = Task()    
+    t1 = Task()
     t1.executable = ['mv']
-    t1.arguments = ['temp','/tmp/'] 
+    t1.arguments = ['temp','/tmp/']
     t1.upload_input_data = ['%s/temp'%cur_dir]
 
     # Add the Task to the Stage
@@ -34,7 +34,7 @@ def generate_pipeline():
     # Add Stage to the Pipeline
     p.add_stages(s1)
 
-    return p   
+    return p
 
 def test_issue_236():
 
@@ -72,7 +72,7 @@ def test_issue_236():
     appman.resource_desc = res_dict
 
     p = generate_pipeline()
-    
+
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.workflow = [p]
 

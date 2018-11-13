@@ -343,7 +343,7 @@ def test_task_assign_uid():
         test_fold = glob.glob('%s/.radical/utils/test*'%home)
         for f in test_fold:
             shutil.rmtree(f)
-    except:
+    except Exception, ex:
         pass
     t._assign_uid('test')
     assert t.uid == 'task.0000'

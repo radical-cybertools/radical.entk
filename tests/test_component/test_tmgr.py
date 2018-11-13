@@ -66,7 +66,7 @@ def test_tmgr_base_initialization(s, l, i):
 
 @given(s=st.characters(),
        l=st.lists(st.characters()),
-       i=st.integers().filter(lambda x: type(x) == int),
+       i=st.integers().filter(lambda x: isinstance(x,int)),
        b=st.booleans(),
        se=st.sets(st.text()),
        di=st.dictionaries(st.text(), st.text()))

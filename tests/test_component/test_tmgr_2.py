@@ -7,7 +7,6 @@ from radical.entk.execman.mock import ResourceManager as MockRmgr
 from radical.entk import Task, states
 from radical.entk.exceptions import *
 import pytest
-from hypothesis import given
 import hypothesis.strategies as st
 import os
 from radical.entk.exceptions import *
