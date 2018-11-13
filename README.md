@@ -8,5 +8,7 @@ Build status: [![Build Status](https://jenkins.radical-project.org/job/radical.e
 
 Test coverage: [![codecov](https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg)](https://codecov.io/gh/radical-cybertools/radical.entk)
 
+Conda status: [![conda](https://anaconda.org/conda-forge/radical.entk/badges/version.svg)](https://anaconda.org/conda-forge/radical.entk)
+
 <!-- coverage run --source $VENV/lib/python2.7/site-packages/radical/entk -m pytest -vvv $LOC/radical.entk/tests -->
 <!-- coverage html -->
