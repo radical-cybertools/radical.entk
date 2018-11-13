@@ -227,7 +227,7 @@ def test_pipeline_validate():
 
 
 def test_pipeline_assign_uid():
-    
+
     p = Pipeline()
     try:
         import glob
@@ -259,3 +259,28 @@ def test_pipeline_pass_uid():
     assert s1.parent_pipeline['name'] == p.name
     assert s2.parent_pipeline['uid'] == p.uid
     assert s2.parent_pipeline['name'] == p.name
+
+def test_pipeline_suspend_resume():
+
+    p = Pipeline()
+    assert p.state == states.INITIAL
+    p.suspend()
+    assert p.state == states.SUSPENDED
+    p.resume()
+    assert p.state == states.INITIAL
+
+
+    p.state = states.SCHEDULING
+    assert p.state == states.SCHEDULING
+    p.suspend()
+    assert p.state == states.SUSPENDED
+    p.resume()
+    assert p.state == states.SCHEDULING
+
+    with pytest.raises(EnTKError):
+        p.resume()
+
+    p.suspend()
+
+    with pytest.raises(EnTKError):
+        p.suspend()
