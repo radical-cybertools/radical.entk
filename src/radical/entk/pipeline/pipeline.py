@@ -133,7 +133,8 @@ class Pipeline(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise EnTKError(
+                    "Using ',' in an object's name may corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
 
@@ -168,7 +169,7 @@ class Pipeline(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def add_stages(self, val):
-        """        
+        """
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
@@ -224,7 +225,8 @@ class Pipeline(object):
                                      expected_value=states._pipeline_state_values.keys(),
                                      actual_value=d['state'])
             else:
-                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+                raise TypeError(entity='state', expected_type=str,
+                                actual_type=type(d['state']))
 
         else:
             self._state = states.INITIAL
@@ -233,14 +235,32 @@ class Pipeline(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+                raise TypeError(entity='state_history', expected_type=list, actual_type=type(
+                    d['state_history']))
 
         if 'completed' in d:
             if isinstance(d['completed'], bool):
                 if d['completed']:
                     self._completed_flag.set()
             else:
-                raise TypeError(entity='completed', expected_type=bool, actual_type=type(d['completed']))
+                raise TypeError(entity='completed', expected_type=bool,
+                                actual_type=type(d['completed']))
+
+    def suspend(self):
+        if self._state == states.SUSPENDED:
+            raise EnTKError(
+                'suspend() called on Pipeline %s that is already suspended' % self._uid)
+
+        self._state = states.SUSPENDED
+        self._state_history.append(self._state)
+
+    def resume(self):
+        if self._state != states.SUSPENDED:
+            raise EnTKError(
+                'Cannot resume Pipeline %s since it is not suspended' % self._uid)
+
+        self._state = self._state_history[-2]
+        self._state_history.append(self._state)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -295,7 +315,7 @@ class Pipeline(object):
 
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also 
+        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also
         validate that the current Pipeline contains Stages.
         """
 
@@ -319,7 +339,8 @@ class Pipeline(object):
         Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
         current object
         """
-        self._uid = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id(
+            'pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
         for stage in self._stages:
             stage._assign_uid(sid)
 
@@ -327,7 +348,7 @@ class Pipeline(object):
 
     def _pass_uid(self):
         """
-        Purpose: Pass current Pipeline's uid to all Stages. 
+        Purpose: Pass current Pipeline's uid to all Stages.
 
         :argument: List of Stage objects (optional)
         """

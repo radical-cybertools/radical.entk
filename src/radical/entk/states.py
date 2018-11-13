@@ -7,6 +7,7 @@ __license__ = "MIT"
 # Possible states
 INITIAL = 'DESCRIBED'
 SCHEDULING = 'SCHEDULING'
+SUSPENDED = 'SUSPENDED'
 SCHEDULED = 'SCHEDULED'
 SUBMITTING = 'SUBMITTING'
 SUBMITTED = 'SUBMITTED'
@@ -25,15 +26,16 @@ state_numbers = {
 
     INITIAL: 1,
     SCHEDULING: 2,
-    SCHEDULED: 3,
-    SUBMITTING: 4,
-    SUBMITTED: 5,
-    COMPLETED: 6,
-    DEQUEUEING: 7,
-    DEQUEUED: 8,
-    DONE: 9,
-    FAILED: 9,
-    CANCELED: 9
+    SUSPENDED: 3,
+    SCHEDULED: 4,
+    SUBMITTING: 5,
+    SUBMITTED: 6,
+    COMPLETED: 7,
+    DEQUEUEING: 8,
+    DEQUEUED: 9,
+    DONE: 10,
+    FAILED: 10,
+    CANCELED: 10
 }
 
 
@@ -41,9 +43,10 @@ state_numbers = {
 _pipeline_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
-    DONE: 9,
-    FAILED: 9,
-    CANCELED: 9
+    SUSPENDED: 3,
+    DONE: 10,
+    FAILED: 10,
+    CANCELED: 10
 }
 
 _pipeline_state_inv = {}
@@ -59,10 +62,10 @@ for k, v in _pipeline_state_values.iteritems():
 _stage_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
-    SCHEDULED: 3,
-    DONE: 9,
-    FAILED: 9,
-    CANCELED: 9
+    SCHEDULED: 4,
+    DONE: 10,
+    FAILED: 10,
+    CANCELED: 10
 }
 
 _stage_state_inv = {}
@@ -78,15 +81,15 @@ for k, v in _stage_state_values.iteritems():
 _task_state_values = {
     INITIAL: 1,
     SCHEDULING: 2,
-    SCHEDULED: 3,
-    SUBMITTING: 4,
-    SUBMITTED: 5,
-    COMPLETED: 6,
-    DEQUEUEING: 7,
-    DEQUEUED: 8,
-    DONE: 9,
-    FAILED: 9,
-    CANCELED: 9
+    SCHEDULED: 4,
+    SUBMITTING: 5,
+    SUBMITTED: 6,
+    COMPLETED: 7,
+    DEQUEUEING: 8,
+    DEQUEUED: 9,
+    DONE: 10,
+    FAILED: 10,
+    CANCELED: 10
 }
 
 _task_state_inv = {}

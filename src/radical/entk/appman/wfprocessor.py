@@ -56,11 +56,13 @@ class WFprocessor(object):
         self._workflow = workflow
 
         # Create logger and profiler at their specific locations using the sid
-        self._uid = ru.generate_id('wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
+        self._uid = ru.generate_id(
+            'wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
         self._logger = ru.Logger('radical.entk.%s' %
                                  self._uid, path=self._path, targets=['2', '.'])
-        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
+        self._prof = ru.Profiler(name='radical.entk.%s' %
+                                 self._uid + '-obj', path=self._path)
 
         self._prof.prof('create wfp obj', uid=self._uid)
 
@@ -97,7 +99,8 @@ class WFprocessor(object):
             self._prof.prof('workflow initialized', uid=self._uid)
 
         except Exception, ex:
-            self._logger.exception('Fatal error while initializing workflow: %s' % ex)
+            self._logger.exception(
+                'Fatal error while initializing workflow: %s' % ex)
             raise
 
     def _enqueue(self, local_prof):
@@ -117,7 +120,8 @@ class WFprocessor(object):
             self._logger.info('enqueue-thread started')
 
             # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
@@ -136,7 +140,7 @@ class WFprocessor(object):
 
                     with pipe.lock:
 
-                        if not pipe.completed:
+                        if ((not pipe.completed) and (not pipe.state == states.SUSPENDED)):
 
                             # Test if the pipeline is already in the final state
                             if pipe.state in states.FINAL:
@@ -192,7 +196,8 @@ class WFprocessor(object):
                                         workload.append(executable_task)
 
                                         if executable_stage not in scheduled_stages:
-                                            scheduled_stages.append(executable_stage)
+                                            scheduled_stages.append(
+                                                executable_stage)
 
                 if workload:
 
@@ -221,7 +226,8 @@ class WFprocessor(object):
                                    profiler=local_prof,
                                    logger=self._logger)
 
-                        self._logger.debug('Task %s published to pending queue' % task.uid)
+                        self._logger.debug(
+                            'Task %s published to pending queue' % task.uid)
 
                 if scheduled_stages:
                     for executable_stage in scheduled_stages:
@@ -280,7 +286,8 @@ class WFprocessor(object):
             local_prof.prof('dequeue-thread started', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
@@ -289,14 +296,16 @@ class WFprocessor(object):
 
                 try:
 
-                    method_frame, header_frame, body = mq_channel.basic_get(queue=self._completed_queue[0])
+                    method_frame, header_frame, body = mq_channel.basic_get(
+                        queue=self._completed_queue[0])
 
                     if body:
 
                         # Get task from the message
                         completed_task = Task()
                         completed_task.from_dict(json.loads(body))
-                        self._logger.info('Got finished task %s from queue' % (completed_task.uid))
+                        self._logger.info(
+                            'Got finished task %s from queue' % (completed_task.uid))
 
                         transition(obj=completed_task,
                                    obj_type='Task',
@@ -311,16 +320,18 @@ class WFprocessor(object):
 
                             with pipe.lock:
 
-                                if not pipe.completed:
+                                if ((not pipe.completed) and (not pipe.state == states.SUSPENDED)):
 
                                     if completed_task.parent_pipeline['uid'] == pipe.uid:
 
-                                        self._logger.debug('Found parent pipeline: %s' % pipe.uid)
+                                        self._logger.debug(
+                                            'Found parent pipeline: %s' % pipe.uid)
 
                                         for stage in pipe.stages:
 
                                             if completed_task.parent_stage['uid'] == stage.uid:
-                                                self._logger.debug('Found parent stage: %s' % (stage.uid))
+                                                self._logger.debug(
+                                                    'Found parent stage: %s' % (stage.uid))
 
                                                 transition(obj=completed_task,
                                                            obj_type='Task',
@@ -338,7 +349,8 @@ class WFprocessor(object):
                                                 for task in stage.tasks:
 
                                                     if task.uid == completed_task.uid:
-                                                        task.state = str(completed_task.state)
+                                                        task.state = str(
+                                                            completed_task.state)
 
                                                         if (task.state == states.FAILED) and (self._resubmit_failed):
                                                             task.state = states.INITIAL
@@ -370,8 +382,8 @@ class WFprocessor(object):
 
                                                                     self._logger.info(
                                                                         'Executing post-exec for stage %s' % stage.uid)
-                                                                    self._prof.prof('Adap: executing post-exec', 
-                                                                        uid=self._uid)
+                                                                    self._prof.prof('Adap: executing post-exec',
+                                                                                    uid=self._uid)
 
                                                                     func_condition = stage.post_exec['condition']
                                                                     func_on_true = stage.post_exec['on_true']
@@ -384,7 +396,8 @@ class WFprocessor(object):
 
                                                                     self._logger.info(
                                                                         'Post-exec executed for stage %s' % stage.uid)
-                                                                    self._prof.prof('Adap: post-exec executed', uid=self._uid)
+                                                                    self._prof.prof(
+                                                                        'Adap: post-exec executed', uid=self._uid)
 
                                                                 except Exception, ex:
                                                                     self._logger.exception(
@@ -413,7 +426,8 @@ class WFprocessor(object):
                                         # Found the pipeline and processed it -- no more iterations neeeded
                                         break
 
-                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                        mq_channel.basic_ack(
+                            delivery_tag=method_frame.delivery_tag)
 
                     # Appease pika cos it thinks the connection is dead
                     now = time.time()
@@ -422,7 +436,8 @@ class WFprocessor(object):
                         last = now
 
                 except Exception, ex:
-                    self._logger.error('Unable to receive message from completed queue: %s' % ex)
+                    self._logger.error(
+                        'Unable to receive message from completed queue: %s' % ex)
                     raise
 
             self._logger.info('Terminated dequeue thread')
@@ -459,7 +474,8 @@ class WFprocessor(object):
 
         try:
 
-            local_prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(
+                name='radical.entk.%s' % self._uid + '-proc', path=self._path)
 
             local_prof.prof('wfp process started', uid=self._uid)
 
@@ -473,23 +489,27 @@ class WFprocessor(object):
                     # Start dequeue thread
                     if (not self._dequeue_thread) or (not self._dequeue_thread.is_alive()):
 
-                        local_prof.prof('creating dequeue-thread', uid=self._uid)
+                        local_prof.prof(
+                            'creating dequeue-thread', uid=self._uid)
                         self._dequeue_thread = threading.Thread(
                             target=self._dequeue, args=(local_prof,), name='dequeue-thread')
 
                         self._logger.info('Starting dequeue-thread')
-                        local_prof.prof('starting dequeue-thread', uid=self._uid)
+                        local_prof.prof(
+                            'starting dequeue-thread', uid=self._uid)
                         self._dequeue_thread.start()
 
                     # Start enqueue thread
                     if (not self._enqueue_thread) or (not self._enqueue_thread.is_alive()):
 
-                        local_prof.prof('creating enqueue-thread', uid=self._uid)
+                        local_prof.prof(
+                            'creating enqueue-thread', uid=self._uid)
                         self._enqueue_thread = threading.Thread(
                             target=self._enqueue, args=(local_prof,), name='enqueue-thread')
 
                         self._logger.info('Starting enqueue-thread')
-                        local_prof.prof('starting enqueue-thread', uid=self._uid)
+                        local_prof.prof(
+                            'starting enqueue-thread', uid=self._uid)
                         self._enqueue_thread.start()
 
                 except Exception, ex:
@@ -535,7 +555,8 @@ class WFprocessor(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Error in wfp process: %s. \n Closing enqueue, dequeue threads' % ex)
+            self._logger.error(
+                'Error in wfp process: %s. \n Closing enqueue, dequeue threads' % ex)
 
             if self._enqueue_thread:
 
@@ -572,7 +593,8 @@ class WFprocessor(object):
             try:
 
                 self._prof.prof('creating wfp process', uid=self._uid)
-                self._wfp_process = Process(target=self._wfp, name='wfprocessor')
+                self._wfp_process = Process(
+                    target=self._wfp, name='wfprocessor')
 
                 self._enqueue_thread = None
                 self._dequeue_thread = None
@@ -593,7 +615,8 @@ class WFprocessor(object):
                 raise
 
         else:
-            self._logger.warn('Wfp process already running, attempted to restart!')
+            self._logger.warn(
+                'Wfp process already running, attempted to restart!')
 
     def terminate_processor(self):
         """
@@ -604,7 +627,8 @@ class WFprocessor(object):
         try:
 
             if self.check_processor():
-                self._logger.debug('Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
+                self._logger.debug(
+                    'Attempting to end WFprocessor... event: %s' % self._wfp_terminate.is_set())
                 self._wfp_terminate.set()
                 self._wfp_process.join()
                 self._wfp_process = None
@@ -635,7 +659,8 @@ class WFprocessor(object):
             return False
 
         except Exception, ex:
-            self._logger.error('Could not check if workflow is incomplete, error:%s' % ex)
+            self._logger.error(
+                'Could not check if workflow is incomplete, error:%s' % ex)
             raise
 
     def check_processor(self):
