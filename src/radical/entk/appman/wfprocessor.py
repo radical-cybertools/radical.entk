@@ -341,10 +341,10 @@ class WFprocessor(object):
                                                            profiler=local_prof,
                                                            logger=self._logger)
 
-                                                if completed_task.exit_code:
-                                                    completed_task.state = states.FAILED
-                                                else:
+                                                if not completed_task.exit_code:
                                                     completed_task.state = states.DONE
+                                                else:
+                                                    completed_task.state = states.FAILED
 
                                                 for task in stage.tasks:
 
