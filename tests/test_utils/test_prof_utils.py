@@ -134,13 +134,13 @@ def test_write_session_description():
                                                          'task_manager'],
                                                  'uid': 'appmanager.0000'},
                              'pipeline.0000': {'cfg': {},
-                                               'children': ['stage.0000', 
+                                               'children': ['stage.0000',
                                                             'stage.0001'],
                                                'etype': 'pipeline',
                                                'has': ['stage'],
                                                'uid': 'pipeline.0000'},
                              'pipeline.0001': {'cfg': {},
-                                               'children': ['stage.0002', 
+                                               'children': ['stage.0002',
                                                             'stage.0003'],
                                                'etype': 'pipeline',
                                                'has': ['stage'],
@@ -384,7 +384,7 @@ def test_write_workflow():
                             mq_hostname=amgr._mq_hostname,
                             port=amgr._port,
                             resubmit_failed=amgr._resubmit_failed)
-    amgr._wfp._initialize_workflow()  
+    amgr._wfp._initialize_workflow()
     wf = amgr._wfp.workflow
 
     write_workflow(wf, 'test')

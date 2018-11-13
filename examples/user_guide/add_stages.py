@@ -20,7 +20,7 @@ if __name__ == '__main__':
     # Create a Pipeline object
     p = Pipeline()
 
-    # Create a Stage object 
+    # Create a Stage object
     s1 = Stage()
     s1.name = 'Stage 1'
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         # Create a Task object
         t = Task()
         t.name = 'my-task'        # Assign a name to the task (optional)
-        t.executable = ['/bin/echo']   # Assign executable to the task   
+        t.executable = ['/bin/echo']   # Assign executable to the task
         t.arguments = ['I am task %s in %s'%(cnt, s1.name)]  # Assign arguments for the task executable
 
         # Add the Task to the Stage
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         # Create a Task object
         t = Task()
         t.name = 'my-task'        # Assign a name to the task (optional, do not use ',' or '_')
-        t.executable = ['/bin/echo']   # Assign executable to the task   
+        t.executable = ['/bin/echo']   # Assign executable to the task
         t.arguments = ['I am task %s in %s'%(cnt, s2.name)]  # Assign arguments for the task executable
 
         # Add the Task to the Stage

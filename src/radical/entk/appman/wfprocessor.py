@@ -265,8 +265,8 @@ class WFprocessor(object):
             self._logger.exception('Error in enqueue-thread: %s' % ex)
             try:
                 mq_connection.close()
-            except:
-                self._logger.warning('mq_connection not created')
+            except Exception as ex:
+                self._logger.warning('mq_connection not created, %s' % ex)
 
             raise
 

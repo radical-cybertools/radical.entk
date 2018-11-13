@@ -551,7 +551,7 @@ class Task(object):
         if isinstance(val, int):
             self._lfs_per_process = val
         else:
-            raise TypeError(expected_type=int, actual_value=type(val))
+            raise TypeError(expected_type=int, actual_type=type(val))
 
     @upload_input_data.setter
     def upload_input_data(self, val):

@@ -10,7 +10,6 @@ from radical.entk.task.task import Task
 from radical.entk.utils.prof_utils import write_session_description
 from radical.entk.utils.prof_utils import write_workflow
 from wfprocessor import WFprocessor
-import sys
 import time
 import os
 import Queue
@@ -61,7 +60,7 @@ class AppManager(object):
         else:
             self._name= str()
             self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
-            
+
         self._read_config(config_path, hostname, port, reattempts,
                           resubmit_failed, autoterminate, write_workflow,
                           rts, rmq_cleanup, rts_config)
@@ -126,9 +125,9 @@ class AppManager(object):
     @property
     def name(self):
         """
-        Name for the application manager. Allows the user to setup the name of 
+        Name for the application manager. Allows the user to setup the name of
         the application manager, as well as, its session ID. This name should be
-        unique between different EnTK executions, otherwise it will produce an 
+        unique between different EnTK executions, otherwise it will produce an
         error.
 
         :getter: Returns the name of the application manager
@@ -280,7 +279,7 @@ class AppManager(object):
 
                 if not setup:
                     self._logger.error('RabbitMQ system not available')
-                    raise EnTKError(text="RabbitMQ setup failed")
+                    raise EnTKError("RabbitMQ setup failed")
 
                 self._mqs_setup = True
 

@@ -97,7 +97,7 @@ def get_session_profile(sid, src=None):
 
         # Push the exception raised by child functions
         print traceback.format_exc()
-        raise Exception
+        raise EnTKError('Error: %s'%ex)
 
 
 def write_session_description(amgr):

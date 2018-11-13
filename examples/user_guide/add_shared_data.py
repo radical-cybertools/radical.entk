@@ -14,18 +14,18 @@ port = int(os.environ.get('RMQ_PORT',5672))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def generate_pipeline():
-    
+
     # Create a Pipeline object
     p = Pipeline()
 
-    # Create a Stage object 
+    # Create a Stage object
     s1 = Stage()
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     for x in range(10):
-        t1 = Task()    
+        t1 = Task()
         t1.executable = ['cat']
-        t1.arguments = ['file1.txt','file2.txt','>','output.txt'] 
+        t1.arguments = ['file1.txt','file2.txt','>','output.txt']
         t1.copy_input_data = ['$SHARED/file1.txt', '$SHARED/file2.txt']
         t1.download_output_data = ['output.txt > %s/output_%s.txt' %(cur_dir,x+1)]
 
@@ -35,7 +35,7 @@ def generate_pipeline():
     # Add Stage to the Pipeline
     p.add_stages(s1)
 
-    return p   
+    return p
 
 if __name__ == '__main__':
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     appman.shared_data = ['%s/file1.txt' %cur_dir, '%s/file2.txt' %cur_dir]
 
     p = generate_pipeline()
-    
+
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.workflow = [p]
 

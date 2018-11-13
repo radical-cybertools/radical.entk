@@ -8,7 +8,7 @@ import hypothesis.strategies as st
 
 def test_stage_initialization():
     """
-    ***Purpose***: Test if all attributes have, thus expect, the 
+    ***Purpose***: Test if all attributes have, thus expect, the
     correct data types
     """
 
@@ -253,7 +253,7 @@ def test_stage_validate_entities(t, l, i, b, se):
 
 
 def test_stage_validate():
-    
+
     s = Stage()
     s._state = 'test'
     with pytest.raises(ValueError):
@@ -265,7 +265,7 @@ def test_stage_validate():
 
 
 def test_stage_assign_uid():
-    
+
     s = Stage()
     try:
         import glob
@@ -282,7 +282,7 @@ def test_stage_assign_uid():
 
 
 def test_stage_pass_uid():
-    
+
     s = Stage()
     s._uid = 's'
     s.name = 's1'

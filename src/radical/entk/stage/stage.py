@@ -309,8 +309,9 @@ class Stage(object):
             return True
 
         except Exception, ex:
-            raise EnTKError(text=ex)
+            raise EnTKError(ex)
 
+    @classmethod
     def _validate_entities(self, tasks):
         """
         Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
