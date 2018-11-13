@@ -1,6 +1,6 @@
 # radical.entk
 
-The documentation for Ensemble Toolkit is available at 
+The documentation for Ensemble Toolkit is available at
 [http://radicalentk.readthedocs.io/en/latest/](http://radicalentk.readthedocs.io/en/latest/)
 
 
