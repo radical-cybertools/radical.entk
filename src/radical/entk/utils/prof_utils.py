@@ -214,7 +214,7 @@ def get_session_description(sid, src=None):
     if os.path.exists(src):
 
         # EnTK profiles are always on localhost
-        desc = ru.read_json("%s/%s/%s.json" % (src, sid, sid))
+        desc = ru.read_json("%s/%s/radical.entk.%s.json" % (src, sid, sid))
 
     else:
         raise EnTKError('%s/%s does not exist' % (src, sid))
