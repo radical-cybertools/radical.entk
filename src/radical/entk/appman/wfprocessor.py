@@ -462,7 +462,7 @@ class WFprocessor(object):
             except:
                 self._logger.warning('mq_connection not created')
 
-            raise EnTKError(text=ex)
+            raise EnTKError(ex)
 
     def _wfp(self):
         """
@@ -575,7 +575,7 @@ class WFprocessor(object):
             self._logger.info('WFprocessor process terminated')
 
             print traceback.format_exc()
-            raise EnTKError(text=ex)
+            raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
