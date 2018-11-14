@@ -11,13 +11,14 @@ os:
 #env variables
 env:
   global:
-  - RADICAL_PILOT_DBURL=mongodb://entk:entk@ds129013.mlab.com:29013/travis_tests
+  - RADICAL_PILOT_DBURL=mongodb://entk:entk123@ds041218.mlab.com:41218/rc-0-7-9
   - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
 
 # command to install dependencies
 install:
   - pip install .
   - pip install coverage
+  - pip install codecov
 
 
 script:
