@@ -52,7 +52,7 @@ def test_shared_data():
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-            'resource': 'local.localhost_anaconda',
+            'resource': 'local.localhost',
             'walltime': 1,
             'cpus': 1
     }
