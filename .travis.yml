@@ -17,6 +17,7 @@ env:
 # command to install dependencies
 install:
   - pip install .
+  - pip install coverage
 
 
 script:
