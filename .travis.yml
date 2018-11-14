@@ -41,8 +41,8 @@ script:
   - coverage run -m pytest -vvv tests/test_component/test_tmgr.py
   - coverage run -m pytest -vvv tests/test_component/test_wfp.py
   - coverage run -m pytest -vvv tests/test_component/test_states.py
-  # - coverage run -m pytest -vvv test_integration/test_*
-  # - coverage run -m pytest -vvv test_issues/test_*
+  - coverage run -m pytest -vvv tests/test_integration/test_*
+  - coverage run -m pytest -vvv tests/test_issues/test_*
   - coverage run -m pytest -vvv tests/test_utils/test_*
 
 after_success:
