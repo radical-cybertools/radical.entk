@@ -23,7 +23,8 @@ install:
 before_script:
   - sleep 20  # Ensures mongodb service is up
   - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=`which python`
+  - which radical-stack
+  - LOC=` /home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages/radical/entk`
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc
   - cat .coveragerc
 
@@ -41,8 +42,8 @@ script:
   - coverage run -m pytest -vvv tests/test_component/test_tmgr.py
   - coverage run -m pytest -vvv tests/test_component/test_wfp.py
   - coverage run -m pytest -vvv tests/test_component/test_states.py
-  - coverage run -m pytest -vvv test_integration/test_*
-  - coverage run -m pytest -vvv test_issues/test_*
+  # - coverage run -m pytest -vvv test_integration/test_*
+  # - coverage run -m pytest -vvv test_issues/test_*
   - coverage run -m pytest -vvv tests/test_utils/test_*
 
 after_success:
