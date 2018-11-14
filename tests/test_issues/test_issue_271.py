@@ -41,7 +41,7 @@ def generate_pipeline():
     return p
 
 
-def test_issue_259():
+def test_issue_271():
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)
@@ -51,7 +51,7 @@ def test_issue_259():
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-        'resource': 'local.localhost_anaconda',
+        'resource': 'local.localhost',
         'walltime': 10,
         'cpus': 1
     }
