@@ -11,7 +11,7 @@ os:
 #env variables
 env:
   global:
-  - RADICAL_PILOT_DBURL=mongodb://entk:entk123@ds041218.mlab.com:41218/rc-0-7-9
+  - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
   - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
 
 # command to install dependencies
@@ -20,6 +20,9 @@ install:
   - pip install coverage
   - pip install codecov
 
+before_script:
+  - sleep 20  # Ensures mongodb service is up
+  - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
 
 script:
   - LOC=`which python`
@@ -48,3 +51,4 @@ after_success:
 # rabbitmq
 services:
 - rabbitmq
+- mongodb
