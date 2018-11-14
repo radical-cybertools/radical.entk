@@ -23,7 +23,7 @@ install:
 before_script:
   - sleep 20  # Ensures mongodb service is up
   - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=/home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages/radical/entk
+  - LOC=/home/travis/virtualenv/python2.7.13
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc
   - cat .coveragerc
 
