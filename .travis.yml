@@ -23,20 +23,20 @@ install:
 script:
   - LOC=`which python`
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc
-  - coverage run -m pytest -vvv test_component/test_amgr.py
-  - coverage run -m pytest -vvv test_component/test_modules.py
-  - coverage run -m pytest -vvv test_component/test_pipeline.py
-  - coverage run -m pytest -vvv test_component/test_rmgr_2.py
-  - coverage run -m pytest -vvv test_component/test_rmgr.py
-  - coverage run -m pytest -vvv test_component/test_stage.py
-  - coverage run -m pytest -vvv test_component/test_task.py
-  - coverage run -m pytest -vvv test_component/test_tmgr_2.py
-  - coverage run -m pytest -vvv test_component/test_tmgr_rp_utils_2.py
-  - coverage run -m pytest -vvv test_component/test_tmgr_rp_utils.py
-  - coverage run -m pytest -vvv test_component/test_tmgr.py
-  - coverage run -m pytest -vvv test_component/test_wfp.py
-  - coverage run -m pytest -vvv test_component/test_states.py
-  - coverage run -m pytest -vvv test_utils/test_*
+  - coverage run -m pytest -vvv tests/test_component/test_amgr.py
+  - coverage run -m pytest -vvv tests/test_component/test_modules.py
+  - coverage run -m pytest -vvv tests/test_component/test_pipeline.py
+  - coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py
+  - coverage run -m pytest -vvv tests/test_component/test_rmgr.py
+  - coverage run -m pytest -vvv tests/test_component/test_stage.py
+  - coverage run -m pytest -vvv tests/test_component/test_task.py
+  - coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py
+  - coverage run -m pytest -vvv tests/test_component/test_tmgr_rp_utils_2.py
+  - coverage run -m pytest -vvv tests/test_component/test_tmgr_rp_utils.py
+  - coverage run -m pytest -vvv tests/test_component/test_tmgr.py
+  - coverage run -m pytest -vvv tests/test_component/test_wfp.py
+  - coverage run -m pytest -vvv tests/test_component/test_states.py
+  - coverage run -m pytest -vvv tests/test_utils/test_*
 
 after_success:
   - coverage combine
