@@ -369,6 +369,13 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         if task.lfs_per_process:
             cud.lfs_per_process = task.lfs_per_process
 
+        if task.stdout:
+            cud.stdout = task.stdout
+        if task.stderr:
+            cud.stderr = task.stderr
+
+        print 'STDOUT', cud.stdout, task.stdout
+
         cud.input_staging = get_input_list_from_task(task, placeholder_dict)
         cud.output_staging = get_output_list_from_task(task, placeholder_dict)
 

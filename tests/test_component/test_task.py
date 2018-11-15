@@ -35,6 +35,8 @@ def test_task_initialization():
     assert t.copy_output_data == list()
     assert t.move_input_data == list()
     assert t.download_output_data == list()
+    assert t.stdout == None
+    assert t.stderr == None
     assert t.exit_code == None
     assert t.tag == None
     assert t.path == None
@@ -57,7 +59,6 @@ def test_task_exceptions(s,l,i,b):
 
     for data in data_type:
 
-
         if not isinstance(data,str):
             with pytest.raises(TypeError):
                 t.name = data
@@ -70,6 +71,12 @@ def test_task_exceptions(s,l,i,b):
 
             with pytest.raises(TypeError):
                 t.parent_pipeline = data
+
+            with pytest.raises(TypeError):
+                t.stdout = data
+
+            with pytest.raises(TypeError):
+                t.stderr = data
 
         if not isinstance(data,list):
 
@@ -199,6 +206,8 @@ def test_task_to_dict():
                     'copy_output_data': [],
                     'move_output_data': [],
                     'download_output_data': [],
+                    'stdout': None,
+                    'stderr': None,
                     'exit_code': None,
                     'path': None,
                     'tag': None,
@@ -224,6 +233,8 @@ def test_task_to_dict():
     t.copy_output_data = ['test5']
     t.move_output_data = ['test6']
     t.download_output_data = ['test7']
+    t.stdout = 'out'
+    t.stderr = 'err'
     t.exit_code = 1
     t.path = 'a/b/c'
     t.tag = 'task.0010'
@@ -258,6 +269,8 @@ def test_task_to_dict():
                     'copy_output_data': ['test5'],
                     'move_output_data': ['test6'],
                     'download_output_data': ['test7'],
+                    'stdout': 'out',
+                    'stderr': 'err',
                     'exit_code': 1,
                     'path': 'a/b/c',
                     'tag': 'task.0010',
@@ -298,6 +311,8 @@ def test_task_from_dict():
             'copy_output_data': [],
             'move_output_data': [],
             'download_output_data': [],
+            'stdout': 'out',
+            'stderr': 'err',
             'exit_code': 555,
             'path': 'here/it/is',
             'tag': 'task.0010',
@@ -325,6 +340,8 @@ def test_task_from_dict():
     assert t.copy_output_data      == d['copy_output_data']
     assert t.move_output_data      == d['move_output_data']
     assert t.download_output_data  == d['download_output_data']
+    assert t.stdout                == d['stdout']
+    assert t.stderr                == d['stderr']
     assert t.exit_code             == d['exit_code']
     assert t.path                  == d['path']
     assert t.tag                   == d['tag']

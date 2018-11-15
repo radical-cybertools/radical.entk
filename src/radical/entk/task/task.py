@@ -50,6 +50,12 @@ class Task(object):
         self._move_output_data = list()
         self._download_output_data = list()
 
+        # Name of file to write stdout and stderr of task
+        self._stdout = None
+        self._stderr = None
+
+        # Additional attributes that help in mapping tasks
+        # to cuds and cus to tasks
         self._path = None
         self._exit_code = None
         self._tag = None
@@ -324,6 +330,31 @@ class Task(object):
         :arguments: list of strings
         """
         return self._download_output_data
+
+    @property
+    def stdout(self):
+        """
+        Name of the file to which stdout of task is to be written
+
+        :getter: return name of stdout file
+        :setter: assign name of stdout file
+        :arguments: str
+        """
+
+        return self._stdout
+
+    @property
+    def stderr(self):
+        """
+        Name of the file to which stderr of task is to be written
+
+        :getter: return name of stderr file
+        :setter: assign name of stderr file
+        :arguments: str
+        """
+
+        return self._stderr
+
 
     @property
     def exit_code(self):
@@ -604,6 +635,20 @@ class Task(object):
         else:
             raise TypeError(expected_type=list, actual_type=type(val))
 
+    @stdout.setter
+    def stdout(self, val):
+        if isinstance(val, str):
+            self._stdout = val
+        else:
+            raise TypeError(expected_type=str, actual_type=type(val))
+
+    @stderr.setter
+    def stderr(self, val):
+        if isinstance(val, str):
+            self._stderr = val
+        else:
+            raise TypeError(expected_type=str, actual_type=type(val))
+
     @exit_code.setter
     def exit_code(self, val):
         if isinstance(val, int):
@@ -674,6 +719,9 @@ class Task(object):
             'copy_output_data': self._copy_output_data,
             'move_output_data': self._move_output_data,
             'download_output_data': self._download_output_data,
+
+            'stdout': self._stdout,
+            'stderr': self._stderr,
 
             'exit_code': self._exit_code,
             'path': self._path,
@@ -816,6 +864,20 @@ class Task(object):
             else:
                 raise TypeError(expected_type=list, actual_type=type(
                     d['download_output_data']))
+
+        if 'stdout' in d:
+            if d['stdout']:
+                if isinstance(d['stdout'], str) or isinstance(d['stdout'], unicode):
+                    self._stdout = d['stdout']
+                else:
+                    raise TypeError(expected_type=str, actual_type=type(d['stdout']))
+
+        if 'stderr' in d:
+            if d['stderr']:
+                if isinstance(d['stderr'], str) or isinstance(d['stderr'], unicode):
+                    self._stderr = d['stderr']
+                else:
+                    raise TypeError(expected_type=str, actual_type=type(d['stderr']))
 
         if 'exit_code' in d:
             if d['exit_code']:

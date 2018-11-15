@@ -26,7 +26,8 @@ def generate_pipeline():
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
     t1.executable = ['cat']
-    t1.arguments = ['file1.txt','file2.txt','>','output.txt']
+    t1.arguments = ['file1.txt','file2.txt']
+    t1.stdout = 'output.txt'
     t1.copy_input_data = ['$SHARED/file1.txt', '$SHARED/file2.txt']
     t1.download_output_data = ['output.txt > %s/output.txt' %cur_dir]
 

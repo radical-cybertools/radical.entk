@@ -30,7 +30,8 @@ def generate_pipeline():
     t1 = Task()
     t1.name = 't1'
     t1.executable = ['/bin/echo']
-    t1.arguments = ['"Hello World"','>>','temp.txt']
+    t1.arguments = ['"Hello World"']
+    t1.stdout = 'temp.txt'
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -46,9 +47,8 @@ def generate_pipeline():
     t2 = Task()
     t2.name = 't2'
     t2.executable = ['/bin/cat']
-    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt'%(p.name, s1.name, t1.name),
-                    '>>',
-                    'output.txt']
+    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt'%(p.name, s1.name, t1.name)]
+    t2.stdout = 'output.txt'
     t2.download_output_data = ['output.txt']
 
     # Add the Task to the Stage
