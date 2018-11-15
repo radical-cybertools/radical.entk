@@ -1,5 +1,11 @@
 # Changelog for each release
 
+## Changelog for 0.7.9
+
+* Issues resolved in 0.7.9 milestone: https://github.com/radical-cybertools/radical.entk/milestone/11?closed=1
+* Included ability to suspend and resume pipeline execution
+* Several bug fixes
+
 ## Changelog for 0.7.8
 
 * Hotfix for issue 259
