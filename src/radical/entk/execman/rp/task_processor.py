@@ -96,7 +96,7 @@ def resolve_arguments(args, placeholder_dict):
             if placeholder == "$SHARED":
                 entry = entry.replace(placeholder, '$RP_PILOT_STAGING')
 
-            else:
+            elif placeholder.startswith('$Pipeline'):
                 broken_placeholder = placeholder.split('_')
 
                 if not len(broken_placeholder) == 6:
@@ -123,14 +123,33 @@ def resolve_arguments(args, placeholder_dict):
     return resolved_args
 
 
+def resolve_tags(tag, parent_pipeline_name, placeholder_dict):
+
+    # Check self pipeline first
+    for stage_name in placeholder_dict[parent_pipeline_name].keys():
+        for task_name in placeholder_dict[parent_pipeline_name][stage_name].keys():
+            if tag == task_name:
+                return placeholder_dict[parent_pipeline_name][stage_name][task_name]['rts_uid']
+
+    for pipeline_name in placeholder_dict.keys():
+        if pipeline_name != parent_pipeline_name:
+            for stage_name in placeholder_dict[pipeline_name].keys():
+                for task_name in placeholder_dict[pipeline_name][stage_name].keys():
+                    if tag == task_name:
+                        return placeholder_dict[pipeline_name][stage_name][task_name]['rts_uid']
+
+    raise EnTKError(msg="Tag %s cannot be used as no previous task with that name is found" %tag)
+
+
+
 def get_input_list_from_task(task, placeholder_dict):
     """
-    Purpose: Parse a Task object to extract the files to be staged as the output. 
+    Purpose: Parse a Task object to extract the files to be staged as the output.
 
     Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
     is to be copied/downloaded.
 
-    :arguments: 
+    :arguments:
         :task: EnTK Task object
         :placeholder_dict: dictionary holding the values for placeholders
 
@@ -238,12 +257,12 @@ def get_input_list_from_task(task, placeholder_dict):
 
 def get_output_list_from_task(task, placeholder_dict):
     """
-    Purpose: Parse a Task object to extract the files to be staged as the output. 
+    Purpose: Parse a Task object to extract the files to be staged as the output.
 
     Details: The extracted data is then converted into the appropriate RP directive depending on whether the data
     is to be copied/downloaded.
 
-    :arguments: 
+    :arguments:
         :task: EnTK Task object
         :placeholder_dict: dictionary holding the values for placeholders
 
@@ -317,7 +336,7 @@ def get_output_list_from_task(task, placeholder_dict):
                         'target': os.path.basename(path.split('>')[0].strip()),
                         'action': rp.MOVE
                     }
-                    
+
                 output_data.append(temp)
 
 
@@ -333,7 +352,7 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
     """
     Purpose: Create a Compute Unit description based on the defined Task.
 
-    :arguments: 
+    :arguments:
         :task: EnTK Task object
         :placeholder_dict: dictionary holding the values for placeholders
 
@@ -356,7 +375,10 @@ def create_cud_from_task(task, placeholder_dict, prof=None):
         cud.arguments = resolve_arguments(task.arguments, placeholder_dict)
         cud.post_exec = task.post_exec
         if task.tag:
-            cud.tag = resolve_tags(task.tag, placeholder_dict)
+            if task.parent_pipeline['name']:
+                cud.tag = resolve_tags( tag=task.tag,
+                                        parent_pipeline_name=task.parent_pipeline['name'],
+                                        placeholder_dict=placeholder_dict)
 
         cud.cpu_processes = task.cpu_reqs['processes']
         cud.cpu_threads = task.cpu_reqs['threads_per_process']
@@ -394,12 +416,12 @@ def create_task_from_cu(cu, prof=None):
     Purpose: Create a Task based on the Compute Unit.
 
     Details: Currently, only the uid, parent_stage and parent_pipeline are retrieved. The exact initial Task (that was
-    converted to a CUD) cannot be recovered as the RP API does not provide the same attributes for a CU as for a CUD. 
+    converted to a CUD) cannot be recovered as the RP API does not provide the same attributes for a CU as for a CUD.
     Also, this is not required for the most part.
 
     TODO: Add exit code, stdout, stderr and path attributes to a Task. These can be extracted from a CU
 
-    :arguments: 
+    :arguments:
         :cu: RP Compute Unit
 
     :return: Task

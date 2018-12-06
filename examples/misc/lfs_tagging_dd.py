@@ -30,7 +30,7 @@ def get_pipeline(shared_fs=False, size=1):
         else:
             t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
 
-        t.cpu_reqs['processes'] = 1        
+        t.cpu_reqs['processes'] = 1
         t.cpu_reqs['threads_per_process'] = 24
         t.cpu_reqs['thread_type'] = ''
         t.cpu_reqs['process_type'] = ''
@@ -60,7 +60,7 @@ def get_pipeline(shared_fs=False, size=1):
         s2.add_tasks(t)
 
 
-    p.add_stages(s2)    
+    p.add_stages(s2)
 
     return p
 
@@ -90,11 +90,11 @@ if __name__ == '__main__':
                 'project'       : 'unc100'
                 # 'project'       : 'gk4',
                 # 'queue'         : 'high'
-            }    
+            }
 
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
     p = get_pipeline(shared_fs=shared_fs, size=size)
     appman.workflow = [p]
-    appman.run()    
+    appman.run()
