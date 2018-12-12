@@ -1,6 +1,17 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
+'''
+This example represents the ensemble of pipelines pattern created with the
+EnTK API. The tasks are simple unix commands but the API and the usage of the
+PST model should give the users an idea on how to compose their applications.
+
+This application is a workflow composed of multiple pipelines and 2 stages per
+pipeline. Each task of the first stage executes a /bin/echo command and writes
+the output to a file. The second stage has one task which prints the output of
+the task to another file.
+'''
+
 # ------------------------------------------------------------------------------
 # USER VARIABLES
 # ------------------------------------------------------------------------------
@@ -13,7 +24,7 @@ num_pipelines = 5
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
-# Description of how the RabbitMQ process is accessible
+# RabbitMQ configuration
 # No need to change/set any variables if you installed RabbitMQ has a system
 # process. If you are running RabbitMQ under a docker container or another
 # VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running

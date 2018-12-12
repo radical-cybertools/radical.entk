@@ -2,8 +2,15 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 '''
-Application with a workflow composed of a pipeline and two stages. Each task of
-the first stage ...; each task of the second pipeline ....
+This example represents the simulation analysis loop pattern created with the
+EnTK API. The tasks are simple unix commands but the API and the usage of the
+PST model should give the users an idea on how to compose their applications.
+
+This application is a workflow composed of a pipeline and 4 stages. Each task of
+the first and third stage execute /bin/echo command and write the output to a
+file. The second and fourth stages have one task each and these tasks
+concatenate the output of all tasks from the first and second stages
+respectively.
 '''
 
 # ------------------------------------------------------------------------------
