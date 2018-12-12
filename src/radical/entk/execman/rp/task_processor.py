@@ -49,14 +49,14 @@ def resolve_placeholders(path, placeholder_dict):
         if not len(broken_placeholder) == 6:
             raise ValueError(
                 obj='placeholder',
-                attribute='segments',
+                attribute='task',
                 expected_value='$Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name) or $SHARED',
                 actual_value=broken_placeholder)
 
         pipeline_name = broken_placeholder[1]
         stage_name = broken_placeholder[3]
         task_name = broken_placeholder[5]
-        resolve_placeholder = None
+        resolved_placeholder = None
 
         if pipeline_name in placeholder_dict.keys():
             if stage_name in placeholder_dict[pipeline_name].keys():
@@ -72,14 +72,14 @@ def resolve_placeholders(path, placeholder_dict):
         else:
             logger.warning('%s not assigned to any Pipeline' % (pipeline_name))
 
-        if not resolve_placeholder:
+        if not resolved_placeholder:
             logger.warning('No placeholder could be found for task name %s \
                         stage name %s and pipeline name %s. Please be sure to \
                         use object names and not uids in your references,i.e, \
                         $Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name)')
             raise ValueError(
                 obj='placeholder',
-                attribute='segments',
+                attribute='task',
                 expected_value='$Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name) or $SHARED',
                 actual_value=broken_placeholder)
 
