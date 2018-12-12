@@ -68,10 +68,10 @@ def generate_pipeline(i):
     t.arguments = ['./output_sim_*','>','output_ana_pipe_%s.txt'%i]
     t.copy_input_data = list()
 
-    t.copy_input_data.append('$Pipeline_%s_Stage_%s_Task_%s/output_ana_pipe_%s.txt' % (  p.name,
-                                                                                        sim.name,
-                                                                                        sim_task_uids,
-                                                                                        i))
+    t.copy_input_data.append('$Pipeline_%s_Stage_%s_Task_%s/output_sim_%s.txt' % (  p.name,
+                                                                                    sim.name,
+                                                                                    sim_task_uids,
+                                                                                    i))
 
     t.download_output_data = ['output_ana_pipe_%s.txt'%i]
 
