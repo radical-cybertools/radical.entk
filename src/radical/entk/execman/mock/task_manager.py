@@ -3,7 +3,7 @@ __author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__ = "MIT"
 
 import radical.utils as ru
-from radical.entk.exceptions import *
+from radical.entk.exceptions import EnTKError
 import threading
 from multiprocessing import Process, Event
 from radical.entk import states, Task
@@ -15,6 +15,7 @@ import os
 import uuid
 from ..base.task_manager import Base_TaskManager
 from radical.entk.utils.init_transition import transition
+import Queue
 
 
 class TaskManager(Base_TaskManager):
@@ -73,30 +74,57 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            local_prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-proc', path=self._path)
+            def heartbeat_response(mq_channel):
+
+                try:
+
+                    # Get request from heartbeat-req for heartbeat response
+                    hb_method_frame, hb_props, hb_body = mq_channel.basic_get(
+                        queue=self._hb_request_q)
+
+                    if hb_body:
+
+                        logger.info('Received heartbeat request')
+
+                        mq_channel.basic_publish(exchange='',
+                                                 routing_key=self._hb_response_q,
+                                                 properties=pika.BasicProperties(
+                                                     correlation_id=hb_props.correlation_id),
+                                                 body='response')
+
+                        logger.info('Sent heartbeat response')
+                        mq_channel.basic_ack(
+                            delivery_tag=hb_method_frame.delivery_tag)
+
+                except Exception, ex:
+                    logger.exception(
+                        'Failed to respond to heartbeat request, error: %s' % ex)
+                    raise
+
+            local_prof = ru.Profiler(
+                name='radical.entk.%s' % self._uid + '-proc', path=self._path)
 
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
 
-            placeholder_dict = dict()
-
-            def load_placeholder(task):
-
-                parent_pipeline = str(task.parent_pipeline['name'])
-                parent_stage = str(task.parent_stage['name'])
-
-                if parent_pipeline not in placeholder_dict:
-                    placeholder_dict[parent_pipeline] = dict()
-
-                if parent_stage not in placeholder_dict[parent_pipeline]:
-                    placeholder_dict[parent_pipeline][parent_stage] = dict()
-
-                if None not in [parent_pipeline, parent_stage, task.name]:
-                    placeholder_dict[parent_pipeline][parent_stage][str(task.name)] = str(task.path)
-
             # Thread should run till terminate condtion is encountered
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+            mq_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=mq_hostname, port=port))
             mq_channel = mq_connection.channel()
+
+            # Queue for communication between threads of this process
+            task_queue = Queue.Queue()
+
+            # Start second thread to receive tasks and push to RTS
+            self._rts_runner = threading.Thread(target=self._process_tasks,
+                                                args=(task_queue,
+                                                      rmgr,
+                                                      logger,
+                                                      mq_hostname,
+                                                      port,
+                                                      local_prof,
+                                                      self._sid))
+            self._rts_runner.start()
 
             local_prof.prof('tmgr infrastructure setup done', uid=uid)
 
@@ -105,124 +133,146 @@ class TaskManager(Base_TaskManager):
 
                 try:
 
-                    method_frame, header_frame, body = mq_channel.basic_get(queue=pending_queue[0])
+                    method_frame, header_frame, body = mq_channel.basic_get(
+                        queue=pending_queue[0])
 
                     if body:
 
                         body = json.loads(body)
-                        bulk_tasks = list()
-                        bulk_cuds = list()
+                        task_queue.put(body)
 
-                        for task in body:
-                            t = Task()
-                            t.from_dict(task)
-                            bulk_tasks.append(t)
+                        mq_channel.basic_ack(
+                            delivery_tag=method_frame.delivery_tag)
 
-                            transition(obj=t,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTING,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-
-                        for task in bulk_tasks:
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.SUBMITTED,
-                                       channel=mq_channel,
-                                       queue='%s-tmgr-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=self._logger)
-                            self._logger.info('Task %s submitted to RTS' % (task.uid))
-
-                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                        for task in bulk_tasks:
-
-                            transition(obj=task,
-                                       obj_type='Task',
-                                       new_state=states.COMPLETED,
-                                       channel=mq_channel,
-                                       queue='%s-cb-to-sync' % self._sid,
-                                       profiler=local_prof,
-                                       logger=logger)
-
-                            task_as_dict = json.dumps(task.to_dict())
-
-                            mq_channel.basic_publish(exchange='',
-                                                     routing_key='%s-completedq-1' % self._sid,
-                                                     body=task_as_dict
-                                                     # properties=pika.BasicProperties(
-                                                     # make message persistent
-                                                     #    delivery_mode = 2,
-                                                     #)
-                                                     )
-
-                            logger.info('Pushed task %s with state %s to completed queue %s' % (
-                                task.uid,
-                                task.state,
-                                completed_queue[0])
-                            )
-
-                    # Appease pika cos it thinks the connection is dead
-                    now = time.time()
-                    if now - last >= self._rmq_ping_interval:
-                        mq_connection.process_data_events()
-                        last = now
-
-                except Exception as ex:
-                    logger.exception('Error in tmgr: %s' % ex)
-                    raise
-
-                try:
-
-                    # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = mq_channel.basic_get(queue=self._hb_request_q)
-
-                    if body:
-
-                        logger.info('Received heartbeat request')
-
-                        mq_channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(correlation_id=props.correlation_id),
-                                                 body='response')
-
-                        logger.info('Sent heartbeat response')
-                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                    heartbeat_response(mq_channel)
 
                 except Exception, ex:
-                    logger.exception('Failed to respond to heartbeat request, error: %s' % ex)
+                    logger.exception('Error in task execution: %s' % ex)
                     raise
-
-            mq_connection.close()
 
         except KeyboardInterrupt:
 
             self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
-            raise KeyboardInterrupt
 
         except Exception, ex:
 
             print traceback.format_exc()
-            raise EnTKError(text=ex)
+            raise EnTKError(ex)
 
         finally:
 
-            try:
-                mq_connection.close()
-            except:
-                self._logger.warning('mq_connection not created')
-
             local_prof.prof('terminating tmgr process', uid=uid)
+
+            if self._rts_runner:
+                self._rts_runner.join()
+
+            mq_connection.close()
             local_prof.close()
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public Methods
-    # ------------------------------------------------------------------------------------------------------------------
+    def _process_tasks(self, task_queue, rmgr, logger, mq_hostname, port, local_prof, sid):
+
+        def load_placeholder(task):
+
+            parent_pipeline = str(task.parent_pipeline['name'])
+            parent_stage = str(task.parent_stage['name'])
+
+            if parent_pipeline not in placeholder_dict:
+                placeholder_dict[parent_pipeline] = dict()
+
+            if parent_stage not in placeholder_dict[parent_pipeline]:
+                placeholder_dict[parent_pipeline][parent_stage] = dict()
+
+            if None not in [parent_pipeline, parent_stage, task.name]:
+                placeholder_dict[parent_pipeline][parent_stage][str(
+                    task.name)] = str(task.path)
+
+        placeholder_dict = dict()
+
+        mq_connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=mq_hostname, port=port))
+        mq_channel = mq_connection.channel()
+
+        try:
+
+            while not self._tmgr_terminate.is_set():
+
+                body = None
+
+                try:
+                    body = task_queue.get(block=True, timeout=10)
+                except Queue.Empty:
+                    # Ignore empty exception, we don't always have new tasks to run
+                    pass
+
+                if body:
+
+                    task_queue.task_done()
+
+                    bulk_tasks = list()
+                    bulk_cuds = list()
+
+                    for task in body:
+                        t = Task()
+                        t.from_dict(task)
+                        bulk_tasks.append(t)
+
+                        transition(obj=t,
+                                   obj_type='Task',
+                                   new_state=states.SUBMITTING,
+                                   channel=mq_channel,
+                                   queue='%s-tmgr-to-sync' % self._sid,
+                                   profiler=local_prof,
+                                   logger=self._logger)
+
+                    for task in bulk_tasks:
+
+                        transition(obj=task,
+                                   obj_type='Task',
+                                   new_state=states.SUBMITTED,
+                                   channel=mq_channel,
+                                   queue='%s-tmgr-to-sync' % self._sid,
+                                   profiler=local_prof,
+                                   logger=self._logger)
+                        self._logger.info(
+                            'Task %s submitted to RTS' % (task.uid))
+
+                    for task in bulk_tasks:
+
+                        transition(obj=task,
+                                   obj_type='Task',
+                                   new_state=states.COMPLETED,
+                                   channel=mq_channel,
+                                   queue='%s-cb-to-sync' % self._sid,
+                                   profiler=local_prof,
+                                   logger=logger)
+
+                        task_as_dict = json.dumps(task.to_dict())
+
+                        mq_channel.basic_publish(exchange='',
+                                                 routing_key='%s-completedq-1' % self._sid,
+                                                 body=task_as_dict
+                                                 # properties=pika.BasicProperties(
+                                                 # make message persistent
+                                                 #    delivery_mode = 2,
+                                                 # )
+                                                 )
+
+                        logger.info('Pushed task %s with state %s to completed queue %s-completedq-1' % (
+                            task.uid,
+                            task.state,
+                            sid))
+
+        except KeyboardInterrupt as ex:
+            logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                         'trying to cancel task processor gracefully...')
+
+        except Exception as ex:
+            print traceback.format_exc()
+            raise EnTKError(ex)
+        # ------------------------------------------------------------------------------------------------------------------
+        # Public Methods
+        # ------------------------------------------------------------------------------------------------------------------
 
     def start_manager(self):
         """
@@ -263,6 +313,7 @@ class TaskManager(Base_TaskManager):
                 raise
 
         else:
-            self._logger.warn('tmgr process already running, but attempted to restart!')
+            self._logger.warn(
+                'tmgr process already running, but attempted to restart!')
 
     # ------------------------------------------------------------------------------------------------------------------
