@@ -61,11 +61,18 @@ class TaskManager(Base_TaskManager):
 
     def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
         """
-        **Purpose**: Method to be run by the tmgr process. This method receives a Task from the pending_queue
-        and submits it to the RTS. Currently, it also converts Tasks into CUDs and CUs into (partially described) Tasks.
-        This conversion is necessary since the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU, they
-        are then pushed to the completed_queue. At all state transititons, they are synced (blocking) with the AppManager
-        in the master process.
+        **Purpose**: This method has 3 purposes: Respond to a heartbeat thread indicating the live-ness of the RTS,
+        receive tasks from the pending_queue, start a new thread that processes these tasks and submits to the RTS.
+        
+        It is important to separate the reception of the tasks from their processing due to RMQ/AMQP design. The
+        channel (i.e., the thread that holds the channel) that is receiving msgs from the RMQ server needs to be
+        non-blocking as it can interfere with the heartbeat intervals of RMQ. Processing a large number of tasks can
+        considerable time and can block the communication channel. Hence, the two are separated.
+        
+        The new thread is responsible for pushing completed tasks (returned by the RTS) to the dequeueing queue.
+        It also converts Tasks into CUDs and CUs into (partially described) Tasks. This conversion is necessary since 
+        the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU, they are then pushed to the
+        completed_queue. At all state transititons, they are synced (blocking) with the AppManager in the master process.
 
         In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-request queue. It responds with a
         'response' message to the heartbeart-response queue.
@@ -178,6 +185,12 @@ class TaskManager(Base_TaskManager):
             local_prof.close()
 
     def _process_tasks(self, task_queue, rmgr, logger, mq_hostname, port, local_prof, sid):
+
+
+        '''
+        **Purpose**: The new thread that gets spawned by the main tmgr process invokes this function. This
+        function receives tasks from 'task_queue' and submits them to the RADICAL Pilot RTS.
+        '''
 
         placeholder_dict = dict()
 
