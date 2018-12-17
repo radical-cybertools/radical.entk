@@ -70,7 +70,7 @@ class Base_TaskManager(object):
         if isinstance(rmgr, Base_ResourceManager):
             self._rmgr = rmgr
         else:
-            raise TypeError(expected_type=ResourceManager, actual_type=type(rmgr))
+            raise TypeError(expected_type=Base_ResourceManager, actual_type=type(rmgr))
 
         self._rts = rts
 
