@@ -233,6 +233,9 @@ def write_workflow(workflow, uid):
     if os.path.isfile('%s/entk_workflow.json' % uid):
         data = ru.read_json('%s/entk_workflow.json' % uid)
 
+    stack = ru.stack()
+    data.append({'stack': stack})
+
     for pipe in workflow:
 
         p = dict()
