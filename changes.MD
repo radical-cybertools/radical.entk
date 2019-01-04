@@ -1,5 +1,10 @@
 # Changelog for each release
 
+## Changelog for 0.7.11
+
+* Issues resolved in 0.7.10 milestone: https://github.com/radical-cybertools/radical.entk/milestone/12
+* Separated the CU creation from RMQ Communication thread
+
 ## Changelog for 0.7.9
 
 * Issues resolved in 0.7.9 milestone: https://github.com/radical-cybertools/radical.entk/milestone/11?closed=1

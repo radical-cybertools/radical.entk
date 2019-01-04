@@ -1,4 +1,4 @@
-from radical.entk.execman.rp.task_processor import create_task_from_cu, resolve_arguments
+from radical.entk.execman.rp.task_processor import create_task_from_cu, resolve_arguments, resolve_tags
 from radical.entk.exceptions import *
 from radical.entk import Task, Stage, Pipeline
 import radical.pilot as rp
@@ -38,19 +38,19 @@ def test_create_task_from_cu():
 
 def test_resolve_args():
 
-    pipeline = str(ru.generate_id('pipeline'))
-    stage = str(ru.generate_id('stage'))
-    t1 = str(ru.generate_id('task'))
-    t2 = str(ru.generate_id('task'))
+    pipeline_name = 'p1'
+    stage_name = 's1'
+    t1_name = 't1'
+    t2_name = 't2'
 
     placeholder_dict = {
-        pipeline: {
-            stage: {
-                t1: {
+        pipeline_name: {
+            stage_name: {
+                t1_name: {
                     'path': '/home/vivek/t1',
                     'rts_uid': 'unit.0002'
                 },
-                t2: {
+                t2_name: {
                     'path': '/home/vivek/t2',
                     'rts_uid': 'unit.0003'
                 }
@@ -59,9 +59,43 @@ def test_resolve_args():
     }
 
     arguments = ['$SHARED',
-                 '$Pipeline_%s_Stage_%s_Task_%s' % (pipeline, stage, t1),
-                 '$Pipeline_%s_Stage_%s_Task_%s' % (pipeline, stage, t2)]
+                 '$Pipeline_%s_Stage_%s_Task_%s' % (pipeline_name, stage_name, t1_name),
+                 '$Pipeline_%s_Stage_%s_Task_%s' % (pipeline_name, stage_name, t2_name),
+                 '$NODE_LFS_PATH/test.txt']
 
     assert resolve_arguments(arguments, placeholder_dict) == ['$RP_PILOT_STAGING',
                                                               '/home/vivek/t1',
-                                                              '/home/vivek/t2']
+                                                              '/home/vivek/t2',
+                                                              '$NODE_LFS_PATH/test.txt']
+
+
+def test_resolve_tags():
+
+    pipeline_name = 'p1'
+    stage_name = 's1'
+    t1_name = 't1'
+    t2_name = 't2'
+
+    placeholder_dict = {
+        pipeline_name: {
+            stage_name: {
+                t1_name: {
+                    'path': '/home/vivek/t1',
+                    'rts_uid': 'unit.0002'
+                },
+                t2_name: {
+                    'path': '/home/vivek/t2',
+                    'rts_uid': 'unit.0003'
+                }
+            }
+        }
+    }
+
+    assert resolve_tags(tag=t1_name,
+                        parent_pipeline_name=pipeline_name,
+                        placeholder_dict=placeholder_dict) == 'unit.0002'
+
+    with pytest.raises(EnTKError):
+        resolve_tags(   tag='t3',
+                        parent_pipeline_name=pipeline_name,
+                        placeholder_dict=placeholder_dict) == 'unit.0002'
