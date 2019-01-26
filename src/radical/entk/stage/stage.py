@@ -176,27 +176,27 @@ class Stage(object):
 
         import types
 
-        if not isinstance(condition, types.FunctionType):
+        if not callable(condition):
 
             raise TypeError(entity='stage %s branch' % self._uid,
-                            expected_type=types.FunctionType,
+                            expected_type='callable',
                             actual_type=type(condition)
                             )
 
         self._condition = condition
 
-        if not isinstance(on_true, types.FunctionType):
+        if not callable(on_true):
 
             raise TypeError(entity='stage %s on_true' % self._uid,
-                            expected_type=types.FunctionType,
+                            expected_type='callable',
                             actual_type=type(on_true))
 
         self._on_true = on_true
 
-        if not isinstance(on_false, types.FunctionType):
+        if not callable(on_false):
 
             raise TypeError(entity='stage %s on_false' % self._uid,
-                            expected_type=types.FunctionType,
+                            expected_type='callable',
                             actual_type=type(on_false))
 
         self._on_false = on_false
