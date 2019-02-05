@@ -29,9 +29,7 @@ class Stage(object):
         # Pipeline this stage belongs to
         self._p_pipeline = {'uid': None, 'name': None}
 
-        self._post_exec = {'condition': None,
-                           'on_true': None,
-                           'on_false': None}
+        self._post_exec = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -159,48 +157,13 @@ class Stage(object):
     @post_exec.setter
     def post_exec(self, val):
 
-        if isinstance(val, dict):
-            self._post_exec = val
-        else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
-
-        if set(['condition', 'on_true', 'on_false']) != set(val.keys()):
-            raise ValueError(obj=self._uid,
-                             attribute='post_exec',
-                             expected_value="'condition', 'on_true', 'on_false'",
-                             actual_value='%s' % val.keys())
-
-        condition = self._post_exec['condition']
-        on_true = self._post_exec['on_true']
-        on_false = self._post_exec['on_false']
-
-        import types
-
-        if not isinstance(condition, types.FunctionType):
+        if not callable(val):
 
             raise TypeError(entity='stage %s branch' % self._uid,
-                            expected_type=types.FunctionType,
-                            actual_type=type(condition)
-                            )
+                            expected_type=callable,
+                            actual_type=type(val))
 
-        self._condition = condition
-
-        if not isinstance(on_true, types.FunctionType):
-
-            raise TypeError(entity='stage %s on_true' % self._uid,
-                            expected_type=types.FunctionType,
-                            actual_type=type(on_true))
-
-        self._on_true = on_true
-
-        if not isinstance(on_false, types.FunctionType):
-
-            raise TypeError(entity='stage %s on_false' % self._uid,
-                            expected_type=types.FunctionType,
-                            actual_type=type(on_false))
-
-        self._on_false = on_false
-
+        self._post_exec = val
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
