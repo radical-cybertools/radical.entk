@@ -15,7 +15,7 @@ To install the Ensemble Toolkit, we need to create a virtual environment. Open a
         source $HOME/myenv/bin/activate
 
 
-The suggested to use is the released version of EnTK which you can install
+It is suggested to use the released version of EnTK which you can install
 by executing the following command in your virtualenv:
 
 .. code-block:: bash
@@ -50,10 +50,10 @@ Installing rabbitmq
 Installing rabbitmq as a system process (sudo privileges required)
 ------------------------------------------------------------------
 
-Ensemble toolkit relies on RabbitMQ for message transfers. Installation
-instructions can be found at ```https://www.rabbitmq.com/download.html```. At
+Ensemble Toolkit relies on RabbitMQ for message transfers. Installation
+instructions can be found at <https://www.rabbitmq.com/download.html>. At
 the end of the installation run ```rabbitmq-server``` to start the server.
-RabbitMQ needs to be installed on the same machine as where EnTK is installed.
+RabbitMQ needs to be installed on the same machine as EnTK is installed.
 
 In some cases, you might have to explicitly start the rabbitmq-server after
 installation. You can check if the rabbitmq-server process is alive. If not,
@@ -131,7 +131,7 @@ a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 .. warning:: If you want to run your application on your laptop or private
             workstation, but run your MD tasks on a remote HPC cluster,
             installing MongoDB on your laptop or workstation won't work.
-            Your laptop or workstations usually does not have a public IP
+            Your laptop or workstation usually does not have a public IP
             address and is hidden behind a masked and firewalled home or office
             network. This means that the components running on the HPC cluster
             will not be able to access the MongoDB server.
@@ -152,7 +152,7 @@ http://docs.mongodb.org/manual/installation/
 **MongoDB-as-a-Service**
 
 There are multiple commercial providers of hosted MongoDB services, some of them
-offering free usage tiers. We have had some good experience with the following:
+offer free usage tiers. We have had some good experience with the following:
 
 * https://mongolab.com/
 
@@ -192,7 +192,7 @@ Setting up GSISSH access to a machine is a bit more complicated. We have documen
 trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute
 all the commands, see comments for details.
 
-The above links document the overall procedure and get certificates to access XSEDE machines. Depending on the machine
+The above links document the overall procedure and how to get certificates to access XSEDE machines. Depending on the machine
 you want to access, you will have to get the certificates from the corresponding locations. In most cases, this
 information is available in their user guide.
 
