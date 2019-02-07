@@ -18,7 +18,7 @@ or find it in your virtualenv under ``share/radical.entk/user_guide/scripts``.
         
 
 Below, you can see the code snippet that shows how you can create a workflow with two Pipelines. You simple create more 
-another Pipeline objects, populate them with Stages and Tasks and create the workflow as a set of two Pipelines 
+Pipeline objects, populate them with Stages and Tasks and create the workflow as a set of two Pipelines 
 and assign them to the Application Manager. 
 
 .. literalinclude:: ../../examples/user_guide/add_pipelines.py
