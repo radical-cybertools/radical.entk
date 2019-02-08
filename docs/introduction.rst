@@ -43,19 +43,19 @@ are used directly by the user. The **Pipeline**, **Stage** and **Task** are
 components used to create the application by describing its task graph. We will 
 soon take a look into how these can be used to create an application.
 
-The **Application Manager** is an internal components, that takes the workflow 
-described by the user and converts them into a set of **workloads**, i.e. tasks
+The **Application Manager** is an internal component, that takes a workflow 
+described by the user and converts it into a set of **workloads**, i.e. tasks
 with no dependencies by parsing through the workflow and identifying, during 
 runtime, tasks with equivalent or no dependencies. The Application Manager
 also accepts the description of the resource request (with resource
 label, walltime, cpus, gpus, user credentials) to be created.
 
 The **Execution Manager** is the last component in Ensemble Toolkit. It 
-accepts the workload prepared by the Application Manager and executes them on 
+accepts the workloads prepared by the Application Manager and executes them on 
 the specified resource using a Runtime system (RTS). Internally, it consists of 
 two subcomponents: ResourceManager and TaskManager, that are responsible for the
 allocation, management, and deallocation of resources, and execution management
-of tasks respectively. The Execution Manager is currently configured to use
+of tasks, respectively. The Execution Manager is currently configured to use
 `RADICAL Pilot (RP) <http://radicalpilot.readthedocs.org>`_ as the runtime 
 system, but can be extended to other RTS.
 
@@ -89,15 +89,15 @@ or directly plot the required fields.
 
 Dependencies such as RP and Pandas are automatically installed when installing 
 EnTK. RabbitMQ, on the other hand, needs to be installed manually by the user.
-Instructions for all are provided in :ref:`here <installation>`.
+Instructions are provided :ref:`here <installation>`.
 
 Five steps to create an application
 -----------------------------------
 
-1. Use the Pipeline, Stage and Task components to create the workflow
+1. Use the Pipeline, Stage and Task components to create the workflow.
 2. Create an Application Manager (Amgr) object with required parameters/configurations.
 3. Describe the resource request to be created. Assign resource request description and workflow to the Amgr.
-4. Run the Application Manager
+4. Run the Application Manager.
 5. Sit back and relax!
 
 Jump ahead to take a look at the step by step instructions for an example
@@ -106,14 +106,13 @@ script :ref:`here <uguide_get_started>`.
 Intended users
 ==============
 
-Ensemble Toolkit is completely python based and requires familiarity with the 
-python language. 
+Ensemble Toolkit is completely Python based and requires familiarity with the 
+Python language. 
 
 Our primary focus is to support domain scientists and enable them to execute 
-their applications at scale on various of CI. But this does not mean this 
-framework cannot be used by users with simpler requirements. Even if no HPC is 
-to be used, consider using EnTK for its automation and fault-tolerance 
-capabilities (even on your personal PC)!
+their applications at scale on various CIs. This, however, does not mean that this 
+framework cannot be used by users with simpler requirements. Consider using EnTK for
+its automation and fault-tolerance capabilities, even if it requires no HPC (even on your personal PC!).
 
 Some of our current users are mentioned below.
 
