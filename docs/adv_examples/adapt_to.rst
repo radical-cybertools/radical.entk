@@ -4,7 +4,7 @@
 Adaptive applications: Task-order
 *********************************
 
-We encourage you to take a look at the Pipeline of Ensembles example in the next page and compare with the above
+We encourage you to take a look at the Pipeline of Ensembles example on the next page and compare it with the above
 pattern.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
@@ -17,8 +17,8 @@ find it in your virtualenv under ``share/radical.entk/advanced_examples/scripts`
 
 For any adaptive capability within a Pipeline, we need to use the post execution property of a Stage object. Decisions
 can only be performed once all tasks of a Stage are completed as the concurrent tasks cannot be interrupted by design.
-The post execution property of a Stage requires 3 function handles: a function that return a boolean, a function that is
-executed when boolean result is True, and a function that is executed when boolean result is False.
+The post execution property of a Stage requires 3 function handles: a function that returns a boolean, a function that is
+executed when the boolean result is True, and a function that is executed when the boolean result is False.
 
 .. code-block:: python
 
