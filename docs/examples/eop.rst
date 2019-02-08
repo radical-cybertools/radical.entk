@@ -17,7 +17,7 @@ provided below.
    `Figure 1: Ensemble of Pipelines`
 
 
-We encourage you to take a look at the Pipeline of Ensembles example in the next page and compare with the above
+We encourage you to take a look at the Pipeline of Ensembles example on the next page and compare with the above
 pattern.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
@@ -25,7 +25,7 @@ pattern.
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
 
-In the following example, we create 10 Pipelines each with three Stages. The Task in the first Stage creates a file. The
+In the following example, we create 10 Pipelines, each with three Stages. The Task in the first Stage creates a file. The
 Task in the second Stage performs a character count on that file. The Task in the third Stage performs
 a checksum on the output of the Task from the second stage.
 
