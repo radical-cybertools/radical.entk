@@ -1,11 +1,14 @@
-from radical.entk import Pipeline, Stage, Task, AppManager
-import pytest
-from radical.entk.exceptions import *
+
 import os
+import pytest
+
+from radical.entk import Pipeline, Stage, Task, AppManager
+from radical.entk.exceptions import *
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
+
 
 def create_single_task():
 
@@ -18,50 +21,39 @@ def create_single_task():
 
     return t1
 
+
 NUM_TASKS = 2
 MAX_STAGES = 5
 CUR_STAGE = 1
 
+
 def condition():
 
-    global CUR_STAGE, MAX_STAGES
-    
+    global CUR_STAGE, MAX_STAGES, NUM_TASKS
+
     if CUR_STAGE < MAX_STAGES:
+
+
         CUR_STAGE += 1
-        return True
+        NUM_TASKS *= 2
 
-    return False
+        s = Stage()
+        s.name = 's%s' % CUR_STAGE
 
-def on_true():
+        for t in range(NUM_TASKS):
+            s.add_tasks(create_single_task())
 
-    global NUM_TASKS, CUR_STAGE
-
-    NUM_TASKS *= 2
-
-    s = Stage()
-    s.name = 's%s'%CUR_STAGE
-
-    for t in range(NUM_TASKS):
-        s.add_tasks(create_single_task())
-
-    s.post_exec = { 'condition': condition,
-                    'on_true': on_true,
-                    'on_false': on_false
-                }
-
-    p1.add_stages(s)
-
-
-def on_false():
-    pass
+        s.post_exec = condition
+        p1.add_stages(s)
 
 
 p1 = Pipeline()
 
+
 def test_stage_post_exec():
 
     global p1
-    
+
     p1.name = 'p1'
 
     s = Stage()
@@ -70,15 +62,11 @@ def test_stage_post_exec():
     for t in range(NUM_TASKS):
         s.add_tasks(create_single_task())
 
-    s.post_exec = { 'condition': condition,
-                    'on_true': on_true,
-                    'on_false': on_false
-                }
+    s.post_exec = condition
 
     p1.add_stages(s)
 
     res_dict = {
-
             'resource': 'local.localhost',
             'walltime': 30,
             'cpus': 1,
@@ -89,3 +77,4 @@ def test_stage_post_exec():
     appman.resource_desc = res_dict
     appman.workflow = [p1]
     appman.run()
+

@@ -22,9 +22,7 @@ def test_stage_initialization():
     assert s._task_count == 0
     assert s.parent_pipeline['uid'] == None
     assert s.parent_pipeline['name'] == None
-    assert s.post_exec == {'condition': None,
-                           'on_true': None,
-                           'on_false': None}
+    assert s.post_exec == None
 
 
 @given(t=st.text(),
@@ -120,23 +118,20 @@ def test_stage_post_exec_assignment(l, d):
     with pytest.raises(ValueError):
         s.post_exec = d
 
-    pe_d = {'condition': 1,
-            'on_true': 2,
-            'on_false': 3}
-
+    pe = 'True'
     with pytest.raises(TypeError):
-        s.post_exec = pe_d
+        s.post_exec = pe
 
-    pe_d['condition'] = func
+    pe = True
     with pytest.raises(TypeError):
-        s.post_exec = pe_d
+        s.post_exec = pe
 
-    pe_d['on_true'] = func
+    pe = 1
     with pytest.raises(TypeError):
-        s.post_exec = pe_d
+        s.post_exec = pe
 
-    pe_d['on_false'] = func
-    s.post_exec = pe_d
+    pe = func
+    s.post_exec = pe
 
 
 def test_stage_task_addition():

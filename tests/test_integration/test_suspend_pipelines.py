@@ -20,17 +20,11 @@ def generate_pipeline():
     def func_condition():
 
         p.suspend()
-        print 'Suspending pipeline %s for 10 seconds' %p.uid
+        print 'Suspending pipeline %s for 10 seconds' % p.uid
         sleep(10)
-        return True
-
-    def func_on_true():
-
-        print 'Resuming pipeline %s' %p.uid
+        print 'Resuming pipeline %s' % p.uid
         p.resume()
 
-    def func_on_false():
-        pass
 
     # Create a Pipeline object
     p = Pipeline()
@@ -48,11 +42,7 @@ def generate_pipeline():
         s1.add_tasks(t1)
 
     # Add post-exec to the Stage
-    s1.post_exec = {
-        'condition': func_condition,
-        'on_true': func_on_true,
-        'on_false': func_on_false
-    }
+    s1.post_exec = func_condition
 
     # Add Stage to the Pipeline
     p.add_stages(s1)
