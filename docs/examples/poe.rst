@@ -17,7 +17,7 @@ provided below.
    `Figure 1: Pipeline of Ensembles`
 
 
-We encourage you to take a look at the Ensemble of Pipelines example on the next page and compare with the above
+We encourage you to take a look at the Ensemble of Pipelines example on the next page and compare it with the above
 pattern.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
