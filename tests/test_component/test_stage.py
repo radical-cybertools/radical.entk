@@ -115,7 +115,7 @@ def test_stage_post_exec_assignment(l, d):
     with pytest.raises(TypeError):
         s.post_exec = l
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         s.post_exec = d
 
     pe = 'True'
