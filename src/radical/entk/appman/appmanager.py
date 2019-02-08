@@ -232,9 +232,9 @@ class AppManager(object):
         if not isinstance(data, list):
             data = [data]
 
-        for val in data:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
+        for value in data:
+            if not isinstance(value, str):
+                raise TypeError(expected_type=str, actual_type=type(value))
 
         if self._resource_manager:
             self._resource_manager.shared_data = data
