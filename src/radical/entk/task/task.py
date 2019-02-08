@@ -447,7 +447,7 @@ class Task(object):
                                  expected_value=states._task_state_values.keys(),
                                  actual_value=value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @pre_exec.setter
     def pre_exec(self, val):
