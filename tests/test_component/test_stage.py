@@ -138,6 +138,22 @@ def test_stage_post_exec_assignment(l, d):
     pe_d['on_false'] = func
     s.post_exec = pe_d
 
+    class Tmp(object):
+
+        def cond(self):
+            return True
+
+        def on_true(self, par=None):
+            assert(par is None)
+
+        def on_false(self, par=None):
+            assert(False)
+
+    tmp = Tmp()
+    s.post_exec = {'condition': tmp.cond,
+                   'on_true'  : tmp.on_true,
+                   'on_false' : tmp.on_false}
+
 
 def test_stage_task_addition():
 
