@@ -97,27 +97,25 @@ class Stage(object):
 
         return self._state_history
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def post_exec(self):
         '''
-        The post_exec property enables adaptivity in EnTK. A function, func_1,
-        is evaluated to produce a boolean result. Function func_2 is executed
-        if the result is True and func_3 is executed if the result is False.
-        Following is the expected structure:
-        
-        self._post_exec = {
-                            |  'condition' : func_1,
-                            |  'on_true'   : func_2,
-                            |  'on_false'  : func_3                            
-                        }
-        
+        The post_exec property enables adaptivity in EnTK. It can be set to
+        a function which is called in the local application context agfter this
+        stage completed.  This can, for example, be used to add new stages to
+        the pipeline, depending on the results of this stage, or other internal
+        and external conditions.
         '''
+
         return self._post_exec
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Setter functions
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    # Setter functions
+    # --------------------------------------------------------------------------
     @name.setter
     def name(self, value):
         if isinstance(value, str):
@@ -154,20 +152,23 @@ class Stage(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
+
+    # --------------------------------------------------------------------------
+    #
     @post_exec.setter
     def post_exec(self, val):
 
         if not callable(val):
-
             raise TypeError(entity='stage %s branch' % self._uid,
                             expected_type=callable,
                             actual_type=type(val))
 
         self._post_exec = val
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
 
+
+    # --------------------------------------------------------------------------
+    # Public methods
+    # --------------------------------------------------------------------------
     def add_tasks(self, val):
         """
         Adds tasks to the existing set of tasks of the Stage
