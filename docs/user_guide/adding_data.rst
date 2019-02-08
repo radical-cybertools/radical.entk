@@ -17,7 +17,7 @@ move data between different tasks.
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_data.py>` or
 find it in your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
-In the following example, we will create a Pipeline of two Stages each with one Task. In the first stage, we will
+In the following example, we will create a Pipeline of two Stages, each with one Task. In the first stage, we will
 create a file of size 1MB. In the next stage, we will perform a character count on the same file and write to another
 file. Finally, we will bring that output to the current location. 
 
