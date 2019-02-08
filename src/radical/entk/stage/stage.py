@@ -131,8 +131,8 @@ class Stage(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @tasks.setter
-    def tasks(self, val):
-        self._tasks = self._validate_entities(val)
+    def tasks(self, value):
+        self._tasks = self._validate_entities(value)
         self._task_count = len(self._tasks)
 
     @parent_pipeline.setter
@@ -157,18 +157,18 @@ class Stage(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @post_exec.setter
-    def post_exec(self, val):
+    def post_exec(self, value):
 
-        if isinstance(val, dict):
-            self._post_exec = val
+        if isinstance(value, dict):
+            self._post_exec = value
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(value))
 
-        if set(['condition', 'on_true', 'on_false']) != set(val.keys()):
+        if set(['condition', 'on_true', 'on_false']) != set(value.keys()):
             raise ValueError(obj=self._uid,
                              attribute='post_exec',
                              expected_value="'condition', 'on_true', 'on_false'",
-                             actual_value='%s' % val.keys())
+                             actual_value='%s' % value.keys())
 
         condition = self._post_exec['condition']
         on_true = self._post_exec['on_true']
@@ -205,13 +205,13 @@ class Stage(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_tasks(self, val):
+    def add_tasks(self, value):
         """
         Adds tasks to the existing set of tasks of the Stage
 
         :argument: set of tasks
         """
-        tasks = self._validate_entities(val)
+        tasks = self._validate_entities(value)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
 

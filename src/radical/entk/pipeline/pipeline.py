@@ -142,9 +142,9 @@ class Pipeline(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @stages.setter
-    def stages(self, val):
+    def stages(self, value):
 
-        self._stages = self._validate_entities(val)
+        self._stages = self._validate_entities(value)
 
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
@@ -168,13 +168,13 @@ class Pipeline(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_stages(self, val):
+    def add_stages(self, value):
         """
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
         """
-        stages = self._validate_entities(val)
+        stages = self._validate_entities(value)
 
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
@@ -319,9 +319,9 @@ class Pipeline(object):
         if not isinstance(stages, list):
             stages = [stages]
 
-        for val in stages:
-            if not isinstance(val, Stage):
-                raise TypeError(expected_type=Stage, actual_type=type(val))
+        for value in stages:
+            if not isinstance(value, Stage):
+                raise TypeError(expected_type=Stage, actual_type=type(value))
 
         return stages
 

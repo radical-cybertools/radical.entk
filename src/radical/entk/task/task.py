@@ -418,11 +418,11 @@ class Task(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     @uid.setter
-    def uid(self, val):
-        if isinstance(val, str):
-            self._uid = val
+    def uid(self, value):
+        if isinstance(value, str):
+            self._uid = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @name.setter
     def name(self, value):
@@ -447,245 +447,245 @@ class Task(object):
                                  expected_value=states._task_state_values.keys(),
                                  actual_value=value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @pre_exec.setter
-    def pre_exec(self, val):
-        if isinstance(val, list):
-            self._pre_exec = val
+    def pre_exec(self, value):
+        if isinstance(value, list):
+            self._pre_exec = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @executable.setter
-    def executable(self, val):
-        if isinstance(val, list):
-            self._executable = val
-        elif isinstance(val, str):
-            self._executable = [val]
+    def executable(self, value):
+        if isinstance(value, list):
+            self._executable = value
+        elif isinstance(value, str):
+            self._executable = [value]
         else:
-            raise TypeError(expected_type='list or str', actual_type=type(val))
+            raise TypeError(expected_type='list or str', actual_type=type(value))
 
     @arguments.setter
-    def arguments(self, val):
-        if isinstance(val, list):
-            self._arguments = val
+    def arguments(self, value):
+        if isinstance(value, list):
+            self._arguments = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @post_exec.setter
-    def post_exec(self, val):
-        if isinstance(val, list):
-            self._post_exec = val
+    def post_exec(self, value):
+        if isinstance(value, list):
+            self._post_exec = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @cpu_reqs.setter
-    def cpu_reqs(self, val):
-        if isinstance(val, dict):
+    def cpu_reqs(self, value):
+        if isinstance(value, dict):
 
             expected_keys = set(
                 ['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
-            if set(val.keys()) <= expected_keys:
+            if set(value.keys()) <= expected_keys:
 
-                if type(val.get('processes')) in [type(None), int]:
-                    self._cpu_reqs['processes'] = val.get('processes', 1)
+                if type(value.get('processes')) in [type(None), int]:
+                    self._cpu_reqs['processes'] = value.get('processes', 1)
                 else:
                     raise TypeError(expected_type=int,
-                                    actual_type=type(val.get('processes')),
+                                    actual_type=type(value.get('processes')),
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI', '']:
-                    self._cpu_reqs['process_type'] = val.get('process_type')
+                if value.get('process_type') in [None, 'MPI', '']:
+                    self._cpu_reqs['process_type'] = value.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
-                                     actual_value=val.get('process_type'),
+                                     actual_value=value.get('process_type'),
                                      obj='cpu_reqs',
                                      attribute='process_type'
                                      )
 
-                if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._cpu_reqs['threads_per_process'] = val.get(
+                if type(value.get('threads_per_process')) in [type(None), int]:
+                    self._cpu_reqs['threads_per_process'] = value.get(
                         'threads_per_process', 1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(
-                                        val.get('threads_per_process')),
+                                        value.get('threads_per_process')),
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP', '']:
-                    self._cpu_reqs['thread_type'] = val.get('thread_type')
+                if value.get('thread_type') in [None, 'OpenMP', '']:
+                    self._cpu_reqs['thread_type'] = value.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',
-                                     actual_value=val.get('thread_type'),
+                                     actual_value=value.get('thread_type'),
                                      obj='cpu_reqs',
                                      attribute='thread_type'
                                      )
 
             else:
                 raise MissingError(
-                    obj='cpu_reqs', missing_attribute=expected_keys - set(val.keys()))
+                    obj='cpu_reqs', missing_attribute=expected_keys - set(value.keys()))
 
     @gpu_reqs.setter
-    def gpu_reqs(self, val):
-        if isinstance(val, dict):
+    def gpu_reqs(self, value):
+        if isinstance(value, dict):
 
             expected_keys = set(
                 ['processes', 'threads_per_process', 'process_type', 'thread_type'])
 
-            if set(val.keys()) <= expected_keys:
+            if set(value.keys()) <= expected_keys:
 
-                if type(val.get('processes')) in [type(None), int]:
-                    self._gpu_reqs['processes'] = val.get('processes', 1)
+                if type(value.get('processes')) in [type(None), int]:
+                    self._gpu_reqs['processes'] = value.get('processes', 1)
                 else:
                     raise TypeError(expected_type=dict,
-                                    actual_type=type(val.get('processes')),
+                                    actual_type=type(value.get('processes')),
                                     entity='processes'
                                     )
 
-                if val.get('process_type') in [None, 'MPI', '']:
-                    self._gpu_reqs['process_type'] = val.get('process_type')
+                if value.get('process_type') in [None, 'MPI', '']:
+                    self._gpu_reqs['process_type'] = value.get('process_type')
                 else:
                     raise ValueError(expected_value='None or MPI',
-                                     actual_value=val.get('process_type'),
+                                     actual_value=value.get('process_type'),
                                      obj='gpu_reqs',
                                      attribute='process_type'
                                      )
 
-                if type(val.get('threads_per_process')) in [type(None), int]:
-                    self._gpu_reqs['threads_per_process'] = val.get(
+                if type(value.get('threads_per_process')) in [type(None), int]:
+                    self._gpu_reqs['threads_per_process'] = value.get(
                         'threads_per_process', 1)
                 else:
                     raise TypeError(expected_type=int,
                                     actual_type=type(
-                                        val.get('threads_per_process')),
+                                        value.get('threads_per_process')),
                                     entity='threads_per_process'
                                     )
 
-                if val.get('thread_type') in [None, 'OpenMP', '']:
-                    self._gpu_reqs['thread_type'] = val.get('thread_type')
+                if value.get('thread_type') in [None, 'OpenMP', '']:
+                    self._gpu_reqs['thread_type'] = value.get('thread_type')
                 else:
                     raise ValueError(expected_value='None or OpenMP',
-                                     actual_value=val.get('thread_type'),
+                                     actual_value=value.get('thread_type'),
                                      obj='gpu_reqs',
                                      attribute='thread_type'
                                      )
 
             else:
                 raise MissingError(
-                    obj='gpu_reqs', missing_attribute=expected_keys - set(val.keys()))
+                    obj='gpu_reqs', missing_attribute=expected_keys - set(value.keys()))
 
     @lfs_per_process.setter
-    def lfs_per_process(self, val):
-        if isinstance(val, int):
-            self._lfs_per_process = val
+    def lfs_per_process(self, value):
+        if isinstance(value, int):
+            self._lfs_per_process = value
         else:
-            raise TypeError(expected_type=int, actual_type=type(val))
+            raise TypeError(expected_type=int, actual_type=type(value))
 
     @upload_input_data.setter
-    def upload_input_data(self, val):
-        if isinstance(val, list):
-            self._upload_input_data = val
+    def upload_input_data(self, value):
+        if isinstance(value, list):
+            self._upload_input_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @copy_input_data.setter
-    def copy_input_data(self, val):
-        if isinstance(val, list):
-            self._copy_input_data = val
+    def copy_input_data(self, value):
+        if isinstance(value, list):
+            self._copy_input_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
 
     @move_input_data.setter
-    def move_input_data(self, val):
-        if isinstance(val, list):
-            self._move_input_data = val
+    def move_input_data(self, value):
+        if isinstance(value, list):
+            self._move_input_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @link_input_data.setter
-    def link_input_data(self, val):
-        if isinstance(val, list):
-            self._link_input_data = val
+    def link_input_data(self, value):
+        if isinstance(value, list):
+            self._link_input_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @copy_output_data.setter
-    def copy_output_data(self, val):
-        if isinstance(val, list):
-            self._copy_output_data = val
+    def copy_output_data(self, value):
+        if isinstance(value, list):
+            self._copy_output_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
 
     @move_output_data.setter
-    def move_output_data(self, val):
-        if isinstance(val, list):
-            self._move_output_data = val
+    def move_output_data(self, value):
+        if isinstance(value, list):
+            self._move_output_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @download_output_data.setter
-    def download_output_data(self, val):
-        if isinstance(val, list):
-            self._download_output_data = val
+    def download_output_data(self, value):
+        if isinstance(value, list):
+            self._download_output_data = value
         else:
-            raise TypeError(expected_type=list, actual_type=type(val))
+            raise TypeError(expected_type=list, actual_type=type(value))
 
     @stdout.setter
-    def stdout(self, val):
-        if isinstance(val, str):
-            self._stdout = val
+    def stdout(self, value):
+        if isinstance(value, str):
+            self._stdout = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @stderr.setter
-    def stderr(self, val):
-        if isinstance(val, str):
-            self._stderr = val
+    def stderr(self, value):
+        if isinstance(value, str):
+            self._stderr = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(val))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
     @exit_code.setter
-    def exit_code(self, val):
-        if isinstance(val, int):
-            self._exit_code = val
+    def exit_code(self, value):
+        if isinstance(value, int):
+            self._exit_code = value
         else:
             raise TypeError(entity='exit_code',
-                            expected_type=int, actual_type=type(val))
+                            expected_type=int, actual_type=type(value))
 
     @path.setter
-    def path(self, val):
-        if isinstance(val, str):
-            self._path = val
+    def path(self, value):
+        if isinstance(value, str):
+            self._path = value
         else:
             raise TypeError(entity='path', expected_type=str,
-                            actual_type=type(val))
+                            actual_type=type(value))
 
     @tag.setter
-    def tag(self, val):
-        if isinstance(val, str):
-            self._tag = val
+    def tag(self, value):
+        if isinstance(value, str):
+            self._tag = value
         else:
             raise TypeError(entity='tag', expected_type=str,
-                            actual_type=type(val))
+                            actual_type=type(value))
 
     @parent_stage.setter
-    def parent_stage(self, val):
-        if isinstance(val, dict):
-            self._p_stage = val
+    def parent_stage(self, value):
+        if isinstance(value, dict):
+            self._p_stage = value
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(value))
 
     @parent_pipeline.setter
-    def parent_pipeline(self, val):
-        if isinstance(val, dict):
-            self._p_pipeline = val
+    def parent_pipeline(self, value):
+        if isinstance(value, dict):
+            self._p_pipeline = value
         else:
-            raise TypeError(expected_type=dict, actual_type=type(val))
+            raise TypeError(expected_type=dict, actual_type=type(value))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
