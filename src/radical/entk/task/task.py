@@ -458,12 +458,10 @@ class Task(object):
 
     @executable.setter
     def executable(self, value):
-        if isinstance(value, list):
+        if isinstance(value, str):
             self._executable = value
-        elif isinstance(value, str):
-            self._executable = [value]
         else:
-            raise TypeError(expected_type='list or str', actual_type=type(value))
+            raise TypeError(expected_type='str', actual_type=type(value))
 
     @arguments.setter
     def arguments(self, value):
