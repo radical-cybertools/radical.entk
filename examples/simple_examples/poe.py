@@ -43,7 +43,7 @@ def generate_pipeline():
     s2.name = 's2'
     s2_task_uids = []
 
-    for cnt in range(10):
+    for cnt in range(30):
 
         # Create a Task object
         t2 = Task()
@@ -64,7 +64,7 @@ def generate_pipeline():
     s3 = Stage()
     s3.name = 's3'
 
-    for cnt in range(10):
+    for cnt in range(30):
 
         # Create a Task object
         t3 = Task()
@@ -87,16 +87,21 @@ def generate_pipeline():
 if __name__ == '__main__':
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port, rts='mock')
+    appman = AppManager(hostname=hostname, port=port)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-        'resource': 'local.localhost',
-        'walltime': 10,
-        'cpus': 1
+    #    'resource': 'ncsa.bw_aprun',
+    #    'walltime': 10,
+    #    'cpus': 32,
+    #'project': 'bamm',
+    #'queue': 'high'
+	'resource': 'local.localhost',
+	'walltime': 10,
+	'cpus':2
     }
 
     # Assign resource request description to the Application Manager

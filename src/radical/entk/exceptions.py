@@ -70,27 +70,3 @@ class MissingError(EnTKError):
 
         msg = 'Attribute %s in %s undefined' % (str(missing_attribute), str(obj))
         super(MissingError, self).__init__(msg)
-
-
-class ExistsError(EnTKError):
-    """ExistsError is raised when there is an attempt to add or assign an
-    object with a particular uid to another parent object which already
-    contains an object with the same uid"""
-
-    def __init__(self, item, parent):
-        msg = "Object %s already exists in %s." % (
-            str(item),
-            str(parent)
-        )
-        super(ExistsError, self).__init__(msg)
-
-
-class MatchError(EnTKError):
-    """MatchError is thrown if two parameters are not equal."""
-
-    def __init__(self, par1, par2):
-        msg = "%s does not match %s." % (
-            str(par1),
-            str(par2)
-        )
-        super(MatchError, self).__init__(msg)
