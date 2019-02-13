@@ -179,12 +179,12 @@ class ResourceManager(Base_ResourceManager):
             if self._session:
                 self._session.close()
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Resource request submission failed')
+            self._logger.exception('Resource request submission failed')
             raise
 
     def _terminate_resource_request(self):
@@ -205,12 +205,12 @@ class ResourceManager(Base_ResourceManager):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not cancel resource request, error: %s' % ex)
+            self._logger.exception('Could not cancel resource request, error: %s' % ex)
             raise
 
     # ------------------------------------------------------------------------------------------------------------------

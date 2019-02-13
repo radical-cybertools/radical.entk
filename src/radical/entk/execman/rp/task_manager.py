@@ -166,12 +166,12 @@ class TaskManager(Base_TaskManager):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
 
         except Exception, ex:
 
-            print traceback.format_exc()
+            logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
         finally:
@@ -322,11 +322,11 @@ class TaskManager(Base_TaskManager):
                         mq_connection.close()
 
         except KeyboardInterrupt as ex:
-            logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                         'trying to cancel task processor gracefully...')
+            logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                            'trying to cancel task processor gracefully...')
 
         except Exception as ex:
-            print traceback.format_exc()
+            logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -368,7 +368,7 @@ class TaskManager(Base_TaskManager):
 
             except Exception, ex:
 
-                self._logger.error('Task manager not started, error: %s' % ex)
+                self._logger.exception('Task manager not started, error: %s' % ex)
                 self.terminate_manager()
                 raise
 

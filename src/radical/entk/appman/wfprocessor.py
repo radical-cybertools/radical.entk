@@ -253,7 +253,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
             mq_connection.close()
@@ -436,7 +436,7 @@ class WFprocessor(object):
                         last = now
 
                 except Exception, ex:
-                    self._logger.error(
+                    self._logger.exception(
                         'Unable to receive message from completed queue: %s' % ex)
                     raise
 
@@ -447,7 +447,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit gracefully...')
 
             mq_connection.close()
@@ -513,7 +513,7 @@ class WFprocessor(object):
                         self._enqueue_thread.start()
 
                 except Exception, ex:
-                    self._logger.error('WFProcessor interrupted')
+                    self._logger.exception('WFProcessor interrupted')
                     raise
 
             local_prof.prof('start termination', uid=self._uid)
@@ -533,7 +533,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel wfprocessor process gracefully...')
 
             if self._enqueue_thread:
@@ -555,7 +555,7 @@ class WFprocessor(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error(
+            self._logger.exception(
                 'Error in wfp process: %s. \n Closing enqueue, dequeue threads' % ex)
 
             if self._enqueue_thread:
@@ -574,7 +574,7 @@ class WFprocessor(object):
 
             self._logger.info('WFprocessor process terminated')
 
-            print traceback.format_exc()
+            self._logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -610,8 +610,8 @@ class WFprocessor(object):
 
             except Exception, ex:
 
-                self._logger.error('WFprocessor not started')
-                self.end_processor()
+                self._logger.exception('WFprocessor not started')
+                self.terminate_processor()
                 raise
 
         else:
@@ -641,7 +641,7 @@ class WFprocessor(object):
             self._prof.close()
 
         except Exception, ex:
-            self._logger.error('Could not terminate wfprocessor process')
+            self._logger.exception('Could not terminate wfprocessor process')
             raise
 
     def workflow_incomplete(self):
@@ -659,7 +659,7 @@ class WFprocessor(object):
             return False
 
         except Exception, ex:
-            self._logger.error(
+            self._logger.exception(
                 'Could not check if workflow is incomplete, error:%s' % ex)
             raise
 

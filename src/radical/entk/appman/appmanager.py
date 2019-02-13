@@ -265,8 +265,7 @@ class AppManager(object):
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
             if not self._resource_manager:
-                self._logger.error(
-                    'No resource manager assigned currently, please create and add a valid resource manager')
+                self._logger.error('No resource manager assigned currently, please create and add a valid resource manager')
                 raise MissingError(obj=self._uid, missing_attribute='resource_manager')
 
             self._prof.prof('amgr run started', uid=self._uid)
@@ -307,11 +306,13 @@ class AppManager(object):
                     self._logger.info('Starting resource request submission')
                     self._prof.prof('init rreq submission', uid=self._uid)
                     self._resource_manager._submit_resource_request()
+                    res_alloc_state = self._resource_manager.get_resource_allocation_state()
+                    if res_alloc_state in self._resource_manager.get_completed_states():
+                        raise EnTKError(msg="Cannot proceed. Resource allocation ended up in %s"%res_alloc_state)
 
             else:
 
-                self._logger.error(
-                    'Cannot run without resource manager, please create and assign a resource manager')
+                self._logger.exception('Cannot run without resource manager, please create and assign a resource manager')
                 raise EnTKError(text='Missing resource manager')
 
             # Start synchronizer thread
@@ -447,7 +448,7 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
             # Terminate threads in following order: wfp, helper, synchronizer
@@ -584,7 +585,7 @@ class AppManager(object):
 
         except Exception, ex:
 
-            self._logger.error('Error setting RabbitMQ system: %s' % ex)
+            self._logger.exception('Error setting RabbitMQ system: %s' % ex)
             raise
 
     def _cleanup_mqs(self):
@@ -946,7 +947,7 @@ class AppManager(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to terminate synchronizer thread gracefully...')
 
             raise KeyboardInterrupt
