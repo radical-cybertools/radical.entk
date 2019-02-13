@@ -155,16 +155,16 @@ Titan machine.
 Detailed description of the experiments can be found in this 
 `technical paper <https://arxiv.org/pdf/1710.08491>`_.
 
-.. figure:: figures/entk_weak_scaling.png
- :width: 400pt
+.. figure:: figures/weak_scaling_titan_orte.png
+ :width: 600pt
  :align: center
- :alt: Ensemble Toolkit Architecture and Execution Model
+ :alt: Weak Scaling experiments from Titan
 
  `Figure 3: Weak scalability on Titan: 512, 1,024, 2,048, and 4,096 1-core tasks executed on the same amount of cores`
 
-.. figure:: figures/entk_strong_scaling.png
- :width: 400pt
+.. figure:: figures/strong_scaling_titan_orte.png
+ :width: 600pt
  :align: center
- :alt: Ensemble Toolkit Architecture and Execution Model
+ :alt: Strong Scaling experiments from Titan
 
  `Figure 4: Strong scalability on Titan: 8,192 1-core tasks are executed on 1,024, 2,048 and 4,096 cores`
