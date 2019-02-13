@@ -106,7 +106,7 @@ class AppManager(object):
         config = ru.read_json(os.path.join(config_path, 'config.json'))
 
         self._mq_hostname = hostname if hostname else str(config['hostname'])
-        self._port = port if port else config['port']
+        self._port = int(port if port else config['port'])
         self._reattempts = reattempts if reattempts else config['reattempts']
         self._resubmit_failed = resubmit_failed if resubmit_failed is not None else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate is not None else config['autoterminate']
