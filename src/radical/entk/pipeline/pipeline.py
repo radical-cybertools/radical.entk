@@ -86,6 +86,23 @@ class Pipeline(object):
         """
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current pipeline (fully qualified).
+        For the pipeline class, his is an alias to `uid`.
+
+        example:
+            >>> pipeline.luid
+            pipe.0001
+
+        :getter: Returns the fully qualified uid of the current pipeline
+        :type: String
+        """
+        return self.uid
+
+
     @property
     def lock(self):
         """

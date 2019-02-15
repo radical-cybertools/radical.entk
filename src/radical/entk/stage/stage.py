@@ -89,6 +89,22 @@ class Stage(object):
 
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current stage (fully qualified).
+
+        example:
+            >>> stage.luid
+            pipe.0001.stage.0004
+
+        :getter: Returns the fully qualified uid of the current stage
+        :type: String
+        """
+        return '%s.%s' % (self.parent_pipeline['uid'], self.uid)
+
+
     @property
     def state_history(self):
         """

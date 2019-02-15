@@ -83,6 +83,23 @@ class Task(object):
         """
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current task (fully qualified).
+
+        example:
+            >>> task.luid
+            pipe.0001.stage.0004.task.0234
+
+        :getter: Returns the fully qualified uid of the current task
+        :type: String
+        """
+        return '%s.%s.%s' % (self.parent_pipeline['uid'],
+                             self.parent_stage['uid'], self.uid)
+
+
     @property
     def name(self):
         """
