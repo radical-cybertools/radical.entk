@@ -8,5 +8,3 @@ from radical.entk.task.task import Task
 from radical.entk.appman.appmanager import AppManager
 import states
 
-# from radical.entk.utils.profiler import Profiler
-from utils import version_short, version_detail, version_base, version_branch

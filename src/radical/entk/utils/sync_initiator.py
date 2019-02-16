@@ -1,11 +1,15 @@
+
 import uuid
 import json
 import pika
 
 
+# ------------------------------------------------------------------------------
+#
 def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
     object_as_dict = {'object': obj.to_dict()}
+
     if obj_type == 'Task':
         object_as_dict['type'] = 'Task'
 
@@ -17,7 +21,9 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
     corr_id = str(uuid.uuid4())
 
-    logger.debug('Attempting to sync %s with state %s with AppManager' % (obj.uid, obj.state))
+    logger.debug('Attempting to sync %s with state %s with AppManager'
+                % (obj.uid, obj.state))
+
     channel.basic_publish(exchange='',
                           routing_key=queue,
                           body=json.dumps(object_as_dict),
@@ -25,12 +31,16 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
                           )
 
     if obj_type == 'Task':
-        local_prof.prof('publishing obj with state %s for sync' % obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
+        local_prof.prof('publishing obj with state %s for sync'
+                       % obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
+
     elif obj_type == 'Stage':
-        local_prof.prof('publishing obj with state %s for sync' %
-                        obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
+        local_prof.prof('publishing obj with state %s for sync'
+                       % obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
+
     else:
-        local_prof.prof('publishing obj with state %s for sync' % obj.state, uid=obj.uid)
+        local_prof.prof('publishing obj with state %s for sync'
+                       % obj.state, uid=obj.uid)
 
     sid = '-'.join(queue.split('-')[:-3])
     qname = queue.split('-')[-3:]
@@ -39,25 +49,40 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
     reply_queue = sid + '-' + reply_queue
 
     while True:
-        #self._logger.info('waiting for ack')
+
+      # self._logger.info('waiting for ack')
 
         method_frame, props, body = channel.basic_get(queue=reply_queue)
 
         if body:
+
+            # AM: what happens to messages which don't match the `if` below
+            # - it seems like they are doscarded?  Why?
+
             if corr_id == props.correlation_id:
 
                 # print 'acknowledged: ', obj.uid, obj.state
                 if obj_type == 'Task':
-                    local_prof.prof('obj with state %s synchronized' %
-                                    obj.state, uid=obj.uid, msg=obj.parent_stage['uid'])
-                elif obj_type == 'Stage':
-                    local_prof.prof('obj with state %s synchronized' %
-                                    obj.state, uid=obj.uid, msg=obj.parent_pipeline['uid'])
-                else:
-                    local_prof.prof('obj with state %s synchronized' % obj.state, uid=obj.uid)
+                    local_prof.prof('obj with state %s synchronized'
+                                   % obj.state, uid=obj.uid,
+                                     msg=obj.parent_stage['uid'])
 
-                logger.debug('%s with state %s synced with AppManager' % (obj.uid, obj.state))
+                elif obj_type == 'Stage':
+                    local_prof.prof('obj with state %s synchronized'
+                                   % obj.state, uid=obj.uid,
+                                     msg=obj.parent_pipeline['uid'])
+
+                else:
+                    local_prof.prof('obj with state %s synchronized'
+                                   % obj.state, uid=obj.uid)
+
+                logger.debug('%s with state %s synced with AppManager'
+                            % (obj.uid, obj.state))
 
                 channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 break
+
+
+# ------------------------------------------------------------------------------
+

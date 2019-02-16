@@ -1,65 +1,15 @@
+
 import os
-import csv
-import copy
 import glob
-import time
-import threading
-import json
+
 import radical.utils as ru
 
-from radical.entk.exceptions import *
-import traceback
-import socket
-from radical.entk import states as res
+from ..exceptions import *
+from ..           import states as res
 
 
-def get_hostmap(profile):
-    '''
-    We abuse the profile combination to also derive a pilot-host map, which
-    will tell us on what exact host each pilot has been running.  To do so, we
-    check for the PMGR_ACTIVE advance event in agent_0.prof, and use the NTP
-    sync info to associate a hostname.
-    '''
-    # FIXME: This should be replaced by proper hostname logging
-    #        in `pilot.resource_details`.
-
-    hostmap = dict()  # map pilot IDs to host names
-    for entry in profile:
-        if entry[ru.EVENT] == 'hostname':
-            hostmap[entry[ru.UID]] = entry[ru.MSG]
-
-    return hostmap
-
-
-def get_hostmap_deprecated(profiles):
-    '''
-    This method mangles combine_profiles and get_hostmap, and is deprecated.  At
-    this point it only returns the hostmap
-    '''
-
-    hostmap = dict()  # map pilot IDs to host names
-    for pname, prof in profiles.iteritems():
-
-        if not len(prof):
-            continue
-
-        if not prof[0][ru.MSG]:
-            continue
-
-        host, ip, _, _, _ = prof[0][ru.MSG].split(':')
-        host_id = '%s:%s' % (host, ip)
-
-        for row in prof:
-
-            if 'agent_0.prof' in pname    and \
-                    row[ru.EVENT] == 'advance' and \
-                    row[ru.STATE] == rps.PMGR_ACTIVE:
-                hostmap[row[ru.UID]] = host_id
-                break
-
-    return hostmap
-
-
+# ------------------------------------------------------------------------------
+#
 def get_session_profile(sid, src=None):
 
     if not src:
@@ -73,33 +23,32 @@ def get_session_profile(sid, src=None):
     else:
         raise EnTKError('%s/%s does not exist' % (src, sid))
 
-    if len(profiles) == 0:
+    if not profiles:
         raise EnTKError('No profiles found at %s' % src)
 
     try:
-
-        profiles = ru.read_profiles(profiles=profiles, sid=sid)
+        profiles  = ru.read_profiles(profiles=profiles, sid=sid)
         prof, acc = ru.combine_profiles(profiles)
         prof = ru.clean_profile(prof,
                                 sid=sid,
                                 state_final=res.FINAL,
                                 state_canceled=res.CANCELED)
 
-        hostmap = get_hostmap(prof)
-
-        if not hostmap:
-            # FIXME: legacy host notation - deprecated
-            hostmap = get_hostmap_deprecated(profiles)
+        # EnTK does not have specific hostmap.
+        # Client, pilot and resource hosts are recorded by RP
+        hostmap = None
 
         return prof, acc, hostmap
+
 
     except Exception as ex:
 
         # Push the exception raised by child functions
-        print traceback.format_exc()
-        raise EnTKError('Error: %s'%ex)
+        raise EnTKError('Error: %s' % ex)
 
 
+# ------------------------------------------------------------------------------
+#
 def write_session_description(amgr):
 
     desc = dict()
@@ -199,29 +148,30 @@ def write_session_description(amgr):
                                    'has': [],
                                    'children': list()
                                    }
-
     desc['tree'] = tree
     desc['config'] = dict()
 
     ru.write_json(desc, '%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
 
 
+# ------------------------------------------------------------------------------
+#
 def get_session_description(sid, src=None):
 
     if not src:
         src = os.getcwd()
 
-    if os.path.exists(src):
-
-        # EnTK profiles are always on localhost
-        desc = ru.read_json("%s/%s/radical.entk.%s.json" % (src, sid, sid))
-
-    else:
+    if not os.path.exists(src):
         raise EnTKError('%s/%s does not exist' % (src, sid))
+
+    # EnTK profiles are always on localhost
+    desc = ru.read_json("%s/%s/radical.entk.%s.json" % (src, sid, sid))
 
     return desc
 
 
+# ------------------------------------------------------------------------------
+#
 def write_workflow(workflow, uid):
 
     try:
@@ -260,3 +210,7 @@ def write_workflow(workflow, uid):
         data.append(p)
 
     ru.write_json(data, '%s/entk_workflow.json' % uid)
+
+
+# ------------------------------------------------------------------------------
+
