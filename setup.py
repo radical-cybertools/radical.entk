@@ -8,10 +8,9 @@ __license__   = 'MIT'
 
 """ Setup script, only usable via pip. """
 
+import re
 import os
 import sys
-import subprocess as sp
-import re
 import shutil
 
 import radical.utils as ru
@@ -305,10 +304,4 @@ setup (**setup_args)
 os.system('rm -rf src/%s.egg-info' % name)
 
 # ------------------------------------------------------------------------------
-
-'''
-To publish to pypi:
-python setup.py sdist
-twine upload --skip-existing dist/<tarball name>
-'''
 
