@@ -1,6 +1,7 @@
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
-__license__ = "MIT"
+
+__copyright__ = "Copyright 2017-2019, http://radical.rutgers.edu"
+__author__    = "RADICAL Team <radical@rutgers.edu>"
+__license__   = "MIT"
 
 import time
 import os
