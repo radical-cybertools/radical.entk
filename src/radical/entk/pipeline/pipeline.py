@@ -1,27 +1,20 @@
-
-from collections import Iterable
-import threading
-
 import radical.utils as ru
+from radical.entk.exceptions import *
+from radical.entk.stage.stage import Stage
+import threading
+from radical.entk import states
+from collections import Iterable
 
-from ..exceptions  import *
-from ..stage.stage import Stage
-from ..            import states
 
-
-# ------------------------------------------------------------------------------
-#
 class Pipeline(object):
 
     """
-    A pipeline represents a collection of objects that have a linear temporal
-    execution order.  In this case, a pipeline consists of multiple 'Stage'
-    objects. Each ```Stage_i``` can execute only after all stages up to
-    ```Stage_(i-1)``` have completed execution.
+    A pipeline represents a collection of objects that have a linear temporal execution order.
+    In this case, a pipeline consists of multiple 'Stage' objects. Each ```Stage_i``` can execute only
+    after all stages up to ```Stage_(i-1)``` have completed execution.
+
     """
 
-    # --------------------------------------------------------------------------
-    #
     def __init__(self):
 
         self._uid = None
@@ -44,15 +37,15 @@ class Pipeline(object):
         # To keep track of termination of pipeline
         self._completed_flag = threading.Event()
 
-    # --------------------------------------------------------------------------
-    #
+    # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
-    #
+    # ------------------------------------------------------------------------------------------------------------------
+
     @property
     def name(self):
         """
-        Name of the pipeline useful for bookkeeping and to refer to this
-        pipeline while data staging. Do not use a ',' or '_' in object's names.
+        Name of the pipeline useful for bookkeeping and to refer to this pipeline while data staging.
+        Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the pipeline
         :setter: Assigns the name of the pipeline
@@ -60,9 +53,6 @@ class Pipeline(object):
         """
         return self._name
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def stages(self):
         """
@@ -75,9 +65,6 @@ class Pipeline(object):
 
         return self._stages
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def state(self):
         """
@@ -89,9 +76,6 @@ class Pipeline(object):
 
         return self._state
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def uid(self):
         """
@@ -102,9 +86,6 @@ class Pipeline(object):
         """
         return self._uid
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def lock(self):
         """
@@ -115,9 +96,6 @@ class Pipeline(object):
 
         return self._lock
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def completed(self):
         """
@@ -127,9 +105,6 @@ class Pipeline(object):
         """
         return self._completed_flag.is_set()
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def current_stage(self):
         """
@@ -140,9 +115,6 @@ class Pipeline(object):
 
         return self._cur_stage
 
-
-    # --------------------------------------------------------------------------
-    #
     @property
     def state_history(self):
         """
@@ -153,11 +125,10 @@ class Pipeline(object):
 
         return self._state_history
 
-
-    # --------------------------------------------------------------------------
-    #
+    # ------------------------------------------------------------------------------------------------------------------
     # Setter functions
-    #
+    # ------------------------------------------------------------------------------------------------------------------
+
     @name.setter
     def name(self, value):
         if isinstance(value, str):
@@ -170,9 +141,6 @@ class Pipeline(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-
-    # --------------------------------------------------------------------------
-    #
     @stages.setter
     def stages(self, value):
 
@@ -182,14 +150,10 @@ class Pipeline(object):
         if self._cur_stage == 0:
             self._cur_stage = 1
 
-
-    # --------------------------------------------------------------------------
-    #
     @state.setter
     def state(self, value):
-
         if isinstance(value, str):
-            if value in states._pipeline_state_values:
+            if value in states._pipeline_state_values.keys():
                 self._state = value
                 self._state_history.append(value)
             else:
@@ -200,11 +164,10 @@ class Pipeline(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-
-    # --------------------------------------------------------------------------
-    #
+    # ------------------------------------------------------------------------------------------------------------------
     # Public methods
-    #
+    # ------------------------------------------------------------------------------------------------------------------
+
     def add_stages(self, value):
         """
         Appends stages to the current Pipeline
@@ -215,13 +178,9 @@ class Pipeline(object):
 
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
-
         if self._cur_stage == 0:
             self._cur_stage = 1
 
-
-    # --------------------------------------------------------------------------
-    #
     def rerun(self):
 
         """
@@ -231,11 +190,8 @@ class Pipeline(object):
 
         self._state = states.SCHEDULING
         self._completed_flag = threading.Event()
-        print 'Pipeline %s in %s state' % (self._uid, self._state)
+        print 'Pipeline %s in %s state'%(self._uid, self._state)
 
-
-    # --------------------------------------------------------------------------
-    #
     def to_dict(self):
         """
         Convert current Pipeline (i.e. its attributes) into a dictionary
@@ -254,9 +210,6 @@ class Pipeline(object):
 
         return pipeline_desc_as_dict
 
-
-    # --------------------------------------------------------------------------
-    #
     def from_dict(self, d):
         """
         Create a Pipeline from a dictionary. The change is in inplace.
@@ -304,19 +257,14 @@ class Pipeline(object):
                 raise TypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
-
-    # --------------------------------------------------------------------------
-    #
     def suspend(self):
         if self._state == states.SUSPENDED:
-            raise EnTKError('suspend() called on suspended Pipeline %s' % self._uid)
+            raise EnTKError(
+                'suspend() called on Pipeline %s that is already suspended' % self._uid)
 
         self._state = states.SUSPENDED
         self._state_history.append(self._state)
 
-
-    # --------------------------------------------------------------------------
-    #
     def resume(self):
         if self._state != states.SUSPENDED:
             raise EnTKError(
@@ -325,60 +273,48 @@ class Pipeline(object):
         self._state = self._state_history[-2]
         self._state_history.append(self._state)
 
-
-    # --------------------------------------------------------------------------
-    #
+    # ------------------------------------------------------------------------------------------------------------------
     # Private methods
-    #
+    # ------------------------------------------------------------------------------------------------------------------
+
     def _increment_stage(self):
         """
         Purpose: Increment stage pointer. Also check if Pipeline has completed.
         """
 
         try:
+
             if self._cur_stage < self._stage_count:
                 self._cur_stage += 1
             else:
                 self._completed_flag.set()
 
-        # AM: what can possibly raise an exception above - this increases an int
-        # or sets a threading flag - both of which are atomic ops.   The
-        # re-raised exeption below does not add any useful information
-        # whatsoever.
         except Exception, ex:
             raise EnTKError(text=ex)
 
-
-    # --------------------------------------------------------------------------
-    #
     def _decrement_stage(self):
         """
         Purpose: Decrement stage pointer. Reset completed flag.
         """
 
         try:
+
             if self._cur_stage > 0:
                 self._cur_stage -= 1
                 self._completed_flag = threading.Event()  # reset
 
-        # AM: what can possibly raise an exception above - this increases an int
-        # or sets a threading flag - both of which are atomic ops.   The
         except Exception, ex:
             raise EnTKError(text=ex)
 
-
-    # --------------------------------------------------------------------------
-    #
-    # AM: why is this a class method?
-    #
     @classmethod
     def _validate_entities(self, stages):
         """
-        Purpose: Validate whether the argument 'stages' is a list of
-                 Stage objects
+        Purpose: Validate whether the argument 'stages' is of list of Stage objects
 
         :argument: list of Stage objects
         """
+        if not stages:
+            raise TypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]
@@ -389,14 +325,10 @@ class Pipeline(object):
 
         return stages
 
-
-    # --------------------------------------------------------------------------
-    #
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED'
-                 (user has not meddled with it). Also validate that the current
-                 Pipeline contains Stages.
+        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also
+        validate that the current Pipeline contains Stages.
         """
 
         if self._state is not states.INITIAL:
@@ -407,32 +339,25 @@ class Pipeline(object):
                              actual_value=self._state)
 
         if not self._stages:
+
             raise MissingError(obj=self._uid,
                                missing_attribute='stages')
 
         for stage in self._stages:
             stage._validate()
 
-
-    # --------------------------------------------------------------------------
-    #
-    # AM: why does UID assignment not happen during creation?
     def _assign_uid(self, sid):
         """
-        Purpose: Assign a uid to the current object based on the sid passed.
-                 Pass the current uid to children of current object
+        Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
+        current object
         """
-
-        self._uid = ru.generate_id('pipeline.%(item_counter)04d',
-                                    ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id(
+            'pipeline.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
         for stage in self._stages:
             stage._assign_uid(sid)
 
         self._pass_uid()
 
-
-    # --------------------------------------------------------------------------
-    #
     def _pass_uid(self):
         """
         Purpose: Pass current Pipeline's uid to all Stages.
@@ -444,7 +369,4 @@ class Pipeline(object):
             stage.parent_pipeline['uid'] = self._uid
             stage.parent_pipeline['name'] = self._name
             stage._pass_uid()
-
-
-# ------------------------------------------------------------------------------
-
+    # ------------------------------------------------------------------------------------------------------------------

@@ -191,33 +191,36 @@ class WFprocessor(object):
 
                             for executable_task in executable_tasks:
 
-                                if  self._resubmit_failed and \
-                                    executable_task.state in [states.INITIAL,
-                                                              states.FAILED]:
+                                if executable_task.state not in [states.INITIAL,
+                                                                 states.FAILED]:
+                                    continue
 
-                                    # Set state of Tasks in current Stage to SCHEDULING
-                                    transition(obj=executable_task,
-                                               obj_type='Task',
-                                               new_state=states.SCHEDULING,
-                                               channel=mq_channel,
-                                               queue='%s-enq-to-sync' % self._sid,
-                                               profiler=local_prof,
-                                               logger=self._logger)
+                                if  executable_task.state == states.FAILED and \
+                                    not self._resubmit_failed:
+                                    continue
 
-                                    # task_as_dict = json.dumps(executable_task.to_dict())
-                                    workload.append(executable_task)
+                                # Set task states in current Stage to SCHEDULING
+                                transition(obj=executable_task,
+                                           obj_type='Task',
+                                           new_state=states.SCHEDULING,
+                                           channel=mq_channel,
+                                           queue='%s-enq-to-sync' % self._sid,
+                                           profiler=local_prof,
+                                           logger=self._logger)
 
-                                    # I don't understand the flow.  Why is the
-                                    # stage appended for each task in that
-                                    # stage?
-                                    #
-                                    # for task in exe_stage.tasks:
-                                    #   if exe_stage not in sched_stages:
-                                    #       sched_stages.append(exe_stage)
-                                    # 
-                                    # that append can happen only once, right?
-                                    if executable_stage not in scheduled_stages:
-                                        scheduled_stages.append(executable_stage)
+                                workload.append(executable_task)
+
+                                # I don't understand the flow.  Why is the
+                                # stage appended for each task in that
+                                # stage?
+                                #
+                                # for task in exe_stage.tasks:
+                                #   if exe_stage not in sched_stages:
+                                #       sched_stages.append(exe_stage)
+                                # 
+                                # that append can happen only once, right?
+                                if executable_stage not in scheduled_stages:
+                                    scheduled_stages.append(executable_stage)
 
                 if workload:
 
@@ -281,7 +284,7 @@ class WFprocessor(object):
 
         except Exception:
 
-            self._logger.exception('Error in enqueue-thread: %s')
+            self._logger.exception('Error in enqueue-thread')
             try:
                 mq_connection.close()
 
@@ -516,7 +519,7 @@ class WFprocessor(object):
             raise
 
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._logger.exception('Error in dequeue-thread')
             try:
@@ -540,6 +543,7 @@ class WFprocessor(object):
         """
 
         try:
+            # AM FIXME: create Profiler in thread
             local_prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-proc',
                                      path=self._path)
 
