@@ -5,6 +5,7 @@ __license__ = "MIT"
 
 # -----------------------------------------------------------------------------
 # Possible states
+#
 INITIAL = 'DESCRIBED'
 SCHEDULING = 'SCHEDULING'
 SUSPENDED = 'SUSPENDED'
@@ -20,6 +21,13 @@ CANCELED = 'CANCELED'
 
 # Final states
 FINAL = [DONE, FAILED, CANCELED]
+
+# AM: this should be
+#   INITIAL = [DESCRIBED]
+# so that tests for INITIAL and FINAL are symmetric.
+#
+# AM: DESCRIBED is NEW elsewhere in the RCT stack.
+# AM: ENTK used FOOING / FOOED as states, RCT elsewhere uses FOO_PENDING, FOOING
 
 # Assign numeric values to states
 state_numbers = {
@@ -100,3 +108,5 @@ for k, v in _task_state_values.iteritems():
         _task_state_inv[v].append(k)
     else:
         _task_state_inv[v] = k
+
+

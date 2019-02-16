@@ -1,9 +1,10 @@
 # Version
-from radical.entk.version import version, __version__
+from .version import version, __version__, version_short, version_detail
+from .version import version_base, version_branch, sdist_name, sdist_path
 
-from radical.entk.pipeline.pipeline import Pipeline
-from radical.entk.stage.stage import Stage
-from radical.entk.task.task import Task
+from .pipeline.pipeline import Pipeline
+from .stage.stage       import Stage
+from .task.task         import Task
 
 from radical.entk.appman.appmanager import AppManager
 import states

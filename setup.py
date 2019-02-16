@@ -14,6 +14,8 @@ import subprocess as sp
 import re
 import shutil
 
+import radical.utils as ru
+
 name     = 'radical.entk'
 mod_root = 'src/radical/entk/'
 
@@ -65,20 +67,20 @@ def get_version (mod_root):
         # and the pip version used uses an install tmp dir in the ve space
         # instead of /tmp (which seems to happen with some pip/setuptools
         # versions).
-        p = sp.Popen('cd %s ; '
+        out, err, ret = ru.sh_callout(
+                     'cd %s ; '
                      'test -z `git rev-parse --show-prefix` || exit -1; '
                      'tag=`git describe --tags --always` 2>/dev/null ; '
                      'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
-                     'echo $tag@$branch' % src_root,
-                     stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-        version_detail = str(p.communicate()[0].strip())
+                     'echo $tag@$branch' % src_root, shell=True)
+        version_detail = out.strip()
         version_detail = version_detail.replace('detached from ', 'detached-')
 
         # remove all non-alphanumeric (and then some) chars
         version_detail = re.sub('[/ ]+', '-', version_detail)
         version_detail = re.sub('[^a-zA-Z0-9_+@.-]+', '', version_detail)
 
-        if  p.returncode   !=  0  or \
+        if  ret            !=  0  or \
             version_detail == '@' or \
             'git-error'      in version_detail or \
             'not-a-git-repo' in version_detail or \
@@ -227,6 +229,17 @@ def isgood(name):
 
 # ------------------------------------------------------------------------------
 #
+class RunTwine(Command):
+    user_options = []
+    def initialize_options (self) : pass
+    def finalize_options   (self) : pass
+    def run (self) :
+        out,  err, ret = ru.sh_callout('python setup.py sdist upload -r pypi')
+        raise SystemExit(ret)
+
+
+# ------------------------------------------------------------------------------
+#
 if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
     raise RuntimeError("SETUP ERROR: %s requires Python 2.6 or higher" % name)
 
@@ -265,11 +278,9 @@ setup_args = {
     'packages'           : find_packages('src'),
     'package_dir'        : {'': 'src'},
     'scripts'            : ['bin/entk-version'],
-
-
     'package_data'       : {'': ['*.sh', '*.json',
                                  'VERSION', 'SDIST', sdist_name]},
-
+    'setup_requires'     : ['pytest-runner'],
     'install_requires'   : ['radical.utils',
                             'radical.pilot',
                             'pika',
@@ -281,6 +292,9 @@ setup_args = {
                            ],
     'zip_safe'           : False,
     'data_files'         : makeDataFiles('share/%s/examples/' % name, 'examples'),
+    'cmdclass'           : {
+        'upload'         :   RunTwine,
+                           },
 }
 
 
