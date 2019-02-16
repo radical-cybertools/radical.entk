@@ -1,12 +1,12 @@
-    #!/usr/bin/env python
+#!/usr/bin/env python
 
-__author__    = "Vivek Balasubramanian"
-__email__     = "vivek.balasubramanian@rutgers.edu"
-__copyright__ = "Copyright 2017, The RADICAL Project at Rutgers"
-__license__   = "MIT"
+__author__    = 'RADICAL Team'
+__email__     = 'radical@rutgers.edu'
+__copyright__ = 'Copyright 2017-19, RADICAL Research, Rutgers University'
+__license__   = 'MIT'
 
 
-""" Setup script. Used by easy_install and pip. """
+""" Setup script, only usable via pip. """
 
 import os
 import sys
@@ -23,7 +23,21 @@ except ImportError as e:
     print("%s needs setuptools to install" % name)
     sys.exit(1)
 
-def set_version(mod_root):
+
+# ------------------------------------------------------------------------------
+#
+# versioning mechanism:
+#
+#   - version:          1.2.3            - is used for installation
+#   - version_detail:  v1.2.3-9-g0684b06 - is used for debugging
+#   - version is read from VERSION file in src_root, which then is copied to
+#     module dir, and is getting installed from there.
+#   - version_detail is derived from the git tag, and only available when
+#     installed from git.  That is stored in mod_root/VERSION in the install
+#     tree.
+#   - The VERSION file is used to provide the runtime version information.
+#
+def get_version (mod_root):
     """
     mod_root
         a VERSION file containes the version strings is created in mod_root,
@@ -66,7 +80,7 @@ def set_version(mod_root):
 
         if  p.returncode   !=  0  or \
             version_detail == '@' or \
-            'git-error' in version_detail or \
+            'git-error'      in version_detail or \
             'not-a-git-repo' in version_detail or \
             'not-found'      in version_detail or \
             'fatal'          in version_detail :
@@ -119,18 +133,33 @@ if  sys.hexversion < 0x02070000 or sys.hexversion >= 0x03000000:
 
 # ------------------------------------------------------------------------------
 # get version info -- this will create VERSION and srcroot/VERSION
-version, version_detail, sdist_name = set_version(mod_root)
+version, version_detail, sdist_name = get_version(mod_root)
 
+
+# ------------------------------------------------------------------------------
+#
+def read(*rnames):
+    try :
+        return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    except Exception :
+        return ''
+
+
+# ------------------------------------------------------------------------------
+#
 # borrowed from the MoinMoin-wiki installer
 #
 def makeDataFiles(prefix, dir):
     """ Create distutils data_files structure from dir
+
     distutil will copy all file rooted under dir into prefix, excluding
     dir itself, just like 'ditto src dst' works, and unlike 'cp -r src
     dst, which copy src into dst'.
+
     Typical usage:
         # install the contents of 'wiki' under sys.prefix+'share/moin'
         data_files = makeDataFiles('share/moin', 'wiki')
+
     For this directory structure:
         root
             file1
@@ -139,7 +168,9 @@ def makeDataFiles(prefix, dir):
                 file
                 subdir
                     file
-    makeDataFiles('prefix', 'root')  will create this distutil data_files structure:
+
+    makeDataFiles('prefix', 'root')  will create this distutil
+    data_files structure:
         [('prefix', ['file1', 'file2']),
          ('prefix/dir', ['file']),
          ('prefix/dir/subdir', ['file'])]
@@ -149,13 +180,15 @@ def makeDataFiles(prefix, dir):
     strip = len(dir) + 1
     found = []
     os.path.walk(dir, visit, (prefix, strip, found))
-    #print found[0]
-    return found[0]
+    return found
+
 
 def visit((prefix, strip, found), dirname, names):
     """ Visit directory, create distutil tuple
+
     Add distutil tuple for each directory using this format:
         (destination, [dirname/file1, dirname/file2, ...])
+
     distutil will copy later file1, file2, ... info destination.
     """
     files = []
@@ -173,6 +206,7 @@ def visit((prefix, strip, found), dirname, names):
     destination = os.path.join(prefix, dirname[strip:])
     found.append((destination, files))
 
+
 def isbad(name):
     """ Whether name should not be installed """
     return (name.startswith('.') or
@@ -180,33 +214,37 @@ def isbad(name):
             name.endswith('.pickle') or
             name == 'CVS')
 
+
 def isgood(name):
     """ Whether name should be installed """
     if not isbad(name):
-        if name.endswith('.py') or name.endswith('.json') or name.endswith('.tar'):
+        if  name.endswith('.py')   or \
+            name.endswith('.json') or \
+            name.endswith('.tar'):
             return True
     return False
 
-#-----------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 #
 if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError("SETUP ERROR: radical.entk requires Python 2.6 or higher")
+    raise RuntimeError("SETUP ERROR: %s requires Python 2.6 or higher" % name)
 
-# short_version = 0.6
 
+# -------------------------------------------------------------------------------
 setup_args = {
-    'name'             : 'radical.entk',
-    'version'          : version,
-    'description'      : "Radical Ensemble Toolkit.",
-    #'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
-    'author'           : 'RADICAL Group at Rutgers University',
-    'author_email'     : 'vivek.balasubramanian@rutgers.edu',
-    'maintainer'       : "Vivek Balasubramanian",
-    'maintainer_email' : 'vivek.balasubramanian@rutgers.edu',
-    'url'              : 'https://github.com/radical-cybertools/radical.entk',
-    'license'          : 'MIT',
-    'keywords'         : "ensemble workflow execution",
-    'classifiers'      :  [
+    'name'               : name,
+    'version'            : version,
+    'description'        : "Radical Ensemble Toolkit.",
+    'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
+    'author'             : 'RADICAL Group at Rutgers University',
+    'author_email'       : 'radical@rutgers.edu',
+    'maintainer'         : 'The RADICAL Group',
+    'maintainer_email'   : 'radical@rutgers.edu',
+    'url'                : 'https://github.com/radical-cybertools/radical.entk',
+    'license'            : 'MIT',
+    'keywords'           : "ensemble workflow execution",
+    'classifiers'        :  [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Environment :: Console',
@@ -218,45 +256,45 @@ setup_args = {
         'Programming Language :: Python :: 2.7',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
+        'Topic :: Scientific/Engineering',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-
-    #'entry_points': {},
-
-    #'dependency_links': ['https://github.com/saga-project/saga-pilot/tarball/master#egg=sagapilot'],
-
-    'namespace_packages': ['radical', 'radical'],
-    'packages'          : find_packages('src'),
-
-    'package_dir'       : {'': 'src'},
-
-    'scripts'           : ['bin/entk-version'],
+    'namespace_packages' : ['radical'],
+    'packages'           : find_packages('src'),
+    'package_dir'        : {'': 'src'},
+    'scripts'            : ['bin/entk-version'],
 
 
-    'package_data'      :  {'': ['*.sh', '*.json', 'VERSION', 'SDIST']},
+    'package_data'       : {'': ['*.sh', '*.json',
+                                 'VERSION', 'SDIST', sdist_name]},
 
-    #'install_requires'  :  ['radical.pilot', 'pika', 'pandas', 'numpy', 'matplotlib'],
-    'install_requires'  :  ['radical.utils', 'pika', 'radical.pilot',
-                            'pytest','hypothesis','sphinx'],
-
-    'zip_safe'          : False,
-
-    'data_files'        : [
-                            makeDataFiles('share/radical.entk/user_guide/scripts/', 'examples/user_guide'),
-                            makeDataFiles('share/radical.entk/simple_examples/scripts/', 'examples/simple_examples'),
-                            makeDataFiles('share/radical.entk/analytics/scripts/','examples/analytics'),
-                            makeDataFiles('share/radical.entk/advanced_examples/scripts/','examples/advanced_examples')
-                        ],
-
+    'install_requires'   : ['radical.utils',
+                            'radical.pilot',
+                            'pika',
+                            'sphinx'
+                           ],
+    'tests_require'      : ['pytest',
+                            'coverage',
+                            'hypothesis',
+                           ],
+    'zip_safe'           : False,
+    'data_files'         : makeDataFiles('share/%s/examples/' % name, 'examples'),
 }
 
+
+# ------------------------------------------------------------------------------
+#
 setup (**setup_args)
 
+os.system('rm -rf src/%s.egg-info' % name)
+
+# ------------------------------------------------------------------------------
 
 '''
 To publish to pypi:
 python setup.py sdist
 twine upload --skip-existing dist/<tarball name>
 '''
+
