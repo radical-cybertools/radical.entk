@@ -26,7 +26,7 @@ class Task(object):
 
         # Attributes necessary for execution
         self._pre_exec = list()
-        self._executable = list()
+        self._executable = None
         self._arguments = list()
         self._post_exec = list()
         self._cpu_reqs = {'processes': 1,
@@ -458,7 +458,8 @@ class Task(object):
 
     @executable.setter
     def executable(self, value):
-        if isinstance(value, str) or isinstance(value, list):
+
+        if isinstance(value, str):
             self._executable = value
         else:
             raise TypeError(expected_type='str', actual_type=type(value))
@@ -771,10 +772,10 @@ class Task(object):
                                 actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            if isinstance(d['executable'], list):
+            if isinstance(d['executable'], str):
                 self._executable = d['executable']
             else:
-                raise TypeError(expected_type=list,
+                raise TypeError(expected_type=str,
                                 actual_type=type(d['executable']))
 
         if 'arguments' in d:
