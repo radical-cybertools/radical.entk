@@ -771,7 +771,7 @@ class Task(object):
                                 actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            if isinstance(d['executable'], list):
+            if isinstance(d['executable'], list) or isinstance(d['executable'], str) or isinstance(d['executable'], unicode):
                 self._executable = d['executable']
             else:
                 raise TypeError(expected_type=list,
