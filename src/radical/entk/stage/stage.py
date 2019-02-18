@@ -102,7 +102,15 @@ class Stage(object):
         :getter: Returns the fully qualified uid of the current stage
         :type: String
         """
-        return '%s.%s' % (self.parent_pipeline['uid'], self.uid)
+        p_elem = self.parent_pipeline.get('name')
+        if not p_elem:
+            p_elem = self.parent_pipeline['uid']
+
+        s_elem = self.name
+        if not s_elem:
+            s_elem = self.uid
+
+        return '%s.%s' % (p_elem, s_elem)
 
 
     @property

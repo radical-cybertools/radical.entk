@@ -100,7 +100,8 @@ class Pipeline(object):
         :getter: Returns the fully qualified uid of the current pipeline
         :type: String
         """
-        return self.uid
+        if self.name: return self.name
+        else        : return self.uid
 
 
     @property
