@@ -31,10 +31,12 @@ executed when the boolean result is True, and a function that is executed when t
 
 
 
-In the following example, we create 1 Pipeline with five stages. There are 10 tasks in each Stage that each runs
-'sleep 30'. After a Stage is DONE (i.e. all tasks in the Stage have completed execution), a condition is evaluated
-that checks whether the current stage is less than the max number of stages in the Pipeline. If yes, then the arguments 
-of the tasks of the next Stage are modified. If not, no operation is performed.
+In the following example, we create 1 Pipeline with five stages. There are 10
+tasks in each Stage, each running 'sleep 30'. After a Stage is DONE (i.e. all
+tasks in the Stage have completed execution), a condition is evaluated that
+checks whether the current stage is less than the max number of stages in the
+Pipeline. If yes, then the arguments of the tasks of the next Stage are
+modified. If not, no operation is performed.
 
 
 To run the script, simply execute the following from the command line:
@@ -48,8 +50,9 @@ To run the script, simply execute the following from the command line:
 
     python adapt_ta.py
 
-Let's take a look at the complete code in the example. You can generate a more verbose output by setting the environment
-variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
+Let's take a look at the complete code in the example. Note: You can generate
+a more verbose output by setting the environment variable
+``RADICAL_ENTK_VERBOSE=DEBUG``.
 
 A look at the complete code in this section:
 
