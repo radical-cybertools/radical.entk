@@ -677,7 +677,7 @@ class AppManager(object):
 
                                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                             self._report.ok('Update: ')
-                                            self._report.info('Task %s in state %s\n' % (task.uid, task.state))
+                                            self._report.info('%s state: %s\n' % (task.luid, task.state))
 
                                             found_task = True
 
@@ -709,8 +709,8 @@ class AppManager(object):
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                         self._report.ok('Update: ')
-                                        self._report.info('Task %s in state %s\n' %
-                                                          (completed_task.uid, completed_task.state))
+                                        self._report.info('%s state: %s\n' %
+                                                          (completed_task.luid, completed_task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -749,7 +749,7 @@ class AppManager(object):
 
                                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                     self._report.ok('Update: ')
-                                    self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
+                                    self._report.info('%s state: %s\n' % (stage.luid, stage.state))
 
                                     found_stage = True
 
@@ -822,7 +822,7 @@ class AppManager(object):
                             if completed_pipeline.completed:
                                 pipe._completed_flag.set()
                             self._report.ok('Update: ')
-                            self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
+                            self._report.info('%s state: %s\n' % (pipe.luid, pipe.state))
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
