@@ -280,8 +280,8 @@ class Pipeline(object):
             raise EnTKError(
                 'suspend() called on Pipeline %s that is already suspended' % self._uid)
 
+        # state history gets updated by `transition()`
         self._state = states.SUSPENDED
-        self._state_history.append(self._state)
 
     def resume(self):
         if self._state != states.SUSPENDED:
