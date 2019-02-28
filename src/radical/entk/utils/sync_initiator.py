@@ -58,6 +58,9 @@ def sync_with_master(obj, obj_type, channel, queue, logger, local_prof):
 
             # AM: what happens to messages which don't match the `if` below
             # - it seems like they are doscarded?  Why?
+            # VB: Messages from RMQ can come out of order. Messages that are unacknowledged will
+            # get resent, so no messages are discarded actually. We acknowledge a processed
+            # message below.
 
             if corr_id == props.correlation_id:
 
