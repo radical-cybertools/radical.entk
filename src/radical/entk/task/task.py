@@ -800,12 +800,8 @@ class Task(object):
                 raise TypeError(expected_type=list,
                                 actual_type=type(d['pre_exec']))
 
-        if 'executable' in d:
-            if isinstance(d['executable'], str) or isinstance(d['executable'], unicode):
-                self._executable = d['executable']
-            else:
-                raise TypeError(expected_type=str,
-                                actual_type=type(d['executable']))
+        if d.get('executable'):
+            self.executable = d['executable']
 
         if 'arguments' in d:
             if isinstance(d['arguments'], list):
