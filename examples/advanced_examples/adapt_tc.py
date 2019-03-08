@@ -32,7 +32,7 @@ def generate_pipeline():
 
         for i in range(10):
             t = Task()
-            t.executable = ['sleep']
+            t.executable = '/bin/sleep'
             t.arguments = [ '30']
 
             s.add_tasks(t)

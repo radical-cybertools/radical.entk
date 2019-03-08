@@ -34,7 +34,7 @@ def generate_pipeline(name, stages):
             # Create a Task object
             t = Task()
             t.name = 'my-task'        # Assign a name to the task (optional)
-            t.executable = ['/bin/echo']   # Assign executable to the task
+            t.executable = '/bin/echo'   # Assign executable to the task
             # Assign arguments for the task executable
             t.arguments = ['I am task %s in %s in %s'%(t_cnt, s_cnt, name)]
 
