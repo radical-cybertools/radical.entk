@@ -281,6 +281,7 @@ def test_task_to_dict():
 
 
     t.executable = 'sleep'
+    d = t.to_dict()
 
     assert d == {   'uid': 'test.0000',
                     'name': 'new',

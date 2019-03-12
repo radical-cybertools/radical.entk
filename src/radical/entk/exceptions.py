@@ -3,6 +3,14 @@ __copyright__ = "Copyright 2017, http://radical.rutgers.edu"
 __license__ = "MIT"
 
 
+class EnTKError(Exception):
+    """EnTKError is the generic exception type used by EnTK -- exception arg
+    messages are usually 
+    """
+
+    def __init__(self, msg):
+        super(EnTKError, self).__init__(msg)
+
 class TypeError(TypeError):
     """TypeError is raised if value of a wrong type is passed to a function or
     assigned as an attribute of an object"""

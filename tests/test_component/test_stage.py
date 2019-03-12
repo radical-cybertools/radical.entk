@@ -22,9 +22,7 @@ def test_stage_initialization():
     assert s._task_count == 0
     assert s.parent_pipeline['uid'] == None
     assert s.parent_pipeline['name'] == None
-    assert s.post_exec == {'condition': None,
-                           'on_true': None,
-                           'on_false': None}
+    assert s.post_exec == None
 
 
 @given(t=st.text(),
