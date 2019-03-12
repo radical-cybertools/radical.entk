@@ -456,8 +456,10 @@ class Task(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise ValueError(
-                    "Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -800,8 +802,12 @@ class Task(object):
                 raise TypeError(expected_type=list,
                                 actual_type=type(d['pre_exec']))
 
-        if d.get('executable'):
-            self.executable = d['executable']
+        if 'executable' in d:
+            if isinstance(d['executable'], list)  or isinstance(d['state'], str):
+                self._executable = d['executable']
+            else:
+                raise TypeError(expected_type=list,
+                                actual_type=type(d['executable']))
 
         if 'arguments' in d:
             if isinstance(d['arguments'], list):

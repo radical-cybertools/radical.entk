@@ -3,14 +3,7 @@ __copyright__ = "Copyright 2017, http://radical.rutgers.edu"
 __license__ = "MIT"
 
 
-class EnTKError(Exception):
-    """EnTKError is the base exception raised by Ensemble Toolkit"""
-
-    def __init__(self, msg):
-        super(EnTKError, self).__init__(msg)
-
-
-class TypeError(EnTKError):
+class TypeError(TypeError):
     """TypeError is raised if value of a wrong type is passed to a function or
     assigned as an attribute of an object"""
 
@@ -30,7 +23,7 @@ class TypeError(EnTKError):
         super(TypeError, self).__init__(msg)
 
 
-class ValueError(EnTKError):
+class ValueError(ValueError):
 
     """
     ValueError is raised if a value that is unacceptable is passed to a
@@ -59,7 +52,7 @@ class ValueError(EnTKError):
         super(ValueError, self).__init__(msg)
 
 
-class MissingError(EnTKError):
+class MissingError(AttributeError):
 
     """
     MissingError is raised when an attribute that is mandatory is left
