@@ -84,9 +84,6 @@ def test_task_exceptions(s,l,i,b):
                 t.pre_exec = data
 
             with pytest.raises(TypeError):
-                t.executable = data
-
-            with pytest.raises(TypeError):
                 t.arguments = data
 
             with pytest.raises(TypeError):
@@ -141,6 +138,11 @@ def test_task_exceptions(s,l,i,b):
                                 'thread_type': data
                             }
 
+
+        if not isinstance(data, str) and not isinstance(data, list) and not isinstance(data, unicode):
+
+            with pytest.raises(TypeError):
+                t.executable = data
 
         if not isinstance(data, int):
 
