@@ -1,0 +1,22 @@
+2019-03-13 13:03:58,524: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : ERROR   : flushing failed
+Traceback (most recent call last):
+  File "/home/vivek/Research/ves/entk/local/lib/python2.7/site-packages/saga/utils/pty_process.py", line 174, in flush
+    tmp = self.read (timeout=0.1)
+  File "/home/vivek/Research/ves/entk/local/lib/python2.7/site-packages/saga/utils/pty_process.py", line 679, in read
+    % (e, self.tail))
+NoSuccess: read from process failed '[Errno 5] Input/output error' : (epos/radical.entk/tests/test_integration$ $$PROMPT-0->PROMPT-0->PROMPT-0->PID: 16982
+PROMPT-0->
+
+RUNNING 
+OK
+17243.0
+PROMPT-0->
+OK
+BULK COMPLETED
+PROMPT-0->
+
+trapped EXIT
+cmd_quit called (1)PROMPT-1->STATS 17243.0
+/bin/sh: 5: STATS: not found
+PROMPT-127->
+) (/home/vivek/Research/ves/entk/local/lib/python2.7/site-packages/saga/utils/pty_process.py +679 (read)  :  % (e, self.tail)))

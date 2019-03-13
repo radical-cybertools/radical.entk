@@ -241,7 +241,7 @@ def test_create_cud_from_task():
     assert cud.pre_exec == t1.pre_exec
 
     # rp returns executable as a string regardless of whether assignment was using string or list
-    assert cud.executable == t1.executable
+    assert cud.executable == t1.executable[0]
     assert cud.arguments == t1.arguments
     assert cud.cpu_processes == t1.cpu_reqs['processes']
     assert cud.cpu_threads == t1.cpu_reqs['threads_per_process']
