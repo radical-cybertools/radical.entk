@@ -28,7 +28,7 @@ before_script:
   - cat .coveragerc
 
 script:
-  - coverage run -m pytest -vvv tests/test_component/test_amgr.py
+  # - coverage run -m pytest -vvv tests/test_component/test_amgr.py
   - coverage run -m pytest -vvv tests/test_component/test_modules.py
   - coverage run -m pytest -vvv tests/test_component/test_pipeline.py
   - travis_wait coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py
