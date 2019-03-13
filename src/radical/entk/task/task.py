@@ -488,9 +488,7 @@ class Task(object):
 
     @executable.setter
     def executable(self, value):
-        if isinstance(value, list):
-            self._executable = value[0]
-        elif isinstance(value, str):
+        if isinstance(value, list) or isinstance(value, str):
             self._executable = value
         else:
             raise TypeError(expected_type='str', actual_type=type(value))
