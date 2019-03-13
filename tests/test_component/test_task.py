@@ -16,7 +16,7 @@ def test_task_initialization():
     assert t.name == None
     assert t.state == states.INITIAL
     assert t.pre_exec == list()
-    assert t.executable == list()
+    assert t.executable == None
     assert t.arguments == list()
     assert t.post_exec == list()
     assert t.cpu_reqs['processes'] == 1
@@ -110,6 +110,11 @@ def test_task_exceptions(s,l,i,b):
             with pytest.raises(TypeError):
                 t.move_output_data = data
 
+        if not isinstance(data, str) and not isinstance(data, list):
+
+            with pytest.raises(TypeError):
+                t.executable = data
+
         if not isinstance(data, str) and not isinstance(data, unicode):
 
             with pytest.raises(ValueError):
@@ -137,12 +142,6 @@ def test_task_exceptions(s,l,i,b):
                                 'threads_per_process': 1,
                                 'thread_type': data
                             }
-
-
-        if not isinstance(data, str) and not isinstance(data, list) and not isinstance(data, unicode):
-
-            with pytest.raises(TypeError):
-                t.executable = data
 
         if not isinstance(data, int):
 
@@ -187,7 +186,7 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': [],
-                    'executable': [],
+                    'executable': None,
                     'arguments': [],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 1,
@@ -250,7 +249,7 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': ['module load abc'],
-                    'executable': ['sleep'],
+                    'executable': 'sleep',
                     'arguments': ['10'],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 10,
@@ -330,7 +329,7 @@ def test_task_from_dict():
             'state': states.DONE,
             'state_history': [states.INITIAL, states.DONE],
             'pre_exec': [],
-            'executable': [],
+            'executable': '',
             'arguments': [],
             'post_exec': [],
             'cpu_reqs': { 'processes': 1,
