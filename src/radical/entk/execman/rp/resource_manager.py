@@ -169,7 +169,7 @@ class ResourceManager(Base_ResourceManager):
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
 
             # Wait for pilot to go active
-            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED])
+            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
             self._logger.info('Pilot is now active')
