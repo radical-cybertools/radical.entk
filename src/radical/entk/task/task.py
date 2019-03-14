@@ -232,7 +232,7 @@ class Task(object):
                             |  'processes': X,
                             |  'process_type': None/MPI,
                             |  'threads_per_process': Y,
-                            |  'thread_type': None/OpenMP
+                            |  'thread_type': None/OpenMP/CUDA
                         }
 
         This description means that the Task is going to spawn X processes and Y threads
@@ -594,10 +594,10 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if value.get('thread_type') in [None, 'OpenMP', '']:
+                if value.get('thread_type') in [None, 'OpenMP', 'CUDA','']:
                     self._gpu_reqs['thread_type'] = value.get('thread_type')
                 else:
-                    raise ValueError(expected_value='None or OpenMP',
+                    raise ValueError(expected_value='None or OpenMP or CUDA',
                                      actual_value=value.get('thread_type'),
                                      obj='gpu_reqs',
                                      attribute='thread_type'
