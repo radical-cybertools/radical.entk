@@ -803,7 +803,7 @@ class Task(object):
                                 actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            if isinstance(d['state'], str):
+            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
                 self._executable = d['executable']
             else:
                 raise TypeError(expected_type=str,
