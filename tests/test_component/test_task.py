@@ -16,7 +16,7 @@ def test_task_initialization():
     assert t.name == None
     assert t.state == states.INITIAL
     assert t.pre_exec == list()
-    assert t.executable == None
+    assert t.executable == str()
     assert t.arguments == list()
     assert t.post_exec == list()
     assert t.cpu_reqs['processes'] == 1
@@ -186,7 +186,7 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': [],
-                    'executable': None,
+                    'executable': str(),
                     'arguments': [],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 1,
