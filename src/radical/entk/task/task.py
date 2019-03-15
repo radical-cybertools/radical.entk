@@ -26,7 +26,7 @@ class Task(object):
 
         # Attributes necessary for execution
         self._pre_exec = list()
-        self._executable = None
+        self._executable = str()
         self._arguments = list()
         self._post_exec = list()
         self._cpu_reqs = {'processes': 1,
