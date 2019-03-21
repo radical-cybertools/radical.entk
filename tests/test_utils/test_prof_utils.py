@@ -1,14 +1,12 @@
-import pytest
-from radical.entk.utils import get_session_profile, get_session_description, write_session_description, write_workflow
-from pprint import pprint
-from radical.entk.exceptions import *
-import radical.utils as ru
 import os
+import shutil
+
+import radical.utils as ru
+
 from radical.entk import Pipeline, Stage, Task, AppManager
 from radical.entk.appman.wfprocessor import WFprocessor
 from radical.entk.execman.rp import TaskManager
-from glob import glob
-import shutil
+from radical.entk.utils import get_session_profile, get_session_description, write_session_description, write_workflow
 
 MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
@@ -72,7 +70,6 @@ def test_write_session_description():
     curdir = os.path.dirname(os.path.abspath(__file__))
     src = '%s/sample_data' % curdir
     assert desc == ru.read_json('%s/expected_desc_write_session.json' % src)
-
 
 
 def test_get_session_description():
@@ -159,9 +156,12 @@ def test_write_workflow():
 
         stack = data.pop(0)
         assert stack.keys() == ['stack']
-        assert stack['stack'].keys() == ['sys','radical']
-        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+                                                    'radical.utils',
+                                                    'radical.entk']
 
         p_cnt = 0
         for p in data:
@@ -184,22 +184,6 @@ def test_write_workflow():
         raise
 
     try:
-        wf = list()
-        wf.append(generate_pipeline(1))
-        wf.append(generate_pipeline(2))
-
-        amgr = AppManager(hostname=hostname, port=port)
-        amgr.workflow = wf
-        amgr._wfp = WFprocessor(sid=amgr._sid,
-                                workflow=amgr._workflow,
-                                pending_queue=amgr._pending_queue,
-                                completed_queue=amgr._completed_queue,
-                                mq_hostname=amgr._mq_hostname,
-                                port=amgr._port,
-                                resubmit_failed=amgr._resubmit_failed)
-        amgr._wfp._initialize_workflow()
-        wf = amgr._wfp.workflow
-
         write_workflow(wf, 'test', workflow_fout='test_workflow')
 
         data = ru.read_json('test/test_workflow.json')
@@ -207,9 +191,12 @@ def test_write_workflow():
 
         stack = data.pop(0)
         assert stack.keys() == ['stack']
-        assert stack['stack'].keys() == ['sys','radical']
-        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+                                                    'radical.utils',
+                                                    'radical.entk']
 
         p_cnt = 0
         for p in data:
@@ -225,29 +212,13 @@ def test_write_workflow():
                     assert t.to_dict() in s['tasks']
                 s_cnt += 1
             p_cnt += 1
-        
+
         shutil.rmtree('test')
     except Exception as ex:
         shutil.rmtree('test')
         raise
 
     try:
-        wf = list()
-        wf.append(generate_pipeline(1))
-        wf.append(generate_pipeline(2))
-
-        amgr = AppManager(hostname=hostname, port=port)
-        amgr.workflow = wf
-        amgr._wfp = WFprocessor(sid=amgr._sid,
-                                workflow=amgr._workflow,
-                                pending_queue=amgr._pending_queue,
-                                completed_queue=amgr._completed_queue,
-                                mq_hostname=amgr._mq_hostname,
-                                port=amgr._port,
-                                resubmit_failed=amgr._resubmit_failed)
-        amgr._wfp._initialize_workflow()
-        wf = amgr._wfp.workflow
-
         data = write_workflow(wf, 'test', workflow_fout='test_workflow',
                               fwrite=False)
 
@@ -255,9 +226,12 @@ def test_write_workflow():
 
         stack = data.pop(0)
         assert stack.keys() == ['stack']
-        assert stack['stack'].keys() == ['sys','radical']
-        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+                                                    'radical.utils',
+                                                    'radical.entk']
 
         p_cnt = 0
         for p in data:
