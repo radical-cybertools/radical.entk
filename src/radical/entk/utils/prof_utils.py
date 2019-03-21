@@ -1,15 +1,9 @@
 import os
-import csv
-import copy
 import glob
-import time
-import threading
-import json
 import radical.utils as ru
 
 from radical.entk.exceptions import *
 import traceback
-import socket
 from radical.entk import states as res
 
 
@@ -222,7 +216,7 @@ def get_session_description(sid, src=None):
     return desc
 
 
-def write_workflow(workflow, uid):
+def write_workflow(workflow, uid, workflow_fout='entk_workflow',fwrite=True):
 
     try:
         os.mkdir(uid)
@@ -230,8 +224,8 @@ def write_workflow(workflow, uid):
         pass
 
     data = list()
-    if os.path.isfile('%s/entk_workflow.json' % uid):
-        data = ru.read_json('%s/entk_workflow.json' % uid)
+    if os.path.isfile('%s/%s.json' % (uid, workflow_fout)):
+        data = ru.read_json('%s/%s.json' % (uid, workflow_fout))
 
     stack = ru.stack()
     data.append({'stack': stack})
@@ -259,4 +253,7 @@ def write_workflow(workflow, uid):
 
         data.append(p)
 
-    ru.write_json(data, '%s/entk_workflow.json' % uid)
+    if fwrite:
+        ru.write_json(data, '%s/entk_workflow.json' % uid)
+    else:
+        return data
