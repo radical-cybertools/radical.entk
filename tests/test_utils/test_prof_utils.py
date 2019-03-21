@@ -178,6 +178,102 @@ def test_write_workflow():
                 s_cnt += 1
             p_cnt += 1
 
+        shutil.rmtree('test')
+    except Exception as ex:
+        shutil.rmtree('test')
+        raise
+
+    try:
+        wf = list()
+        wf.append(generate_pipeline(1))
+        wf.append(generate_pipeline(2))
+
+        amgr = AppManager(hostname=hostname, port=port)
+        amgr.workflow = wf
+        amgr._wfp = WFprocessor(sid=amgr._sid,
+                                workflow=amgr._workflow,
+                                pending_queue=amgr._pending_queue,
+                                completed_queue=amgr._completed_queue,
+                                mq_hostname=amgr._mq_hostname,
+                                port=amgr._port,
+                                resubmit_failed=amgr._resubmit_failed)
+        amgr._wfp._initialize_workflow()
+        wf = amgr._wfp.workflow
+
+        write_workflow(wf, 'test', workflow_fout='test_workflow')
+
+        data = ru.read_json('test/test_workflow.json')
+        assert len(data) == len(wf) + 1
+
+        stack = data.pop(0)
+        assert stack.keys() == ['stack']
+        assert stack['stack'].keys() == ['sys','radical']
+        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
+        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+
+        p_cnt = 0
+        for p in data:
+            assert p['uid'] == wf[p_cnt].uid
+            assert p['name'] == wf[p_cnt].name
+            assert p['state_history'] == wf[p_cnt].state_history
+            s_cnt = 0
+            for s in p['stages']:
+                assert s['uid'] == wf[p_cnt].stages[s_cnt].uid
+                assert s['name'] == wf[p_cnt].stages[s_cnt].name
+                assert s['state_history'] == wf[p_cnt].stages[s_cnt].state_history
+                for t in wf[p_cnt].stages[s_cnt].tasks:
+                    assert t.to_dict() in s['tasks']
+                s_cnt += 1
+            p_cnt += 1
+        
+        shutil.rmtree('test')
+    except Exception as ex:
+        shutil.rmtree('test')
+        raise
+
+    try:
+        wf = list()
+        wf.append(generate_pipeline(1))
+        wf.append(generate_pipeline(2))
+
+        amgr = AppManager(hostname=hostname, port=port)
+        amgr.workflow = wf
+        amgr._wfp = WFprocessor(sid=amgr._sid,
+                                workflow=amgr._workflow,
+                                pending_queue=amgr._pending_queue,
+                                completed_queue=amgr._completed_queue,
+                                mq_hostname=amgr._mq_hostname,
+                                port=amgr._port,
+                                resubmit_failed=amgr._resubmit_failed)
+        amgr._wfp._initialize_workflow()
+        wf = amgr._wfp.workflow
+
+        data = write_workflow(wf, 'test', workflow_fout='test_workflow',
+                              fwrite=False)
+
+        assert len(data) == len(wf) + 1
+
+        stack = data.pop(0)
+        assert stack.keys() == ['stack']
+        assert stack['stack'].keys() == ['sys','radical']
+        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
+        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+
+        p_cnt = 0
+        for p in data:
+            assert p['uid'] == wf[p_cnt].uid
+            assert p['name'] == wf[p_cnt].name
+            assert p['state_history'] == wf[p_cnt].state_history
+            s_cnt = 0
+            for s in p['stages']:
+                assert s['uid'] == wf[p_cnt].stages[s_cnt].uid
+                assert s['name'] == wf[p_cnt].stages[s_cnt].name
+                assert s['state_history'] == wf[p_cnt].stages[s_cnt].state_history
+                for t in wf[p_cnt].stages[s_cnt].tasks:
+                    assert t.to_dict() in s['tasks']
+                s_cnt += 1
+            p_cnt += 1
+
     except Exception as ex:
         shutil.rmtree('test')
         raise

@@ -1,11 +1,11 @@
 import os
 import glob
+import traceback
 import radical.utils as ru
 
 from radical.entk.exceptions import *
-import traceback
 from radical.entk import states as res
-
+from radical.pilot import states as rps
 
 def get_hostmap(profile):
     '''
@@ -34,7 +34,7 @@ def get_hostmap_deprecated(profiles):
     hostmap = dict()  # map pilot IDs to host names
     for pname, prof in profiles.iteritems():
 
-        if not len(prof):
+        if not prof:
             continue
 
         if not prof[0][ru.MSG]:
@@ -67,7 +67,7 @@ def get_session_profile(sid, src=None):
     else:
         raise EnTKError('%s/%s does not exist' % (src, sid))
 
-    if len(profiles) == 0:
+    if not profiles:
         raise EnTKError('No profiles found at %s' % src)
 
     try:
@@ -133,7 +133,7 @@ def write_session_description(amgr):
                                'resource_manager',
                                'task_manager'],
                        'children': list()
-                       }
+                      }
 
     # Adding wfp to the tree
     wfp = amgr._wfp
@@ -143,7 +143,7 @@ def write_session_description(amgr):
                       'cfg': {},
                       'has': [],
                       'children': list()
-                      }
+                     }
 
     # Adding rmgr to the tree
     rmgr = amgr._resource_manager
@@ -153,7 +153,7 @@ def write_session_description(amgr):
                        'cfg': {},
                        'has': [],
                        'children': list()
-                       }
+                      }
 
     # Adding tmgr to the tree
     tmgr = amgr._task_manager
@@ -163,7 +163,7 @@ def write_session_description(amgr):
                        'cfg': {},
                        'has': [],
                        'children': list()
-                       }
+                      }
 
     # Adding pipelines to the tree
     wf = amgr._workflow
@@ -174,7 +174,7 @@ def write_session_description(amgr):
                            'cfg': {},
                            'has': ['stage'],
                            'children': list()
-                           }
+                          }
         # Adding stages to the tree
         for stage in pipe.stages:
             tree[pipe._uid]['children'].append(stage._uid)
@@ -183,7 +183,7 @@ def write_session_description(amgr):
                                 'cfg': {},
                                 'has': ['task'],
                                 'children': list()
-                                }
+                               }
             # Adding tasks to the tree
             for task in stage.tasks:
                 tree[stage._uid]['children'].append(task._uid)
@@ -192,7 +192,7 @@ def write_session_description(amgr):
                                    'cfg': {},
                                    'has': [],
                                    'children': list()
-                                   }
+                                  }
 
     desc['tree'] = tree
     desc['config'] = dict()
@@ -216,7 +216,7 @@ def get_session_description(sid, src=None):
     return desc
 
 
-def write_workflow(workflow, uid, workflow_fout='entk_workflow',fwrite=True):
+def write_workflow(workflow, uid, workflow_fout='entk_workflow', fwrite=True):
 
     try:
         os.mkdir(uid)
@@ -255,5 +255,6 @@ def write_workflow(workflow, uid, workflow_fout='entk_workflow',fwrite=True):
 
     if fwrite:
         ru.write_json(data, '%s/entk_workflow.json' % uid)
-    else:
-        return data
+        return 0
+
+    return data
