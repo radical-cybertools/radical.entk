@@ -275,5 +275,4 @@ def test_write_workflow():
             p_cnt += 1
 
     except Exception as ex:
-        shutil.rmtree('test')
         raise
