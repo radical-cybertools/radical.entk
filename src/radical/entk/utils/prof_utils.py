@@ -254,7 +254,7 @@ def write_workflow(workflow, uid, workflow_fout='entk_workflow', fwrite=True):
         data.append(p)
 
     if fwrite:
-        ru.write_json(data, '%s/entk_workflow.json' % uid)
+        ru.write_json(data, '%s/entk_workflow.json' % (uid, workflow_fout))
         return 0
 
     return data
