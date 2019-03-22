@@ -1,0 +1,27 @@
+#time,event,comp,thread,uid,state,msg
+1553114822.6383,sync_abs,radical.entk.task_manager.0000-proc,MainThread,,,localhost.localdomain:138.201.86.166:1553114822.64:1553114822.64:sys
+1553114822.6383,tmgr process started,radical.entk.task_manager.0000-proc,MainThread,task_manager.0000,,
+1553114822.6440,tmgr infrastructure setup done,radical.entk.task_manager.0000-proc,MainThread,task_manager.0000,,
+1553114824.1955,cud from task - create,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,
+1553114824.1966,cud from task - done,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,
+1553114824.1999,advance,radical.entk.task_manager.0000-proc,Thread-1,task.0000,SUBMITTING,stage.0000
+1553114824.2004,publishing obj with state SUBMITTING for sync,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,stage.0000
+1553114824.2044,obj with state SUBMITTING synchronized,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,stage.0000
+1553114824.2063,cud from task - create,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,
+1553114824.2074,cud from task - done,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,
+1553114824.2107,advance,radical.entk.task_manager.0000-proc,Thread-1,task.0001,SUBMITTING,stage.0000
+1553114824.2109,publishing obj with state SUBMITTING for sync,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,stage.0000
+1553114824.2125,obj with state SUBMITTING synchronized,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,stage.0000
+1553114824.2266,advance,radical.entk.task_manager.0000-proc,Thread-1,task.0000,SUBMITTED,stage.0000
+1553114824.2271,publishing obj with state SUBMITTED for sync,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,stage.0000
+1553114824.2293,obj with state SUBMITTED synchronized,radical.entk.task_manager.0000-proc,Thread-1,task.0000,,stage.0000
+1553114824.2336,advance,radical.entk.task_manager.0000-proc,Thread-1,task.0001,SUBMITTED,stage.0000
+1553114824.2342,publishing obj with state SUBMITTED for sync,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,stage.0000
+1553114824.2353,obj with state SUBMITTED synchronized,radical.entk.task_manager.0000-proc,Thread-1,task.0001,,stage.0000
+1553114828.2195,task from cu - create,radical.entk.task_manager.0000-proc,umgr.0000.subscriber._state_sub_cb,task.0001,,
+1553114828.2197,task from cu - done,radical.entk.task_manager.0000-proc,umgr.0000.subscriber._state_sub_cb,task.0001,,
+1553114828.2198,advance,radical.entk.task_manager.0000-proc,umgr.0000.subscriber._state_sub_cb,task.0001,EXECUTED,stage.0000
+1553114828.2205,publishing obj with state EXECUTED for sync,radical.entk.task_manager.0000-proc,umgr.0000.subscriber._state_sub_cb,task.0001,,stage.0000
+1553114828.2220,obj with state EXECUTED synchronized,radical.entk.task_manager.0000-proc,umgr.0000.subscriber._state_sub_cb,task.0001,,stage.0000
+1553115002.4659,terminating tmgr process,radical.entk.task_manager.0000-proc,MainThread,task_manager.0000,,
+1553115004.2399,END,radical.entk.task_manager.0000-proc,MainThread,,,

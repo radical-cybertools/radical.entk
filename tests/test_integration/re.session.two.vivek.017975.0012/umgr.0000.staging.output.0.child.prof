@@ -1,0 +1,11 @@
+#time,event,comp,thread,uid,state,msg
+1553114822.8888,sync_abs,umgr.0000.staging.output.0.child,Thread-1,,,localhost.localdomain:138.201.86.166:1553114822.88:1553114822.88:ntp
+1553114822.9811,component_init,umgr.0000.staging.output.0.child,Thread-1,,,
+1553114828.2144,get,umgr.0000.staging.output.0.child,Thread-1,unit.000001,UMGR_STAGING_OUTPUT_PENDING,
+1553114828.2146,advance,umgr.0000.staging.output.0.child,Thread-1,unit.000001,UMGR_STAGING_OUTPUT,
+1553114828.2147,publish,umgr.0000.staging.output.0.child,Thread-1,unit.000001,UMGR_STAGING_OUTPUT,
+1553114828.2147,advance,umgr.0000.staging.output.0.child,Thread-1,unit.000001,DONE,
+1553114828.2148,publish,umgr.0000.staging.output.0.child,Thread-1,unit.000001,DONE,
+1553114828.2148,drop,umgr.0000.staging.output.0.child,Thread-1,unit.000001,DONE,
+1553115002.4683,component_final,umgr.0000.staging.output.0.child,Thread-1,,,
+1553115002.4683,END,umgr.0000.staging.output.0.child,Thread-1,,,
