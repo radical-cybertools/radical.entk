@@ -87,6 +87,7 @@ class AppManager(object):
         self._resource_desc = None
         self._task_manager = None
         self._workflow = None
+        self._wrokflows = list()  # history of all workflows
         self._cur_attempt = 1
         self._shared_data = list()
 
@@ -223,8 +224,13 @@ class AppManager(object):
 
             p._validate()
 
+        # keep history
+        self._workflows.append(workflow)
+
+        # set current workflow
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
+
 
     @shared_data.setter
     def shared_data(self, data):
@@ -439,8 +445,11 @@ class AppManager(object):
             if self._autoterminate:
                 self.resource_terminate()
 
+            if os.environ.get('RADICAL_ENTK_PROFILE', False):
+                write_session_description(self)
+
             if self._write_workflow:
-                write_workflow(self._workflow, self._sid)
+                write_workflow(self._workflows, self._sid)
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -511,9 +520,6 @@ class AppManager(object):
 
         if self._resource_manager:
             self._resource_manager._terminate_resource_request()
-
-        if os.environ.get('RADICAL_ENTK_PROFILE', False):
-            write_session_description(self)
 
         if self._rmq_cleanup:
             self._cleanup_mqs()

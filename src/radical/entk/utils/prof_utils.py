@@ -222,41 +222,57 @@ def get_session_description(sid, src=None):
     return desc
 
 
-def write_workflow(workflow, uid):
+# ------------------------------------------------------------------------------
+#
+def write_workflow(workflows, uid):
 
     try:
         os.mkdir(uid)
+
     except:
         pass
 
-    data = list()
     if os.path.isfile('%s/entk_workflow.json' % uid):
         data = ru.read_json('%s/entk_workflow.json' % uid)
 
-    stack = ru.stack()
-    data.append({'stack': stack})
+    data = {'stack'    : ru.stack(), 
+            'workflows': list()}
 
-    for pipe in workflow:
+    for workflow in workflows:
 
-        p = dict()
-        p['uid'] = pipe.uid
-        p['name'] = pipe.name
-        p['state_history'] = pipe.state_history
-        p['stages'] = list()
+        w = dict()
+        w['uid']           = workflow.uid
+        w['name']          = workflow.name
+        w['state_history'] = workflow.state_history
+        w['pipes']         = list()
 
-        for stage in pipe.stages:
+        for pipe in workflow:
 
-            s = dict()
-            s['uid'] = stage.uid
-            s['name'] = stage.name
-            s['state_history'] = stage.state_history
-            s['tasks'] = list()
+            p = dict()
+            p['uid']           = pipe.uid
+            p['name']          = pipe.name
+            p['state_history'] = pipe.state_history
+            p['stages']        = list()
 
-            for task in stage.tasks:
-                s['tasks'].append(task.to_dict())
+            for stage in pipe.stages:
 
-            p['stages'].append(s)
+                s = dict()
+                s['uid']           = stage.uid
+                s['name']          = stage.name
+                s['state_history'] = stage.state_history
+                s['tasks']         = list()
 
-        data.append(p)
+                for task in stage.tasks:
+                    s['tasks'].append(task.to_dict())
+
+                p['stages'].append(s)
+
+            w['pipes'].append(p)
+
+        data['workflows'].append(w)
 
     ru.write_json(data, '%s/entk_workflow.json' % uid)
+
+
+# ------------------------------------------------------------------------------
+
