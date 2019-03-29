@@ -172,32 +172,33 @@ def write_session_description(amgr):
                        }
 
     # Adding pipelines to the tree
-    wf = amgr._workflow
-    for pipe in wf:
-        tree[amgr._uid]['children'].append(pipe._uid)
-        tree[pipe._uid] = {'uid': pipe._uid,
-                           'etype': 'pipeline',
-                           'cfg': {},
-                           'has': ['stage'],
-                           'children': list()
-                           }
-        # Adding stages to the tree
-        for stage in pipe.stages:
-            tree[pipe._uid]['children'].append(stage._uid)
-            tree[stage._uid] = {'uid': stage._uid,
-                                'etype': 'stage',
-                                'cfg': {},
-                                'has': ['task'],
-                                'children': list()
-                                }
-            # Adding tasks to the tree
-            for task in stage.tasks:
-                tree[stage._uid]['children'].append(task._uid)
-                tree[task._uid] = {'uid': task._uid,
-                                   'etype': 'task',
-                                   'cfg': {},
-                                   'has': [],
-                                   'children': list()
+    for wf in amgr._workflows:
+
+        for pipe in wf:
+            tree[amgr._uid]['children'].append(pipe._uid)
+            tree[pipe._uid] = {'uid': pipe._uid,
+                               'etype': 'pipeline',
+                               'cfg': {},
+                               'has': ['stage'],
+                               'children': list()
+                               }
+            # Adding stages to the tree
+            for stage in pipe.stages:
+                tree[pipe._uid]['children'].append(stage._uid)
+                tree[stage._uid] = {'uid': stage._uid,
+                                    'etype': 'stage',
+                                    'cfg': {},
+                                    'has': ['task'],
+                                    'children': list()
+                                    }
+                # Adding tasks to the tree
+                for task in stage.tasks:
+                    tree[stage._uid]['children'].append(task._uid)
+                    tree[task._uid] = {'uid': task._uid,
+                                       'etype': 'task',
+                                       'cfg': {},
+                                       'has': [],
+                                       'children': list()
                                    }
 
     desc['tree'] = tree
