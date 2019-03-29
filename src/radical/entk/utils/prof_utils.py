@@ -241,10 +241,7 @@ def write_workflow(workflows, uid):
     for workflow in workflows:
 
         w = dict()
-        w['uid']           = workflow.uid
-        w['name']          = workflow.name
-        w['state_history'] = workflow.state_history
-        w['pipes']         = list()
+        w['pipes'] = list()
 
         for pipe in workflow:
 
