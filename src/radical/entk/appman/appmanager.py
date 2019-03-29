@@ -87,7 +87,7 @@ class AppManager(object):
         self._resource_desc = None
         self._task_manager = None
         self._workflow = None
-        self._wrokflows = list()  # history of all workflows
+        self._workflows = list()  # history of all workflows
         self._cur_attempt = 1
         self._shared_data = list()
 
