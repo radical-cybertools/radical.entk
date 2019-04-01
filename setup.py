@@ -12,8 +12,7 @@ import re
 import os
 import sys
 import shutil
-
-import radical.utils as ru
+import subprocess as sp
 
 name     = 'radical.entk'
 mod_root = 'src/radical/entk/'
@@ -38,7 +37,7 @@ except ImportError as e:
 #     tree.
 #   - The VERSION file is used to provide the runtime version information.
 #
-def get_version (mod_root):
+def get_version(mod_root):
     """
     mod_root
         a VERSION file containes the version strings is created in mod_root,
@@ -66,20 +65,20 @@ def get_version (mod_root):
         # and the pip version used uses an install tmp dir in the ve space
         # instead of /tmp (which seems to happen with some pip/setuptools
         # versions).
-        out, err, ret = ru.sh_callout(
-                     'cd %s ; '
+        p = sp.Popen('cd %s ; '
                      'test -z `git rev-parse --show-prefix` || exit -1; '
                      'tag=`git describe --tags --always` 2>/dev/null ; '
                      'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
-                     'echo $tag@$branch' % src_root, shell=True)
-        version_detail = out.strip()
+                     'echo $tag@$branch' % src_root,
+                     stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        version_detail = str(p.communicate()[0].strip())
         version_detail = version_detail.replace('detached from ', 'detached-')
 
         # remove all non-alphanumeric (and then some) chars
         version_detail = re.sub('[/ ]+', '-', version_detail)
         version_detail = re.sub('[^a-zA-Z0-9_+@.-]+', '', version_detail)
 
-        if  ret            !=  0  or \
+        if  p.returncode   !=  0  or \
             version_detail == '@' or \
             'git-error'      in version_detail or \
             'not-a-git-repo' in version_detail or \
@@ -263,8 +262,6 @@ setup_args = {
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.5',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
