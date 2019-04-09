@@ -221,6 +221,32 @@ def test_amgr_run():
     # tests
 
 
+def test_amgr_run_mock():
+
+    p = Pipeline()
+    s = Stage()
+    t = Task()
+    t.name = 'simulation'
+    t.executable = ['/bin/date']
+    s.tasks = t
+    p.add_stages(s)
+
+    res_dict = {
+
+            'resource': 'local.localhost',
+            'walltime': 5,
+            'cpus': 1,
+            'project': ''
+
+    }
+
+    appman = Amgr(hostname=hostname, port=port, rts="mock")
+    appman.resource_desc = res_dict
+
+    appman.workflow = [p]
+    appman.run()
+
+
 def test_amgr_resource_terminate():
 
     res_dict = {
