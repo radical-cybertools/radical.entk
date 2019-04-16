@@ -248,6 +248,32 @@ def test_amgr_resource_terminate():
 
     amgr.resource_terminate()
 
+def test_amgr_terminate():
+
+    res_dict = {
+
+        'resource': 'xsede.supermic',
+        'walltime': 30,
+        'cpus': 20,
+        'project': 'TG-MCB090174'
+
+    }
+
+    from radical.entk.execman.rp import TaskManager
+
+    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+    amgr.resource_desc = res_dict
+    amgr._setup_mqs()
+    amgr._rmq_cleanup = True
+    amgr._task_manager = TaskManager(sid='test',
+                                     pending_queue=list(),
+                                     completed_queue=list(),
+                                     mq_hostname=amgr._mq_hostname,
+                                     rmgr=amgr._resource_manager,
+                                     port=amgr._port
+                                     )
+
+    amgr.terminate()
 
 def test_amgr_setup_mqs():
 
