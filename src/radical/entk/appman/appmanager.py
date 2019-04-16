@@ -465,21 +465,26 @@ class AppManager(object):
 
             # Terminate threads in following order: wfp, helper, synchronizer
             
-            self._terminate
+            self._terminate()
 
             self._prof.prof('termination done', uid=self._uid)
             raise
 
     def terminate(self):
 
+        self._prof.prof('start termination', uid=self._uid)
         self._terminate()
+        self._prof.prof('termination done', uid=self._uid)
 
 
     def resource_terminate(self):
         
+        self._prof.prof('start termination', uid=self._uid)
         self._logger.warning('DeprecationWarning: Public Method resource_terminate is deprecated.\
                              Please use terminate')
         self._terminate()
+        self._prof.prof('termination done', uid=self._uid)
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
