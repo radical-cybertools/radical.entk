@@ -426,7 +426,7 @@ class AppManager(object):
                     self._cur_attempt += 1
 
             self._prof.prof('start termination', uid=self._uid)
-            
+
             # Terminate threads in following order: wfp, helper, synchronizer
             self._logger.info('Terminating WFprocessor')
             self._wfp.terminate_processor()
@@ -948,5 +948,5 @@ class AppManager(object):
             self._cleanup_mqs()
 
         self._report.info('All components terminated\n')
-    
+
     # ------------------------------------------------------------------------------------------------------------------
