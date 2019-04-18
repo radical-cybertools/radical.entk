@@ -1,187 +1,262 @@
-from radical.entk import Pipeline, Stage, Task, AppManager
-import os
-from random import randint
+#!/usr/bin/env python
+
+import radical.entk  as re
+import radical.utils as ru
+
+
 # ------------------------------------------------------------------------------
-# Set default verbosity
-# if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
-    # os.environ['RADICAL_ENTK_REPORT'] = 'True'
+#
+def void():
+    # entk needs callables as post_exec conditionals, even if there is nothing
+    # to decide...
+    pass
 
 
-# Description of how the RabbitMQ process is accessible
-# No need to change/set any variables if you installed RabbitMQ has a system
-# process. If you are running RabbitMQ under a docker container or another
-# VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running
-# this script.
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = int(os.environ.get('RMQ_PORT', 5672))
+# ------------------------------------------------------------------------------
+#
+class Exchange(re.AppManager):
+
+    _glyphs = {re.states.INITIAL:    'I',
+               re.states.SCHEDULING: '!',
+               re.states.SUSPENDED:  'X',
+               re.states.DONE:       '=',
+               re.states.FAILED:     '!',
+               re.states.CANCELED:   '/'}
+
+    def __init__(self, size, max_wait, min_cycles):
+
+        self._size       = size
+        self._max_wait   = max_wait
+        self._min_cycles = min_cycles
+
+        self._log = ru.Logger('radical.repex.exc')
+
+        re.AppManager.__init__(self, autoterminate=False, port=5672) 
+        self.resource_desc = {"resource" : 'local.localhost',
+                              "walltime" : 30,
+                              "cpus"     : 4}                                
+
+        self._replicas  = list()
+        self._waitlist  = list()
+
+        # create the required number of replicas
+        for i in range(size):
+
+            replica = Replica(check_ex  = self._check_exchange,
+                              check_res = self._check_resume,
+                              rid       = i)
+
+            self._replicas.append(replica)
+
+        self._dump()
+
+        # run the replica pipelines
+        self.workflow = set(self._replicas)
+        self.run() 
 
 
-num_replicas = 8
-pipelines = []
-# Replica state
-# 0 - Ready for MD
-# 1 - MD done, waiting for exchange selection
-# 2 - Selected for exchange
-# 3 - Not selected for exchange
-# 4 - Done
-replica_state = [0 for _ in range(num_replicas)]
-finish_threshold = 4
+    # --------------------------------------------------------------------------
+    #
+    def get_replica(self, rid):
 
-replica_cycles = [0 for _ in range(num_replicas)]
-cycle_threshold = 4
-
-replica_neighbors = dict()
-for ind in range(num_replicas):
-    replica_neighbors['R_%s'%ind] = list()
-
-
-def generate_pipeline(index):
-
-    def md_condition():
-
-        print 'Replica %s | Cycle %s | Event: Evaluating condition after MD'%(index, replica_cycles[index])
-        
-        global replica_state
-        replica_state[index] = 1
-
-        if replica_state.count(1) == finish_threshold:            
-            return True
+        for r in self._replicas:
+            if r.rid == rid:
+                return r
             
-        return False
+        return None
 
 
-    def md_on_true():
+    # --------------------------------------------------------------------------
+    #
+    def _dump(self):
 
-        print 'Replica %s | Cycle %s | Event: Adding exchange'%(index, replica_cycles[index])
-
-        global replica_state
-        
-        replica_state[index] = 2
-        s_exch = create_exch_stage()        
-        p.add_stages(s_exch)
-        exch_r_ids = list()
-        for ind, state in enumerate(replica_state):
-            if state==1:
-                replica_state[ind] = 3
-                replica_neighbors['R_%s'%index].append(ind)
-                exch_r_ids.append(str(ind))
-
-        print 'Replica %s | Cycle %s | Event: Initiating exchanges between replicas %s'%(index, replica_cycles[index], ' '.join(exch_r_ids))
-
-    def md_on_false():
-
-        print 'Replica %s | Cycle %s | Event: No exchange added'%(index, replica_cycles[index])
+        with open('dump.log', 'a') as fout:
+            fout.write('  ')
+            for r in self._replicas:
+                fout.write('%s ' % self._glyphs[r.state])
+            fout.write('\n')
+            fout.flush()
 
 
-    def create_md_stage():
+    # --------------------------------------------------------------------------
+    #
+    def terminate(self):
 
-        print 'Replica %s | Cycle %s | Event: Creating MD task'%(index, replica_cycles[index])
+        self._dump()
+        self._log.debug('exc term')
 
-        # Create a Stage object
-        s_md = Stage()
-
-        # Create a Task object which creates a file named 'output.txt' of size 1 MB
-        t_md = Task()
-        t_md.executable = ['/bin/sleep']
-        t_md.arguments = ['%s'%randint(2,7)]
-
-        # Add the Task to the Stage
-        s_md.add_tasks(t_md)
-
-        s_md.post_exec = {  'condition': md_condition,
-                            'on_true': md_on_true,
-                            'on_false': md_on_false
-                        }
-
-        return s_md
+        # we are done!
+        self.resource_terminate()
 
 
-    def exch_condition():    
+    # --------------------------------------------------------------------------
+    #
+    def _check_exchange(self, replica):
 
-        print 'Replica %s | Cycle %s | Event: Evaluation condition after exchange'%(index, replica_cycles[index])
+        self._dump()
 
-        global replica_state, replica_cycles
+        self._log.debug('=== %s check exchange : %d >= %d?',
+                  replica.rid, len(self._waitlist), self._max_wait)
 
-        # Always returns True
-        for ind, state in enumerate(replica_state):
-            if ind in replica_neighbors['R_%s'%index]:
-                if state in [2,3]:
-                    replica_cycles[ind] += 1
-                    if replica_cycles[ind] == cycle_threshold:
-                        print 'Replica %s completed'%ind
-                        replica_state[ind] = 4
+        self._waitlist.append(replica)
 
-        return True
+        if len(self._waitlist) < self._max_wait:
 
-    def exch_on_true():
+            # just suspend this replica and wait for the next
+            self._log.debug('=== %s no  - suspend', replica.rid)
+            replica.suspend()
 
-        print 'Replica %s | Cycle %s | Event: Adding MD tasks to replicas after exchange'%(index, replica_cycles[index])
+        else:
+            # before we continue, we need to make sure that any other
+            # pipeline fills a *new* waitlist.  At the same time, we need to
+            # tell *this* replica, what replicas need resuming after the
+            # exchange
+            #
+            # NOTE: there is a race from the above append to this reset which
+            #       should be guarded by a lock.  Does that need to be a process
+            #       lock because EnTK spans processes?
+            replica.set_suspended([r.rid for r in self._waitlist])
+            self._waitlist = list()
 
-        global replica_state, pipelines
-        for ind, state in enumerate(replica_state):
-            if ind in replica_neighbors['R_%s'%index]:
-                if state in [2,3]:
-                    s_md = create_md_stage()
-                    pipelines[ind].add_stages(s_md)
-                    print 'Replica %s | Cycle %s | Event: MD task added to replica %s'%(index, replica_cycles[index], ind)
-                    pipelines[ind].rerun()
-                    replica_state[ind] = 0
+            # we are in for a wild ride!
+            self._log.debug('=== %s yes - exchange', replica.rid)
 
-    def exch_on_false():
+            task = re.Task()
+            task.name       = 'extsk'
+            task.executable = 'date'
 
-        pass
+            stage = re.Stage()
+            stage.add_tasks(task)
+            stage.post_exec = replica.check_resume
 
-    def create_exch_stage():
-
-        print 'Replica %s | Cycle %s | Event: Creating exchange task'%(index, replica_cycles[index])
-
-        s_exch = Stage()
-        t_exch = Task()
-        t_exch.executable = ['/bin/sleep']
-        t_exch.arguments =  ['5']
-
-        s_exch.add_tasks(t_exch)
-
-        s_exch.post_exec = {
-                            'condition': exch_condition,
-                            'on_true': exch_on_true,
-                            'on_false': exch_on_false
-                        }
-
-        return s_exch
-
-    # Create a Pipeline object
-    p = Pipeline()
-    s_md = create_md_stage()    
-    p.add_stages(s_md)
-
-    return p
+            replica.add_stages(stage)
 
 
+    # --------------------------------------------------------------------------
+    #
+    def _check_resume(self, replica):
+
+        self._dump()
+        self._log.debug('=== %s check resume', replica.rid)
+
+        resumed = list()  # list of resumed replica IDs
+
+        # after a successfull exchange we revive all participating replicas
+        # (whose rids we get with `replica.get_suspended()`).
+        # For those replicas which did not yet reach min cycles, add an md
+        # stage, all others we let die and add a new md stage for them.
+        for rid in replica.get_suspended():
+
+            _replica = self.get_replica(rid)
+
+            if _replica.cycle <= self._min_cycles:
+                _replica.add_md_stage()
+
+            # Make sure we don't resume the current replica
+            if replica.rid != _replica.rid:
+
+                self._log.debug('=== %s resume', _replica.rid)
+                _replica.resume()
+                resumed.append(_replica.uid)
+
+        # reset suspended list
+        replica.set_suspended()
+
+        return resumed
+
+
+# ------------------------------------------------------------------------------
+#
+class Replica(re.Pipeline):
+    '''
+    A `Replica` is an EnTK pipeline which consists of alternating md and
+    exchange stages.  The initial setup is for one MD stage - Exchange and more
+    MD stages get added depending on runtime conditions.
+    '''
+
+    # --------------------------------------------------------------------------
+    #
+    def __init__(self, check_ex, check_res, rid):
+
+        self._check_ex  = check_ex
+        self._check_res = check_res
+        self._rid       = rid
+
+        self._cycle     = 0     # initial cycle
+        self._suspended = None  # replicas to resume after exchange
+
+        re.Pipeline.__init__(self)
+        self.name = 'p_%s' % self.rid
+        self._log = ru.Logger('radical.repex.rep')
+
+        # add an initial md stage
+        self.add_md_stage()
+
+
+    @property
+    def rid(self):      return self._rid
+
+    @property
+    def cycle(self):    return self._cycle
+
+
+    # --------------------------------------------------------------------------
+    #
+    def set_suspended(self, rids=None):
+
+        self._suspended = rids
+
+
+    # --------------------------------------------------------------------------
+    #
+    def get_suspended(self):
+
+        return self._suspended
+
+
+    # --------------------------------------------------------------------------
+    #
+    def add_md_stage(self):
+
+        self._log.debug('=== %s add md', self.rid)
+
+        task = re.Task()
+        task.name        = 'mdtsk-%s-%s' % (self.rid, self.cycle)
+        task.executable  = 'date'
+
+        stage = re.Stage()
+        stage.add_tasks(task)
+        stage.post_exec = self.check_exchange
+
+        self.add_stages(stage)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def check_exchange(self):
+        '''
+        after an md cycle, record its completion and check for exchange
+        '''
+
+        self._cycle += 1
+        self._check_ex(self)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def check_resume(self):
+        '''
+        after an ex cycle, trigger replica resumption
+        '''
+        return self._check_res(self)
+
+
+# ------------------------------------------------------------------------------
+#
 if __name__ == '__main__':
 
-    for cnt in range(num_replicas):
-        pipelines.append(generate_pipeline(index=cnt))
+    exchange = Exchange(size=16, max_wait=4, min_cycles=8)
+    exchange.terminate()
 
-    # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+# ------------------------------------------------------------------------------
 
-    # Create a dictionary describe four mandatory keys:
-    # resource, walltime, and cpus
-    # resource is 'local.localhost' to execute locally
-    res_dict = {
-
-        'resource': 'local.localhost_anaconda',
-        'walltime': 10,
-        'cpus': num_replicas
-    }
-
-    # Assign resource request description to the Application Manager
-    appman.resource_desc = res_dict
-
-    # Assign the workflow as a set or list of Pipelines to the Application Manager
-    # Note: The list order is not guaranteed to be preserved
-    appman.workflow = set(pipelines)
-
-    # Run the Application Manager
-    appman.run()
