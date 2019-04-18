@@ -387,7 +387,11 @@ class WFprocessor(object):
                                                                     self._prof.prof('Adap: executing post-exec',
                                                                                     uid=self._uid)
 
-                                                                    resumed_pipe_uids = stage.post_exec()
+                                                                    try:
+                                                                        resumed_pipe_uids = stage.post_exec()
+                                                                    except:
+                                                                        self._logger.exception('%s post_exec failed', stage.uid)
+                                                                        raise
 
                                                                     if resumed_pipe_uids:
 
