@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
+import time
+import random
+
 import threading as mt
 
 import radical.entk  as re
 import radical.utils as ru
 
+t_0 = time.time()
 
 # ------------------------------------------------------------------------------
 #
@@ -18,12 +22,12 @@ def void():
 #
 class Exchange(re.AppManager):
 
-    _glyphs = {re.states.INITIAL:    'I',
+    _glyphs = {re.states.INITIAL:    '+',
                re.states.SCHEDULING: '|',
                re.states.SUSPENDED:  '-',
-               re.states.DONE:       '=',
+               re.states.DONE:       ' ',
                re.states.FAILED:     '!',
-               re.states.CANCELED:   '/'}
+               re.states.CANCELED:   'X'}
 
 
     # --------------------------------------------------------------------------
@@ -41,7 +45,7 @@ class Exchange(re.AppManager):
         re.AppManager.__init__(self, autoterminate=False, port=5672) 
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
-                              "cpus"     : 4}                                
+                              "cpus"     : 16}                                
 
         self._replicas = list()
         self._waitlist = list()
@@ -67,14 +71,14 @@ class Exchange(re.AppManager):
     def _dump(self, msg=None, special=None, glyph=None ):
 
         with open('dump.log', 'a') as fout:
-            fout.write('  ')
+            fout.write(' %7.2f :    ' % (time.time() - t_0))
             for r in self._replicas:
                 if special and r in special:
-                    fout.write('%s ' % glyph)
+                    fout.write('%s' % glyph)
                 else:
-                    fout.write('%s ' % self._glyphs[r.state])
+                    fout.write('%s' % self._glyphs[r.state])
             if msg:
-                fout.write('   %s' % msg)
+                fout.write('    : %s' % msg)
             fout.write('\n')
             fout.flush()
 
@@ -228,7 +232,8 @@ class Replica(re.Pipeline):
 
         task = re.Task()
         task.name        = 'mdtsk-%s-%s' % (self.rid, self.cycle)
-        task.executable  = 'date'
+        task.executable  = 'sleep'
+        task.arguments   = [str(random.randint(0, 20)/10.0)]
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -281,7 +286,7 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = Exchange(size=16, max_wait=4, min_cycles=8)
+    exchange = Exchange(size=128, max_wait=8, min_cycles=16)
     exchange.terminate()
 
 # ------------------------------------------------------------------------------
