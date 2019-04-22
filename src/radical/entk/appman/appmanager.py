@@ -22,22 +22,32 @@ from radical.entk import states
 class AppManager(object):
 
     """
-    An application manager takes the responsibility of setting up the communication infrastructure, instantiates the
-    ResourceManager, TaskManager, WFProcessor objects and all their threads and processes. This is the Master object
-    running in the main process and is designed to recover from errors from all other objects, threads and processes.
+    An application manager takes the responsibility of setting up the
+    communication infrastructure, instantiates the ResourceManager, TaskManager,
+    WFProcessor objects and all their threads and processes. This is the Master
+    object running in the main process and is designed to recover from errors
+    from all other objects, threads and processes.
 
     :Arguments:
-        :config_path: Url to config path to be read for AppManager
-        :hostname: host rabbitmq server is running
-        :port: port at which rabbitmq can be accessed
-        :reattempts: number of attempts to re-invoke any failed EnTK components
-        :resubmit_failed: resubmit failed tasks (True/False)
-        :autoterminate: terminate resource reservation upon execution of all tasks of first workflow (True/False)
-        :write_workflow: write workflow and mapping to rts entities to a file (post-termination)
-        :rts: Specify RTS to use. Current options: 'mock', 'radical.pilot' (default if unspecified)
-        :rmq_cleanup: Cleanup all queues created in RabbitMQ server for current execution (default is True)
-        :rts_config: Configuration for the RTS, accepts {"sandbox_cleanup": True/False,"db_cleanup": True/False} when RTS is RP
-        :name: Name of the Application. It should be unique between executions. (default is randomly assigned)
+        :config_path:       Url to config path to be read for AppManager
+        :hostname:          host rabbitmq server is running
+        :port:              port at which rabbitmq can be accessed
+        :reattempts:        number of attempts to re-invoke any failed EnTK
+                            components
+        :resubmit_failed:   resubmit failed tasks (True/False)
+        :autoterminate:     terminate resource reservation upon execution of all
+                            tasks of first workflow (True/False)
+        :write_workflow:    write workflow and mapping to rts entities to a file
+                            (post-termination)
+        :rts:               Specify RTS to use. Current options: 'mock',
+                            'radical.pilot' (default if unspecified)
+        :rmq_cleanup:       Cleanup all queues created in RabbitMQ server for
+                            current execution (default is True)
+        :rts_config:        Configuration for the RTS, accepts
+                            {"sandbox_cleanup": True/False,"db_cleanup":
+                            True/False} when RTS is RP
+        :name:              Name of the Application. It should be unique between
+                            executions. (default is randomly assigned)
     """
 
     def __init__(self,
@@ -58,7 +68,7 @@ class AppManager(object):
             self._name = name
             self._sid = name
         else:
-            self._name= str()
+            self._name = str()
             self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
 
         self._read_config(config_path, hostname, port, reattempts,
@@ -68,8 +78,10 @@ class AppManager(object):
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
         path = os.getcwd() + '/' + self._sid
-        self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path, targets=['2','.'])
+        self._uid = ru.generate_id('appmanager.%(item_counter)04d',
+                                   ru.ID_CUSTOM, namespace=self._sid)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path,
+                                 targets=['2', '.'])
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -108,12 +120,18 @@ class AppManager(object):
         self._mq_hostname = hostname if hostname else str(config['hostname'])
         self._port = int(port if port else config['port'])
         self._reattempts = reattempts if reattempts else config['reattempts']
-        self._resubmit_failed = resubmit_failed if resubmit_failed is not None else config['resubmit_failed']
-        self._autoterminate = autoterminate if autoterminate is not None else config['autoterminate']
-        self._write_workflow = write_workflow if write_workflow is not None else config['write_workflow']
-        self._rts = rts if rts in ['radical.pilot', 'mock'] else str(config['rts'])
-        self._rmq_cleanup = rmq_cleanup if rmq_cleanup is not None else config['rmq_cleanup']
-        self._rts_config = rts_config if rts_config is not None else config['rts_config']
+        self._resubmit_failed = resubmit_failed if resubmit_failed is not None \
+            else config['resubmit_failed']
+        self._autoterminate = autoterminate if autoterminate is not None \
+            else config['autoterminate']
+        self._write_workflow = write_workflow if write_workflow is not None \
+            else config['write_workflow']
+        self._rts = rts if rts in ['radical.pilot', 'mock'] \
+            else str(config['rts'])
+        self._rmq_cleanup = rmq_cleanup if rmq_cleanup is not None \
+            else config['rmq_cleanup']
+        self._rts_config = rts_config if rts_config is not None \
+            else config['rts_config']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -169,8 +187,10 @@ class AppManager(object):
     @property
     def shared_data(self):
         """
-        :getter: Return list of filenames that are shared between multiple tasks of the application
-        :setter: Assign a list of names of files that need to be staged to the remote machine
+        :getter: Return list of filenames that are shared between multiple tasks
+                 of the application
+        :setter: Assign a list of names of files that need to be staged to the
+                remote machine
         """
 
         return self._shared_data
@@ -219,7 +239,8 @@ class AppManager(object):
         for p in workflow:
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise TypeError(expected_type=['Pipeline', 'set of Pipelines'], actual_type=type(p))
+                raise TypeError(expected_type=['Pipeline', 'set of Pipelines'],
+                                actual_type=type(p))
 
             p._validate()
 
@@ -239,16 +260,16 @@ class AppManager(object):
         if self._resource_manager:
             self._resource_manager.shared_data = data
 
-
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
     def run(self):
         """
-        **Purpose**: Run the application manager. Once the workflow and resource manager have been assigned. Invoking this
-        method will start the setting up the communication infrastructure, submitting a resource request and then
-        submission of all the tasks.
+        **Purpose**: Run the application manager. Once the workflow and resource
+        manager have been assigned. Invoking this method will start the setting
+        up the communication infrastructure, submitting a resource request and
+        then submission of all the tasks.
         """
 
         try:
@@ -261,67 +282,72 @@ class AppManager(object):
             self._cur_attempt = 1
 
             if not self._workflow:
-                self._logger.error('No workflow assigned currently, please check your script')
+                self._logger.error('No workflow assigned currently, please \
+                                    check your script')
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
             if not self._resource_manager:
-                self._logger.error('No resource manager assigned currently, please create and add a valid resource manager')
-                raise MissingError(obj=self._uid, missing_attribute='resource_manager')
+                self._logger.error('No resource manager assigned currently, \
+                                    please create and add a valid resource \
+                                    manager')
+                raise MissingError(obj=self._uid,
+                                   missing_attribute='resource_manager')
 
             self._prof.prof('amgr run started', uid=self._uid)
-
 
             # Submit resource request if not resource allocation done till now or
             # resubmit a new one if the old one has completed
             if self._resource_manager:
                 res_alloc_state = self._resource_manager.get_resource_allocation_state()
-                if (not res_alloc_state) or (res_alloc_state in self._resource_manager.get_completed_states()):
+                if not res_alloc_state or \
+                    res_alloc_state in \
+                        self._resource_manager.get_completed_states()):
 
                     self._logger.info('Starting resource request submission')
-                    self._prof.prof('init rreq submission', uid=self._uid)
+                    self._prof.prof('init rreq submission', uid = self._uid)
                     self._resource_manager._submit_resource_request()
-                    res_alloc_state = self._resource_manager.get_resource_allocation_state()
+                    res_alloc_state=self._resource_manager.get_resource_allocation_state()
                     if res_alloc_state in self._resource_manager.get_completed_states():
-                        raise EnTKError(msg="Cannot proceed. Resource allocation ended up in %s"%res_alloc_state)
+                        raise EnTKError(msg = "Cannot proceed. Resource \
+                                allocation ended up in %s" % res_alloc_state)
 
             else:
 
-                self._logger.exception('Cannot run without resource manager, please create and assign a resource manager')
-                raise EnTKError(text='Missing resource manager')
-
+                self._logger.exception('Cannot run without resource manager, \
+                                please create and assign a resource manager')
+                raise EnTKError(text = 'Missing resource manager')
 
             # Setup rabbitmq stuff
             if not self._mqs_setup:
                 self._report.info('Setting up RabbitMQ system')
-                setup = self._setup_mqs()
+                setup=self._setup_mqs()
 
                 if not setup:
                     self._logger.error('RabbitMQ system not available')
                     raise EnTKError("RabbitMQ setup failed")
 
-                self._mqs_setup = True
+                self._mqs_setup=True
                 self._report.ok('>>ok\n')
 
-                    
-
             # Create WFProcessor object
-            self._prof.prof('creating wfp obj', uid=self._uid)
-            self._wfp = WFprocessor(sid=self._sid,
-                                    workflow=self._workflow,
-                                    pending_queue=self._pending_queue,
-                                    completed_queue=self._completed_queue,
-                                    mq_hostname=self._mq_hostname,
-                                    port=self._port,
-                                    resubmit_failed=self._resubmit_failed)
+            self._prof.prof('creating wfp obj', uid = self._uid)
+            self._wfp=WFprocessor(sid = self._sid,
+                                    workflow = self._workflow,
+                                    pending_queue = self._pending_queue,
+                                    completed_queue = self._completed_queue,
+                                    mq_hostname = self._mq_hostname,
+                                    port = self._port,
+                                    resubmit_failed = self._resubmit_failed)
             self._wfp._initialize_workflow()
-            self._workflow = self._wfp.workflow
-
+            self._workflow=self._wfp.workflow
 
             # Start synchronizer thread
             if not self._sync_thread:
                 self._logger.info('Starting synchronizer thread')
-                self._sync_thread = Thread(target=self._synchronizer, name='synchronizer-thread')
-                self._prof.prof('starting synchronizer thread', uid=self._uid)
+                self._sync_thread=Thread(target = self._synchronizer,
+                                            name = 'synchronizer-thread')
+                self._prof.prof('starting synchronizer thread',
+                                uid = self._uid)
                 self._sync_thread.start()
 
             # Start WFprocessor
@@ -337,27 +363,28 @@ class AppManager(object):
                 from radical.entk.execman.mock import TaskManager
 
             if not self._task_manager:
-                self._prof.prof('creating tmgr obj', uid=self._uid)
-                self._task_manager = TaskManager(sid=self._sid,
-                                                 pending_queue=self._pending_queue,
-                                                 completed_queue=self._completed_queue,
-                                                 mq_hostname=self._mq_hostname,
-                                                 rmgr=self._resource_manager,
-                                                 port=self._port
+                self._prof.prof('creating tmgr obj', uid = self._uid)
+                self._task_manager= TaskManager(sid = self._sid,
+                                                 pending_queue = self._pending_queue,
+                                                 completed_queue = self._completed_queue,
+                                                 mq_hostname = self._mq_hostname,
+                                                 rmgr = self._resource_manager,
+                                                 port = self._port
                                                  )
-                self._logger.info('Starting task manager process from AppManager')
+                self._logger.info('Starting task manager process from \
+                                    AppManager')
                 self._task_manager.start_manager()
                 self._task_manager.start_heartbeat()
 
-            active_pipe_count = len(self._workflow)
-            finished_pipe_uids = []
+            active_pipe_count=len(self._workflow)
+            finished_pipe_uids=[]
 
             # We wait till all pipelines of the workflow are marked
             # complete
-            while ((active_pipe_count > 0) and
-                    (self._wfp.workflow_incomplete()) and
-                    (self._resource_manager.get_resource_allocation_state() not
-                     in self._resource_manager.get_completed_states())):
+            while ((active_pipe_count > 0) and \
+                    (self._wfp.workflow_incomplete()) and \
+                    (self._resource_manager.get_resource_allocation_state() \
+                     not in self._resource_manager.get_completed_states())):
 
                 if active_pipe_count > 0:
 
@@ -365,33 +392,37 @@ class AppManager(object):
 
                         with pipe.lock:
 
-                            if (pipe.completed) and (pipe.uid not in finished_pipe_uids):
+                            if pipe.completed and \
+                                pipe.uid not in finished_pipe_uids:
 
-                                self._logger.info('Pipe %s completed' % pipe.uid)
+                                self._logger.info('Pipe %s completed' \
+                                                    % pipe.uid)
                                 finished_pipe_uids.append(pipe.uid)
                                 active_pipe_count -= 1
-                                self._logger.info('Active pipes: %s' % active_pipe_count)
+                                self._logger.info('Active pipes: %s' 
+                                                    % active_pipe_count)
 
-                if (not self._sync_thread.is_alive()) and (self._cur_attempt <= self._reattempts):
+                if not self._sync_thread.is_alive() and \
+                    self._cur_attempt <= self._reattempts:
 
-                    self._sync_thread = Thread(target=self._synchronizer,
-                                               name='synchronizer-thread')
+                    self._sync_thread= Thread(target = self._synchronizer,
+                                               name = 'synchronizer-thread')
                     self._logger.info('Restarting synchronizer thread')
-                    self._prof.prof('restarting synchronizer', uid=self._uid)
+                    self._prof.prof('restarting synchronizer', uid = self._uid)
                     self._sync_thread.start()
 
                     self._cur_attempt += 1
 
-                if (not self._wfp.check_processor()) and (self._cur_attempt <= self._reattempts):
+                if not self._wfp.check_processor() and \
+                    self._cur_attempt <= self._reattempts:
 
-                    """
-                    If WFP dies, both child threads are also cleaned out.
-                    We simply recreate the wfp object with a copy of the workflow
-                    in the appmanager and start the processor.
-                    """
+                    # If WFP dies, both child threads are also cleaned out.
+                    # We simply recreate the wfp object with a copy of the 
+                    # workflow in the appmanager and start the processor.
 
-                    self._prof.prof('recreating wfp obj', uid=self._uid)
-                    self._wfp = WFprocessor(sid=self._sid,
+
+                    self._prof.prof('recreating wfp obj', uid = self._uid)
+                    self._wfp= WFprocessor(sid = self._sid,
                                             workflow=self._workflow,
                                             pending_queue=self._pending_queue,
                                             completed_queue=self._completed_queue,
@@ -399,21 +430,23 @@ class AppManager(object):
                                             port=self._port,
                                             resubmit_failed=self._resubmit_failed)
 
-                    self._logger.info('Restarting WFProcessor process from AppManager')
+                    self._logger.info('Restarting WFProcessor process from \
+                                        AppManager')
                     self._wfp.start_processor()
 
                     self._cur_attempt += 1
 
-                if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
+                if not self._task_manager.check_heartbeat() and \
+                    self._cur_attempt <= self._reattempts:
 
-                    """
-                    If the tmgr process or heartbeat dies, we simply start a
-                    new process using the start_manager method. We do not
-                    need to create a new instance of the TaskManager object
-                    itself. We stop and start a new instance of the
-                    heartbeat thread as well.
-                    """
-                    self._prof.prof('restarting tmgr process and heartbeat', uid=self._uid)
+                    # If the tmgr process or heartbeat dies, we simply start a
+                    # new process using the start_manager method. We do not
+                    # need to create a new instance of the TaskManager object
+                    # itself. We stop and start a new instance of the
+                    # heartbeat thread as well.
+
+                    self._prof.prof('restarting tmgr process and heartbeat', 
+                                    uid=self._uid)
 
                     self._logger.info('Terminating heartbeat thread')
                     self._task_manager.terminate_heartbeat()
@@ -450,7 +483,7 @@ class AppManager(object):
             self._prof.prof('start termination', uid=self._uid)
 
             self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to cancel enqueuer thread gracefully...')
+                                   'trying to cancel enqueuer thread gracefully...')
 
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
@@ -527,16 +560,20 @@ class AppManager(object):
 
     def _setup_mqs(self):
         """
-        **Purpose**: Setup RabbitMQ system on the client side. We instantiate queue(s) 'pendingq-*' for communication
-        between the enqueuer thread and the task manager process. We instantiate queue(s) 'completedq-*' for
-        communication between the task manager and dequeuer thread. We instantiate queue 'sync-to-master' for
-        communication from enqueuer/dequeuer/task_manager to the synchronizer thread. We instantiate queue
-        'sync-ack' for communication from synchronizer thread to enqueuer/dequeuer/task_manager.
+        **Purpose**: Setup RabbitMQ system on the client side. We instantiate 
+        queue(s) 'pendingq-*' for communication between the enqueuer thread and 
+        the task manager process. We instantiate queue(s) 'completedq-*' for
+        communication between the task manager and dequeuer thread. We 
+        instantiate queue 'sync-to-master' for communication from 
+        enqueuer/dequeuer/task_manager to the synchronizer thread. We 
+        instantiate queue 'sync-ack' for communication from synchronizer thread 
+        to enqueuer/dequeuer/task_manager.
 
-        Details: All queues are durable: Even if the RabbitMQ server goes down, the queues are saved to disk and can
-        be retrieved. This also means that after an erroneous run the queues might still have unacknowledged messages
-        and will contain messages from that run. Hence, in every new run, we first delete the queue and create a new
-        one.
+        Details: All queues are durable: Even if the RabbitMQ server goes down, 
+        the queues are saved to disk and can be retrieved. This also means that 
+        after an erroneous run the queues might still have unacknowledged 
+        messages and will contain messages from that run. Hence, in every new 
+        run, we first delete the queue and create a new one.
         """
 
         try:
@@ -545,7 +582,8 @@ class AppManager(object):
 
             self._logger.debug('Setting up mq connection and channel')
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
 
             mq_channel = mq_connection.channel()
             self._logger.debug('Connection and channel setup successful')
@@ -556,7 +594,7 @@ class AppManager(object):
                 '%s-cb-to-sync' % self._sid,
                 '%s-sync-to-tmgr' % self._sid,
                 '%s-sync-to-cb' % self._sid,
-                ]
+            ]
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
@@ -589,7 +627,9 @@ class AppManager(object):
 
         try:
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                                    host=self._mq_hostname, 
+                                                    port=self._port))
             mq_channel = mq_connection.channel()
 
             mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
@@ -606,9 +646,8 @@ class AppManager(object):
                 mq_channel.queue_delete(queue=queue_name)
 
         except Exception as ex:
-            self._logger.exception('Message queues not deleted, error: %s' % ex)
+            self._logger.exception('Message queues not deleted, error')
             raise
-
 
     def _synchronizer(self):
         """
@@ -630,140 +669,166 @@ class AppManager(object):
 
                 completed_task = Task()
                 completed_task.from_dict(msg['object'])
-                self._logger.info('Received %s with state %s' % (completed_task.uid, completed_task.state))
+                self._logger.info('Received %s with state %s' %
+                                  (completed_task.uid, completed_task.state))
 
                 found_task = False
 
                 # Traverse the entire workflow to find the correct task
                 for pipe in self._workflow:
 
-                    if not pipe.completed:
-                        if completed_task.parent_pipeline['uid'] == pipe.uid:
+                    if pipe.completed or \
+                        pipe.uid != completed_task.parent_pipeline['uid']:
+                        continue
 
-                            for stage in pipe.stages:
+                    for stage in pipe.stages:
 
-                                if completed_task.parent_stage['uid'] == stage.uid:
+                        if stage.uid != completed_task.parent_stage['uid']:
+                            continue
 
-                                    for task in stage.tasks:
+                        for task in stage.tasks:
 
-                                        if (completed_task.uid == task.uid)and(completed_task.state != task.state):
+                            if completed_task.uid != task.uid and \
+                                completed_task.state == task.state:
+                                continue
 
-                                            task.state = str(completed_task.state)
-                                            self._logger.debug('Found task %s with state %s' %
-                                                               (task.uid, task.state))
+                            task.state = str(completed_task.state)
+                            self._logger.debug('Found task %s with state %s' %
+                                                               (task.uid, 
+                                                               task.state))
 
-                                            if completed_task.path:
-                                                task.path = str(completed_task.path)
+                            if completed_task.path:
+                                task.path = str(completed_task.path)
 
-                                            mq_channel.basic_publish(exchange='',
-                                                                     routing_key=reply_to,
-                                                                     properties=pika.BasicProperties(
-                                                                         correlation_id=corr_id),
-                                                                     body='%s-ack' % task.uid)
+                            mq_channel.basic_publish(exchange='',
+                                            routing_key=reply_to,
+                                            properties=pika.BasicProperties(
+                                                correlation_id=corr_id),
+                                            body='%s-ack' % task.uid)
 
-                                            self._prof.prof('publishing sync ack for obj with state %s' %
-                                                            msg['object']['state'],
-                                                            uid=msg['object']['uid']
-                                                            )
+                            self._prof.prof('publishing sync ack for obj with \
+                                            state %s' % msg['object']['state'],
+                                            uid=msg['object']['uid'])
 
-                                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                                            self._report.ok('Update: ')
-                                            self._report.info('%s state: %s\n' % (task.luid, task.state))
+                            mq_channel.basic_ack(
+                                delivery_tag=method_frame.delivery_tag)
+                            self._report.ok('Update: ')
+                            self._report.info('%s state: %s\n' % (task.luid, 
+                                                                task.state))
 
-                                            found_task = True
+                            found_task = True
 
-                                    if not found_task:
+                            if not found_task:
 
-                                        # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                        # means that this was a Stage that was added during runtime and the AppManager does not
-                                        # know about it. The current solution is going to be: add it to the workflow object in the
-                                        # AppManager via the synchronizer.
+                                # If there was a Stage update, but the Stage was
+                                # not found in any of the Pipelines. This
+                                # means that this was a Stage that was added 
+                                # during runtime and the AppManager does not
+                                # know about it. The current solution is going 
+                                # to be: add it to the workflow object in the
+                                # AppManager via the synchronizer.
 
-                                        self._prof.prof('Adap: adding new task')
+                                self._prof.prof('Adap: adding new task')
 
-                                        self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
-                                                                                                      stage.uid))
+                                self._logger.info('Adding new task %s to \
+                                                    parent stage: %s' 
+                                                    % (completed_task.uid,
+                                                    stage.uid))
 
-                                        stage.add_tasks(completed_task)
-                                        mq_channel.basic_publish(exchange='',
-                                                                 routing_key=reply_to,
-                                                                 properties=pika.BasicProperties(
-                                                                     correlation_id=corr_id),
-                                                                 body='%s-ack' % completed_task.uid)
+                                stage.add_tasks(completed_task)
+                                mq_channel.basic_publish(exchange='',
+                                            routing_key=reply_to,
+                                            properties=pika.BasicProperties(
+                                                correlation_id=corr_id),
+                                            body='%s-ack' % completed_task.uid)
 
-                                        self._prof.prof('Adap: added new task')
+                                self._prof.prof('Adap: added new task')
 
-                                        self._prof.prof('publishing sync ack for obj with state %s' %
-                                                        msg['object']['state'],
-                                                        uid=msg['object']['uid']
-                                                        )
+                                self._prof.prof('publishing sync ack for obj \
+                                                with state %s' %
+                                                msg['object']['state'],
+                                                uid=msg['object']['uid'])
 
-                                        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                                        self._report.ok('Update: ')
-                                        self._report.info('%s state: %s\n' %
-                                                          (completed_task.luid, completed_task.state))
+                                mq_channel.basic_ack(
+                                    delivery_tag=method_frame.delivery_tag)
+                                self._report.ok('Update: ')
+                                self._report.info('%s state: %s\n' %
+                                (completed_task.luid, completed_task.state))
 
-            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                            host=self._mq_hostname, 
+                                            port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
 
             while not self._terminate_sync.is_set():
 
-                #-------------------------------------------------------------------------------------------------------
-                # Messages between tmgr Main thread and synchronizer -- only Task objects
+                # -------------------------------------------------------------------------------------------------------
+                # Messages between tmgr Main thread and synchronizer -- only 
+                # Task objects
 
-                method_frame, props, body = mq_channel.basic_get(queue='%s-tmgr-to-sync' % self._sid)
+                method_frame, props, body = mq_channel.basic_get(
+                                                    queue='%s-tmgr-to-sync' 
+                                                    % self._sid)
 
-                """
-                The message received is a JSON object with the following structure:
-                msg = {
-                        'type': 'Pipeline'/'Stage'/'Task',
-                        'object': json/dict
-                        }
-                """
+                # The message received is a JSON object with the following 
+                # structure:
+                # msg = {
+                #         'type': 'Pipeline'/'Stage'/'Task',
+                #         'object': json/dict
+                #         }
 
-                if body:
-
-                    msg = json.loads(body)
-
-                    self._prof.prof('received obj with state %s for sync' % msg['object']['state'], 
-                                    uid=msg['object']['uid'])
-
-                    self._logger.debug( 'received %s with state %s for sync' %(msg['object']['uid'],
-                                        msg['object']['state']))
-
-                    if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
-                #-------------------------------------------------------------------------------------------------------
-
-                #-------------------------------------------------------------------------------------------------------
-                # Messages between callback thread and synchronizer -- only Task objects
-
-                method_frame, props, body = mq_channel.basic_get(queue='%s-cb-to-sync' % self._sid)
-
-                """
-                The message received is a JSON object with the following structure:
-                msg = {
-                        'type': 'Pipeline'/'Stage'/'Task',
-                        'object': json/dict
-                        }
-                """
 
                 if body:
 
                     msg = json.loads(body)
 
-                    self._prof.prof('received obj with state %s for sync' %msg['object']['state'],
-                                    uid=msg['object']['uid'])
+                    self._prof.prof('received obj with state %s for sync' % 
+                                                    msg['object']['state'],
+                                                    uid=msg['object']['uid'])
 
-                    self._logger.debug( 'received %s with state %s for sync' %(msg['object']['uid'],
-                                        msg['object']['state']))
+                    self._logger.debug('received %s with state %s for sync' % 
+                                                    (msg['object']['uid'],
+                                                    msg['object']['state']))
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
+                        task_update(msg, '%s-sync-to-tmgr' %self._sid, 
+                                    props.correlation_id, mq_channel)
+                # -------------------------------------------------------------------------------------------------------
 
-                #-------------------------------------------------------------------------------------------------------
+                # -------------------------------------------------------------------------------------------------------
+                # Messages between callback thread and synchronizer -- only 
+                # Task objects
+
+                method_frame, props, body = mq_channel.basic_get(
+                    queue='%s-cb-to-sync' % self._sid)
+
+
+                # The message received is a JSON object with the following structure:
+                # msg = {
+                #         'type': 'Pipeline'/'Stage'/'Task',
+                #         'object': json/dict
+                #         }
+
+
+                if body:
+
+                    msg = json.loads(body)
+
+                    self._prof.prof('received obj with state %s for sync' % 
+                                                    msg['object']['state'],
+                                                    uid=msg['object']['uid'])
+
+                    self._logger.debug('received %s with state %s for sync' % 
+                                                    (msg['object']['uid'],
+                                                    msg['object']['state']))
+
+                    if msg['type'] == 'Task':
+                        task_update(msg, '%s-sync-to-cb' %
+                                    self._sid, props.correlation_id, mq_channel)
+
+                # -------------------------------------------------------------------------------------------------------
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()
@@ -775,12 +840,14 @@ class AppManager(object):
 
         except KeyboardInterrupt:
 
-            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to terminate synchronizer thread gracefully...')
+            self._logger.exception('Execution interrupted by user (you \
+                                    probably hit Ctrl+C), trying to terminate \
+                                    synchronizer thread gracefully...')
 
             raise KeyboardInterrupt
 
         except Exception, ex:
 
-            self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
+            self._logger.exception('Unknown error in synchronizer: %s. \
+                                    Terminating thread')
             raise
