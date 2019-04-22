@@ -39,3 +39,22 @@ def transition(obj, obj_type, new_state, channel, queue, profiler, logger):
                          logger=logger,
                          local_prof=profiler)
         raise
+
+
+def local_transition(obj, obj_type, new_state, profiler, logger, reporter):
+
+    if obj_type == 'Task':
+        msg = obj.parent_stage['uid']
+    elif obj_type == 'Stage':
+        msg = obj.parent_pipeline['uid']
+    else:
+        msg = None
+
+    obj.state = new_state
+    profiler.prof(  'advance',
+                    uid=obj.uid,
+                    state=obj.state,
+                    msg=msg)
+    reporter.ok('Update: ')
+    reporter.info('%s state: %s\n' %(obj.luid, obj.state))
+    logger.info('Transition of %s to new state %s successful' % (obj.uid, new_state))

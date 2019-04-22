@@ -270,32 +270,6 @@ class AppManager(object):
 
             self._prof.prof('amgr run started', uid=self._uid)
 
-            # Setup rabbitmq stuff
-            if not self._mqs_setup:
-
-                self._report.info('Setting up RabbitMQ system')
-                setup = self._setup_mqs()
-
-                if not setup:
-                    self._logger.error('RabbitMQ system not available')
-                    raise EnTKError("RabbitMQ setup failed")
-
-                self._mqs_setup = True
-
-                self._report.ok('>>ok\n')
-
-            # Create WFProcessor object
-            self._prof.prof('creating wfp obj', uid=self._uid)
-            self._wfp = WFprocessor(sid=self._sid,
-                                    workflow=self._workflow,
-                                    pending_queue=self._pending_queue,
-                                    completed_queue=self._completed_queue,
-                                    mq_hostname=self._mq_hostname,
-                                    port=self._port,
-                                    resubmit_failed=self._resubmit_failed)
-            self._wfp._initialize_workflow()
-            self._workflow = self._wfp.workflow
-
 
             # Submit resource request if not resource allocation done till now or
             # resubmit a new one if the old one has completed
@@ -314,6 +288,34 @@ class AppManager(object):
 
                 self._logger.exception('Cannot run without resource manager, please create and assign a resource manager')
                 raise EnTKError(text='Missing resource manager')
+
+
+            # Setup rabbitmq stuff
+            if not self._mqs_setup:
+                self._report.info('Setting up RabbitMQ system')
+                setup = self._setup_mqs()
+
+                if not setup:
+                    self._logger.error('RabbitMQ system not available')
+                    raise EnTKError("RabbitMQ setup failed")
+
+                self._mqs_setup = True
+                self._report.ok('>>ok\n')
+
+                    
+
+            # Create WFProcessor object
+            self._prof.prof('creating wfp obj', uid=self._uid)
+            self._wfp = WFprocessor(sid=self._sid,
+                                    workflow=self._workflow,
+                                    pending_queue=self._pending_queue,
+                                    completed_queue=self._completed_queue,
+                                    mq_hostname=self._mq_hostname,
+                                    port=self._port,
+                                    resubmit_failed=self._resubmit_failed)
+            self._wfp._initialize_workflow()
+            self._workflow = self._wfp.workflow
+
 
             # Start synchronizer thread
             if not self._sync_thread:
@@ -389,14 +391,13 @@ class AppManager(object):
                     """
 
                     self._prof.prof('recreating wfp obj', uid=self._uid)
-                    self._wfp = WFProcessor(
-                        sid=self._sid,
-                        workflow=self._workflow,
-                        pending_queue=self._pending_queue,
-                        completed_queue=self._completed_queue,
-                        mq_hostname=self._mq_hostname,
-                        port=self._port,
-                        resubmit_failed=self._resubmit_failed)
+                    self._wfp = WFprocessor(sid=self._sid,
+                                            workflow=self._workflow,
+                                            pending_queue=self._pending_queue,
+                                            completed_queue=self._completed_queue,
+                                            mq_hostname=self._mq_hostname,
+                                            port=self._port,
+                                            resubmit_failed=self._resubmit_failed)
 
                     self._logger.info('Restarting WFProcessor process from AppManager')
                     self._wfp.start_processor()
@@ -553,13 +554,9 @@ class AppManager(object):
             qs = [
                 '%s-tmgr-to-sync' % self._sid,
                 '%s-cb-to-sync' % self._sid,
-                '%s-enq-to-sync' % self._sid,
-                '%s-deq-to-sync' % self._sid,
                 '%s-sync-to-tmgr' % self._sid,
                 '%s-sync-to-cb' % self._sid,
-                '%s-sync-to-enq' % self._sid,
-                '%s-sync-to-deq' % self._sid
-            ]
+                ]
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
@@ -597,12 +594,8 @@ class AppManager(object):
 
             mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
             mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
-            mq_channel.queue_delete(queue='%s-enq-to-sync' % self._sid)
-            mq_channel.queue_delete(queue='%s-deq-to-sync' % self._sid)
             mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
             mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
-            mq_channel.queue_delete(queue='%s-sync-to-enq' % self._sid)
-            mq_channel.queue_delete(queue='%s-sync-to-deq' % self._sid)
 
             for i in range(1, self._num_pending_qs + 1):
                 queue_name = '%s-pendingq-%s' % (self._sid, i)
@@ -616,23 +609,21 @@ class AppManager(object):
             self._logger.exception('Message queues not deleted, error: %s' % ex)
             raise
 
+
     def _synchronizer(self):
         """
         **Purpose**: Thread in the master process to keep the workflow data
-        structure in appmanager up to date. We receive pipelines, stages and
-        tasks objects directly. The respective object is updated in this master
-        process.
-
+        structure in appmanager up to date. We receive only tasks objects from
+        the task manager. 
         Details: Important to note that acknowledgements of the type
         channel.basic_ack() is an acknowledgement to the server that the msg
         was received. This is not to be confused with the Ack sent to the
-        enqueuer/dequeuer/task_manager through the sync-ack queue.
+        task_manager through the sync-ack queue.
         """
 
         try:
 
             self._prof.prof('synchronizer started', uid=self._uid)
-
             self._logger.info('synchronizer thread started')
 
             def task_update(msg, reply_to, corr_id, mq_channel):
@@ -712,118 +703,6 @@ class AppManager(object):
                                         self._report.info('%s state: %s\n' %
                                                           (completed_task.luid, completed_task.state))
 
-            def stage_update(msg, reply_to, corr_id, mq_channel):
-
-                completed_stage = Stage()
-                completed_stage.from_dict(msg['object'])
-                self._logger.info('Received %s with state %s' % (completed_stage.uid, completed_stage.state))
-
-                found_stage = False
-
-                # Traverse the entire workflow to find the correct stage
-                for pipe in self._workflow:
-
-                    if not pipe.completed:
-
-                        if completed_stage.parent_pipeline['uid'] == pipe.uid:
-                            self._logger.info('Found parent pipeline: %s' % pipe.uid)
-
-                            for stage in pipe.stages:
-
-                                if (completed_stage.uid == stage.uid)and(completed_stage.state != stage.state):
-
-                                    self._logger.debug('Found stage %s' % stage.uid)
-
-                                    stage.state = str(completed_stage.state)
-
-                                    mq_channel.basic_publish(exchange='',
-                                                             routing_key=reply_to,
-                                                             properties=pika.BasicProperties(
-                                                                 correlation_id=corr_id),
-                                                             body='%s-ack' % stage.uid)
-
-                                    self._prof.prof('publishing sync ack for obj with state %s' %
-                                                    msg['object']['state'],
-                                                    uid=msg['object']['uid']
-                                                    )
-
-                                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                                    self._report.ok('Update: ')
-                                    self._report.info('%s state: %s\n' % (stage.luid, stage.state))
-
-                                    found_stage = True
-
-                            if not found_stage:
-
-                                # If there was a Stage update, but the Stage was not found in any of the Pipelines. This
-                                # means that this was a Stage that was added during runtime and the AppManager does not
-                                # know about it. The current solution is going to be: add it to the workflow object in the
-                                # AppManager via the synchronizer.
-
-                                self._prof.prof('Adap: adding new stage', uid=self._uid)
-
-                                self._logger.info('Adding new stage %s to parent pipeline: %s' % (completed_stage.uid,
-                                                                                                  pipe.uid))
-
-                                pipe.add_stages(completed_stage)
-                                mq_channel.basic_publish(exchange='',
-                                                         routing_key=reply_to,
-                                                         properties=pika.BasicProperties(
-                                                             correlation_id=corr_id),
-                                                         body='%s-ack' % completed_stage.uid)
-
-                                self._prof.prof('Adap: adding new stage', uid=self._uid)
-
-                                self._prof.prof('publishing sync ack for obj with state %s' %
-                                                msg['object']['state'],
-                                                uid=msg['object']['uid']
-                                                )
-
-                                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-            def pipeline_update(msg, reply_to, corr_id, mq_channel):
-
-                completed_pipeline = Pipeline()
-                completed_pipeline.from_dict(msg['object'])
-
-                self._logger.info('Received %s with state %s' % (completed_pipeline.uid, completed_pipeline.state))
-
-                # Traverse the entire workflow to find the correct pipeline
-                for pipe in self._workflow:
-
-                    if not pipe.completed:
-
-                        if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
-
-                            pipe.state = str(completed_pipeline.state)
-
-                            self._logger.info('Found pipeline %s, state %s, completed %s' % (pipe.uid,
-                                                                                             pipe.state,
-                                                                                             pipe.completed)
-                                              )
-
-                            # Reply with ack msg to the sender
-                            mq_channel.basic_publish(exchange='',
-                                                     routing_key=reply_to,
-                                                     properties=pika.BasicProperties(
-                                                         correlation_id=corr_id),
-                                                     body='%s-ack' % pipe.uid)
-
-                            self._prof.prof('publishing sync ack for obj with state %s' %
-                                            msg['object']['state'],
-                                            uid=msg['object']['uid']
-                                            )
-
-                            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                            # Keep the assignment of the completed flag after sending the acknowledgment
-                            # back. Otherwise the MainThread takes lock over the pipeline because of logging
-                            # and profiling
-                            if completed_pipeline.completed:
-                                pipe._completed_flag.set()
-                            self._report.ok('Update: ')
-                            self._report.info('%s state: %s\n' % (pipe.luid, pipe.state))
-
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
@@ -838,7 +717,6 @@ class AppManager(object):
 
                 """
                 The message received is a JSON object with the following structure:
-
                 msg = {
                         'type': 'Pipeline'/'Stage'/'Task',
                         'object': json/dict
@@ -849,15 +727,14 @@ class AppManager(object):
 
                     msg = json.loads(body)
 
-                    self._prof.prof('received obj with state %s for sync' %
-                                    msg['object']['state'], uid=msg['object']['uid'])
+                    self._prof.prof('received obj with state %s for sync' % msg['object']['state'], 
+                                    uid=msg['object']['uid'])
 
-                    self._logger.debug('received %s with state %s for sync' %
-                                       (msg['object']['uid'], msg['object']['state']))
+                    self._logger.debug( 'received %s with state %s for sync' %(msg['object']['uid'],
+                                        msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
-
                 #-------------------------------------------------------------------------------------------------------
 
                 #-------------------------------------------------------------------------------------------------------
@@ -867,7 +744,6 @@ class AppManager(object):
 
                 """
                 The message received is a JSON object with the following structure:
-
                 msg = {
                         'type': 'Pipeline'/'Stage'/'Task',
                         'object': json/dict
@@ -878,63 +754,15 @@ class AppManager(object):
 
                     msg = json.loads(body)
 
-                    self._prof.prof('received obj with state %s for sync' %
-                                    msg['object']['state'], uid=msg['object']['uid'])
+                    self._prof.prof('received obj with state %s for sync' %msg['object']['state'],
+                                    uid=msg['object']['uid'])
 
-                    self._logger.debug('received %s with state %s for sync' %
-                                       (msg['object']['uid'], msg['object']['state']))
+                    self._logger.debug( 'received %s with state %s for sync' %(msg['object']['uid'],
+                                        msg['object']['state']))
 
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
 
-                #-------------------------------------------------------------------------------------------------------
-
-                #-------------------------------------------------------------------------------------------------------
-                # Messages between enqueue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='%s-enq-to-sync' % self._sid)
-
-                if body:
-
-                    msg = json.loads(body)
-
-                    self._prof.prof('received obj with state %s for sync' %
-                                    msg['object']['state'], uid=msg['object']['uid'])
-
-                    self._logger.debug('received %s with state %s for sync' %
-                                       (msg['object']['uid'], msg['object']['state']))
-
-                    if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
-
-                    elif msg['type'] == 'Stage':
-                        stage_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
-
-                    elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
-                #-------------------------------------------------------------------------------------------------------
-
-                #-------------------------------------------------------------------------------------------------------
-                # Messages between dequeue thread and synchronizer -- Task, Stage or Pipeline
-                method_frame, props, body = mq_channel.basic_get(queue='%s-deq-to-sync' % self._sid)
-
-                if body:
-
-                    msg = json.loads(body)
-
-                    self._prof.prof('received obj with state %s for sync' %
-                                    msg['object']['state'], uid=msg['object']['uid'])
-
-                    self._logger.debug('received %s with state %s for sync' %
-                                       (msg['object']['uid'], msg['object']['state']))
-
-                    if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
-
-                    elif msg['type'] == 'Stage':
-                        stage_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
-
-                    elif msg['type'] == 'Pipeline':
-                        pipeline_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
                 #-------------------------------------------------------------------------------------------------------
 
                 # Appease pika cos it thinks the connection is dead
@@ -956,5 +784,3 @@ class AppManager(object):
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
             raise
-
-    # ------------------------------------------------------------------------------------------------------------------

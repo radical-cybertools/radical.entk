@@ -306,20 +306,20 @@ class TaskManager(Base_TaskManager):
 
                     umgr.submit_units(bulk_cuds)
 
-                    for task in bulk_tasks:
+                    # for task in bulk_tasks:
 
-                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
-                        mq_channel = mq_connection.channel()
+                    #     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+                    #     mq_channel = mq_connection.channel()
 
-                        transition(obj=task,
-                                   obj_type='Task',
-                                   new_state=states.SUBMITTED,
-                                   channel=mq_channel,
-                                   queue='%s-tmgr-to-sync' % sid,
-                                   profiler=local_prof,
-                                   logger=logger)
+                    #     transition(obj=task,
+                    #                obj_type='Task',
+                    #                new_state=states.SUBMITTED,
+                    #                channel=mq_channel,
+                    #                queue='%s-tmgr-to-sync' % sid,
+                    #                profiler=local_prof,
+                    #                logger=logger)
 
-                        mq_connection.close()
+                    #     mq_connection.close()
 
         except KeyboardInterrupt as ex:
             logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
