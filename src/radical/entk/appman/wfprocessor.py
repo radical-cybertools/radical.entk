@@ -23,11 +23,11 @@ from ..utils.init_transition import transition, local_transition
 class WFprocessor(object):
 
     """
-    An WFprocessor (workflow processor) takes the responsibility of dispatching 
+    An WFprocessor (workflow processor) takes the responsibility of dispatching
     tasks from the various pipelines of the workflow according to their relative
     order to the TaskManager. All state updates are relflected in the AppManager
     as we operate on the reference of the same workflow object. The WFprocessor
-    also retrieves completed tasks from the TaskManager and updates states of 
+    also retrieves completed tasks from the TaskManager and updates states of
     PST accordingly.
 
     :Arguments:
@@ -71,7 +71,6 @@ class WFprocessor(object):
                                  path=self._path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
-
         self._prof.prof('create wfp obj', uid=self._uid)
 
         # Defaults
@@ -108,10 +107,152 @@ class WFprocessor(object):
 
             self._prof.prof('workflow initialized', uid=self._uid)
 
-        except Exception, ex:
-            self._logger.exception(
-                'Fatal error when initializing workflow: %s')
+        except Exception:
+            self._logger.exception('Fatal error when initializing workflow')
             raise
+
+    def _create_workload(self):
+
+        # We iterate through all pipelines to collect tasks from
+        # stages that are pending scheduling. Once collected, these tasks
+        # will be communicated to the tmgr in bulk.
+
+        # Initial empty list to store executable tasks across different
+        # pipelines
+        workload = []
+
+        # The executable tasks can belong to different pipelines, and
+        # hence different stages. Empty list to store the stages so that
+        # we can update the state of stages accordingly
+        scheduled_stages = []
+
+        for pipe in self._workflow:
+
+            with pipe.lock:
+
+                # If Pipeline is in the final state or suspended, we
+                # skip processing it.
+                if pipe.state in states.FINAL or  \
+                    pipe.completed or \
+                    pipe.state == states.SUSPENDED:
+
+                    continue
+
+                if pipe.state == states.INITIAL:
+
+                    # Set state of pipeline to SCHEDULING if it is
+                    # in INITIAL.
+                    local_transition(obj=pipe,
+                                    obj_type='Pipeline',
+                                    new_state=states.SCHEDULING,
+                                    profiler=self._prof,
+                                    logger=self._logger,
+                                    reporter=self._report)
+
+                # Get the next stage of this pipeline to process
+                exec_stage = pipe.stages[pipe.current_stage - 1]
+
+                if not exec_stage.uid:
+                    # TODO: Move parent uid, name assignment to
+                    # assign_uid function
+                    exec_stage.parent_pipeline['uid'] = pipe.uid
+                    exec_stage.parent_pipeline['name'] = pipe.name
+                    exec_stage._assign_uid(self._sid)
+
+                # We need to check both INITIAL and SCHEDULED as
+                # there maybe a task in the stage that needs to be
+                # resubmitted.
+                exec_tasks = list()
+                if exec_stage.state in [states.INITIAL,
+                                        states.SCHEDULED]:
+
+                    # If its a new stage, update its state
+                    if exec_stage.state == states.INITIAL:
+
+                        local_transition(obj=exec_stage,
+                                        obj_type='Stage',
+                                        new_state=states.SCHEDULING,
+                                        profiler=self._prof,
+                                        logger=self._logger,
+                                        reporter=self._report)
+
+                    exec_tasks = exec_stage.tasks
+
+                for exec_task in exec_tasks:
+
+                    if exec_task.state == states.INITIAL or \
+                        (exec_task.state == states.FAILED) and
+                            self._resubmit_failed):
+
+                        # Set state of Tasks in current Stage
+                        # to SCHEDULING
+                        local_transition(obj = exec_task,
+                                        obj_type = 'Task',
+                                        new_state = states.SCHEDULING,
+                                        profiler = self._prof,
+                                        logger = self._logger,
+                                        reporter = self._report)
+
+                        # Store the tasks from different pipelines
+                        # into our workload list. All tasks will
+                        # be submitted in bulk and their states
+                        # will be updated accordingly
+                        workload.append(exec_task)
+
+                        # We store the stages since the stages the
+                        # above tasks belong to also need to be
+                        # updated. If its a task that failed, the
+                        # stage is already in the correct state
+                        if exec_task.state == states.FAILED:
+                            continue
+                        if exec_stage not in scheduled_stages:
+                            scheduled_stages.append(exec_stage)
+
+        return workload, scheduled_stages
+
+
+    def _execute_workload(self, workload, scheduled_stages):
+
+        # Tasks of the workload need to be converted into a dict
+        # as pika can send and receive only json/dict data
+        wl_json=json.dumps([task.to_dict() for task in workload])
+
+        # Send the workload to the pending queue
+        mq_channel.basic_publish(exchange = '',
+                                    routing_key=self._pending_queue[0],
+                                    body=workload_as_json
+
+                                    # TODO: Make durability parameters
+                                    # as a config parameter and then
+                                    # enable the following accordingly
+                                    # properties=pika.BasicProperties(
+                                    # make message persistent
+                                    # delivery_mode = 2)
+
+                                    )
+        self._logger.debug('Workload submitted to Task Manager')
+
+        # Update the state of the tasks in the workload
+        for task in workload:
+
+            # Set state of Tasks in current Stage to SCHEDULED
+            local_transition(obj=task,
+                            obj_type='Task',
+                            new_state=states.SCHEDULED,
+                            profiler=self._prof,
+                            logger=self._logger,
+                            reporter=self._report)
+
+        # Update the state of the stages from which tasks have
+        # been scheduled
+        if scheduled_stages:
+            for executable_stage in scheduled_stages:
+                local_transition(obj=executable_stage,
+                                obj_type='Stage',
+                                new_state=states.SCHEDULED,
+                                profiler=self._prof,
+                                logger=self._logger,
+                                reporter=self._report)
 
     def _enqueue(self):
         """
@@ -128,155 +269,19 @@ class WFprocessor(object):
 
             # Acquire a connection+channel to the rmq server
             mq_connection = pika.BlockingConnection(
-                pika.ConnectionParameters(
-                    host=self._mq_hostname,
-                    port=self._port))
+                                pika.ConnectionParameters(
+                                    host=self._mq_hostname,
+                                    port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
             while not self._enqueue_thread_terminate.is_set():
 
-                # We iterate through all pipelines to collect tasks from
-                # stages that are pending scheduling. Once collected, these tasks
-                # will be communicated to the tmgr in bulk.
-
-                # Initial empty list to store executable tasks across different
-                # pipelines
-                workload = []
-
-                # The executable tasks can belong to different pipelines, and
-                # hence different stages. Empty list to store the stages so that
-                # we can update the state of stages accordingly
-                scheduled_stages = []
-
-                for pipe in self._workflow:
-
-                    with pipe.lock:
-
-                        # If Pipeline is in the final state or suspended, we
-                        # skip processing it.
-                        if pipe.state in states.FINAL or  \
-                           pipe.completed or \
-                           pipe.state == states.SUSPENDED:
-
-                            continue
-
-                        if pipe.state == states.INITIAL:
-
-                            # Set state of pipeline to SCHEDULING if it is
-                            # in INITIAL.
-                            local_transition(obj=pipe,
-                                             obj_type='Pipeline',
-                                             new_state=states.SCHEDULING,
-                                             profiler=self._prof,
-                                             logger=self._logger,
-                                             reporter=self._report)
-
-                        # Get the next stage of this pipeline to process
-                        exec_stage = pipe.stages[pipe.current_stage - 1]
-
-                        if not exec_stage.uid:
-                            # TODO: Move parent uid, name assignment to
-                            # assign_uid function
-                            exec_stage.parent_pipeline['uid'] = pipe.uid
-                            exec_stage.parent_pipeline['name'] = pipe.name
-                            exec_stage._assign_uid(self._sid)
-
-                        # We need to check both INITIAL and SCHEDULED as
-                        # there maybe a task in the stage that needs to be
-                        # resubmitted.
-                        exec_tasks = list()
-                        if exec_stage.state in [states.INITIAL,
-                                                states.SCHEDULED]:
-
-                            # If its a new stage, update its state
-                            if exec_stage.state == states.INITIAL:
-
-                                local_transition(obj=exec_stage,
-                                                    obj_type='Stage',
-                                                    new_state=states.SCHEDULING,
-                                                    profiler=self._prof,
-                                                    logger=self._logger,
-                                                    reporter=self._report)
-
-                            exec_tasks = exec_stage.tasks
-
-                        for exec_task in exec_tasks:
-
-                            if (exec_task.state == states.INITIAL) or \
-                                ((exec_task.state == states.FAILED) and
-                                    (self._resubmit_failed)):
-
-                                # Set state of Tasks in current Stage
-                                # to SCHEDULING
-                                local_transition(obj=exec_task,
-                                                    obj_type='Task',
-                                                    new_state=states.SCHEDULING,
-                                                    profiler=self._prof,
-                                                    logger=self._logger,
-                                                    reporter=self._report)
-
-                                # Store the tasks from different pipelines
-                                # into our workload list. All tasks will
-                                # be submitted in bulk and their states
-                                # will be updated accordingly
-                                workload.append(exec_task)
-
-                                # We store the stages since the stages the
-                                # above tasks belong to also need to be
-                                # updated. If its a task that failed, the
-                                # stage is already in the correct state
-                                if exec_task.state == states.FAILED:
-                                    continue
-                                if exec_stage not in scheduled_stages:
-                                    scheduled_stages.append(exec_stage)
-
+                workload, scheduled_stages = self._create_workload()
+                
                 # If there are tasks to be scheduled
                 if workload:
-
-                    # Tasks of the workload need to be converted into a dict
-                    # as pika can send and receive only json/dict data
-                    workload_as_json = list()
-                    for task in workload:
-                        workload_as_json.append(task.to_dict())
-                    workload_as_json = json.dumps(workload_as_json)
-
-                    # Send the workload to the pending queue
-                    mq_channel.basic_publish(exchange='',
-                                             routing_key=self._pending_queue[0],
-                                             body=workload_as_json
-
-                                             # TODO: Make durability parameters
-                                             # as a config parameter and then
-                                             # enable the following accordingly
-                                             # properties=pika.BasicProperties(
-                                             # make message persistent
-                                             # delivery_mode = 2)
-
-                                             )
-                    self._logger.debug('Workload submitted to Task Manager')
-
-                    # Update the state of the tasks in the workload
-                    for task in workload:
-
-                        # Set state of Tasks in current Stage to SCHEDULED
-                        local_transition(obj=task,
-                                         obj_type='Task',
-                                         new_state=states.SCHEDULED,
-                                         profiler=self._prof,
-                                         logger=self._logger,
-                                         reporter=self._report)
-
-                    # Update the state of the stages from which tasks have
-                    # been scheduled
-                    if scheduled_stages:
-                        for executable_stage in scheduled_stages:
-                            local_transition(obj=executable_stage,
-                                             obj_type='Stage',
-                                             new_state=states.SCHEDULED,
-                                             profiler=self._prof,
-                                             logger=self._logger,
-                                             reporter=self._report)
+                    self._execute_workload(workload, scheduled_stages)
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()
@@ -297,14 +302,157 @@ class WFprocessor(object):
             mq_connection.close()
             raise KeyboardInterrupt
 
-        except Exception, ex:
+        except Exception:
 
             self._logger.exception('Error in enqueue-thread')
             try:
                 mq_connection.close()
             except Exception as ex:
-                self._logger.warning('mq_connection not created, %s' % ex)
+                self._logger.warning('mq_connection not closed, %s' % ex)
 
+            raise
+
+
+    def _update_dequeued_task(self, deq_task):
+
+        # Update state of dequeued task
+        local_transition(obj=deq_task,
+                        obj_type='Task',
+                        new_state=states.DEQUEUEING,
+                        profiler=self._prof,
+                        logger=self._logger,
+                        reporter=self._report)
+
+        # Traverse the entire workflow to find out the correct Task
+        # TODO: Investigate whether we can change the DS of the
+        # workflow so that we don't have this expensive search
+        # for each task.
+        # First search across all pipelines
+        for pipe in self._workflow:
+
+            with pipe.lock:
+
+                # Skip pipelines that have completed or are
+                # currently suspended
+                if pipe.completed or pipe.state == states.SUSPENDED:
+                    continue
+
+                # Skip pipelines that don't match the UID
+                # There will be only one pipeline that matches
+                if pipe.uid != deq_task.parent_pipeline['uid']:
+                    continue
+
+                self._logger.debug('Found parent pipeline: %s' %
+                                    pipe.uid)
+
+                # Next search across all stages of a matching
+                # pipelines
+                for stage in pipe.stages:
+
+                    # Skip stages that don't match the UID
+                    # There will be only one stage that matches
+                    if stage.uid != deq_task.parent_stage['uid']:
+                        continue
+
+                    self._logger.debug('Found parent stage: %s' %
+                                        stage.uid)
+
+                    # Update state of stage of dequeued task
+                    local_transition(obj=deq_task,
+                                    obj_type='Task',
+                                    new_state=states.DEQUEUED,
+                                    profiler=self._prof,
+                                    logger=self._logger,
+                                    reporter=self._report)
+
+                    # If there is no exit code, we assume success
+                    if not deq_task.exit_code:
+                        deq_task.state = states.DONE
+                    else:
+                        deq_task.state = states.FAILED
+
+                    # Search across all tasks of matching stage
+                    for task in stage.tasks:
+
+                        # Skip tasks that don't match the UID
+                        # There will be only one task that matches
+                        if task.uid != deq_task.uid:
+                            continue
+
+                        task.state = str(deq_task.state)
+
+                        if task.state == states.FAILED and \
+                                self._resubmit_failed:
+                            task.state = states.INITIAL
+
+                        local_transition(obj=task,
+                                        obj_type='Task',
+                                        new_state=task.state,
+                                        profiler=self._prof,
+                                        logger=self._logger,
+                                        reporter=self._report)
+
+                        # Found the task and processed it -- no more
+                        # iterations needed
+                        break
+
+                    # Found the stage and processed it -- no more
+                    # iterations needed for the current task
+                    break
+
+                # Check if current stage has completed
+                # If yes, we need to (i) check for post execs to
+                # be executed and (ii) check if it is the last
+                # stage of the pipeline -- update pipeline
+                # state if yes.
+                if stage._check_stage_complete():
+
+                    local_transition(obj=stage,
+                                    obj_type='Stage',
+                                    new_state=states.DONE,
+                                    profiler=self._prof,
+                                    logger=self._logger,
+                                    reporter=self._report)
+
+                    # Check if the current stage has a post-exec
+                    # that needs to be executed
+                    if stage.post_exec:
+                        self._execute_post_exec(stage)
+
+                    # Increment current stage pointer of the
+                    # pipeline
+                    pipe._increment_stage()
+
+                    # If pipeline has completed, make state
+                    # change
+                    if pipe.completed:
+
+                        local_transition(obj=pipe,
+                                        obj_type='Pipeline',
+                                        new_state=states.DONE,
+                                        profiler=self._prof,
+                                        logger=self._logger,
+                                        reporter=self._report)
+
+                # Found the pipeline and processed it -- no more
+                # iterations needed for the current task
+                break
+
+    def _execute_post_exec(self, stage):
+
+        try:
+
+            self._logger.info('Executing post-exec for stage %s' % stage.uid)
+            self._prof.prof('post_exec_start', uid=self._uid)
+
+            stage.post_exec()
+
+            self._logger.info('Post-exec executed for stage %s' % stage.uid)
+            self._prof.prof('post_exec_stop', uid=self._uid)
+
+        except Exception:
+            self._logger.exception('Execution failed in post_exec \
+                                    of stage %s' % stage.uid)
             raise
 
     def _dequeue(self):
@@ -321,13 +469,12 @@ class WFprocessor(object):
 
             # Acquire a connection+channel to the rmq server
             mq_connection = pika.BlockingConnection(
-                pika.ConnectionParameters(
-                    host=self._mq_hostname,
-                    port=self._port))
+                                pika.ConnectionParameters(
+                                    host=self._mq_hostname,
+                                    port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
-
             while not self._dequeue_thread_terminate.is_set():
 
                 method_frame, header_frame, body = mq_channel.basic_get(
@@ -345,129 +492,7 @@ class WFprocessor(object):
                 deq_task.from_dict(json.loads(body))
                 self._logger.info('Got finished task %s from queue'
                                   % (deq_task.uid))
-
-                # Update state of dequeued task
-                local_transition(obj=deq_task,
-                                 obj_type='Task',
-                                 new_state=states.DEQUEUEING,
-                                 profiler=self._prof,
-                                 logger=self._logger,
-                                 reporter=self._report)
-
-                # Traverse the entire workflow to find out the correct Task
-                # TODO: Investigate whether we can change the DS of the
-                # workflow so that we don't have this expensive search
-                # for each task.
-                # First search across all pipelines
-                for pipe in self._workflow:
-
-                    with pipe.lock:
-
-                        # Skip pipelines that have completed or are
-                        # currently suspended
-                        if pipe.completed or pipe.state == states.SUSPENDED:
-                            continue
-
-                        # Skip pipelines that don't match the UID
-                        # There will be only one pipeline that matches
-                        if pipe.uid != deq_task.parent_pipeline['uid']:
-                            continue
-
-                        self._logger.debug('Found parent pipeline: %s' %
-                                           pipe.uid)
-
-                        # Next search across all stages of a matching
-                        # pipelines
-                        for stage in pipe.stages:
-
-                            # Skip stages that don't match the UID
-                            # There will be only one stage that matches
-                            if stage.uid != deq_task.parent_stage['uid']:
-                                continue
-
-                            self._logger.debug('Found parent stage: %s' %
-                                               stage.uid)
-
-                            # Update state of stage of dequeued task
-                            local_transition(obj=deq_task,
-                                             obj_type='Task',
-                                             new_state=states.DEQUEUED,
-                                             profiler=self._prof,
-                                             logger=self._logger,
-                                             reporter=self._report)
-
-                            # If there is no exit code, we assume success
-                            if not deq_task.exit_code:
-                                deq_task.state = states.DONE
-                            else:
-                                deq_task.state = states.FAILED
-
-                            # Search across all tasks of matching stage
-                            for task in stage.tasks:
-
-                                # Skip tasks that don't match the UID
-                                # There will be only one task that matches
-                                if task.uid != deq_task.uid:
-                                    continue
-
-                                task.state = str(deq_task.state)
-
-                                if task.state == states.FAILED and \
-                                        self._resubmit_failed:
-                                    task.state = states.INITIAL
-
-                                local_transition(obj=task,
-                                                 obj_type='Task',
-                                                 new_state=task.state,
-                                                 profiler=self._prof,
-                                                 logger=self._logger,
-                                                 reporter=self._report)
-
-                                # Found the task and processed it -- no more
-                                # iterations needed
-                                break
-
-                            # Found the stage and processed it -- no more
-                            # iterations needed for the current task
-                            break
-
-                        # Check if current stage has completed
-                        # If yes, we need to (i) check for post execs to
-                        # be executed and (ii) check if it is the last
-                        # stage of the pipeline -- update pipeline
-                        # state if yes.
-                        if stage._check_stage_complete():
-
-                            local_transition(obj=stage,
-                                             obj_type='Stage',
-                                             new_state=states.DONE,
-                                             profiler=self._prof,
-                                             logger=self._logger,
-                                             reporter=self._report)
-
-                            # Check if the current stage has a post-exec
-                            # that needs to be executed
-                            if stage.post_exec:
-                                self._execute_post_exec(stage)
-
-                            # Increment current stage pointer of the
-                            # pipeline
-                            pipe._increment_stage()
-
-                            # If pipeline has completed, make state
-                            # change
-                            if pipe.completed:
-
-                                local_transition(obj=pipe,
-                                                 obj_type='Pipeline',
-                                                 new_state=states.DONE,
-                                                 profiler=self._prof,
-                                                 logger=self._logger,
-                                                 reporter=self._report)
-
-                        # Found the pipeline and processed it -- no more
-                        # iterations needed for the current task
-                        break
+                self._update_dequeued_task(deq_task)                
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()
@@ -495,23 +520,6 @@ class WFprocessor(object):
             except Exception as ex:
                 self._logger.warning('mq_connection not created, %s' % ex)
 
-            raise
-
-    def _execute_post_exec(self, stage):
-
-        try:
-
-            self._logger.info('Executing post-exec for stage %s' % stage.uid)
-            self._prof.prof('Adap: executing post-exec', uid=self._uid)
-
-            stage.post_exec()
-
-            self._logger.info('Post-exec executed for stage %s' % stage.uid)
-            self._prof.prof('Adap: post-exec executed', uid=self._uid)
-
-        except Exception, ex:
-            self._logger.exception('Execution failed in post_exec \
-                                    of stage %s' % stage.uid)
             raise
 
     # ------------------------------------------------------------------------------------------------------------------
