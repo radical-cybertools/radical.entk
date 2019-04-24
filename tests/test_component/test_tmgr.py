@@ -24,6 +24,7 @@ MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 @given(s=st.text(),
        l=st.lists(st.characters()),

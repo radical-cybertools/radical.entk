@@ -8,7 +8,7 @@ import threading
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
-
+settings.load_profile("travis")
 
 def test_pipeline_initialization():
 

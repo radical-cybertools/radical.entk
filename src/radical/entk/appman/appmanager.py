@@ -89,6 +89,8 @@ class AppManager(object):
         self._workflow = None
         self._cur_attempt = 1
         self._shared_data = list()
+        self._wfp = None
+        self._sync_thread = None
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 

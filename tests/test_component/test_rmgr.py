@@ -13,6 +13,7 @@ MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_base_initialization(d):
