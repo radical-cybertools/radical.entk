@@ -14,7 +14,7 @@ def test_rmgr_rp_get_resource_allocation_state():
 
     res_dict = {
         'resource': 'local.localhost',
-                    'walltime': 40,
+                    'walltime': 10,
                     'cpus': 1,
                     'project': ''
     }
@@ -33,6 +33,7 @@ def test_rmgr_rp_get_resource_allocation_state():
 
     import radical.pilot as rp
     assert rmgr.get_resource_allocation_state() in [rp.PMGR_ACTIVE, rp.FAILED]
+    rmgr._terminate_resource_request()
 
 
 def test_rmgr_rp_resource_request():
@@ -43,7 +44,7 @@ def test_rmgr_rp_resource_request():
 
     res_dict = {
         'resource': 'local.localhost',
-                    'walltime': 40,
+                    'walltime': 10,
                     'cpus': 1,
                     'project': ''
     }
@@ -60,7 +61,6 @@ def test_rmgr_rp_resource_request():
     rmgr._submit_resource_request()
 
     import radical.pilot as rp
-    assert rmgr.get_resource_allocation_state() in [rp.PMGR_ACTIVE, rp.FAILED]
 
     rmgr._terminate_resource_request()
 
