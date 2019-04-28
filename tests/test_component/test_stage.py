@@ -1,11 +1,15 @@
+
+import pytest
+from   hypothesis import given
+import hypothesis.strategies as st
+
 from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
-import pytest
-from hypothesis import given
-import hypothesis.strategies as st
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_initialization():
     """
     ***Purpose***: Test if all attributes have, thus expect, the
@@ -25,6 +29,8 @@ def test_stage_initialization():
     assert s.post_exec == None
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -32,7 +38,8 @@ def test_stage_initialization():
        se=st.sets(st.text()))
 def test_stage_exceptions(t, l, i, b, se):
     """
-    ***Purpose***: Test if correct exceptions are raised when attributes are assigned unacceptable values.
+    ***Purpose***: Test if correct exceptions are raised when attributes are
+    assigned unacceptable values.
     """
 
     s = Stage()
@@ -54,6 +61,8 @@ def test_stage_exceptions(t, l, i, b, se):
             s.add_tasks(data)
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_task_assignment():
     """
     ***Purpose***: Test if necessary attributes are automatically updates upon task assignment
@@ -69,6 +78,8 @@ def test_stage_task_assignment():
     assert t in s.tasks
 
 
+# ------------------------------------------------------------------------------
+#
 @given(l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
        b=st.booleans())
@@ -81,6 +92,8 @@ def test_stage_parent_pipeline_assignment(l, i, b):
             s.parent_pipeline = data
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -103,6 +116,8 @@ def test_stage_state_assignment(t, l, i, b):
         s.state = val
 
 
+# ------------------------------------------------------------------------------
+#
 @given(l=st.lists(st.text()),
        d=st.dictionaries(st.text(), st.text()))
 def test_stage_post_exec_assignment(l, d):
@@ -131,6 +146,8 @@ def test_stage_post_exec_assignment(l, d):
     s.post_exec = tmp.func
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_task_addition():
 
     s = Stage()
@@ -158,6 +175,8 @@ def test_stage_task_addition():
     assert t2 in s.tasks
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_to_dict():
 
     s = Stage()
@@ -170,6 +189,8 @@ def test_stage_to_dict():
                  'parent_pipeline': {'uid': None, 'name': None}}
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_from_dict():
 
     d = {'uid': 're.Stage.0000',
@@ -190,6 +211,8 @@ def test_stage_from_dict():
     assert s.parent_pipeline == d['parent_pipeline']
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_set_tasks_state():
 
     s = Stage()
@@ -207,6 +230,8 @@ def test_stage_set_tasks_state():
     assert t2.state == states.DONE
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_check_complete():
 
     s = Stage()
@@ -221,6 +246,8 @@ def test_stage_check_complete():
     assert s._check_stage_complete() == True
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -244,6 +271,8 @@ def test_stage_validate_entities(t, l, i, b, se):
     assert set([t1, t2]) == s._validate_entities([t1, t2])
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_validate():
 
     s = Stage()
@@ -256,6 +285,8 @@ def test_stage_validate():
         s._validate()
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_assign_uid():
 
     s = Stage()
@@ -273,6 +304,8 @@ def test_stage_assign_uid():
     assert s.uid == 'stage.0000'
 
 
+# ------------------------------------------------------------------------------
+#
 def test_stage_pass_uid():
 
     s = Stage()
@@ -296,3 +329,7 @@ def test_stage_pass_uid():
     assert t2.parent_stage['name'] == s.name
     assert t2.parent_pipeline['uid'] == s.parent_pipeline['uid']
     assert t2.parent_pipeline['name'] == s.parent_pipeline['name']
+
+
+# ------------------------------------------------------------------------------
+

@@ -1,11 +1,15 @@
-from radical.entk import Pipeline, Stage, Task
-from radical.entk import states
-from radical.entk.exceptions import *
+
 import pytest
-from hypothesis import given
+from   hypothesis import given
 import hypothesis.strategies as st
 import threading
 
+from radical.entk import Pipeline, Stage, Task
+from radical.entk import states
+from radical.entk.exceptions import *
+
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_initialization():
 
     p = Pipeline()
@@ -22,6 +26,8 @@ def test_pipeline_initialization():
     assert p.completed == False
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -46,6 +52,8 @@ def test_pipeline_assignment_exceptions(t, l, i, b, se):
             p.add_stages(data)
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_stage_assignment():
 
     p = Pipeline()
@@ -61,6 +69,8 @@ def test_pipeline_stage_assignment():
     assert p.stages[0] == s
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -83,6 +93,8 @@ def test_pipeline_state_assignment(t, l, i, b):
         p.state = val
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_stage_addition():
 
     p = Pipeline()
@@ -103,6 +115,8 @@ def test_pipeline_stage_addition():
     assert p.stages[1] == s2
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_to_dict():
 
     p = Pipeline()
@@ -114,6 +128,8 @@ def test_pipeline_to_dict():
                  'completed': False}
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_from_dict():
 
     d = {'uid': 're.Pipeline.0000',
@@ -132,6 +148,8 @@ def test_pipeline_from_dict():
     assert p.completed == d['completed']
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_increment_stage():
 
     p = Pipeline()
@@ -160,6 +178,8 @@ def test_pipeline_increment_stage():
     assert p._completed_flag.is_set() == True
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_decrement_stage():
 
     p = Pipeline()
@@ -190,6 +210,8 @@ def test_pipeline_decrement_stage():
     assert p._completed_flag.is_set() == False
 
 
+# ------------------------------------------------------------------------------
+#
 @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
@@ -213,7 +235,8 @@ def test_pipeline_validate_entities(t, l, i, b, se):
     assert [s1,s2] == p._validate_entities([s1,s2])
 
 
-
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_validate():
 
     p = Pipeline()
@@ -226,6 +249,8 @@ def test_pipeline_validate():
         p._validate()
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_assign_uid():
 
     p = Pipeline()
@@ -243,6 +268,8 @@ def test_pipeline_assign_uid():
     assert p.uid == 'pipeline.0000'
 
 
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_pass_uid():
 
     p = Pipeline()
@@ -260,6 +287,9 @@ def test_pipeline_pass_uid():
     assert s2.parent_pipeline['uid'] == p.uid
     assert s2.parent_pipeline['name'] == p.name
 
+
+# ------------------------------------------------------------------------------
+#
 def test_pipeline_suspend_resume():
 
     p = Pipeline()
@@ -284,3 +314,7 @@ def test_pipeline_suspend_resume():
 
     with pytest.raises(EnTKError):
         p.suspend()
+
+
+# ------------------------------------------------------------------------------
+
