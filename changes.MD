@@ -1,8 +1,17 @@
 # Changelog for each release
 
+## Changelog for 0.7.14+0.7.16 (hotfix)
+* Issues resolved in 0.7.14 milestone: https://github.com/radical-cybertools/radical.entk/milestone/14
+* Bug fixes and updated documentation
+
+## Changelog for 0.7.12+0.7.13 (hotfix)
+* Issues resolved in 0.7.12 milestone: https://github.com/radical-cybertools/radical.entk/milestone/13
+* Fixed bug in task manager where there were some elements blocking the pika communication loop
+* Improved documentation
+
 ## Changelog for 0.7.11
 
-* Issues resolved in 0.7.10 milestone: https://github.com/radical-cybertools/radical.entk/milestone/12
+* Issues resolved in 0.7.11 milestone: https://github.com/radical-cybertools/radical.entk/milestone/12
 * Separated the CU creation from RMQ Communication thread
 
 ## Changelog for 0.7.9

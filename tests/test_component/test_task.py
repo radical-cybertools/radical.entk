@@ -16,7 +16,7 @@ def test_task_initialization():
     assert t.name == None
     assert t.state == states.INITIAL
     assert t.pre_exec == list()
-    assert t.executable == list()
+    assert t.executable == str()
     assert t.arguments == list()
     assert t.post_exec == list()
     assert t.cpu_reqs['processes'] == 1
@@ -84,9 +84,6 @@ def test_task_exceptions(s,l,i,b):
                 t.pre_exec = data
 
             with pytest.raises(TypeError):
-                t.executable = data
-
-            with pytest.raises(TypeError):
                 t.arguments = data
 
             with pytest.raises(TypeError):
@@ -112,6 +109,11 @@ def test_task_exceptions(s,l,i,b):
 
             with pytest.raises(TypeError):
                 t.move_output_data = data
+
+        if not isinstance(data, str) and not isinstance(data, list):
+
+            with pytest.raises(TypeError):
+                t.executable = data
 
         if not isinstance(data, str) and not isinstance(data, unicode):
 
@@ -140,7 +142,6 @@ def test_task_exceptions(s,l,i,b):
                                 'threads_per_process': 1,
                                 'thread_type': data
                             }
-
 
         if not isinstance(data, int):
 
@@ -185,7 +186,7 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': [],
-                    'executable': [],
+                    'executable': str(),
                     'arguments': [],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 1,
@@ -248,7 +249,45 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': ['module load abc'],
-                    'executable': ['sleep'],
+                    'executable': 'sleep',
+                    'arguments': ['10'],
+                    'post_exec': [],
+                    'cpu_reqs': { 'processes': 10,
+                                'process_type': None,
+                                'threads_per_process': 2,
+                                'thread_type': None
+                                },
+                    'gpu_reqs': { 'processes': 5,
+                                'process_type': None,
+                                'threads_per_process': 3,
+                                'thread_type': None
+                                },
+                    'lfs_per_process': 1024,
+                    'upload_input_data': ['test1'],
+                    'copy_input_data': ['test2'],
+                    'link_input_data': ['test3'],
+                    'move_input_data': ['test4'],
+                    'copy_output_data': ['test5'],
+                    'move_output_data': ['test6'],
+                    'download_output_data': ['test7'],
+                    'stdout': 'out',
+                    'stderr': 'err',
+                    'exit_code': 1,
+                    'path': 'a/b/c',
+                    'tag': 'task.0010',
+                    'parent_stage': {'uid': 's1', 'name': 'stage1'},
+                    'parent_pipeline': {'uid': 'p1', 'name': 'pipeline1'}}
+
+
+    t.executable = 'sleep'
+    d = t.to_dict()
+
+    assert d == {   'uid': 'test.0000',
+                    'name': 'new',
+                    'state': states.INITIAL,
+                    'state_history': [states.INITIAL],
+                    'pre_exec': ['module load abc'],
+                    'executable': 'sleep',
                     'arguments': ['10'],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 10,
@@ -290,7 +329,7 @@ def test_task_from_dict():
             'state': states.DONE,
             'state_history': [states.INITIAL, states.DONE],
             'pre_exec': [],
-            'executable': [],
+            'executable': '',
             'arguments': [],
             'post_exec': [],
             'cpu_reqs': { 'processes': 1,
@@ -348,6 +387,11 @@ def test_task_from_dict():
     assert t.parent_stage          == d['parent_stage']
     assert t.parent_pipeline       == d['parent_pipeline']
 
+
+    d['executable'] = 'sleep'
+    t = Task()
+    t.from_dict(d)
+    assert t.executable            == d['executable']
 
 def test_task_assign_uid():
 

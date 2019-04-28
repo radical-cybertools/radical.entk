@@ -5,7 +5,7 @@
 Getting Started
 ***************
 
-In this section we will run you through Ensemble Toolkit  API.
+In this section we will run through the Ensemble Toolkit API.
 We will develop an example application consisting of a simple bag of Tasks.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
@@ -48,17 +48,17 @@ In the below snippet, we first create a Pipeline then a Stage.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 13-17
+    :lines: 20-24
     :linenos:
-    :lineno-start: 13
+    :lineno-start: 20
 
 Next, we create a Task and assign its name, executable and arguments of the executable.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 19-23
+    :lines: 26-30
     :linenos:
-    :lineno-start: 19
+    :lineno-start: 26
 
 
 Now, that we have a fully described Task, a Stage and a Pipeline. We create our workflow by adding the Task to the
@@ -66,24 +66,24 @@ Stage and adding the Stage to the Pipeline.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 25-29
+    :lines: 32-36
     :linenos:
-    :lineno-start: 25
+    :lineno-start: 32
 
 
 Creating the AppManager 
 =======================
 
-Now that our workflow is created, we need to specify where the it needs to be executed. For this example, we will 
+Now that our workflow has been created, we need to specify where it is to be executed. For this example, we will 
 simply execute the workflow locally. We create an AppManager object, describe a resource request for 1 core for 10 
 minutes on localhost, i.e. your local machine. We assign the resource request description and the workflow to the
 AppManager and ``run`` our application.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 31-52
+    :lines: 38-59
     :linenos:
-    :lineno-start: 31
+    :lineno-start: 38
 
 
 
@@ -94,9 +94,9 @@ To run the script, simply execute the following from the command line:
     python get_started.py
 
 
-And that's it! That's all the steps of the example. Let's take a look at the complete code in the example. You can generate
-a more verbose output by setting the environment variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
+And that's it! That's all the steps in this example. You can generate more verbose output
+by setting the environment variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 
-A look at the complete code in this section:
+Let's look at the complete code for this example:
 
 .. literalinclude:: ../../examples/user_guide/get_started.py

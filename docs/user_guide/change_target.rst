@@ -9,9 +9,9 @@ All of our examples so far have been run locally. Its time to run something on
 a HPC! One of the features of Ensemble Toolkit is that you can submit tasks on 
 another machine remotely from your local machine. But this has some requirements, 
 you need to have passwordless ssh or gsissh access to the target machine. If you
-don't have such access, we discuss setup :ref:`here <ssh_gsissh_setup>`. You 
+don't have such access, we discuss the setup :ref:`here <ssh_gsissh_setup>`. You 
 also need to confirm that RP and Ensemble Toolkit are supported on this machine.
-A list of supported machines and mechanism to get support for new machines is 
+A list of supported machines and how to get support for new machines is 
 discussed :ref:`here <entk>`.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through 

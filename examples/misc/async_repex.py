@@ -73,13 +73,13 @@ class ReplicaExchange(re.AppManager):
         if not msg:
             msg = ''
 
-        self._dout.write(' %7.2f :   |' % (time.time() - t_0))
+        self._dout.write(' | %7.2f |' % (time.time() - t_0))
         for r in self._replicas:
             if special and r in special:
                 self._dout.write('%s' % glyph)
             else:
                 self._dout.write('%s' % self._glyphs[r.state])
-        self._dout.write('    : %s\n' % msg)
+        self._dout.write('| %s\n' % msg)
         self._dout.flush()
 
 

@@ -18,9 +18,9 @@ a look at how we can move data shared between multiple tasks to the remote machi
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_shared_data.py>` 
 or find it in your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
-In the following example, we will create a Pipeline with one Stage with 10 tasks. The tasks concatenate two input files 
+In the following example, we will create a Pipeline with one Stage and 10 tasks. The tasks concatenate two input files 
 and write the standard output to a file. Since the two input files are common between all the tasks, it will be efficient
-to be transfer those files only once to the remote machine and have the tasks copy the input files when being 
+to transfer those files only once to the remote machine and have the tasks copy the input files when being 
 executed. 
 
 Users can specify such shared data using the ``shared_data`` attribute of the AppManager object.
@@ -39,7 +39,7 @@ file movement description of the task.
     :lines: 25-30
     :dedent: 4
 
-In the example provided, the two files contain the words 'Hello' and 'World' respectively and the output files
+In the example provided, the two files contain the words 'Hello' and 'World', respectively, and the output files
 are expected to contain 'Hello World'
 
 To run the script, simply execute the following from the command line:

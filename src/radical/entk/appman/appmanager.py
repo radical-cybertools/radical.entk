@@ -106,7 +106,7 @@ class AppManager(object):
         config = ru.read_json(os.path.join(config_path, 'config.json'))
 
         self._mq_hostname = hostname if hostname else str(config['hostname'])
-        self._port = port if port else config['port']
+        self._port = int(port if port else config['port'])
         self._reattempts = reattempts if reattempts else config['reattempts']
         self._resubmit_failed = resubmit_failed if resubmit_failed is not None else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate is not None else config['autoterminate']
@@ -232,9 +232,9 @@ class AppManager(object):
         if not isinstance(data, list):
             data = [data]
 
-        for val in data:
-            if not isinstance(val, str):
-                raise TypeError(expected_type=str, actual_type=type(val))
+        for value in data:
+            if not isinstance(value, str):
+                raise TypeError(expected_type=str, actual_type=type(value))
 
         if self._resource_manager:
             self._resource_manager.shared_data = data
@@ -265,8 +265,7 @@ class AppManager(object):
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
             if not self._resource_manager:
-                self._logger.error(
-                    'No resource manager assigned currently, please create and add a valid resource manager')
+                self._logger.error('No resource manager assigned currently, please create and add a valid resource manager')
                 raise MissingError(obj=self._uid, missing_attribute='resource_manager')
 
             self._prof.prof('amgr run started', uid=self._uid)
@@ -307,11 +306,13 @@ class AppManager(object):
                     self._logger.info('Starting resource request submission')
                     self._prof.prof('init rreq submission', uid=self._uid)
                     self._resource_manager._submit_resource_request()
+                    res_alloc_state = self._resource_manager.get_resource_allocation_state()
+                    if res_alloc_state in self._resource_manager.get_completed_states():
+                        raise EnTKError(msg="Cannot proceed. Resource allocation ended up in %s"%res_alloc_state)
 
             else:
 
-                self._logger.error(
-                    'Cannot run without resource manager, please create and assign a resource manager')
+                self._logger.exception('Cannot run without resource manager, please create and assign a resource manager')
                 raise EnTKError(text='Missing resource manager')
 
             # Start synchronizer thread
@@ -447,7 +448,7 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
             # Terminate threads in following order: wfp, helper, synchronizer
@@ -584,7 +585,7 @@ class AppManager(object):
 
         except Exception, ex:
 
-            self._logger.error('Error setting RabbitMQ system: %s' % ex)
+            self._logger.exception('Error setting RabbitMQ system: %s' % ex)
             raise
 
     def _cleanup_mqs(self):
@@ -676,7 +677,7 @@ class AppManager(object):
 
                                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                             self._report.ok('Update: ')
-                                            self._report.info('Task %s in state %s\n' % (task.uid, task.state))
+                                            self._report.info('%s state: %s\n' % (task.luid, task.state))
 
                                             found_task = True
 
@@ -708,8 +709,8 @@ class AppManager(object):
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                         self._report.ok('Update: ')
-                                        self._report.info('Task %s in state %s\n' %
-                                                          (completed_task.uid, completed_task.state))
+                                        self._report.info('%s state: %s\n' %
+                                                          (completed_task.luid, completed_task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -748,7 +749,7 @@ class AppManager(object):
 
                                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                     self._report.ok('Update: ')
-                                    self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
+                                    self._report.info('%s state: %s\n' % (stage.luid, stage.state))
 
                                     found_stage = True
 
@@ -826,7 +827,7 @@ class AppManager(object):
                             if completed_pipeline.completed:
                                 pipe._completed_flag.set()
                             self._report.ok('Update: ')
-                            self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
+                            self._report.info('%s state: %s\n' % (pipe.luid, pipe.state))
 
                             break
 
@@ -953,7 +954,7 @@ class AppManager(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to terminate synchronizer thread gracefully...')
 
             raise KeyboardInterrupt

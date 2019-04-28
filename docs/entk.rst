@@ -12,7 +12,7 @@ elicit requirements and rapid prototyping
 Design
 ======
 
-We describe how applications modeled using EnTK components, the architecture
+We describe how applications are modeled using EnTK components, the architecture
 and execution model of EnTK. We also specify the types of failures recognized
 by EnTK and how some of the failures are handled.
 
@@ -43,14 +43,14 @@ In our PST model, we have the following objects:
 
 * **Task**: an abstraction of a computational task that contains information regarding an executable, its software environment and its data dependences.
 * **Stage**: a set of tasks without mutual dependences and that can be executed concurrently.
-* **Pipeline**: a list of stages where any stage i can be executed only after stage i−1 has been executed.
+* **Pipeline**: a list of stages where any stage 'i' can be executed only after stage 'i−1' has been executed.
 
-The entire application when assigned to the Application Manager can be expressed
-as a set of Pipelines. A graphical representation of an application is provided
-in Figure 1. Note how different Pipelines can have different number of Stages 
-and different Stages can have different number of Tasks.
+When assigned to the Application Manager, the entire application can be
+expressed as a set of Pipelines. A graphical representation of an application is provided
+in Figure 1. Note how different Pipelines can have different numbers of Stages, 
+and different Stages can have different numbers of Tasks.
 
-By expressing your application as a set or *list* of such Pipelines, one can 
+By expressing your application as a *set* or *list* of such Pipelines, one can 
 create any application that can be expressed as a DAG.
 
 
@@ -68,7 +68,7 @@ and execution management from the user.
  `Figure 2: Ensemble Toolkit Architecture and Execution Model`
 
 
-Fig. 2 shows the components (purple) and subcomponents (green) of EnTK, 
+Figure 2 shows the components (purple) and subcomponents (green) of EnTK, 
 organized in three layers: API, Workflow Management, and Workload Management.
 The API layer enables users to codify PST descriptions. The Workflow Management 
 layer retrieves information from the user about available CIs, initializes EnTK,
@@ -112,7 +112,7 @@ executables. All state updates in EnTK are transactional, hence any EnTK
 component that fails can be restarted at runtime without losing information
 about ongoing execution. Both the RTS and the CI are considered black boxes. 
 Partial failures of their subcomponents at runtime are assumed to be handled 
-locally. CI-level failures are reported to EnTK indirectly, either as a failed 
+locally. CI-level failures are reported to EnTK indirectly, either as failed 
 pilots or failed tasks. Both pilots and tasks can be restarted. Failures are 
 logged and reported to the user at runtime for live or postmortem analysis
 
@@ -124,7 +124,7 @@ EnTK is implemented in Python, uses RabbitMQ message queuing system and the
 RADICAL-Pilot (RP) runtime system. All EnTK components are implemented as 
 processes, and all subcomponents as threads.
 
-RabbitMQ is a server-based system and requires to be installed before the 
+RabbitMQ is a server-based system and is required to be installed before the 
 execution of EnTK. This adds overheads but it also offers the following 
 benefits: (1) producers and consumers do not need to be topology aware because 
 they interact only with the server; (2) messages are stored in the server and
@@ -152,19 +152,19 @@ Performance
 Below we present the weak and strong scaling behavior of EnTK on the ORNL
 Titan machine.
 
-Detailed description of the experiments can be found in 
+Detailed description of the experiments can be found in this 
 `technical paper <https://arxiv.org/pdf/1710.08491>`_.
 
-.. figure:: figures/entk_weak_scaling.png
- :width: 400pt
+.. figure:: figures/weak_scaling_titan_orte.png
+ :width: 600pt
  :align: center
- :alt: Ensemble Toolkit Architecture and Execution Model
+ :alt: Weak Scaling experiments from Titan
 
  `Figure 3: Weak scalability on Titan: 512, 1,024, 2,048, and 4,096 1-core tasks executed on the same amount of cores`
 
-.. figure:: figures/entk_strong_scaling.png
- :width: 400pt
+.. figure:: figures/strong_scaling_titan_orte.png
+ :width: 600pt
  :align: center
- :alt: Ensemble Toolkit Architecture and Execution Model
+ :alt: Strong Scaling experiments from Titan
 
  `Figure 4: Strong scalability on Titan: 8,192 1-core tasks are executed on 1,024, 2,048 and 4,096 cores`

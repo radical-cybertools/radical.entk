@@ -169,7 +169,7 @@ class ResourceManager(Base_ResourceManager):
             self._logger.info('Resource request submission successful.. waiting for pilot to go Active')
 
             # Wait for pilot to go active
-            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED])
+            self._pilot.wait([rp.PMGR_ACTIVE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
             self._logger.info('Pilot is now active')
@@ -179,12 +179,12 @@ class ResourceManager(Base_ResourceManager):
             if self._session:
                 self._session.close()
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Resource request submission failed')
+            self._logger.exception('Resource request submission failed')
             raise
 
     def _terminate_resource_request(self):
@@ -205,12 +205,12 @@ class ResourceManager(Base_ResourceManager):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit callback thread gracefully...')
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error('Could not cancel resource request, error: %s' % ex)
+            self._logger.exception('Could not cancel resource request, error: %s' % ex)
             raise
 
     # ------------------------------------------------------------------------------------------------------------------

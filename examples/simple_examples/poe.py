@@ -29,7 +29,7 @@ def generate_pipeline():
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
     t1.name = 't1'
-    t1.executable = ['/bin/bash']
+    t1.executable = '/bin/bash'
     t1.arguments = ['-l', '-c', 'base64 /dev/urandom | head -c 1000000 > output.txt']
 
     # Add the Task to the Stage
@@ -43,12 +43,12 @@ def generate_pipeline():
     s2.name = 's2'
     s2_task_uids = []
 
-    for cnt in range(10):
+    for cnt in range(30):
 
         # Create a Task object
         t2 = Task()
         t2.name = 't%s' % (cnt + 1)
-        t2.executable = ['/bin/bash']
+        t2.executable = '/bin/bash'
         t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
         # Copy data from the task in the first stage to the current task's location
         t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
@@ -64,12 +64,12 @@ def generate_pipeline():
     s3 = Stage()
     s3.name = 's3'
 
-    for cnt in range(10):
+    for cnt in range(30):
 
         # Create a Task object
         t3 = Task()
         t3.name = 't%s' % (cnt + 1)
-        t3.executable = ['/bin/bash']
+        t3.executable = '/bin/bash'
         t3.arguments = ['-l', '-c', 'sha1sum ccount.txt > chksum.txt']
         # Copy data from the task in the first stage to the current task's location
         t3.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/ccount.txt' % (p.name, s2.name, s2_task_uids[cnt])]
@@ -87,16 +87,21 @@ def generate_pipeline():
 if __name__ == '__main__':
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port, rts='mock')
+    appman = AppManager(hostname=hostname, port=port)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-        'resource': 'local.localhost',
-        'walltime': 10,
-        'cpus': 1
+    #    'resource': 'ncsa.bw_aprun',
+    #    'walltime': 10,
+    #    'cpus': 32,
+    #'project': 'bamm',
+    #'queue': 'high'
+	'resource': 'local.localhost',
+	'walltime': 10,
+	'cpus':2
     }
 
     # Assign resource request description to the Application Manager

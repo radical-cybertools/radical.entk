@@ -166,12 +166,12 @@ class TaskManager(Base_TaskManager):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
 
         except Exception, ex:
 
-            print traceback.format_exc()
+            logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
         finally:
@@ -264,10 +264,6 @@ class TaskManager(Base_TaskManager):
         umgr.add_pilots(rmgr.pilot)
         umgr.register_callback(unit_state_cb)
 
-        mq_connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=mq_hostname, port=port))
-        mq_channel = mq_connection.channel()
-
         try:
 
             while not self._tmgr_terminate.is_set():
@@ -294,6 +290,9 @@ class TaskManager(Base_TaskManager):
                         bulk_cuds.append(create_cud_from_task(
                             t, placeholder_dict, local_prof))
 
+                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+                        mq_channel = mq_connection.channel()
+
                         transition(obj=t,
                                    obj_type='Task',
                                    new_state=states.SUBMITTING,
@@ -302,9 +301,15 @@ class TaskManager(Base_TaskManager):
                                    profiler=local_prof,
                                    logger=logger)
 
+                        mq_connection.close()
+
+
                     umgr.submit_units(bulk_cuds)
 
                     for task in bulk_tasks:
+
+                        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=mq_hostname, port=port))
+                        mq_channel = mq_connection.channel()
 
                         transition(obj=task,
                                    obj_type='Task',
@@ -314,12 +319,14 @@ class TaskManager(Base_TaskManager):
                                    profiler=local_prof,
                                    logger=logger)
 
+                        mq_connection.close()
+
         except KeyboardInterrupt as ex:
-            logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                         'trying to cancel task processor gracefully...')
+            logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
+                            'trying to cancel task processor gracefully...')
 
         except Exception as ex:
-            print traceback.format_exc()
+            logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -361,7 +368,7 @@ class TaskManager(Base_TaskManager):
 
             except Exception, ex:
 
-                self._logger.error('Task manager not started, error: %s' % ex)
+                self._logger.exception('Task manager not started, error: %s' % ex)
                 self.terminate_manager()
                 raise
 

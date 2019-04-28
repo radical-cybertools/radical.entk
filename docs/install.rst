@@ -7,7 +7,11 @@ Installation
 Installing Ensemble Toolkit
 ===========================
 
-To install the Ensemble Toolkit, we need to create a virtual environment. Open a terminal and run:
+Installing Ensemble Toolkit using Pypi, or Git
+----------------------------------------------
+
+To install the Ensemble Toolkit, we need to create a virtual environment. 
+Open a terminal and run:
 
 .. code-block:: bash
 
@@ -15,7 +19,7 @@ To install the Ensemble Toolkit, we need to create a virtual environment. Open a
         source $HOME/myenv/bin/activate
 
 
-The suggested to use is the released version of EnTK which you can install
+It is suggested to use the released version of EnTK which you can install
 by executing the following command in your virtualenv:
 
 .. code-block:: bash
@@ -35,13 +39,86 @@ and checkout the branch. You can do so using the following commands:
 
 
 
-You can check the version of Ensemble MD Toolkit with the ```entk-version```
+You can check the version of Ensemble Toolkit with the ```entk-version```
 command-line tool. The current version should be printed.
 
 .. code-block:: bash
 
         entk-version
-        0.7.5
+        0.7.14
+
+
+Installing Ensemble Toolkit using Anaconda/Conda
+------------------------------------------------
+
+To install the Ensemble Toolkit, we need to create a conda environment. 
+Open a terminal and run (assuming you have PATH to point to ``conda``):
+
+.. code-block:: bash
+
+        conda create -n ve-entk python=2.7 -y
+        source activate ve-entk
+
+
+It is suggested to use the released version of EnTK which you can install
+by executing the following command in your conda env:
+
+.. code-block:: bash
+
+        conda install radical.entk
+
+
+You can check the version of Ensemble Toolkit with the ```entk-version```
+command-line tool. The current version should be printed.
+
+.. code-block:: bash
+
+        entk-version
+        0.7.14
+
+
+Installing Ensemble Toolkit using Docker
+----------------------------------------
+
+You can install Docker from their 
+`official documentation <https://hub.docker.com/search/?type=edition&offering=community>`_.
+Once you have installed Docker, you can use the following Dockerfile to build
+a container:
+
+.. code-block:: bash
+
+        FROM ubuntu:16.04
+
+        ENV RMQ_HOSTNAME=two.radical-project.org
+        ENV RMQ_PORT=33247
+        ENV RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
+
+        RUN apt-get update \
+        && apt-get install wget curl python python-dev python-pip python-virtualenv bzip2 -y \
+        && virtualenv ~/ve-entk \
+        && . ~/ve-entk/bin/activate \
+        && pip install radical.entk
+
+You can also download the Dockerfile :download:`here <./misc/Dockerfile>`.
+
+You can build and execute the container by running:
+
+,, code-block:: bash
+
+        docker build -f ./Dockerfile -t entk .
+        docker run -t -i entk
+
+Once you execute the container, the default path will be /root (of the container).
+The EnTK virtualenv exists at ~/ve-entk (inside the container). This is useful
+to know as the examples exist inside the virtualenv.
+
+You can check the version of Ensemble Toolkit with the ```entk-version```
+command-line tool. The current version should be printed.
+
+.. code-block:: bash
+
+        entk-version
+        0.7.14
 
 
 Installing rabbitmq
@@ -50,10 +127,10 @@ Installing rabbitmq
 Installing rabbitmq as a system process (sudo privileges required)
 ------------------------------------------------------------------
 
-Ensemble toolkit relies on RabbitMQ for message transfers. Installation
-instructions can be found at ```https://www.rabbitmq.com/download.html```. At
+Ensemble Toolkit relies on RabbitMQ for message transfers. Installation
+instructions can be found at <https://www.rabbitmq.com/download.html>. At
 the end of the installation run ```rabbitmq-server``` to start the server.
-RabbitMQ needs to be installed on the same machine as where EnTK is installed.
+RabbitMQ needs to be installed on the same machine as EnTK is installed.
 
 In some cases, you might have to explicitly start the rabbitmq-server after
 installation. You can check if the rabbitmq-server process is alive. If not,
@@ -75,6 +152,7 @@ download and run the rabbitmq instance using the following command:
 
         docker run -d --name <name of instance> -P rabbitmq:3
 
+
 The '-P' argument auto maps new ports from localhost to the ports expected by
 rabbitmq. This is useful if you want to have multiple EnTK scripts running as
 you would require multiple rabbitmq instances.
@@ -94,10 +172,12 @@ Interactions between RabbitMQ and EnTK are done through port 5672 by default.
 For the above docker instance, we need to use port 32775. In your EnTK scripts,
 while creating the AppManager, you need to specify port=32775.
 
+.. note:: If you are using Docker to install both EnTK and RabbitMQ, they
+should run as two different containers. You can set the RMQ_PORT in the EnTK
+container accordingly.
 
 Installation Video
 ==================
-
 
 .. raw:: html
 
@@ -131,7 +211,7 @@ a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
 .. warning:: If you want to run your application on your laptop or private
             workstation, but run your MD tasks on a remote HPC cluster,
             installing MongoDB on your laptop or workstation won't work.
-            Your laptop or workstations usually does not have a public IP
+            Your laptop or workstation usually does not have a public IP
             address and is hidden behind a masked and firewalled home or office
             network. This means that the components running on the HPC cluster
             will not be able to access the MongoDB server.
@@ -152,7 +232,7 @@ http://docs.mongodb.org/manual/installation/
 **MongoDB-as-a-Service**
 
 There are multiple commercial providers of hosted MongoDB services, some of them
-offering free usage tiers. We have had some good experience with the following:
+offer free usage tiers. We have had some good experience with the following:
 
 * https://mongolab.com/
 
@@ -192,7 +272,7 @@ Setting up GSISSH access to a machine is a bit more complicated. We have documen
 trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute
 all the commands, see comments for details.
 
-The above links document the overall procedure and get certificates to access XSEDE machines. Depending on the machine
+The above links document the overall procedure and how to get certificates to access XSEDE machines. Depending on the machine
 you want to access, you will have to get the certificates from the corresponding locations. In most cases, this
 information is available in their user guide.
 

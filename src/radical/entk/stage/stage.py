@@ -87,6 +87,30 @@ class Stage(object):
 
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current stage (fully qualified).
+
+        example:
+            >>> stage.luid
+            pipe.0001.stage.0004
+
+        :getter: Returns the fully qualified uid of the current stage
+        :type: String
+        """
+        p_elem = self.parent_pipeline.get('name')
+        if not p_elem:
+            p_elem = self.parent_pipeline['uid']
+
+        s_elem = self.name
+        if not s_elem:
+            s_elem = self.uid
+
+        return '%s.%s' % (p_elem, s_elem)
+
+
     @property
     def state_history(self):
         """
@@ -122,15 +146,18 @@ class Stage(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @tasks.setter
-    def tasks(self, val):
-        self._tasks = self._validate_entities(val)
+    def tasks(self, value):
+        self._tasks = self._validate_entities(value)
         self._task_count = len(self._tasks)
 
     @parent_pipeline.setter
@@ -155,26 +182,28 @@ class Stage(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @post_exec.setter
-    def post_exec(self, val):
+    def post_exec(self, value):
 
-        if not callable(val):
+        if not callable(value):
 
             raise TypeError(entity='stage %s branch' % self._uid,
-                            expected_type=callable,
-                            actual_type=type(val))
+                            expected_type='callable',
+                            actual_type=type(value)
+                            )
+            
+        self._post_exec = value
+            
 
-        self._post_exec = val
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
-
-    def add_tasks(self, val):
+    def add_tasks(self, value):
         """
         Adds tasks to the existing set of tasks of the Stage
 
         :argument: set of tasks
         """
-        tasks = self._validate_entities(val)
+        tasks = self._validate_entities(value)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
 

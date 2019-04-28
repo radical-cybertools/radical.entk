@@ -28,9 +28,9 @@ def condition():
     
     if CUR_STAGE < MAX_STAGES:
         CUR_STAGE += 1
-        return True
+        on_true()
 
-    return False
+    on_false()
 
 def on_true():
 
@@ -44,10 +44,7 @@ def on_true():
     for t in range(NUM_TASKS):
         s.add_tasks(create_single_task())
 
-    s.post_exec = { 'condition': condition,
-                    'on_true': on_true,
-                    'on_false': on_false
-                }
+    s.post_exec = condition
 
     p1.add_stages(s)
 
@@ -70,10 +67,7 @@ def test_stage_post_exec():
     for t in range(NUM_TASKS):
         s.add_tasks(create_single_task())
 
-    s.post_exec = { 'condition': condition,
-                    'on_true': on_true,
-                    'on_false': on_false
-                }
+    s.post_exec = condition
 
     p1.add_stages(s)
 

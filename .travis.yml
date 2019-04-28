@@ -1,5 +1,5 @@
 language: python
-python: "2.7.13"
+python: "2.7"
 
 branches:
   - master
@@ -23,12 +23,12 @@ install:
 before_script:
   - sleep 20  # Ensures mongodb service is up
   - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=/home/travis/virtualenv/python2.7.13  # Location where VE is created on travis
+  - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
   - cat .coveragerc
 
 script:
-  - coverage run -m pytest -vvv tests/test_component/test_amgr.py
+  # - coverage run -m pytest -vvv tests/test_component/test_amgr.py
   - coverage run -m pytest -vvv tests/test_component/test_modules.py
   - coverage run -m pytest -vvv tests/test_component/test_pipeline.py
   - travis_wait coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py

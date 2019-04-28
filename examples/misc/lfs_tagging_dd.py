@@ -23,7 +23,7 @@ def get_pipeline(shared_fs=False, size=1):
 
         # dd if=/dev/random bs=<byte size of a chunk> count=<number of chunks> of=<output file name>
 
-        t.executable = ['dd']
+        t.executable = 'dd'
 
         if not shared_fs:
             t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]

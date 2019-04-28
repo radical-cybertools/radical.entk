@@ -161,7 +161,7 @@ class Base_TaskManager(object):
                 # mq_connection.close()
 
         except KeyboardInterrupt:
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel tmgr process gracefully...')
             raise KeyboardInterrupt
 
@@ -222,7 +222,7 @@ class Base_TaskManager(object):
 
             except Exception, ex:
 
-                self._logger.error('Heartbeat not started, error: %s' % ex)
+                self._logger.exception('Heartbeat not started, error: %s' % ex)
                 self.terminate_heartbeat()
                 raise
 
@@ -257,7 +257,7 @@ class Base_TaskManager(object):
                 self._prof.close()
 
         except Exception, ex:
-            self._logger.error('Could not terminate heartbeat thread')
+            self._logger.exception('Could not terminate heartbeat thread')
             raise
 
         finally:
@@ -305,7 +305,7 @@ class Base_TaskManager(object):
                 self._prof.prof('tmgr process terminated', uid=self._uid)
 
         except Exception, ex:
-            self._logger.error('Could not terminate task manager process')
+            self._logger.exception('Could not terminate task manager process')
             raise
 
 

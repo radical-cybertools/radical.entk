@@ -253,7 +253,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
             mq_connection.close()
@@ -382,8 +382,8 @@ class WFprocessor(object):
 
                                                                 try:
 
-                                                                    self._logger.info(
-                                                                        'Executing post-exec for stage %s' % stage.uid)
+                                                                    self._logger.info('Executing post-exec for stage %s'
+                                                                                    % stage.uid)
                                                                     self._prof.prof('Adap: executing post-exec',
                                                                                     uid=self._uid)
 
@@ -447,8 +447,7 @@ class WFprocessor(object):
                                                                         'Adap: post-exec executed', uid=self._uid)
 
                                                                 except Exception, ex:
-                                                                    self._logger.exception(
-                                                                        'Execution failed in post_exec of stage %s' % stage.uid)
+                                                                    self._logger.exception('Execution failed in post_exec of stage %s' % stage.uid)
                                                                     raise
 
                                                             if pipe.state != states.SUSPENDED:
@@ -463,7 +462,6 @@ class WFprocessor(object):
                                                                             queue='%s-deq-to-sync' % self._sid,
                                                                             profiler=local_prof,
                                                                             logger=self._logger)
-
 
                                                         # Found the task and processed it -- no more iterations needed
                                                         break
@@ -484,7 +482,7 @@ class WFprocessor(object):
                         last = now
 
                 except Exception, ex:
-                    self._logger.error(
+                    self._logger.exception(
                         'Unable to receive message from completed queue: %s' % ex)
                     raise
 
@@ -495,7 +493,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to exit gracefully...')
 
             mq_connection.close()
@@ -561,7 +559,7 @@ class WFprocessor(object):
                         self._enqueue_thread.start()
 
                 except Exception, ex:
-                    self._logger.error('WFProcessor interrupted')
+                    self._logger.exception('WFProcessor interrupted')
                     raise
 
             local_prof.prof('start termination', uid=self._uid)
@@ -581,7 +579,7 @@ class WFprocessor(object):
 
         except KeyboardInterrupt:
 
-            self._logger.error('Execution interrupted by user (you probably hit Ctrl+C), ' +
+            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel wfprocessor process gracefully...')
 
             if self._enqueue_thread:
@@ -603,7 +601,7 @@ class WFprocessor(object):
             raise KeyboardInterrupt
 
         except Exception, ex:
-            self._logger.error(
+            self._logger.exception(
                 'Error in wfp process: %s. \n Closing enqueue, dequeue threads' % ex)
 
             if self._enqueue_thread:
@@ -622,7 +620,7 @@ class WFprocessor(object):
 
             self._logger.info('WFprocessor process terminated')
 
-            print traceback.format_exc()
+            self._logger.exception('%s failed with %s'%(self._uid, ex))
             raise EnTKError(ex)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -658,8 +656,8 @@ class WFprocessor(object):
 
             except Exception, ex:
 
-                self._logger.error('WFprocessor not started')
-                self.end_processor()
+                self._logger.exception('WFprocessor not started')
+                self.terminate_processor()
                 raise
 
         else:
@@ -689,7 +687,7 @@ class WFprocessor(object):
             self._prof.close()
 
         except Exception, ex:
-            self._logger.error('Could not terminate wfprocessor process')
+            self._logger.exception('Could not terminate wfprocessor process')
             raise
 
     def workflow_incomplete(self):
@@ -707,7 +705,7 @@ class WFprocessor(object):
             return False
 
         except Exception, ex:
-            self._logger.error(
+            self._logger.exception(
                 'Could not check if workflow is incomplete, error:%s' % ex)
             raise
 

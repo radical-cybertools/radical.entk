@@ -86,6 +86,24 @@ class Pipeline(object):
         """
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current pipeline (fully qualified).
+        For the pipeline class, his is an alias to `uid`.
+
+        example:
+            >>> pipeline.luid
+            pipe.0001
+
+        :getter: Returns the fully qualified uid of the current pipeline
+        :type: String
+        """
+        if self.name: return self.name
+        else        : return self.uid
+
+
     @property
     def lock(self):
         """
@@ -133,8 +151,10 @@ class Pipeline(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError(
-                    "Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
 
@@ -142,9 +162,9 @@ class Pipeline(object):
             raise TypeError(expected_type=str, actual_type=type(value))
 
     @stages.setter
-    def stages(self, val):
+    def stages(self, value):
 
-        self._stages = self._validate_entities(val)
+        self._stages = self._validate_entities(value)
 
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
@@ -171,13 +191,13 @@ class Pipeline(object):
     # Public methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_stages(self, val):
+    def add_stages(self, value):
         """
         Appends stages to the current Pipeline
 
         :argument: List of Stage objects
         """
-        stages = self._validate_entities(val)
+        stages = self._validate_entities(value)
 
         self._stages.extend(stages)
         self._stage_count = len(self._stages)
@@ -311,9 +331,9 @@ class Pipeline(object):
         if not isinstance(stages, list):
             stages = [stages]
 
-        for val in stages:
-            if not isinstance(val, Stage):
-                raise TypeError(expected_type=Stage, actual_type=type(val))
+        for value in stages:
+            if not isinstance(value, Stage):
+                raise TypeError(expected_type=Stage, actual_type=type(value))
 
         return stages
 
