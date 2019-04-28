@@ -20,7 +20,7 @@ def void():
 
 # ------------------------------------------------------------------------------
 #
-class Exchange(re.AppManager):
+class ReplicaExchange(re.AppManager):
 
     _glyphs = {re.states.INITIAL:    '+',
                re.states.SCHEDULING: '|',
@@ -32,15 +32,15 @@ class Exchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, size, max_wait, min_cycles):
+    def __init__(self, ensemble_size, exchange_size, md_cycles):
 
-
-        self._size       = size
-        self._max_wait   = max_wait
-        self._min_cycles = min_cycles
+        self._en_size = ensemble_size
+        self._ex_size = exchange_size
+        self._cycles  = md_cycles
 
         self._lock = mt.Lock()
         self._log  = ru.Logger('radical.repex.exc')
+        self._dout = open('dump.log', 'a')
 
         re.AppManager.__init__(self, autoterminate=False, port=5672) 
         self.resource_desc = {"resource" : 'local.localhost',
@@ -51,7 +51,7 @@ class Exchange(re.AppManager):
         self._waitlist = list()
 
         # create the required number of replicas
-        for i in range(size):
+        for i in range(self._en_size):
 
             replica = Replica(check_ex  = self._check_exchange,
                               check_res = self._check_resume,
@@ -59,7 +59,7 @@ class Exchange(re.AppManager):
 
             self._replicas.append(replica)
 
-        self._dump()
+        self._dump(msg='startup')
 
         # run the replica pipelines
         self.workflow = set(self._replicas)
@@ -70,25 +70,26 @@ class Exchange(re.AppManager):
     #
     def _dump(self, msg=None, special=None, glyph=None ):
 
-        with open('dump.log', 'a') as fout:
-            fout.write(' %7.2f :    ' % (time.time() - t_0))
-            for r in self._replicas:
-                if special and r in special:
-                    fout.write('%s' % glyph)
-                else:
-                    fout.write('%s' % self._glyphs[r.state])
-            if msg:
-                fout.write('    : %s' % msg)
-            fout.write('\n')
-            fout.flush()
+        if not msg:
+            msg = ''
+
+        self._dout.write(' %7.2f :   |' % (time.time() - t_0))
+        for r in self._replicas:
+            if special and r in special:
+                self._dout.write('%s' % glyph)
+            else:
+                self._dout.write('%s' % self._glyphs[r.state])
+        self._dout.write('    : %s\n' % msg)
+        self._dout.flush()
 
 
     # --------------------------------------------------------------------------
     #
     def terminate(self):
 
-        self._dump(special=self._replicas, glyph='=')
         self._log.debug('exc term')
+        self._dump(msg='terminate', special=self._replicas, glyph='=')
+        self._dout.close()
 
         # we are done!
         self.resource_terminate()
@@ -103,7 +104,7 @@ class Exchange(re.AppManager):
         with self._lock:
 
             self._log.debug('=== %s check exchange : %d >= %d?',
-                      replica.rid, len(self._waitlist), self._max_wait)
+                      replica.rid, len(self._waitlist), self._ex_size)
 
             self._waitlist.append(replica)
 
@@ -134,7 +135,7 @@ class Exchange(re.AppManager):
         those which should be part of an exchange step
         '''
 
-        if len(self._waitlist) < self._max_wait:
+        if len(self._waitlist) < self._ex_size:
 
             # not enough replicas to attempt exchange
             return
@@ -168,7 +169,7 @@ class Exchange(re.AppManager):
         # stage, all others we let die and add a new md stage for them.
         for _replica in replica.exchange_list:
 
-            if _replica.cycle <= self._min_cycles:
+            if _replica.cycle <= self._cycles:
                 _replica.add_md_stage()
 
             # Make sure we don't resume the current replica
@@ -286,7 +287,7 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = Exchange(size=128, max_wait=8, min_cycles=16)
+    exchange = ReplicaExchange(ensemble_size=128, exchange_size=8, md_cycles=16)
     exchange.terminate()
 
 # ------------------------------------------------------------------------------
