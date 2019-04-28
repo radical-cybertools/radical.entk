@@ -87,7 +87,7 @@ class Exchange(re.AppManager):
     #
     def terminate(self):
 
-        self._dump()
+        self._dump(special=self._replicas, glyph='=')
         self._log.debug('exc term')
 
         # we are done!
@@ -118,8 +118,8 @@ class Exchange(re.AppManager):
                 return
 
             self._log.debug('=== %s yes - exchange', replica.rid)
-            self._dump(msg=str([r.rid for r in exchange_list]),
-                       special=exchange_list, glyph='v')
+            msg = " > %s: %s" % (replica.rid, [r.rid for r in exchange_list])
+            self._dump(msg=msg, special=exchange_list, glyph='v')
 
             # we have a set of exchange candidates.  The current replica is
             # tasked to host the exchange task.
@@ -160,8 +160,8 @@ class Exchange(re.AppManager):
 
         resumed = list()  # list of resumed replica IDs
 
-        self._dump(msg=str([replica.rid]),
-                   special=replica.exchange_list, glyph='^')
+        msg = " < %s: %s" % (replica.rid, [r.rid for r in replica.exchange_list])
+        self._dump(msg=msg, special=replica.exchange_list, glyph='^')
 
         # after a successfull exchange we revive all participating replicas.
         # For those replicas which did not yet reach min cycles, add an md
