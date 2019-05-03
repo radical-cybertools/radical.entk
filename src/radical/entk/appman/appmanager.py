@@ -89,7 +89,7 @@ class AppManager(object):
         self._prof.prof('create amgr obj', uid=self._uid)
         self._report.info('Creating AppManager')
 
-        self._resource_manager = None
+        self._rmgr = None
         # RabbitMQ Queues
         self._pending_queue = list()
         self._completed_queue = list()
@@ -121,17 +121,17 @@ class AppManager(object):
         self._port = int(port if port else config['port'])
         self._reattempts = reattempts if reattempts else config['reattempts']
         self._resubmit_failed = resubmit_failed if resubmit_failed is not None \
-            else config['resubmit_failed']
+                                    else config['resubmit_failed']
         self._autoterminate = autoterminate if autoterminate is not None \
-            else config['autoterminate']
+                                    else config['autoterminate']
         self._write_workflow = write_workflow if write_workflow is not None \
-            else config['write_workflow']
+                                    else config['write_workflow']
         self._rts = rts if rts in ['radical.pilot', 'mock'] \
-            else str(config['rts'])
+                                    else str(config['rts'])
         self._rmq_cleanup = rmq_cleanup if rmq_cleanup is not None \
-            else config['rmq_cleanup']
+                                    else config['rmq_cleanup']
         self._rts_config = rts_config if rts_config is not None \
-            else config['rts_config']
+                                    else config['rts_config']
 
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -213,19 +213,19 @@ class AppManager(object):
 
         if self._rts == 'radical.pilot':
             from radical.entk.execman.rp import ResourceManager
-            self._resource_manager = ResourceManager(resource_desc=value,
-                                                     sid=self._sid,
-                                                     rts_config=self._rts_config)
+            self._rmgr = ResourceManager(resource_desc=value,
+                                        sid=self._sid,
+                                        rts_config=self._rts_config)
         elif self._rts == 'mock':
             from radical.entk.execman.mock import ResourceManager
-            self._resource_manager = ResourceManager(resource_desc=value,
-                                                     sid=self._sid)
+            self._rmgr = ResourceManager(resource_desc=value,
+                                        sid=self._sid)
 
         self._report.info('Validating and assigning resource manager')
 
-        if self._resource_manager._validate_resource_desc():
-            self._resource_manager._populate()
-            self._resource_manager.shared_data = self._shared_data
+        if self._rmgr._validate_resource_desc():
+            self._rmgr._populate()
+            self._rmgr.shared_data = self._shared_data
         else:
             self._logger.error('Could not validate resource description')
             raise
@@ -257,8 +257,8 @@ class AppManager(object):
             if not isinstance(value, str):
                 raise TypeError(expected_type=str, actual_type=type(value))
 
-        if self._resource_manager:
-            self._resource_manager.shared_data = data
+        if self._rmgr:
+            self._rmgr.shared_data = data
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -274,194 +274,55 @@ class AppManager(object):
 
         try:
 
-            # Set None objects local to each run
+            self._prof.prof('amgr_start', uid=self._uid)
+
+            # Set None for variables local to each run
             self._wfp = None
             self._sync_thread = None
             self._terminate_sync = Event()
             self._resubmit_failed = False
             self._cur_attempt = 1
 
+            # Ensure that a workflow and a resource description have
+            # been defined
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please \
                                     check your script')
                 raise MissingError(obj=self._uid, missing_attribute='workflow')
 
-            if not self._resource_manager:
+            if not self._rmgr:
                 self._logger.error('No resource manager assigned currently, \
                                     please create and add a valid resource \
                                     manager')
                 raise MissingError(obj=self._uid,
                                    missing_attribute='resource_manager')
 
-            self._prof.prof('amgr run started', uid=self._uid)
-
-            # Submit resource request if not resource allocation done till now or
+            # Submit resource request if no resource allocation done till now or
             # resubmit a new one if the old one has completed
-            if self._resource_manager:
-                res_alloc_state = self._resource_manager.get_resource_allocation_state()
-                if not res_alloc_state or \
-                    res_alloc_state in \
-                        self._resource_manager.get_completed_states()):
+            res_alloc_state = self._rmgr.get_resource_allocation_state()
+            if not res_alloc_state or \
+                res_alloc_state in self._rmgr.get_completed_states()):
 
-                    self._logger.info('Starting resource request submission')
-                    self._prof.prof('init rreq submission', uid = self._uid)
-                    self._resource_manager._submit_resource_request()
-                    res_alloc_state=self._resource_manager.get_resource_allocation_state()
-                    if res_alloc_state in self._resource_manager.get_completed_states():
-                        raise EnTKError(msg = "Cannot proceed. Resource \
-                                allocation ended up in %s" % res_alloc_state)
-
-            else:
-
-                self._logger.exception('Cannot run without resource manager, \
-                                please create and assign a resource manager')
-                raise EnTKError(text = 'Missing resource manager')
+                self._logger.info('Starting resource request submission')
+                self._prof.prof('init_rreq_sub', uid = self._uid)
+                self._rmgr._submit_resource_request()
+                res_alloc_state=self._rmgr.get_resource_allocation_state()
+                if res_alloc_state in self._rmgr.get_completed_states():
+                    raise EnTKError(msg = "Cannot proceed. Resource \
+                            allocation ended up in %s" % res_alloc_state)
 
             # Setup rabbitmq stuff
-            if not self._mqs_setup:
-                self._report.info('Setting up RabbitMQ system')
-                setup=self._setup_mqs()
+            self._setup_mqs()
 
-                if not setup:
-                    self._logger.error('RabbitMQ system not available')
-                    raise EnTKError("RabbitMQ setup failed")
+            # Start all components and subcomponents
+            self._start_all_comps()
 
-                self._mqs_setup=True
-                self._report.ok('>>ok\n')
-
-            # Create WFProcessor object
-            self._prof.prof('creating wfp obj', uid = self._uid)
-            self._wfp=WFprocessor(sid = self._sid,
-                                    workflow = self._workflow,
-                                    pending_queue = self._pending_queue,
-                                    completed_queue = self._completed_queue,
-                                    mq_hostname = self._mq_hostname,
-                                    port = self._port,
-                                    resubmit_failed = self._resubmit_failed)
-            self._wfp._initialize_workflow()
-            self._workflow=self._wfp.workflow
-
-            # Start synchronizer thread
-            if not self._sync_thread:
-                self._logger.info('Starting synchronizer thread')
-                self._sync_thread=Thread(target = self._synchronizer,
-                                            name = 'synchronizer-thread')
-                self._prof.prof('starting synchronizer thread',
-                                uid = self._uid)
-                self._sync_thread.start()
-
-            # Start WFprocessor
-            self._logger.info('Starting WFProcessor process from AppManager')
-            self._wfp.start_processor()
-
-            self._report.ok('All components created\n')
-
-            # Create tmgr object only if it does not already exist
-            if self._rts == 'radical.pilot':
-                from radical.entk.execman.rp import TaskManager
-            elif self._rts == 'mock':
-                from radical.entk.execman.mock import TaskManager
-
-            if not self._task_manager:
-                self._prof.prof('creating tmgr obj', uid = self._uid)
-                self._task_manager= TaskManager(sid = self._sid,
-                                                 pending_queue = self._pending_queue,
-                                                 completed_queue = self._completed_queue,
-                                                 mq_hostname = self._mq_hostname,
-                                                 rmgr = self._resource_manager,
-                                                 port = self._port
-                                                 )
-                self._logger.info('Starting task manager process from \
-                                    AppManager')
-                self._task_manager.start_manager()
-                self._task_manager.start_heartbeat()
-
-            active_pipe_count=len(self._workflow)
-            finished_pipe_uids=[]
-
-            # We wait till all pipelines of the workflow are marked
-            # complete
-            while ((active_pipe_count > 0) and \
-                    (self._wfp.workflow_incomplete()) and \
-                    (self._resource_manager.get_resource_allocation_state() \
-                     not in self._resource_manager.get_completed_states())):
-
-                if active_pipe_count > 0:
-
-                    for pipe in self._workflow:
-
-                        with pipe.lock:
-
-                            if pipe.completed and \
-                                pipe.uid not in finished_pipe_uids:
-
-                                self._logger.info('Pipe %s completed' \
-                                                    % pipe.uid)
-                                finished_pipe_uids.append(pipe.uid)
-                                active_pipe_count -= 1
-                                self._logger.info('Active pipes: %s' 
-                                                    % active_pipe_count)
-
-                if not self._sync_thread.is_alive() and \
-                    self._cur_attempt <= self._reattempts:
-
-                    self._sync_thread= Thread(target = self._synchronizer,
-                                               name = 'synchronizer-thread')
-                    self._logger.info('Restarting synchronizer thread')
-                    self._prof.prof('restarting synchronizer', uid = self._uid)
-                    self._sync_thread.start()
-
-                    self._cur_attempt += 1
-
-                if not self._wfp.check_processor() and \
-                    self._cur_attempt <= self._reattempts:
-
-                    # If WFP dies, both child threads are also cleaned out.
-                    # We simply recreate the wfp object with a copy of the 
-                    # workflow in the appmanager and start the processor.
-
-
-                    self._prof.prof('recreating wfp obj', uid = self._uid)
-                    self._wfp= WFprocessor(sid = self._sid,
-                                            workflow=self._workflow,
-                                            pending_queue=self._pending_queue,
-                                            completed_queue=self._completed_queue,
-                                            mq_hostname=self._mq_hostname,
-                                            port=self._port,
-                                            resubmit_failed=self._resubmit_failed)
-
-                    self._logger.info('Restarting WFProcessor process from \
-                                        AppManager')
-                    self._wfp.start_processor()
-
-                    self._cur_attempt += 1
-
-                if not self._task_manager.check_heartbeat() and \
-                    self._cur_attempt <= self._reattempts:
-
-                    # If the tmgr process or heartbeat dies, we simply start a
-                    # new process using the start_manager method. We do not
-                    # need to create a new instance of the TaskManager object
-                    # itself. We stop and start a new instance of the
-                    # heartbeat thread as well.
-
-                    self._prof.prof('restarting tmgr process and heartbeat', 
-                                    uid=self._uid)
-
-                    self._logger.info('Terminating heartbeat thread')
-                    self._task_manager.terminate_heartbeat()
-                    self._logger.info('Terminating tmgr process')
-                    self._task_manager.terminate_manager()
-                    self._logger.info('Restarting task manager process')
-                    self._task_manager.start_manager()
-                    self._logger.info('Restarting heartbeat thread')
-                    self._task_manager.start_heartbeat()
-
-                    self._cur_attempt += 1
-
-            self._prof.prof('start termination', uid=self._uid)
+            # Run workflow -- this call is blocking till all tasks of the
+            # workflow are executed or an error/exception is encountered
+            self._run_workflow()
 
             # Terminate threads in following order: wfp, helper, synchronizer
+            self._prof.prof('start termination', uid=self._uid)
             self._logger.info('Terminating WFprocessor')
             self._wfp.terminate_processor()
 
@@ -482,8 +343,9 @@ class AppManager(object):
 
             self._prof.prof('start termination', uid=self._uid)
 
-            self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                                   'trying to cancel enqueuer thread gracefully...')
+            self._logger.exception('Execution interrupted by user (you \
+                                    probably hit Ctrl+C), trying to cancel \
+                                    enqueuer thread gracefully...')
 
             # Terminate threads in following order: wfp, helper, synchronizer
             if self._wfp:
@@ -501,11 +363,10 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-            if self._resource_manager:
-                self._resource_manager._terminate_resource_request()
+            if self._rmgr:
+                self._rmgr._terminate_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
-
             raise KeyboardInterrupt
 
         except Exception, ex:
@@ -530,8 +391,8 @@ class AppManager(object):
                 self._sync_thread.join()
                 self._logger.info('Synchronizer thread terminated')
 
-            if self._resource_manager:
-                self._resource_manager._terminate_resource_request()
+            if self._rmgr:
+                self._rmgr._terminate_resource_request()
 
             self._prof.prof('termination done', uid=self._uid)
             raise
@@ -543,8 +404,8 @@ class AppManager(object):
             self._task_manager.terminate_manager()
             self._task_manager.terminate_heartbeat()
 
-        if self._resource_manager:
-            self._resource_manager._terminate_resource_request()
+        if self._rmgr:
+            self._rmgr._terminate_resource_request()
 
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
@@ -578,45 +439,54 @@ class AppManager(object):
 
         try:
 
-            self._prof.prof('init mqs setup', uid=self._uid)
+            self._report.info('Setting up RabbitMQ system')
+            if self._mqs_setup:
+                self._report.info('RabbitMQ already set')
+                return
 
-            self._logger.debug('Setting up mq connection and channel')
+            try:
 
-            mq_connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
+                self._report.ok('>>ok\n')
 
-            mq_channel = mq_connection.channel()
-            self._logger.debug('Connection and channel setup successful')
-            self._logger.debug('Setting up all exchanges and queues')
+                self._prof.prof('init mqs setup', uid=self._uid)
+                self._logger.debug('Setting up mq connection and channel')
 
-            qs = [
-                '%s-tmgr-to-sync' % self._sid,
-                '%s-cb-to-sync' % self._sid,
-                '%s-sync-to-tmgr' % self._sid,
-                '%s-sync-to-cb' % self._sid,
-            ]
+                mq_connection = pika.BlockingConnection(
+                                    pika.ConnectionParameters(
+                                        host=self._mq_hostname, 
+                                        port=self._port))
 
-            for i in range(1, self._num_pending_qs + 1):
-                queue_name = '%s-pendingq-%s' % (self._sid, i)
-                self._pending_queue.append(queue_name)
-                qs.append(queue_name)
+                mq_channel = mq_connection.channel()
+                self._logger.debug('Connection and channel setup successful')
+                self._logger.debug('Setting up all exchanges and queues')
 
-            for i in range(1, self._num_completed_qs + 1):
-                queue_name = '%s-completedq-%s' % (self._sid, i)
-                self._completed_queue.append(queue_name)
-                qs.append(queue_name)
+                qs = [
+                    '%s-tmgr-to-sync' % self._sid,
+                    '%s-cb-to-sync' % self._sid,
+                    '%s-sync-to-tmgr' % self._sid,
+                    '%s-sync-to-cb' % self._sid,
+                ]
 
-            f = open('.%s.txt' % self._sid, 'w')
-            for q in qs:
-                # Durable Qs will not be lost if rabbitmq server crashes
-                mq_channel.queue_declare(queue=q)
-                f.write(q + '\n')
-            f.close()
+                for i in range(1, self._num_pending_qs + 1):
+                    queue_name = '%s-pendingq-%s' % (self._sid, i)
+                    self._pending_queue.append(queue_name)
+                    qs.append(queue_name)
 
-            self._logger.debug('All exchanges and queues are setup')
-            self._prof.prof('mqs setup done', uid=self._uid)
+                for i in range(1, self._num_completed_qs + 1):
+                    queue_name = '%s-completedq-%s' % (self._sid, i)
+                    self._completed_queue.append(queue_name)
+                    qs.append(queue_name)
 
-            return True
+                f = open('.%s.txt' % self._sid, 'w')
+                for q in qs:
+                    # Durable Qs will not be lost if rabbitmq server crashes
+                    mq_channel.queue_declare(queue=q)
+                    f.write(q + '\n')
+                f.close()
+
+                self._logger.debug('All exchanges and queues are setup')
+                self._prof.prof('mqs setup done', uid=self._uid)
+                self._mqs_setup=True
 
         except Exception, ex:
 
@@ -648,6 +518,142 @@ class AppManager(object):
         except Exception as ex:
             self._logger.exception('Message queues not deleted, error')
             raise
+
+
+    def _start_all_comps(self):
+
+        # Create WFProcessor and initialize workflow its contents with
+        # uids
+        self._prof.prof('creating_wfp', uid = self._uid)
+        self._wfp=WFprocessor(sid = self._sid,
+                                workflow = self._workflow,
+                                pending_queue = self._pending_queue,
+                                completed_queue = self._completed_queue,
+                                mq_hostname = self._mq_hostname,
+                                port = self._port,
+                                resubmit_failed = self._resubmit_failed)
+        self._wfp.initialize_workflow()
+        self._prof.prof('wfp_created', uid = self._uid)
+
+        # Start synchronizer thread
+        if not self._sync_thread:
+            self._logger.info('Starting synchronizer thread')
+            self._sync_thread=Thread(target = self._synchronizer,
+                                    name = 'synchronizer-thread')
+            self._prof.prof('start_sync_thread',uid = self._uid)
+            self._sync_thread.start()
+
+        # Start WFprocessor
+        self._logger.info('Starting WFProcessor')
+        self._wfp.start_processor()
+        self._report.ok('All components created\n')
+
+        # Create tmgr object only if it does not already exist
+        if self._rts == 'radical.pilot':
+            from radical.entk.execman.rp import TaskManager
+        elif self._rts == 'mock':
+            from radical.entk.execman.mock import TaskManager
+
+        if not self._task_manager:
+            self._prof.prof('creating tmgr obj', uid = self._uid)
+            self._task_manager= TaskManager(sid = self._sid,
+                                                pending_queue = self._pending_queue,
+                                                completed_queue = self._completed_queue,
+                                                mq_hostname = self._mq_hostname,
+                                                rmgr = self._rmgr,
+                                                port = self._port
+                                                )
+            self._logger.info('Starting task manager process from \
+                                AppManager')
+            self._task_manager.start_manager()
+            self._task_manager.start_heartbeat()
+            
+
+    def _run_workflow(self):
+
+        active_pipe_count=len(self._workflow)
+        finished_pipe_uids=[]
+
+        # We wait till all pipelines of the workflow are marked
+        # complete
+        while ((active_pipe_count > 0) and \
+                (self._wfp.workflow_incomplete()) and \
+                (self._rmgr.get_resource_allocation_state() \
+                    not in self._rmgr.get_completed_states())):
+
+            if active_pipe_count > 0:
+
+                for pipe in self._workflow:
+
+                    with pipe.lock:
+
+                        if pipe.completed and \
+                            pipe.uid not in finished_pipe_uids:
+
+                            self._logger.info('Pipe %s completed' \
+                                                % pipe.uid)
+                            finished_pipe_uids.append(pipe.uid)
+                            active_pipe_count -= 1
+                            self._logger.info('Active pipes: %s' 
+                                                % active_pipe_count)
+
+            if not self._sync_thread.is_alive() and \
+                self._cur_attempt <= self._reattempts:
+
+                self._sync_thread= Thread(target = self._synchronizer,
+                                            name = 'synchronizer-thread')
+                self._logger.info('Restarting synchronizer thread')
+                self._prof.prof('restarting synchronizer', uid = self._uid)
+                self._sync_thread.start()
+
+                self._cur_attempt += 1
+
+            if not self._wfp.check_processor() and \
+                self._cur_attempt <= self._reattempts:
+
+                # If WFP dies, both child threads are also cleaned out.
+                # We simply recreate the wfp object with a copy of the 
+                # workflow in the appmanager and start the processor.
+
+
+                self._prof.prof('recreating wfp obj', uid = self._uid)
+                self._wfp= WFprocessor(sid = self._sid,
+                                        workflow=self._workflow,
+                                        pending_queue=self._pending_queue,
+                                        completed_queue=self._completed_queue,
+                                        mq_hostname=self._mq_hostname,
+                                        port=self._port,
+                                        resubmit_failed=self._resubmit_failed)
+
+                self._logger.info('Restarting WFProcessor process from \
+                                    AppManager')
+                self._wfp.start_processor()
+
+                self._cur_attempt += 1
+
+            if not self._task_manager.check_heartbeat() and \
+                self._cur_attempt <= self._reattempts:
+
+                # If the tmgr process or heartbeat dies, we simply start a
+                # new process using the start_manager method. We do not
+                # need to create a new instance of the TaskManager object
+                # itself. We stop and start a new instance of the
+                # heartbeat thread as well.
+
+                self._prof.prof('restarting tmgr process and heartbeat', 
+                                uid=self._uid)
+
+                self._logger.info('Terminating heartbeat thread')
+                self._task_manager.terminate_heartbeat()
+                self._logger.info('Terminating tmgr process')
+                self._task_manager.terminate_manager()
+                self._logger.info('Restarting task manager process')
+                self._task_manager.start_manager()
+                self._logger.info('Restarting heartbeat thread')
+                self._task_manager.start_heartbeat()
+
+                self._cur_attempt += 1
+
 
     def _synchronizer(self):
         """

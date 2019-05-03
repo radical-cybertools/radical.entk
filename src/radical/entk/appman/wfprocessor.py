@@ -92,25 +92,6 @@ class WFprocessor(object):
     # ------------------------------------------------------------------------------------------------------------------
     # Private Methods
 
-    def _initialize_workflow(self):
-        """
-        **Purpose**: Initialize the PST of the workflow with a uid and type
-        checks
-        """
-
-        try:
-
-            self._prof.prof('initializing workflow', uid=self._uid)
-
-            for p in self._workflow:
-                p._assign_uid(self._sid)
-
-            self._prof.prof('workflow initialized', uid=self._uid)
-
-        except Exception:
-            self._logger.exception('Fatal error when initializing workflow')
-            raise
-
     def _create_workload(self):
 
         # We iterate through all pipelines to collect tasks from
@@ -279,7 +260,7 @@ class WFprocessor(object):
 
                 workload, scheduled_stages = self._create_workload()
                 
-                # If there are tasks to be scheduled
+                # If there are tasks to be executed
                 if workload:
                     self._execute_workload(workload, scheduled_stages)
 
@@ -524,6 +505,25 @@ class WFprocessor(object):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
+
+    def initialize_workflow(self):
+        """
+        **Purpose**: Initialize the PST of the workflow with a uid and type
+        checks
+        """
+
+        try:
+
+            self._prof.prof('initializing workflow', uid=self._uid)
+
+            for p in self._workflow:
+                p._assign_uid(self._sid)
+
+            self._prof.prof('workflow initialized', uid=self._uid)
+
+        except Exception:
+            self._logger.exception('Fatal error when initializing workflow')
+            raise
 
     def start_processor(self):
         """
