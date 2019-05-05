@@ -159,9 +159,9 @@ def test_write_workflow():
         assert stack['stack'].keys() == ['sys', 'radical']
         assert stack['stack']['sys'].keys() == ["python", "pythonpath",
                                                 "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
                                                     'radical.utils',
-                                                    'radical.entk']
+                                                    'radical.entk'])
 
         p_cnt = 0
         for p in data:
@@ -179,11 +179,7 @@ def test_write_workflow():
             p_cnt += 1
 
         shutil.rmtree('test')
-    except Exception as ex:
-        shutil.rmtree('test')
-        raise
 
-    try:
         write_workflow(wf, 'test', workflow_fout='test_workflow')
 
         data = ru.read_json('test/test_workflow.json')
@@ -194,9 +190,9 @@ def test_write_workflow():
         assert stack['stack'].keys() == ['sys', 'radical']
         assert stack['stack']['sys'].keys() == ["python", "pythonpath",
                                                 "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
                                                     'radical.utils',
-                                                    'radical.entk']
+                                                    'radical.entk'])
 
         p_cnt = 0
         for p in data:
@@ -214,11 +210,7 @@ def test_write_workflow():
             p_cnt += 1
 
         shutil.rmtree('test')
-    except Exception as ex:
-        shutil.rmtree('test')
-        raise
 
-    try:
         data = write_workflow(wf, 'test', workflow_fout='test_workflow',
                               fwrite=False)
 
@@ -229,9 +221,9 @@ def test_write_workflow():
         assert stack['stack'].keys() == ['sys', 'radical']
         assert stack['stack']['sys'].keys() == ["python", "pythonpath",
                                                 "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot',
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
                                                     'radical.entk',
-                                                    'radical.utils']
+                                                    'radical.utils'])
 
         p_cnt = 0
         for p in data:
@@ -250,3 +242,6 @@ def test_write_workflow():
 
     except Exception as ex:
         raise
+
+    finally:
+        shutil.rmtree('test')

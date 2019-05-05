@@ -43,7 +43,7 @@ def test_issue_214():
     res_dict = {
 
             'resource': 'local.localhost',
-            'walltime': int(sleep)+5,
+            'walltime': (int(sleep)/60)+5,
             'cpus': 1
     }
 

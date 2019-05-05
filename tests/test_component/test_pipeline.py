@@ -2,9 +2,13 @@ from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
 import threading
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 def test_pipeline_initialization():
 
