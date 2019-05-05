@@ -1,5 +1,5 @@
 from radical.entk import AppManager as Amgr
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
 from radical.entk import Pipeline, Stage, Task, states
 from radical.entk.exceptions import *
@@ -15,6 +15,10 @@ hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
+
 def test_amgr_initialization():
     amgr_name = ru.generate_id('test.appmanager.%(item_counter)04d', ru.ID_CUSTOM)
     amgr = Amgr(hostname=hostname, port=port,name=amgr_name)
@@ -22,7 +26,7 @@ def test_amgr_initialization():
     assert amgr._name.split('.') == amgr_name.split('.')
     assert amgr._sid.split('.') == amgr_name.split('.')
     assert amgr._uid.split('.') == ['appmanager', '0000']
-    assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
+    assert type(amgr._logger) == type(ru.Logger('radical.tests'))
     assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
     assert type(amgr._report) == type(ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
@@ -51,7 +55,7 @@ def test_amgr_initialization():
     amgr = Amgr(hostname=hostname, port=port)
 
     assert amgr._uid.split('.') == ['appmanager', '0000']
-    assert type(amgr._logger) == type(ru.get_logger('radical.tests'))
+    assert type(amgr._logger) == type(ru.Logger('radical.tests'))
     assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
     assert type(amgr._report) == type(ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
@@ -248,6 +252,32 @@ def test_amgr_resource_terminate():
 
     amgr.resource_terminate()
 
+def test_amgr_terminate():
+
+    res_dict = {
+
+        'resource': 'xsede.supermic',
+        'walltime': 30,
+        'cpus': 20,
+        'project': 'TG-MCB090174'
+
+    }
+
+    from radical.entk.execman.rp import TaskManager
+
+    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+    amgr.resource_desc = res_dict
+    amgr._setup_mqs()
+    amgr._rmq_cleanup = True
+    amgr._task_manager = TaskManager(sid='test',
+                                     pending_queue=list(),
+                                     completed_queue=list(),
+                                     mq_hostname=amgr._mq_hostname,
+                                     rmgr=amgr._resource_manager,
+                                     port=amgr._port
+                                     )
+
+    amgr.terminate()
 
 def test_amgr_setup_mqs():
 
@@ -345,7 +375,7 @@ def func_for_synchronizer_test(sid, p, logger, profiler):
 
 def test_amgr_synchronizer():
 
-    logger = ru.get_logger('radical.entk.temp_logger')
+    logger = ru.Logger('radical.entk.temp_logger')
     profiler = ru.Profiler(name='radical.entk.temp')
     amgr = Amgr(hostname=hostname, port=port)
 

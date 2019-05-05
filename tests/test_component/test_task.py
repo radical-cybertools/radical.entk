@@ -2,8 +2,12 @@ from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 def test_task_initialization():
 
@@ -16,7 +20,7 @@ def test_task_initialization():
     assert t.name == None
     assert t.state == states.INITIAL
     assert t.pre_exec == list()
-    assert t.executable == None
+    assert t.executable == str()
     assert t.arguments == list()
     assert t.post_exec == list()
     assert t.cpu_reqs['processes'] == 1
@@ -186,7 +190,7 @@ def test_task_to_dict():
                     'state': states.INITIAL,
                     'state_history': [states.INITIAL],
                     'pre_exec': [],
-                    'executable': None,
+                    'executable': str(),
                     'arguments': [],
                     'post_exec': [],
                     'cpu_reqs': { 'processes': 1,

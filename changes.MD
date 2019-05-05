@@ -1,7 +1,7 @@
 # Changelog for each release
 
-## Changelog for 0.7.14
-* Issues resolved in 0.7.12 milestone: https://github.com/radical-cybertools/radical.entk/milestone/14
+## Changelog for 0.7.14+0.7.16 (hotfix)
+* Issues resolved in 0.7.14 milestone: https://github.com/radical-cybertools/radical.entk/milestone/14
 * Bug fixes and updated documentation
 
 ## Changelog for 0.7.12+0.7.13 (hotfix)

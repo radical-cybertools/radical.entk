@@ -11,7 +11,7 @@ def test_issue_271():
             'state': states.DONE,
             'state_history': [states.INITIAL, states.DONE],
             'pre_exec': [],
-            'executable': ['sleep'],
+            'executable': 'sleep',
             'arguments': [],
             'post_exec': [],
             'cpu_reqs': { 'processes': 1,

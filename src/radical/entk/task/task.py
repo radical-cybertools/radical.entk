@@ -26,7 +26,7 @@ class Task(object):
 
         # Attributes necessary for execution
         self._pre_exec = list()
-        self._executable = None
+        self._executable = str()
         self._arguments = list()
         self._post_exec = list()
         self._cpu_reqs = {'processes': 1,
@@ -803,7 +803,7 @@ class Task(object):
                                 actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
+            if isinstance(d['executable'], str) or isinstance(d['executable'], unicode):
                 self._executable = d['executable']
             else:
                 raise TypeError(expected_type=str,
