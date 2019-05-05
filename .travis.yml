@@ -17,15 +17,14 @@ env:
     - OLD=`echo $LOG | cut -d ' ' -f2`
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    # - coverage run -m pytest -vvv tests/test_component/test_amgr.py
     - CMD1="coverage run -m pytest -vvv tests/test_component/test_amgr.py;coverage run -m pytest -vvv tests/test_component/test_modules.py;coverage run -m pytest -vvv tests/test_component/test_pipeline.py;coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_rmgr.py;coverage run -m pytest -vvv tests/test_component/test_stage.py;coverage run -m pytest -vvv tests/test_component/test_task.py;coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp.py;coverage run -m pytest -vvv tests/test_component/test_tmgr.py;coverage run -m pytest -vvv tests/test_component/test_wfp.py;coverage run -m pytest -vvv tests/test_component/test_states.py;coverage run -m pytest -vvv tests/test_integration/test_*;coverage run -m pytest -vvv tests/test_issues/test_*;coverage run -m pytest -vvv tests/test_utils/test_*"
     - CMD2="flake8 --config=.flake8 $DIFF"
     - CMD3="pylint $DIFF"
     - COVERAGE=false
   matrix:
     - MAIN_CMD=$CMD1 COVERAGE=true
-#     - MAIN_CMD=$CMD2
-#     - MAIN_CMD=$CMD3
+    - MAIN_CMD=$CMD2
+    - MAIN_CMD=$CMD3
   
 # command to install dependencies
 install:
