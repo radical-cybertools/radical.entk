@@ -4,12 +4,16 @@ from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk.execman.mock import ResourceManager as MockRmgr
 import pytest
 from radical.entk.exceptions import *
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
 import os
 
 # MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_base_initialization(d):
