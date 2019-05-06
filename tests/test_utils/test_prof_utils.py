@@ -161,7 +161,7 @@ def test_write_workflow():
         assert stack.keys() == ['stack']
         assert stack['stack'].keys() == ['sys','radical']
         assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot', 'radical.utils', 'radical.entk'])
 
         p_cnt = 0
         for p in data:
