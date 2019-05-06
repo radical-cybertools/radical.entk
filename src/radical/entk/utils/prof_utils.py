@@ -222,7 +222,7 @@ def get_session_description(sid, src=None):
     return desc
 
 
-def write_workflow(workflow, uid):
+def writing_workflow(workflow, uid):
 
     try:
         os.mkdir(uid)
