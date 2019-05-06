@@ -12,6 +12,7 @@ MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 
+# pylint: disable=protected-access
 
 def test_get_session_profile():
 
@@ -29,8 +30,6 @@ def test_get_session_profile():
 
 def test_write_session_description():
 
-    hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-    port = int(os.environ.get('RMQ_PORT', 5672))
     amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {
         'resource': 'xsede.stampede',
@@ -44,7 +43,7 @@ def test_write_session_description():
     workflow = [generate_pipeline(1), generate_pipeline(2)]
     amgr.workflow = workflow
 
-    amgr._wfp = WFprocessor(sid=amgr._sid,
+    amgr._wfp = WFprocessor(sid=amgr.sid,
                             workflow=amgr._workflow,
                             pending_queue=amgr._pending_queue,
                             completed_queue=amgr._completed_queue,
@@ -241,7 +240,7 @@ def test_write_workflow():
             p_cnt += 1
 
     except Exception as ex:
-        raise
+        raise ex
 
     finally:
         shutil.rmtree('test')
