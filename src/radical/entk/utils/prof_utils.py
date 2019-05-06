@@ -7,6 +7,8 @@ from radical.entk.exceptions import EnTKError
 from radical.entk import states as res
 from radical.pilot import states as rps
 
+# pylint: disable=protected-access
+
 
 def get_hostmap(profile):
     '''
@@ -179,7 +181,7 @@ def write_session_description(amgr):
         # Adding stages to the tree
         for stage in pipe.stages:
             tree[pipe.uid]['children'].append(stage.uid)
-            tree[stage_uid] = {'uid': stage.uid,
+            tree[stage.uid] = {'uid': stage.uid,
                                'etype': 'stage',
                                'cfg': {},
                                'has': ['task'],
@@ -259,3 +261,5 @@ def write_workflow(workflow, uid, workflow_fout='entk_workflow', fwrite=True):
         return 0
 
     return data
+
+# pylint: disable=protected-access

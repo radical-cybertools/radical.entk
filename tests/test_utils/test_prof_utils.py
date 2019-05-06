@@ -14,6 +14,7 @@ port = int(os.environ.get('RMQ_PORT', 5672))
 
 # pylint: disable=protected-access
 
+
 def test_get_session_profile():
 
     sid = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
@@ -244,3 +245,4 @@ def test_write_workflow():
 
     finally:
         shutil.rmtree('test')
+# pylint: enable=protected-access
