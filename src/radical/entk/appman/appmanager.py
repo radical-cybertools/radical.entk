@@ -8,7 +8,7 @@ from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
 from radical.entk.utils.prof_utils import write_session_description
-from radical.entk.utils.prof_utils import writing_workflow
+from radical.entk.utils import prof_utils as reup
 from wfprocessor import WFprocessor
 import time
 import os
@@ -441,7 +441,7 @@ class AppManager(object):
                 self.terminate()
 
             if self._write_workflow:
-                writing_workflow(self._workflow, self._sid)
+                reup.write_workflow(self._workflow, self._sid)
 
             self._prof.prof('termination done', uid=self._uid)
 

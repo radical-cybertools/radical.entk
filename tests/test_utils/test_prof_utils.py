@@ -133,7 +133,7 @@ def generate_pipeline(nid):
     return p
 
 
-def test_writing_workflow():
+def test_write_workflow():
 
     try:
         wf = list()
@@ -152,7 +152,7 @@ def test_writing_workflow():
         amgr._wfp._initialize_workflow()
         wf = amgr._wfp.workflow
 
-        writing_workflow(wf, 'test')
+        write_workflow(wf, 'test')
 
         data = ru.read_json('test/entk_workflow.json')
         assert len(data) == len(wf) + 1
