@@ -175,7 +175,10 @@ class Pipeline(object):
         if isinstance(value, str):
             if value in states._pipeline_state_values.keys():
                 self._state = value
-                self._state_history.append(value)
+
+                # We add SUSPENDED to state history in suspend()
+                if self._state != states.SUSPENDED:
+                    self._state_history.append(value)
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',
@@ -200,17 +203,6 @@ class Pipeline(object):
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
             self._cur_stage = 1
-
-    def rerun(self):
-
-        """
-        Rerun sets the state of the Pipeline to scheduling so that the Pipeline
-        can be checked for new stages
-        """
-
-        self._state = states.SCHEDULING
-        self._completed_flag = threading.Event()
-        print 'Pipeline %s in %s state'%(self._uid, self._state)
 
     def to_dict(self):
         """

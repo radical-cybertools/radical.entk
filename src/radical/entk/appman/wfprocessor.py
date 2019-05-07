@@ -317,7 +317,9 @@ class WFprocessor(object):
                         # Traverse the entire workflow to find out the correct Task
                         for pipe in self._workflow:
 
-                            with pipe.lock:
+                            self._logger.debug('####FOUND PIPELINE: %s in state %s' % (pipe.uid, pipe.state))
+
+                            with pipe.lock:                                
 
                                 if ((not pipe.completed) and (not pipe.state == states.SUSPENDED)):
 
@@ -384,7 +386,59 @@ class WFprocessor(object):
                                                                     self._prof.prof('Adap: executing post-exec',
                                                                                     uid=self._uid)
 
-                                                                    stage.post_exec()
+                                                                    try:
+                                                                        resumed_pipe_uids = stage.post_exec()
+                                                                    except:
+                                                                        self._logger.exception('%s post_exec failed', stage.uid)
+                                                                        raise
+
+                                                                    if resumed_pipe_uids:
+
+                                                                        # Some pipelines were resumed in the post exec
+
+                                                                        for r_pipe in self._workflow:
+
+                                                                            if r_pipe != pipe:
+                                                                                with r_pipe.lock: 
+
+
+                                                                                    if r_pipe.uid in resumed_pipe_uids:
+
+                                                                                        # Resumed pipelines already have the correct state,
+                                                                                        # they just need to be synced with the AppMgr.
+                                                                                        
+                                                                                        r_pipe._increment_stage()
+                                                                                        if r_pipe.completed:
+
+                                                                                            transition(obj=r_pipe,
+                                                                                                    obj_type='Pipeline',
+                                                                                                    new_state=states.DONE,
+                                                                                                    channel=mq_channel,
+                                                                                                    queue='%s-deq-to-sync' % self._sid,
+                                                                                                    profiler=local_prof,
+                                                                                                    logger=self._logger)
+
+                                                                                        else:
+
+                                                                                            transition(obj=r_pipe,
+                                                                                                    obj_type='Pipeline',
+                                                                                                    new_state=r_pipe.state,
+                                                                                                    channel=mq_channel,
+                                                                                                    queue='%s-deq-to-sync' % self._sid,
+                                                                                                    profiler=local_prof,
+                                                                                                    logger=self._logger)
+
+
+                                                                    if pipe.state == states.SUSPENDED:
+
+                                                                        # pipe._cur_stage += 1
+                                                                        transition(obj=pipe,
+                                                                                    obj_type='Pipeline',
+                                                                                    new_state=states.SUSPENDED,
+                                                                                    channel=mq_channel,
+                                                                                    queue='%s-deq-to-sync' % self._sid,
+                                                                                    profiler=local_prof,
+                                                                                    logger=self._logger)
 
                                                                     self._logger.info(
                                                                         'Post-exec executed for stage %s' % stage.uid)
@@ -395,17 +449,18 @@ class WFprocessor(object):
                                                                     self._logger.exception('Execution failed in post_exec of stage %s' % stage.uid)
                                                                     raise
 
-                                                            pipe._increment_stage()
+                                                            if pipe.state != states.SUSPENDED:
 
-                                                            if pipe.completed:
+                                                                pipe._increment_stage()
+                                                                if pipe.completed:
 
-                                                                transition(obj=pipe,
-                                                                           obj_type='Pipeline',
-                                                                           new_state=states.DONE,
-                                                                           channel=mq_channel,
-                                                                           queue='%s-deq-to-sync' % self._sid,
-                                                                           profiler=local_prof,
-                                                                           logger=self._logger)
+                                                                    transition(obj=pipe,
+                                                                            obj_type='Pipeline',
+                                                                            new_state=states.DONE,
+                                                                            channel=mq_channel,
+                                                                            queue='%s-deq-to-sync' % self._sid,
+                                                                            profiler=local_prof,
+                                                                            logger=self._logger)
 
                                                         # Found the task and processed it -- no more iterations needed
                                                         break
@@ -415,7 +470,7 @@ class WFprocessor(object):
 
                                         # Found the pipeline and processed it -- no more iterations neeeded
                                         break
-
+                                
                         mq_channel.basic_ack(
                             delivery_tag=method_frame.delivery_tag)
 
