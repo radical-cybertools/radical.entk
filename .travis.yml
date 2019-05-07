@@ -8,16 +8,30 @@ branches:
 os:
   - linux
 
-#env variables
+
 env:
   global:
-  - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
-  - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
-
+    - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
+    - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
+    - LOG=`git log -n 1 | grep Merge`
+    - OLD=`echo $LOG | cut -d ' ' -f2`
+    - NEW=`echo $LOG | cut -d ' ' -f3`
+    - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+    - CMD1="coverage run -m pytest -vvv tests/test_component/test_amgr.py;coverage run -m pytest -vvv tests/test_component/test_modules.py;coverage run -m pytest -vvv tests/test_component/test_pipeline.py;coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_rmgr.py;coverage run -m pytest -vvv tests/test_component/test_stage.py;coverage run -m pytest -vvv tests/test_component/test_task.py;coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp.py;coverage run -m pytest -vvv tests/test_component/test_tmgr.py;coverage run -m pytest -vvv tests/test_component/test_wfp.py;coverage run -m pytest -vvv tests/test_component/test_states.py;coverage run -m pytest -vvv tests/test_integration/test_*;coverage run -m pytest -vvv tests/test_issues/test_*;coverage run -m pytest -vvv tests/test_utils/test_*"
+    - CMD2="flake8 --config=.flake8 $DIFF"
+    - CMD3="pylint $DIFF"
+    - COVERAGE=false
+  matrix:
+    - MAIN_CMD=$CMD1 COVERAGE=true
+    - MAIN_CMD=$CMD2
+    - MAIN_CMD=$CMD3
+  
 # command to install dependencies
 install:
   - pip install .
   - pip install coverage
+  - pip install flake8
+  - pip install pylint
   - pip install codecov
 
 before_script:
@@ -28,28 +42,17 @@ before_script:
   - cat .coveragerc
 
 script:
-  # - coverage run -m pytest -vvv tests/test_component/test_amgr.py
-  - coverage run -m pytest -vvv tests/test_component/test_modules.py
-  - coverage run -m pytest -vvv tests/test_component/test_pipeline.py
-  - travis_wait coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py
-  - travis_wait coverage run -m pytest -vvv tests/test_component/test_rmgr.py
-  - coverage run -m pytest -vvv tests/test_component/test_stage.py
-  - coverage run -m pytest -vvv tests/test_component/test_task.py
-  - coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py
-  - coverage run -m pytest -vvv tests/test_component/test_tproc_rp_2.py
-  - coverage run -m pytest -vvv tests/test_component/test_tproc_rp.py
-  - coverage run -m pytest -vvv tests/test_component/test_tmgr.py
-  - coverage run -m pytest -vvv tests/test_component/test_wfp.py
-  - coverage run -m pytest -vvv tests/test_component/test_states.py
-  - coverage run -m pytest -vvv tests/test_integration/test_*
-  - travis_wait coverage run -m pytest -vvv tests/test_issues/test_*
-  - coverage run -m pytest -vvv tests/test_utils/test_*
+  - echo $MAIN_CMD
+  - eval $MAIN_CMD
 
 after_success:
-  - coverage combine
-  - coverage xml
-  - codecov
-  - curl -s https://codecov.io/bash | bash
+  - |
+    if [[ $COVERAGE == 'true' ]]; then \
+      coverage combine; \
+      coverage xml; \
+      coverage report; \
+      curl -s https://codecov.io/bash | bash
+    fi
 
 services:
 - rabbitmq
