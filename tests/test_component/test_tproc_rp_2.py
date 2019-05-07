@@ -35,6 +35,8 @@ def test_create_task_from_cu():
     assert t.parent_pipeline['uid'] == 'parent_pipeline_uid'
     assert t.parent_pipeline['name'] == 'parent_pipeline_name'
 
+    session.close()
+
 
 def test_resolve_args():
 

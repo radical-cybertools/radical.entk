@@ -59,8 +59,7 @@ class WFprocessor(object):
         self._uid = ru.generate_id(
             'wfprocessor.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' %
-                                 self._uid, path=self._path, targets=['2', '.'])
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s' %
                                  self._uid + '-obj', path=self._path)
 
@@ -376,23 +375,16 @@ class WFprocessor(object):
                                                             # Check if Stage has a post-exec that needs to be
                                                             # executed
 
-                                                            if stage.post_exec['condition']:
+                                                            if stage.post_exec:
 
                                                                 try:
 
-                                                                    self._logger.info(
-                                                                        'Executing post-exec for stage %s' % stage.uid)
+                                                                    self._logger.info('Executing post-exec for stage %s'
+                                                                                    % stage.uid)
                                                                     self._prof.prof('Adap: executing post-exec',
                                                                                     uid=self._uid)
 
-                                                                    func_condition = stage.post_exec['condition']
-                                                                    func_on_true = stage.post_exec['on_true']
-                                                                    func_on_false = stage.post_exec['on_false']
-
-                                                                    if func_condition():
-                                                                        func_on_true()
-                                                                    else:
-                                                                        func_on_false()
+                                                                    stage.post_exec()
 
                                                                     self._logger.info(
                                                                         'Post-exec executed for stage %s' % stage.uid)
@@ -400,8 +392,7 @@ class WFprocessor(object):
                                                                         'Adap: post-exec executed', uid=self._uid)
 
                                                                 except Exception, ex:
-                                                                    self._logger.exception(
-                                                                        'Execution failed in post_exec of stage %s' % stage.uid)
+                                                                    self._logger.exception('Execution failed in post_exec of stage %s' % stage.uid)
                                                                     raise
 
                                                             pipe._increment_stage()
@@ -417,7 +408,6 @@ class WFprocessor(object):
                                                                            logger=self._logger)
 
                                                         # Found the task and processed it -- no more iterations needed
-
                                                         break
 
                                                 # Found the stage and processed it -- no more iterations neeeded

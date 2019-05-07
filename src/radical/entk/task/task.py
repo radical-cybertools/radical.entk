@@ -27,6 +27,7 @@ class Task(object):
         # Attributes necessary for execution
         self._pre_exec = list()
         self._executable = None
+        self._executable = str()
         self._arguments = list()
         self._post_exec = list()
         self._cpu_reqs = {'processes': 1,
@@ -82,6 +83,34 @@ class Task(object):
         :type: String
         """
         return self._uid
+
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current task (fully qualified).
+
+        example:
+            >>> task.luid
+            pipe.0001.stage.0004.task.0234
+
+        :getter: Returns the fully qualified uid of the current task
+        :type: String
+        """
+        p_elem = self.parent_pipeline.get('name')
+        if not p_elem:
+            p_elem = self.parent_pipeline['uid']
+
+        s_elem = self.parent_stage.get('name')
+        if not s_elem:
+            s_elem = self.parent_stage['uid']
+
+        t_elem = self.name
+        if not t_elem:
+            t_elem = self.uid
+
+        return '%s.%s.%s' % (p_elem, s_elem, t_elem)
+
 
     @property
     def name(self):
@@ -204,7 +233,7 @@ class Task(object):
                             |  'processes': X,
                             |  'process_type': None/MPI,
                             |  'threads_per_process': Y,
-                            |  'thread_type': None/OpenMP
+                            |  'thread_type': None/OpenMP/CUDA
                         }
 
         This description means that the Task is going to spawn X processes and Y threads
@@ -428,8 +457,10 @@ class Task(object):
     def name(self, value):
         if isinstance(value, basestring):
             if ',' in value:
-                raise Error(
-                    "Using ',' or '_' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -462,8 +493,12 @@ class Task(object):
         if value is None:
             self._executable = None
 
-        if isinstance(value, basestring):
+        elif isinstance(value, basestring):
             self._executable = value
+
+        elif isinstance(value, list):
+            self._executable = value[0]
+
         else:
             raise TypeError(expected_type='basestring', actual_type=type(value))
 
@@ -566,10 +601,10 @@ class Task(object):
                                     entity='threads_per_process'
                                     )
 
-                if value.get('thread_type') in [None, 'OpenMP', '']:
+                if value.get('thread_type') in [None, 'OpenMP', 'CUDA','']:
                     self._gpu_reqs['thread_type'] = value.get('thread_type')
                 else:
-                    raise ValueError(expected_value='None or OpenMP',
+                    raise ValueError(expected_value='None or OpenMP or CUDA',
                                      actual_value=value.get('thread_type'),
                                      obj='gpu_reqs',
                                      attribute='thread_type'

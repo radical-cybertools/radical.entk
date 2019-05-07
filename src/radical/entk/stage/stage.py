@@ -29,9 +29,7 @@ class Stage(object):
         # Pipeline this stage belongs to
         self._p_pipeline = {'uid': None, 'name': None}
 
-        self._post_exec = {'condition': None,
-                           'on_true': None,
-                           'on_false': None}
+        self._post_exec = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
@@ -89,6 +87,30 @@ class Stage(object):
 
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current stage (fully qualified).
+
+        example:
+            >>> stage.luid
+            pipe.0001.stage.0004
+
+        :getter: Returns the fully qualified uid of the current stage
+        :type: String
+        """
+        p_elem = self.parent_pipeline.get('name')
+        if not p_elem:
+            p_elem = self.parent_pipeline['uid']
+
+        s_elem = self.name
+        if not s_elem:
+            s_elem = self.uid
+
+        return '%s.%s' % (p_elem, s_elem)
+
+
     @property
     def state_history(self):
         """
@@ -124,7 +146,10 @@ class Stage(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError("Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
         else:
@@ -159,47 +184,15 @@ class Stage(object):
     @post_exec.setter
     def post_exec(self, value):
 
-        if isinstance(value, dict):
-            self._post_exec = value
-        else:
-            raise TypeError(expected_type=dict, actual_type=type(value))
-
-        if set(['condition', 'on_true', 'on_false']) != set(value.keys()):
-            raise ValueError(obj=self._uid,
-                             attribute='post_exec',
-                             expected_value="'condition', 'on_true', 'on_false'",
-                             actual_value='%s' % value.keys())
-
-        condition = self._post_exec['condition']
-        on_true = self._post_exec['on_true']
-        on_false = self._post_exec['on_false']
-
-        import types
-
-        if not callable(condition):
+        if not callable(value):
 
             raise TypeError(entity='stage %s branch' % self._uid,
                             expected_type='callable',
-                            actual_type=type(condition)
+                            actual_type=type(value)
                             )
-
-        self._condition = condition
-
-        if not callable(on_true):
-
-            raise TypeError(entity='stage %s on_true' % self._uid,
-                            expected_type='callable',
-                            actual_type=type(on_true))
-
-        self._on_true = on_true
-
-        if not callable(on_false):
-
-            raise TypeError(entity='stage %s on_false' % self._uid,
-                            expected_type='callable',
-                            actual_type=type(on_false))
-
-        self._on_false = on_false
+            
+        self._post_exec = value
+            
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods

@@ -241,7 +241,7 @@ def test_create_cud_from_task():
     assert cud.pre_exec == t1.pre_exec
 
     # rp returns executable as a string regardless of whether assignment was using string or list
-    assert cud.executable == t1.executable[0]
+    assert cud.executable == t1.executable
     assert cud.arguments == t1.arguments
     assert cud.cpu_processes == t1.cpu_reqs['processes']
     assert cud.cpu_threads == t1.cpu_reqs['threads_per_process']
@@ -282,6 +282,8 @@ def test_create_task_from_cu():
     assert t.parent_stage['name'] == 'parent_stage_name'
     assert t.parent_pipeline['uid'] == 'parent_pipeline_uid'
     assert t.parent_pipeline['name'] == 'parent_pipeline_name'
+
+    session.close()
 
 
 def test_resolve_placeholder():

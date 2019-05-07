@@ -86,6 +86,24 @@ class Pipeline(object):
         """
         return self._uid
 
+
+    @property
+    def luid(self):
+        """
+        Unique ID of the current pipeline (fully qualified).
+        For the pipeline class, his is an alias to `uid`.
+
+        example:
+            >>> pipeline.luid
+            pipe.0001
+
+        :getter: Returns the fully qualified uid of the current pipeline
+        :type: String
+        """
+        if self.name: return self.name
+        else        : return self.uid
+
+
     @property
     def lock(self):
         """
@@ -133,8 +151,10 @@ class Pipeline(object):
     def name(self, value):
         if isinstance(value, str):
             if ',' in value:
-                raise EnTKError(
-                    "Using ',' in an object's name may corrupt the profiling and internal mapping tables")
+                raise ValueError(obj=self._uid,
+                                attribute='name',
+                                actual_value=value,
+                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
             else:
                 self._name = value
 

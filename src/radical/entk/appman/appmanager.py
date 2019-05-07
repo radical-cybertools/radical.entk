@@ -69,7 +69,7 @@ class AppManager(object):
         # namespace
         path = os.getcwd() + '/' + self._sid
         self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path, targets=['2','.'])
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -89,6 +89,8 @@ class AppManager(object):
         self._workflow = None
         self._cur_attempt = 1
         self._shared_data = list()
+        self._wfp = None
+        self._sync_thread = None
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
@@ -437,7 +439,7 @@ class AppManager(object):
             self._logger.info('Synchronizer thread terminated')
 
             if self._autoterminate:
-                self.resource_terminate()
+                self._terminate()
 
             if self._write_workflow:
                 write_workflow(self._workflow, self._sid)
@@ -451,24 +453,7 @@ class AppManager(object):
             self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
                                'trying to cancel enqueuer thread gracefully...')
 
-            # Terminate threads in following order: wfp, helper, synchronizer
-            if self._wfp:
-                self._logger.info('Terminating WFprocessor')
-                self._wfp.terminate_processor()
-
-            if self._task_manager:
-                self._logger.info('Terminating task manager process')
-                self._task_manager.terminate_manager()
-                self._task_manager.terminate_heartbeat()
-
-            if self._sync_thread:
-                self._logger.info('Terminating synchronizer thread')
-                self._terminate_sync.set()
-                self._sync_thread.join()
-                self._logger.info('Synchronizer thread terminated')
-
-            if self._resource_manager:
-                self._resource_manager._terminate_resource_request()
+            self._terminate()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -481,44 +466,27 @@ class AppManager(object):
             self._logger.exception('Error in AppManager: %s' % ex)
 
             # Terminate threads in following order: wfp, helper, synchronizer
-            if self._wfp:
-                self._logger.info('Terminating WFprocessor')
-                self._wfp.terminate_processor()
-
-            if self._task_manager:
-                self._logger.info('Terminating task manager process')
-                self._task_manager.terminate_manager()
-                self._task_manager.terminate_heartbeat()
-
-            if self._sync_thread:
-                self._logger.info('Terminating synchronizer thread')
-                self._terminate_sync.set()
-                self._sync_thread.join()
-                self._logger.info('Synchronizer thread terminated')
-
-            if self._resource_manager:
-                self._resource_manager._terminate_resource_request()
+            
+            self._terminate()
 
             self._prof.prof('termination done', uid=self._uid)
             raise
 
+    def terminate(self):
+
+        self._prof.prof('start termination', uid=self._uid)
+        self._terminate()
+        self._prof.prof('termination done', uid=self._uid)
+
+
     def resource_terminate(self):
+        
+        self._prof.prof('start termination', uid=self._uid)
+        self._logger.warning('DeprecationWarning: Public Method resource_terminate is deprecated.\
+                             Please use terminate')
+        self._terminate()
+        self._prof.prof('termination done', uid=self._uid)
 
-        if self._task_manager:
-            self._logger.info('Terminating task manager process')
-            self._task_manager.terminate_manager()
-            self._task_manager.terminate_heartbeat()
-
-        if self._resource_manager:
-            self._resource_manager._terminate_resource_request()
-
-        if os.environ.get('RADICAL_ENTK_PROFILE', False):
-            write_session_description(self)
-
-        if self._rmq_cleanup:
-            self._cleanup_mqs()
-
-        self._report.info('All components terminated\n')
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -677,7 +645,7 @@ class AppManager(object):
 
                                             mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                             self._report.ok('Update: ')
-                                            self._report.info('Task %s in state %s\n' % (task.uid, task.state))
+                                            self._report.info('%s state: %s\n' % (task.luid, task.state))
 
                                             found_task = True
 
@@ -708,8 +676,8 @@ class AppManager(object):
 
                                         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                         self._report.ok('Update: ')
-                                        self._report.info('Task %s in state %s\n' %
-                                                          (completed_task.uid, completed_task.state))
+                                        self._report.info('%s state: %s\n' %
+                                                          (completed_task.luid, completed_task.state))
 
             def stage_update(msg, reply_to, corr_id, mq_channel):
 
@@ -748,7 +716,7 @@ class AppManager(object):
 
                                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
                                     self._report.ok('Update: ')
-                                    self._report.info('Stage %s in state %s\n' % (stage.uid, stage.state))
+                                    self._report.info('%s state: %s\n' % (stage.luid, stage.state))
 
                                     found_stage = True
 
@@ -821,7 +789,7 @@ class AppManager(object):
                             if completed_pipeline.completed:
                                 pipe._completed_flag.set()
                             self._report.ok('Update: ')
-                            self._report.info('Pipeline %s in state %s\n' % (pipe.uid, pipe.state))
+                            self._report.info('%s state: %s\n' % (pipe.luid, pipe.state))
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
@@ -955,5 +923,36 @@ class AppManager(object):
 
             self._logger.exception('Unknown error in synchronizer: %s. \n Terminating thread' % ex)
             raise
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def _terminate(self):
+
+        # Terminate threads in following order: wfp, helper, synchronizer
+        if self._wfp:
+            self._logger.info('Terminating WFprocessor')
+            self._wfp.terminate_processor()
+
+        if self._task_manager:
+            self._logger.info('Terminating task manager process')
+            self._task_manager.terminate_manager()
+            self._task_manager.terminate_heartbeat()
+
+        if self._sync_thread:
+            self._logger.info('Terminating synchronizer thread')
+            self._terminate_sync.set()
+            self._sync_thread.join()
+            self._logger.info('Synchronizer thread terminated')
+
+        if self._resource_manager:
+            self._resource_manager._terminate_resource_request()
+
+        if os.environ.get('RADICAL_ENTK_PROFILE', False):
+            write_session_description(self)
+
+        if self._rmq_cleanup:
+            self._cleanup_mqs()
+
+        self._report.info('All components terminated\n')
 
     # ------------------------------------------------------------------------------------------------------------------

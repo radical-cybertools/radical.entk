@@ -2,9 +2,13 @@ from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
 
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 def test_stage_initialization():
     """
@@ -22,9 +26,7 @@ def test_stage_initialization():
     assert s._task_count == 0
     assert s.parent_pipeline['uid'] == None
     assert s.parent_pipeline['name'] == None
-    assert s.post_exec == {'condition': None,
-                           'on_true': None,
-                           'on_false': None}
+    assert s.post_exec == None
 
 
 @given(t=st.text(),
@@ -117,42 +119,20 @@ def test_stage_post_exec_assignment(l, d):
     with pytest.raises(TypeError):
         s.post_exec = l
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         s.post_exec = d
 
-    pe_d = {'condition': 1,
-            'on_true': 2,
-            'on_false': 3}
 
-    with pytest.raises(TypeError):
-        s.post_exec = pe_d
-
-    pe_d['condition'] = func
-    with pytest.raises(TypeError):
-        s.post_exec = pe_d
-
-    pe_d['on_true'] = func
-    with pytest.raises(TypeError):
-        s.post_exec = pe_d
-
-    pe_d['on_false'] = func
-    s.post_exec = pe_d
+    s.post_exec = func
 
     class Tmp(object):
 
-        def cond(self):
+        def func(self):
             return True
 
-        def on_true(self, par=None):
-            assert(par is None)
-
-        def on_false(self, par=None):
-            assert(False)
 
     tmp = Tmp()
-    s.post_exec = {'condition': tmp.cond,
-                   'on_true'  : tmp.on_true,
-                   'on_false' : tmp.on_false}
+    s.post_exec = tmp.func
 
 
 def test_stage_task_addition():

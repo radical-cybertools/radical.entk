@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
-    t1.executable = ['/bin/bash']
+    t1.executable = '/bin/bash'
     t1.arguments = ['-l', '-c', 'base64 /dev/urandom | head -c 1000000 > output.txt']
 
     # Add the Task to the Stage
