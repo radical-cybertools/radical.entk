@@ -1,6 +1,7 @@
 
 import pytest
-from   hypothesis import given
+
+from   hypothesis import given, settings
 import hypothesis.strategies as st
 
 from radical.entk import Pipeline, Stage, Task
@@ -10,6 +11,11 @@ from radical.entk.exceptions import *
 
 # ------------------------------------------------------------------------------
 #
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
+
 def test_stage_initialization():
     """
     ***Purpose***: Test if all attributes have, thus expect, the
