@@ -4,7 +4,7 @@ from radical.entk import Pipeline, Stage, Task, states
 import pytest
 from radical.entk.exceptions import *
 import os
-from hypothesis import given, strategies as st
+from hypothesis import given, settings, strategies as st
 import radical.utils as ru
 from threading import Event, Thread
 from multiprocessing import Process
@@ -13,6 +13,10 @@ hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 # MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 @given(s=st.characters(),
        i=st.integers().filter(lambda x: isinstance(x,int)),

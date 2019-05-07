@@ -34,7 +34,7 @@ def test_issue_26():
     res_dict = {
 
             'resource': 'local.localhost',
-            'walltime': 5,
+            'walltime': 10,
             'cpus': 1,
             'project': ''
 

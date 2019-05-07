@@ -7,7 +7,7 @@ from radical.entk.execman.mock import ResourceManager as MockRmgr
 from radical.entk import Task, states
 from radical.entk.exceptions import *
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 import hypothesis.strategies as st
 import os
 from radical.entk.exceptions import *
@@ -21,6 +21,10 @@ hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 # MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 MLAB = os.environ.get('RADICAL_PILOT_DBURL')
+
+# Hypothesis settings
+settings.register_profile("travis", max_examples=100, deadline=None)
+settings.load_profile("travis")
 
 @given(s=st.text(),
        l=st.lists(st.characters()),
