@@ -51,8 +51,7 @@ class Base_ResourceManager(object):
                                    ru.ID_CUSTOM,
                                    namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' %
-                                 self._uid, path=self._path, targets=['2', '.'])
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=self._path)
 
         # Shared data list
