@@ -278,7 +278,7 @@ class Pipeline(object):
         for execution until `resume()` is called.
 
          - The `suspend()` method can not be called on a suspended or completed
-           pipeline. Doing so will result in an exeption.
+           pipeline, doing so will result in an exeption.
          - The state of the pipeline will be set to `SUSPENDED`.
         '''
         if self._state == states.SUSPENDED:
@@ -293,7 +293,7 @@ class Pipeline(object):
     #
     def resume(self):
         '''
-        Continue execution of stages and tasks.
+        Continue execution of paused stages and tasks.
         
          - The `resume()` method can only be called on a suspended pipeline, an
            exception will be raised if that condition is not met.
