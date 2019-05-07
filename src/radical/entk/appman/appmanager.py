@@ -302,7 +302,7 @@ class AppManager(object):
             # resubmit a new one if the old one has completed
             res_alloc_state = self._rmgr.get_resource_allocation_state()
             if not res_alloc_state or \
-                res_alloc_state in self._rmgr.get_completed_states()):
+                res_alloc_state in self._rmgr.get_completed_states():
 
                 self._logger.info('Starting resource request submission')
                 self._prof.prof('init_rreq_sub', uid = self._uid)
@@ -385,49 +385,47 @@ class AppManager(object):
                 self._report.info('RabbitMQ already set')
                 return
 
-            try:
+            self._report.ok('>>ok\n')
 
-                self._report.ok('>>ok\n')
+            self._prof.prof('mqs_setup_start', uid=self._uid)
+            self._logger.debug('Setting up mq connection and channel')
 
-                self._prof.prof('mqs_setup_start', uid=self._uid)
-                self._logger.debug('Setting up mq connection and channel')
+            mq_connection = pika.BlockingConnection(
+                                pika.ConnectionParameters(
+                                    host=self._mq_hostname, 
+                                    port=self._port))
 
-                mq_connection = pika.BlockingConnection(
-                                    pika.ConnectionParameters(
-                                        host=self._mq_hostname, 
-                                        port=self._port))
+            mq_channel = mq_connection.channel()
+            self._logger.debug('Connection and channel setup successful')
+            self._logger.debug('Setting up all exchanges and queues')
 
-                mq_channel = mq_connection.channel()
-                self._logger.debug('Connection and channel setup successful')
-                self._logger.debug('Setting up all exchanges and queues')
+            qs = [
+                '%s-tmgr-to-sync' % self._sid,
+                '%s-cb-to-sync' % self._sid,
+                '%s-sync-to-tmgr' % self._sid,
+                '%s-sync-to-cb' % self._sid,
+            ]
 
-                qs = [
-                    '%s-tmgr-to-sync' % self._sid,
-                    '%s-cb-to-sync' % self._sid,
-                    '%s-sync-to-tmgr' % self._sid,
-                    '%s-sync-to-cb' % self._sid,
-                ]
+            for i in range(1, self._num_pending_qs + 1):
+                queue_name = '%s-pendingq-%s' % (self._sid, i)
+                self._pending_queue.append(queue_name)
+                qs.append(queue_name)
 
-                for i in range(1, self._num_pending_qs + 1):
-                    queue_name = '%s-pendingq-%s' % (self._sid, i)
-                    self._pending_queue.append(queue_name)
-                    qs.append(queue_name)
+            for i in range(1, self._num_completed_qs + 1):
+                queue_name = '%s-completedq-%s' % (self._sid, i)
+                self._completed_queue.append(queue_name)
+                qs.append(queue_name)
 
-                for i in range(1, self._num_completed_qs + 1):
-                    queue_name = '%s-completedq-%s' % (self._sid, i)
-                    self._completed_queue.append(queue_name)
-                    qs.append(queue_name)
+            f = open('.%s.txt' % self._sid, 'w')
+            for q in qs:
+                # Durable Qs will not be lost if rabbitmq server crashes
+                mq_channel.queue_declare(queue=q)
+                f.write(q + '\n')
+            f.close()
 
-                f = open('.%s.txt' % self._sid, 'w')
-                for q in qs:
-                    # Durable Qs will not be lost if rabbitmq server crashes
-                    mq_channel.queue_declare(queue=q)
-                    f.write(q + '\n')
-                f.close()
-
-                self._logger.debug('All exchanges and queues are setup')
-                self._prof.prof('mqs_setup_stop', uid=self._uid)
-                self._mqs_setup=True
+            self._logger.debug('All exchanges and queues are setup')
+            self._prof.prof('mqs_setup_stop', uid=self._uid)
+            self._mqs_setup=True
 
         except Exception, ex:
 

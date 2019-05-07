@@ -157,7 +157,7 @@ class WFprocessor(object):
                 for exec_task in exec_tasks:
 
                     if exec_task.state == states.INITIAL or \
-                        (exec_task.state == states.FAILED) and
+                        (exec_task.state == states.FAILED and \
                             self._resubmit_failed):
 
                         # Set state of Tasks in current Stage
