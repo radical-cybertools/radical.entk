@@ -277,9 +277,9 @@ class Pipeline(object):
         will continue to execute, but no new stages and tasks will be eligible
         for execution until `resume()` is called.
 
-         - the `suspend()` method can not be called on a suspended or completed
-           pipeline - doing though will result in an exeption.
-         - the state of the pipeline will be set to `SUSPENDED`.
+         - The `suspend()` method can not be called on a suspended or completed
+           pipeline - doing so will result in an exeption.
+         - The state of the pipeline will be set to `SUSPENDED`.
         '''
         if self._state == states.SUSPENDED:
             raise EnTKError(
@@ -295,8 +295,8 @@ class Pipeline(object):
         '''
         Continue execution of stages and tasks.
         
-         - the `resume()` method can only be called on a suspended pipeline, an
-            exception will be raised if that condition is not met.
+         - The `resume()` method can only be called on a suspended pipeline, an
+           exception will be raised if that condition is not met.
          - The state of a resumed pipeline will be set to the state the pipeline
            had before suspension.
         '''
