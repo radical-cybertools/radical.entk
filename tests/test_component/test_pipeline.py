@@ -55,7 +55,7 @@ def test_pipeline_stage_assignment():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.tasks = t
     p.stages = s
 
@@ -92,11 +92,11 @@ def test_pipeline_stage_addition():
     p = Pipeline()
     s1 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s1.tasks = t
     s2 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s2.tasks = t
     p.add_stages([s1, s2])
 
@@ -141,11 +141,11 @@ def test_pipeline_increment_stage():
     p = Pipeline()
     s1 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s1.tasks = t
     s2 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s2.tasks = t
     p.add_stages([s1, s2])
 
@@ -169,11 +169,11 @@ def test_pipeline_decrement_stage():
     p = Pipeline()
     s1 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s1.tasks = t
     s2 = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s2.tasks = t
     p.add_stages([s1, s2])
 

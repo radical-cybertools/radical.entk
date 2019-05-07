@@ -29,7 +29,7 @@ def generate_pipeline():
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
     t1.name = 't1'
-    t1.executable = ['/bin/false']
+    t1.executable = '/bin/false'
     # t1.arguments = ['"Hello World"','>>','temp.txt']
 
     # Add the Task to the Stage

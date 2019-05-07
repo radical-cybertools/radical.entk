@@ -65,7 +65,7 @@ def test_stage_task_assignment():
 
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.tasks = t
 
     assert type(s.tasks) == set
@@ -139,9 +139,9 @@ def test_stage_task_addition():
 
     s = Stage()
     t1 = Task()
-    t1.executable = ['/bin/date']
+    t1.executable = '/bin/date'
     t2 = Task()
-    t2.executable = ['/bin/date']
+    t2.executable = '/bin/date'
     s.add_tasks(set([t1, t2]))
 
     assert type(s.tasks) == set
@@ -151,9 +151,9 @@ def test_stage_task_addition():
 
     s = Stage()
     t1 = Task()
-    t1.executable = ['/bin/date']
+    t1.executable = '/bin/date'
     t2 = Task()
-    t2.executable = ['/bin/date']
+    t2.executable = '/bin/date'
     s.add_tasks([t1, t2])
 
     assert type(s.tasks) == set
@@ -198,9 +198,9 @@ def test_stage_set_tasks_state():
 
     s = Stage()
     t1 = Task()
-    t1.executable = ['/bin/date']
+    t1.executable = '/bin/date'
     t2 = Task()
-    t2.executable = ['/bin/date']
+    t2.executable = '/bin/date'
     s.add_tasks([t1, t2])
 
     with pytest.raises(ValueError):
@@ -215,9 +215,9 @@ def test_stage_check_complete():
 
     s = Stage()
     t1 = Task()
-    t1.executable = ['/bin/date']
+    t1.executable = '/bin/date'
     t2 = Task()
-    t2.executable = ['/bin/date']
+    t2.executable = '/bin/date'
     s.add_tasks([t1, t2])
 
     assert s._check_stage_complete() == False

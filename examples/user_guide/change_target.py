@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # Create a Task object
     t2 = Task()
-    t2.executable = ['/bin/bash']
+    t2.executable = '/bin/bash'
     t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
     # Copy data from the task in the first stage to the current task's location
     t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.uid, s1.uid, t1.uid)]

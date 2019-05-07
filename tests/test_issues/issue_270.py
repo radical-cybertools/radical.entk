@@ -29,7 +29,7 @@ def generate_pipeline():
     # Create 4K tasks to ensure we don't hit any RMQ connection drops
     for _ in range(4096):
         t1 = Task()
-        t1.executable = ['/bin/echo']
+        t1.executable = '/bin/echo'
         t1.arguments = ['"Hello World"']
 
         # Add the Task to the Stage
