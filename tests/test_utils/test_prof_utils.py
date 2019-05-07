@@ -1,18 +1,18 @@
-import pytest
-from radical.entk.utils import get_session_profile, get_session_description, write_session_description, write_workflow
-from pprint import pprint
-from radical.entk.exceptions import *
-import radical.utils as ru
 import os
+import shutil
+
+import radical.utils as ru
+
 from radical.entk import Pipeline, Stage, Task, AppManager
 from radical.entk.appman.wfprocessor import WFprocessor
 from radical.entk.execman.rp import TaskManager
-from glob import glob
-import shutil
+from radical.entk.utils import get_session_profile, get_session_description, write_session_description, write_workflow
 
 MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
+
+# pylint: disable=protected-access
 
 
 def test_get_session_profile():
@@ -31,8 +31,6 @@ def test_get_session_profile():
 
 def test_write_session_description():
 
-    hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-    port = int(os.environ.get('RMQ_PORT', 5672))
     amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {
         'resource': 'xsede.stampede',
@@ -46,7 +44,7 @@ def test_write_session_description():
     workflow = [generate_pipeline(1), generate_pipeline(2)]
     amgr.workflow = workflow
 
-    amgr._wfp = WFprocessor(sid=amgr._sid,
+    amgr._wfp = WFprocessor(sid=amgr.sid,
                             workflow=amgr._workflow,
                             pending_queue=amgr._pending_queue,
                             completed_queue=amgr._completed_queue,
@@ -72,7 +70,6 @@ def test_write_session_description():
     curdir = os.path.dirname(os.path.abspath(__file__))
     src = '%s/sample_data' % curdir
     assert desc == ru.read_json('%s/expected_desc_write_session.json' % src)
-
 
 
 def test_get_session_description():
@@ -159,9 +156,74 @@ def test_write_workflow():
 
         stack = data.pop(0)
         assert stack.keys() == ['stack']
-        assert stack['stack'].keys() == ['sys','radical']
-        assert stack['stack']['sys'].keys() == ["python","pythonpath","virtualenv"]
-        assert stack['stack']['radical'].keys() == ['saga', 'radical.pilot', 'radical.utils', 'radical.entk']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
+                                                    'radical.utils',
+                                                    'radical.entk'])
+
+        p_cnt = 0
+        for p in data:
+            assert p['uid'] == wf[p_cnt].uid
+            assert p['name'] == wf[p_cnt].name
+            assert p['state_history'] == wf[p_cnt].state_history
+            s_cnt = 0
+            for s in p['stages']:
+                assert s['uid'] == wf[p_cnt].stages[s_cnt].uid
+                assert s['name'] == wf[p_cnt].stages[s_cnt].name
+                assert s['state_history'] == wf[p_cnt].stages[s_cnt].state_history
+                for t in wf[p_cnt].stages[s_cnt].tasks:
+                    assert t.to_dict() in s['tasks']
+                s_cnt += 1
+            p_cnt += 1
+
+        shutil.rmtree('test')
+
+        write_workflow(wf, 'test', workflow_fout='test_workflow')
+
+        data = ru.read_json('test/test_workflow.json')
+        assert len(data) == len(wf) + 1
+
+        stack = data.pop(0)
+        assert stack.keys() == ['stack']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
+                                                    'radical.utils',
+                                                    'radical.entk'])
+
+        p_cnt = 0
+        for p in data:
+            assert p['uid'] == wf[p_cnt].uid
+            assert p['name'] == wf[p_cnt].name
+            assert p['state_history'] == wf[p_cnt].state_history
+            s_cnt = 0
+            for s in p['stages']:
+                assert s['uid'] == wf[p_cnt].stages[s_cnt].uid
+                assert s['name'] == wf[p_cnt].stages[s_cnt].name
+                assert s['state_history'] == wf[p_cnt].stages[s_cnt].state_history
+                for t in wf[p_cnt].stages[s_cnt].tasks:
+                    assert t.to_dict() in s['tasks']
+                s_cnt += 1
+            p_cnt += 1
+
+        shutil.rmtree('test')
+
+        data = write_workflow(wf, 'test', workflow_fout='test_workflow',
+                              fwrite=False)
+
+        assert len(data) == len(wf) + 1
+
+        stack = data.pop(0)
+        assert stack.keys() == ['stack']
+        assert stack['stack'].keys() == ['sys', 'radical']
+        assert stack['stack']['sys'].keys() == ["python", "pythonpath",
+                                                "virtualenv"]
+        assert set(stack['stack']['radical'].keys()) == set(['radical.saga', 'radical.pilot',
+                                                    'radical.entk',
+                                                    'radical.utils'])
 
         p_cnt = 0
         for p in data:
@@ -179,5 +241,8 @@ def test_write_workflow():
             p_cnt += 1
 
     except Exception as ex:
+        raise ex
+
+    finally:
         shutil.rmtree('test')
-        raise
+# pylint: enable=protected-access

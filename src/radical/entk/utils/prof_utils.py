@@ -1,16 +1,13 @@
 import os
-import csv
-import copy
 import glob
-import time
-import threading
-import json
+import traceback
 import radical.utils as ru
 
-from radical.entk.exceptions import *
-import traceback
-import socket
+from radical.entk.exceptions import EnTKError
 from radical.entk import states as res
+from radical.pilot import states as rps
+
+# pylint: disable=protected-access
 
 
 def get_hostmap(profile):
@@ -40,7 +37,7 @@ def get_hostmap_deprecated(profiles):
     hostmap = dict()  # map pilot IDs to host names
     for pname, prof in profiles.iteritems():
 
-        if not len(prof):
+        if not prof:
             continue
 
         if not prof[0][ru.MSG]:
@@ -73,7 +70,7 @@ def get_session_profile(sid, src=None):
     else:
         raise EnTKError('%s/%s does not exist' % (src, sid))
 
-    if len(profiles) == 0:
+    if not profiles:
         raise EnTKError('No profiles found at %s' % src)
 
     try:
@@ -97,7 +94,7 @@ def get_session_profile(sid, src=None):
 
         # Push the exception raised by child functions
         print traceback.format_exc()
-        raise EnTKError('Error: %s'%ex)
+        raise EnTKError('Error: %s' % ex)
 
 
 def write_session_description(amgr):
@@ -139,7 +136,7 @@ def write_session_description(amgr):
                                'resource_manager',
                                'task_manager'],
                        'children': list()
-                       }
+                      }
 
     # Adding wfp to the tree
     wfp = amgr._wfp
@@ -149,7 +146,7 @@ def write_session_description(amgr):
                       'cfg': {},
                       'has': [],
                       'children': list()
-                      }
+                     }
 
     # Adding rmgr to the tree
     rmgr = amgr._resource_manager
@@ -159,7 +156,7 @@ def write_session_description(amgr):
                        'cfg': {},
                        'has': [],
                        'children': list()
-                       }
+                      }
 
     # Adding tmgr to the tree
     tmgr = amgr._task_manager
@@ -169,7 +166,7 @@ def write_session_description(amgr):
                        'cfg': {},
                        'has': [],
                        'children': list()
-                       }
+                      }
 
     # Adding pipelines to the tree
     for wf in amgr._workflows:
@@ -204,7 +201,7 @@ def write_session_description(amgr):
     desc['tree'] = tree
     desc['config'] = dict()
 
-    ru.write_json(desc, '%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
+    ru.write_json(desc, '%s/radical.entk.%s.json' % (amgr.sid, amgr.sid))
 
 
 def get_session_description(sid, src=None):
@@ -226,6 +223,7 @@ def get_session_description(sid, src=None):
 # ------------------------------------------------------------------------------
 #
 def write_workflow(workflows, uid):
+def write_workflow(workflows, uid, workflow_fout='entk_workflow', fwrite=True):
 
     try:
         os.mkdir(uid)
@@ -233,11 +231,12 @@ def write_workflow(workflows, uid):
     except:
         pass
 
-    if os.path.isfile('%s/entk_workflow.json' % uid):
-        data = ru.read_json('%s/entk_workflow.json' % uid)
-
     data = {'stack'    : ru.stack(), 
             'workflows': list()}
+
+    data = list()
+    if os.path.isfile('%s/%s.json' % (uid, workflow_fout)):
+        data = ru.read_json('%s/%s.json' % (uid, workflow_fout))
 
     for workflow in workflows:
 
@@ -269,8 +268,11 @@ def write_workflow(workflows, uid):
 
         data['workflows'].append(w)
 
-    ru.write_json(data, '%s/entk_workflow.json' % uid)
+    if fwrite:
+        ru.write_json(data, '%s/%s.json' % (uid, workflow_fout))
+        return 0
 
+    return data
 
-# ------------------------------------------------------------------------------
+# pylint: disable=protected-access
 
