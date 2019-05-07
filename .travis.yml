@@ -23,7 +23,7 @@ env:
     - CMD3="if [[ -z '\"\$DIFF\"' ]]; then pylint $DIFF; fi"
     - COVERAGE=false
   matrix:
-    #- MAIN_CMD=$CMD1 COVERAGE=true
+    - MAIN_CMD=$CMD1 COVERAGE=true
     - MAIN_CMD=$CMD2
     - MAIN_CMD=$CMD3
   
