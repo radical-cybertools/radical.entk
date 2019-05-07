@@ -3,7 +3,7 @@ __author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__ = "MIT"
 
 import radical.utils as ru
-from radical.entk.exceptions import *
+from radical.entk.exceptions import EnTKError, TypeError, ValueError, MissingError
 from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
@@ -322,63 +322,38 @@ class AppManager(object):
             # workflow are executed or an error/exception is encountered
             self._run_workflow()
 
-            # Terminate threads in following order: wfp, helper, synchronizer
-            self._prof.prof('start termination', uid=self._uid)
-            self._logger.info('Terminating WFprocessor')
-            self._wfp.terminate_processor()
-
-            self._logger.info('Terminating synchronizer thread')
-            self._terminate_sync.set()
-            self._sync_thread.join()
-            self._logger.info('Synchronizer thread terminated')
-
             if self._autoterminate:
                 self._terminate()
 
             if self._write_workflow:
                 write_workflow(self._workflow, self._sid)
 
-            self._prof.prof('termination done', uid=self._uid)
-
         except KeyboardInterrupt:
-
-            self._prof.prof('start termination', uid=self._uid)
 
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
 
             self._terminate()
-
-            self._prof.prof('termination done', uid=self._uid)
             raise KeyboardInterrupt
 
         except Exception, ex:
-
-            self._prof.prof('start termination', uid=self._uid)
 
             self._logger.exception('Error in AppManager: %s' % ex)
 
             # Terminate threads in following order: wfp, helper, synchronizer
             self._terminate()
-
-            self._prof.prof('termination done', uid=self._uid)
             raise
 
     def terminate(self):
-
-        self._prof.prof('start termination', uid=self._uid)
         self._terminate()
-        self._prof.prof('termination done', uid=self._uid)
 
 
     def resource_terminate(self):
         
-        self._prof.prof('start termination', uid=self._uid)
         self._logger.warning('DeprecationWarning: Public Method resource_terminate is deprecated.\
                              Please use terminate')
         self._terminate()
-        self._prof.prof('termination done', uid=self._uid)
 
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -414,7 +389,7 @@ class AppManager(object):
 
                 self._report.ok('>>ok\n')
 
-                self._prof.prof('init mqs setup', uid=self._uid)
+                self._prof.prof('mqs_setup_start', uid=self._uid)
                 self._logger.debug('Setting up mq connection and channel')
 
                 mq_connection = pika.BlockingConnection(
@@ -451,7 +426,7 @@ class AppManager(object):
                 f.close()
 
                 self._logger.debug('All exchanges and queues are setup')
-                self._prof.prof('mqs setup done', uid=self._uid)
+                self._prof.prof('mqs_setup_stop', uid=self._uid)
                 self._mqs_setup=True
 
         except Exception, ex:
@@ -462,6 +437,8 @@ class AppManager(object):
     def _cleanup_mqs(self):
 
         try:
+
+            self._prof.prof('mqs_cleanup_start', uid=self._uid)
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
                                                     host=self._mq_hostname, 
@@ -481,6 +458,8 @@ class AppManager(object):
                 queue_name = '%s-completedq-%s' % (self._sid, i)
                 mq_channel.queue_delete(queue=queue_name)
 
+            self._prof.prof('mqs_cleanup_stop', uid=self._uid)
+
         except Exception as ex:
             self._logger.exception('Message queues not deleted, error')
             raise
@@ -490,7 +469,7 @@ class AppManager(object):
 
         # Create WFProcessor and initialize workflow its contents with
         # uids
-        self._prof.prof('creating_wfp', uid = self._uid)
+        self._prof.prof('wfp_create_start', uid = self._uid)
         self._wfp=WFprocessor(sid = self._sid,
                                 workflow = self._workflow,
                                 pending_queue = self._pending_queue,
@@ -499,14 +478,14 @@ class AppManager(object):
                                 port = self._port,
                                 resubmit_failed = self._resubmit_failed)
         self._wfp.initialize_workflow()
-        self._prof.prof('wfp_created', uid = self._uid)
+        self._prof.prof('wfp_create_stop', uid = self._uid)
 
         # Start synchronizer thread
         if not self._sync_thread:
             self._logger.info('Starting synchronizer thread')
             self._sync_thread=Thread(target = self._synchronizer,
                                     name = 'synchronizer-thread')
-            self._prof.prof('start_sync_thread',uid = self._uid)
+            self._prof.prof('sync_thread_start',uid = self._uid)
             self._sync_thread.start()
 
         # Start WFprocessor
@@ -521,7 +500,7 @@ class AppManager(object):
             from radical.entk.execman.mock import TaskManager
 
         if not self._task_manager:
-            self._prof.prof('creating tmgr obj', uid = self._uid)
+            self._prof.prof('tmgr_create_start', uid = self._uid)
             self._task_manager= TaskManager(sid = self._sid,
                                                 pending_queue = self._pending_queue,
                                                 completed_queue = self._completed_queue,
@@ -533,6 +512,7 @@ class AppManager(object):
                                 AppManager')
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
+            self._prof.prof('tmgr_create_stop', uid = self._uid)
             
 
     def _run_workflow(self):
@@ -569,7 +549,7 @@ class AppManager(object):
                 self._sync_thread= Thread(target = self._synchronizer,
                                             name = 'synchronizer-thread')
                 self._logger.info('Restarting synchronizer thread')
-                self._prof.prof('restarting synchronizer', uid = self._uid)
+                self._prof.prof('sync_thread_restart', uid = self._uid)
                 self._sync_thread.start()
 
                 self._cur_attempt += 1
@@ -583,6 +563,7 @@ class AppManager(object):
 
 
                 self._prof.prof('recreating wfp obj', uid = self._uid)
+                self._prof.prof('wfp_recreate', uid = self._uid)
                 self._wfp= WFprocessor(sid = self._sid,
                                         workflow=self._workflow,
                                         pending_queue=self._pending_queue,
@@ -606,8 +587,7 @@ class AppManager(object):
                 # itself. We stop and start a new instance of the
                 # heartbeat thread as well.
 
-                self._prof.prof('restarting tmgr process and heartbeat', 
-                                uid=self._uid)
+                self._prof.prof('restart_tmgr', uid=self._uid)
 
                 self._logger.info('Terminating heartbeat thread')
                 self._task_manager.terminate_heartbeat()
@@ -634,7 +614,7 @@ class AppManager(object):
 
         try:
 
-            self._prof.prof('synchronizer started', uid=self._uid)
+            self._prof.prof('sync_thread_started', uid=self._uid)
             self._logger.info('synchronizer thread started')
 
             def task_update(msg, reply_to, corr_id, mq_channel):
@@ -678,8 +658,8 @@ class AppManager(object):
                                                 correlation_id=corr_id),
                                             body='%s-ack' % task.uid)
 
-                            self._prof.prof('publishing sync ack for obj with \
-                                            state %s' % msg['object']['state'],
+                            self._prof.prof('pub_ack_state_%s' % 
+                                            msg['object']['state'],
                                             uid=msg['object']['uid'])
 
                             mq_channel.basic_ack(
@@ -700,26 +680,24 @@ class AppManager(object):
                                 # to be: add it to the workflow object in the
                                 # AppManager via the synchronizer.
 
-                                self._prof.prof('Adap: adding new task')
-
                                 self._logger.info('Adding new task %s to \
                                                     parent stage: %s' 
                                                     % (completed_task.uid,
                                                     stage.uid))
 
+                                self._prof.prof('adap_add_task_start', uid=completed_task.uid)
                                 stage.add_tasks(completed_task)
+                                self._prof.prof('adap_add_task_stop', uid=completed_task.uid)
+
                                 mq_channel.basic_publish(exchange='',
                                             routing_key=reply_to,
                                             properties=pika.BasicProperties(
                                                 correlation_id=corr_id),
                                             body='%s-ack' % completed_task.uid)
 
-                                self._prof.prof('Adap: added new task')
-
-                                self._prof.prof('publishing sync ack for obj \
-                                                with state %s' %
-                                                msg['object']['state'],
-                                                uid=msg['object']['uid'])
+                                self._prof.prof('pub_ack_state_%s' % 
+                                            msg['object']['state'],
+                                            uid=msg['object']['uid'])
 
                                 mq_channel.basic_ack(
                                     delivery_tag=method_frame.delivery_tag)
@@ -756,9 +734,9 @@ class AppManager(object):
 
                     msg = json.loads(body)
 
-                    self._prof.prof('received obj with state %s for sync' % 
-                                                    msg['object']['state'],
-                                                    uid=msg['object']['uid'])
+                    self._prof.prof('sync_recv_obj_state_%s' % 
+                                                msg['object']['state'],
+                                                uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' % 
                                                     (msg['object']['uid'],
@@ -788,9 +766,9 @@ class AppManager(object):
 
                     msg = json.loads(body)
 
-                    self._prof.prof('received obj with state %s for sync' % 
-                                                    msg['object']['state'],
-                                                    uid=msg['object']['uid'])
+                    self._prof.prof('sync_recv_obj_state_%s' % 
+                                                msg['object']['state'],
+                                                uid=msg['object']['uid'])
 
                     self._logger.debug('received %s with state %s for sync' % 
                                                     (msg['object']['uid'],
@@ -808,7 +786,7 @@ class AppManager(object):
                     mq_connection.process_data_events()
                     last = now
 
-            self._prof.prof('terminating synchronizer', uid=self._uid)
+            self._prof.prof('sync_thread_stop', uid=self._uid)
 
         except KeyboardInterrupt:
 
@@ -827,6 +805,8 @@ class AppManager(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def _terminate(self):
+
+        self._prof.prof('term_start', uid=self._uid)        
 
         # Terminate threads in following order: wfp, helper, synchronizer
         if self._wfp:
@@ -854,5 +834,6 @@ class AppManager(object):
             self._cleanup_mqs()
 
         self._report.info('All components terminated\n')
+        self._prof.prof('term_stop', uid=self._uid)
 
     # ------------------------------------------------------------------------------------------------------------------

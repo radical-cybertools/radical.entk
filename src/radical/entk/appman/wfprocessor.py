@@ -15,7 +15,7 @@ import uuid
 import time
 
 # EnTK imports
-from ..exceptions import *
+from ..exceptions import EnTKError, ValueError, TypeError, MissingError
 from .. import states, Pipeline, Task
 from ..utils.init_transition import transition, local_transition
 
@@ -70,7 +70,7 @@ class WFprocessor(object):
                                 path=self._path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
-        self._prof.prof('create wfp obj', uid=self._uid)
+        
 
         # Defaults
         self._wfp_process = None
@@ -79,7 +79,7 @@ class WFprocessor(object):
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
-        self._prof.prof('wfp obj created', uid=self._uid)
+        self._prof.prof('create_wfp', uid=self._uid)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter
@@ -139,23 +139,19 @@ class WFprocessor(object):
                     exec_stage.parent_pipeline['name'] = pipe.name
                     exec_stage._assign_uid(self._sid)
 
-                # We need to check both INITIAL and SCHEDULED as
-                # there maybe a task in the stage that needs to be
-                # resubmitted.
+                # If its a new stage, update its state
+                if exec_stage.state == states.INITIAL:
+
+                    local_transition(obj=exec_stage,
+                                    obj_type='Stage',
+                                    new_state=states.SCHEDULING,
+                                    profiler=self._prof,
+                                    logger=self._logger,
+                                    reporter=self._report)
+
+                # Get all tasks of a stage in SCHEDULED state
                 exec_tasks = list()
-                if exec_stage.state in [states.INITIAL,
-                                        states.SCHEDULED]:
-
-                    # If its a new stage, update its state
-                    if exec_stage.state == states.INITIAL:
-
-                        local_transition(obj=exec_stage,
-                                        obj_type='Stage',
-                                        new_state=states.SCHEDULING,
-                                        profiler=self._prof,
-                                        logger=self._logger,
-                                        reporter=self._report)
-
+                if exec_stage.state == states.SCHEDULED:
                     exec_tasks = exec_stage.tasks
 
                 for exec_task in exec_tasks:
@@ -244,7 +240,7 @@ class WFprocessor(object):
 
         try:
 
-            self._prof.prof('enqueue-thread started', uid=self._uid)
+            self._prof.prof('enq_start', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
             # Acquire a connection+channel to the rmq server
@@ -272,7 +268,7 @@ class WFprocessor(object):
             self._logger.info('Enqueue thread terminated')
             mq_connection.close()
 
-            self._prof.prof('terminating enqueue-thread', uid=self._uid)
+            self._prof.prof('enq_stop', uid=self._uid)
 
         except KeyboardInterrupt:
 
@@ -444,7 +440,7 @@ class WFprocessor(object):
 
         try:
 
-            self._prof.prof('dequeue-thread started', uid=self._uid)
+            self._prof.prof('deq_start', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
             # Acquire a connection+channel to the rmq server
@@ -482,7 +478,7 @@ class WFprocessor(object):
 
             self._logger.info('Terminated dequeue thread')
             mq_connection.close()
-            self._prof.prof('terminating dequeue-thread', uid=self._uid)
+            self._prof.prof('deq_stop', uid=self._uid)
 
         except KeyboardInterrupt:
 
@@ -513,12 +509,12 @@ class WFprocessor(object):
 
         try:
 
-            self._prof.prof('initializing workflow', uid=self._uid)
+            self._prof.prof('wf_init_start', uid=self._uid)
 
             for p in self._workflow:
                 p._assign_uid(self._sid)
 
-            self._prof.prof('workflow initialized', uid=self._uid)
+            self._prof.prof('wf_init_stop', uid=self._uid)
 
         except Exception:
             self._logger.exception('Fatal error when initializing workflow')
@@ -534,7 +530,7 @@ class WFprocessor(object):
         try:
 
             self._logger.info('Starting WFprocessor')
-            self._prof.prof('starting wfp', uid=self._uid)
+            self._prof.prof('wfp_start', uid=self._uid)
 
             self._enqueue_thread_terminate = threading.Event()
             self._dequeue_thread_terminate = threading.Event()
@@ -554,7 +550,7 @@ class WFprocessor(object):
             self._enqueue_thread.start()
 
             self._logger.info('WFprocessor started')
-            self._prof.prof('wfp started', uid=self._uid)
+            self._prof.prof('wfp_started', uid=self._uid)
 
         except Exception, ex:
 
@@ -587,7 +583,7 @@ class WFprocessor(object):
                     self._dequeue_thread = None
 
             self._logger.info('WFprocessor terminated')
-            self._prof.prof('wfp terminated', uid=self._uid)
+            self._prof.prof('wfp_stop', uid=self._uid)
             self._prof.close()
 
         except Exception, ex:
