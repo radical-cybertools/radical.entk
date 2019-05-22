@@ -19,8 +19,8 @@ env:
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
     - CMD_PYTEST="coverage run -m pytest -vvv tests/test_component/test_amgr.py;coverage run -m pytest -vvv tests/test_component/test_modules.py;coverage run -m pytest -vvv tests/test_component/test_pipeline.py;coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_rmgr.py;coverage run -m pytest -vvv tests/test_component/test_stage.py;coverage run -m pytest -vvv tests/test_component/test_task.py;coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp.py;coverage run -m pytest -vvv tests/test_component/test_tmgr.py;coverage run -m pytest -vvv tests/test_component/test_wfp.py;coverage run -m pytest -vvv tests/test_component/test_states.py;coverage run -m pytest -vvv tests/test_integration/test_*;coverage run -m pytest -vvv tests/test_issues/test_*;coverage run -m pytest -vvv tests/test_utils/test_*"
-    - CMD_FLAKE8="if ! test -z '\$DIFF\'; then flake8 --config=.flake8 $DIFF; fi"
-    - CMD_PYLINT="if ! test -z '\$DIFF\'; then pylint $DIFF; fi"
+    - CMD_FLAKE8="if ! test -z \"$DIFF"\; then flake8 --config=.flake8 $DIFF; fi"
+    - CMD_PYLINT="if ! test -z \"$DIFF"\; then pylint $DIFF; fi"
     - COVERAGE=false
   matrix:
     - MAIN_CMD=$CMD_PYTEST COVERAGE=true
