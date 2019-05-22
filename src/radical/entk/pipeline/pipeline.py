@@ -175,7 +175,10 @@ class Pipeline(object):
         if isinstance(value, str):
             if value in states._pipeline_state_values.keys():
                 self._state = value
-                self._state_history.append(value)
+
+                # We add SUSPENDED to state history in suspend()
+                if self._state != states.SUSPENDED:
+                    self._state_history.append(value)
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',
@@ -200,17 +203,6 @@ class Pipeline(object):
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
             self._cur_stage = 1
-
-    def rerun(self):
-
-        """
-        Rerun sets the state of the Pipeline to scheduling so that the Pipeline
-        can be checked for new stages
-        """
-
-        self._state = states.SCHEDULING
-        self._completed_flag = threading.Event()
-        print 'Pipeline %s in %s state'%(self._uid, self._state)
 
     def to_dict(self):
         """
@@ -277,7 +269,18 @@ class Pipeline(object):
                 raise TypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
+    # --------------------------------------------------------------------------
+    #
     def suspend(self):
+        '''
+        Pause execution of the pipeline: stages and tasks that are executing
+        will continue to execute, but no new stages and tasks will be eligible
+        for execution until `resume()` is called.
+
+         - The `suspend()` method can not be called on a suspended or completed
+           pipeline, doing so will result in an exeption.
+         - The state of the pipeline will be set to `SUSPENDED`.
+        '''
         if self._state == states.SUSPENDED:
             raise EnTKError(
                 'suspend() called on Pipeline %s that is already suspended' % self._uid)
@@ -285,13 +288,25 @@ class Pipeline(object):
         self._state = states.SUSPENDED
         self._state_history.append(self._state)
 
+
+    # --------------------------------------------------------------------------
+    #
     def resume(self):
+        '''
+        Continue execution of paused stages and tasks.
+        
+         - The `resume()` method can only be called on a suspended pipeline, an
+           exception will be raised if that condition is not met.
+         - The state of a resumed pipeline will be set to the state the pipeline
+           had before suspension.
+        '''
         if self._state != states.SUSPENDED:
             raise EnTKError(
                 'Cannot resume Pipeline %s since it is not suspended' % self._uid)
 
         self._state = self._state_history[-2]
         self._state_history.append(self._state)
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods

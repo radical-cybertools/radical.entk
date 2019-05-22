@@ -69,7 +69,7 @@ class AppManager(object):
         # namespace
         path = os.getcwd() + '/' + self._sid
         self._uid = ru.generate_id('appmanager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path, targets=['2','.'])
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -783,6 +783,11 @@ class AppManager(object):
 
                     if not pipe.completed:
 
+                        self._logger.info('Completed pipe uid %s state %s, pipe uid %s state %s' %(completed_pipeline.uid,
+                                                                                                   completed_pipeline.state,
+                                                                                                   pipe.uid,
+                                                                                                   pipe.state))
+
                         if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
 
                             pipe.state = str(completed_pipeline.state)
@@ -813,6 +818,8 @@ class AppManager(object):
                                 pipe._completed_flag.set()
                             self._report.ok('Update: ')
                             self._report.info('%s state: %s\n' % (pipe.luid, pipe.state))
+
+                            break
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=self._mq_hostname, port=self._port))
             mq_channel = mq_connection.channel()
