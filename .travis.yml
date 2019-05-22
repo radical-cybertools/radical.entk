@@ -23,8 +23,8 @@ env:
     - CMD_PYLINT="if ! test -z \"$DIFF\"; then pylint $DIFF;else echo 'Nothing to lint';fi"
     - COVERAGE=false
   matrix:
-    #- MAIN_CMD=$CMD_PYTEST COVERAGE=true
-    #- MAIN_CMD=$CMD_FLAKE8
+    - MAIN_CMD=$CMD_PYTEST COVERAGE=true
+    - MAIN_CMD=$CMD_FLAKE8
     - MAIN_CMD=$CMD_PYLINT  
   
   
