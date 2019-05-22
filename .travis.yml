@@ -20,7 +20,7 @@ env:
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
     - CMD_PYTEST="coverage run -m pytest -vvv tests/test_component/test_amgr.py;coverage run -m pytest -vvv tests/test_component/test_modules.py;coverage run -m pytest -vvv tests/test_component/test_pipeline.py;coverage run -m pytest -vvv tests/test_component/test_rmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_rmgr.py;coverage run -m pytest -vvv tests/test_component/test_stage.py;coverage run -m pytest -vvv tests/test_component/test_task.py;coverage run -m pytest -vvv tests/test_component/test_tmgr_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp_2.py;coverage run -m pytest -vvv tests/test_component/test_tproc_rp.py;coverage run -m pytest -vvv tests/test_component/test_tmgr.py;coverage run -m pytest -vvv tests/test_component/test_wfp.py;coverage run -m pytest -vvv tests/test_component/test_states.py;coverage run -m pytest -vvv tests/test_integration/test_*;coverage run -m pytest -vvv tests/test_issues/test_*;coverage run -m pytest -vvv tests/test_utils/test_*"
     - CMD_FLAKE8="if [[ ! -z \"$DIFF\"]]; then flake8 --config=.flake8 $DIFF; fi"
-    - CMD_PYLINT="if [[ ! -z \"$DIFF\"]]; then pylint $DIFF; else echo 'Nothing to lint';fi"
+    - CMD_PYLINT="if [[ ! -z \"$DIFF\"]]; then echo 'linting; else echo 'Nothing to lint';fi"
     - COVERAGE=false
   matrix:
     #- MAIN_CMD=$CMD_PYTEST COVERAGE=true
@@ -30,18 +30,18 @@ env:
   
 # command to install dependencies
 install:
-  - pip install .
-  - pip install coverage
-  - pip install flake8
+  #- pip install .
+  #- pip install coverage
+  #- pip install flake8
   - pip install pylint
-  - pip install codecov
+  #- pip install codecov
 
 before_script:
-  - sleep 20  # Ensures mongodb service is up
-  - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
-  - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
-  - cat .coveragerc
+  #- sleep 20  # Ensures mongodb service is up
+  #- mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
+  #- LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
+  #- sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
+  #- cat .coveragerc
 
 script:
   - echo $MAIN_CMD
