@@ -151,7 +151,7 @@ class WFprocessor(object):
 
                 # Get all tasks of a stage in SCHEDULED state
                 exec_tasks = list()
-                if exec_stage.state == states.SCHEDULED:
+                if exec_stage.state == states.SCHEDULING:
                     exec_tasks = exec_stage.tasks
 
                 for exec_task in exec_tasks:
@@ -193,10 +193,17 @@ class WFprocessor(object):
         # as pika can send and receive only json/dict data
         wl_json=json.dumps([task.to_dict() for task in workload])
 
+        # Acquire a connection+channel to the rmq server
+        mq_connection = pika.BlockingConnection(
+                            pika.ConnectionParameters(
+                                host=self._mq_hostname,
+                                port=self._port))
+        mq_channel = mq_connection.channel()
+
         # Send the workload to the pending queue
         mq_channel.basic_publish(exchange = '',
                                     routing_key=self._pending_queue[0],
-                                    body=workload_as_json
+                                    body=wl_json
 
                                     # TODO: Make durability parameters
                                     # as a config parameter and then

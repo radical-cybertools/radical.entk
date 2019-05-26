@@ -151,12 +151,12 @@ def test_amgr_resource_description_assignment():
     amgr = Amgr(rts='radical.pilot')
     amgr.resource_desc = res_dict
     from radical.entk.execman.rp import ResourceManager
-    assert isinstance(amgr._resource_manager, ResourceManager)
+    assert isinstance(amgr._rmgr, ResourceManager)
 
     amgr = Amgr(rts='mock')
     amgr.resource_desc = res_dict
     from radical.entk.execman.mock import ResourceManager
-    assert isinstance(amgr._resource_manager, ResourceManager)
+    assert isinstance(amgr._rmgr, ResourceManager)
 
 
 def test_amgr_assign_workflow():
@@ -177,11 +177,7 @@ def test_amgr_assign_workflow():
     amgr._workflow = set([p1, p2, p3])
 
 
-@given(s=st.characters(),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans(),
-       se=st.sets(st.text()))
-def test_amgr_assign_shared_data(s,i,b,se):
+def test_amgr_assign_shared_data():
     amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
 
     res_dict = {
@@ -194,20 +190,13 @@ def test_amgr_assign_shared_data(s,i,b,se):
     }
 
     amgr.resource_desc = res_dict
-
-    data = [s, i, b, se]
-
-    for d in data:
-        with pytest.raises(TypeError):
-            amgr.shared_data = d
-
     amgr.shared_data = ['file1.txt','file2.txt']
-    assert amgr._resource_manager.shared_data == ['file1.txt','file2.txt'] 
+    assert amgr._rmgr.shared_data == ['file1.txt','file2.txt'] 
 
 
 def test_amgr_run():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=hostname, port=port)
 
     with pytest.raises(MissingError):
         amgr.run()
@@ -216,10 +205,8 @@ def test_amgr_run():
     p2 = Pipeline()
     p3 = Pipeline()
 
-    amgr._workflow = [p1, p2, p3]
-
     with pytest.raises(MissingError):
-        amgr.run()
+        amgr.workflow = [p1, p2, p3]
 
     # Remaining lines of run() should be tested in the integration
     # tests
@@ -272,7 +259,7 @@ def test_amgr_resource_terminate():
                                      pending_queue=list(),
                                      completed_queue=list(),
                                      mq_hostname=amgr._mq_hostname,
-                                     rmgr=amgr._resource_manager,
+                                     rmgr=amgr._rmgr,
                                      port=amgr._port
                                      )
 
@@ -299,7 +286,7 @@ def test_amgr_terminate():
                                      pending_queue=list(),
                                      completed_queue=list(),
                                      mq_hostname=amgr._mq_hostname,
-                                     rmgr=amgr._resource_manager,
+                                     rmgr=amgr._rmgr,
                                      port=amgr._port
                                      )
 
@@ -308,7 +295,7 @@ def test_amgr_terminate():
 def test_amgr_setup_mqs():
 
     amgr = Amgr(hostname=hostname, port=port)
-    assert amgr._setup_mqs() == True
+    amgr._setup_mqs()
 
     assert len(amgr._pending_queue) == 1
     assert len(amgr._completed_queue) == 1
@@ -319,12 +306,10 @@ def test_amgr_setup_mqs():
     qs = [
         '%s-tmgr-to-sync' % amgr._sid,
         '%s-cb-to-sync' % amgr._sid,
-        '%s-enq-to-sync' % amgr._sid,
-        '%s-deq-to-sync' % amgr._sid,
         '%s-sync-to-tmgr' % amgr._sid,
         '%s-sync-to-cb' % amgr._sid,
-        '%s-sync-to-enq' % amgr._sid,
-        '%s-sync-to-deq' % amgr._sid
+        '%s-pendingq-1' % amgr._sid,
+        '%s-completedq-1' % amgr._sid
     ]
 
     for q in qs:
@@ -336,7 +321,7 @@ def test_amgr_setup_mqs():
     for ind, val in enumerate(lines):
         lines[ind] = val.strip()
 
-    assert set(qs) < set(lines)
+    assert set(qs) == set(lines)
 
 
 def test_amgr_cleanup_mqs():
@@ -352,12 +337,8 @@ def test_amgr_cleanup_mqs():
 
     qs = ['%s-tmgr-to-sync' % sid,
           '%s-cb-to-sync' % sid,
-          '%s-enq-to-sync' % sid,
-          '%s-deq-to-sync' % sid,
           '%s-sync-to-tmgr' % sid,
           '%s-sync-to-cb' % sid,
-          '%s-sync-to-enq' % sid,
-          '%s-sync-to-deq' % sid,
           '%s-pendingq-1' % sid,
           '%s-completedq-1' % sid]
 
@@ -369,34 +350,21 @@ def test_amgr_cleanup_mqs():
 
 def func_for_synchronizer_test(sid, p, logger, profiler):
 
-    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname, port=port))
+    mq_connection = pika.BlockingConnection(
+                        pika.ConnectionParameters(host=hostname, port=port))
     mq_channel = mq_connection.channel()
 
     for t in p.stages[0].tasks:
 
         t.state = states.SCHEDULING
         sync_with_master(obj=t,
-                         obj_type='Task',
-                         channel=mq_channel,
-                         queue='%s-tmgr-to-sync' % sid,
-                         logger=logger,
-                         local_prof=profiler)
+                        obj_type='Task',
+                        channel=mq_channel,
+                        queue='%s-tmgr-to-sync' % sid,
+                        logger=logger,
+                        local_prof=profiler)
 
-    p.stages[0].state = states.SCHEDULING
-    sync_with_master(obj=p.stages[0],
-                     obj_type='Stage',
-                     channel=mq_channel,
-                     queue='%s-enq-to-sync' % sid,
-                     logger=logger,
-                     local_prof=profiler)
-
-    p.state = states.SCHEDULING
-    sync_with_master(obj=p,
-                     obj_type='Pipeline',
-                     channel=mq_channel,
-                     queue='%s-deq-to-sync' % sid,
-                     logger=logger,
-                     local_prof=profiler)
+    mq_connection.close()
 
 
 def test_amgr_synchronizer():

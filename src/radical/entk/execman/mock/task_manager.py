@@ -21,19 +21,25 @@ import Queue
 class TaskManager(Base_TaskManager):
 
     """
-    A Task Manager takes the responsibility of dispatching tasks it receives from a pending_queue for execution on to
-    the available resources using a runtime system. Once the tasks have completed execution, they are pushed on to
-    the completed_queue for other components of EnTK to process.
+    A Task Manager takes the responsibility of dispatching tasks it receives 
+    from a pending_queue for execution on to the available resources using a 
+    runtime system. Once the tasks have completed execution, they are pushed on
+    to the completed_queue for other components of EnTK to process.
 
     :arguments:
-        :pending_queue: List of queue(s) with tasks ready to be executed. Currently, only one queue.
-        :completed_queue: List of queue(s) with tasks that have finished execution. Currently, only one queue.
-        :rmgr: ResourceManager object to be used to access the Pilot where the tasks can be submitted
-        :mq_hostname: Name of the host where RabbitMQ is running
-        :port: port at which rabbitMQ can be accessed
+        :pending_queue:     (list) List of queue(s) with tasks ready to be 
+                            executed. Currently, only one queue.
+        :completed_queue:   (list) List of queue(s) with tasks that have 
+                            finished execution. Currently, only one queue.
+        :rmgr:              (ResourceManager) Object to be used to access the 
+                            Pilot where the tasks can be submitted
+        :mq_hostname:       (str) Name of the host where RabbitMQ is running
+        :port:              (int) Port at which rabbitMQ can be accessed
 
-    Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of
-    queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
+    Currently, EnTK is configured to work with one pending queue and one 
+    completed queue. In the future, the number of queues can be varied for 
+    different throughput requirements at the cost of additional Memory and CPU 
+    consumption.
     """
 
     def __init__(self, sid, pending_queue, completed_queue,
@@ -56,20 +62,25 @@ class TaskManager(Base_TaskManager):
     # Private Methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _tmgr(self, uid, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
+    def _tmgr(self, uid, rmgr, logger, mq_hostname, 
+                port, pending_queue, completed_queue):
         """
-        **Purpose**: Method to be run by the tmgr process. This method receives a Task from the pending_queue
-        and submits it to the RTS. Currently, it also converts Tasks into CUDs and CUs into (partially described) Tasks.
-        This conversion is necessary since the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU, they
-        are then pushed to the completed_queue. At all state transititons, they are synced (blocking) with the AppManager
-        in the master process.
+        **Purpose**: Method to be run by the tmgr process. This method receives 
+        a Task from the pending_queue and submits it to the RTS. Currently, it 
+        also converts Tasks into CUDs and CUs into (partially described) Tasks.
+        This conversion is necessary since the current RTS is RADICAL Pilot.
+        Once Tasks are recovered from a CU, they are then pushed to the 
+        completed_queue. At all state transititons, they are synced (blocking)
+        with the AppManager in the master process.
 
-        In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-req queue. It responds with a
-        'response' message to the 'heartbeart-res' queue.
+        In addition the tmgr also receives heartbeat 'request' msgs from the
+        heartbeat-req queue. It responds with a 'response' message to the 
+        'heartbeart-res' queue.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is
-        still incomplete. There is also population of a dictionary, placeholder_dict, which stores the path of each of
-        the tasks on the remote machine.
+        **Details**: The AppManager can re-invoke the tmgr process with this
+        function if the execution of the workflow is still incomplete. There is
+        also population of a dictionary, placeholder_dict, which stores the path
+        of each of the tasks on the remote machine.
         """
 
         try:
@@ -87,30 +98,33 @@ class TaskManager(Base_TaskManager):
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(
-                                                     correlation_id=hb_props.correlation_id),
-                                                 body='response')
+                                    routing_key=self._hb_response_q,
+                                    properties=pika.BasicProperties(
+                                        correlation_id=hb_props.correlation_id),
+                                    body='response')
 
                         logger.info('Sent heartbeat response')
                         mq_channel.basic_ack(
                             delivery_tag=hb_method_frame.delivery_tag)
 
                 except Exception, ex:
-                    logger.exception(
-                        'Failed to respond to heartbeat request, error: %s' % ex)
+                    logger.exception('Failed to respond to heartbeat request,\
+                                    error: %s' % ex)
                     raise
 
-            local_prof = ru.Profiler(
-                name='radical.entk.%s' % self._uid + '-proc', path=self._path)
-
+            local_prof = ru.Profiler(name='radical.entk.%s-proc' % self._uid, 
+                                    path=self._path)
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
 
-            # Thread should run till terminate condtion is encountered
+            # Acquire a connection+channel to the rmq server
             mq_connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=mq_hostname, port=port))
             mq_channel = mq_connection.channel()
+
+            # Make sure the heartbeat response queue is empty
+            mq_channel.queue_delete(queue=self._hb_response_q)
+            mq_channel.queue_declare(queue=self._hb_response_q)
 
             # Queue for communication between threads of this process
             task_queue = Queue.Queue()
@@ -152,13 +166,15 @@ class TaskManager(Base_TaskManager):
 
         except KeyboardInterrupt:
 
-            logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to cancel tmgr process gracefully...')
+            logger.exception('Execution interrupted by user (you probably hit\
+                            Ctrl+C), trying to cancel tmgr process\
+                            gracefully...')
+            raise
 
         except Exception, ex:
 
             logger.exception('%s failed with %s'%(self._uid, ex))
-            raise EnTKError(ex)
+            raise
 
         finally:
 
@@ -170,7 +186,8 @@ class TaskManager(Base_TaskManager):
             mq_connection.close()
             local_prof.close()
 
-    def _process_tasks(self, task_queue, rmgr, logger, mq_hostname, port, local_prof, sid):
+    def _process_tasks(self, task_queue, rmgr, logger, 
+                        mq_hostname, port, local_prof, sid):
 
         def load_placeholder(task):
 
@@ -189,8 +206,9 @@ class TaskManager(Base_TaskManager):
 
         placeholder_dict = dict()
 
-        mq_connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=mq_hostname, port=port))
+        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                                    host=mq_hostname, 
+                                                    port=port))
         mq_channel = mq_connection.channel()
 
         try:

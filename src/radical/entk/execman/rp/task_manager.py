@@ -22,20 +22,27 @@ import traceback
 class TaskManager(Base_TaskManager):
 
     """
-    A Task Manager takes the responsibility of dispatching tasks it receives from a queue for execution on to
-    the available resources using a runtime system. In this case, the runtime system being used RADICAL Pilot. Once
-    the tasks have completed execution, they are pushed on to another queue for other components of EnTK to access.
+    A Task Manager takes the responsibility of dispatching tasks it receives 
+    from a queue for execution on to the available resources using a runtime 
+    system. In this case, the runtime system being used RADICAL Pilot. Once
+    the tasks have completed execution, they are pushed on to another queue for 
+    other components of EnTK to access.
 
 
     :arguments:
-        :pending_queue: List of queue(s) with tasks ready to be executed. Currently, only one queue.
-        :completed_queue: List of queue(s) with tasks that have finished execution. Currently, only one queue.
-        :rmgr: ResourceManager object to be used to access the Pilot where the tasks can be submitted
-        :mq_hostname: Name of the host where RabbitMQ is running
-        :port: port at which rabbitMQ can be accessed
+        :pending_queue:     (list) List of queue(s) with tasks ready to be 
+                            executed. Currently, only one queue.
+        :completed_queue:   (list) List of queue(s) with tasks that have 
+                            finished execution. Currently, only one queue.
+        :rmgr:              (ResourceManager) Object to be used to access the 
+                            Pilot where the tasks can be submitted
+        :mq_hostname:       (str) Name of the host where RabbitMQ is running
+        :port:              (int) Port at which rabbitMQ can be accessed
 
-    Currently, EnTK is configured to work with one pending queue and one completed queue. In the future, the number of
-    queues can be varied for different throughput requirements at the cost of additional Memory and CPU consumption.
+    Currently, EnTK is configured to work with one pending queue and one 
+    completed queue. In the future, the number of queues can be varied for 
+    different throughput requirements at the cost of additional Memory and CPU 
+    consumption.
     """
 
     def __init__(self, sid, pending_queue, completed_queue,
@@ -59,27 +66,36 @@ class TaskManager(Base_TaskManager):
     # Private Methods
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, port, pending_queue, completed_queue):
+    def _tmgr(self, uid, umgr, rmgr, logger, mq_hostname, 
+                port, pending_queue, completed_queue):
         """
-        **Purpose**: This method has 3 purposes: Respond to a heartbeat thread indicating the live-ness of the RTS,
-        receive tasks from the pending_queue, start a new thread that processes these tasks and submits to the RTS.
+        **Purpose**: This method has 3 purposes: Respond to a heartbeat thread
+        indicating the live-ness of the RTS, receive tasks from the 
+        pending_queue, start a new thread that processes these tasks and 
+        submits to the RTS.
         
-        It is important to separate the reception of the tasks from their processing due to RMQ/AMQP design. The
-        channel (i.e., the thread that holds the channel) that is receiving msgs from the RMQ server needs to be
-        non-blocking as it can interfere with the heartbeat intervals of RMQ. Processing a large number of tasks can
-        considerable time and can block the communication channel. Hence, the two are separated.
+        It is important to separate the reception of the tasks from their 
+        processing due to RMQ/AMQP design. The channel (i.e., the thread that 
+        holds the channel) that is receiving msgs from the RMQ server needs to 
+        be non-blocking as it can interfere with the heartbeat intervals of RMQ.
+        Processing a large number of tasks can considerable time and can block
+        the communication channel. Hence, the two are separated.
         
-        The new thread is responsible for pushing completed tasks (returned by the RTS) to the dequeueing queue.
-        It also converts Tasks into CUDs and CUs into (partially described) Tasks. This conversion is necessary since 
-        the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU, they are then pushed to the
-        completed_queue. At all state transititons, they are synced (blocking) with the AppManager in the master process.
+        The new thread is responsible for pushing completed tasks (returned by
+        the RTS) to the dequeueing queue. It also converts Tasks into CUDs and 
+        CUs into (partially described) Tasks. This conversion is necessary since 
+        the current RTS is RADICAL Pilot. Once Tasks are recovered from a CU,
+        they are then pushed to the completed_queue. At all state transititons,
+        they are synced (blocking) with the AppManager in the master process.
 
-        In addition the tmgr also receives heartbeat 'request' msgs from the heartbeat-request queue. It responds with a
-        'response' message to the heartbeart-response queue.
+        In addition the tmgr also receives heartbeat 'request' msgs from the
+        heartbeat-request queue. It responds with a 'response' message to the
+        heartbeart-response queue.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this function if the execution of the workflow is
-        still incomplete. There is also population of a dictionary, placeholder_dict, which stores the path of each of
-        the tasks on the remote machine.
+        **Details**: The AppManager can re-invoke the tmgr process with this
+        function if the execution of the workflow is still incomplete. There is
+        also population of a dictionary, placeholder_dict, which stores the path
+        of each of the tasks on the remote machine.
         """
 
         try:
@@ -97,22 +113,22 @@ class TaskManager(Base_TaskManager):
                         logger.info('Received heartbeat request')
 
                         mq_channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=pika.BasicProperties(
-                                                     correlation_id=hb_props.correlation_id),
-                                                 body='response')
+                                    routing_key=self._hb_response_q,
+                                    properties=pika.BasicProperties(
+                                        correlation_id=hb_props.correlation_id),
+                                    body='response')
 
                         logger.info('Sent heartbeat response')
                         mq_channel.basic_ack(
                             delivery_tag=hb_method_frame.delivery_tag)
 
                 except Exception, ex:
-                    logger.exception(
-                        'Failed to respond to heartbeat request, error: %s' % ex)
+                    logger.exception('Failed to respond to heartbeat request, \
+                                    error: %s' % ex)
                     raise
 
-            local_prof = ru.Profiler(
-                name='radical.entk.%s' % self._uid + '-proc', path=self._path)
+            local_prof = ru.Profiler(name='radical.entk.%s-proc' % self._uid, 
+                                    path=self._path)
             local_prof.prof('tmgr process started', uid=self._uid)
             logger.info('Task Manager process started')
 

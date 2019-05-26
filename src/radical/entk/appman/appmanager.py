@@ -599,6 +599,96 @@ class AppManager(object):
                 self._cur_attempt += 1
 
 
+    def _task_update(self, msg, reply_to, corr_id, mq_channel, method_frame):
+
+        completed_task = Task()
+        completed_task.from_dict(msg['object'])
+        self._logger.info('Received %s with state %s' %
+                            (completed_task.uid, completed_task.state))
+
+        found_task = False
+
+        # Traverse the entire workflow to find the correct task
+        for pipe in self._workflow:
+
+            if pipe.completed or \
+                pipe.uid != completed_task.parent_pipeline['uid']:
+                continue
+
+            for stage in pipe.stages:
+
+                if stage.uid != completed_task.parent_stage['uid']:
+                    continue
+
+                for task in stage.tasks:
+
+                    if completed_task.uid != task.uid and \
+                        completed_task.state == task.state:
+                        continue
+
+                    task.state = str(completed_task.state)
+                    self._logger.debug('Found task %s with state %s' %
+                                                        (task.uid, 
+                                                        task.state))
+
+                    if completed_task.path:
+                        task.path = str(completed_task.path)
+
+                    mq_channel.basic_publish(exchange='',
+                                    routing_key=reply_to,
+                                    properties=pika.BasicProperties(
+                                        correlation_id=corr_id),
+                                    body='%s-ack' % task.uid)
+
+                    self._prof.prof('pub_ack_state_%s' % 
+                                    msg['object']['state'],
+                                    uid=msg['object']['uid'])
+
+                    mq_channel.basic_ack(
+                        delivery_tag=method_frame.delivery_tag)
+                    self._report.ok('Update: ')
+                    self._report.info('%s state: %s\n' % (task.luid, 
+                                                        task.state))
+
+                    found_task = True
+
+                    if not found_task:
+
+                        # If there was a Stage update, but the Stage was
+                        # not found in any of the Pipelines. This
+                        # means that this was a Stage that was added 
+                        # during runtime and the AppManager does not
+                        # know about it. The current solution is going 
+                        # to be: add it to the workflow object in the
+                        # AppManager via the synchronizer.
+
+                        self._logger.info('Adding new task %s to \
+                                            parent stage: %s' 
+                                            % (completed_task.uid,
+                                            stage.uid))
+
+                        self._prof.prof('adap_add_task_start', 
+                                        uid=completed_task.uid)
+                        stage.add_tasks(completed_task)
+                        self._prof.prof('adap_add_task_stop', 
+                                        uid=completed_task.uid)
+
+                        mq_channel.basic_publish(exchange='',
+                                    routing_key=reply_to,
+                                    properties=pika.BasicProperties(
+                                        correlation_id=corr_id),
+                                    body='%s-ack' % completed_task.uid)
+
+                        self._prof.prof('pub_ack_state_%s' % 
+                                    msg['object']['state'],
+                                    uid=msg['object']['uid'])
+
+                        mq_channel.basic_ack(
+                            delivery_tag=method_frame.delivery_tag)
+                        self._report.ok('Update: ')
+                        self._report.info('%s state: %s\n' %
+                        (completed_task.luid, completed_task.state))
+
     def _synchronizer(self):
         """
         **Purpose**: Thread in the master process to keep the workflow data
@@ -614,94 +704,6 @@ class AppManager(object):
 
             self._prof.prof('sync_thread_started', uid=self._uid)
             self._logger.info('synchronizer thread started')
-
-            def task_update(msg, reply_to, corr_id, mq_channel):
-
-                completed_task = Task()
-                completed_task.from_dict(msg['object'])
-                self._logger.info('Received %s with state %s' %
-                                  (completed_task.uid, completed_task.state))
-
-                found_task = False
-
-                # Traverse the entire workflow to find the correct task
-                for pipe in self._workflow:
-
-                    if pipe.completed or \
-                        pipe.uid != completed_task.parent_pipeline['uid']:
-                        continue
-
-                    for stage in pipe.stages:
-
-                        if stage.uid != completed_task.parent_stage['uid']:
-                            continue
-
-                        for task in stage.tasks:
-
-                            if completed_task.uid != task.uid and \
-                                completed_task.state == task.state:
-                                continue
-
-                            task.state = str(completed_task.state)
-                            self._logger.debug('Found task %s with state %s' %
-                                                               (task.uid, 
-                                                               task.state))
-
-                            if completed_task.path:
-                                task.path = str(completed_task.path)
-
-                            mq_channel.basic_publish(exchange='',
-                                            routing_key=reply_to,
-                                            properties=pika.BasicProperties(
-                                                correlation_id=corr_id),
-                                            body='%s-ack' % task.uid)
-
-                            self._prof.prof('pub_ack_state_%s' % 
-                                            msg['object']['state'],
-                                            uid=msg['object']['uid'])
-
-                            mq_channel.basic_ack(
-                                delivery_tag=method_frame.delivery_tag)
-                            self._report.ok('Update: ')
-                            self._report.info('%s state: %s\n' % (task.luid, 
-                                                                task.state))
-
-                            found_task = True
-
-                            if not found_task:
-
-                                # If there was a Stage update, but the Stage was
-                                # not found in any of the Pipelines. This
-                                # means that this was a Stage that was added 
-                                # during runtime and the AppManager does not
-                                # know about it. The current solution is going 
-                                # to be: add it to the workflow object in the
-                                # AppManager via the synchronizer.
-
-                                self._logger.info('Adding new task %s to \
-                                                    parent stage: %s' 
-                                                    % (completed_task.uid,
-                                                    stage.uid))
-
-                                self._prof.prof('adap_add_task_start', uid=completed_task.uid)
-                                stage.add_tasks(completed_task)
-                                self._prof.prof('adap_add_task_stop', uid=completed_task.uid)
-
-                                mq_channel.basic_publish(exchange='',
-                                            routing_key=reply_to,
-                                            properties=pika.BasicProperties(
-                                                correlation_id=corr_id),
-                                            body='%s-ack' % completed_task.uid)
-
-                                self._prof.prof('pub_ack_state_%s' % 
-                                            msg['object']['state'],
-                                            uid=msg['object']['uid'])
-
-                                mq_channel.basic_ack(
-                                    delivery_tag=method_frame.delivery_tag)
-                                self._report.ok('Update: ')
-                                self._report.info('%s state: %s\n' %
-                                (completed_task.luid, completed_task.state))
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
                                             host=self._mq_hostname, 
@@ -741,8 +743,8 @@ class AppManager(object):
                                                     msg['object']['state']))
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-tmgr' %self._sid, 
-                                    props.correlation_id, mq_channel)
+                        self._task_update(msg, '%s-sync-to-tmgr' %self._sid, 
+                                props.correlation_id, mq_channel, method_frame)
                 # -------------------------------------------------------------------------------------------------------
 
                 # -------------------------------------------------------------------------------------------------------
@@ -773,8 +775,8 @@ class AppManager(object):
                                                     msg['object']['state']))
 
                     if msg['type'] == 'Task':
-                        task_update(msg, '%s-sync-to-cb' %
-                                    self._sid, props.correlation_id, mq_channel)
+                        self._task_update(msg, '%s-sync-to-cb' %self._sid,
+                                props.correlation_id, mq_channel, method_frame)
 
                 # -------------------------------------------------------------------------------------------------------
 
@@ -792,7 +794,7 @@ class AppManager(object):
                                     probably hit Ctrl+C), trying to terminate \
                                     synchronizer thread gracefully...')
 
-            raise KeyboardInterrupt
+            raise
 
         except Exception, ex:
 
@@ -822,8 +824,8 @@ class AppManager(object):
             self._sync_thread.join()
             self._logger.info('Synchronizer thread terminated')
 
-        if self._resource_manager:
-            self._resource_manager._terminate_resource_request()
+        if self._rmgr:
+            self._rmgr._terminate_resource_request()
 
         if os.environ.get('RADICAL_ENTK_PROFILE', False):
             write_session_description(self)
