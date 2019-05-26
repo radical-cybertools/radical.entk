@@ -23,8 +23,8 @@ env:
     - CMD_PYLINT="if [[ ! -z \"$DIFF\"]]; then pylint $DIFF; fi"
     - COVERAGE=false
   matrix:
-    #- MAIN_CMD=$CMD_PYTEST COVERAGE=true
-    #- MAIN_CMD=$CMD_FLAKE8
+    - MAIN_CMD=$CMD_PYTEST COVERAGE=true
+    - MAIN_CMD=$CMD_FLAKE8
     - MAIN_CMD=$CMD_PYLINT  
   
   
