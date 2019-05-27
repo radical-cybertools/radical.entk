@@ -477,7 +477,7 @@ def test_state_order():
 
     res_dict = {
 
-            'resource': 'local.localhost',
+            'resource': 'local.localhost_anaconda',
             'walltime': 5,
             'cpus': 1,
             'project': ''
@@ -504,5 +504,6 @@ def test_state_order():
     for t in tasks:
 
         t_state_hist = t.state_history
-        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'SUBMITTING', 'SUBMITTED',
-                            'EXECUTED', 'DEQUEUEING', 'DEQUEUED', 'DONE']
+        print t_state_hist
+        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 
+                                'SUBMITTING', 'EXECUTED', 'DONE']

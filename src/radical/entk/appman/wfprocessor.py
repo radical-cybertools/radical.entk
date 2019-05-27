@@ -276,19 +276,13 @@ class WFprocessor(object):
 
     def _update_dequeued_task(self, deq_task):
 
-        # Update state of dequeued task
-        local_transition(obj=deq_task,
-                        obj_type='Task',
-                        new_state=states.DEQUEUEING,
-                        profiler=self._prof,
-                        logger=self._logger,
-                        reporter=self._report)
-
         # Traverse the entire workflow to find out the correct Task
         # TODO: Investigate whether we can change the DS of the
         # workflow so that we don't have this expensive search
         # for each task.
         # First search across all pipelines
+        # Note: deq_task is not the same as the task that exists in this process,
+        # they are different objects and have different state histories.
         for pipe in self._workflow:
 
             with pipe.lock:
@@ -318,20 +312,6 @@ class WFprocessor(object):
                     self._logger.debug('Found parent stage: %s' %
                                         stage.uid)
 
-                    # Update state of stage of dequeued task
-                    local_transition(obj=deq_task,
-                                    obj_type='Task',
-                                    new_state=states.DEQUEUED,
-                                    profiler=self._prof,
-                                    logger=self._logger,
-                                    reporter=self._report)
-
-                    # If there is no exit code, we assume success
-                    if not deq_task.exit_code:
-                        deq_task.state = states.DONE
-                    else:
-                        deq_task.state = states.FAILED
-
                     # Search across all tasks of matching stage
                     for task in stage.tasks:
 
@@ -340,15 +320,21 @@ class WFprocessor(object):
                         if task.uid != deq_task.uid:
                             continue
 
-                        task.state = str(deq_task.state)
+                        # If there is no exit code, we assume success
+                        # We are only concerned about state of task and not 
+                        # deq_task
+                        if not deq_task.exit_code:
+                            task_state = states.DONE
+                        else:
+                            task_state = states.FAILED
 
                         if task.state == states.FAILED and \
-                                self._resubmit_failed:
-                            task.state = states.INITIAL
+                            self._resubmit_failed:
+                            task_state = states.INITIAL
 
                         local_transition(obj=task,
                                         obj_type='Task',
-                                        new_state=task.state,
+                                        new_state=task_state,
                                         profiler=self._prof,
                                         logger=self._logger,
                                         reporter=self._report)

@@ -612,47 +612,50 @@ class AppManager(object):
         # Traverse the entire workflow to find the correct task
         for pipe in self._workflow:
 
-            if pipe.completed or \
-                pipe.uid != completed_task.parent_pipeline['uid']:
-                continue
+            with pipe.lock:
 
-            for stage in pipe.stages:
-
-                if stage.uid != completed_task.parent_stage['uid']:
+                if pipe.completed or \
+                    pipe.uid != completed_task.parent_pipeline['uid']:
                     continue
 
-                for task in stage.tasks:
+                for stage in pipe.stages:
 
-                    if completed_task.uid != task.uid and \
-                        completed_task.state == task.state:
+                    if stage.uid != completed_task.parent_stage['uid']:
                         continue
 
-                    task.state = str(completed_task.state)
-                    self._logger.debug('Found task %s with state %s' %
-                                                        (task.uid, 
-                                                        task.state))
+                    for task in stage.tasks:
 
-                    if completed_task.path:
-                        task.path = str(completed_task.path)
+                        if completed_task.uid != task.uid or \
+                            completed_task.state == task.state:
+                            continue
 
-                    mq_channel.basic_publish(exchange='',
-                                    routing_key=reply_to,
-                                    properties=pika.BasicProperties(
-                                        correlation_id=corr_id),
-                                    body='%s-ack' % task.uid)
+                        task.state = str(completed_task.state)
+                        self._logger.debug('Found task %s with state %s' %
+                                                            (task.uid, 
+                                                            task.state))
 
-                    self._prof.prof('pub_ack_state_%s' % 
-                                    msg['object']['state'],
-                                    uid=msg['object']['uid'])
+                        if completed_task.path:
+                            task.path = str(completed_task.path)
 
-                    mq_channel.basic_ack(
-                        delivery_tag=method_frame.delivery_tag)
-                    self._report.ok('Update: ')
-                    self._report.info('%s state: %s\n' % (task.luid, 
-                                                        task.state))
+                        mq_channel.basic_publish(exchange='',
+                                        routing_key=reply_to,
+                                        properties=pika.BasicProperties(
+                                            correlation_id=corr_id),
+                                        body='%s-ack' % task.uid)
 
-                    found_task = True
-                    break
+                        self._prof.prof('pub_ack_state_%s' % 
+                                        msg['object']['state'],
+                                        uid=msg['object']['uid'])
+
+                        mq_channel.basic_ack(
+                            delivery_tag=method_frame.delivery_tag)
+
+                        self._report.ok('Update: ')
+                        self._report.info('%s state: %s\n' % (task.luid, 
+                                                            task.state))
+
+                        found_task = True
+                        break
 
                 # if not found_task:
 
