@@ -356,7 +356,7 @@ def func_for_synchronizer_test(sid, p, logger, profiler):
 
     for t in p.stages[0].tasks:
 
-        t.state = states.SCHEDULING
+        t.state = states.COMPLETED
         sync_with_master(obj=t,
                         obj_type='Task',
                         channel=mq_channel,
@@ -378,8 +378,8 @@ def test_amgr_synchronizer():
     p = Pipeline()
     s = Stage()
 
-    # Create and add 100 tasks to the stage
-    for cnt in range(100):
+    # Create and add 10 tasks to the stage
+    for cnt in range(10):
 
         t = Task()
         t.executable = ['some-executable-%s' % cnt]
@@ -410,14 +410,12 @@ def test_amgr_synchronizer():
     proc.start()
     proc.join()
 
-    for t in p.stages[0].tasks:
-        assert t.state == states.SCHEDULING
-
-    assert p.stages[0].state == states.SCHEDULING
-    assert p.state == states.SCHEDULING
-
     amgr._terminate_sync.set()
     sync_thread.join()
+
+    for t in p.stages[0].tasks:
+        assert t.state == states.COMPLETED
+
 
 
 def test_sid_in_mqs():
@@ -429,12 +427,8 @@ def test_sid_in_mqs():
     qs = [
         '%s-tmgr-to-sync' % sid,
         '%s-cb-to-sync' % sid,
-        '%s-enq-to-sync' % sid,
-        '%s-deq-to-sync' % sid,
         '%s-sync-to-tmgr' % sid,
         '%s-sync-to-cb' % sid,
-        '%s-sync-to-enq' % sid,
-        '%s-sync-to-deq' % sid
     ]
 
     mq_connection = pika.BlockingConnection(

@@ -4,7 +4,7 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 import os
 
-logger = ru.Logger('radical.entk.task_processor')
+logger = ru.Logger('radical.entk.task_processor', ns='radical.entk')
 
 
 def resolve_placeholders(path, placeholder_dict):

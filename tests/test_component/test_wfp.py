@@ -75,20 +75,14 @@ def test_wfp_initialize_workflow():
                       port=port,
                       resubmit_failed=False)
 
-    wfp._initialize_workflow()
+    wfp.initialize_workflow()
     assert p.uid is not None
     assert p.stages[0].uid is not None
     for t in p.stages[0].tasks:
         assert t.uid is not None
 
 
-def func_for_enqueue_test(wfp):
-
-    wfp._enqueue_thread_terminate = Event()
-    p = wfp._workflow[0]
-    profiler = ru.Profiler(name='radical.entk.temp')
-    thread = Thread(target=wfp._enqueue, args=(profiler,))
-    thread.start()
+def func_for_enqueue_test(p):
 
     flag = False
     while True:
@@ -98,9 +92,6 @@ def func_for_enqueue_test(wfp):
                     flag = True
         if flag:
             break
-
-    wfp._enqueue_thread_terminate.set()
-    thread.join()
 
 
 def test_wfp_enqueue():
@@ -123,10 +114,7 @@ def test_wfp_enqueue():
                       port=amgr._port,
                       resubmit_failed=False)
 
-    wfp._initialize_workflow()
-
-    amgr.workflow = [p]
-    profiler = ru.Profiler(name='radical.entk.temp')
+    wfp.initialize_workflow()
 
     for t in p.stages[0].tasks:
         assert t.state == states.INITIAL
@@ -134,16 +122,13 @@ def test_wfp_enqueue():
     assert p.stages[0].state == states.INITIAL
     assert p.state == states.INITIAL
 
-    amgr._terminate_sync = Event()
-    sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
-    sync_thread.start()
+    wfp.start_processor()
 
-    proc = Process(target=func_for_enqueue_test, name='temp-proc', args=(wfp,))
-    proc.start()
-    proc.join()
+    th = Thread(target=func_for_enqueue_test, name='temp-proc', args=(p,))
+    th.start()
+    th.join()
 
-    amgr._terminate_sync.set()
-    sync_thread.join()
+    wfp.terminate_processor()
 
     for t in p.stages[0].tasks:
         assert t.state == states.SCHEDULED
@@ -152,13 +137,7 @@ def test_wfp_enqueue():
     assert p.state == states.SCHEDULING
 
 
-def func_for_dequeue_test(wfp):
-
-    wfp._dequeue_thread_terminate = Event()
-    p = wfp._workflow[0]
-    profiler = ru.Profiler(name='radical.entk.temp')
-    thread = Thread(target=wfp._dequeue, args=(profiler,))
-    thread.start()
+def func_for_dequeue_test(p):
 
     flag = False
     while True:
@@ -168,9 +147,6 @@ def func_for_dequeue_test(wfp):
                     flag = True
         if flag:
             break
-
-    wfp._dequeue_thread_terminate.set()
-    thread.join()
 
 
 def test_wfp_dequeue():
@@ -193,10 +169,7 @@ def test_wfp_dequeue():
                       port=amgr._port,
                       resubmit_failed=False)
 
-    wfp._initialize_workflow()
-
-    amgr.workflow = [p]
-    profiler = ru.Profiler(name='radical.entk.temp')
+    wfp.initialize_workflow()
 
     assert p.stages[0].state == states.INITIAL
     assert p.state == states.INITIAL
@@ -215,19 +188,16 @@ def test_wfp_dequeue():
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=amgr._mq_hostname, port=amgr._port))
     mq_channel = mq_connection.channel()
     mq_channel.basic_publish(exchange='',
-                             routing_key='%s-completedq-1' % amgr._sid,
+                             routing_key='%s' % amgr._completed_queue[0],
                              body=task_as_dict)
 
-    amgr._terminate_sync = Event()
-    sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
-    sync_thread.start()
+    wfp.start_processor()
 
-    proc = Process(target=func_for_dequeue_test, name='temp-proc', args=(wfp,))
-    proc.start()
-    proc.join()
+    th = Thread(target=func_for_dequeue_test, name='temp-proc', args=(p,))
+    th.start()
+    th.join()
 
-    amgr._terminate_sync.set()
-    sync_thread.join()
+    wfp.terminate_processor()
 
     for t in p.stages[0].tasks:
         assert t.state == states.DONE
@@ -256,16 +226,14 @@ def test_wfp_start_processor():
                       port=amgr._port,
                       resubmit_failed=False)
 
-    assert wfp.start_processor()
-    assert not wfp._enqueue_thread
-    assert not wfp._dequeue_thread
+    wfp.start_processor()
+    assert wfp._enqueue_thread
+    assert wfp._dequeue_thread
     assert not wfp._enqueue_thread_terminate.is_set()
     assert not wfp._dequeue_thread_terminate.is_set()
-    assert not wfp._wfp_terminate.is_set()
-    assert wfp._wfp_process.is_alive()
 
-    wfp._wfp_terminate.set()
-    wfp._wfp_process.join()
+    wfp.terminate_processor()
+
 
 
 def test_wfp_terminate_processor():
@@ -291,7 +259,10 @@ def test_wfp_terminate_processor():
     wfp.start_processor()
     wfp.terminate_processor()
 
-    assert not wfp._wfp_process
+    assert not wfp._enqueue_thread
+    assert not wfp._dequeue_thread
+    assert wfp._enqueue_thread_terminate.is_set()
+    assert wfp._dequeue_thread_terminate.is_set()
 
 
 def test_wfp_workflow_incomplete():
@@ -314,12 +285,7 @@ def test_wfp_workflow_incomplete():
                       port=amgr._port,
                       resubmit_failed=False)
 
-    wfp._initialize_workflow()
-
-    assert wfp.workflow_incomplete()
-
-    amgr.workflow = [p]
-    profiler = ru.Profiler(name='radical.entk.temp')
+    wfp.initialize_workflow()
 
     p.stages[0].state == states.SCHEDULING
     p.state == states.SCHEDULED
@@ -333,19 +299,16 @@ def test_wfp_workflow_incomplete():
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(host=amgr._mq_hostname, port=amgr._port))
     mq_channel = mq_connection.channel()
     mq_channel.basic_publish(exchange='',
-                             routing_key='%s-completedq-1' % amgr._sid,
+                             routing_key='%s' % amgr._completed_queue[0],
                              body=task_as_dict)
 
-    amgr._terminate_sync = Event()
-    sync_thread = Thread(target=amgr._synchronizer, name='synchronizer-thread')
-    sync_thread.start()
+    wfp.start_processor()
 
-    proc = Process(target=func_for_dequeue_test, name='temp-proc', args=(wfp,))
-    proc.start()
-    proc.join()
+    th = Thread(target=func_for_dequeue_test, name='temp-proc', args=(p,))
+    th.start()
+    th.join()
 
-    amgr._terminate_sync.set()
-    sync_thread.join()
+    wfp.terminate_processor()
 
     assert not wfp.workflow_incomplete()
 

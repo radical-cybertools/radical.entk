@@ -77,7 +77,8 @@ class Base_TaskManager(object):
         # Utility parameters
         self._uid = ru.generate_id('task_manager.%(item_counter)04d', ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, 
+                                path=self._path, ns='radical.entk')
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid + '-obj', path=self._path)
 
         # Thread should run till terminate condtion is encountered

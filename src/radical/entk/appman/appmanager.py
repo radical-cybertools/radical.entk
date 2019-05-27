@@ -80,7 +80,8 @@ class AppManager(object):
         path = os.getcwd() + '/' + self._sid
         self._uid = ru.generate_id('appmanager.%(item_counter)04d', 
                                     ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=path,
+                                ns='radical.entk')
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
@@ -651,43 +652,44 @@ class AppManager(object):
                                                         task.state))
 
                     found_task = True
+                    break
 
-                    if not found_task:
+                # if not found_task:
 
-                        # If there was a Stage update, but the Stage was
-                        # not found in any of the Pipelines. This
-                        # means that this was a Stage that was added 
-                        # during runtime and the AppManager does not
-                        # know about it. The current solution is going 
-                        # to be: add it to the workflow object in the
-                        # AppManager via the synchronizer.
+                #     # If there was a Stage update, but the Stage was
+                #     # not found in any of the Pipelines. This
+                #     # means that this was a Stage that was added 
+                #     # during runtime and the AppManager does not
+                #     # know about it. The current solution is going 
+                #     # to be: add it to the workflow object in the
+                #     # AppManager via the synchronizer.
 
-                        self._logger.info('Adding new task %s to \
-                                            parent stage: %s' 
-                                            % (completed_task.uid,
-                                            stage.uid))
+                #     self._logger.info('Adding new task %s to \
+                #                         parent stage: %s' 
+                #                         % (completed_task.uid,
+                #                         stage.uid))
 
-                        self._prof.prof('adap_add_task_start', 
-                                        uid=completed_task.uid)
-                        stage.add_tasks(completed_task)
-                        self._prof.prof('adap_add_task_stop', 
-                                        uid=completed_task.uid)
+                #     self._prof.prof('adap_add_task_start', 
+                #                     uid=completed_task.uid)
+                #     stage.add_tasks(completed_task)
+                #     self._prof.prof('adap_add_task_stop', 
+                #                     uid=completed_task.uid)
 
-                        mq_channel.basic_publish(exchange='',
-                                    routing_key=reply_to,
-                                    properties=pika.BasicProperties(
-                                        correlation_id=corr_id),
-                                    body='%s-ack' % completed_task.uid)
+                #     mq_channel.basic_publish(exchange='',
+                #                 routing_key=reply_to,
+                #                 properties=pika.BasicProperties(
+                #                     correlation_id=corr_id),
+                #                 body='%s-ack' % completed_task.uid)
 
-                        self._prof.prof('pub_ack_state_%s' % 
-                                    msg['object']['state'],
-                                    uid=msg['object']['uid'])
+                #     self._prof.prof('pub_ack_state_%s' % 
+                #                 msg['object']['state'],
+                #                 uid=msg['object']['uid'])
 
-                        mq_channel.basic_ack(
-                            delivery_tag=method_frame.delivery_tag)
-                        self._report.ok('Update: ')
-                        self._report.info('%s state: %s\n' %
-                        (completed_task.luid, completed_task.state))
+                #     mq_channel.basic_ack(
+                #         delivery_tag=method_frame.delivery_tag)
+                #     self._report.ok('Update: ')
+                #     self._report.info('%s state: %s\n' %
+                #     (completed_task.luid, completed_task.state))
 
     def _synchronizer(self):
         """

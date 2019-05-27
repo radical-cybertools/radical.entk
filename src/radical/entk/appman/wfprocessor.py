@@ -4,7 +4,6 @@ __license__ = "MIT"
 
 
 import radical.utils as ru
-from multiprocessing import Process, Event
 from time import sleep, time
 import json
 import threading
@@ -65,7 +64,8 @@ class WFprocessor(object):
 
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d',
                                    ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid,path=self._path)
+        self._logger = ru.Logger('radical.entk.%s' % self._uid,path=self._path,
+                                ns='radical.entk')
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
                                 path=self._path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
@@ -250,14 +250,6 @@ class WFprocessor(object):
             self._prof.prof('enq_start', uid=self._uid)
             self._logger.info('enqueue-thread started')
 
-            # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(
-                                pika.ConnectionParameters(
-                                    host=self._mq_hostname,
-                                    port=self._port))
-            mq_channel = mq_connection.channel()
-
-            last = time.time()
             while not self._enqueue_thread_terminate.is_set():
 
                 workload, scheduled_stages = self._create_workload()
@@ -266,15 +258,7 @@ class WFprocessor(object):
                 if workload:
                     self._execute_workload(workload, scheduled_stages)
 
-                # Appease pika cos it thinks the connection is dead
-                now = time.time()
-                if now - last >= self._rmq_ping_interval:
-                    mq_connection.process_data_events()
-                    last = now
-
             self._logger.info('Enqueue thread terminated')
-            mq_connection.close()
-
             self._prof.prof('enq_stop', uid=self._uid)
 
         except KeyboardInterrupt:
@@ -282,17 +266,11 @@ class WFprocessor(object):
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-            mq_connection.close()
             raise KeyboardInterrupt
 
         except Exception:
 
             self._logger.exception('Error in enqueue-thread')
-            try:
-                mq_connection.close()
-            except Exception as ex:
-                self._logger.warning('mq_connection not closed, %s' % ex)
-
             raise
 
 
