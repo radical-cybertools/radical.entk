@@ -247,18 +247,6 @@ class TaskManager(Base_TaskManager):
 
                         transition(obj=task,
                                    obj_type='Task',
-                                   new_state=states.SUBMITTED,
-                                   channel=mq_channel,
-                                   queue='%s-tmgr-to-sync' % self._sid,
-                                   profiler=local_prof,
-                                   logger=self._logger)
-                        self._logger.info(
-                            'Task %s submitted to RTS' % (task.uid))
-
-                    for task in bulk_tasks:
-
-                        transition(obj=task,
-                                   obj_type='Task',
                                    new_state=states.COMPLETED,
                                    channel=mq_channel,
                                    queue='%s-cb-to-sync' % self._sid,
