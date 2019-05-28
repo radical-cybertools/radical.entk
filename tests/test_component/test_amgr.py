@@ -477,7 +477,7 @@ def test_state_order():
 
     res_dict = {
 
-            'resource': 'local.localhost_anaconda',
+            'resource': 'local.localhost',
             'walltime': 5,
             'cpus': 1,
             'project': ''
