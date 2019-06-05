@@ -19,6 +19,8 @@ from threading import Thread, Event
 from radical.entk import states
 
 
+# ------------------------------------------------------------------------------
+#
 class AppManager(object):
 
     """
@@ -50,6 +52,8 @@ class AppManager(object):
                             executions. (default is randomly assigned)
     """
 
+    # --------------------------------------------------------------------------
+    #
     def __init__(self,
                  config_path=None,
                  hostname=None,
@@ -110,6 +114,9 @@ class AppManager(object):
         self._prof.prof('amgr obj created', uid=self._uid)
         self._report.ok('>>ok\n')
 
+
+    # --------------------------------------------------------------------------
+    #
     def _read_config(self, config_path, hostname, port, reattempts,
                      resubmit_failed, autoterminate, write_workflow,
                      rts, rmq_cleanup, rts_config):
@@ -138,10 +145,11 @@ class AppManager(object):
         self._num_pending_qs = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Getter functions
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
+    # Getter functions
+    #
     @property
     def name(self):
         """
@@ -157,6 +165,9 @@ class AppManager(object):
 
         return self._name
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def sid(self):
         """
@@ -168,6 +179,9 @@ class AppManager(object):
 
         return self._sid
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def resource_desc(self):
         """
@@ -177,6 +191,9 @@ class AppManager(object):
 
         return self._resource_desc
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def workflow(self):
         """
@@ -186,6 +203,9 @@ class AppManager(object):
 
         return self._workflow
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def shared_data(self):
         """
@@ -197,10 +217,10 @@ class AppManager(object):
 
         return self._shared_data
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Setter functions
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    # Setter functions
+    #
     @name.setter
     def name(self, value):
 
@@ -210,6 +230,9 @@ class AppManager(object):
         else:
             self._name = value
 
+
+    # --------------------------------------------------------------------------
+    #
     @resource_desc.setter
     def resource_desc(self, value):
 
@@ -233,6 +256,9 @@ class AppManager(object):
             raise
         self._report.ok('>>ok\n')
 
+
+    # --------------------------------------------------------------------------
+    #
     @workflow.setter
     def workflow(self, workflow):
 
@@ -249,6 +275,9 @@ class AppManager(object):
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
 
+
+    # --------------------------------------------------------------------------
+    #
     @shared_data.setter
     def shared_data(self, data):
 
@@ -262,10 +291,11 @@ class AppManager(object):
         if self._rmgr:
             self._rmgr.shared_data = data
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
+    # Public methods
+    #
     def run(self):
         """
         **Purpose**: Run the application manager. Once the workflow and resource
@@ -275,7 +305,6 @@ class AppManager(object):
         """
 
         try:
-
             self._prof.prof('amgr_start', uid=self._uid)
 
             # Set None for variables local to each run
@@ -329,38 +358,43 @@ class AppManager(object):
             if self._write_workflow:
                 write_workflow(self._workflow, self._sid)
 
+
         except KeyboardInterrupt:
 
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-
             self._terminate()
             raise KeyboardInterrupt
+
 
         except Exception, ex:
 
             self._logger.exception('Error in AppManager: %s' % ex)
-
-            # Terminate threads in following order: wfp, helper, synchronizer
             self._terminate()
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def terminate(self):
+
         self._terminate()
 
 
+    # --------------------------------------------------------------------------
+    #
     def resource_terminate(self):
-        
-        self._logger.warning('DeprecationWarning: Public Method resource_terminate is deprecated.\
-                             Please use terminate')
+
+        self._logger.warning('DeprecationWarning: resource_terminate is deprecated.\
+                              Please use terminate')
         self._terminate()
 
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
-
+    #
     def _setup_mqs(self):
         """
         **Purpose**: Setup RabbitMQ system on the client side. We instantiate 
@@ -380,7 +414,6 @@ class AppManager(object):
         """
 
         try:
-
             self._report.info('Setting up RabbitMQ system')
             if self._mqs_setup:
                 self._report.info('RabbitMQ already set')
@@ -433,6 +466,9 @@ class AppManager(object):
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def _cleanup_mqs(self):
 
         try:
@@ -464,6 +500,8 @@ class AppManager(object):
             raise
 
 
+    # --------------------------------------------------------------------------
+    #
     def _start_all_comps(self):
 
         # Create WFProcessor and initialize workflow its contents with
@@ -514,6 +552,8 @@ class AppManager(object):
             self._prof.prof('tmgr_create_stop', uid = self._uid)
             
 
+    # --------------------------------------------------------------------------
+    #
     def _run_workflow(self):
 
         active_pipe_count=len(self._workflow)
@@ -600,6 +640,8 @@ class AppManager(object):
                 self._cur_attempt += 1
 
 
+    # --------------------------------------------------------------------------
+    #
     def _task_update(self, msg, reply_to, corr_id, mq_channel, method_frame):
 
         completed_task = Task()
@@ -694,6 +736,9 @@ class AppManager(object):
                 #     self._report.info('%s state: %s\n' %
                 #     (completed_task.luid, completed_task.state))
 
+
+    # --------------------------------------------------------------------------
+    #
     def _synchronizer(self):
         """
         **Purpose**: Thread in the master process to keep the workflow data
@@ -719,10 +764,9 @@ class AppManager(object):
 
             while not self._terminate_sync.is_set():
 
-                # -------------------------------------------------------------------------------------------------------
+                # --------------------------------------------------------------
                 # Messages between tmgr Main thread and synchronizer -- only 
                 # Task objects
-
                 method_frame, props, body = mq_channel.basic_get(
                                                     queue='%s-tmgr-to-sync' 
                                                     % self._sid)
@@ -734,7 +778,6 @@ class AppManager(object):
                 #         'object': json/dict
                 #         }
 
-
                 if body:
 
                     msg = json.loads(body)
@@ -742,20 +785,16 @@ class AppManager(object):
                     self._prof.prof('sync_recv_obj_state_%s' % 
                                                 msg['object']['state'],
                                                 uid=msg['object']['uid'])
-
                     self._logger.debug('received %s with state %s for sync' % 
                                                     (msg['object']['uid'],
                                                     msg['object']['state']))
-
                     if msg['type'] == 'Task':
                         self._task_update(msg, '%s-sync-to-tmgr' %self._sid, 
                                 props.correlation_id, mq_channel, method_frame)
-                # -------------------------------------------------------------------------------------------------------
 
-                # -------------------------------------------------------------------------------------------------------
+                # --------------------------------------------------------------
                 # Messages between callback thread and synchronizer -- only 
                 # Task objects
-
                 method_frame, props, body = mq_channel.basic_get(
                     queue='%s-cb-to-sync' % self._sid)
 
@@ -766,7 +805,6 @@ class AppManager(object):
                 #         'object': json/dict
                 #         }
 
-
                 if body:
 
                     msg = json.loads(body)
@@ -774,16 +812,12 @@ class AppManager(object):
                     self._prof.prof('sync_recv_obj_state_%s' % 
                                                 msg['object']['state'],
                                                 uid=msg['object']['uid'])
-
                     self._logger.debug('received %s with state %s for sync' % 
                                                     (msg['object']['uid'],
                                                     msg['object']['state']))
-
                     if msg['type'] == 'Task':
                         self._task_update(msg, '%s-sync-to-cb' %self._sid,
                                 props.correlation_id, mq_channel, method_frame)
-
-                # -------------------------------------------------------------------------------------------------------
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()
@@ -798,8 +832,8 @@ class AppManager(object):
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to terminate \
                                     synchronizer thread gracefully...')
-
             raise
+
 
         except Exception, ex:
 
@@ -807,8 +841,9 @@ class AppManager(object):
                                     Terminating thread')
             raise
 
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # -------------------------------------------------------------------------
+    #
     def _terminate(self):
 
         self._prof.prof('term_start', uid=self._uid)        
@@ -841,4 +876,5 @@ class AppManager(object):
         self._report.info('All components terminated\n')
         self._prof.prof('term_stop', uid=self._uid)
 
-    # ------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+

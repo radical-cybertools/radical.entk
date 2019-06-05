@@ -19,6 +19,8 @@ from .. import states, Pipeline, Task
 from ..utils.init_transition import transition, local_transition
 
 
+# ------------------------------------------------------------------------------
+#
 class WFprocessor(object):
 
     """
@@ -39,6 +41,8 @@ class WFprocessor(object):
         :resubmit_failed:   (bool) True if failed tasks should be resubmitted
     """
 
+    # --------------------------------------------------------------------------
+    #
     def __init__(self,
                  sid,
                  workflow,
@@ -64,13 +68,12 @@ class WFprocessor(object):
 
         self._uid = ru.generate_id('wfprocessor.%(item_counter)04d',
                                    ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid,path=self._path,
-                                ns='radical.entk')
+        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path,
+                                 ns='radical.entk')
         self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                path=self._path)
+                                 path=self._path)
         self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
 
-        
 
         # Defaults
         self._wfp_process = None
@@ -81,16 +84,18 @@ class WFprocessor(object):
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
 
-    # ------------------------------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     # Getter
-    # ------------------------------------------------------------------------------------------------------------------
+    #
     @property
     def workflow(self):
         return self._workflow
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Private Methods
 
+    # --------------------------------------------------------------------------
+    # Private Methods
+    #
     def _create_workload(self):
 
         # We iterate through all pipelines to collect tasks from
@@ -187,6 +192,8 @@ class WFprocessor(object):
         return workload, scheduled_stages
 
 
+    # --------------------------------------------------------------------------
+    #
     def _execute_workload(self, workload, scheduled_stages):
 
         # Tasks of the workload need to be converted into a dict
@@ -237,6 +244,9 @@ class WFprocessor(object):
                                 logger=self._logger,
                                 reporter=self._report)
 
+
+    # --------------------------------------------------------------------------
+    #
     def _enqueue(self):
         """
         **Purpose**: This is the function that is run in the enqueue thread.
@@ -274,6 +284,9 @@ class WFprocessor(object):
             raise
 
 
+
+    # --------------------------------------------------------------------------
+    #
     def _update_dequeued_task(self, deq_task):
 
         # Traverse the entire workflow to find out the correct Task
@@ -385,6 +398,9 @@ class WFprocessor(object):
                 # iterations needed for the current task
                 break
 
+
+    # --------------------------------------------------------------------------
+    #
     def _execute_post_exec(self, stage):
 
         try:
@@ -402,6 +418,9 @@ class WFprocessor(object):
                                     of stage %s' % stage.uid)
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def _dequeue(self):
         """
         **Purpose**: This is the function that is run in the dequeue thread.
@@ -448,30 +467,33 @@ class WFprocessor(object):
                     last = now
 
             self._logger.info('Terminated dequeue thread')
-            mq_connection.close()
             self._prof.prof('deq_stop', uid=self._uid)
 
-        except KeyboardInterrupt:
 
+        except KeyboardInterrupt:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to exit \
                                     gracefully...')
-
-            mq_connection.close()
             raise KeyboardInterrupt
+
 
         except Exception:
             self._logger.exception('Error in dequeue-thread')
+            raise
+
+
+        finally:
             try:
                 mq_connection.close()
             except Exception as ex:
-                self._logger.warning('mq_connection not created, %s' % ex)
+                self._logger.warning('mq_connection close failed, %s' % ex)
+            self._logger.debug('closed mq_connection')
 
-            raise
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #
     # Public Methods
-
+    #
     def initialize_workflow(self):
         """
         **Purpose**: Initialize the PST of the workflow with a uid and type
@@ -491,6 +513,9 @@ class WFprocessor(object):
             self._logger.exception('Fatal error when initializing workflow')
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def start_processor(self):
         """
         **Purpose**: Method to start the wfp process. The wfp function
@@ -529,6 +554,9 @@ class WFprocessor(object):
             self.terminate_processor()
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def terminate_processor(self):
         """
         **Purpose**: Method to terminate the wfp process. This method is
@@ -561,6 +589,9 @@ class WFprocessor(object):
             self._logger.exception('Could not terminate wfprocessor process')
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def workflow_incomplete(self):
         """
         **Purpose**: Method to check if the workflow execution is incomplete.
@@ -580,6 +611,9 @@ class WFprocessor(object):
                 'Could not check if workflow is incomplete, error:%s' % ex)
             raise
 
+
+    # --------------------------------------------------------------------------
+    #
     def check_processor(self):
 
         if self._enqueue_thread is None or self._dequeue_thread is None:
@@ -590,3 +624,7 @@ class WFprocessor(object):
             return False
 
         return True
+
+
+# ------------------------------------------------------------------------------
+
