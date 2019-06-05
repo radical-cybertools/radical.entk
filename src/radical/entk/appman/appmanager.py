@@ -107,6 +107,10 @@ class AppManager(object):
         self._shared_data = list()
         self._wfp = None
         self._sync_thread = None
+        self._terminate_sync = Event()
+
+        # Setup rabbitmq stuff
+        self._setup_mqs()
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
@@ -308,9 +312,6 @@ class AppManager(object):
             self._prof.prof('amgr_start', uid=self._uid)
 
             # Set None for variables local to each run
-            self._wfp = None
-            self._sync_thread = None
-            self._terminate_sync = Event()
             self._resubmit_failed = False
             self._cur_attempt = 1
 
@@ -342,8 +343,6 @@ class AppManager(object):
                     raise EnTKError(msg = "Cannot proceed. Resource \
                             allocation ended up in %s" % res_alloc_state)
 
-            # Setup rabbitmq stuff
-            self._setup_mqs()
 
             # Start all components and subcomponents
             self._start_all_comps()
@@ -503,6 +502,10 @@ class AppManager(object):
     # --------------------------------------------------------------------------
     #
     def _start_all_comps(self):
+
+        if self._wfp:
+            # no need to start things again
+            return
 
         # Create WFProcessor and initialize workflow its contents with
         # uids
