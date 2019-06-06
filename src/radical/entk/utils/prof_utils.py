@@ -222,7 +222,7 @@ def get_session_description(sid, src=None):
 
 # ------------------------------------------------------------------------------
 #
-def write_workflow(workflows, uid, workflow_fout='entk_workflow', fwrite=True):
+def write_workflow(workflows, uid, fname='entk_workflow.json', fwrite=True):
 
     try:
         os.mkdir(uid)
@@ -233,9 +233,6 @@ def write_workflow(workflows, uid, workflow_fout='entk_workflow', fwrite=True):
     data = {'stack'    : ru.stack(), 
             'workflows': list()}
 
-    data = list()
-    if os.path.isfile('%s/%s.json' % (uid, workflow_fout)):
-        data = ru.read_json('%s/%s.json' % (uid, workflow_fout))
 
     for workflow in workflows:
 
@@ -268,7 +265,7 @@ def write_workflow(workflows, uid, workflow_fout='entk_workflow', fwrite=True):
         data['workflows'].append(w)
 
     if fwrite:
-        ru.write_json(data, '%s/%s.json' % (uid, workflow_fout))
+        ru.write_json(data, '%s/%s' % (uid, fname))
         return 0
 
     return data

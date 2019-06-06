@@ -163,11 +163,19 @@ class AppManager(object):
     @property
     def workflow(self):
         """
-        :getter: Return the workflow assigned for execution
-        :setter: Assign workflow to be executed
+        :getter: Return the last workflow assigned for execution
+        :setter: Assign a new workflow to be executed
         """
 
         return self._workflow
+
+    @property
+    def workflows(self):
+        """
+        :getter: Return a list of workflows assigned for execution
+        """
+
+        return self._workflows
 
     @property
     def shared_data(self):
@@ -451,7 +459,7 @@ class AppManager(object):
                 write_session_description(self)
 
             if self._write_workflow:
-                write_workflow(self._workflows, self._sid)
+                write_workflow(self.workflows, self._sid)
 
             self._prof.prof('termination done', uid=self._uid)
 
