@@ -269,7 +269,18 @@ class Pipeline(object):
                 raise TypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
+    # --------------------------------------------------------------------------
+    #
     def suspend(self):
+        '''
+        Pause execution of the pipeline: stages and tasks that are executing
+        will continue to execute, but no new stages and tasks will be eligible
+        for execution until `resume()` is called.
+
+         - The `suspend()` method can not be called on a suspended or completed
+           pipeline, doing so will result in an exeption.
+         - The state of the pipeline will be set to `SUSPENDED`.
+        '''
         if self._state == states.SUSPENDED:
             raise EnTKError(
                 'suspend() called on Pipeline %s that is already suspended' % self._uid)
@@ -277,13 +288,25 @@ class Pipeline(object):
         self._state = states.SUSPENDED
         self._state_history.append(self._state)
 
+
+    # --------------------------------------------------------------------------
+    #
     def resume(self):
+        '''
+        Continue execution of paused stages and tasks.
+        
+         - The `resume()` method can only be called on a suspended pipeline, an
+           exception will be raised if that condition is not met.
+         - The state of a resumed pipeline will be set to the state the pipeline
+           had before suspension.
+        '''
         if self._state != states.SUSPENDED:
             raise EnTKError(
                 'Cannot resume Pipeline %s since it is not suspended' % self._uid)
 
         self._state = self._state_history[-2]
         self._state_history.append(self._state)
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
