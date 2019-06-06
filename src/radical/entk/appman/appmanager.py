@@ -783,10 +783,10 @@ class AppManager(object):
 
                     if not pipe.completed:
 
-                        self._logger.info('Completed pipe uid %s state %s, pipe uid %s state %s' %(completed_pipeline.uid,
-                                                                                                   completed_pipeline.state,
-                                                                                                   pipe.uid,
-                                                                                                   pipe.state))
+                        self._logger.info('Completed pipe uid %s state %s, pipe uid %s state %s' % (completed_pipeline.uid,
+                                                                                                    completed_pipeline.state,
+                                                                                                    pipe.uid,
+                                                                                                    pipe.state))
 
                         if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
 
