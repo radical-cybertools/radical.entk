@@ -489,13 +489,10 @@ class Task(object):
     @executable.setter
     def executable(self, value):
 
-        elif isinstance(value, list):
+        if isinstance(value, list):
             value = value[0]
 
-        if value is None:
-            self._executable = None
-
-        elif isinstance(value, basestring):
+        if isinstance(value, basestring):
             self._executable = value
 
         else:
