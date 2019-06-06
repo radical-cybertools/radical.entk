@@ -222,7 +222,6 @@ def get_session_description(sid, src=None):
 
 # ------------------------------------------------------------------------------
 #
-def write_workflow(workflows, uid):
 def write_workflow(workflows, uid, workflow_fout='entk_workflow', fwrite=True):
 
     try:
