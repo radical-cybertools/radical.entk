@@ -1,5 +1,19 @@
 # Changelog for each release
 
+0.62.0  Release                                                       2019-06-08
+--------------------------------------------------------------------------------
+
+  - add travis support (pytest, coverage, flake8, pylint)
+
+
+--------------------------------------------------------------------------------
+## Changelog for 0.7.17
+
+* Issues resolved in 0.7.17 milestone:
+  https://github.com/radical-cybertools/radical.entk/milestone/15
+* support pipeline suspend and resume
+
+
 ## Changelog for 0.7.17
 
 * Issues resolved in 0.7.17 milestone:
