@@ -44,12 +44,10 @@ def test_issue_26():
     p1 = create_pipeline()
     appman.workflow = [p1]
     appman.run()
-    print '====', p1.uid, p1.stages[0].uid
 
     p2 = create_pipeline()
     appman.workflow = [p2]
     appman.run()
-    print '====', p2.uid, p2.stages[0].uid
 
     appman.resource_terminate()
 
