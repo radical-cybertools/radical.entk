@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import radical.utils as ru
+
 from radical.entk import Pipeline, Stage, Task, AppManager
 from radical.entk import states
 from radical.entk.exceptions import *
@@ -42,12 +44,10 @@ def test_issue_26():
     p1 = create_pipeline()
     appman.workflow = [p1]
     appman.run()
-    print p1.uid, p1.stages[0].uid
 
     p2 = create_pipeline()
     appman.workflow = [p2]
     appman.run()
-    print p2.uid, p2.stages[0].uid
 
     appman.resource_terminate()
 
@@ -55,10 +55,10 @@ def test_issue_26():
     rhs = int(p2.stages[0].uid.split('.')[-1])
     assert lhs == rhs
 
-    for t1 in p1.stages[0].tasks:
-        for t2 in p2.stages[0].tasks:
-            lhs = int(t1.uid.split('.')[-1]) + 1
-            rhs = int(t2.uid.split('.')[-1])
+    for t in p1.stages[0].tasks:
+        for tt in p2.stages[0].tasks:
+            lhs = int(t.uid.split('.')[-1]) + 1
+            rhs = int(tt.uid.split('.')[-1])
             assert lhs == rhs
 
 
