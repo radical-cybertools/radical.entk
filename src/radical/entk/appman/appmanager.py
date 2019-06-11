@@ -504,7 +504,16 @@ class AppManager(object):
     def _start_all_comps(self):
 
         if self._wfp:
-            # no need to start things again
+            # This condition is called when there are multiple workflows
+            # submitted for execution. Amgr.run() was probably called twice.
+            # If a WFP exists, we use the same one but with the new workflow.
+            # Since WFP (and its threads) and the Amgr share memory, we have
+            # to terminate WFP's threads, assign the new workflow and then
+            # start the threads again.
+            self._wfp.terminate_processor()
+            self._wfp._workflow = self._workflow
+            self._wfp.initialize_workflow()
+            self._wfp.start_processor()
             return
 
         # Create WFProcessor and initialize workflow its contents with
