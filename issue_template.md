@@ -24,12 +24,12 @@ Attach verbose.log to the ticket.
 When running a RP script or a tool that uses RP, multiple logs are created by the components of RP. A set of these logs are created in the current working directory on the client machine (where your script lies) and a set of logs are created on the remote machine (HPC) in a specific location. You can bring all the logs to the client by running the following cmd (on the client):
 
 ```
-radicalpilot-fetch-logfiles <session id>
+radical-pilot-fecth-logfiles <session id>
 ```
 
-In order to determine the session id, you can look for a folder that is created on the client in current working directory. It should have the format ```rp.session.*```. You can find the latest folder by doing ``ls -ltr`` (last is recent).
+In order to determine the session id, you can look for a folder that is created on the client in current working directory. It should have the format ```re.session.*```. You can find the latest folder by doing ``ls -ltr`` (last is recent).
 
-All the logfiles are brought to this rp.session.* folder. Please zip this folder and attach to github ticket.
+All the logfiles are brought to this re.session.* folder. Please zip this folder and attach to github ticket.
 
 ### Access to sandbox
 
