@@ -175,6 +175,34 @@ def test_task_exceptions(s,l,i,b):
                                 'thread_type': None
                             }
 
+
+def test_dict_to_task():
+
+    d = {
+         'name'      : 'foo',
+         'pre_exec'  : ['bar'],
+         'executable': 'buz',
+         'arguments' : ['baz', 'fiz'],
+         'cpu_reqs'  : {'processes'          : 1,
+                        'process_type'       : None,
+                        'threads_per_process': 1,
+                        'thread_type'        : None},
+         'gpu_reqs'  : {'processes'          : 0,
+                        'process_type'       : None,
+                        'threads_per_process': 0,
+                        'thread_type'        : None}}
+    t = Task(from_dict=d)
+
+    for k,v in d.iteritems():
+        assert(t.__getattribute__(k) == v), '%s != %s' % (t.__getattribute__(k), v)
+
+
+    # make sure the type checks kick in
+    d = {'name' : 1}
+    with pytest.raises(TypeError):
+        Task(from_dict=d)
+
+
 def test_task_to_dict():
 
     """

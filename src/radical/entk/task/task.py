@@ -17,7 +17,7 @@ class Task(object):
     the profiling if not taken care.
     """
 
-    def __init__(self):
+    def __init__(self, from_dict=None):
 
         self._uid = None
         self._name = None
@@ -68,6 +68,11 @@ class Task(object):
         self._p_stage = {'uid': None, 'name': None}
         # Pipeline this task belongs to
         self._p_pipeline = {'uid': None, 'name': None}
+
+        # populate task attributes if so requesteed
+        if from_dict:
+            for k,v in from_dict.iteritems():
+                self.__setattr__(k, v)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
