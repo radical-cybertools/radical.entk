@@ -30,4 +30,6 @@ ignore          =
      # Complex methods
      C901,
      # Do not use bare 'except'
-     E722 
+     E722,
+     # we can spot the difference between I, l and 1, thank you.
+     E741
