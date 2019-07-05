@@ -71,7 +71,7 @@ def test_amgr_initialization():
     assert isinstance(amgr._completed_queue, list)
 
     # Global parameters to have default values
-    assert amgr._mqs_setup == False
+    assert amgr._mqs_setup == True
     assert amgr._resource_desc == None
     assert amgr._task_manager == None
     assert amgr._workflow == None
@@ -507,3 +507,4 @@ def test_state_order():
         print t_state_hist
         assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED',
                                 'SUBMITTING', 'EXECUTED', 'DONE']
+test_amgr_initialization()
