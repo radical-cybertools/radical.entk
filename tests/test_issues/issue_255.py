@@ -19,7 +19,7 @@ def test_issue_255():
 
         t1 = Task()
         t1.name = 'simulation'
-        t1.executable = ['sleep']
+        t1.executable = 'sleep'
         t1.arguments = ['10']
 
         s.add_tasks(t1)

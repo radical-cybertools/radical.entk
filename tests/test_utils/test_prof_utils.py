@@ -95,7 +95,7 @@ def generate_pipeline(nid):
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
     t1.name = 't2'
-    t1.executable = ['/bin/echo']
+    t1.executable = '/bin/echo'
     t1.arguments = ['hello']
 
     # Add the Task to the Stage
@@ -114,7 +114,7 @@ def generate_pipeline(nid):
         # Create a Task object
         t2 = Task()
         t2.name = 't%s' % (cnt + 1)
-        t2.executable = ['/bin/echo']
+        t2.executable = '/bin/echo'
         t2.arguments = ['world']
         # Copy data from the task in the first stage to the current task's location
         t2.copy_input_data = [

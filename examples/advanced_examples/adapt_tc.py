@@ -58,7 +58,7 @@ def generate_pipeline():
     for i in range(10):
 
         t1 = Task()
-        t1.executable = ['sleep']
+        t1.executable = 'sleep'
         t1.arguments = [ '30']
 
         # Add the Task to the Stage
