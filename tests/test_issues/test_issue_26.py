@@ -23,6 +23,7 @@ def test_issue_26():
         p  = Pipeline()
         s  = Stage()
         t1 = Task()
+
         t1.name             = 'simulation'
         t1.executable       = ['/bin/echo']
         t1.arguments        = ['hello']

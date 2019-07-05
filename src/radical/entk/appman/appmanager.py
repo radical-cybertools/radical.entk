@@ -660,7 +660,6 @@ class AppManager(object):
 
                                         self._logger.info('Adding new task %s to parent stage: %s' % (completed_task.uid,
                                                                                                       stage.uid))
-
                                         stage.add_tasks(completed_task)
                                         mq_channel.basic_publish(exchange='',
                                                                  routing_key=reply_to,

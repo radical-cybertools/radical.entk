@@ -204,7 +204,7 @@ def test_create_cud_from_task():
     t1 = Task()
     t1.name = 't1'
     t1.pre_exec = ['module load gromacs']
-    t1.executable = ['grompp']
+    t1.executable = 'grompp'
     t1.arguments = ['hello']
     t1.cpu_reqs = {'processes': 4,
                    'process_type': 'MPI',

@@ -224,7 +224,7 @@ def test_task_to_dict():
     t.uid = 'test.0000'
     t.name = 'new'
     t.pre_exec = ['module load abc']
-    t.executable = ['sleep']
+    t.executable = 'sleep'
     t.arguments = ['10']
     t.cpu_reqs['processes'] = 10
     t.cpu_reqs['threads_per_process'] = 2

@@ -29,7 +29,7 @@ def generate_pipeline():
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
     t1.name = 't1'
-    t1.executable = ['/bin/echo']
+    t1.executable = '/bin/echo'
     t1.arguments = ['"Hello World"']
     t1.stdout = 'temp.txt'
 
@@ -46,7 +46,7 @@ def generate_pipeline():
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t2 = Task()
     t2.name = 't2'
-    t2.executable = ['/bin/cat']
+    t2.executable = '/bin/cat'
     t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt'%(p.name, s1.name, t1.name)]
     t2.stdout = 'output.txt'
     t2.download_output_data = ['output.txt']

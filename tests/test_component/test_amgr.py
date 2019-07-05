@@ -231,7 +231,7 @@ def test_amgr_run_mock():
     s = Stage()
     t = Task()
     t.name = 'simulation'
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.tasks = t
     p.add_stages(s)
 
@@ -414,7 +414,7 @@ def test_amgr_synchronizer():
     for cnt in range(100):
 
         t = Task()
-        t.executable = ['some-executable-%s' % cnt]
+        t.executable = 'some-executable-%s' % cnt
 
         s.add_tasks(t)
 
@@ -497,7 +497,7 @@ def test_state_order():
 
         t1 = Task()
         t1.name = 'simulation'
-        t1.executable = ['/bin/date']
+        t1.executable = '/bin/date'
         t1.copy_input_data = []
         t1.copy_output_data = []
 

@@ -27,7 +27,7 @@ def test_wfp_initialization(s, i, b, l):
     p = Pipeline()
     st = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     st.add_tasks(t)
     p.add_stages(st)
 
@@ -63,7 +63,7 @@ def test_wfp_initialize_workflow():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -108,7 +108,7 @@ def test_wfp_enqueue():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -178,7 +178,7 @@ def test_wfp_dequeue():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -241,7 +241,7 @@ def test_wfp_start_processor():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -273,7 +273,7 @@ def test_wfp_terminate_processor():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -299,7 +299,7 @@ def test_wfp_workflow_incomplete():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 
@@ -355,7 +355,7 @@ def test_wfp_check_processor():
     p = Pipeline()
     s = Stage()
     t = Task()
-    t.executable = ['/bin/date']
+    t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
 

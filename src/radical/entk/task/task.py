@@ -26,7 +26,7 @@ class Task(object):
 
         # Attributes necessary for execution
         self._pre_exec = list()
-        self._executable = str()
+        self._executable = None
         self._arguments = list()
         self._post_exec = list()
         self._cpu_reqs = {'processes': 1,
@@ -447,14 +447,14 @@ class Task(object):
 
     @uid.setter
     def uid(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self._uid = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=basestring, actual_type=type(value))
 
     @name.setter
     def name(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             if ',' in value:
                 raise ValueError(obj=self._uid,
                                 attribute='name',
@@ -463,11 +463,11 @@ class Task(object):
             else:
                 self._name = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=basestring, actual_type=type(value))
 
     @state.setter
     def state(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             if value in states._task_state_values.keys():
                 self._state = value
                 self._state_history.append(value)
@@ -477,7 +477,7 @@ class Task(object):
                                  expected_value=states._task_state_values.keys(),
                                  actual_value=value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=basestring, actual_type=type(value))
 
     @pre_exec.setter
     def pre_exec(self, value):
@@ -488,12 +488,15 @@ class Task(object):
 
     @executable.setter
     def executable(self, value):
+
         if isinstance(value, list):
-            self._executable = value[0]
-        elif isinstance(value, str):
+            value = value[0]
+
+        if isinstance(value, basestring):
             self._executable = value
+
         else:
-            raise TypeError(expected_type='str', actual_type=type(value))
+            raise TypeError(expected_type='basestring', actual_type=type(value))
 
     @arguments.setter
     def arguments(self, value):
@@ -667,17 +670,17 @@ class Task(object):
 
     @stdout.setter
     def stdout(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self._stdout = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=basestring, actual_type=type(value))
 
     @stderr.setter
     def stderr(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self._stderr = value
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=basestring, actual_type=type(value))
 
     @exit_code.setter
     def exit_code(self, value):
@@ -689,18 +692,18 @@ class Task(object):
 
     @path.setter
     def path(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self._path = value
         else:
-            raise TypeError(entity='path', expected_type=str,
+            raise TypeError(entity='path', expected_type=basestring,
                             actual_type=type(value))
 
     @tag.setter
     def tag(self, value):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self._tag = value
         else:
-            raise TypeError(entity='tag', expected_type=str,
+            raise TypeError(entity='tag', expected_type=basestring,
                             actual_type=type(value))
 
     @parent_stage.setter
@@ -780,10 +783,10 @@ class Task(object):
                 self._name = d['name']
 
         if 'state' in d:
-            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
+            if isinstance(d['state'], basestring):
                 self._state = d['state']
             else:
-                raise TypeError(entity='state', expected_type=str,
+                raise TypeError(entity='state', expected_type=basestring,
                                 actual_type=type(d['state']))
         else:
             self._state = states.INITIAL
@@ -803,10 +806,16 @@ class Task(object):
                                 actual_type=type(d['pre_exec']))
 
         if 'executable' in d:
-            if isinstance(d['executable'], str) or isinstance(d['executable'], unicode):
+
+            # AM: why is type checking duplicated to setter?
+
+            if d['executable'] is None:
+                self._executable = None
+
+            elif isinstance(d['executable'], basestring):
                 self._executable = d['executable']
             else:
-                raise TypeError(expected_type=str,
+                raise TypeError(expected_type=basestring,
                                 actual_type=type(d['executable']))
 
         if 'arguments' in d:
@@ -897,17 +906,17 @@ class Task(object):
 
         if 'stdout' in d:
             if d['stdout']:
-                if isinstance(d['stdout'], str) or isinstance(d['stdout'], unicode):
+                if isinstance(d['stdout'], basestring):
                     self._stdout = d['stdout']
                 else:
-                    raise TypeError(expected_type=str, actual_type=type(d['stdout']))
+                    raise TypeError(expected_type=basestring, actual_type=type(d['stdout']))
 
         if 'stderr' in d:
             if d['stderr']:
-                if isinstance(d['stderr'], str) or isinstance(d['stderr'], unicode):
+                if isinstance(d['stderr'], basestring):
                     self._stderr = d['stderr']
                 else:
-                    raise TypeError(expected_type=str, actual_type=type(d['stderr']))
+                    raise TypeError(expected_type=basestring, actual_type=type(d['stderr']))
 
         if 'exit_code' in d:
             if d['exit_code']:
@@ -919,18 +928,18 @@ class Task(object):
 
         if 'path' in d:
             if d['path']:
-                if isinstance(d['path'], str) or isinstance(d['path'], unicode):
+                if isinstance(d['path'], basestring):
                     self._path = d['path']
                 else:
-                    raise TypeError(entity='path', expected_type=str,
+                    raise TypeError(entity='path', expected_type=basestring,
                                     actual_type=type(d['path']))
 
         if 'tag' in d:
             if d['tag']:
-                if isinstance(d['tag'], str) or isinstance(d['tag'], unicode):
-                    self._tag = str(d['tag'])
+                if isinstance(d['tag'], basestring):
+                    self._tag = d['tag']
                 else:
-                    raise TypeError(expected_type=str,
+                    raise TypeError(expected_type=basestring,
                                     actual_type=type(d['tag']))
 
         if 'parent_stage' in d:
