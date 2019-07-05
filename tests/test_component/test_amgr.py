@@ -2,7 +2,7 @@ from radical.entk import AppManager as Amgr
 from hypothesis import given, settings
 import hypothesis.strategies as st
 from radical.entk import Pipeline, Stage, Task, states
-from radical.entk.exceptions import *
+from radical.entk.exceptions import MissingError, EnTKError
 from radical.entk.utils.sync_initiator import sync_with_master
 import radical.utils as ru
 import pytest
@@ -10,6 +10,8 @@ import pika
 from threading import Event, Thread
 from multiprocessing import Process
 import os
+
+# pylint: disable=protected-access
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
@@ -19,6 +21,7 @@ MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
 
+
 def test_amgr_initialization():
     amgr_name = ru.generate_id('test.appmanager.%(item_counter)04d', ru.ID_CUSTOM)
     amgr = Amgr(hostname=hostname, port=port,name=amgr_name)
@@ -26,9 +29,9 @@ def test_amgr_initialization():
     assert amgr._name.split('.') == amgr_name.split('.')
     assert amgr._sid.split('.') == amgr_name.split('.')
     assert amgr._uid.split('.') == ['appmanager', '0000']
-    assert type(amgr._logger) == type(ru.Logger('radical.tests'))
-    assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
-    assert type(amgr._report) == type(ru.Reporter('radical.tests'))
+    assert isinstance(amgr._logger, ru.Logger('radical.tests'))
+    assert isinstance(amgr._prof, ru.Profiler('radical.tests'))
+    assert isinstance(amgr._report, ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
@@ -42,22 +45,22 @@ def test_amgr_initialization():
     assert isinstance(amgr._completed_queue, list)
 
     # Global parameters to have default values
-    assert amgr._mqs_setup == False
-    assert amgr._resource_desc == None
-    assert amgr._task_manager == None
-    assert amgr._workflow == None
-    assert amgr._resubmit_failed == False
+    assert not amgr._mqs_setup  # equivalent to assert amgr._mqs_setup == False
+    assert amgr._resource_desc is None
+    assert amgr._task_manager is None
+    assert amgr._workflow is None
+    assert not amgr._resubmit_failed
     assert amgr._reattempts == 3
     assert amgr._cur_attempt == 1
-    assert amgr._autoterminate == True
+    assert amgr._autoterminate
     assert isinstance(amgr.shared_data, list)
 
     amgr = Amgr(hostname=hostname, port=port)
 
     assert amgr._uid.split('.') == ['appmanager', '0000']
-    assert type(amgr._logger) == type(ru.Logger('radical.tests'))
-    assert type(amgr._prof) == type(ru.Profiler('radical.tests'))
-    assert type(amgr._report) == type(ru.Reporter('radical.tests'))
+    assert isinstance(amgr._logger, ru.Logger('radical.tests'))
+    assert isinstance(amgr._prof, ru.Profiler('radical.tests'))
+    assert isinstance(amgr._report, ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
@@ -71,14 +74,14 @@ def test_amgr_initialization():
     assert isinstance(amgr._completed_queue, list)
 
     # Global parameters to have default values
-    assert amgr._mqs_setup == False
-    assert amgr._resource_desc == None
-    assert amgr._task_manager == None
-    assert amgr._workflow == None
-    assert amgr._resubmit_failed == False
+    assert not amgr._mqs_setup
+    assert amgr._resource_desc is None
+    assert amgr._task_manager is None
+    assert amgr._workflow is None
+    assert not amgr._resubmit_failed
     assert amgr._reattempts == 3
     assert amgr._cur_attempt == 1
-    assert amgr._autoterminate == True
+    assert amgr._autoterminate
     assert isinstance(amgr.shared_data, list)
 
 
@@ -89,14 +92,14 @@ def test_amgr_read_config():
     assert amgr._mq_hostname == 'localhost'
     assert amgr._port == 5672
     assert amgr._reattempts == 3
-    assert amgr._resubmit_failed == False
-    assert amgr._autoterminate == True
-    assert amgr._write_workflow == False
+    assert not amgr._resubmit_failed
+    assert amgr._autoterminate
+    assert not amgr._write_workflow
     assert amgr._rts == 'radical.pilot'
     assert amgr._num_pending_qs == 1
     assert amgr._num_completed_qs == 1
-    assert amgr._rmq_cleanup == True
-    assert amgr._rts_config == { "sandbox_cleanup": False, "db_cleanup": False}
+    assert amgr._rmq_cleanup
+    assert amgr._rts_config == {"sandbox_cleanup": False, "db_cleanup": False}
 
     d = {"hostname": "radical.two",
          "port": 25672,
@@ -105,7 +108,7 @@ def test_amgr_read_config():
          "autoterminate": False,
          "write_workflow": True,
          "rts": "mock",
-         "rts_config": { "sandbox_cleanup": True, "db_cleanup": True},
+         "rts_config": {"sandbox_cleanup": True, "db_cleanup": True},
          "pending_qs": 2,
          "completed_qs": 3,
          "rmq_cleanup": False}
@@ -148,6 +151,7 @@ def test_amgr_resource_description_assignment():
 
     }
 
+    # pylint: disable=reimported
     amgr = Amgr(rts='radical.pilot')
     amgr.resource_desc = res_dict
     from radical.entk.execman.rp import ResourceManager
@@ -157,6 +161,7 @@ def test_amgr_resource_description_assignment():
     amgr.resource_desc = res_dict
     from radical.entk.execman.mock import ResourceManager
     assert isinstance(amgr._resource_manager, ResourceManager)
+    # pylint: enable=reimported
 
 
 def test_amgr_assign_workflow():
@@ -278,6 +283,7 @@ def test_amgr_resource_terminate():
 
     amgr.resource_terminate()
 
+
 def test_amgr_terminate():
 
     res_dict = {
@@ -305,10 +311,11 @@ def test_amgr_terminate():
 
     amgr.terminate()
 
+
 def test_amgr_setup_mqs():
 
     amgr = Amgr(hostname=hostname, port=port)
-    assert amgr._setup_mqs() == True
+    assert amgr._setup_mqs()
 
     assert len(amgr._pending_queue) == 1
     assert len(amgr._completed_queue) == 1
@@ -524,7 +531,7 @@ def test_state_order():
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
-    
+
     appman = Amgr(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
@@ -544,3 +551,4 @@ def test_state_order():
         t_state_hist = t.state_history
         assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'SUBMITTING', 'SUBMITTED',
                             'EXECUTED', 'DEQUEUEING', 'DEQUEUED', 'DONE']
+# pylint: enable=protected-access

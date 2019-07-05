@@ -3,20 +3,20 @@ __author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__ = "MIT"
 
 import radical.utils as ru
-from radical.entk.exceptions import *
+from radical.entk.exceptions import MissingError, EnTKError
 from radical.entk.pipeline.pipeline import Pipeline
 from radical.entk.stage.stage import Stage
 from radical.entk.task.task import Task
 from radical.entk.utils.prof_utils import write_session_description
-from radical.entk.utils.prof_utils import write_workflow
+from radical.entk.utils import prof_utils as reup
 from wfprocessor import WFprocessor
 import time
 import os
-import Queue
 import pika
 import json
 from threading import Thread, Event
-from radical.entk import states
+
+# pylint: disable=protected-access
 
 
 class AppManager(object):
@@ -58,7 +58,7 @@ class AppManager(object):
             self._name = name
             self._sid = name
         else:
-            self._name= str()
+            self._name = str()
             self._sid = ru.generate_id('re.session', ru.ID_PRIVATE)
 
         self._read_config(config_path, hostname, port, reattempts,
@@ -91,6 +91,8 @@ class AppManager(object):
         self._shared_data = list()
         self._wfp = None
         self._sync_thread = None
+        self._terminate_sync = Event()
+        self._resubmit_failed = False
 
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
@@ -210,7 +212,7 @@ class AppManager(object):
             self._resource_manager.shared_data = self._shared_data
         else:
             self._logger.error('Could not validate resource description')
-            raise
+            raise EnTKError('Could not validate resource description')
         self._report.ok('>>ok\n')
 
     @workflow.setter
@@ -280,7 +282,7 @@ class AppManager(object):
 
                 if not setup:
                     self._logger.error('RabbitMQ system not available')
-                    raise EnTKError("RabbitMQ setup failed")
+                    raise EnTKError(msg="RabbitMQ setup failed")
 
                 self._mqs_setup = True
 
@@ -310,12 +312,12 @@ class AppManager(object):
                     self._resource_manager._submit_resource_request()
                     res_alloc_state = self._resource_manager.get_resource_allocation_state()
                     if res_alloc_state in self._resource_manager.get_completed_states():
-                        raise EnTKError(msg="Cannot proceed. Resource allocation ended up in %s"%res_alloc_state)
+                        raise EnTKError(msg="Cannot proceed. Resource allocation ended up in %s" % res_alloc_state)
 
             else:
 
                 self._logger.exception('Cannot run without resource manager, please create and assign a resource manager')
-                raise EnTKError(text='Missing resource manager')
+                raise EnTKError(msg='Missing resource manager')
 
             # Start synchronizer thread
             if not self._sync_thread:
@@ -384,14 +386,12 @@ class AppManager(object):
 
                 if (not self._wfp.check_processor()) and (self._cur_attempt <= self._reattempts):
 
-                    """
-                    If WFP dies, both child threads are also cleaned out.
-                    We simply recreate the wfp object with a copy of the workflow
-                    in the appmanager and start the processor.
-                    """
+                    # If WFP dies, both child threads are also cleaned out.
+                    # We simply recreate the wfp object with a copy of the workflow
+                    # in the appmanager and start the processor.
 
                     self._prof.prof('recreating wfp obj', uid=self._uid)
-                    self._wfp = WFProcessor(
+                    self._wfp = WFprocessor(
                         sid=self._sid,
                         workflow=self._workflow,
                         pending_queue=self._pending_queue,
@@ -407,13 +407,12 @@ class AppManager(object):
 
                 if (not self._task_manager.check_heartbeat()) and (self._cur_attempt <= self._reattempts):
 
-                    """
-                    If the tmgr process or heartbeat dies, we simply start a
-                    new process using the start_manager method. We do not
-                    need to create a new instance of the TaskManager object
-                    itself. We stop and start a new instance of the
-                    heartbeat thread as well.
-                    """
+                    # If the tmgr process or heartbeat dies, we simply start a
+                    # new process using the start_manager method. We do not
+                    # need to create a new instance of the TaskManager object
+                    # itself. We stop and start a new instance of the
+                    # heartbeat thread as well.
+
                     self._prof.prof('restarting tmgr process and heartbeat', uid=self._uid)
 
                     self._logger.info('Terminating heartbeat thread')
@@ -439,10 +438,10 @@ class AppManager(object):
             self._logger.info('Synchronizer thread terminated')
 
             if self._autoterminate:
-                self._terminate()
+                self.terminate()
 
             if self._write_workflow:
-                write_workflow(self._workflow, self._sid)
+                reup.write_workflow(self._workflow, self._sid)
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -451,9 +450,9 @@ class AppManager(object):
             self._prof.prof('start termination', uid=self._uid)
 
             self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to cancel enqueuer thread gracefully...')
+                                   'trying to cancel enqueuer thread gracefully...')
 
-            self._terminate()
+            self.terminate()
 
             self._prof.prof('termination done', uid=self._uid)
 
@@ -466,8 +465,8 @@ class AppManager(object):
             self._logger.exception('Error in AppManager: %s' % ex)
 
             # Terminate threads in following order: wfp, helper, synchronizer
-            
-            self._terminate()
+
+            self.terminate()
 
             self._prof.prof('termination done', uid=self._uid)
             raise
@@ -475,17 +474,40 @@ class AppManager(object):
     def terminate(self):
 
         self._prof.prof('start termination', uid=self._uid)
-        self._terminate()
-        self._prof.prof('termination done', uid=self._uid)
 
+        # Terminate threads in following order: wfp, helper, synchronizer
+        if self._wfp:
+            self._logger.info('Terminating WFprocessor')
+            self._wfp.terminate_processor()
+
+        if self._task_manager:
+            self._logger.info('Terminating task manager process')
+            self._task_manager.terminate_manager()
+            self._task_manager.terminate_heartbeat()
+
+        if self._sync_thread:
+            self._logger.info('Terminating synchronizer thread')
+            self._terminate_sync.set()
+            self._sync_thread.join()
+            self._logger.info('Synchronizer thread terminated')
+
+        if self._resource_manager:
+            self._resource_manager._terminate_resource_request()
+
+        if os.environ.get('RADICAL_ENTK_PROFILE', False):
+            write_session_description(self)
+
+        if self._rmq_cleanup:
+            self._cleanup_mqs()
+
+        self._report.info('All components terminated\n')
+        self._prof.prof('termination done', uid=self._uid)
 
     def resource_terminate(self):
-        
-        self._prof.prof('start termination', uid=self._uid)
+
         self._logger.warning('DeprecationWarning: Public Method resource_terminate is deprecated.\
                              Please use terminate')
-        self._terminate()
-        self._prof.prof('termination done', uid=self._uid)
+        self.terminate()
 
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -760,10 +782,10 @@ class AppManager(object):
 
                     if not pipe.completed:
 
-                        self._logger.info('Completed pipe uid %s state %s, pipe uid %s state %s' %(completed_pipeline.uid,
-                                                                                                   completed_pipeline.state,
-                                                                                                   pipe.uid,
-                                                                                                   pipe.state))
+                        self._logger.info('Completed pipe uid %s state %s, pipe uid %s state %s' % (completed_pipeline.uid,
+                                                                                                    completed_pipeline.state,
+                                                                                                    pipe.uid,
+                                                                                                    pipe.state))
 
                         if (completed_pipeline.uid == pipe.uid)and(completed_pipeline.state != pipe.state):
 
@@ -805,19 +827,16 @@ class AppManager(object):
 
             while not self._terminate_sync.is_set():
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
                 # Messages between tmgr Main thread and synchronizer -- only Task objects
 
                 method_frame, props, body = mq_channel.basic_get(queue='%s-tmgr-to-sync' % self._sid)
 
-                """
-                The message received is a JSON object with the following structure:
-
-                msg = {
-                        'type': 'Pipeline'/'Stage'/'Task',
-                        'object': json/dict
-                        }
-                """
+                # The message received is a JSON object with the following structure:
+                # msg = {
+                #         'type': 'Pipeline'/'Stage'/'Task',
+                #         'object': json/dict
+                #         }
 
                 if body:
 
@@ -832,21 +851,18 @@ class AppManager(object):
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-tmgr' % self._sid, props.correlation_id, mq_channel)
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
                 # Messages between callback thread and synchronizer -- only Task objects
 
                 method_frame, props, body = mq_channel.basic_get(queue='%s-cb-to-sync' % self._sid)
 
-                """
-                The message received is a JSON object with the following structure:
-
-                msg = {
-                        'type': 'Pipeline'/'Stage'/'Task',
-                        'object': json/dict
-                        }
-                """
+                # The message received is a JSON object with the following structure:
+                # msg = {
+                #         'type': 'Pipeline'/'Stage'/'Task',
+                #         'object': json/dict
+                #         }
 
                 if body:
 
@@ -861,9 +877,9 @@ class AppManager(object):
                     if msg['type'] == 'Task':
                         task_update(msg, '%s-sync-to-cb' % self._sid, props.correlation_id, mq_channel)
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
                 # Messages between enqueue thread and synchronizer -- Task, Stage or Pipeline
                 method_frame, props, body = mq_channel.basic_get(queue='%s-enq-to-sync' % self._sid)
 
@@ -885,9 +901,9 @@ class AppManager(object):
 
                     elif msg['type'] == 'Pipeline':
                         pipeline_update(msg, '%s-sync-to-enq' % self._sid, props.correlation_id, mq_channel)
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
 
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
                 # Messages between dequeue thread and synchronizer -- Task, Stage or Pipeline
                 method_frame, props, body = mq_channel.basic_get(queue='%s-deq-to-sync' % self._sid)
 
@@ -909,7 +925,7 @@ class AppManager(object):
 
                     elif msg['type'] == 'Pipeline':
                         pipeline_update(msg, '%s-sync-to-deq' % self._sid, props.correlation_id, mq_channel)
-                #-------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()
@@ -922,7 +938,7 @@ class AppManager(object):
         except KeyboardInterrupt:
 
             self._logger.exception('Execution interrupted by user (you probably hit Ctrl+C), ' +
-                               'trying to terminate synchronizer thread gracefully...')
+                                   'trying to terminate synchronizer thread gracefully...')
 
             raise KeyboardInterrupt
 
@@ -933,33 +949,4 @@ class AppManager(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def _terminate(self):
-
-        # Terminate threads in following order: wfp, helper, synchronizer
-        if self._wfp:
-            self._logger.info('Terminating WFprocessor')
-            self._wfp.terminate_processor()
-
-        if self._task_manager:
-            self._logger.info('Terminating task manager process')
-            self._task_manager.terminate_manager()
-            self._task_manager.terminate_heartbeat()
-
-        if self._sync_thread:
-            self._logger.info('Terminating synchronizer thread')
-            self._terminate_sync.set()
-            self._sync_thread.join()
-            self._logger.info('Synchronizer thread terminated')
-
-        if self._resource_manager:
-            self._resource_manager._terminate_resource_request()
-
-        if os.environ.get('RADICAL_ENTK_PROFILE', False):
-            write_session_description(self)
-
-        if self._rmq_cleanup:
-            self._cleanup_mqs()
-
-        self._report.info('All components terminated\n')
-
-    # ------------------------------------------------------------------------------------------------------------------
+# pylint: disable=protected-access
