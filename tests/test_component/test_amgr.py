@@ -42,7 +42,7 @@ def test_amgr_initialization():
     assert isinstance(amgr._completed_queue, list)
 
     # Global parameters to have default values
-    assert amgr._mqs_setup == False
+    assert amgr._mqs_setup == True
     assert amgr._resource_desc == None
     assert amgr._task_manager == None
     assert amgr._workflow == None
@@ -191,7 +191,7 @@ def test_amgr_assign_shared_data():
 
     amgr.resource_desc = res_dict
     amgr.shared_data = ['file1.txt','file2.txt']
-    assert amgr._rmgr.shared_data == ['file1.txt','file2.txt'] 
+    assert amgr._rmgr.shared_data == ['file1.txt','file2.txt']
 
 
 def test_amgr_run():
@@ -486,7 +486,7 @@ def test_state_order():
 
     os.environ['RADICAL_PILOT_DBURL'] = MLAB
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
-    
+
     appman = Amgr(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 
@@ -505,5 +505,5 @@ def test_state_order():
 
         t_state_hist = t.state_history
         print t_state_hist
-        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 
+        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED',
                                 'SUBMITTING', 'EXECUTED', 'DONE']
