@@ -280,7 +280,8 @@ class AppManager(object):
 
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise ree.TypeError(expected_type=['Pipeline', 'set of Pipelines'],
+                raise ree.TypeError(expected_type=['Pipeline',
+                                                   'set of Pipelines'],
                                     actual_type=type(p))
             p._validate()
 
@@ -340,7 +341,7 @@ class AppManager(object):
             self._prof.prof('amgr run started', uid=self._uid)
 
             # ensure rabbitmq setup
-            setup = self._setup_mqs()
+            self._setup_mqs()
 
             # Submit resource request if no resource allocation done till now or
             # resubmit a new one if the old one has completed
@@ -534,7 +535,7 @@ class AppManager(object):
 
             self._prof.prof('mqs_cleanup_stop', uid=self._uid)
 
-        except Exception as ex:
+        except Exception:
             self._logger.exception('Message queues not deleted, error')
             raise
 
@@ -585,11 +586,15 @@ class AppManager(object):
         # Create tmgr object only if it does not already exist
         if self._rts == 'radical.pilot':
             from radical.entk.execman.rp import TaskManager
+
         elif self._rts == 'mock':
             from radical.entk.execman.mock import TaskManager
 
         if not self._task_manager:
+
+            self._logger.info('Starting task manager')
             self._prof.prof('tmgr_create_start', uid=self._uid)
+
             self._task_manager = TaskManager(
                     sid=self._sid,
                     pending_queue=self._pending_queue,
@@ -598,9 +603,9 @@ class AppManager(object):
                     rmgr=self._rmgr,
                     port=self._port)
 
-            self._logger.info('Starting task manager')
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
+
             self._prof.prof('tmgr_create_stop', uid=self._uid)
 
 

@@ -1,28 +1,24 @@
-__copyright__ = "Copyright 2017-2019, http://radical.rutgers.edu"
-__author__ = "RADICAL Team <radical@rutgers.edu>"
-__license__ = "MIT"
 
+__copyright__ = "Copyright 2017-2019, http://radical.rutgers.edu"
+__author__    = "RADICAL Team <radical@rutgers.edu>"
+__license__   = "MIT"
+
+
+import os
+import json
+import pika
+import time
+import threading
 
 import radical.utils as ru
-from time import sleep, time
-import json
-import threading
-import pika
-import traceback
-import os
-import uuid
-import time
 
 # EnTK imports
-from ..exceptions import EnTKError, ValueError, TypeError, MissingError
-from .. import states, Pipeline, Task
-from ..utils.init_transition import transition, local_transition
+from ..      import states, Task
 
 
 # ------------------------------------------------------------------------------
 #
 class WFprocessor(object):
-
     """
     An WFprocessor (workflow processor) takes the responsibility of dispatching
     tasks from the various pipelines of the workflow according to their relative
@@ -32,13 +28,13 @@ class WFprocessor(object):
     PST accordingly.
 
     :Arguments:
-        :sid:               (str) session id used by the profiler and loggers
-        :workflow:          (set) REFERENCE of the AppManager's workflow
-        :pending_queue:     (list) queues to hold pending tasks
-        :completed_queue:   (list) queues to hold completed tasks
-        :mq_hostname:       (str) hostname where the RabbitMQ is alive
-        :port:              (int) port at which RabbitMQ can be accessed
-        :resubmit_failed:   (bool) True if failed tasks should be resubmitted
+        :sid:             (str) session id used by the profiler and loggers
+        :workflow:        (set) REFERENCE of the AppManager's workflow
+        :pending_queue:   (list) queues to hold pending tasks
+        :completed_queue: (list) queues to hold completed tasks
+        :mq_hostname:     (str) hostname where the RabbitMQ is alive
+        :port:            (int) port at which RabbitMQ can be accessed
+        :resubmit_failed: (bool) True if failed tasks should be resubmitted
     """
 
     # --------------------------------------------------------------------------
@@ -53,11 +49,11 @@ class WFprocessor(object):
                  resubmit_failed):
 
         # Mandatory arguments
-        self._sid = sid
-        self._pending_queue = pending_queue
+        self._sid             = sid
+        self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
-        self._mq_hostname = mq_hostname
-        self._port = port
+        self._mq_hostname     = mq_hostname
+        self._port            = port
         self._resubmit_failed = resubmit_failed
 
         # Assign validated workflow
@@ -65,24 +61,41 @@ class WFprocessor(object):
 
         # Create logger and profiler at their specific locations using the sid
         self._path = os.getcwd() + '/' + self._sid
+        self._uid  = ru.generate_id('wfprocessor.%(item_counter)04d',
+                                    ru.ID_CUSTOM, namespace=self._sid)
 
-        self._uid = ru.generate_id('wfprocessor.%(item_counter)04d',
-                                   ru.ID_CUSTOM, namespace=self._sid)
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path,
-                                 ns='radical.entk')
-        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid,
-                                 path=self._path)
-        self._report = ru.Reporter(name='radical.entk.%s' % self._uid)
-
+        name = 'radical.entk.%s' % self._uid
+        self._logger = ru.Logger  (name, path=self._path)
+        self._prof   = ru.Profiler(name, path=self._path)
+        self._report = ru.Reporter(name)
 
         # Defaults
-        self._wfp_process = None
-        self._enqueue_thread = None
-        self._dequeue_thread = None
+        self._wfp_process       = None
+        self._enqueue_thread    = None
+        self._dequeue_thread    = None
         self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _advance(self, obj, obj_type, new_state):
+        '''
+        transition `obj` of type `obj_type` into state `new_state`
+        '''
+
+        if   obj_type == 'Task' : msg = obj.parent_stage['uid']
+        elif obj_type == 'Stage': msg = obj.parent_pipeline['uid']
+        else                    : msg = None
+
+        obj.state = new_state
+
+        self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
+        self._report.ok('Update: ')
+        self._report.info('%s state: %s\n' % (obj.luid, obj.state))
+        self._logger.info('Transition %s to state %s' % (obj.uid, new_state))
 
 
     # --------------------------------------------------------------------------
@@ -104,12 +117,12 @@ class WFprocessor(object):
 
         # Initial empty list to store executable tasks across different
         # pipelines
-        workload = []
+        workload = list()
 
         # The executable tasks can belong to different pipelines, and
         # hence different stages. Empty list to store the stages so that
         # we can update the state of stages accordingly
-        scheduled_stages = []
+        scheduled_stages = list()
 
         for pipe in self._workflow:
 
@@ -125,34 +138,22 @@ class WFprocessor(object):
 
                 if pipe.state == states.INITIAL:
 
-                    # Set state of pipeline to SCHEDULING if it is
-                    # in INITIAL.
-                    local_transition(obj=pipe,
-                                    obj_type='Pipeline',
-                                    new_state=states.SCHEDULING,
-                                    profiler=self._prof,
-                                    logger=self._logger,
-                                    reporter=self._report)
+                    # Set state of pipeline to SCHEDULING if it is in INITIAL
+                    self._advance(pipe, 'Pipeline', states.SCHEDULING)
 
                 # Get the next stage of this pipeline to process
                 exec_stage = pipe.stages[pipe.current_stage - 1]
 
                 if not exec_stage.uid:
-                    # TODO: Move parent uid, name assignment to
-                    # assign_uid function
-                    exec_stage.parent_pipeline['uid'] = pipe.uid
+                    # TODO: Move parent uid, name assignment to assign_uid()
+                    exec_stage.parent_pipeline['uid']  = pipe.uid
                     exec_stage.parent_pipeline['name'] = pipe.name
                     exec_stage._assign_uid(self._sid)
 
                 # If its a new stage, update its state
                 if exec_stage.state == states.INITIAL:
 
-                    local_transition(obj=exec_stage,
-                                    obj_type='Stage',
-                                    new_state=states.SCHEDULING,
-                                    profiler=self._prof,
-                                    logger=self._logger,
-                                    reporter=self._report)
+                    self._advance(exec_stage, 'Stage', states.SCHEDULING)
 
                 # Get all tasks of a stage in SCHEDULED state
                 exec_tasks = list()
@@ -161,18 +162,13 @@ class WFprocessor(object):
 
                 for exec_task in exec_tasks:
 
-                    if exec_task.state == states.INITIAL or \
-                        (exec_task.state == states.FAILED and \
-                            self._resubmit_failed):
+                    state = exec_task.state
+                    if   state == states.INITIAL or \
+                        (state == states.FAILED and self._resubmit_failed):
 
                         # Set state of Tasks in current Stage
                         # to SCHEDULING
-                        local_transition(obj = exec_task,
-                                        obj_type = 'Task',
-                                        new_state = states.SCHEDULING,
-                                        profiler = self._prof,
-                                        logger = self._logger,
-                                        reporter = self._report)
+                        self._advance(exec_task, 'Task', states.SCHEDULING)
 
                         # Store the tasks from different pipelines
                         # into our workload list. All tasks will
@@ -226,23 +222,13 @@ class WFprocessor(object):
         for task in workload:
 
             # Set state of Tasks in current Stage to SCHEDULED
-            local_transition(obj=task,
-                            obj_type='Task',
-                            new_state=states.SCHEDULED,
-                            profiler=self._prof,
-                            logger=self._logger,
-                            reporter=self._report)
+            self._advance(task, 'Task', states.SCHEDULED)
 
         # Update the state of the stages from which tasks have
         # been scheduled
         if scheduled_stages:
             for executable_stage in scheduled_stages:
-                local_transition(obj=executable_stage,
-                                obj_type='Stage',
-                                new_state=states.SCHEDULED,
-                                profiler=self._prof,
-                                logger=self._logger,
-                                reporter=self._report)
+                self._advance(executable_stage, 'Stage', states.SCHEDULED)
 
 
     # --------------------------------------------------------------------------
@@ -263,7 +249,7 @@ class WFprocessor(object):
             while not self._enqueue_thread_terminate.is_set():
 
                 workload, scheduled_stages = self._create_workload()
-                
+
                 # If there are tasks to be executed
                 if workload:
                     self._execute_workload(workload, scheduled_stages)
@@ -334,7 +320,7 @@ class WFprocessor(object):
                             continue
 
                         # If there is no exit code, we assume success
-                        # We are only concerned about state of task and not 
+                        # We are only concerned about state of task and not
                         # deq_task
                         if not deq_task.exit_code:
                             task_state = states.DONE
@@ -345,12 +331,7 @@ class WFprocessor(object):
                             self._resubmit_failed:
                             task_state = states.INITIAL
 
-                        local_transition(obj=task,
-                                        obj_type='Task',
-                                        new_state=task_state,
-                                        profiler=self._prof,
-                                        logger=self._logger,
-                                        reporter=self._report)
+                        self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
                         # iterations needed
@@ -367,12 +348,7 @@ class WFprocessor(object):
                 # state if yes.
                 if stage._check_stage_complete():
 
-                    local_transition(obj=stage,
-                                    obj_type='Stage',
-                                    new_state=states.DONE,
-                                    profiler=self._prof,
-                                    logger=self._logger,
-                                    reporter=self._report)
+                    self._advance(stage, 'Stage', states.DONE)
 
                     # Check if the current stage has a post-exec
                     # that needs to be executed
@@ -387,12 +363,7 @@ class WFprocessor(object):
                     # change
                     if pipe.completed:
 
-                        local_transition(obj=pipe,
-                                        obj_type='Pipeline',
-                                        new_state=states.DONE,
-                                        profiler=self._prof,
-                                        logger=self._logger,
-                                        reporter=self._report)
+                        self._advance(pipe, 'Pipeline', states.DONE)
 
                 # Found the pipeline and processed it -- no more
                 # iterations needed for the current task
@@ -458,7 +429,7 @@ class WFprocessor(object):
                 deq_task.from_dict(json.loads(body))
                 self._logger.info('Got finished task %s from queue'
                                   % (deq_task.uid))
-                self._update_dequeued_task(deq_task)                
+                self._update_dequeued_task(deq_task)
 
                 # Appease pika cos it thinks the connection is dead
                 now = time.time()

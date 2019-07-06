@@ -7,9 +7,6 @@ from .prof_utils         import get_session_profile
 from .prof_utils         import write_session_description
 from .prof_utils         import get_session_description
 from .prof_utils         import write_workflow
-from .sync_initiator     import sync_with_master
-from .init_transition    import transition
-from .init_transition    import local_transition
 
 
 # ------------------------------------------------------------------------------
