@@ -35,7 +35,7 @@ def test_amgr_initialization():
 
     assert amgr._name.split('.') == amgr_name.split('.')
     assert amgr._sid.split('.')  == amgr_name.split('.')
-    assert amgr._uid.split('.')  == ['amgr', '0000']
+    assert amgr._uid.split('.')  == ['appmanager', '0000']
 
     assert isinstance(amgr._logger, ru.Logger('radical.tests'))
     assert isinstance(amgr._prof,   ru.Profiler('radical.tests'))
@@ -43,8 +43,8 @@ def test_amgr_initialization():
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
-    assert amgr._mq_hostname == hostname
-    assert amgr._port        == port
+    assert amgr._hostname == hostname
+    assert amgr._port     == port
 
     # RabbitMQ Queues
     assert amgr._num_pending_qs   == 1
@@ -69,15 +69,15 @@ def test_amgr_initialization():
 
     amgr = Amgr(hostname=hostname, port=port)
 
-    assert amgr._uid.split('.') == ['amgr', '0000']
+    assert amgr._uid.split('.') == ['appmanager', '0000']
     assert isinstance(amgr._logger, ru.Logger('radical.tests'))
     assert isinstance(amgr._prof,   ru.Profiler('radical.tests'))
     assert isinstance(amgr._report, ru.Reporter('radical.tests'))
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
-    assert amgr._mq_hostname == hostname
-    assert amgr._port        == port
+    assert amgr._hostname == hostname
+    assert amgr._port     == port
 
     # RabbitMQ Queues
     assert amgr._num_pending_qs   == 1
@@ -108,9 +108,9 @@ def test_amgr_read_config():
 
     amgr = Amgr()
 
-    assert amgr._mq_hostname == 'localhost'
-    assert amgr._port        == 5672
-    assert amgr._reattempts  == 3
+    assert amgr._hostname   == 'localhost'
+    assert amgr._port       == 5672
+    assert amgr._reattempts == 3
 
     assert amgr._rmq_cleanup
     assert amgr._autoterminate
@@ -149,7 +149,7 @@ def test_amgr_read_config():
                       rmq_cleanup=None,
                       rts_config=None)
 
-    assert amgr._mq_hostname      == d['hostname']
+    assert amgr._hostname         == d['hostname']
     assert amgr._port             == d['port']
     assert amgr._reattempts       == d['reattempts']
     assert amgr._resubmit_failed  == d['resubmit_failed']
@@ -287,7 +287,7 @@ def test_amgr_resource_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._mq_hostname,
+                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
                                      port=amgr._port)
     amgr.resource_terminate()
@@ -313,7 +313,7 @@ def test_amgr_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._mq_hostname,
+                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
                                      port=amgr._port
                                      )
@@ -326,13 +326,13 @@ def test_amgr_terminate():
 def test_amgr_setup_mqs():
 
     amgr = Amgr(hostname=hostname, port=port)
-    assert amgr._setup_mqs()
+    amgr._setup_mqs()
 
     assert len(amgr._pending_queue)   == 1
     assert len(amgr._completed_queue) == 1
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                       host=amgr._mq_hostname, port=amgr._port))
+                                       host=amgr._hostname, port=amgr._port))
     mq_channel    = mq_connection.channel()
 
     qs = ['%s-tmgr-to-sync' % amgr._sid,
@@ -538,11 +538,8 @@ def test_state_order():
         t_state_hist = t.state_history
 
         # FIXME: which on should be used?
-        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED',
-                                'SUBMITTING', 'EXECUTED', 'DONE']
-        assert t_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED',
-                                'SUBMITTING', 'SUBMITTED', 'EXECUTED',
-                                'DEQUEUEING', 'DEQUEUED', 'DONE']
+        assert t_state_hist == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
+                                'SUBMITTING', 'EXECUTED',   'DONE']
 
 
 # ------------------------------------------------------------------------------
