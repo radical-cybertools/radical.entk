@@ -9,12 +9,14 @@ from   hypothesis      import settings
 import threading       as mt
 import multiprocessing as mp
 
-import radical.utils as ru
+import radical.utils   as ru
 
-from radical.entk                      import AppManager as Amgr
-from radical.entk                      import Pipeline, Stage, Task, states
-from radical.entk.exceptions           import MissingError, EnTKError
-from radical.entk.utils.sync_initiator import sync_with_master
+from radical.entk.exceptions   import MissingError, EnTKError
+from radical.entk              import Pipeline, Stage, Task, states
+
+from radical.entk              import AppManager           as Amgr
+from radical.entk.execman.base import Base_TaskManager     as BaseTmgr
+from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 # pylint: disable=protected-access
 
@@ -37,10 +39,10 @@ def test_amgr_initialization():
     assert amgr._sid.split('.')  == amgr_name.split('.')
     assert amgr._uid.split('.')  == ['appmanager', '0000']
 
-    assert isinstance(amgr._logger, ru.Logger('radical.tests'))
-    assert isinstance(amgr._prof,   ru.Profiler('radical.tests'))
-    assert isinstance(amgr._report, ru.Reporter('radical.tests'))
-    assert isinstance(amgr.name, str)
+    assert isinstance(amgr._logger, ru.Logger)
+    assert isinstance(amgr._prof,   ru.Profiler)
+    assert isinstance(amgr._report, ru.Reporter)
+    assert isinstance(amgr.name,    str)
 
     # RabbitMQ inits
     assert amgr._hostname == hostname
@@ -70,9 +72,9 @@ def test_amgr_initialization():
     amgr = Amgr(hostname=hostname, port=port)
 
     assert amgr._uid.split('.') == ['appmanager', '0000']
-    assert isinstance(amgr._logger, ru.Logger('radical.tests'))
-    assert isinstance(amgr._prof,   ru.Profiler('radical.tests'))
-    assert isinstance(amgr._report, ru.Reporter('radical.tests'))
+    assert isinstance(amgr._logger, ru.Logger)
+    assert isinstance(amgr._prof,   ru.Profiler)
+    assert isinstance(amgr._report, ru.Reporter)
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
@@ -382,7 +384,7 @@ def test_amgr_cleanup_mqs():
 
 # ------------------------------------------------------------------------------
 #
-def func_for_synchronizer_test(sid, p, logger, profiler):
+def func_for_synchronizer_test(sid, p, tmgr):
 
     # FIXME: what is tested / asserted here?
 
@@ -393,12 +395,10 @@ def func_for_synchronizer_test(sid, p, logger, profiler):
     for t in p.stages[0].tasks:
 
         t.state = states.COMPLETED
-        sync_with_master(obj=t,
-                         obj_type='Task',
-                         channel=mq_channel,
-                         queue='%s-tmgr-to-sync' % sid,
-                         logger=logger,
-                         local_prof=profiler)
+        tmgr._sync_with_master(obj=t,
+                               obj_type='Task',
+                               channel=mq_channel,
+                               queue='%s-tmgr-to-sync' % sid)
     mq_connection.close()
 
 
@@ -406,10 +406,7 @@ def func_for_synchronizer_test(sid, p, logger, profiler):
 #
 def test_amgr_synchronizer():
 
-    logger   = ru.Logger('radical.entk.temp_logger')
-    profiler = ru.Profiler(name='radical.entk.temp')
-    amgr     = Amgr(hostname=hostname, port=port)
-
+    amgr = Amgr(hostname=hostname, port=port)
     amgr._setup_mqs()
 
     p = Pipeline()
@@ -429,6 +426,19 @@ def test_amgr_synchronizer():
 
     amgr.workflow = [p]
 
+    sid  = 'test.0000'
+    rmgr = BaseRmgr({}, sid, None, {})
+    tmgr = BaseTmgr(sid=sid,
+                    pending_queue=['pending-1'],
+                    completed_queue=['completed-1'],
+                    rmgr=rmgr,
+                    mq_hostname=hostname,
+                    port=port,
+                    rts=None)
+
+    amgr._rmgr         = rmgr
+    rmgr._task_manager = tmgr
+
     for t in p.stages[0].tasks:
         assert t.state == states.INITIAL
 
@@ -443,7 +453,7 @@ def test_amgr_synchronizer():
 
     # Start the synchronizer method in a thread
     proc = mp.Process(target=func_for_synchronizer_test, name='temp-proc',
-                      args=(amgr._sid, p, logger, profiler))
+                      args=(amgr._sid, p, tmgr))
 
     proc.start()
     proc.join()

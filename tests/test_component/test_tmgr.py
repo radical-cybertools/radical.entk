@@ -1,30 +1,35 @@
-from radical.entk.execman.base import Base_TaskManager as BaseTmgr
-from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
-from radical.entk.execman.rp import TaskManager as RPTmgr
-from radical.entk.execman.rp import ResourceManager as RPRmgr
-from radical.entk.execman.mock import TaskManager as MockTmgr
-from radical.entk.execman.mock import ResourceManager as MockRmgr
-from radical.entk import Task, states
-from radical.entk.exceptions import *
-import pytest
-from hypothesis import given, settings
-import hypothesis.strategies as st
+
 import os
-from radical.entk.exceptions import *
-from time import sleep
-import threading
-import pika
-from multiprocessing import Process, Event
 import json
+import pika
+import time
+import pytest
+
+from   hypothesis import given, settings
+import hypothesis.strategies as st
+
+import threading       as mt
+import multiprocessing as mp
+
+from radical.entk.execman.base import Base_TaskManager     as BaseTmgr
+from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
+from radical.entk.execman.rp   import TaskManager          as RPTmgr
+from radical.entk.execman.rp   import ResourceManager      as RPRmgr
+from radical.entk.execman.mock import TaskManager          as MockTmgr
+from radical.entk.execman.mock import ResourceManager      as MockRmgr
+
+from radical.entk              import Task, states
+
+from radical.entk.exceptions   import *
+
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-# MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
+
 
 @given(s=st.text(),
        l=st.lists(st.characters()),
@@ -146,10 +151,9 @@ def test_tmgr_base_heartbeat():
     tmgr._hb_thread = threading.Thread(target=tmgr._heartbeat, name='heartbeat')
     tmgr._hb_thread.start()
 
-    proc = Process(target=func_for_heartbeat_test, args=(hostname,
-                                                         port,
-                                                         tmgr._hb_request_q,
-                                                         tmgr._hb_response_q))
+    proc = mp.Process(target=func_for_heartbeat_test,
+                      args=(hostname, port, tmgr._hb_request_q,
+                            tmgr._hb_response_q))
     proc.start()
 
     proc.join()
@@ -175,7 +179,7 @@ def test_tmgr_base_start_heartbeat():
     assert not tmgr._hb_terminate.is_set()
     assert tmgr._hb_thread.is_alive()
     tmgr._hb_terminate.set()
-    sleep(15)
+    time.sleep(15)
     tmgr._hb_thread.join()
     assert not tmgr._hb_thread.is_alive()
 
@@ -200,7 +204,7 @@ def test_tmgr_base_terminate_heartbeat():
     assert not tmgr._hb_terminate.is_set()
     assert tmgr._hb_thread.is_alive()
     tmgr.terminate_heartbeat()
-    sleep(30)
+    time.sleep(30)
     assert not tmgr._hb_thread
     assert tmgr._hb_terminate.is_set()
 
@@ -218,8 +222,8 @@ def test_tmgr_base_terminate_manager():
                     port=port,
                     rts=None)
 
-    tmgr._tmgr_process = Process(target=tmgr._tmgr, name='heartbeat')
-    tmgr._tmgr_terminate = Event()
+    tmgr._tmgr_process = mp.Process(target=tmgr._tmgr, name='heartbeat')
+    tmgr._tmgr_terminate = mp.Event()
     tmgr.terminate_manager()
 
     assert not tmgr._tmgr_process
@@ -261,8 +265,8 @@ def test_tmgr_base_check_manager():
                     port=port,
                     rts=None)
 
-    tmgr._tmgr_process = Process(target=tmgr._tmgr, name='heartbeat')
-    tmgr._tmgr_terminate = Event()
+    tmgr._tmgr_process = mp.Process(target=tmgr._tmgr, name='heartbeat')
+    tmgr._tmgr_terminate = mp.Event()
     tmgr._tmgr_process.start()
     assert tmgr.check_manager()
     tmgr.terminate_manager()
@@ -376,7 +380,6 @@ def test_tmgr_mock_tmgr():
                     'project': 'Random'
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mlab-url'
     os.environ['ENTK_HB_INTERVAL'] = '30'
 
     rmgr = MockRmgr(resource_desc=res_dict, sid='test.0000')
@@ -390,10 +393,9 @@ def test_tmgr_mock_tmgr():
 
     tmgr.start_manager()
 
-    proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
-                                                          port,
-                                                          tmgr._pending_queue[0],
-                                                          tmgr._completed_queue[0]))
+    proc = mp.Process(target=func_for_mock_tmgr_test,
+                      args=(hostname, port, tmgr._pending_queue[0],
+                            tmgr._completed_queue[0]))
     proc.start()
 
     proc.join()
@@ -406,7 +408,6 @@ def test_tmgr_mock_tmgr():
 def test_tmgr_rp_initialization(s, l, i):
 
     sid = 'test.0000'
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     config={ "sandbox_cleanup": False,"db_cleanup": False}
     rmgr = RPRmgr({}, sid, config)
@@ -432,7 +433,6 @@ def test_tmgr_rp_initialization(s, l, i):
 
 # def test_tmgr_rp_tmgr():
 
-#     os.environ['RADICAL_PILOT_DBURL'] = MLAB
 #     os.environ['ENTK_HB_INTERVAL'] = '30'
 
 #     res_dict = {
@@ -455,10 +455,9 @@ def test_tmgr_rp_initialization(s, l, i):
 
 #     tmgr.start_manager()
 
-#     proc = Process(target=func_for_mock_tmgr_test, args=(hostname,
-#                                                           port,
-#                                                           tmgr._pending_queue[0],
-#                                                           tmgr._completed_queue[0]))
+#     proc = mp.Process(target=func_for_mock_tmgr_test,
+#                       args=(hostname, port, tmgr._pending_queue[0],
+#                       tmgr._completed_queue[0]))
 #     proc.start()
 
 #     proc.join()

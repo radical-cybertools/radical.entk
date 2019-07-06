@@ -12,7 +12,7 @@ import uuid
 import threading     as mt
 import radical.utils as ru
 
-from ...exceptions import EnTKError
+from ...exceptions import EnTKError, TypeError
 
 from resource_manager import Base_ResourceManager
 
