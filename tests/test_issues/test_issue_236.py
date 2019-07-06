@@ -24,7 +24,7 @@ def generate_pipeline():
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
-    t1.executable = ['mv']
+    t1.executable = 'mv'
     t1.arguments = ['temp','/tmp/']
     t1.upload_input_data = ['%s/temp'%cur_dir]
 

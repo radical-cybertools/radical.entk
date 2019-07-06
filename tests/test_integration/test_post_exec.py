@@ -11,7 +11,7 @@ def create_single_task():
 
     t1 = Task()
     t1.name = 'simulation'
-    t1.executable = ['/bin/echo']
+    t1.executable = '/bin/echo'
     t1.arguments = ['hello']
     t1.copy_input_data = []
     t1.copy_output_data = []

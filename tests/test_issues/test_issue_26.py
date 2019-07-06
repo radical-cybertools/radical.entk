@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-import radical.utils as ru
-
 from radical.entk import Pipeline, Stage, Task, AppManager
-from radical.entk import states
-from radical.entk.exceptions import *
 
-import pytest
 import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
@@ -21,9 +16,11 @@ def create_pipeline():
     s = Stage()
     t = Task()
 
-    t.name       = 'simulation'
-    t.executable = ['/bin/echo']
-    t.arguments  = ['hello']
+    t.name             = 'simulation'
+    t.executable       = ['/bin/echo']
+    t.arguments        = ['hello']
+    t.copy_input_data  = []
+    t.copy_output_data = []
 
     s.add_tasks(t)
     p.add_stages(s)
@@ -65,7 +62,7 @@ def test_issue_26():
 # ------------------------------------------------------------------------------
 #
 if __name__ == '__main__':
-    
+
     test_issue_26()
 
 
