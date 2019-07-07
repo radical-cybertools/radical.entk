@@ -201,10 +201,9 @@ class Base_ResourceManager(object):
                                actual_type=type(self._resource_desc['gpus']))
 
         if 'project' in self._resource_desc:
-            if  not isinstance(self._resource_desc['project'], basestring) or \
-                not self._resource_desc['project']:
+            if  not isinstance(self._resource_desc['project'], basestring):
                 raise TypeError(expected_type=basestring,
-                               actual_type=type(self._resource_desc['project']))
+                              actual_type=type(self._resource_desc['project']))
 
         if 'access_schema' in self._resource_desc:
             if not isinstance(self._resource_desc['access_schema'], basestring):
