@@ -52,7 +52,7 @@ class WFprocessor(object):
         self._sid             = sid
         self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
-        self._mq_hostname     = mq_hostname
+        self._hostname        = mq_hostname
         self._port            = port
         self._resubmit_failed = resubmit_failed
 
@@ -202,7 +202,7 @@ class WFprocessor(object):
         # Acquire a connection+channel to the rmq server
         mq_connection = pika.BlockingConnection(
                             pika.ConnectionParameters(
-                                host=self._mq_hostname,
+                                host=self._hostname,
                                 port=self._port))
         mq_channel = mq_connection.channel()
 
@@ -410,7 +410,7 @@ class WFprocessor(object):
             # Acquire a connection+channel to the rmq server
             mq_connection = pika.BlockingConnection(
                                 pika.ConnectionParameters(
-                                    host=self._mq_hostname,
+                                    host=self._hostname,
                                     port=self._port))
             mq_channel = mq_connection.channel()
 

@@ -75,7 +75,7 @@ class Base_TaskManager(object):
         self._sid             = sid
         self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
-        self._mq_hostname     = mq_hostname
+        self._hostname        = mq_hostname
         self._port            = port
         self._rmgr            = rmgr
         self._rts             = rts
@@ -232,7 +232,7 @@ class Base_TaskManager(object):
             self._prof.prof('hbeat_start', uid=self._uid)
 
             mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                       host=self._mq_hostname, port=self._port))
+                                       host=self._hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             while not self._hb_terminate.is_set():
@@ -371,7 +371,7 @@ class Base_TaskManager(object):
             if not self.check_heartbeat() or self.check_manager():
 
                 conn = pika.BlockingConnection(pika.ConnectionParameters(
-                                       host=self._mq_hostname, port=self._port))
+                                       host=self._hostname, port=self._port))
                 mq_channel = conn.channel()
 
                 # To respond to heartbeat - get request from rpc_queue

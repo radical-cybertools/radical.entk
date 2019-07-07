@@ -295,7 +295,7 @@ class TaskManager(Base_TaskManager):
                                             name='task-manager',
                                             args=(self._uid,
                                                   self._rmgr,
-                                                  self._mq_hostname,
+                                                  self._hostname,
                                                   self._port,
                                                   self._pending_queue,
                                                   self._completed_queue)

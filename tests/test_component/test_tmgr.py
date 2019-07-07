@@ -64,7 +64,7 @@ def test_tmgr_base_initialization(s, l, i):
     assert tmgr._uid             == 'task_manager.0000'
     assert tmgr._pending_queue   == ['pending-1']
     assert tmgr._completed_queue == ['completed-1']
-    assert tmgr._mq_hostname     == hostname
+    assert tmgr._hostname        == hostname
     assert tmgr._port            == port
     assert tmgr._rts             is None
 
@@ -98,25 +98,15 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
             with pytest.raises(ree.TypeError):
 
-                _ = BaseTmgr(sid=s,
-                             pending_queue=s,
-                             completed_queue=s,
-                             rmgr=rmgr,
-                             mq_hostname=s,
-                             port=d,
-                             rts=None)
+                BaseTmgr(sid=s, pending_queue=s, completed_queue=s,
+                         rmgr=rmgr, mq_hostname=s, port=d, rts=None)
 
         if not isinstance(d, int):
 
             with pytest.raises(ree.TypeError):
 
-                _ = BaseTmgr(sid=s,
-                             pending_queue=s,
-                             completed_queue=s,
-                             rmgr=rmgr,
-                             mq_hostname=s,
-                             port=d,
-                             rts=None)
+                BaseTmgr(sid=s, pending_queue=s, completed_queue=s,
+                         rmgr=rmgr, mq_hostname=s, port=d, rts=None)
 
 
 # ------------------------------------------------------------------------------
@@ -345,7 +335,7 @@ def test_tmgr_mock_initialization(s, l, i):
     assert tmgr._uid               == 'task_manager.0000'
     assert tmgr._pending_queue     == ['pending']
     assert tmgr._completed_queue   == ['completed']
-    assert tmgr._mq_hostname       == hostname
+    assert tmgr._hostname          == hostname
     assert tmgr._port              == port
     assert tmgr._rts               == 'mock'
 
@@ -448,7 +438,7 @@ def test_tmgr_rp_initialization(s, l, i):
 
     assert tmgr._pending_queue   == ['pending']
     assert tmgr._completed_queue == ['completed']
-    assert tmgr._mq_hostname     == hostname
+    assert tmgr._hostname        == hostname
     assert tmgr._port            == port
     assert tmgr._rts             == 'radical.pilot'
     assert tmgr._umgr            is None
