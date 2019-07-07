@@ -577,7 +577,7 @@ class Task(object):
             raise ree.TypeError(expected_type=int, entity='threads_per_process',
                             actual_type=type(value.get('threads_per_process')))
 
-        if value.get('thread_type') in [None, 'OpenMP', '']:
+        if value.get('thread_type') not in [None, 'OpenMP', '']:
             raise ree.ValueError(expected_value='None or OpenMP', obj='cpu_reqs',
                                  actual_value=value.get('thread_type'),
                                  attribute='thread_type')
