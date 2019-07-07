@@ -1,3 +1,4 @@
+
 language: python
 python: "2.7"
 
@@ -12,6 +13,7 @@ os:
 env:
   global:
     - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
+    - RADICAL_PILOT_DBURL="mongodb://rp:rp@138.201.86.166/rp"
     - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
     - LOG=`git log -n 1 | grep Merge`
     - OLD=`echo $LOG | cut -d ' ' -f2`
@@ -35,6 +37,8 @@ env:
 
 # command to install dependencies
 install:
+  - apt get update
+  - apt get upgrade
   - pip install .
   - pip install coverage
   - pip install flake8
@@ -45,8 +49,8 @@ install:
   - pip install pytest-timeout
 
 before_script:
-  - sleep 20  # Ensures mongodb service is up
-  - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
+# - sleep 20  # Ensures mongodb service is up
+# - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
   - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
   - cat .coveragerc
@@ -65,5 +69,6 @@ after_success:
     fi
 
 services:
-- rabbitmq
-- mongodb
+  - rabbitmq
+# - mongodb
+
