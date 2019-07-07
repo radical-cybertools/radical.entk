@@ -43,7 +43,7 @@ install:
   - pip install pytest-timeout
 
 before_script:
-  - sleep 20  # Ensures mongodb service is up
+  - sleep 5  # Ensures mongodb service is up
   - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
   - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
