@@ -1,4 +1,3 @@
-
 language: python
 python: "2.7"
 
@@ -9,22 +8,21 @@ branches:
 os:
   - linux
 
+
 env:
   global:
     - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
-    - RADICAL_PILOT_DBURL="mongodb://rp:rp@138.201.86.166/rp"
     - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
     - LOG=`git log -n 1 | grep Merge`
     - OLD=`echo $LOG | cut -d ' ' -f2`
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    - PYTEST="coverage run -m pytest -ra --timeout=120 -vvv"
-    - CMD_PYTEST="for f in tests/test_component/*.py
-                           tests/test_integration/test_*.py
-                           tests/test_issues/test_*
-                           tests/test_utils/test_*
-                  ; do $PYTEST $f; done"
+    - PYTEST="coverage run -m pytest --timeout=120 -vvv"
+    - CMD_PYTEST="$PYTEST tests/test_component/*.py ;
+                  $PYTEST tests/test_integration/test_*.py ;
+                  $PYTEST tests/test_issues/test_* ;
+                  $PYTEST tests/test_utils/test_*"
     - CMD_FLAKE8="if ! test -z \"$DIFF\"; then flake8 --config=.flake8 $DIFF;else echo 'Nothing to pep8'; fi"
     - CMD_PYLINT="if ! test -z \"$DIFF\"; then pylint $DIFF;else echo 'Nothing to lint';fi"
     - COVERAGE=false
@@ -39,16 +37,15 @@ install:
   - pip install .
   - pip install coverage
   - pip install flake8
-  - pip install flake8-per-file-ignores
   - pip install pylint
   - pip install codecov
   - pip install pytest
   - pip install pytest-timeout
 
 before_script:
-# - sleep 20  # Ensures mongodb service is up
-# - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=/home/travis/virtualenv/python2.7   # Location where VE is created on travis
+  - sleep 5  # Ensures mongodb service is up
+  - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
+  - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
   - cat .coveragerc
 
@@ -66,6 +63,5 @@ after_success:
     fi
 
 services:
-  - rabbitmq
-# - mongodb
-
+- rabbitmq
+- mongodb
