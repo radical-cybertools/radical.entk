@@ -9,7 +9,6 @@ branches:
 os:
   - linux
 
-
 env:
   global:
     - RADICAL_PILOT_DBURL="mongodb://entk:entk123@127.0.0.1:27017/entk_test"
@@ -49,7 +48,7 @@ install:
 before_script:
 # - sleep 20  # Ensures mongodb service is up
 # - mongo entk_test --eval 'db.createUser({user:"entk",pwd:"entk123",roles:["readWrite"]});'
-  - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
+  - LOC=/home/travis/virtualenv/python2.7   # Location where VE is created on travis
   - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
   - cat .coveragerc
 
