@@ -8,9 +8,6 @@ from hypothesis import given, settings
 import hypothesis.strategies as st
 import os
 
-# MLAB = 'mongodb://entk:entk123@ds143511.mlab.com:43511/entk_0_7_4_release'
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
-
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
@@ -305,16 +302,8 @@ def test_rmgr_rp_initialization(d):
     with pytest.raises(ValueError):
         rmgr = RPRmgr(d, 'test.0000', rts_config={})
 
-    env_var = os.environ.get('RADICAL_PILOT_DBURL', None)
-    if env_var:
-        del os.environ['RADICAL_PILOT_DBURL']
-
-    config={ "sandbox_cleanup": False,"db_cleanup": False}
-    with pytest.raises(EnTKError):
-        rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-        rmgr = RPRmgr(d, rmgr_id, {})
-
-
+    config = {"sandbox_cleanup": False,
+              "db_cleanup"     : False}
     try:
         import glob
         import shutil
@@ -326,7 +315,6 @@ def test_rmgr_rp_initialization(d):
         pass
 
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
     rmgr = RPRmgr(d, rmgr_id, {'db_cleanup': False, 'sandbox_cleanup': False})
 
@@ -354,14 +342,12 @@ def test_rmgr_rp_initialization(d):
     assert not rmgr.pmgr
     assert not rmgr.pilot
     assert rmgr._download_rp_profile == False
-    assert rmgr._mlab_url
 
 
 
 
 def test_rmgr_rp_completed_states():
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     config={ "sandbox_cleanup": False,"db_cleanup": False}
     rmgr = RPRmgr({}, sid='test.0000', rts_config=config)
 
