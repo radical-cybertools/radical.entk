@@ -19,10 +19,11 @@ env:
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
     - PYTEST="coverage run -m pytest -ra --timeout=120 -vvv"
-    - CMD_PYTEST="$PYTEST tests/test_component/*.py ;
-                  $PYTEST tests/test_integration/test_*.py ;
-                  $PYTEST tests/test_issues/test_* ;
-                  $PYTEST tests/test_utils/test_*"
+    - CMD_PYTEST="for f in tests/test_component/*.py
+                           tests/test_integration/test_*.py
+                           tests/test_issues/test_*
+                           tests/test_utils/test_*
+                  ; do $PYTEST $f; done"
     - CMD_FLAKE8="if ! test -z \"$DIFF\"; then flake8 --config=.flake8 $DIFF;else echo 'Nothing to pep8'; fi"
     - CMD_PYLINT="if ! test -z \"$DIFF\"; then pylint $DIFF;else echo 'Nothing to lint';fi"
     - COVERAGE=false
