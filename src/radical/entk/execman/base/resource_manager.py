@@ -4,9 +4,6 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
 __license__   = "MIT"
 
 import os
-import uuid
-import json
-import pika
 
 import radical.utils as ru
 

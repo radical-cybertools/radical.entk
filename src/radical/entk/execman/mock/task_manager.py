@@ -78,7 +78,7 @@ class TaskManager(Base_TaskManager):
         **Details**: The AppManager can re-invoke the tmgr process with this
                     function if the execution of the workflow is still
                     incomplete. There is also population of a dictionary,
-                    placeholder_dict, which stores the path of each of the tasks
+                    `placeholders`, which stores the path of each of the tasks
                     on the remote machine.
         """
 
@@ -195,7 +195,7 @@ class TaskManager(Base_TaskManager):
                      'task_queue' and submits them to the RADICAL Pilot RTS.
         '''
 
-        placeholder_dict = dict()
+        placeholders = dict()
 
         # ----------------------------------------------------------------------
         def load_placeholder(task):
@@ -203,14 +203,14 @@ class TaskManager(Base_TaskManager):
             parent_pipeline = str(task.parent_pipeline['name'])
             parent_stage = str(task.parent_stage['name'])
 
-            if parent_pipeline not in placeholder_dict:
-                placeholder_dict[parent_pipeline] = dict()
+            if parent_pipeline not in placeholders:
+                placeholders[parent_pipeline] = dict()
 
-            if parent_stage not in placeholder_dict[parent_pipeline]:
-                placeholder_dict[parent_pipeline][parent_stage] = dict()
+            if parent_stage not in placeholders[parent_pipeline]:
+                placeholders[parent_pipeline][parent_stage] = dict()
 
             if None not in [parent_pipeline, parent_stage, task.name]:
-                placeholder_dict[parent_pipeline][parent_stage][str(
+                placeholders[parent_pipeline][parent_stage][str(
                     task.name)] = str(task.path)
         # ----------------------------------------------------------------------
 

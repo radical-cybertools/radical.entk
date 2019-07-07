@@ -13,7 +13,7 @@ import threading
 import radical.utils as ru
 
 # EnTK imports
-from ..      import states, Task
+from .. import states, Task
 
 
 # ------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ class WFprocessor(object):
 
         # Tasks of the workload need to be converted into a dict
         # as pika can send and receive only json/dict data
-        wl_json=json.dumps([task.to_dict() for task in workload])
+        wl_json = json.dumps([task.to_dict() for task in workload])
 
         # Acquire a connection+channel to the rmq server
         mq_connection = pika.BlockingConnection(
@@ -522,7 +522,7 @@ class WFprocessor(object):
             self._logger.info('WFprocessor started')
             self._prof.prof('wfp_started', uid=self._uid)
 
-        except Exception, ex:
+        except:
 
             self._logger.exception('WFprocessor failed')
             self.terminate_processor()
@@ -559,7 +559,8 @@ class WFprocessor(object):
             self._prof.prof('wfp_stop', uid=self._uid)
             self._prof.close()
 
-        except Exception, ex:
+        except:
+
             self._logger.exception('Could not terminate wfprocessor process')
             raise
 
