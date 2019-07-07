@@ -86,6 +86,9 @@ class WFprocessor(object):
         transition `obj` of type `obj_type` into state `new_state`
         '''
 
+        # NOTE: this is a local operation, no queue communication is involved
+        #       (other than the `_advance()` in the TaskManager classes, which
+
         if   obj_type == 'Task' : msg = obj.parent_stage['uid']
         elif obj_type == 'Stage': msg = obj.parent_pipeline['uid']
         else                    : msg = None
