@@ -30,8 +30,8 @@ def resolve_placeholders(path, placeholders):
             path = str(path)
 
         if not isinstance(path, basestring):
-            raise TypeError(expected_type=basestring,
-                            actual_type=type(path))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(path))
 
         if '$' not in path:
             return path
@@ -59,8 +59,8 @@ def resolve_placeholders(path, placeholders):
             expected = '$Pipeline_(pipeline_name)_' \
                        'Stage_(stage_name)_' \
                        'Task_(task_name) or $SHARED',
-            raise ValueError(obj='placeholder', attribute='task',
-                             expected_value=expected, actual_value=elems)
+            raise ree.ValueError(obj='placeholder', attribute='task',
+                                 expected_value=expected, actual_value=elems)
 
         pname    = elems[1]
         sname    = elems[3]
@@ -89,8 +89,8 @@ def resolve_placeholders(path, placeholders):
             expected = '$Pipeline_(pipeline_name)_' \
                        'Stage_(stage_name)_' \
                        'Task_(task_name) or $SHARED'
-            raise ValueError(obj='placeholder', attribute='task',
-                             expected_value=expected, actual_value=elems)
+            raise ree.ValueError(obj='placeholder', attribute='task',
+                                 expected_value=expected, actual_value=elems)
 
         return resolved
 
@@ -129,8 +129,8 @@ def resolve_arguments(args, placeholders):
                 expected = '$Pipeline_{pipeline.uid}_' \
                            'Stage_{stage.uid}_' \
                            'Task_{task.uid} or $SHARED'
-                raise ValueError(obj='placeholder', attribute='length',
-                                 expected_value=expected, actual_value=elems)
+                raise ree.ValueError(obj='placeholder', attribute='length',
+                                    expected_value=expected, actual_value=elems)
 
             pname = elems[1]
             sname = elems[3]
@@ -196,7 +196,7 @@ def get_input_list_from_task(task, placeholders):
     try:
 
         if not isinstance(task, Task):
-            raise TypeError(expected_type=Task, actual_type=type(task))
+            raise ree.TypeError(expected_type=Task, actual_type=type(task))
 
         input_data = list()
 
@@ -315,7 +315,7 @@ def get_output_list_from_task(task, placeholders):
     try:
 
         if not isinstance(task, Task):
-            raise TypeError(expected_type=Task, actual_type=type(task))
+            raise ree.TypeError(expected_type=Task, actual_type=type(task))
 
 
         output_data = list()
