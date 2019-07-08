@@ -31,7 +31,6 @@
 * support pipeline suspend and resume
 
 
->>>>>>> master
 ## Changelog for 0.7.17
 
 * Issues resolved in 0.7.17 milestone:
