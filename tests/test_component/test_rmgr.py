@@ -98,12 +98,12 @@ def test_rmgr_base_completed_states():
 @given(t=st.text(), i=st.integers())
 def test_rmgr_base_validate_resource_desc(t, i):
 
-    rmgr = BaseRmgr({}, sid='test.0000', rts=None, rts_config={})
+    sid  = 'test.0000'
+    rmgr = BaseRmgr({}, sid=sid, rts=None, rts_config={})
 
     with pytest.raises(ree.MissingError):
         rmgr._validate_resource_desc()
 
-    sid      = 'test.0000'
     res_dict = {'resource' : 'local.localhost',
                 'walltime' : 30,
                 'cpus'     : 20}
@@ -117,6 +117,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
+
     with pytest.raises(ree.TypeError):
 
         res_dict = {'resource' : t,
@@ -126,6 +127,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
+
     with pytest.raises(ree.TypeError):
 
         res_dict = {'resource' : t,
@@ -134,6 +136,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
 
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
+
 
     with pytest.raises(ree.TypeError):
 
@@ -145,6 +148,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
+
     with pytest.raises(ree.TypeError):
 
         res_dict = {'resource' : t,
@@ -155,6 +159,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
 
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
+
 
     with pytest.raises(ree.TypeError):
 
@@ -168,6 +173,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
 
+
     with pytest.raises(ree.TypeError):
 
         res_dict = {'resource'      : t,
@@ -180,6 +186,7 @@ def test_rmgr_base_validate_resource_desc(t, i):
 
         rm = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
         rm._validate_resource_desc()
+
 
     if isinstance(t, str):
 

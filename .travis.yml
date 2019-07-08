@@ -18,7 +18,7 @@ env:
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    - PYTEST="coverage run -m pytest -ra --timeout=120 -vvv"
+    - PYTEST="coverage run -m pytest -ra --timeout=200 -vvv"
     - CMD_PYTEST="$PYTEST tests/test_component/*.py ;
                   $PYTEST tests/test_integration/test_*.py ;
                   $PYTEST tests/test_issues/test_* ;
