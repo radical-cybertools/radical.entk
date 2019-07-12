@@ -56,7 +56,7 @@ def test_write_session_description():
                             mq_hostname=amgr._hostname,
                             port=amgr._port,
                             resubmit_failed=amgr._resubmit_failed)
-    amgr._wfp._initialize_workflow()
+    amgr._wfp.initialize_workflow()
     amgr._workflow = amgr._wfp.workflow
 
     amgr._task_manager = TaskManager(sid=amgr._sid,
@@ -149,7 +149,7 @@ def test_write_workflow():
                                     mq_hostname=amgr._hostname,
                                     port=amgr._port,
                                     resubmit_failed=amgr._resubmit_failed)
-        amgr._wfp._initialize_workflow()
+        amgr._wfp.initialize_workflow()
 
         wf = amgr._wfp.workflow
 
