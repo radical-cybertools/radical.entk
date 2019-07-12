@@ -1020,16 +1020,6 @@
         "task"
     ], 
     [
-        19.93339991569519, 
-        "state", 
-        "radical.entk.wfprocessor.0000-proc", 
-        "dequeue-thread", 
-        "task.0000", 
-        "DEQUEUEING", 
-        "stage.0000", 
-        "task"
-    ], 
-    [
         19.93939995765686, 
         "publishing obj with state DEQUEUEING for sync", 
         "radical.entk.wfprocessor.0000-proc", 
