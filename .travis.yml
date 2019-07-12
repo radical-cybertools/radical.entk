@@ -29,6 +29,17 @@ env:
     - MAIN_CMD=$CMD_FLAKE8
     - MAIN_CMD=$CMD_PYLINT
 
+before_install:
+  - uname -a
+  - ulimit -a
+  - python -V
+  - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  - echo "Host localhost" >> /home/travis/.ssh/config
+  - echo "  StrictHostKeyChecking no" >> /home/travis/.ssh/config
+  - chmod g-rw,o-rw /home/travis/.ssh/*
+  - ssh localhost hostname
+  - ssh localhost uname -a
 
 # command to install dependencies
 install:
