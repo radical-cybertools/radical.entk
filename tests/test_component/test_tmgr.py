@@ -13,6 +13,8 @@ import hypothesis.strategies as st
 import threading       as mt
 import multiprocessing as mp
 
+import radical.utils   as ru
+
 from radical.entk.execman.base import Base_TaskManager     as BaseTmgr
 from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 from radical.entk.execman.rp   import TaskManager          as RPTmgr
@@ -20,9 +22,7 @@ from radical.entk.execman.rp   import ResourceManager      as RPRmgr
 from radical.entk.execman.mock import TaskManager          as MockTmgr
 from radical.entk.execman.mock import ResourceManager      as MockRmgr
 from radical.entk              import exceptions           as ree
-
 from radical.entk              import Task, states
-
 
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
@@ -397,8 +397,8 @@ def test_tmgr_mock_tmgr():
                 'cpus'    : 20,
                 'project' : 'Random'}
 
-    rmgr = MockRmgr(resource_desc=res_dict, sid='test.0000')
-    tmgr = MockTmgr(sid='test.0000',
+    rmgr = MockRmgr(resource_desc=res_dict, sid='test.0018')
+    tmgr = MockTmgr(sid='test.0019',
                     pending_queue=['pendingq-1'],
                     completed_queue=['completedq-1'],
                     rmgr=rmgr,
@@ -422,7 +422,7 @@ def test_tmgr_mock_tmgr():
        i=st.integers())
 def test_tmgr_rp_initialization(s, l, i):
 
-    sid  = 'test.0011'
+    sid  = ru.generate_id('test.', ru.ID_UNIQUE)
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
 

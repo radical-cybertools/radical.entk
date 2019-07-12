@@ -70,14 +70,14 @@ def test_rmgr_base_assignment_exception(s, l, i, b, se):
 
     for d in data:
         with pytest.raises(ree.TypeError):
-            BaseRmgr(d, 'test.0000', None, {})
+            BaseRmgr(d, 'test.0020', None, {})
 
 
 # ------------------------------------------------------------------------------
 #
 def test_rmgr_base_get_resource_allocation_state():
 
-    rmgr = BaseRmgr({}, 'test.0000', None, {})
+    rmgr = BaseRmgr({}, 'test.0021', None, {})
 
     with pytest.raises(NotImplementedError):
         rmgr.get_resource_allocation_state()
@@ -87,7 +87,7 @@ def test_rmgr_base_get_resource_allocation_state():
 #
 def test_rmgr_base_completed_states():
 
-    rmgr = BaseRmgr({}, 'test.0000', None, {})
+    rmgr = BaseRmgr({}, 'test.0022', None, {})
 
     with pytest.raises(NotImplementedError):
         rmgr.get_completed_states()
@@ -257,7 +257,7 @@ def test_rmgr_base_populate(t, i):
 #
 def test_rmgr_base_submit_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None, {})
+    rmgr = BaseRmgr({}, 'test.0023', None, {})
 
     with pytest.raises(NotImplementedError):
         rmgr._submit_resource_request()
@@ -267,7 +267,7 @@ def test_rmgr_base_submit_resource_request():
 #
 def test_rmgr_base_terminate_resource_request():
 
-    rmgr = BaseRmgr({}, 'test.0000', None, {})
+    rmgr = BaseRmgr({}, 'test.0024', None, {})
 
     with pytest.raises(NotImplementedError):
         rmgr._terminate_resource_request()
@@ -312,7 +312,7 @@ def test_rmgr_mock_initialization(d):
 #
 def test_rmgr_mock_methods():
 
-    rmgr = MockRmgr(resource_desc={}, sid='test.0000')
+    rmgr = MockRmgr(resource_desc={}, sid='test.0025')
 
     assert rmgr._validate_resource_desc()
 
@@ -329,7 +329,8 @@ def test_rmgr_mock_methods():
 def test_rmgr_rp_initialization(d):
 
     with pytest.raises(ree.ValueError):
-        rmgr = RPRmgr(d, 'test.0000', rts_config={})
+        sid  = ru.generate_id('test.', ru.ID_UNIQUE)
+        rmgr = RPRmgr(d, sid, rts_config={})
 
     config = {"sandbox_cleanup": False,
               "db_cleanup"     : False}
@@ -345,12 +346,12 @@ def test_rmgr_rp_initialization(d):
         pass
 
 
-    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
-    rmgr    = RPRmgr(d, rmgr_id, {'db_cleanup'     : False,
-                                  'sandbox_cleanup': False})
+    sid  = ru.generate_id('test.', ru.ID_UNIQUE)
+    rmgr = RPRmgr(d, sid, {'db_cleanup'     : False,
+                           'sandbox_cleanup': False})
 
     assert rmgr._resource_desc       == d
-    assert rmgr._sid                 == rmgr_id
+    assert rmgr._sid                 == sid
     assert rmgr._rts                 == 'radical.pilot'
     assert rmgr._rts_config          == config
     assert rmgr._resource            is None
@@ -380,7 +381,8 @@ def test_rmgr_rp_completed_states():
 
     config = {"sandbox_cleanup": False,
               "db_cleanup"     : False}
-    rmgr   = RPRmgr({}, sid='test.0000', rts_config=config)
+    sid    = ru.generate_id('test.', ru.ID_UNIQUE)
+    rmgr   = RPRmgr({}, sid=sid, rts_config=config)
 
     assert rmgr.get_completed_states() == rp.FINAL
 

@@ -426,7 +426,7 @@ def test_amgr_synchronizer():
 
     amgr.workflow = [p]
 
-    sid  = 'test.0000'
+    sid  = 'test.0016'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],

@@ -6,7 +6,7 @@ import json
 import multiprocessing as mp
 import radical.utils   as ru
 
-from radical.entk.execman.rp import TaskManager as RPTmgr
+from radical.entk.execman.rp import TaskManager     as RPTmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk            import Task, states
 
@@ -65,7 +65,7 @@ def test_tmgr_rp_tmgr():
                 'cpus'     : 20}
 
     config  = {"sandbox_cleanup": False,"db_cleanup": False}
-    rmgr_id = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr_id = ru.generate_id('test.', ru.ID_UNIQUE)
     rmgr    = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
 
     rmgr._validate_resource_desc()

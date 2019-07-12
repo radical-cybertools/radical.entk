@@ -235,7 +235,7 @@ def test_task_to_dict():
 
 
     t = Task()
-    t.uid                             = 'test.0000'
+    t.uid                             = 'test.0017'
     t.name                            = 'new'
     t.pre_exec                        = ['module load abc']
     t.executable                      = 'sleep'
@@ -262,7 +262,7 @@ def test_task_to_dict():
 
     d = t.to_dict()
 
-    assert d == {'uid'                  : 'test.0000',
+    assert d == {'uid'                  : 'test.0017',
                  'name'                 : 'new',
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
@@ -298,7 +298,7 @@ def test_task_to_dict():
     t.executable = 'sleep'
     d = t.to_dict()
 
-    assert d == {'uid'                  : 'test.0000',
+    assert d == {'uid'                  : 'test.0017',
                  'name'                 : 'new',
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
