@@ -63,7 +63,7 @@ def test_write_session_description():
                                      pending_queue=amgr._pending_queue,
                                      completed_queue=amgr._completed_queue,
                                      mq_hostname=amgr._hostname,
-                                     rmgr=amgr._resource_manager,
+                                     rmgr=amgr._rmgr,
                                      port=amgr._port
                                      )
 
@@ -159,16 +159,20 @@ def test_write_workflow():
         assert len(data) == len(wf) + 1
 
         stack = data.pop(0)
-        assert stack.keys()                     == ['stack']
-        assert stack['stack'].keys()            == ['sys',
-                                                    'radical']
-        assert stack['stack']['sys'].keys()     == ["python",
-                                                    "pythonpath",
-                                                    "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['radical.saga',
-                                                    'radical.pilot',
-                                                    'radical.utils',
-                                                    'radical.entk']
+
+        for k in ['stack']:
+            assert k in stack.keys()
+
+        for k in ['sys', 'radical']:
+            assert k in stack['stack'].keys()
+
+        for k in ["python", "pythonpath", "virtualenv"]:
+            assert k in stack['stack']['sys'].keys()
+
+        for k in ['radical.saga', 'radical.pilot',
+                  'radical.utils', 'radical.entk']:
+            assert k in stack['stack']['radical'].keys()
+
         p_cnt = 0
         for p in data:
 
@@ -198,16 +202,18 @@ def test_write_workflow():
 
         stack = data.pop(0)
 
-        assert stack.keys()                     == ['stack']
-        assert stack['stack'].keys()            == ['sys',
-                                                    'radical']
-        assert stack['stack']['sys'].keys()     == ["python",
-                                                    "pythonpath",
-                                                    "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['radical.saga',
-                                                    'radical.pilot',
-                                                    'radical.utils',
-                                                    'radical.entk']
+        for k in ['stack']:
+            assert k in stack.keys()
+
+        for k in ['sys', 'radical']:
+            assert k in stack['stack'].keys()
+
+        for k in ["python", "pythonpath", "virtualenv"]:
+            assert k in stack['stack']['sys'].keys()
+
+        for k in ['radical.saga', 'radical.pilot',
+                  'radical.utils', 'radical.entk']:
+            assert k in stack['stack']['radical'].keys()
 
         p_cnt = 0
         for p in data:
@@ -237,16 +243,18 @@ def test_write_workflow():
 
         stack = data.pop(0)
 
-        assert stack.keys()                     == ['stack']
-        assert stack['stack'].keys()            == ['sys',
-                                                    'radical']
-        assert stack['stack']['sys'].keys()     == ["python",
-                                                    "pythonpath",
-                                                    "virtualenv"]
-        assert stack['stack']['radical'].keys() == ['radical.saga',
-                                                    'radical.pilot',
-                                                    'radical.entk',
-                                                    'radical.utils']
+        for k in ['stack']:
+            assert k in stack.keys()
+
+        for k in ['sys', 'radical']:
+            assert k in stack['stack'].keys()
+
+        for k in ["python", "pythonpath", "virtualenv"]:
+            assert k in stack['stack']['sys'].keys()
+
+        for k in ['radical.saga', 'radical.pilot',
+                  'radical.utils', 'radical.entk']:
+            assert k in stack['stack']['radical'].keys()
 
         p_cnt = 0
         for p in data:
