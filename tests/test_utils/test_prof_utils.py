@@ -82,7 +82,7 @@ def test_write_session_description():
 #
 def test_get_session_description():
 
-    sid    = 're.session.host.user.012345.1235'
+    sid    = 're.session.host.user.012345.1234'
     curdir = os.path.dirname(os.path.abspath(__file__))
     src    = '%s/sample_data/profiler' % curdir
     desc   = get_session_description(sid=sid, src=src)
