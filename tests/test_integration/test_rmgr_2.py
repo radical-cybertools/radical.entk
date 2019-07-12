@@ -18,7 +18,7 @@ def test_rmgr_rp_get_resource_allocation_state():
                 'project'         : ''}
     config   = {"sandbox_cleanup" : False,
                 "db_cleanup"      : False}
-    sid      = ru.generate_id('test.', ru.ID_UNIQUE)
+    sid      = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(res_dict, sid=sid, rts_config=config)
 
     assert not rmgr.get_resource_allocation_state()
@@ -46,7 +46,7 @@ def test_rmgr_rp_resource_request():
                 'project'         : ''}
     config   = {"sandbox_cleanup" : False,
                 "db_cleanup"      : False}
-    sid      = ru.generate_id('test.', ru.ID_UNIQUE)
+    sid      = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(res_dict, sid=sid, rts_config = config)
 
     rmgr._validate_resource_desc()

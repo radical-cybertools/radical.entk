@@ -329,7 +329,7 @@ def test_rmgr_mock_methods():
 def test_rmgr_rp_initialization(d):
 
     with pytest.raises(ree.ValueError):
-        sid  = ru.generate_id('test.', ru.ID_UNIQUE)
+        sid  = ru.generate_id('test', ru.ID_UNIQUE)
         rmgr = RPRmgr(d, sid, rts_config={})
 
     config = {"sandbox_cleanup": False,
@@ -346,7 +346,7 @@ def test_rmgr_rp_initialization(d):
         pass
 
 
-    sid  = ru.generate_id('test.', ru.ID_UNIQUE)
+    sid  = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr = RPRmgr(d, sid, {'db_cleanup'     : False,
                            'sandbox_cleanup': False})
 
@@ -381,7 +381,7 @@ def test_rmgr_rp_completed_states():
 
     config = {"sandbox_cleanup": False,
               "db_cleanup"     : False}
-    sid    = ru.generate_id('test.', ru.ID_UNIQUE)
+    sid    = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr   = RPRmgr({}, sid=sid, rts_config=config)
 
     assert rmgr.get_completed_states() == rp.FINAL

@@ -65,7 +65,7 @@ def test_tmgr_rp_tmgr():
                 'cpus'     : 20}
 
     config  = {"sandbox_cleanup": False,"db_cleanup": False}
-    rmgr_id = ru.generate_id('test.', ru.ID_UNIQUE)
+    rmgr_id = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr    = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
 
     rmgr._validate_resource_desc()

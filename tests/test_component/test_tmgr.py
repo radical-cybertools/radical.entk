@@ -422,7 +422,7 @@ def test_tmgr_mock_tmgr():
        i=st.integers())
 def test_tmgr_rp_initialization(s, l, i):
 
-    sid  = ru.generate_id('test.', ru.ID_UNIQUE)
+    sid  = ru.generate_id('test', ru.ID_UNIQUE)
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
 
