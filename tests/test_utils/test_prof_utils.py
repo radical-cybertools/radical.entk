@@ -23,7 +23,7 @@ def test_get_session_profile():
 
     curdir = os.path.dirname(os.path.abspath(__file__))
     src    = '%s/sample_data/profiler' % curdir
-    sid    = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
+    sid    = 're.session.host.user.012345.1234'
 
     profile, acc, hostmap = get_session_profile(sid=sid, src=src)
 
@@ -82,7 +82,7 @@ def test_write_session_description():
 #
 def test_get_session_description():
 
-    sid    = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
+    sid    = 're.session.host.user.012345.1235'
     curdir = os.path.dirname(os.path.abspath(__file__))
     src    = '%s/sample_data/profiler' % curdir
     desc   = get_session_description(sid=sid, src=src)

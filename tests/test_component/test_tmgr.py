@@ -51,7 +51,7 @@ def test_tmgr_base_initialization(s, l, i):
     except:
         pass
 
-    sid  = 'test.0000'
+    sid  = 'test.0001'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -87,7 +87,7 @@ def test_tmgr_base_initialization(s, l, i):
        di=st.dictionaries(st.text(), st.text()))
 def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
-    sid = 'test.0000'
+    sid = 'test.0002'
     rmgr = BaseRmgr({}, sid, None, {})
 
     data_type = [s, l, i, b, se, di]
@@ -139,7 +139,7 @@ def func_for_heartbeat_test(mq_hostname, port, hb_request_q, hb_response_q):
 #
 def test_tmgr_base_heartbeat():
 
-    sid  = 'test.0000'
+    sid  = 'test.0003'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -165,7 +165,7 @@ def test_tmgr_base_heartbeat():
 #
 def test_tmgr_base_start_heartbeat():
 
-    sid  = 'test.0000'
+    sid  = 'test.0004'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -190,7 +190,7 @@ def test_tmgr_base_start_heartbeat():
 #
 def test_tmgr_base_terminate_heartbeat():
 
-    sid  = 'test.0000'
+    sid  = 'test.0005'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -217,7 +217,7 @@ def test_tmgr_base_terminate_heartbeat():
 #
 def test_tmgr_base_terminate_manager():
 
-    sid  = 'test.0000'
+    sid  = 'test.0006'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -240,7 +240,7 @@ def test_tmgr_base_terminate_manager():
 #
 def test_tmgr_base_check_heartbeat():
 
-    sid  = 'test.0000'
+    sid  = 'test.0007'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -263,7 +263,7 @@ def test_tmgr_base_check_heartbeat():
 #
 def test_tmgr_base_check_manager():
 
-    sid  = 'test.0000'
+    sid  = 'test.0008'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -286,7 +286,7 @@ def test_tmgr_base_check_manager():
 #
 def test_tmgr_base_methods():
 
-    sid  = 'test.0000'
+    sid  = 'test.0009'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
@@ -323,7 +323,7 @@ def test_tmgr_mock_initialization(s, l, i):
     except:
         pass
 
-    sid  = 'test.0000'
+    sid  = 'test.0010'
     rmgr = MockRmgr(resource_desc={}, sid=sid)
     tmgr = MockTmgr(sid=sid,
                     pending_queue=['pending'],
@@ -422,7 +422,7 @@ def test_tmgr_mock_tmgr():
        i=st.integers())
 def test_tmgr_rp_initialization(s, l, i):
 
-    sid  = 'test.0000'
+    sid  = 'test.0011'
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
 

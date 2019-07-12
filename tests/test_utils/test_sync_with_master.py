@@ -20,7 +20,7 @@ def syncer(obj, obj_type, queue1):
                                                       host=hostname, port=port))
     mq_channel = mq_connection.channel()
 
-    sid = 'test.0000'
+    sid = 'test.0015'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],

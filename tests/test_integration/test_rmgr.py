@@ -98,7 +98,7 @@ def test_rmgr_base_completed_states():
 @given(t=st.text(), i=st.integers())
 def test_rmgr_base_validate_resource_desc(t, i):
 
-    sid  = 'test.0000'
+    sid  = 'test.0014'
     rmgr = BaseRmgr({}, sid=sid, rts=None, rts_config={})
 
     with pytest.raises(ree.MissingError):
@@ -217,7 +217,7 @@ def test_rmgr_base_populate(t, i):
                     'access_schema' : t,
                     'queue'         : t}
 
-        sid = 'test.0000'
+        sid = 'test.0012'
         rm  = BaseRmgr(res_dict, sid=sid, rts=None, rts_config={})
 
         with pytest.raises(ree.EnTKError):
@@ -287,10 +287,10 @@ def test_rmgr_mock_initialization(d):
     except:
         pass
 
-    rmgr = MockRmgr(resource_desc=d, sid='test.0000')
+    rmgr = MockRmgr(resource_desc=d, sid='test.0016')
 
     assert rmgr._resource_desc == d
-    assert rmgr._sid           == 'test.0000'
+    assert rmgr._sid           == 'test.0016'
     assert rmgr._rts           == 'mock'
     assert rmgr._resource      is None
     assert rmgr._walltime      is None

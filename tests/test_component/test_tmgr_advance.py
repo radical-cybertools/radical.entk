@@ -19,7 +19,7 @@ def func(obj, obj_type, new_state, queue1):
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
     port = int(os.environ.get('RMQ_PORT', 5672))
 
-    sid  = 'test.0000'
+    sid  = 'test.0013'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
