@@ -17,24 +17,23 @@ def test_create_task_from_cu():
     parent_pipeline from a RP ComputeUnit
     """
 
-    session        = rp.Session()
-    umgr           = rp.UnitManager(session=session)
-    cud            = rp.ComputeUnitDescription()
-    cud.name       = 'uid, name, parent_stage_uid, parent_stage_name, ' \
-                     'parent_pipeline_uid, parent_pipeline_name'
-    cud.executable = '/bin/echo'
+    with rp.Session() as session:
 
-    cu = rp.ComputeUnit(umgr, cud)
-    t  = create_task_from_cu(cu)
+        umgr           = rp.UnitManager(session=session)
+        cud            = rp.ComputeUnitDescription()
+        cud.name       = 'uid, name, parent_stage_uid, parent_stage_name, ' \
+                         'parent_pipeline_uid, parent_pipeline_name'
+        cud.executable = '/bin/echo'
 
-    assert t.uid                     == 'uid'
-    assert t.name                    == 'name'
-    assert t.parent_stage['uid']     == 'parent_stage_uid'
-    assert t.parent_stage['name']    == 'parent_stage_name'
-    assert t.parent_pipeline['uid']  == 'parent_pipeline_uid'
-    assert t.parent_pipeline['name'] == 'parent_pipeline_name'
+        cu = rp.ComputeUnit(umgr, cud)
+        t  = create_task_from_cu(cu)
 
-    session.close()
+        assert t.uid                     == 'uid'
+        assert t.name                    == 'name'
+        assert t.parent_stage['uid']     == 'parent_stage_uid'
+        assert t.parent_stage['name']    == 'parent_stage_name'
+        assert t.parent_pipeline['uid']  == 'parent_pipeline_uid'
+        assert t.parent_pipeline['name'] == 'parent_pipeline_name'
 
 
 # ------------------------------------------------------------------------------
