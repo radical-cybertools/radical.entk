@@ -21,7 +21,7 @@ def generate_pipeline():
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
     t1 = Task()
-    t1.executable = ['/bin/sleep']
+    t1.executable = '/bin/sleep'
     t1.arguments = ['300']
 
     # Add the Task to the Stage

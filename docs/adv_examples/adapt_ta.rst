@@ -12,8 +12,8 @@ pattern.
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
 
-You can download the complete code discussed in this section :download:`here <../../examples/advanced_examples/adapt_ta.py>`
-or find it in your virtualenv under ``share/radical.entk/advanced_examples/scripts``.
+You can download the complete code discussed in this section :download:`here <../../examples/advanced/adapt_ta.py>`
+or find it in your virtualenv under ``share/radical.entk/advanced/scripts``.
 
 For any adaptive capability within a Pipeline, we need to use the post execution property of a Stage object. Decisions
 can only be performed once all tasks of a Stage are completed as the concurrent tasks cannot be interrupted by design.
@@ -56,4 +56,4 @@ a more verbose output by setting the environment variable
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/advanced_examples/adapt_ta.py
+.. literalinclude:: ../../examples/advanced/adapt_ta.py

@@ -1,5 +1,5 @@
 #time,event,comp,thread,uid,state,msg
-1520525809.9988,sync_abs,radical.entk.wfprocessor.0000-proc,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525809.96:1520525810.0:ntp
+1520525809.9988,sync_abs,radical.entk.wfprocessor.0000-proc,MainThread,,,host:127.0.0.1:1520525809.96:1520525810.0:ntp
 1520525809.9995,wfp process started,radical.entk.wfprocessor.0000-proc,MainThread,wfprocessor.0000,,
 1520525809.9998,creating dequeue-thread,radical.entk.wfprocessor.0000-proc,MainThread,wfprocessor.0000,,
 1520525810.0000,starting dequeue-thread,radical.entk.wfprocessor.0000-proc,MainThread,wfprocessor.0000,,

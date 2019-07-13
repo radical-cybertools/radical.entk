@@ -5,16 +5,18 @@ import shutil
 
 import radical.utils as ru
 
-from radical.entk import Pipeline, Stage, Task, AppManager
+from radical.entk                    import Pipeline, Stage, Task, AppManager
 from radical.entk.appman.wfprocessor import WFprocessor
-from radical.entk.execman.rp import TaskManager
-from radical.entk.utils import get_session_profile, get_session_description
-from radical.entk.utils import write_session_description, write_workflow
+from radical.entk.execman.rp         import TaskManager
+from radical.entk.utils              import get_session_profile
+from radical.entk.utils              import get_session_description
+from radical.entk.utils              import write_session_description
+from radical.entk.utils              import write_workflow
 
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
-
 pwd      = os.path.dirname(os.path.abspath(__file__))
+
 
 # pylint: disable=protected-access
 
@@ -23,8 +25,8 @@ pwd      = os.path.dirname(os.path.abspath(__file__))
 #
 def test_get_session_profile():
 
-    sid    = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
-    src    = '%s/sample_data/profiler' % pwd
+    src = '%s/sample_data/profiler' % pwd
+    sid = 're.session.host.user.012345.1234'
 
     profile, acc, hostmap = get_session_profile(sid=sid, src=src)
 
@@ -40,38 +42,38 @@ def test_get_session_profile():
 def test_write_session_description():
 
     amgr = AppManager(hostname=hostname, port=port)
-    amgr.resource_desc = {'resource': 'xsede.stampede',
-                          'walltime': 60,
-                          'cpus'    : 128,
-                          'gpus'    : 64,
-                          'project' : 'xyz',
-                          'queue'   : 'high'}
+    amgr.resource_desc = {'resource' : 'xsede.stampede',
+                          'walltime' : 60,
+                          'cpus'     : 128,
+                          'gpus'     : 64,
+                          'project'  : 'xyz',
+                          'queue'    : 'high'}
 
-    workflow = [generate_pipeline(1), generate_pipeline(2)]
+    workflow      = [generate_pipeline(1), generate_pipeline(2)]
     amgr.workflow = workflow
 
     amgr._wfp = WFprocessor(sid=amgr.sid,
                             workflow=amgr._workflow,
                             pending_queue=amgr._pending_queue,
                             completed_queue=amgr._completed_queue,
-                            mq_hostname=amgr._mq_hostname,
+                            mq_hostname=amgr._hostname,
                             port=amgr._port,
                             resubmit_failed=amgr._resubmit_failed)
-    amgr._wfp._initialize_workflow()
+    amgr._wfp.initialize_workflow()
     amgr._workflow = amgr._wfp.workflow
 
     amgr._task_manager = TaskManager(sid=amgr._sid,
                                      pending_queue=amgr._pending_queue,
                                      completed_queue=amgr._completed_queue,
-                                     mq_hostname=amgr._mq_hostname,
-                                     rmgr=amgr._resource_manager,
+                                     mq_hostname=amgr._hostname,
+                                     rmgr=amgr._rmgr,
                                      port=amgr._port
                                      )
 
     write_session_description(amgr)
 
-    desc   = ru.read_json('%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
-    src    = '%s/sample_data' % pwd
+    desc = ru.read_json('%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
+    src  = '%s/sample_data' % pwd
 
     assert desc == ru.read_json('%s/expected_desc_write_session.json' % src)
 
@@ -80,7 +82,7 @@ def test_write_session_description():
 #
 def test_get_session_description():
 
-    sid  = 're.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017732.0002'
+    sid  = 're.session.host.user.012345.1234'
     src  = '%s/sample_data/profiler' % pwd
     desc = get_session_description(sid=sid, src=src)
 
@@ -91,37 +93,33 @@ def test_get_session_description():
 #
 def generate_pipeline(nid):
 
-    p = Pipeline()
-    p.name = 'p%s' % nid
+    p       = Pipeline()
+    s1      = Stage()
+    s2      = Stage()
+    t1      = Task()
 
-    s1 = Stage()
+    p.name  = 'p%s' % nid
     s1.name = 's1'
+    s2.name = 's2'
+    t1.name = 't1'
 
-    t1 = Task()
-    t1.name       = 't2'
-    t1.executable = ['/bin/echo']
+    t1.executable = '/bin/echo'
     t1.arguments  = ['hello']
-
-    # FIXME: the above task does not seem to produce output data?
-    t1_data = '$Pipeline_%s_Stage_%s_Task_%s/output.txt' \
-            % (p.name, s1.name, t1.name)
 
     s1.add_tasks(t1)
     p.add_stages(s1)
 
-    s2 = Stage()
-    s2.name = 's2'
-
     for cnt in range(10):
 
-        # Create a Task object
-        t2 = Task()
-        t2.name            = 't%s' % (cnt + 1)
-        t2.executable      = ['/bin/echo']
-        t2.arguments       = ['world']
-        t2.copy_input_data = [t1_data]
+        tn            = Task()
+        tn.name       = 't%s' % (cnt + 1)
+        tn.executable = '/bin/echo'
+        tn.arguments  = ['world']
 
-        s2.add_tasks(t2)
+        # Copy data from the task in first stage to the current task's location
+        tn.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'
+                              % (p.name, s1.name, t1.name)]
+        s2.add_tasks(tn)
 
     p.add_stages(s2)
 
@@ -172,44 +170,34 @@ def test_write_workflow():
         wf.append(generate_pipeline(1))
         wf.append(generate_pipeline(2))
 
-        amgr = AppManager(hostname=hostname, port=port)
+        amgr          = AppManager(hostname=hostname, port=port)
         amgr.workflow = wf
         amgr._wfp     = WFprocessor(sid=amgr._sid,
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._mq_hostname,
+                                    mq_hostname=amgr._hostname,
                                     port=amgr._port,
                                     resubmit_failed=amgr._resubmit_failed)
-        amgr._wfp._initialize_workflow()
+
+        amgr._wfp.initialize_workflow()
         check = amgr.workflow
 
         # ----------------------------------------------------------------------
-        # check json output
-        write_workflow(amgr.workflows, 'test')
+        # check json output, with defaut and custom fname
+        for fname in [None, 'wf.json']:
+            write_workflow(amgr.workflows, 'test', fname=fname)
 
-        data = ru.read_json('test/entk_workflow.json')
+            if not fname: fname = 'entk_workflow.json'
+            data = ru.read_json('test/%s' % fname)
 
-        check_stack(data['stack'])
-        check_wf(data['workflows'][0], check)
+            check_stack(data['stack'])
+            check_wf(data['workflows'][0], check)
 
-        assert len(data['workflows']) == 1
+            assert len(data['workflows']) == 1
 
-        shutil.rmtree('test')
+            shutil.rmtree('test')
 
-
-        # ----------------------------------------------------------------------
-        # check with  custom fname
-        write_workflow(amgr.workflows, 'test', fname='wf.json')
-
-        data = ru.read_json('test/wf.json')
-
-        check_stack(data['stack'])
-        check_wf(data['workflows'][0], check)
-
-        assert len(data['workflows']) == 1
-
-        shutil.rmtree('test')
 
         # ----------------------------------------------------------------------
         # check with data return
@@ -252,12 +240,12 @@ def test_write_workflow():
 #
 if __name__ == '__main__':
 
-   test_get_session_profile()
-   test_write_session_description()
-   test_get_session_description()
-   test_write_workflow()
+    test_get_session_profile()
+    test_write_session_description()
+    test_get_session_description()
+    test_write_workflow()
 
 
-# pylint: enable=protected-access
 # ------------------------------------------------------------------------------
+# pylint: enable=protected-access
 

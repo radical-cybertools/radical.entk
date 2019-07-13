@@ -1,68 +1,79 @@
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__ = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
-__license__ = "MIT"
 
-import radical.utils as ru
-from radical.entk.exceptions import *
-import radical.pilot as rp
+__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
+__author__    = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
+__license__   = "MIT"
+
 import os
 
+import radical.utils as ru
 
+from ...exceptions import MissingError, TypeError, EnTKError
+
+
+# ------------------------------------------------------------------------------
+#
 class Base_ResourceManager(object):
-
     """
     A resource manager takes the responsibility of placing resource requests on
     different, possibly multiple, DCIs.
 
     :arguments:
-        :resource_desc: dictionary with details of the resource request + access credentials of the user
+        :resource_desc: dictionary with details of the resource request
+                        and access credentials of the user
         :example: resource_desc = {
                                     |  'resource'      : 'xsede.stampede',
                                     |  'walltime'      : 120,
-                                    |  'cpus'         : 64,
+                                    |  'cpus'          : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
-                                    |  'access_schema' : 'ssh'  # optional
-                                }
+                                    |  'access_schema' : 'ssh'     # optional
+                                  }
     """
 
+    # --------------------------------------------------------------------------
+    #
     def __init__(self, resource_desc, sid, rts, rts_config):
 
         if not isinstance(resource_desc, dict):
             raise TypeError(expected_type=dict, actual_type=type(resource_desc))
 
         self._resource_desc = resource_desc
-        self._sid = sid
-        self._rts = rts
-        self._rts_config = rts_config
+        self._sid           = sid
+        self._rts           = rts
+        self._rts_config    = rts_config
 
         # Resource reservation related parameters
-        self._resource = None
-        self._walltime = None
-        self._cpus = 1
-        self._gpus = 0
-        self._project = None
+        self._resource      = None
+        self._walltime      = None
+        self._cpus          = 1
+        self._gpus          = 0
+        self._project       = None
         self._access_schema = None
-        self._queue = None
-        self._validated = False
+        self._queue         = None
+        self._validated     = False
 
         # Utility parameters
         self._uid = ru.generate_id('resource_manager.%(item_counter)04d',
-                                   ru.ID_CUSTOM,
-                                   namespace=self._sid)
+                                   ru.ID_CUSTOM, namespace=self._sid)
         self._path = os.getcwd() + '/' + self._sid
-        self._logger = ru.Logger('radical.entk.%s' % self._uid, path=self._path)
-        self._prof = ru.Profiler(name='radical.entk.%s' % self._uid, path=self._path)
+
+        name = 'radical.entk.%s' % self._uid
+        self._logger = ru.Logger  (name, path=self._path)
+        self._prof   = ru.Profiler(name, path=self._path)
 
         # Shared data list
         self._shared_data = list()
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def resource(self):
         """
         :getter: Return user specified resource name
         """
         return self._resource
+
 
     @property
     def walltime(self):
@@ -71,12 +82,14 @@ class Base_ResourceManager(object):
         """
         return self._walltime
 
+
     @property
     def cpus(self):
         """
         :getter: Return user specified number of cpus
         """
         return self._cpus
+
 
     @property
     def gpus(self):
@@ -85,12 +98,14 @@ class Base_ResourceManager(object):
         """
         return self._gpus
 
+
     @property
     def project(self):
         """
         :getter: Return user specified project ID
         """
         return self._project
+
 
     @property
     def access_schema(self):
@@ -100,12 +115,14 @@ class Base_ResourceManager(object):
         """
         return self._access_schema
 
+
     @property
     def queue(self):
         """
         :getter: Return user specified resource queue to be used
         """
         return self._queue
+
 
     @property
     def shared_data(self):
@@ -115,40 +132,43 @@ class Base_ResourceManager(object):
         """
         return self._shared_data
 
+
     @shared_data.setter
     def shared_data(self, data_list):
 
         self._shared_data = data_list
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
     def get_resource_allocation_state(self):
         """
         **Purpose**: Get the state of the resource allocation
         """
-        raise NotImplementedError('get_resource_allocation_state() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts)
+        raise NotImplementedError('get_resource_allocation_state() method not '
+                                  'implemented in ResourceManager for %s'
+                                  % self._rts)
 
+
+    # --------------------------------------------------------------------------
+    #
     def get_completed_states(self):
         """
         **Purpose**: Test if a resource allocation was submitted
         """
 
-        raise NotImplementedError('completed_states() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts)
+        raise NotImplementedError('completed_states() method not implemented '
+                                  'in ResourceManager for %s' % self._rts)
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
     def _validate_resource_desc(self):
         """
-        **Purpose**: Validate the resource description provided to the ResourceManager
+        **Purpose**: Validate the provided resource description
         """
 
-        self._prof.prof('validating rdesc', uid=self._uid)
+        self._prof.prof('rdesc_validate', uid=self._uid)
         self._logger.debug('Validating resource description')
 
         expected_keys = ['resource',
@@ -157,81 +177,102 @@ class Base_ResourceManager(object):
 
         for key in expected_keys:
             if key not in self._resource_desc:
-                raise MissingError(obj='resource description', missing_attribute=key)
+                raise MissingError(obj='resource description',
+                                   missing_attribute=key)
 
-        if not isinstance(self._resource_desc['resource'], str):
-            raise TypeError(expected_type=str, actual_type=type(self._resource_desc['resource']))
+        if not isinstance(self._resource_desc['resource'], basestring):
+            raise TypeError(expected_type=basestring,
+                            actual_type=type(self._resource_desc['resource']))
 
         if not isinstance(self._resource_desc['walltime'], int):
-            raise TypeError(expected_type=int, actual_type=type(self._resource_desc['walltime']))
+            raise TypeError(expected_type=int,
+                            actual_type=type(self._resource_desc['walltime']))
 
         if not isinstance(self._resource_desc['cpus'], int):
-            raise TypeError(expected_type=int, actual_type=type(self._resource_desc['cpus']))
+            raise TypeError(expected_type=int,
+                            actual_type=type(self._resource_desc['cpus']))
 
         if 'gpus' in self._resource_desc:
-            if (not isinstance(self._resource_desc['gpus'], int)):
-                raise TypeError(expected_type=int, actual_type=type(self._resource_desc['project']))
+            if not isinstance(self._resource_desc['gpus'], int):
+                raise TypeError(expected_type=int,
+                               actual_type=type(self._resource_desc['gpus']))
 
         if 'project' in self._resource_desc:
-            if (not isinstance(self._resource_desc['project'], str)) and (not self._resource_desc['project']):
-                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['project']))
+            if  not isinstance(self._resource_desc['project'], basestring):
+                raise TypeError(expected_type=basestring,
+                              actual_type=type(self._resource_desc['project']))
 
         if 'access_schema' in self._resource_desc:
-            if not isinstance(self._resource_desc['access_schema'], str):
-                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['access_schema']))
+            if not isinstance(self._resource_desc['access_schema'], basestring):
+                raise TypeError(expected_type=basestring,
+                         actual_type=type(self._resource_desc['access_schema']))
 
         if 'queue' in self._resource_desc:
-            if not isinstance(self._resource_desc['queue'], str):
-                raise TypeError(expected_type=str, actual_type=type(self._resource_desc['queue']))
+            if not isinstance(self._resource_desc['queue'], basestring):
+                raise TypeError(expected_type=basestring,
+                                actual_type=type(self._resource_desc['queue']))
 
         if not isinstance(self._rts_config, dict):
-            raise TypeError(expected_type=dict, actual_type=type(self._rts_config))
+            raise TypeError(expected_type=dict,
+                            actual_type=type(self._rts_config))
+
+        self._logger.info('Resource description validated')
+        self._prof.prof('rdesc_valid', uid=self._uid)
 
         self._validated = True
 
-        self._logger.info('Resource description validated')
-        self._prof.prof('rdesc validated', uid=self._uid)
-
         return self._validated
 
+
+    # --------------------------------------------------------------------------
+    #
     def _populate(self):
         """
         **Purpose**:    Populate the ResourceManager class with the validated
                         resource description
         """
 
-        if self._validated:
-
-            self._prof.prof('populating rmgr', uid=self._uid)
-            self._logger.debug('Populating resource manager object')
-
-            self._resource = self._resource_desc['resource']
-            self._walltime = self._resource_desc['walltime']
-            self._cpus = self._resource_desc['cpus']
-            self._gpus = self._resource_desc.get('gpus', 0)
-            self._project = self._resource_desc.get('project', None)
-            self._access_schema = self._resource_desc.get('access_schema', None)
-            self._queue = self._resource_desc.get('queue', None)
-
-            self._logger.debug('Resource manager population successful')
-            self._prof.prof('rmgr populated', uid=self._uid)
-
-        else:
+        if not self._validated:
             raise EnTKError('Resource description not validated')
 
+
+        self._prof.prof('populating rmgr', uid=self._uid)
+        self._logger.debug('Populating resource manager object')
+
+        self._resource      = self._resource_desc['resource']
+        self._walltime      = self._resource_desc['walltime']
+        self._cpus          = self._resource_desc['cpus']
+        self._gpus          = self._resource_desc.get('gpus',          0)
+        self._project       = self._resource_desc.get('project',       None)
+        self._access_schema = self._resource_desc.get('access_schema', None)
+        self._queue         = self._resource_desc.get('queue',         None)
+
+        self._logger.debug('Resource manager population successful')
+        self._prof.prof('rmgr populated', uid=self._uid)
+
+
+    # --------------------------------------------------------------------------
+    #
     def _submit_resource_request(self):
         """
-        **Purpose**:    Submit resource request as per the description provided by the user
+        **Purpose**:  Submit resource request per provided description
         """
 
-        raise NotImplementedError('_submit_resource_request() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts)
+        raise NotImplementedError('_submit_resource_request() method not '
+                            'implemented in ResourceManager for %s' % self._rts)
 
+
+    # --------------------------------------------------------------------------
+    #
     def _terminate_resource_request(self):
         """
-        **Purpose**:    Cancel resource request by terminating any reservation on any acquired
-                        resources or resources pending acquisition
+        **Purpose**:  Cancel resource request by terminating any reservation
+                      on any acquired resources or resources pending acquisition
         """
 
-        raise NotImplementedError('_terminate_resource_request() method ' +
-                                  'not implemented in ResourceManager for %s' % self._rts)
+        raise NotImplementedError('_terminate_resource_request() method not '
+                            'implemented in ResourceManager for %s' % self._rts)
+
+
+# ------------------------------------------------------------------------------
+

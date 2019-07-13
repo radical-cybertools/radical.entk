@@ -149,7 +149,7 @@ def write_session_description(amgr):
                      }
 
     # Adding rmgr to the tree
-    rmgr = amgr._resource_manager
+    rmgr = amgr._rmgr
     tree[amgr._uid]['children'].append(rmgr._uid)
     tree[rmgr._uid] = {'uid': rmgr._uid,
                        'etype': 'resource_manager',
