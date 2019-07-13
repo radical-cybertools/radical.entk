@@ -1,5 +1,5 @@
 #time,event,comp,thread,uid,state,msg
-1520525794.7484,sync_abs,radical.entk.appmanager.0000,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525794.71:1520525794.75:ntp
+1520525794.7484,sync_abs,radical.entk.appmanager.0000,MainThread,,,host:127.0.0.1:1520525794.71:1520525794.75:ntp
 1520525794.7489,create amgr obj,radical.entk.appmanager.0000,MainThread,appmanager.0000,,
 1520525794.7492,amgr obj created,radical.entk.appmanager.0000,MainThread,appmanager.0000,,
 1520525794.8303,assigning workflow,radical.entk.appmanager.0000,MainThread,appmanager.0000,,

@@ -1,4 +1,21 @@
-# Changelog for each release
+
+  - For a list of bug fixes, see
+    https://github.com/radical-cybertools/radical.entk/ \
+            issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc
+  - For a list of open issues and known problems, see
+    https://github.com/radical-cybertools/radical.entk/ \
+            issues?q=is%3Aissue+is%3Aopen+
+
+
+0.70.0  Release                                                       2019-07-07
+--------------------------------------------------------------------------------
+
+  - fix executable value check
+  - Fix outdated command and session name
+  - pep8
+  - allow str, unicode and None for executable
+  - executable list -> scalar
+
 
 0.62.0  Release                                                       2019-06-08
 --------------------------------------------------------------------------------

@@ -4,9 +4,9 @@
         "sync_abs", 
         "radical.entk.appmanager.0000", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525794.71:1520525794.75:ntp", 
+        "host:127.0.0.1:1520525794.71:1520525794.75:ntp", 
         "re"
     ], 
     [
@@ -34,9 +34,9 @@
         "sync_abs", 
         "radical.entk.resource_manager.0000", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525794.79:1520525794.82:ntp", 
+        "host:127.0.0.1:1520525794.79:1520525794.82:ntp", 
         "re"
     ], 
     [
@@ -134,9 +134,9 @@
         "sync_abs", 
         "radical.entk.wfprocessor.0000-obj", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525794.92:1520525794.96:ntp", 
+        "host:127.0.0.1:1520525794.92:1520525794.96:ntp", 
         "re"
     ], 
     [
@@ -304,9 +304,9 @@
         "sync_abs", 
         "radical.entk.task_manager.0000-obj", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525809.95:1520525809.98:ntp", 
+        "host:127.0.0.1:1520525809.95:1520525809.98:ntp", 
         "re"
     ], 
     [
@@ -384,9 +384,9 @@
         "sync_abs", 
         "radical.entk.wfprocessor.0000-proc", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525809.96:1520525810.0:ntp", 
+        "host:127.0.0.1:1520525809.96:1520525810.0:ntp", 
         "re"
     ], 
     [
@@ -574,9 +574,9 @@
         "sync_abs", 
         "radical.entk.task_manager.0000-proc", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
-        "vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525810.03:1520525810.07:ntp", 
+        "host:127.0.0.1:1520525810.03:1520525810.07:ntp", 
         "re"
     ], 
     [
@@ -1006,16 +1006,6 @@
         "umgr.0000.subscriber._state_sub_cb", 
         "task.0000", 
         "", 
-        "stage.0000", 
-        "task"
-    ], 
-    [
-        19.93339991569519, 
-        "state", 
-        "radical.entk.wfprocessor.0000-proc", 
-        "dequeue-thread", 
-        "task.0000", 
-        "DEQUEUEING", 
         "stage.0000", 
         "task"
     ], 
@@ -2074,7 +2064,7 @@
         "END", 
         "radical.entk.wfprocessor.0000-proc", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
         "", 
         "re"
@@ -2094,7 +2084,7 @@
         "END", 
         "radical.entk.wfprocessor.0000-obj", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
         "", 
         "re"
@@ -2134,7 +2124,7 @@
         "END", 
         "radical.entk.task_manager.0000-proc", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
         "", 
         "re"
@@ -2174,7 +2164,7 @@
         "END", 
         "radical.entk.task_manager.0000-obj", 
         "MainThread", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
         "", 
         "re"
@@ -2204,7 +2194,7 @@
         "END", 
         "radical.entk.appmanager.0000", 
         "Dummy-1", 
-        "re.session.vivek-HP-Pavilion-m6-Notebook-PC.vivek.017598.0002", 
+        "re.session.host.user.012345.1234", 
         "", 
         "", 
         "re"
