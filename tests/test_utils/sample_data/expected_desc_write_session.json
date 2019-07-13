@@ -52,31 +52,25 @@
             "event_model": {},
             "state_model": {
                 "CANCELED": 10,
-                "DEQUEUED": 9,
-                "DEQUEUEING": 8,
                 "DESCRIBED": 1,
                 "DONE": 10,
                 "EXECUTED": 7,
                 "FAILED": 10,
                 "SCHEDULED": 4,
                 "SCHEDULING": 2,
-                "SUBMITTED": 6,
                 "SUBMITTING": 5
             },
             "state_values": {
                 "1": "DESCRIBED",
+                "10": [
+                    "FAILED",
+                    "CANCELED",
+                    "DONE"
+                ],
                 "2": "SCHEDULING",
                 "4": "SCHEDULED",
                 "5": "SUBMITTING",
-                "6": "SUBMITTED",
-                "7": "EXECUTED",
-                "8": "DEQUEUEING",
-                "9": "DEQUEUED",
-                "10": [
-                    "DONE",
-                    "CANCELED",
-                    "FAILED"
-                ]
+                "7": "EXECUTED"
             }
         }
     },

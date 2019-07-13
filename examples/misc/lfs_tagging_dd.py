@@ -44,7 +44,7 @@ def get_pipeline(shared_fs=False, size=1):
     s2.name = 's2'
     for x in range(n):
         t = Task()
-        t.executable = ['dd']
+        t.executable = 'dd'
 
         if not shared_fs:
             t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]

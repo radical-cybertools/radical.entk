@@ -27,42 +27,46 @@ def test_task_initialization():
     '''
 
     t = Task()
-    assert t._uid          is None
-    assert t.name          is None
-    assert t.pre_exec      == list()
-    assert t.executable    == str()
-    assert t.arguments     == list()
-    assert t.post_exec     == list()
-    assert t.state         == states.INITIAL
-    assert t.state_history == [states.INITIAL]
 
-    assert t.cpu_reqs['processes']           == 1
-    assert t.cpu_reqs['process_type']        is None
-    assert t.cpu_reqs['threads_per_process'] == 1
-    assert t.cpu_reqs['thread_type']         is None
-    assert t.gpu_reqs['processes']           == 0
-    assert t.gpu_reqs['process_type']        is None
-    assert t.gpu_reqs['threads_per_process'] == 0
-    assert t.gpu_reqs['thread_type']         is None
+    assert t._uid                             is None
+    assert t.name                             is None
 
-    assert t.lfs_per_process         == 0
-    assert t.upload_input_data       == list()
-    assert t.copy_input_data         == list()
-    assert t.link_input_data         == list()
-    assert t.move_input_data         == list()
-    assert t.copy_output_data        == list()
-    assert t.move_input_data         == list()
-    assert t.download_output_data    == list()
+    assert t.state                            == states.INITIAL
+    assert t.state_history                    == [states.INITIAL]
 
-    assert t.stdout                  is None
-    assert t.stderr                  is None
-    assert t.exit_code               is None
-    assert t.tag                     is None
-    assert t.path                    is None
-    assert t.parent_pipeline['uid']  is None
-    assert t.parent_pipeline['name'] is None
-    assert t.parent_stage['uid']     is None
-    assert t.parent_stage['name']    is None
+    assert t.executable                       is None
+    assert t.arguments                        == list()
+    assert t.pre_exec                         == list()
+    assert t.post_exec                        == list()
+
+    assert t.cpu_reqs['processes']            == 1
+    assert t.cpu_reqs['process_type']         is None
+    assert t.cpu_reqs['threads_per_process']  == 1
+    assert t.cpu_reqs['thread_type']          is None
+    assert t.gpu_reqs['processes']            == 0
+    assert t.gpu_reqs['process_type']         is None
+    assert t.gpu_reqs['threads_per_process']  == 0
+    assert t.gpu_reqs['thread_type']          is None
+    assert t.lfs_per_process                  == 0
+
+    assert t.upload_input_data                == list()
+    assert t.copy_input_data                  == list()
+    assert t.link_input_data                  == list()
+    assert t.move_input_data                  == list()
+    assert t.copy_output_data                 == list()
+    assert t.move_input_data                  == list()
+    assert t.download_output_data             == list()
+
+    assert t.stdout                           is None
+    assert t.stderr                           is None
+    assert t.exit_code                        is None
+    assert t.tag                              is None
+    assert t.path                             is None
+
+    assert t.parent_pipeline['uid']           is None
+    assert t.parent_pipeline['name']          is None
+    assert t.parent_stage['uid']              is None
+    assert t.parent_stage['name']             is None
 
 
 # ------------------------------------------------------------------------------
@@ -83,6 +87,13 @@ def test_task_exceptions(s, l, i, b):
 
     for data in data_type:
 
+        # special case due to backward compatibility
+        if not isinstance(data, basestring) and \
+           not isinstance(data, list):
+
+            with pytest.raises(ree.TypeError): t.executable = data
+
+
         if not isinstance(data, basestring):
 
             with pytest.raises(ree.TypeError): t.name                 = data
@@ -91,6 +102,7 @@ def test_task_exceptions(s, l, i, b):
             with pytest.raises(ree.TypeError): t.parent_pipeline      = data
             with pytest.raises(ree.TypeError): t.stdout               = data
             with pytest.raises(ree.TypeError): t.stderr               = data
+
 
         if not isinstance(data, list):
 
@@ -105,7 +117,8 @@ def test_task_exceptions(s, l, i, b):
             with pytest.raises(ree.TypeError): t.download_output_data = data
             with pytest.raises(ree.TypeError): t.move_output_data     = data
 
-        if not isinstance(data, basestring):
+        if not isinstance(data, basestring) and \
+           not isinstance(data, unicode):
 
             with pytest.raises(ree.ValueError):
                 t.cpu_reqs = {'processes'          : 1,
@@ -153,20 +166,18 @@ def test_task_exceptions(s, l, i, b):
                               'threads_per_process' : data,
                               'thread_type'         : None}
 
-        # special case due to backward compatibility
-        if  not isinstance(data, basestring) and \
-            not isinstance(data, list):
-
-            with pytest.raises(ree.TypeError):
-                t.executable = data
-
 
 # ------------------------------------------------------------------------------
 #
 def test_dict_to_task():
 
-    d = {
-         'name'      : 'foo',
+    # make sure the type checks kick in
+    d = {'name' : 1}
+    with pytest.raises(ree.TypeError):
+        Task(from_dict=d)
+
+
+    d = {'name'      : 'foo',
          'pre_exec'  : ['bar'],
          'executable': 'buz',
          'arguments' : ['baz', 'fiz'],
@@ -181,12 +192,8 @@ def test_dict_to_task():
     t = Task(from_dict=d)
 
     for k,v in d.iteritems():
-        assert(t.__getattribute__(k) == v), '%s != %s' % (t.__getattribute__(k), v)
-
-    # make sure the type checks kick in
-    d = {'name' : 1}
-    with pytest.raises(ree.TypeError):
-        Task(from_dict=d)
+        assert(t.__getattribute__(k) == v), '%s != %s' \
+            % (t.__getattribute__(k), v)
 
 
 # ------------------------------------------------------------------------------
@@ -205,7 +212,7 @@ def test_task_to_dict():
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
                  'pre_exec'             : [],
-                 'executable'           : str(),
+                 'executable'           : None,
                  'arguments'            : [],
                  'post_exec'            : [],
                  'cpu_reqs'             : {'processes'           : 1,
@@ -234,7 +241,7 @@ def test_task_to_dict():
 
 
     t                                 = Task()
-    t.uid                             = 'test.0000'
+    t.uid                             = 'test.0017'
     t.name                            = 'new'
     t.pre_exec                        = ['module load abc']
     t.executable                      = ['sleep']
@@ -261,7 +268,7 @@ def test_task_to_dict():
 
     d = t.to_dict()
 
-    assert d == {'uid'                  : 'test.0000',
+    assert d == {'uid'                  : 'test.0017',
                  'name'                 : 'new',
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
@@ -273,7 +280,7 @@ def test_task_to_dict():
                                            'process_type'        : None,
                                            'threads_per_process' : 2,
                                            'thread_type'         : None},
-                 'gpu_reqs':              {'processes'           : 5,
+                 'gpu_reqs'             : {'processes'           : 5,
                                            'process_type'        : None,
                                            'threads_per_process' : 3,
                                            'thread_type'         : None},
@@ -290,14 +297,14 @@ def test_task_to_dict():
                  'exit_code'            : 1,
                  'path'                 : 'a/b/c',
                  'tag'                  : 'task.0010',
-                 'parent_stage'         : {'uid': 's1', 'name': 'stage1'},
-                 'parent_pipeline'      : {'uid': 'p1', 'name': 'pipeline1'}}
+                 'parent_stage'         : {'uid': 's1', 'name' : 'stage1'},
+                 'parent_pipeline'      : {'uid': 'p1', 'name' : 'pipeline1'}}
 
 
     t.executable = 'sleep'
     d = t.to_dict()
 
-    assert d == {'uid'                  : 'test.0000',
+    assert d == {'uid'                  : 'test.0017',
                  'name'                 : 'new',
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
@@ -404,7 +411,7 @@ def test_task_from_dict():
     d['executable'] = 'sleep'
     t = Task()
     t.from_dict(d)
-    assert t.executable            == d['executable']
+    assert t.executable == d['executable']
 
 
 # ------------------------------------------------------------------------------
@@ -413,11 +420,12 @@ def test_task_assign_uid():
 
     t = Task()
     try:
-        home      = os.environ.get('HOME','/home')
-        test_fold = glob.glob('%s/.radical/utils/test*' % home)
-        for f in test_fold:
+        home   = os.environ.get('HOME', '/home')
+        folder = glob.glob('%s/.radical/utils/test*' % home)
+
+        for f in folder:
             shutil.rmtree(f)
-    except Exception:
+    except:
         pass
 
     t._assign_uid('test')

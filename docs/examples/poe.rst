@@ -4,8 +4,8 @@
 Pipeline of Ensembles
 *********************
 
-One of the most common execution patterns consists of one Pipeline with multiple Stages where each Stage 
-consists of several Tasks. We call this a **Pipeline of Ensembles**. A pictorial representation of this pattern is 
+One of the most common execution patterns consists of one Pipeline with multiple Stages where each Stage
+consists of several Tasks. We call this a **Pipeline of Ensembles**. A pictorial representation of this pattern is
 provided below.
 
 
@@ -29,13 +29,13 @@ In the following example, we create one Pipeline with three Stages. The Task in 
 are 10 Tasks in the second Stage that perform a character count on that file. The 10 Tasks in the third Stage perform
 a checksum on the output of each Task from the second stage.
 
-You can download the complete code discussed in this section :download:`here <../../examples/simple_examples/poe.py>` or find it in 
-your virtualenv under ``share/radical.entk/simple_examples/scripts``.
+You can download the complete code discussed in this section :download:`here <../../examples/simple/poe.py>` or find it in
+your virtualenv under ``share/radical.entk/simple/scripts``.
 
 To run the script, simply execute the following from the command line:
 
-.. tip:: For the purposes of this example, we have a MongoDB setup to use. Please run the following command to use 
-        it:: 
+.. tip:: For the purposes of this example, we have a MongoDB setup to use. Please run the following command to use
+        it::
 
             export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
@@ -48,4 +48,4 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/simple_examples/poe.py
+.. literalinclude:: ../../examples/simple/poe.py

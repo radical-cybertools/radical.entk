@@ -13,21 +13,23 @@ from radical.entk            import Task, states
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',     5672))
-MLAB     =     os.environ.get('RADICAL_PILOT_DBURL')
+
+os.environ['ENTK_HB_INTERVAL'] = '5'
 
 
 # ------------------------------------------------------------------------------
 #
 def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
 
-    mq_connection = pika.BlockingConnection(
-                    pika.ConnectionParameters(host=mq_hostname, port=port))
-    mq_channel    = mq_connection.channel()
+    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                                   host=mq_hostname, port=port))
+    mq_channel = mq_connection.channel()
 
     tasks = list()
     for _ in range(16):
+
         t = Task()
-        t.state = states.SCHEDULING
+        t.state      = states.SCHEDULING
         t.executable = '/bin/echo'
         print t.to_dict()
         tasks.append(t.to_dict())
@@ -41,14 +43,16 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
 
         method_frame, props, body = mq_channel.basic_get(queue=completed_queue)
 
-        if body:
-            task = Task()
-            task.from_dict(json.loads(body))
+        if not body:
+            continue
 
-            if task.state == states.DONE:
-                cnt += 1
+        task = Task()
+        task.from_dict(json.loads(body))
 
-            mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        if task.state == states.DONE:
+            cnt += 1
+
+        mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
     mq_connection.close()
 
@@ -57,15 +61,12 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
 #
 def test_tmgr_rp_tmgr():
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
-    os.environ['ENTK_HB_INTERVAL']    = '30'
-
     res_dict = {'resource'       : 'local.localhost',
                 'walltime'       : 40,
                 'cpus'           : 20}
     config   = {"sandbox_cleanup": False,
                 "db_cleanup"     : False}
-    rmgr_id  = ru.generate_id('test.%(item_counter)04d', ru.ID_CUSTOM)
+    rmgr_id  = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
 
     rmgr._validate_resource_desc()
@@ -82,11 +83,11 @@ def test_tmgr_rp_tmgr():
     tmgr.start_manager()
 
     proc = mp.Process(target=func_for_mock_tmgr_test,
-                      args=(hostname, port,
-                            tmgr._pending_queue[0],
+                      args=(hostname, port, tmgr._pending_queue[0],
                             tmgr._completed_queue[0]))
     proc.start()
     proc.join()
+
     tmgr.terminate_manager()
     rmgr._terminate_resource_request()
 

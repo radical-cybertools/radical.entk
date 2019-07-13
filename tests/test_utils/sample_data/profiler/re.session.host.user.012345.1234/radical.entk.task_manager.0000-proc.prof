@@ -1,5 +1,5 @@
 #time,event,comp,thread,uid,state,msg
-1520525810.0707,sync_abs,radical.entk.task_manager.0000-proc,MainThread,,,vivek-HP-Pavilion-m6-Notebook-PC:127.0.0.1:1520525810.03:1520525810.07:ntp
+1520525810.0707,sync_abs,radical.entk.task_manager.0000-proc,MainThread,,,host:127.0.0.1:1520525810.03:1520525810.07:ntp
 1520525810.0711,tmgr process started,radical.entk.task_manager.0000-proc,MainThread,task_manager.0000,,
 1520525810.9816,tmgr infrastructure setup done,radical.entk.task_manager.0000-proc,MainThread,task_manager.0000,,
 1520525810.9829,advance,radical.entk.task_manager.0000-proc,MainThread,task.0000,SUBMITTING,stage.0000

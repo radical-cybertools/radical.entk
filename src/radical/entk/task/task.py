@@ -20,17 +20,23 @@ class Task(object):
     the profiling if not taken care.
     '''
 
+    # FIXME: this should be converted into an RU/RS Attribute object, almost all
+    #        of the code is redundant with the attribute class...
+
+    # --------------------------------------------------------------------------
+    #
     def __init__(self, from_dict=None):
 
-        self._uid   = None
-        self._name  = None
-        self._state = res.INITIAL
+        self._uid        = None
+        self._name       = None
+        self._state      = res.INITIAL
 
         # Attributes necessary for execution
-        self._pre_exec        = list()
-        self._executable      = str()
-        self._arguments       = list()
-        self._post_exec       = list()
+        self._pre_exec   = list()
+        self._executable = None
+        self._arguments  = list()
+        self._post_exec  = list()
+
         self._lfs_per_process = 0
         self._cpu_reqs        = {'processes'           : 1,
                                  'process_type'        : None,
@@ -69,13 +75,16 @@ class Task(object):
 
         # populate task attributes if so requesteed
         if from_dict:
+
+            if not isinstance(from_dict, dict):
+                raise ree.TypeError(expected_type=dict,
+                                    actual_type=type(from_dict))
+
             for k,v in from_dict.iteritems():
                 self.__setattr__(k, v)
 
 
     # --------------------------------------------------------------------------
-    #
-    # Getter functions
     #
     @property
     def uid(self):
@@ -100,6 +109,9 @@ class Task(object):
         :getter: Returns the fully qualified uid of the current task
         :type: String
         '''
+
+        # TODO: cache
+
 
         p_elem = self.parent_pipeline.get('name')
         s_elem = self.parent_stage.get('name')
@@ -194,13 +206,15 @@ class Task(object):
         '''
         **Purpose:** The CPU requirements of the current Task.
 
-        The requirements are described in terms of the number of processes and threads to
-        be run in this Task. The expected format is:
+        The requirements are described in terms of the number of processes and
+        threads to be run in this Task. The expected format is:
 
-        task.cpu_reqs = {'processes'           : X,
-                         'process_type'        : None/MPI,
-                         'threads_per_process' : Y,
-                         'thread_type'         : None/OpenMP}
+        task.cpu_reqs = {
+                          | 'processes'           : X,
+                          | 'process_type'        : None/MPI,
+                          | 'threads_per_process' : Y,
+                          | 'thread_type'         : None/OpenMP
+                        }
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on CPUs. Hence, the total
@@ -210,10 +224,12 @@ class Task(object):
 
         The default value is:
 
-        task.cpu_reqs = {'processes'           : 1,
-                         'process_type'        : None,
-                         'threads_per_process' : 1,
-                         'thread_type'         : None}
+        task.cpu_reqs = {
+                          | 'processes'           : 1,
+                          | 'process_type'        : None,
+                          | 'threads_per_process' : 1,
+                          | 'thread_type'         : None
+                        }
 
         This description requests 1 core and expected the executable to non-MPI
         and single threaded.
@@ -231,13 +247,15 @@ class Task(object):
         '''
         **Purpose:** The GPU requirements of the current Task.
 
-        The requirements are described in terms of the number of processes and threads to
-        be run in this Task. The expected format is:
+        The requirements are described in terms of the number of processes and
+        threads to be run in this Task. The expected format is:
 
-        task.gpu_reqs = {'processes'           : X,
-                         'process_type'        : None/MPI,
-                         'threads_per_process' : Y,
-                         'thread_type'         : None/OpenMP/CUDA}
+        task.gpu_reqs = {
+                          | 'processes'           : X,
+                          | 'process_type'        : None/MPI,
+                          | 'threads_per_process' : Y,
+                          | 'thread_type'         : None/OpenMP/CUDA
+                        }
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on GPUs. Hence, the total
@@ -247,10 +265,12 @@ class Task(object):
 
         The default value is:
 
-        task.gpu_reqs = {'processes'           : 0,
-                         'process_type'        : None,
-                         'threads_per_process' : 0,
-                         'thread_type'         : None}
+        task.gpu_reqs = {
+                          | 'processes'           : 0,
+                          | 'process_type'        : None,
+                          | 'threads_per_process' : 0,
+                          | 'thread_type'         : None
+                        }
 
         This description requests 0 gpus as not all machines have GPUs.
 
@@ -275,7 +295,7 @@ class Task(object):
     def upload_input_data(self):
         '''
         List of files to be transferred from local machine to the location of
-        the current task on the remote machine
+        the current task on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -289,7 +309,7 @@ class Task(object):
     def copy_input_data(self):
         '''
         List of files to be copied from a location on the remote machine to the
-        location of current task on the remote machine
+        location of current task on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -303,7 +323,7 @@ class Task(object):
     def link_input_data(self):
         '''
         List of files to be linked from a location on the remote machine to the
-        location of current task on the remote machine
+        location of current task on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -317,7 +337,7 @@ class Task(object):
     def move_input_data(self):
         '''
         List of files to be move from a location on the remote machine to the
-        location of current task on the remote machine
+        location of current task on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -331,7 +351,7 @@ class Task(object):
     def copy_output_data(self):
         '''
         List of files to be copied from the location of the current task to
-        another location on the remote machine
+        another location on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -345,7 +365,7 @@ class Task(object):
     def move_output_data(self):
         '''
         List of files to be copied from the location of the current task to
-        another location on the remote machine
+        another location on the remote machine.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -398,8 +418,7 @@ class Task(object):
     @property
     def exit_code(self):
         '''
-        Get the exit code for DONE tasks. 0 for successful tasks, 1 for failed
-        tasks.
+        Get the exit code for DONE tasks. 0 for successful, 1 for failed tasks.
 
         :getter: return the exit code of the current task
         '''
@@ -463,13 +482,12 @@ class Task(object):
 
     # --------------------------------------------------------------------------
     #
-    # Setter functions
-    #
     @uid.setter
     def uid(self, value):
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring, actual_type=type(value))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(value))
 
         self._uid = value
 
@@ -478,7 +496,8 @@ class Task(object):
     def name(self, value):
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring, actual_type=type(value))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(value))
 
         if ',' in value:
             raise ree.ValueError(obj=self._uid,
@@ -486,17 +505,20 @@ class Task(object):
                                  actual_value=value,
                                  expected_value="Using ',' in an object's name"
                                  "will corrupt internal mapping tables")
+
         self._name = value
 
 
     @state.setter
     def state(self, value):
+
         # FIXME: this state setter has side effects (adding to state_history)
         #        which should be moved into a separate method.  Also, a state
         #        progression check is missing to ensure the state model
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring, actual_type=type(value))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(value))
 
         if value not in res._task_state_values:
             raise ree.ValueError(obj=self._uid,
@@ -535,12 +557,12 @@ class Task(object):
     @executable.setter
     def executable(self, value):
 
-        # backward compatibility
-        if isinstance(value, list) and len(value) == 1:
+        if isinstance(value, list):
             value = value[0]
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type='basestring', actual_type=type(value))
+            raise ree.TypeError(expected_type='basestring',
+                                actual_type=type(value))
 
         self._executable = value
 
@@ -569,7 +591,7 @@ class Task(object):
         if not isinstance(value, dict):
             raise ree.TypeError(expected_type=dict, actual_type=type(value))
 
-        expected_keys = set(['processes', 'threads_per_process',
+        expected_keys = set(['processes',    'threads_per_process',
                              'process_type', 'thread_type'])
 
         missing = expected_keys - set(value.keys())
@@ -577,7 +599,7 @@ class Task(object):
         if missing:
             raise ree.MissingError(obj='cpu_reqs', missing_attribute=missing)
 
-        if type(value.get('processes')) not in [type(None), int]:
+        if not isinstance(value.get('processes'), (type(None), int)):
             raise ree.TypeError(expected_type=int,
                                 actual_type=type(value.get('processes')),
                                 entity='processes')
@@ -588,15 +610,14 @@ class Task(object):
                                  obj='cpu_reqs',
                                  attribute='process_type')
 
-        if type(value.get('threads_per_process')) not in [type(None), int]:
+        if not isinstance(value.get('threads_per_process'), (type(None), int)):
             raise ree.TypeError(expected_type=int,
-                                actual_type=type(value.get('threads_per_process')),
-                                entity='threads_per_process')
+                             actual_type=type(value.get('threads_per_process')),
+                             entity='threads_per_process')
 
         if value.get('thread_type') not in [None, 'OpenMP', '']:
-            raise ree.ValueError(expected_value='None or OpenMP',
+            raise ree.ValueError(expected_value='None or OpenMP', obj='cpu_reqs',
                                  actual_value=value.get('thread_type'),
-                                 obj='cpu_reqs',
                                  attribute='thread_type')
 
         self._cpu_reqs['processes']           = value.get('processes', 1)
@@ -611,7 +632,7 @@ class Task(object):
         if not isinstance(value, dict):
             raise ree.TypeError(expected_type=dict, actual_type=type(value))
 
-        expected_keys = set(['processes', 'threads_per_process',
+        expected_keys = set(['processes',    'threads_per_process',
                              'process_type', 'thread_type'])
 
         missing = expected_keys - set(value.keys())
@@ -619,7 +640,7 @@ class Task(object):
         if missing:
             raise ree.MissingError(obj='gpu_reqs', missing_attribute=missing)
 
-        if type(value.get('processes')) not in [type(None), int]:
+        if not isinstance(value.get('processes'), (type(None), int)):
             raise ree.TypeError(expected_type=dict,
                                 actual_type=type(value.get('processes')),
                                 entity='processes')
@@ -630,10 +651,10 @@ class Task(object):
                                  obj='gpu_reqs',
                                  attribute='process_type')
 
-        if type(value.get('threads_per_process')) not in [type(None), int]:
+        if not isinstance(value.get('threads_per_process'), (type(None), int)):
             raise ree.TypeError(expected_type=int,
-                                actual_type=type(value.get('threads_per_process')),
-                                entity='threads_per_process')
+                             actual_type=type(value.get('threads_per_process')),
+                             entity='threads_per_process')
 
         if value.get('thread_type') not in [None, 'OpenMP', 'CUDA','']:
             raise ree.ValueError(expected_value='None or OpenMP or CUDA',
@@ -723,7 +744,8 @@ class Task(object):
     def stdout(self, value):
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring, actual_type=type(value))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(value))
 
         self._stdout = value
 
@@ -732,7 +754,8 @@ class Task(object):
     def stderr(self, value):
 
         if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring, actual_type=type(value))
+            raise ree.TypeError(expected_type=basestring,
+                                actual_type=type(value))
 
         self._stderr = value
 
@@ -742,7 +765,8 @@ class Task(object):
 
         if not isinstance(value, int):
             raise ree.TypeError(entity='exit_code', expected_type=int,
-                            actual_type=type(value))
+                                actual_type=type(value))
+
         self._exit_code = value
 
 
@@ -751,7 +775,8 @@ class Task(object):
 
         if not isinstance(value, basestring):
             raise ree.TypeError(entity='path', expected_type=basestring,
-                            actual_type=type(value))
+                                actual_type=type(value))
+
         self._path = value
 
 
@@ -760,7 +785,8 @@ class Task(object):
 
         if not isinstance(value, basestring):
             raise ree.TypeError(entity='tag', expected_type=basestring,
-                            actual_type=type(value))
+                                actual_type=type(value))
+
         self._tag = value
 
 
@@ -783,8 +809,6 @@ class Task(object):
 
 
     # --------------------------------------------------------------------------
-    #
-    # Public methods
     #
     def to_dict(self):
         '''
@@ -839,40 +863,48 @@ class Task(object):
         :return: None
         '''
 
-        if d.get('state'): self._state = d['state']   # FIXME: see state setter
-        else             : self._state = res.INITIAL  # FIXME: see state setter
+        # FIXME: uid, name, state and state_history to use setter type checks
+        if d.get('uid')  is not None: self._uid  = d['uid']
+        if d.get('name') is not None: self._name = d['name']
 
-        valid_keys = ['uid', 'name', 'state_history', 'pre_exec', 'executable',
-                      'executable', 'arguments', 'post_exec', 'cpu_reqs',
-                      'gpu_reqs', 'lfs_per_process', 'upload_input_data',
-                      'copy_input_data', 'link_input_data', 'move_input_data',
-                      'copy_output_data', 'move_output_data',
-                      'download_output_data', 'stdout', 'stderr', 'exit_code',
-                      'path', 'tag', 'parent_stage', 'parent_pipeline']
+        if 'state' not in d:
+            self._state = res.INITIAL
 
-        # update self from all dict entries
-        for k,v in d.iteritems():
+        else:
+            # avoid adding state to state history, thus do typecheck here
+            if not isinstance(d['state'], basestring):
+                raise ree.TypeError(entity='state', expected_type=basestring,
+                                    actual_type=type(d['state']))
+            self._state = d['state']
 
-            if k in ['state']:
-                continue  # see above
 
-            if k not in valid_keys:
-                # `to_dict()` and `from_dict()` are out of sync!
-                # FIXME: why don't we have a logger here?
-                log = ru.Logger('radical.entk.task')
-                log.error('key %s is not valid in from_dict()' % k)
-                continue
-
-            # ignore unset attributes
-            if v:
-
-                # invoke the class' setter to ensure type and value checks
-                self.__setattr__(k,  v)
+        # for all other attributes, we use the type and value checks in the
+        # class setters
+        if d.get('state_history')        is not None: self.state_history         = d['state_history']
+        if d.get('pre_exec')             is not None: self.pre_exec              = d['pre_exec']
+        if d.get('executable')           is not None: self.executable            = d['executable']
+        if d.get('arguments')            is not None: self.arguments             = d['arguments']
+        if d.get('post_exec')            is not None: self.post_exec             = d['post_exec']
+        if d.get('cpu_reqs')             is not None: self.cpu_reqs              = d['cpu_reqs']
+        if d.get('gpu_reqs')             is not None: self.gpu_reqs              = d['gpu_reqs']
+        if d.get('lfs_per_process')      is not None: self.lfs_per_process       = d['lfs_per_process']
+        if d.get('upload_input_data')    is not None: self.upload_input_data     = d['upload_input_data']
+        if d.get('copy_input_data')      is not None: self.copy_input_data       = d['copy_input_data']
+        if d.get('link_input_data')      is not None: self._link_input_data      = d['link_input_data']
+        if d.get('move_input_data')      is not None: self._move_input_data      = d['move_input_data']
+        if d.get('copy_output_data')     is not None: self._copy_output_data     = d['copy_output_data']
+        if d.get('move_output_data')     is not None: self._move_output_data     = d['move_output_data']
+        if d.get('download_output_data') is not None: self._download_output_data = d['download_output_data']
+        if d.get('stdout')               is not None: self._stdout               = d['stdout']
+        if d.get('stderr')               is not None: self._stderr               = d['stderr']
+        if d.get('exit_code')            is not None: self._exit_code            = d['exit_code']
+        if d.get('path')                 is not None: self._path                 = d['path']
+        if d.get('tag')                  is not None: self._tag                  = d['tag']
+        if d.get('parent_stage')         is not None: self._p_stage              = d['parent_stage']
+        if d.get('parent_pipeline')      is not None: self._p_pipeline           = d['parent_pipeline']
 
 
     # --------------------------------------------------------------------------
-    #
-    # Private methods
     #
     def _assign_uid(self, sid):
         '''
@@ -891,14 +923,13 @@ class Task(object):
         '''
 
         if self._state is not res.INITIAL:
-            raise ree.ValueError(obj=self._uid,
-                             attribute='state',
-                             expected_value=res.INITIAL,
-                             actual_value=self._state)
+            raise ree.ValueError(obj=self._uid, attribute='state',
+                                 expected_value=res.INITIAL,
+                                 actual_value=self._state)
 
         if not self._executable:
             raise ree.MissingError(obj=self._uid,
-                               missing_attribute='executable')
+                                   missing_attribute='executable')
 
 
 # ------------------------------------------------------------------------------
