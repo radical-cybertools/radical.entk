@@ -222,7 +222,7 @@ def get_session_description(sid, src=None):
 
 # ------------------------------------------------------------------------------
 #
-def write_workflow(workflows, uid, fname='entk_workflow.json', fwrite=True):
+def write_workflow(workflows, uid, fname=None, fwrite=True):
 
     try:
         os.mkdir(uid)
@@ -230,7 +230,10 @@ def write_workflow(workflows, uid, fname='entk_workflow.json', fwrite=True):
     except:
         pass
 
-    data = {'stack'    : ru.stack(), 
+    if not fname:
+        fname = 'entk_workflow.json'
+
+    data = {'stack'    : ru.stack(),
             'workflows': list()}
 
 

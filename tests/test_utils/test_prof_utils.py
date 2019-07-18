@@ -215,10 +215,10 @@ def test_write_workflow():
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._mq_hostname,
+                                    mq_hostname=amgr._hostname,
                                     port=amgr._port,
                                     resubmit_failed=amgr._resubmit_failed)
-        amgr._wfp._initialize_workflow()
+        amgr._wfp.initialize_workflow()
         check = amgr.workflows
 
         data = write_workflow(amgr.workflows, 'test', fwrite=False)
