@@ -103,7 +103,7 @@ You can also download the Dockerfile :download:`here <./misc/Dockerfile>`.
 
 You can build and execute the container by running:
 
-,, code-block:: bash
+.. code-block:: bash
 
         docker build -f ./Dockerfile -t entk .
         docker run -t -i entk
