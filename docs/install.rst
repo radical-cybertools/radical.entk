@@ -172,9 +172,10 @@ Interactions between RabbitMQ and EnTK are done through port 5672 by default.
 For the above docker instance, we need to use port 32775. In your EnTK scripts,
 while creating the AppManager, you need to specify port=32775.
 
-.. note:: If you are using Docker to install both EnTK and RabbitMQ, they
-should run as two different containers. You can set the RMQ_PORT in the EnTK
-container accordingly.
+.. note::
+   If you are using Docker to install both EnTK and RabbitMQ, they should run
+   as two different containers. You can set the RMQ_PORT in the EnTK container
+   accordingly.
 
 Installation Video
 ==================
