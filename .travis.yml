@@ -13,7 +13,7 @@ env:
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    - PYTEST="coverage run -m pytest -ra --timeout=600 -vvv --showlocals"
+    - PYTEST="coverage run -m pytest -ra --timeout=600 -vvv --showlocals --forked --numprocesses=3"
     - CMD_PYTEST_UNITTESTS="  $PYTEST tests/test_component/  ;
                               $PYTEST tests/test_utils/      "
     - CMD_PYTEST_INTEGRATION="$PYTEST tests/test_integration/"
@@ -50,6 +50,7 @@ install:
   - pip install pylint
   - pip install codecov
   - pip install pytest
+  - pip install pytest-xdist
   - pip install pytest-timeout
 
 before_script:
