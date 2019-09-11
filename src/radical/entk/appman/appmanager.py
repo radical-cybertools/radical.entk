@@ -17,7 +17,7 @@ from .. import exceptions as ree
 from ..pipeline    import Pipeline
 from ..task        import Task
 from ..utils       import write_session_description
-from ..utils       import write_workflow
+from ..utils       import write_workflows
 
 from .wfprocessor  import WFprocessor
 
@@ -110,6 +110,7 @@ class AppManager(object):
         self._resource_desc   = None
         self._task_manager    = None
         self._workflow        = None
+        self._workflows       = list()
         self._cur_attempt     = 1
         self._shared_data     = list()
         self._wfp             = None
@@ -210,8 +211,8 @@ class AppManager(object):
     @property
     def workflow(self):
         '''
-        :getter: Return the workflow assigned for execution
-        :setter: Assign workflow to be executed
+        :getter: Return the last workflow assigned for execution
+        :setter: Assign a new workflow to be executed
         '''
 
         return self._workflow
@@ -219,6 +220,14 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
+    @property
+    def workflows(self):
+        """
+        :getter: Return a list of workflows assigned for execution
+        """
+
+        return self._workflows
+
     @property
     def shared_data(self):
         '''
@@ -285,6 +294,10 @@ class AppManager(object):
                                     actual_type=type(p))
             p._validate()
 
+        # keep history
+        self._workflows.append(workflow)
+
+        # set current workflow
         self._workflow = workflow
         self._logger.info('Workflow assigned to Application Manager')
 
@@ -370,9 +383,6 @@ class AppManager(object):
             if self._autoterminate:
                 self.terminate()
 
-            if self._write_workflow:
-                write_workflow(self._workflow, self._sid)
-
 
         except KeyboardInterrupt:
 
@@ -411,6 +421,9 @@ class AppManager(object):
             self._terminate_sync.set()
             self._sync_thread.join()
             self._logger.info('Synchronizer thread terminated')
+
+        if self._write_workflow:
+            write_workflows(self.workflows, self._sid)
 
         if self._rmgr:
             self._rmgr._terminate_resource_request()
