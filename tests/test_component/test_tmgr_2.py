@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import os
 import pika
@@ -10,9 +11,8 @@ from radical.entk.execman.rp import TaskManager     as RPTmgr
 from radical.entk.execman.rp import ResourceManager as RPRmgr
 from radical.entk            import Task, states
 
-
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = int(os.environ.get('RMQ_PORT', 5672))
+hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
+port     = int(os.environ.get('RMQ_PORT',     5672))
 
 os.environ['ENTK_HB_INTERVAL'] = '5'
 
@@ -31,6 +31,7 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
         t = Task()
         t.state      = states.SCHEDULING
         t.executable = '/bin/echo'
+        print t.to_dict()
         tasks.append(t.to_dict())
 
     tasks_as_json = json.dumps(tasks)
@@ -60,13 +61,13 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
 #
 def test_tmgr_rp_tmgr():
 
-    res_dict = {'resource' : 'local.localhost',
-                'walltime' : 40,
-                'cpus'     : 20}
-
-    config  = {"sandbox_cleanup": False,"db_cleanup": False}
-    rmgr_id = ru.generate_id('test', ru.ID_UNIQUE)
-    rmgr    = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
+    res_dict = {'resource'       : 'local.localhost',
+                'walltime'       : 40,
+                'cpus'           : 20}
+    config   = {"sandbox_cleanup": False,
+                "db_cleanup"     : False}
+    rmgr_id  = ru.generate_id('test', ru.ID_UNIQUE)
+    rmgr     = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
 
     rmgr._validate_resource_desc()
     rmgr._populate()
@@ -89,6 +90,13 @@ def test_tmgr_rp_tmgr():
 
     tmgr.terminate_manager()
     rmgr._terminate_resource_request()
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    test_tmgr_rp_tmgr()
 
 
 # ------------------------------------------------------------------------------

@@ -3,7 +3,7 @@ exclude         = .git,__pycache__,docs,build,dist,examples,setup.py,bin
 max-complexity  = 10
 max-line-length = 80
 ignore          =
-    # module level import location
+  # module level import location
     E402,
     # space before/after operator
     E221, E222,E251,
@@ -12,7 +12,7 @@ ignore          =
     # line too long
     E501,
     # whitespace before/after ...
-    E203, E202, E231, E241, E211, E116, E127, W504
+    E203, E202, E231, E241, E211, E116, E127,
     # same indent
     E129,
     # comment indent not mod(4)
@@ -30,7 +30,9 @@ ignore          =
     # Complex methods
     C901,
     # Do not use bare 'except'
-    E722
+    E722,
+    # we can spot the difference between I, l and 1, thank you.
+    E741
 
 per-file-ignores =
     # imported but unused
