@@ -39,13 +39,14 @@ and checkout the branch. You can do so using the following commands:
 
 
 
-You can check the version of Ensemble Toolkit with the ```entk-version```
-command-line tool. The current version should be printed.
+You can check the version of Ensemble Toolkit with the
+```radical-entk-version``` command-line tool. The current version should be
+printed.
 
 .. code-block:: bash
 
-        entk-version
-        0.7.14
+        radical-entk-version
+        0.70.0
 
 
 Installing Ensemble Toolkit using Anaconda/Conda
@@ -68,13 +69,14 @@ by executing the following command in your conda env:
         conda install radical.entk
 
 
-You can check the version of Ensemble Toolkit with the ```entk-version```
-command-line tool. The current version should be printed.
+You can check the version of Ensemble Toolkit with the
+```radical-entk-version``` command-line tool. The current version should be
+printed.
 
 .. code-block:: bash
 
-        entk-version
-        0.7.14
+        radical-entk-version
+        0.70.0
 
 
 Installing Ensemble Toolkit using Docker
@@ -112,13 +114,14 @@ Once you execute the container, the default path will be /root (of the container
 The EnTK virtualenv exists at ~/ve-entk (inside the container). This is useful
 to know as the examples exist inside the virtualenv.
 
-You can check the version of Ensemble Toolkit with the ```entk-version```
-command-line tool. The current version should be printed.
+You can check the version of Ensemble Toolkit with the
+```radical-entk-version``` command-line tool. The current version should be
+printed.
 
 .. code-block:: bash
 
-        entk-version
-        0.7.14
+        radical-entk-version
+        0.70.0
 
 
 Installing rabbitmq
@@ -172,9 +175,10 @@ Interactions between RabbitMQ and EnTK are done through port 5672 by default.
 For the above docker instance, we need to use port 32775. In your EnTK scripts,
 while creating the AppManager, you need to specify port=32775.
 
-.. note:: If you are using Docker to install both EnTK and RabbitMQ, they
-should run as two different containers. You can set the RMQ_PORT in the EnTK
-container accordingly.
+.. note::
+   If you are using Docker to install both EnTK and RabbitMQ, they should run
+   as two different containers. You can set the RMQ_PORT in the EnTK container
+   accordingly.
 
 Installation Video
 ==================
