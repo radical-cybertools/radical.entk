@@ -428,7 +428,7 @@ class AppManager(object):
         if self._rmgr:
             self._rmgr._terminate_resource_request()
 
-        if os.environ.get('RADICAL_ENTK_PROFILE', False):
+        if os.environ.get('RADICAL_ENTK_PROFILE'):
             write_session_description(self)
 
         if self._rmq_cleanup:
