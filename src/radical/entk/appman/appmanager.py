@@ -548,6 +548,8 @@ class AppManager(object):
 
             self._prof.prof('mqs_cleanup_stop', uid=self._uid)
 
+            self._mqs_setup = False
+
         except Exception:
             self._logger.exception('Message queues not deleted, error')
             raise
