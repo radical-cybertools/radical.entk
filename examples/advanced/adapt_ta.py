@@ -18,9 +18,9 @@ def generate_pipeline():
         global CUR_NEW_STAGE, MAX_NEW_STAGE
 
         if CUR_NEW_STAGE <= MAX_NEW_STAGE:
-            return True
+            func_on_true()
 
-        return False
+        func_on_false()
 
     def func_on_true():
 
@@ -51,11 +51,7 @@ def generate_pipeline():
             s1.add_tasks(t1)
 
         # Add post-exec to the Stage
-        s1.post_exec = {
-                            'condition': func_condition,
-                            'on_true': func_on_true,
-                            'on_false': func_on_false
-                        }
+        s1.post_exec = func_condition
 
         # Add Stage to the Pipeline
         p.add_stages(s1)
