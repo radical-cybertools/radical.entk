@@ -415,7 +415,7 @@ class AppManager(object):
         if self._rmgr:
             self._rmgr._terminate_resource_request()
 
-        if os.environ.get('RADICAL_ENTK_PROFILE', False):
+        if os.environ.get('RADICAL_ENTK_PROFILE'):
             write_session_description(self)
 
         if self._rmq_cleanup:
@@ -534,6 +534,8 @@ class AppManager(object):
                 mq_channel.queue_delete(queue=queue_name)
 
             self._prof.prof('mqs_cleanup_stop', uid=self._uid)
+
+            self._mqs_setup = False
 
         except Exception:
             self._logger.exception('Message queues not deleted, error')
