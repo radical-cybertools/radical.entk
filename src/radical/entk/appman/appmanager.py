@@ -17,7 +17,7 @@ from .. import exceptions as ree
 from ..pipeline    import Pipeline
 from ..task        import Task
 from ..utils       import write_session_description
-from ..utils       import write_workflow
+from ..utils       import write_workflows
 
 from .wfprocessor  import WFprocessor
 
@@ -423,7 +423,7 @@ class AppManager(object):
             self._logger.info('Synchronizer thread terminated')
 
         if self._write_workflow:
-            write_workflow(self.workflows, self._sid)
+            write_workflows(self.workflows, self._sid)
 
         if self._rmgr:
             self._rmgr._terminate_resource_request()
