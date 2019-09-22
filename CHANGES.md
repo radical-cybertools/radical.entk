@@ -7,6 +7,19 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
+0.72.0  Release                                                       2019-09-11
+--------------------------------------------------------------------------------
+
+  - fix test setup
+  - Fix documentation
+  - adaptivity examples updated, post_exec is callable now
+  - add dict initialization for tasks
+  - write all workflows in session description
+  - battle test resource issues
+  - fix channel cleanup/restart
+  - fix workflow writer (again)
+
+
 0.70.0  Release                                                       2019-07-07
 --------------------------------------------------------------------------------
 
@@ -186,4 +199,3 @@
 
 * ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
   changed to ```parent_pipeline``` and ```parent_stage```.
-
