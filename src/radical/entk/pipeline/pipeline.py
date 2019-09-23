@@ -37,6 +37,7 @@ class Pipeline(object):
         # To keep track of termination of pipeline
         self._completed_flag = threading.Event()
 
+
     # ------------------------------------------------------------------------------------------------------------------
     # Getter functions
     # ------------------------------------------------------------------------------------------------------------------
@@ -187,10 +188,9 @@ class Pipeline(object):
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
     def add_stages(self, value):
         """
         Appends stages to the current Pipeline
@@ -203,6 +203,7 @@ class Pipeline(object):
         self._stage_count = len(self._stages)
         if self._cur_stage == 0:
             self._cur_stage = 1
+
 
     def to_dict(self):
         """
@@ -301,12 +302,11 @@ class Pipeline(object):
            had before suspension.
         '''
         if self._state != states.SUSPENDED:
-            raise EnTKError(
-                'Cannot resume Pipeline %s since it is not suspended' % self._uid)
+            raise EnTKError('Cannot resume Pipeline %s: not suspended [%s] [%s]'
+                    % (self._uid, self._state, self._state_history))
 
         self._state = self._state_history[-2]
         self._state_history.append(self._state)
-        self.log('%-15s X> %s' % (self._uid, self._state))
 
 
     # --------------------------------------------------------------------------
