@@ -294,7 +294,7 @@ class Pipeline(object):
     def resume(self):
         '''
         Continue execution of paused stages and tasks.
-        
+
          - The `resume()` method can only be called on a suspended pipeline, an
            exception will be raised if that condition is not met.
          - The state of a resumed pipeline will be set to the state the pipeline
@@ -306,11 +306,12 @@ class Pipeline(object):
 
         self._state = self._state_history[-2]
         self._state_history.append(self._state)
+        self.log('%-15s X> %s' % (self._uid, self._state))
 
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def _increment_stage(self):
         """
