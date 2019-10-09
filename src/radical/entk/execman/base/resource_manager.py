@@ -141,6 +141,19 @@ class Base_ResourceManager(object):
 
     # --------------------------------------------------------------------------
     #
+    def fetch_data(self, fnames=None):
+        '''
+        **Purpose**: fetch the specified list of data files from the target
+        resources (shell wildcards are supported).  If `fnames` is `None`, then
+        leave it to the backend what data are fatched (if any).  The method
+        returns the list of filenames which have been successfully retrieved.
+        The files will be stored in the current working directory.
+        '''
+        raise NotImplementedError('no fetch_data() for %s' % self._rts)
+
+
+    # --------------------------------------------------------------------------
+    #
     def get_resource_allocation_state(self):
         """
         **Purpose**: Get the state of the resource allocation

@@ -298,8 +298,9 @@ class AppManager(object):
             data = [data]
 
         for value in data:
-            if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str, actual_type=type(value))
+            if not isinstance(value, basestring):
+                raise ree.TypeError(expected_type=basestring,
+                                    actual_type=type(value))
 
         if self._rmgr:
             self._rmgr.shared_data = data
@@ -316,6 +317,8 @@ class AppManager(object):
         up the communication infrastructure, submitting a resource request and
         then submission of all the tasks.
         '''
+
+        ret = None
 
         try:
             self._prof.prof('amgr_start', uid=self._uid)
@@ -367,6 +370,11 @@ class AppManager(object):
             # workflow are executed or an error/exception is encountered
             self._run_workflow()
 
+            # once the workflow is completed, we attempt to fetch output data.
+            # The method will return a list of fetched filenames which we return
+            if self._outputs:
+                ret = self._rmgr.fetch_data(self._outputs)
+
             if self._autoterminate:
                 self.terminate()
 
@@ -388,6 +396,9 @@ class AppManager(object):
             self._logger.exception('Error in AppManager: %s' % ex)
             self.terminate()
             raise
+
+        # return list of fetched output data, or None.
+        return ret
 
 
     # --------------------------------------------------------------------------

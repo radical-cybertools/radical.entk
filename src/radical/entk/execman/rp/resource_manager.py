@@ -85,6 +85,16 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
+    def fetch_data(self, fnames=None):
+
+        if not self._pilot:
+            raise RuntimeError('fetching data needs an active resource')
+
+        return self._pilot.stage_out(fnames)
+
+
+    # --------------------------------------------------------------------------
+    #
     def get_resource_allocation_state(self):
         """
         **Purpose**: Get the state of the resource allocation
@@ -156,16 +166,21 @@ class ResourceManager(Base_ResourceManager):
 
             self._prof.prof('rreq submitted', uid=self._uid)
 
-            shared_staging_directives = list()
-            for data in self._shared_data:
-                temp = {'source': data,
-                        'target': 'pilot:///' + os.path.basename(data)
-                }
-                shared_staging_directives.append(temp)
+            if self._shared_data:
+                self._prof.prof('shared_data_start', uid=self._uid,
+                                                    msg=len(self._shared_data))
+                shared_staging_directives = list()
+                for data in self._shared_data:
+                    temp = {'source': data,
+                            'target': 'pilot:///' + os.path.basename(data)
+                    }
+                    shared_staging_directives.append(temp)
 
-            self._pilot.stage_in(shared_staging_directives)
+                self._pilot.stage_in(shared_staging_directives)
 
-            self._prof.prof('shared data staging initiated', uid=self._uid)
+                self._prof.prof('shared_data_stop', uid=self._uid,
+                                                    msg=len(self._shared_data))
+
             self._logger.info('Resource request submission successful, waiting'
                               'for pilot to become Active')
 
@@ -173,7 +188,7 @@ class ResourceManager(Base_ResourceManager):
             self._pilot.wait([rp.PMGR_ACTIVE, rp.DONE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
-            self._logger.info('Pilot is now active')
+            self._logger.info('Pilot is now active [%s]', self._pilot.state)
 
         except KeyboardInterrupt:
 
