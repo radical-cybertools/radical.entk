@@ -169,33 +169,34 @@ def write_session_description(amgr):
                       }
 
     # Adding pipelines to the tree
-    wf = amgr._workflow
-    for pipe in wf:
-        tree[amgr._uid]['children'].append(pipe.uid)
-        tree[pipe.uid] = {'uid': pipe.uid,
-                          'etype': 'pipeline',
-                          'cfg': {},
-                          'has': ['stage'],
-                          'children': list()
-                          }
-        # Adding stages to the tree
-        for stage in pipe.stages:
-            tree[pipe.uid]['children'].append(stage.uid)
-            tree[stage.uid] = {'uid': stage.uid,
-                               'etype': 'stage',
+    for wf in amgr._workflows:
+
+        for pipe in wf:
+            tree[amgr._uid]['children'].append(pipe._uid)
+            tree[pipe._uid] = {'uid': pipe._uid,
+                               'etype': 'pipeline',
                                'cfg': {},
-                               'has': ['task'],
+                               'has': ['stage'],
                                'children': list()
                                }
-            # Adding tasks to the tree
-            for task in stage.tasks:
-                tree[stage.uid]['children'].append(task.uid)
-                tree[task.uid] = {'uid': task.uid,
-                                  'etype': 'task',
-                                  'cfg': {},
-                                  'has': [],
-                                  'children': list()
-                                  }
+            # Adding stages to the tree
+            for stage in pipe.stages:
+                tree[pipe._uid]['children'].append(stage._uid)
+                tree[stage._uid] = {'uid': stage._uid,
+                                    'etype': 'stage',
+                                    'cfg': {},
+                                    'has': ['task'],
+                                    'children': list()
+                                    }
+                # Adding tasks to the tree
+                for task in stage.tasks:
+                    tree[stage._uid]['children'].append(task._uid)
+                    tree[task._uid] = {'uid': task._uid,
+                                       'etype': 'task',
+                                       'cfg': {},
+                                       'has': [],
+                                       'children': list()
+                                   }
 
     desc['tree'] = tree
     desc['config'] = dict()
@@ -219,47 +220,58 @@ def get_session_description(sid, src=None):
     return desc
 
 
-def write_workflow(workflow, uid, workflow_fout='entk_workflow', fwrite=True):
+# ------------------------------------------------------------------------------
+#
+def write_workflows(workflows, uid, fname=None, fwrite=True):
 
     try:
         os.mkdir(uid)
+
     except:
         pass
 
-    data = list()
-    if os.path.isfile('%s/%s.json' % (uid, workflow_fout)):
-        data = ru.read_json('%s/%s.json' % (uid, workflow_fout))
+    if not fname:
+        fname = 'entk_workflow.json'
 
-    stack = ru.stack()
-    data.append({'stack': stack})
+    data = {'stack'    : ru.stack(),
+            'workflows': list()}
 
-    for pipe in workflow:
 
-        p = dict()
-        p['uid'] = pipe.uid
-        p['name'] = pipe.name
-        p['state_history'] = pipe.state_history
-        p['stages'] = list()
+    for workflow in workflows:
 
-        for stage in pipe.stages:
+        w = dict()
+        w['pipes'] = list()
 
-            s = dict()
-            s['uid'] = stage.uid
-            s['name'] = stage.name
-            s['state_history'] = stage.state_history
-            s['tasks'] = list()
+        for pipe in workflow:
 
-            for task in stage.tasks:
-                s['tasks'].append(task.to_dict())
+            p = dict()
+            p['uid']           = pipe.uid
+            p['name']          = pipe.name
+            p['state_history'] = pipe.state_history
+            p['stages']        = list()
 
-            p['stages'].append(s)
+            for stage in pipe.stages:
 
-        data.append(p)
+                s = dict()
+                s['uid']           = stage.uid
+                s['name']          = stage.name
+                s['state_history'] = stage.state_history
+                s['tasks']         = list()
+
+                for task in stage.tasks:
+                    s['tasks'].append(task.to_dict())
+
+                p['stages'].append(s)
+
+            w['pipes'].append(p)
+
+        data['workflows'].append(w)
 
     if fwrite:
-        ru.write_json(data, '%s/%s.json' % (uid, workflow_fout))
+        ru.write_json(data, '%s/%s' % (uid, fname))
         return 0
 
     return data
 
 # pylint: disable=protected-access
+
