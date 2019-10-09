@@ -356,11 +356,7 @@ class WFprocessor(object):
                     # Check if the current stage has a post-exec
                     # that needs to be executed
                     if stage.post_exec:
-                        self._execute_post_exec(stage)
-
-                    # Increment current stage pointer of the
-                    # pipeline
-                    pipe._increment_stage()
+                        self._execute_post_exec(pipe, stage)
 
                     # If pipeline has completed, make state
                     # change
@@ -375,22 +371,53 @@ class WFprocessor(object):
 
     # --------------------------------------------------------------------------
     #
-    def _execute_post_exec(self, stage):
+    def _execute_post_exec(self, pipe, stage):
 
         try:
-
             self._logger.info('Executing post-exec for stage %s' % stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
 
-            stage.post_exec()
+            resumed_pipe_uids = stage.post_exec()
 
             self._logger.info('Post-exec executed for stage %s' % stage.uid)
             self._prof.prof('post_exec_stop', uid=self._uid)
 
+
         except Exception:
-            self._logger.exception('Execution failed in post_exec \
-                                    of stage %s' % stage.uid)
+            self._logger.exception('post_exec of stage %s failed' % stage.uid)
+            self._prof.prof('post_exec_fail', uid=self._uid)
             raise
+
+        if resumed_pipe_uids:
+
+            for r_pipe in self._workflow:
+
+                if r_pipe == pipe:
+                    continue
+
+                with r_pipe.lock:
+
+                    if r_pipe.uid in resumed_pipe_uids:
+
+                        # Resumed pipelines already have the correct state,
+                        # they just need to be synced with the AppMgr.
+                        r_pipe._increment_stage()
+
+                        if r_pipe.completed:
+                            self._advance(r_pipe, 'Pipeline', states.DONE)
+
+                        else:
+                            self._advance(r_pipe, 'Pipeline', r_pipe.state)
+
+
+        if pipe.state == states.SUSPENDED:
+            self._advance(pipe, 'Pipeline', states.SUSPENDED)
+
+        else:
+            pipe._increment_stage()
+
+            if pipe.completed:
+                self._advance(pipe, 'Pipeline', states.DONE)
 
 
     # --------------------------------------------------------------------------
