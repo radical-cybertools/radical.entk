@@ -33,7 +33,8 @@ class Base_TaskManager(object):
                             finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
-        :rmq_url:           (str) URI Connection string for RabbitMQ
+        :mq_hostname:       (str) Name of the host where RabbitMQ is running
+        :port:              (int) Port at which rabbitMQ can be accessed
 
     Currently, EnTK is configured to work with one pending queue and one
     completed queue. In the future, the number of queues can be varied for
@@ -43,7 +44,8 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, sid, pending_queue, completed_queue, rmgr, rts, rmq_url):
+    def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname,
+                       port, rts):
 
         if not isinstance(sid, basestring):
             raise TypeError(expected_type=basestring,
@@ -57,21 +59,26 @@ class Base_TaskManager(object):
             raise TypeError(expected_type=basestring,
                             actual_type=type(completed_queue))
 
+        if not isinstance(mq_hostname, basestring):
+            raise TypeError(expected_type=basestring,
+                            actual_type=type(mq_hostname))
+
+        if not isinstance(port, int):
+            raise TypeError(expected_type=int,
+                            actual_type=type(port))
+
         if not isinstance(rmgr, Base_ResourceManager):
             raise TypeError(expected_type=Base_ResourceManager,
                             actual_type=type(rmgr))
-
-        if not isinstance(rmq_url, basestring):
-            raise TypeError(expected_type=basestring,
-                            actual_type=type(rmq_url))
 
 
         self._sid             = sid
         self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
+        self._hostname        = mq_hostname
+        self._port            = port
         self._rmgr            = rmgr
         self._rts             = rts
-        self._rmq_url         = rmq_url
 
         # Utility parameters
         self._uid  = ru.generate_id('task_manager.%(item_counter)04d',
@@ -83,7 +90,8 @@ class Base_TaskManager(object):
         self._prof = ru.Profiler(name, path=self._path)
 
         # Thread should run till terminate condtion is encountered
-        mq_connection = pika.BlockingConnection(pika.URLParameters(rmq_url))
+        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                                   host=mq_hostname, port=port))
 
         self._hb_request_q  = '%s-hb-request'  % self._sid
         self._hb_response_q = '%s-hb-response' % self._sid
@@ -107,7 +115,8 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, rmgr, pending_queue, completed_queue, rmq_url):
+    def _tmgr(self, uid, rmgr, mq_hostname, port, pending_queue,
+                    completed_queue):
         """
         **Purpose**: Method to be run by the tmgr process. This method receives
                      a Task from the pending_queue and submits it to the RTS.
@@ -222,8 +231,8 @@ class Base_TaskManager(object):
 
             self._prof.prof('hbeat_start', uid=self._uid)
 
-            mq_connection = pika.BlockingConnection(pika.URLParameters(
-                                       self._rmq_url))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                       host=self._hostname, port=self._port))
             mq_channel = mq_connection.channel()
 
             while not self._hb_terminate.is_set():
@@ -361,8 +370,8 @@ class Base_TaskManager(object):
 
             if not self.check_heartbeat() or self.check_manager():
 
-                conn = pika.BlockingConnection(pika.URLParameters(
-                                       self._rmq_url))
+                conn = pika.BlockingConnection(pika.ConnectionParameters(
+                                       host=self._hostname, port=self._port))
                 mq_channel = conn.channel()
 
                 # To respond to heartbeat - get request from rpc_queue

@@ -37,6 +37,8 @@ class AppManager(object):
 
     :Arguments:
         :config_path:     Url to config path to be read for AppManager
+        :hostname:        host rabbitmq server is running
+        :port:            port at which rabbitmq can be accessed
         :reattempts:      number of attempts to re-invoke any failed EnTK
                           components
         :resubmit_failed: resubmit failed tasks (True/False)
@@ -53,13 +55,14 @@ class AppManager(object):
                           True/False} when RTS is RP
         :name:            Name of the Application. It should be unique between
                           executions. (default is randomly assigned)
-        :rmq_url:         Connection string for RabbitMQ
     '''
 
     # --------------------------------------------------------------------------
     #
     def __init__(self,
                  config_path=None,
+                 hostname=None,
+                 port=None,
                  reattempts=None,
                  resubmit_failed=None,
                  autoterminate=None,
@@ -67,8 +70,7 @@ class AppManager(object):
                  rts=None,
                  rmq_cleanup=None,
                  rts_config=None,
-                 name=None,
-                 rmq_url=None):
+                 name=None):
 
         # Create a session for each EnTK script execution
         if name:
@@ -78,9 +80,9 @@ class AppManager(object):
             self._name = str()
             self._sid  = ru.generate_id('re.session', ru.ID_PRIVATE)
 
-        self._read_config(config_path, reattempts, resubmit_failed,
-                          autoterminate, write_workflow, rts, rmq_cleanup,
-                          rts_config, rmq_url)
+        self._read_config(config_path, hostname, port, reattempts,
+                          resubmit_failed, autoterminate, write_workflow,
+                          rts, rmq_cleanup, rts_config)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
@@ -128,9 +130,9 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _read_config(self, config_path, reattempts, resubmit_failed,
-                     autoterminate, write_workflow, rts, rmq_cleanup,
-                     rts_config, rmq_url):
+    def _read_config(self, config_path, hostname, port, reattempts,
+                     resubmit_failed, autoterminate, write_workflow,
+                     rts, rmq_cleanup, rts_config):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -141,6 +143,8 @@ class AppManager(object):
             if val1 is not None: return val1
             else               : return val2
 
+        self._hostname         = _if(hostname,        config['hostname'])
+        self._port             = _if(port,            config['port'])
         self._reattempts       = _if(reattempts,      config['reattempts'])
         self._resubmit_failed  = _if(resubmit_failed, config['resubmit_failed'])
         self._autoterminate    = _if(autoterminate,   config['autoterminate'])
@@ -148,7 +152,6 @@ class AppManager(object):
         self._rmq_cleanup      = _if(rmq_cleanup,     config['rmq_cleanup'])
         self._rts_config       = _if(rts_config,      config['rts_config'])
         self._rts              = _if(rts,             config['rts'])
-        self._rmq_url          = _if(rmq_url,         config['rmq_url'])
 
         self._num_pending_qs   = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
@@ -477,8 +480,8 @@ class AppManager(object):
             self._prof.prof('mqs_setup_start', uid=self._uid)
             self._logger.debug('Setting up mq connection and channel')
 
-            mq_connection = pika.BlockingConnection(pika.URLParameters(
-                                                    self._rmq_url))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                       host=self._hostname, port=self._port))
 
             mq_channel = mq_connection.channel()
 
@@ -525,8 +528,9 @@ class AppManager(object):
         try:
             self._prof.prof('mqs_cleanup_start', uid=self._uid)
 
-            mq_connection = pika.BlockingConnection(pika.URLParameters(
-                                                    self._rmq_url))
+            mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                                    host=self._hostname,
+                                                    port=self._port))
             mq_channel = mq_connection.channel()
 
             mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
@@ -575,7 +579,8 @@ class AppManager(object):
                                 workflow=self._workflow,
                                 pending_queue=self._pending_queue,
                                 completed_queue=self._completed_queue,
-                                rmq_url=self._rmq_url,
+                                mq_hostname=self._hostname,
+                                port=self._port,
                                 resubmit_failed=self._resubmit_failed)
         self._wfp.initialize_workflow()
         self._prof.prof('wfp_create_stop', uid=self._uid)
@@ -609,8 +614,9 @@ class AppManager(object):
                     sid=self._sid,
                     pending_queue=self._pending_queue,
                     completed_queue=self._completed_queue,
-                    rmq_url=self._rmq_url,
-                    rmgr=self._rmgr)
+                    mq_hostname=self._hostname,
+                    rmgr=self._rmgr,
+                    port=self._port)
 
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
@@ -673,7 +679,8 @@ class AppManager(object):
                                         workflow=self._workflow,
                                         pending_queue=self._pending_queue,
                                         completed_queue=self._completed_queue,
-                                        rmq_url=self._rmq_url,
+                                        mq_hostname=self._hostname,
+                                        port=self._port,
                                         resubmit_failed=self._resubmit_failed)
 
                 self._logger.info('Restarting WFProcessor')
@@ -841,8 +848,9 @@ class AppManager(object):
         self._prof.prof('sync_thread_start', uid=self._uid)
         self._logger.info('synchronizer thread started')
 
-        mq_connection = pika.BlockingConnection(pika.URLParameters(
-                                        self._rmq_url))
+        mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                                        host=self._hostname,
+                                        port=self._port))
         mq_channel = mq_connection.channel()
 
         last  = time.time()

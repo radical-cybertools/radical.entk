@@ -1,5 +1,7 @@
 
 {
+    "hostname"        : "localhost",
+    "port"            : 5672,
     "reattempts"      : 3,
     "resubmit_failed" : false,
     "autoterminate"   : true,
@@ -9,7 +11,6 @@
                          "db_cleanup"      : false },
     "pending_qs"      : 1,
     "completed_qs"    : 1,
-    "rmq_cleanup"     : true,
-    "rmq_url"         : "amqp://guest:guest@localhost:5672/%2F"
+    "rmq_cleanup"     : true
 }
 

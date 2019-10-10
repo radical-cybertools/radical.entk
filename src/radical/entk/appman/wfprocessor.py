@@ -32,8 +32,9 @@ class WFprocessor(object):
         :workflow:        (set) REFERENCE of the AppManager's workflow
         :pending_queue:   (list) queues to hold pending tasks
         :completed_queue: (list) queues to hold completed tasks
+        :mq_hostname:     (str) hostname where the RabbitMQ is alive
+        :port:            (int) port at which RabbitMQ can be accessed
         :resubmit_failed: (bool) True if failed tasks should be resubmitted
-        :rmq_url          (str) URI connection string for RabbitMQ
     """
 
     # --------------------------------------------------------------------------
@@ -43,15 +44,17 @@ class WFprocessor(object):
                  workflow,
                  pending_queue,
                  completed_queue,
-                 resubmit_failed,
-                 rmq_url):
+                 mq_hostname,
+                 port,
+                 resubmit_failed):
 
         # Mandatory arguments
         self._sid             = sid
         self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
+        self._hostname        = mq_hostname
+        self._port            = port
         self._resubmit_failed = resubmit_failed
-        self._rmq_url         = rmq_url
 
         # Assign validated workflow
         self._workflow = workflow
@@ -198,7 +201,9 @@ class WFprocessor(object):
 
         # Acquire a connection+channel to the rmq server
         mq_connection = pika.BlockingConnection(
-                            pika.URLParameters(self._rmq_url))
+                            pika.ConnectionParameters(
+                                host=self._hostname,
+                                port=self._port))
         mq_channel = mq_connection.channel()
 
         # Send the workload to the pending queue
@@ -404,7 +409,9 @@ class WFprocessor(object):
 
             # Acquire a connection+channel to the rmq server
             mq_connection = pika.BlockingConnection(
-                                pika.URLParameters(self._rmq_url))
+                                pika.ConnectionParameters(
+                                    host=self._hostname,
+                                    port=self._port))
             mq_channel = mq_connection.channel()
 
             last = time.time()
