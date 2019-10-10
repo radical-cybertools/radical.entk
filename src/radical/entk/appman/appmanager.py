@@ -113,6 +113,7 @@ class AppManager(object):
         self._workflows       = list()
         self._cur_attempt     = 1
         self._shared_data     = list()
+        self._outputs         = None
         self._wfp             = None
         self._sync_thread     = None
         self._terminate_sync  = mt.Event()
@@ -386,7 +387,8 @@ class AppManager(object):
             # once the workflow is completed, we attempt to fetch output data.
             # The method will return a list of fetched filenames which we return
             if self._outputs:
-                ret = self._rmgr.fetch_data(self._outputs)
+                sds = ['%s > .' % fname for fname in self._outputs]
+                ret = self._rmgr.stage_output(sds)
 
             if self._autoterminate:
                 self.terminate()

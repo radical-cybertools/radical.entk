@@ -100,11 +100,12 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def fetch_data(self, fnames=None):
+    def stage_output(self, fnames=None):
 
         if not self._pilot:
             raise RuntimeError('fetching data needs an active resource')
 
+        self._logger.debug('=== stage outputs: %s', fnames)
         return self._pilot.stage_out(fnames)
 
 
