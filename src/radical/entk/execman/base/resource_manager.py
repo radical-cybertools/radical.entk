@@ -61,8 +61,8 @@ class Base_ResourceManager(object):
         self._logger = ru.Logger  (name, path=self._path)
         self._prof   = ru.Profiler(name, path=self._path)
 
-        # Shared data list
         self._shared_data = list()
+        self._outputs     = None
 
 
     # --------------------------------------------------------------------------
@@ -139,17 +139,19 @@ class Base_ResourceManager(object):
         self._shared_data = data_list
 
 
-    # --------------------------------------------------------------------------
-    #
-    def stage_output(self, fnames=None):
-        '''
-        **Purpose**: fetch the specified list of data files from the target
-        resources (shell wildcards are supported).  If `fnames` is `None`, then
-        leave it to the backend what data are fatched (if any).  The method
-        returns the list of filenames which have been successfully retrieved.
-        The files will be stored in the current working directory.
-        '''
-        raise NotImplementedError('no stage_output() for %s' % self._rts)
+    @property
+    def outputs(self):
+        """
+        :getter:    list of files to be staged from remote after execution
+        """
+        return self._outputs
+
+
+    @shared_data.setter
+    def outputs(self, data):
+
+        self._logger.debug('=== set outputs: %s', data)
+        self._outputs = data
 
 
     # --------------------------------------------------------------------------

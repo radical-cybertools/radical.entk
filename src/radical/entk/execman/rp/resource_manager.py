@@ -100,17 +100,6 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def stage_output(self, fnames=None):
-
-        if not self._pilot:
-            raise RuntimeError('fetching data needs an active resource')
-
-        self._logger.debug('=== stage outputs: %s', fnames)
-        return self._pilot.stage_out(fnames)
-
-
-    # --------------------------------------------------------------------------
-    #
     def get_resource_allocation_state(self):
         """
         **Purpose**: Get the state of the resource allocation
@@ -161,6 +150,7 @@ class ResourceManager(Base_ResourceManager):
 
             self._pmgr.register_callback(_pilot_state_cb)
 
+            self._logger.debug('=== use outputs: %s', self._outputs)
             cleanup = self._rts_config.get('sandbox_cleanup')
             pd_init = {'resource'      : self._resource,
                        'runtime'       : self._walltime,
@@ -170,6 +160,8 @@ class ResourceManager(Base_ResourceManager):
                        'access_schema' : self._access_schema,
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
+                       'input_staging' : self._shared_data,
+                       'output_staging': self._outputs
                        }
 
             # Create Compute Pilot with validated resource description
@@ -181,21 +173,6 @@ class ResourceManager(Base_ResourceManager):
             self._pilot = self._pmgr.submit_pilots(pdesc)
 
             self._prof.prof('rreq submitted', uid=self._uid)
-
-            if self._shared_data:
-                self._prof.prof('shared_data_start', uid=self._uid,
-                                                    msg=len(self._shared_data))
-                shared_staging_directives = list()
-                for data in self._shared_data:
-                    temp = {'source': data,
-                            'target': 'pilot:///' + os.path.basename(data)
-                    }
-                    shared_staging_directives.append(temp)
-
-                self._pilot.stage_in(shared_staging_directives)
-
-                self._prof.prof('shared_data_stop', uid=self._uid,
-                                                    msg=len(self._shared_data))
 
             self._logger.info('Resource request submission successful, waiting'
                               'for pilot to become Active')
@@ -235,12 +212,20 @@ class ResourceManager(Base_ResourceManager):
                 self._prof.prof('rreq_cancel', uid=self._uid)
                 self._pilot.cancel()
 
+                # once the workflow is completed, fetch output data
+                self._logger.debug('=== stage output: %s', self._outputs)
+                if self._outputs:
+                    self._logger.debug('=== stage output: yes')
+                    self._pilot.stage_out()
+                    self._logger.debug('=== stage output: done')
+
                 get_profiles = os.environ.get('RADICAL_PILOT_PROFILE', False)
                 cleanup      = self._rts_config.get('db_cleanup', False)
 
                 if self._session:
                     self._session.close(cleanup=cleanup, download=get_profiles)
-                self._session = None
+                    self._session = None
+
                 self._prof.prof('rreq_canceled', uid=self._uid)
 
         except KeyboardInterrupt:

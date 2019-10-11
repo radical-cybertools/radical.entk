@@ -241,6 +241,18 @@ class AppManager(object):
         return self._shared_data
 
 
+    @property
+    def outputs(self):
+        '''
+        :getter: Return list of filenames that are to be staged out after
+                 execution
+        :setter: Assign a list of names of files that need to be staged from the
+                 remote machine
+        '''
+
+        return self._outputs
+
+
     # --------------------------------------------------------------------------
     # Setter functions
     #
@@ -273,8 +285,10 @@ class AppManager(object):
             self._logger.error('Could not validate resource description')
             raise ree.EnTKError('Could not validate resource description')
 
+        self._logger.debug('=== set outputs 2: %s', self._outputs)
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
+        self._rmgr.outputs     = self._outputs
 
         self._report.ok('>>ok\n')
 
@@ -318,6 +332,23 @@ class AppManager(object):
 
         if self._rmgr:
             self._rmgr.shared_data = data
+
+
+    # --------------------------------------------------------------------------
+    #
+    @outputs.setter
+    def outputs(self, data):
+
+        if not isinstance(data, list):
+            data = [data]
+
+        for value in data:
+            if not isinstance(value, basestring):
+                raise ree.TypeError(expected_type=basestring,
+                                    actual_type=type(value))
+
+        if self._rmgr:
+            self._rmgr.outputs = data
 
 
     # --------------------------------------------------------------------------
@@ -384,15 +415,8 @@ class AppManager(object):
             # workflow are executed or an error/exception is encountered
             self._run_workflow()
 
-            # once the workflow is completed, we attempt to fetch output data.
-            # The method will return a list of fetched filenames which we return
-            if self._outputs:
-                sds = ['%s > .' % fname for fname in self._outputs]
-                ret = self._rmgr.stage_output(sds)
-
             if self._autoterminate:
                 self.terminate()
-
 
         except KeyboardInterrupt:
 
@@ -401,7 +425,6 @@ class AppManager(object):
                                    'enqueuer thread gracefully...')
             self.terminate()
             raise KeyboardInterrupt
-
 
         except Exception, ex:
 
