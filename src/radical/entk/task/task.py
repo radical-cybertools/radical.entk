@@ -80,7 +80,7 @@ class Task(object):
                 raise ree.TypeError(expected_type=dict,
                                     actual_type=type(from_dict))
 
-            for k,v in from_dict.iteritems():
+            for k,v in from_dict.items():
                 self.__setattr__(k, v)
 
 
@@ -485,8 +485,8 @@ class Task(object):
     @uid.setter
     def uid(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
         self._uid = value
@@ -495,8 +495,8 @@ class Task(object):
     @name.setter
     def name(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
         if ',' in value:
@@ -516,14 +516,14 @@ class Task(object):
         #        which should be moved into a separate method.  Also, a state
         #        progression check is missing to ensure the state model
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
         if value not in res._task_state_values:
             raise ree.ValueError(obj=self._uid,
                              attribute='state',
-                             expected_value=res._task_state_values.keys(),
+                             expected_value=list(res._task_state_values.keys()),
                              actual_value=value)
         self._state = value
         self._state_history.append(value)
@@ -540,7 +540,7 @@ class Task(object):
             if elem not in res._task_state_values:
                 raise ree.ValueError(obj=self._uid,
                                  attribute='state_history element',
-                                 expected_value=res._task_state_values.keys(),
+                                 expected_value=list(res._task_state_values.keys()),
                                  actual_value=elem)
         self._state_history = value
 
@@ -560,7 +560,7 @@ class Task(object):
         if isinstance(value, list):
             value = value[0]
 
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise ree.TypeError(expected_type='basestring',
                                 actual_type=type(value))
 
@@ -743,8 +743,8 @@ class Task(object):
     @stdout.setter
     def stdout(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
         self._stdout = value
@@ -753,8 +753,8 @@ class Task(object):
     @stderr.setter
     def stderr(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
         self._stderr = value
@@ -773,8 +773,8 @@ class Task(object):
     @path.setter
     def path(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(entity='path', expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(entity='path', expected_type=str,
                                 actual_type=type(value))
 
         self._path = value
@@ -783,8 +783,8 @@ class Task(object):
     @tag.setter
     def tag(self, value):
 
-        if not isinstance(value, basestring):
-            raise ree.TypeError(entity='tag', expected_type=basestring,
+        if not isinstance(value, str):
+            raise ree.TypeError(entity='tag', expected_type=str,
                                 actual_type=type(value))
 
         self._tag = value
@@ -872,8 +872,8 @@ class Task(object):
 
         else:
             # avoid adding state to state history, thus do typecheck here
-            if not isinstance(d['state'], basestring):
-                raise ree.TypeError(entity='state', expected_type=basestring,
+            if not isinstance(d['state'], str):
+                raise ree.TypeError(entity='state', expected_type=str,
                                     actual_type=type(d['state']))
             self._state = d['state']
 

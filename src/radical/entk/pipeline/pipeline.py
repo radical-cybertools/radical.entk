@@ -173,7 +173,7 @@ class Pipeline(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in states._pipeline_state_values.keys():
+            if value in list(states._pipeline_state_values.keys()):
                 self._state = value
 
                 # We add SUSPENDED to state history in suspend()
@@ -182,7 +182,7 @@ class Pipeline(object):
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',
-                                 expected_value=states._pipeline_state_values.keys(),
+                                 expected_value=list(states._pipeline_state_values.keys()),
                                  actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
@@ -239,13 +239,13 @@ class Pipeline(object):
                 self._name = d['name']
 
         if 'state' in d:
-            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
-                if d['state'] in states._pipeline_state_values.keys():
+            if isinstance(d['state'], str) or isinstance(d['state'], str):
+                if d['state'] in list(states._pipeline_state_values.keys()):
                     self._state = d['state']
                 else:
                     raise ValueError(obj=self._uid,
                                      attribute='state',
-                                     expected_value=states._pipeline_state_values.keys(),
+                                     expected_value=list(states._pipeline_state_values.keys()),
                                      actual_value=d['state'])
             else:
                 raise TypeError(entity='state', expected_type=str,
@@ -324,7 +324,7 @@ class Pipeline(object):
             else:
                 self._completed_flag.set()
 
-        except Exception, ex:
+        except Exception as ex:
             raise EnTKError(text=ex)
 
     def _decrement_stage(self):
@@ -338,7 +338,7 @@ class Pipeline(object):
                 self._cur_stage -= 1
                 self._completed_flag = threading.Event()  # reset
 
-        except Exception, ex:
+        except Exception as ex:
             raise EnTKError(text=ex)
 
     @classmethod

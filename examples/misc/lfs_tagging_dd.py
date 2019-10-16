@@ -79,7 +79,7 @@ if __name__ == '__main__':
         shared_fs = False
     size = args.size
 
-    print 'SharedFS: ', shared_fs, size
+    print('SharedFS: ', shared_fs, size)
 
     os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds159631.mlab.com:59631/da-lfs-test'
 

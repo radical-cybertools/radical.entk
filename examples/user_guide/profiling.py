@@ -90,8 +90,8 @@ if __name__ == '__main__':
 
     p = Profiler(src='./%s'%appman.sid)
 
-    print 'Tasks in Stage 1: ', s1_task_uids
-    print 'Execution time: ', p.duration(objects = s1_task_uids, states=['SCHEDULING', 'EXECUTED'])
+    print('Tasks in Stage 1: ', s1_task_uids)
+    print('Execution time: ', p.duration(objects = s1_task_uids, states=['SCHEDULING', 'EXECUTED']))
 
-    print 'Tasks in Stage 2: ', s2_task_uids
-    print 'Execution time: ', p.duration(objects = s2_task_uids, states=['SCHEDULING', 'EXECUTED'])
+    print('Tasks in Stage 2: ', s2_task_uids)
+    print('Execution time: ', p.duration(objects = s2_task_uids, states=['SCHEDULING', 'EXECUTED']))

@@ -393,7 +393,7 @@ class AppManager(object):
             raise KeyboardInterrupt
 
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._logger.exception('Error in AppManager: %s' % ex)
             self.terminate()
@@ -515,7 +515,7 @@ class AppManager(object):
             self._logger.debug('All exchanges and queues are setup')
             self._prof.prof('mqs_setup_stop', uid=self._uid)
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
             raise

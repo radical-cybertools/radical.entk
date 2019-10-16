@@ -30,7 +30,7 @@ def generate_pipeline():
         shuffle(p.stages[CUR_NEW_STAGE:])
 
     def func_on_false():
-        print 'Done'
+        print('Done')
 
     # Create a Pipeline object
     p = Pipeline()

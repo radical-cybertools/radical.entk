@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     for x in range(10):
         with open('%s/output_%s.txt' %(cur_dir,x+1), 'r') as fp:
-            print 'Output %s: '%(x+1), fp.readlines()
+            print('Output %s: '%(x+1), fp.readlines())
         os.remove('%s/output_%s.txt' %(cur_dir,x+1))
 
 

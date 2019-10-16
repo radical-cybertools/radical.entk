@@ -20,13 +20,13 @@ def generate_pipeline():
     def func_condition():
 
         p.suspend()
-        print 'Suspending pipeline %s for 10 seconds' %p.uid
+        print('Suspending pipeline %s for 10 seconds' %p.uid)
         sleep(10)
         return True
 
     def func_on_true():
 
-        print 'Resuming pipeline %s' %p.uid
+        print('Resuming pipeline %s' %p.uid)
         p.resume()
 
     def func_on_false():

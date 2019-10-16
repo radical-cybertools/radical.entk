@@ -42,6 +42,6 @@ def test_diff_rmq():
     appman.resource_desc = res_dict
 
     p1 = create_pipeline()
-    print p1.uid, p1.stages[0].uid
+    print(p1.uid, p1.stages[0].uid)
     appman.workflow = [p1]
     appman.run()

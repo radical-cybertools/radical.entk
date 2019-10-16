@@ -14,7 +14,7 @@ import radical.utils as ru
 
 from ...exceptions import EnTKError, TypeError
 
-from resource_manager import Base_ResourceManager
+from .resource_manager import Base_ResourceManager
 
 
 # ------------------------------------------------------------------------------
@@ -47,20 +47,20 @@ class Base_TaskManager(object):
     def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname,
                        port, rts):
 
-        if not isinstance(sid, basestring):
-            raise TypeError(expected_type=basestring,
+        if not isinstance(sid, str):
+            raise TypeError(expected_type=str,
                             actual_type=type(sid))
 
         if not isinstance(pending_queue, list):
-            raise TypeError(expected_type=basestring,
+            raise TypeError(expected_type=str,
                             actual_type=type(pending_queue))
 
         if not isinstance(completed_queue, list):
-            raise TypeError(expected_type=basestring,
+            raise TypeError(expected_type=str,
                             actual_type=type(completed_queue))
 
-        if not isinstance(mq_hostname, basestring):
-            raise TypeError(expected_type=basestring,
+        if not isinstance(mq_hostname, str):
+            raise TypeError(expected_type=str,
                             actual_type=type(mq_hostname))
 
         if not isinstance(port, int):
@@ -201,7 +201,7 @@ class Base_TaskManager(object):
             self._sync_with_master(obj, obj_type, channel, queue)
 
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._log.exception('Transition %s to state %s failed, error: %s',
                                 obj.uid, new_state, ex)

@@ -170,13 +170,13 @@ class Stage(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in states._stage_state_values.keys():
+            if value in list(states._stage_state_values.keys()):
                 self._state = value
                 self._state_history.append(value)
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',
-                                 expected_value=states._stage_state_values.keys(),
+                                 expected_value=list(states._stage_state_values.keys()),
                                  actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
@@ -242,13 +242,13 @@ class Stage(object):
                 self._name = d['name']
 
         if 'state' in d:
-            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
-                if d['state'] in states._stage_state_values.keys():
+            if isinstance(d['state'], str) or isinstance(d['state'], str):
+                if d['state'] in list(states._stage_state_values.keys()):
                     self._state = d['state']
                 else:
                     raise ValueError(obj=self._uid,
                                      attribute='state',
-                                     expected_value=states._stage_state_values.keys(),
+                                     expected_value=list(states._stage_state_values.keys()),
                                      actual_value=value)
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
@@ -278,10 +278,10 @@ class Stage(object):
 
         :arguments: String
         """
-        if value not in states.state_numbers.keys():
+        if value not in list(states.state_numbers.keys()):
             raise ValueError(obj=self._uid,
                              attribute='set_tasks_state',
-                             expected_value=states.state_numbers.keys(),
+                             expected_value=list(states.state_numbers.keys()),
                              actual_value=value)
 
         for task in self._tasks:
@@ -300,7 +300,7 @@ class Stage(object):
 
             return True
 
-        except Exception, ex:
+        except Exception as ex:
             raise EnTKError(ex)
 
     @classmethod

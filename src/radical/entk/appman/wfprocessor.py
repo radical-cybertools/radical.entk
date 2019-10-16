@@ -581,7 +581,7 @@ class WFprocessor(object):
                         return True
             return False
 
-        except Exception, ex:
+        except Exception as ex:
             self._logger.exception(
                 'Could not check if workflow is incomplete, error:%s' % ex)
             raise

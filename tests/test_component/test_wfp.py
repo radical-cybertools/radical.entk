@@ -52,7 +52,7 @@ def test_wfp_initialization(s, i, b, l):
     assert wfp._wfp_process         is None
     assert wfp._workflow            == set([p])
 
-    if not isinstance(s, unicode):
+    if not isinstance(s, str):
         wfp = WFprocessor(sid=s,
                           workflow=set([p]),
                           pending_queue=l,

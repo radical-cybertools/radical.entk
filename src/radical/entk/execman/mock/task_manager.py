@@ -7,7 +7,7 @@ __license__   = "MIT"
 import os
 import json
 import pika
-import Queue
+import queue
 
 import threading       as mt
 import multiprocessing as mp
@@ -130,7 +130,7 @@ class TaskManager(Base_TaskManager):
             mq_channel.queue_declare(queue=self._hb_response_q)
 
             # Queue for communication between threads of this process
-            task_queue = Queue.Queue()
+            task_queue = queue.Queue()
 
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
@@ -227,7 +227,7 @@ class TaskManager(Base_TaskManager):
                 try:
                     body = task_queue.get(block=True, timeout=10)
 
-                except Queue.Empty:
+                except queue.Empty:
                     # Ignore, we don't always have new tasks to run
                     pass
 

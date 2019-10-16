@@ -88,13 +88,13 @@ def test_task_exceptions(s, l, i, b):
     for data in data_type:
 
         # special case due to backward compatibility
-        if not isinstance(data, basestring) and \
+        if not isinstance(data, str) and \
            not isinstance(data, list):
 
             with pytest.raises(ree.TypeError): t.executable = data
 
 
-        if not isinstance(data, basestring):
+        if not isinstance(data, str):
 
             with pytest.raises(ree.TypeError): t.name                 = data
             with pytest.raises(ree.TypeError): t.path                 = data
@@ -117,8 +117,8 @@ def test_task_exceptions(s, l, i, b):
             with pytest.raises(ree.TypeError): t.download_output_data = data
             with pytest.raises(ree.TypeError): t.move_output_data     = data
 
-        if not isinstance(data, basestring) and \
-           not isinstance(data, unicode):
+        if not isinstance(data, str) and \
+           not isinstance(data, str):
 
             with pytest.raises(ree.ValueError):
                 t.cpu_reqs = {'processes'          : 1,
@@ -191,7 +191,7 @@ def test_dict_to_task():
                         'thread_type'        : None}}
     t = Task(from_dict=d)
 
-    for k,v in d.iteritems():
+    for k,v in d.items():
         assert(t.__getattribute__(k) == v), '%s != %s' \
             % (t.__getattribute__(k), v)
 

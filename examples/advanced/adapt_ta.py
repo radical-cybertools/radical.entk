@@ -31,7 +31,7 @@ def generate_pipeline():
             t.arguments = [str(dur)]
 
     def func_on_false():
-        print 'Done'
+        print('Done')
 
     # Create a Pipeline object
     p = Pipeline()

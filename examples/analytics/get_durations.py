@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # First we look at the *event* model of our session.  The event model is
     # usually less stringent than the state model: not all events will always be
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     # We first filter our session to obtain only the task objects
     tasks = session.filter(etype='task', inplace=False)
-    print '#tasks   : %d' % len(tasks.get())
+    print('#tasks   : %d' % len(tasks.get()))
 
     # We use the 're.states.SCHEDULING' and 're.states.SUBMITTED' probes to find
     # the time taken by EnTK to create and submit all tasks for execution
@@ -52,7 +52,7 @@ if __name__ == '__main__':
                                     ru.STATE: re.states.SCHEDULING},
                                     {ru.EVENT: 'state',
                                     ru.STATE: re.states.SUBMITTED}])
-    print 'duration : %.2f' % duration
+    print('duration : %.2f' % duration)
 
     # We use the 're.states.SUBMITTED' and 're.states.COMPLETED' probes to find
     # the time taken by EnTK to execute all tasks
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                                     ru.STATE: re.states.SUBMITTED},
                                     {ru.EVENT: 'state',
                                     ru.STATE: re.states.COMPLETED}])
-    print 'duration : %.2f' % duration
+    print('duration : %.2f' % duration)
 
     # We use the 're.states.COMPLETED' and 're.states.DONE' probes to find
     # the time taken by EnTK to process all executed tasks
@@ -70,7 +70,7 @@ if __name__ == '__main__':
                                     ru.STATE: re.states.COMPLETED},
                                     {ru.EVENT: 'state',
                                     ru.STATE: re.states.DONE}])
-    print 'duration : %.2f' % duration
+    print('duration : %.2f' % duration)
 
     # Finally, we produce a list of the number of concurrent tasks between
     # states 're.states.SUBMITTED' and 're.states.COMPLETED' over the course
