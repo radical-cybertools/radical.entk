@@ -503,12 +503,12 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-            f = open('.%s.txt' % self._sid, 'w')
+          # f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 mq_channel.queue_declare(queue=q)
-                f.write(q + '\n')
-            f.close()
+          #     f.write(q + '\n')
+          # f.close()
 
             self._mqs_setup = True
 
