@@ -33,7 +33,7 @@ class TaskManager(Base_TaskManager):
                             finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
-        :rmq_conn_params:   (pika.connection.URLParameters) object of
+        :rmq_conn_params:   (pika.connection.ConnectionParameters) object of
                             parameters necessary to connect to RabbitMQ
 
     Currently, EnTK is configured to work with one pending queue and one

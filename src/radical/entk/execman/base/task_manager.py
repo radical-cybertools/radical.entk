@@ -33,7 +33,7 @@ class Base_TaskManager(object):
                             finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
-        :rmq_conn_params:   (pika.connection.URLParameters) object of
+        :rmq_conn_params:   (pika.connection.ConnectionParameters) object of
                             parameters necessary to connect to RabbitMQ
 
     Currently, EnTK is configured to work with one pending queue and one
@@ -63,8 +63,9 @@ class Base_TaskManager(object):
             raise TypeError(expected_type=Base_ResourceManager,
                             actual_type=type(rmgr))
 
-        if not isinstance(rmq_conn_params, pika.connection.URLParameters):
-            raise TypeError(expected_type=pika.connection.URLParameters,
+        if not isinstance(rmq_conn_params,
+                            pika.connection.ConnectionParameters):
+            raise TypeError(expected_type=pika.connection.ConnectionParameters,
                             actual_type=type(rmq_conn_params))
 
         self._sid             = sid

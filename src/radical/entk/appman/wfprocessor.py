@@ -33,8 +33,8 @@ class WFprocessor(object):
         :pending_queue:   (list) queues to hold pending tasks
         :completed_queue: (list) queues to hold completed tasks
         :resubmit_failed: (bool) True if failed tasks should be resubmitted
-        :rmq_conn_params: (pika.connection.URLParameters) object of parameters
-                          necessary to connect to RabbitMQ
+        :rmq_conn_params: (pika.connection.ConnectionParameters) object of
+                          parameters necessary to connect to RabbitMQ
     """
 
     # --------------------------------------------------------------------------

@@ -39,6 +39,8 @@ class AppManager(object):
         :config_path:     Url to config path to be read for AppManager
         :hostname:        host rabbitmq server is running
         :port:            port at which rabbitmq can be accessed
+        :username:        username to log in to RabbitMQ
+        :password:        password to log in to RabbitMQ
         :reattempts:      number of attempts to re-invoke any failed EnTK
                           components
         :resubmit_failed: resubmit failed tasks (True/False)
@@ -55,8 +57,6 @@ class AppManager(object):
                           True/False} when RTS is RP
         :name:            Name of the Application. It should be unique between
                           executions. (default is randomly assigned)
-        :rmq_url:         URL string to connect to RabbitMQ; its values will
-                          be overridden by :hostname: or :port:
     '''
 
     # --------------------------------------------------------------------------
@@ -65,6 +65,8 @@ class AppManager(object):
                  config_path=None,
                  hostname=None,
                  port=None,
+                 username=None,
+                 password=None,
                  reattempts=None,
                  resubmit_failed=None,
                  autoterminate=None,
@@ -72,8 +74,7 @@ class AppManager(object):
                  rts=None,
                  rmq_cleanup=None,
                  rts_config=None,
-                 name=None,
-                 rmq_url=None):
+                 name=None):
 
         # Create a session for each EnTK script execution
         if name:
@@ -83,9 +84,9 @@ class AppManager(object):
             self._name = str()
             self._sid  = ru.generate_id('re.session', ru.ID_PRIVATE)
 
-        self._read_config(config_path, hostname, port, reattempts,
-                          resubmit_failed, autoterminate, write_workflow,
-                          rts, rmq_cleanup, rts_config, rmq_url)
+        self._read_config(config_path, hostname, port, username, password,
+                          reattempts, resubmit_failed, autoterminate,
+                          write_workflow, rts, rmq_cleanup, rts_config)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
@@ -133,9 +134,9 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _read_config(self, config_path, hostname, port, reattempts,
-                     resubmit_failed, autoterminate, write_workflow,
-                     rts, rmq_cleanup, rts_config, rmq_url):
+    def _read_config(self, config_path, hostname, port, username, password,
+                     reattempts, resubmit_failed, autoterminate,
+                     write_workflow, rts, rmq_cleanup, rts_config):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -146,6 +147,10 @@ class AppManager(object):
             if val1 is not None: return val1
             else               : return val2
 
+        self._hostname         = _if(hostname,        config['hostname'])
+        self._port             = _if(port,            config['port'])
+        self._username         = _if(username,        config['username'])
+        self._password         = _if(password,        config['password'])
         self._reattempts       = _if(reattempts,      config['reattempts'])
         self._resubmit_failed  = _if(resubmit_failed, config['resubmit_failed'])
         self._autoterminate    = _if(autoterminate,   config['autoterminate'])
@@ -154,12 +159,11 @@ class AppManager(object):
         self._rts_config       = _if(rts_config,      config['rts_config'])
         self._rts              = _if(rts,             config['rts'])
 
-        self._rmq_conn_params = pika.connection.URLParameters(
-                                 _if(rmq_url,         config["rmq_url"]))
-        if hostname is not None:
-            self._rmq_conn_params.host = hostname
-        if port is not None:
-            self._rmq_conn_params.port = port
+        credentials = pika.PlainCredentials(self._username, self._password)
+        self._rmq_conn_params = pika.connection.ConnectionParameters(
+                                        host=self._hostname,
+                                        port=self._port,
+                                        credentials=credentials)
 
         self._num_pending_qs   = config['pending_qs']
         self._num_completed_qs = config['completed_qs']

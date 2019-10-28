@@ -10,6 +10,9 @@
     "pending_qs"      : 1,
     "completed_qs"    : 1,
     "rmq_cleanup"     : true,
-    "rmq_url"         : "amqp://guest:guest@localhost:5672/%2F"
+    "hostname"        : "localhost",
+    "port"            : 5672,
+    "username"        : "guest",
+    "password"        : "guest"
 }
 
