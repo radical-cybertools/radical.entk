@@ -13,7 +13,7 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT', 5672)
+port = int(os.environ.get('RMQ_PORT', 5672))
 
 if __name__ == '__main__':
 
