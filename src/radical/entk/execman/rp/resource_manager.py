@@ -222,7 +222,8 @@ class ResourceManager(Base_ResourceManager):
                 get_profiles = os.environ.get('RADICAL_PILOT_PROFILE', False)
                 cleanup      = self._rts_config.get('db_cleanup', False)
 
-                self._session.close(cleanup=cleanup, download=get_profiles)
+                if self._session:
+                    self._session.close(cleanup=cleanup, download=get_profiles)
                 self._session = None
                 self._prof.prof('rreq_canceled', uid=self._uid)
 

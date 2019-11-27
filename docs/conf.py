@@ -109,6 +109,8 @@ html_theme = 'armstrong'
 #
 html_theme_options = {"collapsiblesidebar" : "true"}
 
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'searchbox.html'] }
+
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ["_themes", ]
 

@@ -117,6 +117,7 @@ class AppManager(object):
         self._sync_thread     = None
         self._terminate_sync  = mt.Event()
         self._resubmit_failed = False
+        self._port            = int(self._port)
 
         # Setup rabbitmq queues
         self._setup_mqs()
