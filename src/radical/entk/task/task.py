@@ -880,7 +880,7 @@ class Task(object):
 
         # for all other attributes, we use the type and value checks in the
         # class setters
-        for k, v in d.iteritems():
+        for k, v in d.items():
             if k not in ['uid', 'name', 'state']:
                 if v is not None:
                     setattr(self, k, v)
