@@ -88,7 +88,7 @@ class AppManager(object):
         # namespace
 
         self._uid    = ru.generate_id('appmanager.%(item_counter)04d',
-                                      ru.ID_CUSTOM, namespace=self._sid)
+                                      ru.ID_CUSTOM, ns=self._sid)
 
         path = os.getcwd() + '/' + self._sid
         name = 'radical.entk.%s' % self._uid

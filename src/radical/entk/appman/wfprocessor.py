@@ -62,7 +62,7 @@ class WFprocessor(object):
         # Create logger and profiler at their specific locations using the sid
         self._path = os.getcwd() + '/' + self._sid
         self._uid  = ru.generate_id('wfprocessor.%(item_counter)04d',
-                                    ru.ID_CUSTOM, namespace=self._sid)
+                                    ru.ID_CUSTOM, ns=self._sid)
 
         name = 'radical.entk.%s' % self._uid
         self._logger = ru.Logger  (name, path=self._path)
