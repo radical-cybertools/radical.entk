@@ -379,8 +379,9 @@ class AppManager(object):
             # Run workflow -- this call is blocking till all tasks of the
             # workflow are executed or an error/exception is encountered
             self._run_workflow()
-
+            self._logger.info('Workflow execution finished.')
             if self._autoterminate:
+                self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
                 self.terminate()
 
 

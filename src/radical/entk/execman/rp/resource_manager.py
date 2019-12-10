@@ -217,7 +217,9 @@ class ResourceManager(Base_ResourceManager):
             if self._pilot:
 
                 self._prof.prof('rreq_cancel', uid=self._uid)
+                self._log.debug('Terminating pilot')
                 self._pilot.cancel()
+                self._log.debug('Pilot terminated')
 
                 get_profiles = os.environ.get('RADICAL_PILOT_PROFILE', False)
                 cleanup      = self._rts_config.get('db_cleanup', False)

@@ -403,15 +403,15 @@ class Base_TaskManager(object):
         """
 
         try:
-
             if self._tmgr_process:
-
+                self._log.debug('Trying to terminate task manager.')
                 if not self._tmgr_terminate.is_set():
                     self._tmgr_terminate.set()
-
+                self._log.debug('TMGR terminate is set %s' % self._tmgr_terminate.is_set())
                 if self.check_manager():
+                    self._log.debug('TMGR process is alive')
                     self._tmgr_process.join()
-
+                self._log.debug('TMGR process joined')
                 self._tmgr_process = None
 
                 self._log.info('Task manager process closed')

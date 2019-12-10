@@ -181,7 +181,7 @@ class TaskManager(Base_TaskManager):
                 except Exception as e:
                     self._log.exception('Error in task execution: %s', e)
                     raise
-
+            self._log.debug('Exited TMGR main loop')
 
         except KeyboardInterrupt:
 
@@ -323,7 +323,7 @@ class TaskManager(Base_TaskManager):
                     mq_connection.close()
 
                 umgr.submit_units(bulk_cuds)
-
+            self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
