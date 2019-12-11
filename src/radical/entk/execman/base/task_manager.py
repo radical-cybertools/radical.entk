@@ -411,7 +411,7 @@ class Base_TaskManager(object):
                 self._log.debug('TMGR terminate is set %s' % self._tmgr_terminate.is_set())
                 if self.check_manager():
                     self._log.debug('TMGR process is alive')
-                    self._tmgr_process.join()
+                    self._tmgr_process.join(30)
                 self._log.debug('TMGR process joined')
                 self._tmgr_process = None
 
