@@ -202,8 +202,12 @@ class TaskManager(Base_TaskManager):
             if self._rts_runner:
                 self._rts_runner.join()
 
+            self._log.debug('TMGR RTS Runner joined')
+
             mq_connection.close()
+            self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
+            self._log.debug('TMGR profile closed')
 
 
     # --------------------------------------------------------------------------

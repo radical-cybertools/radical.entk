@@ -88,6 +88,7 @@ class Base_TaskManager(object):
         name = 'radical.entk.%s' % self._uid
         self._log  = ru.Logger  (name, path=self._path)
         self._prof = ru.Profiler(name, path=self._path)
+        self._dh = ru.DebugHelper(name=name)
 
         # Thread should run till terminate condtion is encountered
         mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
