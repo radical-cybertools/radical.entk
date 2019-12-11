@@ -336,6 +336,9 @@ class TaskManager(Base_TaskManager):
             self._log.exception('%s failed with %s', self._uid, e)
             raise EnTKError(e)
 
+        finally:
+            umgr.close()
+
 
     # --------------------------------------------------------------------------
     #
