@@ -893,8 +893,8 @@ class Task(object):
         Purpose: Assign uid to the current object based on the session ID passed
         '''
 
-        self.uid = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM,
-                                  ns=sid)
+        self.uid = ru.generate_id('task.%(item_counter)04d',
+                                  ru.ID_CUSTOM, ns=sid)
 
 
     # --------------------------------------------------------------------------
