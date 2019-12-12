@@ -32,9 +32,9 @@ class WFprocessor(object):
         :workflow:        (set) REFERENCE of the AppManager's workflow
         :pending_queue:   (list) queues to hold pending tasks
         :completed_queue: (list) queues to hold completed tasks
-        :mq_hostname:     (str) hostname where the RabbitMQ is alive
-        :port:            (int) port at which RabbitMQ can be accessed
         :resubmit_failed: (bool) True if failed tasks should be resubmitted
+        :rmq_conn_params: (pika.connection.ConnectionParameters) object of
+                          parameters necessary to connect to RabbitMQ
     """
 
     # --------------------------------------------------------------------------
@@ -44,17 +44,15 @@ class WFprocessor(object):
                  workflow,
                  pending_queue,
                  completed_queue,
-                 mq_hostname,
-                 port,
-                 resubmit_failed):
+                 resubmit_failed,
+                 rmq_conn_params):
 
         # Mandatory arguments
         self._sid             = sid
         self._pending_queue   = pending_queue
         self._completed_queue = completed_queue
-        self._hostname        = mq_hostname
-        self._port            = port
         self._resubmit_failed = resubmit_failed
+        self._rmq_conn_params = rmq_conn_params
 
         # Assign validated workflow
         self._workflow = workflow
@@ -62,7 +60,7 @@ class WFprocessor(object):
         # Create logger and profiler at their specific locations using the sid
         self._path = os.getcwd() + '/' + self._sid
         self._uid  = ru.generate_id('wfprocessor.%(item_counter)04d',
-                                    ru.ID_CUSTOM, namespace=self._sid)
+                                    ru.ID_CUSTOM, ns=self._sid)
 
         name = 'radical.entk.%s' % self._uid
         self._logger = ru.Logger  (name, path=self._path)
@@ -200,10 +198,7 @@ class WFprocessor(object):
         wl_json = json.dumps([task.to_dict() for task in workload])
 
         # Acquire a connection+channel to the rmq server
-        mq_connection = pika.BlockingConnection(
-                            pika.ConnectionParameters(
-                                host=self._hostname,
-                                port=self._port))
+        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
         mq_channel = mq_connection.channel()
 
         # Send the workload to the pending queue
@@ -356,11 +351,7 @@ class WFprocessor(object):
                     # Check if the current stage has a post-exec
                     # that needs to be executed
                     if stage.post_exec:
-                        self._execute_post_exec(stage)
-
-                    # Increment current stage pointer of the
-                    # pipeline
-                    pipe._increment_stage()
+                        self._execute_post_exec(pipe, stage)
 
                     # If pipeline has completed, make state
                     # change
@@ -375,22 +366,53 @@ class WFprocessor(object):
 
     # --------------------------------------------------------------------------
     #
-    def _execute_post_exec(self, stage):
+    def _execute_post_exec(self, pipe, stage):
 
         try:
-
             self._logger.info('Executing post-exec for stage %s' % stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
 
-            stage.post_exec()
+            resumed_pipe_uids = stage.post_exec()
 
             self._logger.info('Post-exec executed for stage %s' % stage.uid)
             self._prof.prof('post_exec_stop', uid=self._uid)
 
+
         except Exception:
-            self._logger.exception('Execution failed in post_exec \
-                                    of stage %s' % stage.uid)
+            self._logger.exception('post_exec of stage %s failed' % stage.uid)
+            self._prof.prof('post_exec_fail', uid=self._uid)
             raise
+
+        if resumed_pipe_uids:
+
+            for r_pipe in self._workflow:
+
+                if r_pipe == pipe:
+                    continue
+
+                with r_pipe.lock:
+
+                    if r_pipe.uid in resumed_pipe_uids:
+
+                        # Resumed pipelines already have the correct state,
+                        # they just need to be synced with the AppMgr.
+                        r_pipe._increment_stage()
+
+                        if r_pipe.completed:
+                            self._advance(r_pipe, 'Pipeline', states.DONE)
+
+                        else:
+                            self._advance(r_pipe, 'Pipeline', r_pipe.state)
+
+
+        if pipe.state == states.SUSPENDED:
+            self._advance(pipe, 'Pipeline', states.SUSPENDED)
+
+        else:
+            pipe._increment_stage()
+
+            if pipe.completed:
+                self._advance(pipe, 'Pipeline', states.DONE)
 
 
     # --------------------------------------------------------------------------
@@ -408,10 +430,7 @@ class WFprocessor(object):
             self._logger.info('Dequeue thread started')
 
             # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(
-                                pika.ConnectionParameters(
-                                    host=self._hostname,
-                                    port=self._port))
+            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
             mq_channel = mq_connection.channel()
 
             last = time.time()
