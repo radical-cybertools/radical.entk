@@ -26,11 +26,11 @@ def resolve_placeholders(path, placeholders):
 
     try:
 
-        if isinstance(path, unicode):
+        if isinstance(path, str):
             path = str(path)
 
-        if not isinstance(path, basestring):
-            raise ree.TypeError(expected_type=basestring,
+        if not isinstance(path, str):
+            raise ree.TypeError(expected_type=str,
                                 actual_type=type(path))
 
         if '$' not in path:
@@ -94,7 +94,7 @@ def resolve_placeholders(path, placeholders):
 
         return resolved
 
-    except Exception, ex:
+    except Exception as ex:
 
         logger.exception('Failed to resolve placeholder %s, error: %s' %(path, ex))
         raise
@@ -109,7 +109,7 @@ def resolve_arguments(args, placeholders):
         # If entry starts with $, it has a placeholder
         # and needs to be resolved based after a lookup in
         # the placeholders
-        if not isinstance(entry, basestring) or \
+        if not isinstance(entry, str) or \
            not entry.startswith('$'):
 
             resolved_args.append(entry)

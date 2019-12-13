@@ -7,7 +7,7 @@ __license__   = "MIT"
 import os
 import json
 import pika
-import Queue
+import queue
 
 import threading       as mt
 import multiprocessing as mp
@@ -149,7 +149,7 @@ class TaskManager(Base_TaskManager):
             mq_channel.queue_declare(queue=self._hb_response_q)
 
             # Queue for communication between threads of this process
-            task_queue = Queue.Queue()
+            task_queue = queue.Queue()
 
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
@@ -180,7 +180,7 @@ class TaskManager(Base_TaskManager):
                 except Exception as e:
                     self._log.exception('Error in task execution: %s', e)
                     raise
-
+            self._log.debug('Exited TMGR main loop')
 
         except KeyboardInterrupt:
 
@@ -201,8 +201,12 @@ class TaskManager(Base_TaskManager):
             if self._rts_runner:
                 self._rts_runner.join()
 
+            self._log.debug('TMGR RTS Runner joined')
+
             mq_connection.close()
+            self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
+            self._log.debug('TMGR profile closed')
 
 
     # --------------------------------------------------------------------------
@@ -290,7 +294,7 @@ class TaskManager(Base_TaskManager):
                 try:
                     body = task_queue.get(block=True, timeout=10)
 
-                except Queue.Empty:
+                except queue.Empty:
                     # Ignore, we don't always have new tasks to run
                     pass
 
@@ -318,7 +322,7 @@ class TaskManager(Base_TaskManager):
                     mq_connection.close()
 
                 umgr.submit_units(bulk_cuds)
-
+            self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
@@ -326,6 +330,9 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
             raise EnTKError(e)
+
+        finally:
+            umgr.close()
 
 
     # --------------------------------------------------------------------------

@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 
 import os
 import sys
@@ -9,11 +10,11 @@ import radical.entk as re
 
 # ------------------------------------------------------------------------------
 #
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port     = int(os.environ.get('RMQ_PORT', 5672))
+hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
+port     = int(os.environ.get('RMQ_PORT',      5672))
 
-pipes = list()
-cnt   = 0
+pipes    = list()
+cnt      = 0
 
 
 # ------------------------------------------------------------------------------
@@ -85,24 +86,19 @@ if __name__ == '__main__':
     # Assign the workflow as a set of Pipelines to the Application Manager
     appman.workflow = pipes
 
-    done = False
-
     def tmp():
-        while not done:
-            for p in pipes:
-                print p.state,
-            print
+        while True:
+            print([p.state for p in pipes])
             time.sleep(1)
+
     import threading as mt
     t = mt.Thread(target=tmp)
+    t.daemon = True
     t.start()
 
     # Run the Application Manager
     appman.run()
     appman.terminate()
-
-    done = True
-    t.join()
 
 
 # ------------------------------------------------------------------------------

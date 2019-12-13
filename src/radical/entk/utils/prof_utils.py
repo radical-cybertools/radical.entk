@@ -35,7 +35,7 @@ def get_hostmap_deprecated(profiles):
     '''
 
     hostmap = dict()  # map pilot IDs to host names
-    for pname, prof in profiles.iteritems():
+    for pname, prof in profiles.items():
 
         if not prof:
             continue
@@ -93,7 +93,7 @@ def get_session_profile(sid, src=None):
     except Exception as ex:
 
         # Push the exception raised by child functions
-        print traceback.format_exc()
+        print(traceback.format_exc())
         raise EnTKError('Error: %s' % ex)
 
 

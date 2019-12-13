@@ -31,7 +31,7 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
         t = Task()
         t.state      = states.SCHEDULING
         t.executable = '/bin/echo'
-        print t.to_dict()
+        print(t.to_dict())
         tasks.append(t.to_dict())
 
     tasks_as_json = json.dumps(tasks)

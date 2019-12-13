@@ -14,7 +14,7 @@ import radical.utils as ru
 
 from ...exceptions import EnTKError, TypeError
 
-from resource_manager import Base_ResourceManager
+from .resource_manager import Base_ResourceManager
 
 
 # ------------------------------------------------------------------------------
@@ -47,16 +47,16 @@ class Base_TaskManager(object):
     def __init__(self, sid, pending_queue, completed_queue, rmgr,
                        rmq_conn_params, rts):
 
-        if not isinstance(sid, basestring):
-            raise TypeError(expected_type=basestring,
+        if not isinstance(sid, str):
+            raise TypeError(expected_type=str,
                             actual_type=type(sid))
 
         if not isinstance(pending_queue, list):
-            raise TypeError(expected_type=basestring,
+            raise TypeError(expected_type=str,
                             actual_type=type(pending_queue))
 
         if not isinstance(completed_queue, list):
-            raise TypeError(expected_type=basestring,
+            raise TypeError(expected_type=str,
                             actual_type=type(completed_queue))
 
         if not isinstance(rmgr, Base_ResourceManager):
@@ -77,12 +77,13 @@ class Base_TaskManager(object):
 
         # Utility parameters
         self._uid  = ru.generate_id('task_manager.%(item_counter)04d',
-                                    ru.ID_CUSTOM, namespace=self._sid)
+                                    ru.ID_CUSTOM, ns=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
         name = 'radical.entk.%s' % self._uid
         self._log  = ru.Logger  (name, path=self._path)
         self._prof = ru.Profiler(name, path=self._path)
+        self._dh = ru.DebugHelper(name=name)
 
         # Thread should run till terminate condtion is encountered
         mq_connection = pika.BlockingConnection(rmq_conn_params)
@@ -195,7 +196,7 @@ class Base_TaskManager(object):
             self._sync_with_master(obj, obj_type, channel, queue)
 
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._log.exception('Transition %s to state %s failed, error: %s',
                                 obj.uid, new_state, ex)
@@ -395,15 +396,15 @@ class Base_TaskManager(object):
         """
 
         try:
-
             if self._tmgr_process:
-
+                self._log.debug('Trying to terminate task manager.')
                 if not self._tmgr_terminate.is_set():
                     self._tmgr_terminate.set()
-
+                self._log.debug('TMGR terminate is set %s' % self._tmgr_terminate.is_set())
                 if self.check_manager():
-                    self._tmgr_process.join()
-
+                    self._log.debug('TMGR process is alive')
+                    self._tmgr_process.join(30)
+                self._log.debug('TMGR process joined')
                 self._tmgr_process = None
 
                 self._log.info('Task manager process closed')

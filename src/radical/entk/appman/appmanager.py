@@ -92,7 +92,7 @@ class AppManager(object):
         # namespace
 
         self._uid    = ru.generate_id('appmanager.%(item_counter)04d',
-                                      ru.ID_CUSTOM, namespace=self._sid)
+                                      ru.ID_CUSTOM, ns=self._sid)
 
         path = os.getcwd() + '/' + self._sid
         name = 'radical.entk.%s' % self._uid
@@ -391,8 +391,9 @@ class AppManager(object):
             # Run workflow -- this call is blocking till all tasks of the
             # workflow are executed or an error/exception is encountered
             self._run_workflow()
-
+            self._logger.info('Workflow execution finished.')
             if self._autoterminate:
+                self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
                 self.terminate()
 
 
@@ -405,7 +406,7 @@ class AppManager(object):
             raise KeyboardInterrupt
 
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._logger.exception('Error in AppManager: %s' % ex)
             self.terminate()
@@ -514,19 +515,19 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-            f = open('.%s.txt' % self._sid, 'w')
+          # f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 mq_channel.queue_declare(queue=q)
-                f.write(q + '\n')
-            f.close()
+          #     f.write(q + '\n')
+          # f.close()
 
             self._mqs_setup = True
 
             self._logger.debug('All exchanges and queues are setup')
             self._prof.prof('mqs_setup_stop', uid=self._uid)
 
-        except Exception, ex:
+        except Exception as ex:
 
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
             raise

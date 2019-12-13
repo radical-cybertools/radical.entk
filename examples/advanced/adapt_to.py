@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os, sys
 from random import shuffle
@@ -30,7 +32,7 @@ def generate_pipeline():
         shuffle(p.stages[CUR_NEW_STAGE:])
 
     def func_on_false():
-        print 'Done'
+        print('Done')
 
     # Create a Pipeline object
     p = Pipeline()

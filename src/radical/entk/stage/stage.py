@@ -128,13 +128,13 @@ class Stage(object):
         is evaluated to produce a boolean result. Function func_2 is executed
         if the result is True and func_3 is executed if the result is False.
         Following is the expected structure:
-        
+
         self._post_exec = {
                             |  'condition' : func_1,
                             |  'on_true'   : func_2,
-                            |  'on_false'  : func_3                            
+                            |  'on_false'  : func_3
                         }
-        
+
         '''
         return self._post_exec
 
@@ -170,13 +170,13 @@ class Stage(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in states._stage_state_values.keys():
+            if value in list(states._stage_state_values.keys()):
                 self._state = value
                 self._state_history.append(value)
             else:
                 raise ValueError(obj=self._uid,
                                  attribute='state',
-                                 expected_value=states._stage_state_values.keys(),
+                                 expected_value=list(states._stage_state_values.keys()),
                                  actual_value=value)
         else:
             raise TypeError(expected_type=str, actual_type=type(value))
@@ -190,9 +190,9 @@ class Stage(object):
                             expected_type='callable',
                             actual_type=type(value)
                             )
-            
+
         self._post_exec = value
-            
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -242,13 +242,13 @@ class Stage(object):
                 self._name = d['name']
 
         if 'state' in d:
-            if isinstance(d['state'], str) or isinstance(d['state'], unicode):
-                if d['state'] in states._stage_state_values.keys():
+            if isinstance(d['state'], str) or isinstance(d['state'], str):
+                if d['state'] in list(states._stage_state_values.keys()):
                     self._state = d['state']
                 else:
                     raise ValueError(obj=self._uid,
                                      attribute='state',
-                                     expected_value=states._stage_state_values.keys(),
+                                     expected_value=list(states._stage_state_values.keys()),
                                      actual_value=value)
             else:
                 raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
@@ -278,10 +278,10 @@ class Stage(object):
 
         :arguments: String
         """
-        if value not in states.state_numbers.keys():
+        if value not in list(states.state_numbers.keys()):
             raise ValueError(obj=self._uid,
                              attribute='set_tasks_state',
-                             expected_value=states.state_numbers.keys(),
+                             expected_value=list(states.state_numbers.keys()),
                              actual_value=value)
 
         for task in self._tasks:
@@ -300,7 +300,7 @@ class Stage(object):
 
             return True
 
-        except Exception, ex:
+        except Exception as ex:
             raise EnTKError(ex)
 
     @classmethod
@@ -328,7 +328,7 @@ class Stage(object):
 
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also 
+        Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also
         validate that the current Stage contains Tasks
         """
 
@@ -352,7 +352,8 @@ class Stage(object):
         Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
         current object
         """
-        self._uid = ru.generate_id('stage.%(item_counter)04d', ru.ID_CUSTOM, namespace=sid)
+        self._uid = ru.generate_id('stage.%(item_counter)04d',
+                                   ru.ID_CUSTOM, ns=sid)
         for task in self._tasks:
             task._assign_uid(sid)
 
@@ -360,7 +361,7 @@ class Stage(object):
 
     def _pass_uid(self):
         """
-        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage. 
+        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage.
 
         :arguments: set of Tasks (optional)
         :return: list of updated Tasks

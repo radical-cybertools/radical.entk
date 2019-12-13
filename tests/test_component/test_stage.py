@@ -54,7 +54,7 @@ def test_stage_exceptions(t, l, i, b, se):
 
     for data in data_type:
 
-        print 'Using: %s, %s' % (data, type(data))
+        print('Using: %s, %s' % (data, type(data)))
 
         if not isinstance(data, str):
             with pytest.raises(TypeError):
@@ -118,7 +118,7 @@ def test_stage_state_assignment(t, l, i, b):
         with pytest.raises(ValueError):
             s.state = t
 
-    for val in states._stage_state_values.keys():
+    for val in list(states._stage_state_values.keys()):
         s.state = val
 
 

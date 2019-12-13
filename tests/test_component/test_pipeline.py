@@ -96,7 +96,7 @@ def test_pipeline_state_assignment(t, l, i, b):
         with pytest.raises(ValueError):
             p.state = t
 
-    for val in states._pipeline_state_values.keys():
+    for val in list(states._pipeline_state_values.keys()):
         p.state = val
 
 
