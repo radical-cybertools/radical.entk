@@ -647,6 +647,7 @@ class AppManager(object):
         while active_pipe_count and \
               incomplete        and \
               state not in final:
+            state      = self._rmgr.get_resource_allocation_state()
 
             for pipe in self._workflow:
 
