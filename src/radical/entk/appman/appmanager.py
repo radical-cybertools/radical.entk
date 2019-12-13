@@ -648,6 +648,8 @@ class AppManager(object):
               incomplete        and \
               state not in final:
 
+            state = self._rmgr.get_resource_allocation_state()
+
             for pipe in self._workflow:
 
                 with pipe.lock:
