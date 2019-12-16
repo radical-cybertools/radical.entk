@@ -210,7 +210,9 @@ class ResourceManager(Base_ResourceManager):
             if self._pilot:
 
                 self._prof.prof('rreq_cancel', uid=self._uid)
+                self._logger.debug('Terminating pilot')
                 self._pilot.cancel()
+                self._logger.debug('Pilot terminated')
 
                 # once the workflow is completed, fetch output data
                 self._logger.debug('=== stage output: %s', self._outputs)

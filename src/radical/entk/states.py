@@ -44,8 +44,8 @@ _pipeline_state_values = {
 }
 
 _pipeline_state_inv = {}
-for k, v in _pipeline_state_values.iteritems():
-    if v in _pipeline_state_inv.keys():
+for k, v in list(_pipeline_state_values.items()):
+    if v in list(_pipeline_state_inv.keys()):
         if not isinstance(_pipeline_state_inv[v], list):
             _pipeline_state_inv[v] = [_pipeline_state_inv[v]]
         _pipeline_state_inv[v].append(k)
@@ -63,8 +63,8 @@ _stage_state_values = {
 }
 
 _stage_state_inv = {}
-for k, v in _stage_state_values.iteritems():
-    if v in _stage_state_inv.keys():
+for k, v in list(_stage_state_values.items()):
+    if v in list(_stage_state_inv.keys()):
         if not isinstance(_stage_state_inv[v], list):
             _stage_state_inv[v] = [_stage_state_inv[v]]
         _stage_state_inv[v].append(k)
@@ -84,8 +84,8 @@ _task_state_values = {
 }
 
 _task_state_inv = {}
-for k, v in _task_state_values.iteritems():
-    if v in _task_state_inv.keys():
+for k, v in list(_task_state_values.items()):
+    if v in list(_task_state_inv.keys()):
         if not isinstance(_task_state_inv[v], list):
             _task_state_inv[v] = [_task_state_inv[v]]
         _task_state_inv[v].append(k)

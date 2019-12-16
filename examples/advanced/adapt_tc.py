@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os, sys
 
@@ -43,7 +45,7 @@ def generate_pipeline():
         p.add_stages(s)
 
     def func_on_false():
-        print 'Done'
+        print('Done')
 
     # Create a Pipeline object
     p = Pipeline()

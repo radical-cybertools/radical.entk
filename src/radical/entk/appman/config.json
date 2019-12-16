@@ -2,6 +2,8 @@
 {
     "hostname"        : "localhost",
     "port"            : 5672,
+    "username"        : "guest",
+    "password"        : "guest",
     "reattempts"      : 3,
     "resubmit_failed" : false,
     "autoterminate"   : true,

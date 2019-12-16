@@ -54,7 +54,7 @@ class Base_ResourceManager(object):
 
         # Utility parameters
         self._uid = ru.generate_id('resource_manager.%(item_counter)04d',
-                                   ru.ID_CUSTOM, namespace=self._sid)
+                                   ru.ID_CUSTOM, ns=self._sid)
         self._path = os.getcwd() + '/' + self._sid
 
         name = 'radical.entk.%s' % self._uid
@@ -195,8 +195,8 @@ class Base_ResourceManager(object):
                 raise MissingError(obj='resource description',
                                    missing_attribute=key)
 
-        if not isinstance(self._resource_desc['resource'], basestring):
-            raise TypeError(expected_type=basestring,
+        if not isinstance(self._resource_desc['resource'], str):
+            raise TypeError(expected_type=str,
                             actual_type=type(self._resource_desc['resource']))
 
         if not isinstance(self._resource_desc['walltime'], int):
@@ -213,18 +213,18 @@ class Base_ResourceManager(object):
                                actual_type=type(self._resource_desc['gpus']))
 
         if 'project' in self._resource_desc:
-            if  not isinstance(self._resource_desc['project'], basestring):
-                raise TypeError(expected_type=basestring,
+            if  not isinstance(self._resource_desc['project'], str):
+                raise TypeError(expected_type=str,
                               actual_type=type(self._resource_desc['project']))
 
         if 'access_schema' in self._resource_desc:
-            if not isinstance(self._resource_desc['access_schema'], basestring):
-                raise TypeError(expected_type=basestring,
+            if not isinstance(self._resource_desc['access_schema'], str):
+                raise TypeError(expected_type=str,
                          actual_type=type(self._resource_desc['access_schema']))
 
         if 'queue' in self._resource_desc:
-            if not isinstance(self._resource_desc['queue'], basestring):
-                raise TypeError(expected_type=basestring,
+            if not isinstance(self._resource_desc['queue'], str):
+                raise TypeError(expected_type=str,
                                 actual_type=type(self._resource_desc['queue']))
 
         if not isinstance(self._rts_config, dict):

@@ -7,7 +7,7 @@ __license__   = "MIT"
 import os
 import json
 import pika
-import Queue
+import queue
 
 import threading       as mt
 import multiprocessing as mp
@@ -38,8 +38,8 @@ class TaskManager(Base_TaskManager):
                             finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
-        :mq_hostname:       (str) Name of the host where RabbitMQ is running
-        :port:              (int) Port at which rabbitMQ can be accessed
+        :rmq_conn_params:   (pika.connection.ConnectionParameters) object of
+                            parameters necessary to connect to RabbitMQ
 
     Currently, EnTK is configured to work with one pending queue and one
     completed queue. In the future, the number of queues can be varied for
@@ -49,11 +49,11 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, sid, pending_queue, completed_queue, rmgr, mq_hostname,
-                       port):
+    def __init__(self, sid, pending_queue, completed_queue, rmgr,
+                       rmq_conn_params):
 
         super(TaskManager, self).__init__(sid, pending_queue, completed_queue,
-                                          rmgr, mq_hostname, port,
+                                          rmgr, rmq_conn_params,
                                           rts='radical.pilot')
         self._umgr       = None
         self._rts_runner = None
@@ -66,8 +66,8 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, umgr, rmgr, mq_hostname, port, pending_queue,
-                    completed_queue):
+    def _tmgr(self, uid, umgr, rmgr, pending_queue, completed_queue,
+                    rmq_conn_params):
         """
         **Purpose**: This method has 3 purposes: Respond to a heartbeat thread
                      indicating the live-ness of the RTS, receive tasks from the
@@ -141,8 +141,7 @@ class TaskManager(Base_TaskManager):
             self._log.info('Task Manager process started')
 
             # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=mq_hostname, port=port))
+            mq_connection = pika.BlockingConnection(rmq_conn_params)
             mq_channel = mq_connection.channel()
 
             # Make sure the heartbeat response queue is empty
@@ -150,12 +149,12 @@ class TaskManager(Base_TaskManager):
             mq_channel.queue_declare(queue=self._hb_response_q)
 
             # Queue for communication between threads of this process
-            task_queue = Queue.Queue()
+            task_queue = queue.Queue()
 
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
-                                         args=(task_queue, rmgr, mq_hostname,
-                                               port))
+                                         args=(task_queue, rmgr,
+                                               rmq_conn_params))
             self._rts_runner.start()
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
@@ -181,7 +180,7 @@ class TaskManager(Base_TaskManager):
                 except Exception as e:
                     self._log.exception('Error in task execution: %s', e)
                     raise
-
+            self._log.debug('Exited TMGR main loop')
 
         except KeyboardInterrupt:
 
@@ -202,13 +201,17 @@ class TaskManager(Base_TaskManager):
             if self._rts_runner:
                 self._rts_runner.join()
 
+            self._log.debug('TMGR RTS Runner joined')
+
             mq_connection.close()
+            self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
+            self._log.debug('TMGR profile closed')
 
 
     # --------------------------------------------------------------------------
     #
-    def _process_tasks(self, task_queue, rmgr, mq_hostname, port):
+    def _process_tasks(self, task_queue, rmgr, rmq_conn_params):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
                      invokes this function. This function receives tasks from
@@ -244,9 +247,7 @@ class TaskManager(Base_TaskManager):
                 if unit.state in rp.FINAL:
 
                     # Acquire a connection+channel to the rmq server
-                    mq_connection = pika.BlockingConnection(
-                                        pika.ConnectionParameters(
-                                            host=mq_hostname, port=port))
+                    mq_connection = pika.BlockingConnection(rmq_conn_params)
                     mq_channel = mq_connection.channel()
 
                     task = None
@@ -293,7 +294,7 @@ class TaskManager(Base_TaskManager):
                 try:
                     body = task_queue.get(block=True, timeout=10)
 
-                except Queue.Empty:
+                except queue.Empty:
                     # Ignore, we don't always have new tasks to run
                     pass
 
@@ -313,9 +314,7 @@ class TaskManager(Base_TaskManager):
                     bulk_cuds.append(create_cud_from_task(
                                             task, placeholders, self._prof))
 
-                    mq_connection = pika.BlockingConnection(
-                                        pika.ConnectionParameters(
-                                            host=mq_hostname, port=port))
+                    mq_connection = pika.BlockingConnection(rmq_conn_params)
                     mq_channel = mq_connection.channel()
 
                     self._advance(task, 'Task', states.SUBMITTING,
@@ -323,7 +322,7 @@ class TaskManager(Base_TaskManager):
                     mq_connection.close()
 
                 umgr.submit_units(bulk_cuds)
-
+            self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
@@ -331,6 +330,9 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
             raise EnTKError(e)
+
+        finally:
+            umgr.close()
 
 
     # --------------------------------------------------------------------------
@@ -357,10 +359,9 @@ class TaskManager(Base_TaskManager):
                                             args=(self._uid,
                                                   self._umgr,
                                                   self._rmgr,
-                                                  self._hostname,
-                                                  self._port,
                                                   self._pending_queue,
-                                                  self._completed_queue)
+                                                  self._completed_queue,
+                                                  self._rmq_conn_params)
                                             )
 
             self._log.info('Starting task manager process')
