@@ -150,7 +150,6 @@ class ResourceManager(Base_ResourceManager):
 
             self._pmgr.register_callback(_pilot_state_cb)
 
-            self._logger.debug('=== use outputs: %s', self._outputs)
             cleanup = self._rts_config.get('sandbox_cleanup')
             pd_init = {'resource'      : self._resource,
                        'runtime'       : self._walltime,
@@ -215,11 +214,8 @@ class ResourceManager(Base_ResourceManager):
                 self._logger.debug('Pilot terminated')
 
                 # once the workflow is completed, fetch output data
-                self._logger.debug('=== stage output: %s', self._outputs)
                 if self._outputs:
-                    self._logger.debug('=== stage output: yes')
                     self._pilot.stage_out()
-                    self._logger.debug('=== stage output: done')
 
                 get_profiles = os.environ.get('RADICAL_PILOT_PROFILE', False)
                 cleanup      = self._rts_config.get('db_cleanup', False)

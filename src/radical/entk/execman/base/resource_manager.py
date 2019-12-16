@@ -150,7 +150,6 @@ class Base_ResourceManager(object):
     @shared_data.setter
     def outputs(self, data):
 
-        self._logger.debug('=== set outputs: %s', data)
         self._outputs = data
 
 

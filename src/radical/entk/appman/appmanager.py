@@ -297,7 +297,6 @@ class AppManager(object):
             self._logger.error('Could not validate resource description')
             raise ree.EnTKError('Could not validate resource description')
 
-        self._logger.debug('=== set outputs 2: %s', self._outputs)
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
         self._rmgr.outputs     = self._outputs
