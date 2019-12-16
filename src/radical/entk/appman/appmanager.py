@@ -337,8 +337,8 @@ class AppManager(object):
             data = [data]
 
         for value in data:
-            if not isinstance(value, basestring):
-                raise ree.TypeError(expected_type=basestring,
+            if not isinstance(value, str):
+                raise ree.TypeError(expected_type=str,
                                     actual_type=type(value))
 
         if self._rmgr:
@@ -354,8 +354,8 @@ class AppManager(object):
             data = [data]
 
         for value in data:
-            if not isinstance(value, basestring):
-                raise ree.TypeError(expected_type=basestring,
+            if not isinstance(value, str):
+                raise ree.TypeError(expected_type=str,
                                     actual_type=type(value))
 
         if self._rmgr:
