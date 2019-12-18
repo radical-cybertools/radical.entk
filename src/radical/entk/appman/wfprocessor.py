@@ -353,11 +353,18 @@ class WFprocessor(object):
                     if stage.post_exec:
                         self._execute_post_exec(pipe, stage)
 
-                    # If pipeline has completed, make state
-                    # change
-                    if pipe.completed:
+                    # if pipeline got suspended, advance state accordingly
+                    if pipe.state == states.SUSPENDED:
+                      self._advance(pipe, 'Pipeline', states.SUSPENDED)
 
+                    else:
+                        # otherwise perform normal stage progression
+                        pipe._increment_stage()
+
+                    # If pipeline has completed, advance state to DONE
+                    if pipe.completed:
                         self._advance(pipe, 'Pipeline', states.DONE)
+
 
                 # Found the pipeline and processed it -- no more
                 # iterations needed for the current task
@@ -404,15 +411,6 @@ class WFprocessor(object):
                         else:
                             self._advance(r_pipe, 'Pipeline', r_pipe.state)
 
-
-        if pipe.state == states.SUSPENDED:
-            self._advance(pipe, 'Pipeline', states.SUSPENDED)
-
-        else:
-            pipe._increment_stage()
-
-            if pipe.completed:
-                self._advance(pipe, 'Pipeline', states.DONE)
 
 
     # --------------------------------------------------------------------------
