@@ -1,8 +1,13 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 import os
 import pika
 import pytest
+
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 
 from   hypothesis      import settings
 
@@ -20,8 +25,10 @@ from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 # pylint: disable=protected-access
 
-hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
-port     = int(os.environ.get('RMQ_PORT', 5672))
+host     =     os.environ.get('RMQ_HOSTNAME', 'localhost')
+port     = int(os.environ.get('RMQ_PORT',      5672))
+user     = 'foo'
+passwd   = 'bar'
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -30,10 +37,24 @@ settings.load_profile("travis")
 
 # ------------------------------------------------------------------------------
 #
+@mock.patch.object(Amgr, '_setup_mqs', return_value=None)
+def test_amgr_rmq_auth(mocked_setup_mqs):
+
+    amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
+    amgr      = Amgr(hostname=host, port=port, username=user, password=passwd,
+                     name=amgr_name)
+
+    assert(amgr._rmq_conn_params.credentials)
+    assert(amgr._rmq_conn_params.credentials.username == user)
+    assert(amgr._rmq_conn_params.credentials.password == passwd)
+
+
+# ------------------------------------------------------------------------------
+#
 def test_amgr_initialization():
 
     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
-    amgr      = Amgr(hostname=hostname, port=port, name=amgr_name)
+    amgr      = Amgr(hostname=host, port=port, name=amgr_name)
 
     assert amgr._name.split('.') == amgr_name.split('.')
     assert amgr._sid.split('.')  == amgr_name.split('.')
@@ -45,7 +66,7 @@ def test_amgr_initialization():
     assert isinstance(amgr.name,    str)
 
     # RabbitMQ inits
-    assert amgr._hostname == hostname
+    assert amgr._hostname == host
     assert amgr._port     == port
 
     # RabbitMQ Queues
@@ -69,7 +90,7 @@ def test_amgr_initialization():
     assert amgr._cur_attempt == 1
     assert isinstance(amgr.shared_data, list)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=host, port=port)
 
     assert amgr._uid.split('.') == ['appmanager', '0000']
     assert isinstance(amgr._logger, ru.Logger)
@@ -78,7 +99,7 @@ def test_amgr_initialization():
     assert isinstance(amgr.name, str)
 
     # RabbitMQ inits
-    assert amgr._hostname == hostname
+    assert amgr._hostname == host
     assert amgr._port     == port
 
     # RabbitMQ Queues
@@ -212,7 +233,7 @@ def test_amgr_assign_workflow():
 #
 def test_amgr_assign_shared_data():
 
-    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
 
     res_dict = {'resource': 'xsede.supermic',
                 'walltime': 30,
@@ -229,7 +250,7 @@ def test_amgr_assign_shared_data():
 #
 def test_amgr_run():
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=host, port=port)
 
     with pytest.raises(MissingError):
         amgr.run()
@@ -263,7 +284,7 @@ def test_amgr_run_mock():
                 'cpus'    : 1,
                 'project' : ''}
 
-    appman = Amgr(hostname=hostname, port=port, rts="mock")
+    appman = Amgr(hostname=host, port=port, rts="mock")
     appman.resource_desc = res_dict
 
     appman.workflow = [p]
@@ -281,7 +302,7 @@ def test_amgr_resource_terminate():
 
     from radical.entk.execman.rp import TaskManager
 
-    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
     amgr.resource_desc = res_dict
 
     amgr._setup_mqs()
@@ -307,7 +328,7 @@ def test_amgr_terminate():
 
     from radical.entk.execman.rp import TaskManager
 
-    amgr = Amgr(rts='radical.pilot', hostname=hostname, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
     amgr.resource_desc = res_dict
 
     amgr._setup_mqs()
@@ -327,7 +348,7 @@ def test_amgr_terminate():
 #
 def test_amgr_setup_mqs():
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=host, port=port)
     amgr._setup_mqs()
 
     assert len(amgr._pending_queue)   == 1
@@ -360,14 +381,14 @@ def test_amgr_setup_mqs():
 #
 def test_amgr_cleanup_mqs():
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=host, port=port)
     sid  = amgr._sid
 
     amgr._setup_mqs()
     amgr._cleanup_mqs()
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=hostname, port=port))
+                                                      host=host, port=port))
 
     qs = ['%s-tmgr-to-sync' % sid,
           '%s-cb-to-sync'   % sid,
@@ -389,7 +410,7 @@ def func_for_synchronizer_test(sid, p, tmgr):
     # FIXME: what is tested / asserted here?
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=hostname, port=port))
+                                                      host=host, port=port))
     mq_channel    = mq_connection.channel()
 
     for t in p.stages[0].tasks:
@@ -406,7 +427,7 @@ def func_for_synchronizer_test(sid, p, tmgr):
 #
 def test_amgr_synchronizer():
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=host, port=port)
     amgr._setup_mqs()
 
     p = Pipeline()
@@ -432,7 +453,7 @@ def test_amgr_synchronizer():
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
+                    mq_hostname=host,
                     port=port,
                     rts=None)
 
@@ -471,7 +492,7 @@ def test_sid_in_mqs():
 
     # FIXME: what is tested / asserted here?
 
-    appman = Amgr(hostname=hostname, port=port)
+    appman = Amgr(hostname=host, port=port)
     sid    = appman._sid
     appman._setup_mqs()
 
@@ -481,7 +502,7 @@ def test_sid_in_mqs():
           '%s-sync-to-cb'   % sid]
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=hostname, port=port))
+                                                      host=host, port=port))
     mq_channel    = mq_connection.channel()
 
     def callback():
@@ -529,7 +550,7 @@ def test_state_order():
 
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    appman = Amgr(hostname=hostname, port=port)
+    appman = Amgr(hostname=host, port=port)
     appman.resource_desc = res_dict
 
     appman.workflow = [p1]
@@ -544,6 +565,12 @@ def test_state_order():
     for t in p1.stages[0].tasks:
         assert t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
                                    'SUBMITTING', 'EXECUTED',   'DONE']
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+    test_amgr_rmq_auth()
 
 
 # ------------------------------------------------------------------------------
