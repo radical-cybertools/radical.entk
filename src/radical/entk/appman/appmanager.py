@@ -117,6 +117,7 @@ class AppManager(object):
         self._workflows       = list()
         self._cur_attempt     = 1
         self._shared_data     = list()
+        self._outputs         = None
         self._wfp             = None
         self._sync_thread     = None
         self._terminate_sync  = mt.Event()
@@ -252,6 +253,18 @@ class AppManager(object):
         return self._shared_data
 
 
+    @property
+    def outputs(self):
+        '''
+        :getter: Return list of filenames that are to be staged out after
+                 execution
+        :setter: Assign a list of names of files that need to be staged from the
+                 remote machine
+        '''
+
+        return self._outputs
+
+
     # --------------------------------------------------------------------------
     # Setter functions
     #
@@ -286,6 +299,7 @@ class AppManager(object):
 
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
+        self._rmgr.outputs     = self._outputs
 
         self._report.ok('>>ok\n')
 
@@ -324,10 +338,28 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str, actual_type=type(value))
+                raise ree.TypeError(expected_type=str,
+                                    actual_type=type(value))
 
         if self._rmgr:
             self._rmgr.shared_data = data
+
+
+    # --------------------------------------------------------------------------
+    #
+    @outputs.setter
+    def outputs(self, data):
+
+        if not isinstance(data, list):
+            data = [data]
+
+        for value in data:
+            if not isinstance(value, str):
+                raise ree.TypeError(expected_type=str,
+                                    actual_type=type(value))
+
+        if self._rmgr:
+            self._rmgr.outputs = data
 
 
     # --------------------------------------------------------------------------
@@ -341,6 +373,8 @@ class AppManager(object):
         up the communication infrastructure, submitting a resource request and
         then submission of all the tasks.
         '''
+
+        ret = None
 
         try:
             self._prof.prof('amgr_start', uid=self._uid)
@@ -396,7 +430,6 @@ class AppManager(object):
                 self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
                 self.terminate()
 
-
         except KeyboardInterrupt:
 
             self._logger.exception('Execution interrupted by user (you '
@@ -405,12 +438,17 @@ class AppManager(object):
             self.terminate()
             raise KeyboardInterrupt
 
+        except Exception:
 
-        except Exception as ex:
-
-            self._logger.exception('Error in AppManager: %s' % ex)
+            self._logger.exception('Error in AppManager')
             self.terminate()
             raise
+
+        # return list of fetched output data, or None.
+        outputs = self.outputs()
+        if outputs:
+            ret = outputs
+        return ret
 
 
     # --------------------------------------------------------------------------

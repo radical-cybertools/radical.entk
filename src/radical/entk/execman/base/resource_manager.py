@@ -61,8 +61,8 @@ class Base_ResourceManager(object):
         self._logger = ru.Logger  (name, path=self._path)
         self._prof   = ru.Profiler(name, path=self._path)
 
-        # Shared data list
         self._shared_data = list()
+        self._outputs     = None
 
 
     # --------------------------------------------------------------------------
@@ -129,14 +129,35 @@ class Base_ResourceManager(object):
         """
         :getter:    list of files to be staged to remote and that are common to
                     multiple tasks
+        :setter:    Assign a list of names of files that need to be accessible to
+                    tasks
         """
         return self._shared_data
 
 
+    @property
+    def outputs(self):
+        """
+        :getter:    list of files to be staged from remote after execution
+        :setter:    Assign a list of names of files that need to be staged from the
+                    remote machine
+        """
+        return self._outputs
+
+
+    # --------------------------------------------------------------------------
+    # Setter functions
+    #
     @shared_data.setter
     def shared_data(self, data_list):
 
         self._shared_data = data_list
+
+
+    @outputs.setter
+    def outputs(self, data):
+
+        self._outputs = data
 
 
     # --------------------------------------------------------------------------
