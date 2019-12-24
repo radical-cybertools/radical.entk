@@ -129,25 +129,32 @@ class Base_ResourceManager(object):
         """
         :getter:    list of files to be staged to remote and that are common to
                     multiple tasks
+        :setter:    Assign a list of names of files that need to be accessible to
+                    tasks
         """
         return self._shared_data
-
-
-    @shared_data.setter
-    def shared_data(self, data_list):
-
-        self._shared_data = data_list
 
 
     @property
     def outputs(self):
         """
         :getter:    list of files to be staged from remote after execution
+        :setter:    Assign a list of names of files that need to be staged from the
+                    remote machine
         """
         return self._outputs
 
 
+    # --------------------------------------------------------------------------
+    # Setter functions
+    #
     @shared_data.setter
+    def shared_data(self, data_list):
+
+        self._shared_data = data_list
+
+
+    @outputs.setter
     def outputs(self, data):
 
         self._outputs = data
