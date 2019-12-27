@@ -445,7 +445,7 @@ class AppManager(object):
             raise
 
         # return list of fetched output data, or None.
-        outputs = self.outputs()
+        outputs = self.outputs
         if outputs:
             ret = outputs
         return ret
