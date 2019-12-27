@@ -7,6 +7,16 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
+1.0.0  Release                                                        2019-12-26
+--------------------------------------------------------------------------------
+
+  - transition to Python3
+  - add `appman.outputs`  (symmetric to `appman.shared_data`)
+  - RMQ Auth (username/password) #379
+  - Global TOC on sphinx navigation sidebar #390
+  - fix for resume/suspend #376
+
+
 0.72.1  Hotfix Release                                                2019-09-22
 --------------------------------------------------------------------------------
 
