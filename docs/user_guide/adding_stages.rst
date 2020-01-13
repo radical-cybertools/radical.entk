@@ -23,7 +23,6 @@ objects, populate them with Tasks and **add** them to the Pipeline using the **a
 .. literalinclude:: ../../examples/user_guide/add_stages.py
     :language: python
     :lines: 20-58
-    :dedent: 4
 
 To run the script, simply execute the following from the command line:
 

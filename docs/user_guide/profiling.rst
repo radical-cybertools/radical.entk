@@ -28,8 +28,8 @@ More details on the capabilities of RADICAL Analytics can be found in its
 
 .. note:: The current examples of RADICAL Analytics are configured for RADICAL
     Pilot but can be changed to EnTK by
-        * Setting `stype` to 'radical.entk' when creating the RADICAL Analytics session
-        * Following the :ref:`state model <dev_docs_state_model>`, :ref:`event model <dev_docs_events>`, and :ref:`sequence diagram <dev_docs_seq_diag>` to determine the EnTK probes to use in profiling.
+    * Setting `stype` to 'radical.entk' when creating the RADICAL Analytics session
+    * Following the :ref:`state model <dev_docs_state_model>`, :ref:`event model <dev_docs_events>`, and :ref:`sequence diagram <dev_docs_seq_diag>` to determine the EnTK probes to use in profiling.
 
 Extracting durations
 ====================

@@ -213,8 +213,7 @@ class Task(object):
                           | 'processes'           : X,
                           | 'process_type'        : None/MPI,
                           | 'threads_per_process' : Y,
-                          | 'thread_type'         : None/OpenMP
-                        }
+                          | 'thread_type'         : None/OpenMP}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on CPUs. Hence, the total
@@ -228,8 +227,7 @@ class Task(object):
                           | 'processes'           : 1,
                           | 'process_type'        : None,
                           | 'threads_per_process' : 1,
-                          | 'thread_type'         : None
-                        }
+                          | 'thread_type'         : None}
 
         This description requests 1 core and expected the executable to non-MPI
         and single threaded.
@@ -254,8 +252,7 @@ class Task(object):
                           | 'processes'           : X,
                           | 'process_type'        : None/MPI,
                           | 'threads_per_process' : Y,
-                          | 'thread_type'         : None/OpenMP/CUDA
-                        }
+                          | 'thread_type'         : None/OpenMP/CUDA}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on GPUs. Hence, the total
@@ -269,8 +266,7 @@ class Task(object):
                           | 'processes'           : 0,
                           | 'process_type'        : None,
                           | 'threads_per_process' : 0,
-                          | 'thread_type'         : None
-                        }
+                          | 'thread_type'         : None}
 
         This description requests 0 gpus as not all machines have GPUs.
 
