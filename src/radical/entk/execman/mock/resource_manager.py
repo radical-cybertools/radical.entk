@@ -24,8 +24,7 @@ class ResourceManager(Base_ResourceManager):
                                     |  'cpus'          : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
-                                    |  'access_schema' : 'ssh'     # optional
-                                  }
+                                    |  'access_schema' : 'ssh'     # optional}
     '''
 
     # --------------------------------------------------------------------------

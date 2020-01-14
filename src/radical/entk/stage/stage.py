@@ -6,7 +6,6 @@ from collections import Iterable
 
 
 class Stage(object):
-
     """
     A stage represents a collection of objects that have no relative order of execution. In this case, a
     stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
@@ -132,9 +131,7 @@ class Stage(object):
         self._post_exec = {
                             |  'condition' : func_1,
                             |  'on_true'   : func_2,
-                            |  'on_false'  : func_3
-                        }
-
+                            |  'on_false'  : func_3}
         '''
         return self._post_exec
 
