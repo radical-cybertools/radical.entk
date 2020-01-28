@@ -7,7 +7,7 @@ Installation
 Installing Ensemble Toolkit
 ===========================
 
-Installing Ensemble Toolkit using Pypi, or Git
+Installing Ensemble Toolkit using virtualenv
 ----------------------------------------------
 
 To install the Ensemble Toolkit, we need to create a virtual environment. 
@@ -15,11 +15,27 @@ Open a terminal and run:
 
 .. code-block:: bash
 
-        virtualenv $HOME/myenv -p python3.7
-        source $HOME/myenv/bin/activate
+        virtualenv $HOME/ve-entk -p python3.7
+        source $HOME/ve-entk/bin/activate
 
-*`-p` params indicates which python version you use, python3.6+ is required*
+- ``-p`` params indicates which python version you use, python3.6+ is required
+- python2 installation is available with the ``0.72.1`` version. Read more at
+  the troubleshooting_
 
+Activate virtualenv by:
+
+.. code-block:: bash
+
+        source $HOME/ve-entk/bin/activate
+
+.. note:: Activated env name is indicated in the prompt like: ``(ve-entk) username@two:~$``
+
+Deactivate the virtualenv, if you want to disengage. Your python won't
+recognize EnTK after deactivation.  To deactivate, run:
+
+.. code-block:: bash
+
+        deactivate
 
 It is suggested to use the released version of EnTK which you can install
 by executing the following command in your virtualenv:
@@ -29,8 +45,9 @@ by executing the following command in your virtualenv:
         pip install radical.entk
 
 
-To install a specific branch of EnTK, e.g. `devel`, you will need to clone the
-repository and checkout the branch. You can do so using the following commands:
+To install a specific branch of EnTK, e.g. `devel` instead of using pip
+installation, you will need to clone the repository and checkout the branch.
+You can do so using the following commands:
 
 .. code-block:: bash
 
@@ -49,9 +66,9 @@ printed.
 
         radical-stack
 
-          python               : 3.6.9
+          python               : 3.7.4
           pythonpath           :
-          virtualenv           : /home/hrlee/venv3/entk.py36
+          virtualenv           : /home/username/ve-entk
 
           radical.entk         : 1.0.0
           radical.pilot        : 1.0.0
@@ -67,8 +84,8 @@ Open a terminal and run (assuming you have PATH to point to ``conda``):
 
 .. code-block:: bash
 
-        conda create -n ve-entk python=3.7 -y
-        conda activate ve-entk
+        conda create -n conda-entk python=3.7 -y
+        conda activate conda-entk
 
 
 It is suggested to use the released version of EnTK which you can install
@@ -321,6 +338,8 @@ you want to access, you will have to get the certificates from the corresponding
 information is available in their user guide.
 
 
+.. _troubleshooting:
+
 Troubleshooting
 =======================
 
@@ -335,8 +354,35 @@ If virtualenv **is not** installed on your system, you can try the following.
         wget --no-check-certificate http://pypi.python.org/packages/source/v/virtualenv/virtualenv-16.7.9.tar.gz
         tar xzf virtualenv-16.7.9.tar.gz
 
-        python virtualenv-16.7.9/virtualenv.py $HOME/myenv -p python3.7
-        source $HOME/myenv/bin/activate
+        python virtualenv-16.7.9/virtualenv.py $HOME/ve-entk -p python3.7
+        source $HOME/ve-entk/bin/activate
+
+**Python 2 legacy installation**
+
+As of January 1, 2020, Python 2 support is terminated by the Python Software
+Foundation but the previous release of EnTK i.e. ``0.72.1`` allows to use Python 2.
+PyPI installation with virtualenv is:
+
+.. code-block:: bash
+
+        virtualenv $HOME/ve-entk-py2 -p python2.7
+        source $HOME/ve-entk-py2/bin/activate
+        pip install radical.entk==0.72.1
+
+```radical-stack``` confirms the versions of the radical cybertools:
+
+.. code-block:: bash
+
+        $ radical-stack
+
+          python               : 2.7.17
+          pythonpath           :
+          virtualenv           : /home/username/ve-entk-py2
+
+          radical.entk         : 0.72.1
+          radical.pilot        : 0.73.1
+          radical.saga         : 0.72.1
+          radical.utils        : 0.72.0
 
 .. comments
         **TypeError: 'NoneType' object is not callable**
