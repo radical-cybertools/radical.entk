@@ -16,14 +16,16 @@ You can download the complete code discussed in this section :download:`here <..
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
 
-Use pre-configured MongoDB
-==========================
+.. comments
 
-For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
+        Use pre-configured MongoDB
+        ==========================
 
-.. code-block:: bash
+        For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
 
-        export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
+        .. code-block:: bash
+
+                export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
 
 Importing components from the Ensemble Toolkit Module
@@ -33,7 +35,7 @@ To create any application using Ensemble Toolkit, you need to import five module
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 1    
+    :lines: 3
     :linenos:
 
 
@@ -48,17 +50,17 @@ In the below snippet, we first create a Pipeline then a Stage.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 20-24
+    :lines: 22-26
     :linenos:
-    :lineno-start: 20
+    :lineno-start: 22
 
 Next, we create a Task and assign its name, executable and arguments of the executable.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 26-30
+    :lines: 28-32
     :linenos:
-    :lineno-start: 26
+    :lineno-start: 28
 
 
 Now, that we have a fully described Task, a Stage and a Pipeline. We create our workflow by adding the Task to the
@@ -66,9 +68,9 @@ Stage and adding the Stage to the Pipeline.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 32-36
+    :lines: 34-38
     :linenos:
-    :lineno-start: 32
+    :lineno-start: 34
 
 
 Creating the AppManager 
@@ -81,9 +83,9 @@ AppManager and ``run`` our application.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 38-59
+    :lines: 40-61
     :linenos:
-    :lineno-start: 38
+    :lineno-start: 40
 
 
 
@@ -95,7 +97,8 @@ To run the script, simply execute the following from the command line:
 
 
 And that's it! That's all the steps in this example. You can generate more verbose output
-by setting the environment variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
+by setting the environment variable **``export  RADICAL_LOG_TGT=radical.log;
+export RADICAL_LOG_LVL=DEBUG``**.
 
 Let's look at the complete code for this example:
 
