@@ -216,8 +216,15 @@ class ResourceManager(Base_ResourceManager):
                 if self._outputs:
                     self._pilot.stage_out()
 
-                get_profiles = os.environ.get('RADICAL_PILOT_PROFILE', False)
-                cleanup      = self._rts_config.get('db_cleanup', False)
+                # make this a config option?
+                if 'RADICAL_PILOT_PROFILE' in os.environ or \
+                   'RADICAL_ENTK_PROFILE'  in os.environ or \
+                   'RADICAL_PROFILE'       in os.environ :
+                    get_profiles = True
+                else:
+                    get_profiles = False
+
+                cleanup = self._rts_config.get('db_cleanup', False)
 
                 if self._session:
                     self._session.close(cleanup=cleanup, download=get_profiles)
