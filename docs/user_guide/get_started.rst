@@ -16,18 +16,6 @@ You can download the complete code discussed in this section :download:`here <..
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
 
-.. comments
-
-        Use pre-configured MongoDB
-        ==========================
-
-        For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use it:
-
-        .. code-block:: bash
-
-                export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
-
-
 Importing components from the Ensemble Toolkit Module
 ===========================================================
 

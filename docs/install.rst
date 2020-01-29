@@ -16,10 +16,9 @@ Open a terminal and run:
 .. code-block:: bash
 
         virtualenv $HOME/ve-entk -p python3.7
-        source $HOME/ve-entk/bin/activate
 
 - ``-p`` params indicates which python version you use, python3.6+ is required
-- python2 installation is available with the ``0.72.1`` version. Read more at
+- A legacy python2 installation is available with the ``0.72.1`` version. Hot fixes will be provided until Jul 2020. Read more at
   the troubleshooting_
 
 Activate virtualenv by:
@@ -45,7 +44,7 @@ by executing the following command in your virtualenv:
         pip install radical.entk
 
 
-To install a specific branch of EnTK, e.g. `devel` instead of using pip
+To install a specific branch of EnTK, e.g., `devel` instead of using pip
 installation, you will need to clone the repository and checkout the branch.
 You can do so using the following commands:
 
@@ -59,8 +58,8 @@ You can do so using the following commands:
 
 
 You can check the version of Ensemble Toolkit with the
-```radical-stack``` command-line tool. The current version should be
-printed.
+```radical-stack``` command-line tool. The currently installed version should
+be printed.
 
 .. code-block:: bash
 
@@ -97,8 +96,8 @@ by executing the following command in your conda env:
 
 
 You can check the version of Ensemble Toolkit with the
-```radical-stack``` command-line tool. The current version should be
-printed.
+```radical-stack``` command-line tool. The currently installed version should
+be printed.
 
 .. code-block:: bash
 
@@ -345,13 +344,13 @@ Troubleshooting
 
 **Missing virtualenv**
 
-This should return the version of the RADICAL-Pilot installation, e.g., `1.0.0`.
+This should return the version of the RCT installation, e.g., `1.0.0`.
 
 If virtualenv **is not** installed on your system, you can try the following.
 
 .. code-block:: bash
 
-        wget --no-check-certificate http://pypi.python.org/packages/source/v/virtualenv/virtualenv-16.7.9.tar.gz
+        wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-16.7.9.tar.gz
         tar xzf virtualenv-16.7.9.tar.gz
 
         python virtualenv-16.7.9/virtualenv.py $HOME/ve-entk -p python3.7
@@ -360,7 +359,7 @@ If virtualenv **is not** installed on your system, you can try the following.
 **Python 2 legacy installation**
 
 As of January 1, 2020, Python 2 support is terminated by the Python Software
-Foundation but the previous release of EnTK i.e. ``0.72.1`` allows to use Python 2.
+Foundation but the previous release of EnTK i.e. ``0.72.1`` allows to use Python 2.7.
 PyPI installation with virtualenv is:
 
 .. code-block:: bash
@@ -384,17 +383,3 @@ PyPI installation with virtualenv is:
           radical.saga         : 0.72.1
           radical.utils        : 0.72.0
 
-.. comments
-        **TypeError: 'NoneType' object is not callable**
-
-        Note that some Python installations have a broken multiprocessing module -- if you
-        experience the following error during installation::
-
-            Traceback (most recent call last):
-                File "/usr/lib/python2.7/atexit.py", line 24, in _run_exitfuncs
-                    func(*targs, **kargs)
-                File "/usr/lib/python2.7/multiprocessing/util.py", line 284, in _exit_function
-                    info('process shutting down')
-            TypeError: 'NoneType' object is not callable
-
-            you may need to move to Python 2.7 (see http://bugs.python.org/issue15881).
