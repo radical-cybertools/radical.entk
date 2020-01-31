@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: layer:entk, type:bug
+assignees: ''
+
+---
+
 When encountering an issue during execution, please do due diligence to check whether the source of the error is in the user script/tool. If you suspect the source of the error comes from EnTK or tools below please open a ticket in the github repo and follow these steps:
 
 ### Enable verbose messages
@@ -6,7 +15,7 @@ Run your script again with ``RADICAL_VERBOSE=DEBUG`` and ``RADICAL_ENTK_VERBOSE=
 
 Example:
 ```
-RADICAL_VERBOSE=DEBUG RADICAL_ENTK_VERBOSE=DEBUG python example.py &> verbose.log
+RADICAL_VERBOSE=DEBUG RADICAL_ENTK_VERBOSE=DEBUG python example.py 2> verbose.log
 ```
 
 Attach verbose.log to the ticket.
