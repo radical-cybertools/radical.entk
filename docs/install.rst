@@ -52,7 +52,7 @@ You can do so using the following commands:
 
         git clone https://github.com/radical-cybertools/radical.entk.git
         cd radical.entk
-        git checkout devel
+        git checkout <branch-name>
         pip install .
 
 
