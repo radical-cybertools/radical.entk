@@ -369,13 +369,6 @@ def test_amgr_setup_mqs():
     for q in qs:
         mq_channel.queue_delete(queue=q)
 
-    with open('.%s.txt' % amgr._sid, 'r') as fp:
-        lines = fp.readlines()
-
-    for ind, val in enumerate(lines):
-        lines[ind] = val.strip()
-
-    assert set(qs) == set(lines)
 
 
 # ------------------------------------------------------------------------------
