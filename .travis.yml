@@ -40,6 +40,12 @@ before_install:
   - ssh localhost hostname
   - ssh localhost uname -a
 
+# Xenial needs rmq installation
+addons:
+  apt:
+    packages:
+    - rabbitmq-server
+
 # command to install dependencies
 install:
   - pip install .
