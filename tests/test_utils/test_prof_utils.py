@@ -43,7 +43,7 @@ def test_write_session_description():
 
     amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {'resource' : 'xsede.stampede',
-                          'walltime' : 60,
+                          'walltime' : 59,
                           'cpus'     : 128,
                           'gpus'     : 64,
                           'project'  : 'xyz',
@@ -56,18 +56,16 @@ def test_write_session_description():
                             workflow=amgr._workflow,
                             pending_queue=amgr._pending_queue,
                             completed_queue=amgr._completed_queue,
-                            mq_hostname=amgr._hostname,
-                            port=amgr._port,
-                            resubmit_failed=amgr._resubmit_failed)
+                            resubmit_failed=amgr._resubmit_failed,
+                            rmq_conn_params=amgr._rmq_conn_params)
     amgr._wfp.initialize_workflow()
     amgr._workflow = amgr._wfp.workflow
 
     amgr._task_manager = TaskManager(sid=amgr._sid,
                                      pending_queue=amgr._pending_queue,
                                      completed_queue=amgr._completed_queue,
-                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port
+                                     rmq_conn_params=amgr._rmq_conn_params
                                      )
 
     write_session_description(amgr)
@@ -176,9 +174,8 @@ def test_write_workflows():
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._hostname,
-                                    port=amgr._port,
-                                    resubmit_failed=amgr._resubmit_failed)
+                                    resubmit_failed=amgr._resubmit_failed,
+                                    rmq_conn_params=amgr._rmq_conn_params)
 
         amgr._wfp.initialize_workflow()
         check = amgr.workflow
@@ -215,9 +212,8 @@ def test_write_workflows():
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._hostname,
-                                    port=amgr._port,
-                                    resubmit_failed=amgr._resubmit_failed)
+                                    resubmit_failed=amgr._resubmit_failed,
+                                    rmq_conn_params=amgr._rmq_conn_params)
         amgr._wfp.initialize_workflow()
         check = amgr.workflows
 
