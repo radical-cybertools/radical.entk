@@ -312,9 +312,9 @@ def test_amgr_resource_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     rmq_conn_params=amgr._rmq_conn_params,
                                      rmgr=amgr._rmgr,
-                                     rts='radical.pilot')
+                                     rmq_conn_params=amgr._rmq_conn_params)
+
     amgr.resource_terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
 
@@ -338,10 +338,9 @@ def test_amgr_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     rmq_conn_params=amgr._rmq_conn_params,
                                      rmgr=amgr._rmgr,
-                                     rts='radica.pilot'
-                                     )
+                                     rmq_conn_params=amgr._rmq_conn_params)
+
     amgr.terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
 
