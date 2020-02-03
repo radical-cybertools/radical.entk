@@ -5,7 +5,6 @@ import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def create_single_task():
 
@@ -78,7 +77,6 @@ def test_stage_post_exec():
             'cpus': 1,
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     appman = AppManager(rts='radical.pilot', hostname=hostname, port=port)
     appman.resource_desc = res_dict
     appman.workflow = [p1]

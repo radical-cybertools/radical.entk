@@ -164,6 +164,8 @@ def test_amgr_read_config():
     amgr._read_config(config_path='./',
                       hostname=None,
                       port=None,
+                      username=None,
+                      password=None,
                       reattempts=None,
                       resubmit_failed=None,
                       autoterminate=None,
@@ -310,9 +312,9 @@ def test_amgr_resource_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._hostname,
+                                     rmq_conn_params=amgr._rmq_conn_params,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port)
+                                     rts='radical.pilot')
     amgr.resource_terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
 
@@ -336,9 +338,9 @@ def test_amgr_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._hostname,
+                                     rmq_conn_params=amgr._rmq_conn_params,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port
+                                     rts='radica.pilot'
                                      )
     amgr.terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
@@ -453,8 +455,7 @@ def test_amgr_synchronizer():
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=host,
-                    port=port,
+                    rmq_conn_params=amgr._rmq_conn_params,
                     rts=None)
 
     amgr._rmgr         = rmgr

@@ -5,7 +5,6 @@ import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def test_integration_local():
 
@@ -43,7 +42,6 @@ def test_integration_local():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
