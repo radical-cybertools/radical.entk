@@ -129,10 +129,8 @@ def test_amgr_initialization():
 #
 def test_amgr_read_config():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=host, port=port)
 
-    assert amgr._hostname   == 'localhost'
-    assert amgr._port       == 5672
     assert amgr._reattempts == 3
 
     assert amgr._rmq_cleanup
@@ -149,6 +147,8 @@ def test_amgr_read_config():
 
     d = {"hostname"       : "radical.two",
          "port"           : 25672,
+         "username"       : "guest",
+         "password"       : "guest",
          "reattempts"     : 5,
          "resubmit_failed": True,
          "autoterminate"  : False,

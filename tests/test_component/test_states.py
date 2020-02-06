@@ -42,7 +42,8 @@ def test_pipeline_states():
     assert states._pipeline_state_inv == {1: states.INITIAL,
                                           2: states.SCHEDULING,
                                           3: states.SUSPENDED,
-                                          10: [states.FAILED, states.CANCELED, states.DONE]
+                                          10: [states.DONE, states.FAILED,
+                                              states.CANCELED]
                                           }
 
 
@@ -58,7 +59,8 @@ def test_stage_states():
     assert states._stage_state_inv == {1: states.INITIAL,
                                        2: states.SCHEDULING,
                                        4: states.SCHEDULED,
-                                       10: [states.FAILED, states.CANCELED, states.DONE]
+                                       10: [states.DONE, states.FAILED,
+                                           states.CANCELED]
                                        }
 
 
@@ -80,5 +82,5 @@ def test_task_states():
         4: states.SCHEDULED,
         5: states.SUBMITTING,
         7: states.COMPLETED,
-        10: [states.FAILED, states.CANCELED, states.DONE]
+        10: [states.DONE, states.FAILED, states.CANCELED]
     }

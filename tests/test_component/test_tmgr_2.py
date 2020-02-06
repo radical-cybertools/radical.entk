@@ -68,6 +68,7 @@ def test_tmgr_rp_tmgr():
                 "db_cleanup"     : False}
     rmgr_id  = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
+    mq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     rmgr._validate_resource_desc()
     rmgr._populate()
@@ -77,8 +78,7 @@ def test_tmgr_rp_tmgr():
                   pending_queue=['pendingq-1'],
                   completed_queue=['completedq-1'],
                   rmgr=rmgr,
-                  mq_hostname=hostname,
-                  port=port)
+                  rmq_conn_params=rmq_conn_params)
 
     tmgr.start_manager()
 
