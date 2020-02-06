@@ -370,7 +370,6 @@ def test_amgr_setup_mqs():
         mq_channel.queue_delete(queue=q)
 
 
-
 # ------------------------------------------------------------------------------
 #
 def test_amgr_cleanup_mqs():

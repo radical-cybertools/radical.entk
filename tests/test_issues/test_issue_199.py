@@ -10,6 +10,7 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 
+
 def generate_pipeline():
 
     # Create a Pipeline object
@@ -30,6 +31,7 @@ def generate_pipeline():
     p.add_stages(s1)
 
     return p
+
 
 def test_issue_199():
 

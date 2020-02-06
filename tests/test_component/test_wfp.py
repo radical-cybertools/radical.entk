@@ -34,7 +34,7 @@ def test_wfp_initialization(s, i, b, l):
     t.executable = '/bin/date'
     st.add_tasks(t)
     p.add_stages(st)
-    mq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     wfp = WFprocessor(sid='rp.session.local.0000',
                       workflow=set([p]),
@@ -71,7 +71,7 @@ def test_wfp_initialize_workflow():
     t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
-    mq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     wfp = WFprocessor(sid='test',
                       workflow=[p],

@@ -1,10 +1,9 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
-import pytest
-from radical.entk.exceptions import *
 import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+
 
 def create_single_task():
 
@@ -17,19 +16,22 @@ def create_single_task():
 
     return t1
 
+
 NUM_TASKS = 2
 MAX_STAGES = 5
 CUR_STAGE = 1
 
+
 def condition():
 
     global CUR_STAGE, MAX_STAGES
-    
+
     if CUR_STAGE < MAX_STAGES:
         CUR_STAGE += 1
         on_true()
 
     on_false()
+
 
 def on_true():
 
@@ -38,7 +40,7 @@ def on_true():
     NUM_TASKS *= 2
 
     s = Stage()
-    s.name = 's%s'%CUR_STAGE
+    s.name = 's%s' % CUR_STAGE
 
     for t in range(NUM_TASKS):
         s.add_tasks(create_single_task())
@@ -54,10 +56,11 @@ def on_false():
 
 p1 = Pipeline()
 
+
 def test_stage_post_exec():
 
     global p1
-    
+
     p1.name = 'p1'
 
     s = Stage()
