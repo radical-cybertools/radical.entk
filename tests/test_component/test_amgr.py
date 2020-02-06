@@ -37,8 +37,7 @@ settings.load_profile("travis")
 
 # ------------------------------------------------------------------------------
 #
-@mock.patch.object(Amgr, '_setup_mqs', return_value=None)
-def test_amgr_rmq_auth(mocked_setup_mqs):
+def test_amgr_rmq_auth():
 
     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
     amgr      = Amgr(hostname=host, port=port, username=user, password=passwd,

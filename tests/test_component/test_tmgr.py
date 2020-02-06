@@ -334,8 +334,7 @@ def test_tmgr_mock_initialization(s, l, i):
     assert tmgr._uid               == 'task_manager.0000'
     assert tmgr._pending_queue     == ['pending']
     assert tmgr._completed_queue   == ['completed']
-    assert tmgr._hostname          == hostname
-    assert tmgr._port              == port
+    assert tmgr.rmq_conn_params    == rmq_conn_params
     assert tmgr._rts               == 'mock'
 
     assert tmgr._log
@@ -437,8 +436,7 @@ def test_tmgr_rp_initialization(s, l, i):
 
     assert tmgr._pending_queue   == ['pending']
     assert tmgr._completed_queue == ['completed']
-    assert tmgr._hostname        == hostname
-    assert tmgr._port            == port
+    assert tmgr._rmq_conn_params == rmq_conn_params
     assert tmgr._rts             == 'radical.pilot'
     assert tmgr._umgr            is None
     assert tmgr._tmgr_process    is None
