@@ -314,14 +314,6 @@ def test_tmgr_base_methods():
        i=st.integers())
 def test_tmgr_mock_initialization(s, l, i):
 
-    try:
-        home   = os.environ.get('HOME', '/home')
-        folder = glob.glob('%s/.radical/utils/test.*' % home)
-        for f in folder:
-            shutil.rmtree(f)
-    except:
-        pass
-
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0010'
     rmgr = MockRmgr(resource_desc={}, sid=sid)
@@ -331,10 +323,9 @@ def test_tmgr_mock_initialization(s, l, i):
                     rmgr=rmgr,
                     rmq_conn_params=rmq_conn_params)
 
-    assert tmgr._uid               == 'task_manager.0000'
     assert tmgr._pending_queue     == ['pending']
     assert tmgr._completed_queue   == ['completed']
-    assert tmgr.rmq_conn_params    == rmq_conn_params
+    assert tmgr._rmq_conn_params    == rmq_conn_params
     assert tmgr._rts               == 'mock'
 
     assert tmgr._log
