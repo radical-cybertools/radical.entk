@@ -341,6 +341,26 @@ def get_output_list_from_task(task, placeholders):
                     }
                 output_data.append(temp)
 
+        if task.link_output_data:
+
+            for path in task.link_output_data:
+
+                path = resolve_placeholders(path, placeholders)
+
+                if len(path.split('>')) > 1:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': path.split('>')[1].strip(),
+                        'action': rp.LINK
+                    }
+                else:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': os.path.basename(path.split('>')[0].strip()),
+                        'action': rp.COPY
+                    }
+                output_data.append(temp)
+
 
         if task.download_output_data:
 
@@ -421,6 +441,7 @@ def create_cud_from_task(task, placeholders, prof=None):
         cud.pre_exec   = task.pre_exec
         cud.executable = task.executable
         cud.arguments  = resolve_arguments(task.arguments, placeholders)
+        cud.sandbox    = task.sandbox
         cud.post_exec  = task.post_exec
 
         if task.tag:
