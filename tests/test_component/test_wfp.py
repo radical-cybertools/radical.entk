@@ -22,18 +22,17 @@ settings.load_profile("travis")
 # ------------------------------------------------------------------------------
 #
 @given(s=st.characters(),
-       i=st.integers().filter(lambda x: isinstance(x,int)),
        b=st.booleans(),
        l=st.lists(st.characters()))
-def test_wfp_initialization(s, i, b, l):
+def test_wfp_initialization(s, b, l):
 
     p  = Pipeline()
-    st = Stage()
+    stage = Stage()
     t  = Task()
 
     t.executable = '/bin/date'
-    st.add_tasks(t)
-    p.add_stages(st)
+    stage.add_tasks(t)
+    p.add_stages(stage)
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     wfp = WFprocessor(sid='rp.session.local.0000',
@@ -193,9 +192,6 @@ def test_wfp_dequeue():
     for t in p.stages[0].tasks:
         assert t.state == states.INITIAL
 
-    p.state           == states.SCHEDULED
-    p.stages[0].state == states.SCHEDULING
-
     for t in p.stages[0].tasks:
         t.state = states.COMPLETED
 
@@ -312,9 +308,6 @@ def test_wfp_workflow_incomplete():
                       resubmit_failed=False)
 
     wfp.initialize_workflow()
-
-    p.state           == states.SCHEDULED
-    p.stages[0].state == states.SCHEDULING
 
     for t in p.stages[0].tasks:
         t.state = states.COMPLETED

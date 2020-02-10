@@ -137,9 +137,9 @@ def get_version(mod_root):
 
 
 # ------------------------------------------------------------------------------
-# check python version. we need >= 3.5
+# check python version. we need >= 3.6
 if  sys.hexversion <= 0x03050000:
-    raise RuntimeError('%s requires Python 3.5 or higher' % name)
+    raise RuntimeError('%s requires Python 3.6 or higher' % name)
 
 
 # ------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ class RunTwine(Command):
 # ------------------------------------------------------------------------------
 #
 if  sys.hexversion <= 0x03050000:
-    raise RuntimeError('SETUP ERROR: %s requires Python 3.5 or higher' % name)
+    raise RuntimeError('SETUP ERROR: %s requires Python 3.6 or higher' % name)
 
 
 # ------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ setup_args = {
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering',
