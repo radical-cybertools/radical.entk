@@ -27,8 +27,8 @@ from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 host     =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',      5672))
-user     = 'foo'
-passwd   = 'bar'
+user     = 'guest'
+passwd   = 'guest'
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -146,8 +146,8 @@ def test_amgr_read_config():
 
     d = {"hostname"       : "radical.two",
          "port"           : 25672,
-         "username"       : "guest",
-         "password"       : "guest",
+         "username"       : user,
+         "password"       : passwd,
          "reattempts"     : 5,
          "resubmit_failed": True,
          "autoterminate"  : False,
