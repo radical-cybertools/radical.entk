@@ -96,18 +96,18 @@ def get_version(_mod_root):
             'not-a-git-repo' in _version_detail or \
             'not-found'      in _version_detail or \
             'fatal'          in _version_detail :
-            version = _version_base
+            _version = _version_base
         elif '@' not in _version_base:
-            version = '%s-%s' % (_version_base, _version_detail)
+            _version = '%s-%s' % (_version_base, _version_detail)
         else:
-            version = _version_base
+            _version = _version_base
 
         # make sure the version files exist for the runtime version inspection
         path = '%s/%s' % (src_root, _mod_root)
         with open(path + '/VERSION', 'w') as f:
-            f.write(version + '\n')
+            f.write(_version + '\n')
 
-        _sdist_name = '%s-%s.tar.gz' % (name, version)
+        _sdist_name = '%s-%s.tar.gz' % (name, _version)
         _sdist_name = _sdist_name.replace('/', '-')
         _sdist_name = _sdist_name.replace('@', '-')
         _sdist_name = _sdist_name.replace('#', '-')
