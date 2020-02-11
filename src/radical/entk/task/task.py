@@ -35,6 +35,7 @@ class Task(object):
         self._pre_exec   = list()
         self._executable = None
         self._arguments  = list()
+        self._sandbox    = None
         self._post_exec  = list()
 
         self._lfs_per_process = 0
@@ -53,6 +54,7 @@ class Task(object):
         self._link_input_data      = list()
         self._move_input_data      = list()
         self._copy_output_data     = list()
+        self._link_output_data     = list()
         self._move_output_data     = list()
         self._download_output_data = list()
 
@@ -186,6 +188,19 @@ class Task(object):
         '''
 
         return self._arguments
+
+
+    @property
+    def sandbox(self):
+        '''
+        Sandbox the task is running in
+
+        :getter: returns the sandbox name
+        :setter: assigns the sandbox name
+        :arguments: string
+        '''
+
+        return self._sandbox
 
 
     @property
@@ -355,6 +370,20 @@ class Task(object):
         '''
 
         return self._copy_output_data
+
+
+    @property
+    def link_output_data(self):
+        '''
+        List of files to be linked from the location of current task on the
+        remote machine to a location on the remote machine.
+
+        :getter: return the list of files
+        :setter: assign the list of files
+        :arguments: list of strings
+        '''
+
+        return self._link_output_data
 
 
     @property
@@ -572,6 +601,15 @@ class Task(object):
         self._arguments = value
 
 
+    @sandbox.setter
+    def sandbox(self, value):
+
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str, actual_type=type(value))
+
+        self._sandbox = value
+
+
     @post_exec.setter
     def post_exec(self, value):
 
@@ -718,6 +756,15 @@ class Task(object):
         self._copy_output_data = value
 
 
+    @link_output_data.setter
+    def link_output_data(self, value):
+
+        if not isinstance(value, list):
+            raise ree.TypeError(expected_type=list, actual_type=type(value))
+
+        self._link_output_data = value
+
+
     @move_output_data.setter
     def move_output_data(self, value):
 
@@ -822,6 +869,7 @@ class Task(object):
             'pre_exec'             : self._pre_exec,
             'executable'           : self._executable,
             'arguments'            : self._arguments,
+            'sandbox'              : self._sandbox,
             'post_exec'            : self._post_exec,
             'cpu_reqs'             : self._cpu_reqs,
             'gpu_reqs'             : self._gpu_reqs,
@@ -832,6 +880,7 @@ class Task(object):
             'link_input_data'      : self._link_input_data,
             'move_input_data'      : self._move_input_data,
             'copy_output_data'     : self._copy_output_data,
+            'link_output_data'     : self._link_output_data,
             'move_output_data'     : self._move_output_data,
             'download_output_data' : self._download_output_data,
 

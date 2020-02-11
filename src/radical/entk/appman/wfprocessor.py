@@ -246,6 +246,8 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
+                time.sleep(3)
+
                 workload, scheduled_stages = self._create_workload()
 
                 # If there are tasks to be executed
