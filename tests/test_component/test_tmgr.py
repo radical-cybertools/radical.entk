@@ -37,10 +37,7 @@ os.environ['ENTK_HB_INTERVAL'] = '5'
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_base_initialization(s, l, i):
+def test_tmgr_base_initialization():
 
     try:
         home   = os.environ.get('HOME', '/home')
@@ -111,10 +108,10 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
 # ------------------------------------------------------------------------------
 #
-def func_for_heartbeat_test(mq_hostname, port, hb_request_q, hb_response_q):
+def func_for_heartbeat_test(mq_hostname, mq_port, hb_request_q, hb_response_q):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=port))
+                                                   host=mq_hostname, port=mq_port))
     mq_channel = mq_connection.channel()
 
     while True:
@@ -309,10 +306,7 @@ def test_tmgr_base_methods():
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_mock_initialization(s, l, i):
+def test_tmgr_mock_initialization():
 
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0010'
@@ -339,10 +333,10 @@ def test_tmgr_mock_initialization(s, l, i):
 
 # ------------------------------------------------------------------------------
 #
-def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
+def func_for_mock_tmgr_test(mq_hostname, mq_port, pending_queue, completed_queue):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=port))
+                                                   host=mq_hostname, port=mq_port))
     mq_channel = mq_connection.channel()
 
     tasks = list()
@@ -359,7 +353,7 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
     cnt = 0
     while cnt < 15:
 
-        method_frame, props, body = mq_channel.basic_get(queue=completed_queue)
+        method_frame, _, body = mq_channel.basic_get(queue=completed_queue)
 
         if not body:
             continue
@@ -406,10 +400,7 @@ def test_tmgr_mock_tmgr():
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_rp_initialization(s, l, i):
+def test_tmgr_rp_initialization():
 
     sid  = ru.generate_id('test', ru.ID_UNIQUE)
     cfg  = {"sandbox_cleanup": False,
