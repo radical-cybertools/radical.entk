@@ -4,11 +4,6 @@ import os
 import pika
 import pytest
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
 from   hypothesis      import settings
 
 import threading       as mt
