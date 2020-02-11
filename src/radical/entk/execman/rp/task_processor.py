@@ -357,7 +357,7 @@ def get_output_list_from_task(task, placeholders):
                     temp = {
                         'source': path.split('>')[0].strip(),
                         'target': os.path.basename(path.split('>')[0].strip()),
-                        'action': rp.COPY
+                        'action': rp.LINK
                     }
                 output_data.append(temp)
 
