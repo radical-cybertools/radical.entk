@@ -143,7 +143,6 @@ def test_write_workflows():
         assert 'radical.pilot' in stack['radical']
         assert 'radical.entk'  in stack['radical']
 
-
     # --------------------------------------------------------------------------
     def check_wf(wf, check):
 
