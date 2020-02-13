@@ -4,11 +4,6 @@ import os
 import pika
 import pytest
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
 from   hypothesis      import settings
 
 import threading       as mt
@@ -27,8 +22,8 @@ from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 host     =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',      5672))
-user     = 'foo'
-passwd   = 'bar'
+user     = 'guest'
+passwd   = 'guest'
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -37,8 +32,7 @@ settings.load_profile("travis")
 
 # ------------------------------------------------------------------------------
 #
-@mock.patch.object(Amgr, '_setup_mqs', return_value=None)
-def test_amgr_rmq_auth(mocked_setup_mqs):
+def test_amgr_rmq_auth():
 
     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
     amgr      = Amgr(hostname=host, port=port, username=user, password=passwd,
@@ -129,10 +123,8 @@ def test_amgr_initialization():
 #
 def test_amgr_read_config():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=host, port=port)
 
-    assert amgr._hostname   == 'localhost'
-    assert amgr._port       == 5672
     assert amgr._reattempts == 3
 
     assert amgr._rmq_cleanup
@@ -149,6 +141,8 @@ def test_amgr_read_config():
 
     d = {"hostname"       : "radical.two",
          "port"           : 25672,
+         "username"       : user,
+         "password"       : passwd,
          "reattempts"     : 5,
          "resubmit_failed": True,
          "autoterminate"  : False,
@@ -164,6 +158,8 @@ def test_amgr_read_config():
     amgr._read_config(config_path='./',
                       hostname=None,
                       port=None,
+                      username=None,
+                      password=None,
                       reattempts=None,
                       resubmit_failed=None,
                       autoterminate=None,
@@ -310,9 +306,9 @@ def test_amgr_resource_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port)
+                                     rmq_conn_params=amgr._rmq_conn_params)
+
     amgr.resource_terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
 
@@ -336,10 +332,9 @@ def test_amgr_terminate():
     amgr._task_manager = TaskManager(sid='test',
                                      pending_queue=list(),
                                      completed_queue=list(),
-                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port
-                                     )
+                                     rmq_conn_params=amgr._rmq_conn_params)
+
     amgr.terminate()
     # FIXME: what is tested (asserted) here?  What happens if terminate fails?
 
@@ -367,14 +362,6 @@ def test_amgr_setup_mqs():
 
     for q in qs:
         mq_channel.queue_delete(queue=q)
-
-    with open('.%s.txt' % amgr._sid, 'r') as fp:
-        lines = fp.readlines()
-
-    for ind, val in enumerate(lines):
-        lines[ind] = val.strip()
-
-    assert set(qs) == set(lines)
 
 
 # ------------------------------------------------------------------------------
@@ -453,8 +440,7 @@ def test_amgr_synchronizer():
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=host,
-                    port=port,
+                    rmq_conn_params=amgr._rmq_conn_params,
                     rts=None)
 
     amgr._rmgr         = rmgr

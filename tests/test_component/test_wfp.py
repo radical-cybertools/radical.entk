@@ -22,33 +22,31 @@ settings.load_profile("travis")
 # ------------------------------------------------------------------------------
 #
 @given(s=st.characters(),
-       i=st.integers().filter(lambda x: isinstance(x,int)),
        b=st.booleans(),
        l=st.lists(st.characters()))
-def test_wfp_initialization(s, i, b, l):
+def test_wfp_initialization(s, b, l):
 
     p  = Pipeline()
-    st = Stage()
+    stage = Stage()
     t  = Task()
 
     t.executable = '/bin/date'
-    st.add_tasks(t)
-    p.add_stages(st)
+    stage.add_tasks(t)
+    p.add_stages(stage)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     wfp = WFprocessor(sid='rp.session.local.0000',
                       workflow=set([p]),
                       pending_queue=['pending'],
                       completed_queue=['completed'],
-                      mq_hostname=hostname,
-                      port=port,
+                      rmq_conn_params=rmq_conn_params,
                       resubmit_failed=True)
 
     assert len(wfp._uid.split('.')) == 2
     assert 'wfprocessor'            == wfp._uid.split('.')[0]
     assert wfp._pending_queue       == ['pending']
     assert wfp._completed_queue     == ['completed']
-    assert wfp._hostname            == hostname
-    assert wfp._port                == port
+    assert wfp._rmq_conn_params     == rmq_conn_params
     assert wfp._wfp_process         is None
     assert wfp._workflow            == set([p])
 
@@ -57,8 +55,7 @@ def test_wfp_initialization(s, i, b, l):
                           workflow=set([p]),
                           pending_queue=l,
                           completed_queue=l,
-                          mq_hostname=s,
-                          port=i,
+                          rmq_conn_params=rmq_conn_params,
                           resubmit_failed=b)
 
 
@@ -73,13 +70,13 @@ def test_wfp_initialize_workflow():
     t.executable = '/bin/date'
     s.add_tasks(t)
     p.add_stages(s)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     wfp = WFprocessor(sid='test',
                       workflow=[p],
                       pending_queue=list(),
                       completed_queue=list(),
-                      mq_hostname=hostname,
-                      port=port,
+                      rmq_conn_params=rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.initialize_workflow()
@@ -124,8 +121,7 @@ def test_wfp_enqueue():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.initialize_workflow()
@@ -185,8 +181,7 @@ def test_wfp_dequeue():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.initialize_workflow()
@@ -196,9 +191,6 @@ def test_wfp_dequeue():
 
     for t in p.stages[0].tasks:
         assert t.state == states.INITIAL
-
-    p.state           == states.SCHEDULED
-    p.stages[0].state == states.SCHEDULING
 
     for t in p.stages[0].tasks:
         t.state = states.COMPLETED
@@ -247,8 +239,7 @@ def test_wfp_start_processor():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.start_processor()
@@ -281,8 +272,7 @@ def test_wfp_terminate_processor():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.start_processor()
@@ -314,14 +304,10 @@ def test_wfp_workflow_incomplete():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.initialize_workflow()
-
-    p.state           == states.SCHEDULED
-    p.stages[0].state == states.SCHEDULING
 
     for t in p.stages[0].tasks:
         t.state = states.COMPLETED
@@ -365,8 +351,7 @@ def test_wfp_check_processor():
                       workflow=[p],
                       pending_queue=amgr._pending_queue,
                       completed_queue=amgr._completed_queue,
-                      mq_hostname=amgr._hostname,
-                      port=amgr._port,
+                      rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
     wfp.start_processor()

@@ -9,5 +9,5 @@ The documentation for Ensemble Toolkit is available at
 [![conda](https://anaconda.org/conda-forge/radical.entk/badges/version.svg)](https://anaconda.org/conda-forge/radical.entk)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2b7c9d2858804fb49e2e5512ad0a57ec)](https://www.codacy.com/app/vivek-bala/radical.entk?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=radical-cybertools/radical.entk&amp;utm_campaign=Badge_Grade)
 
-<!-- coverage run --source $VENV/lib/python2.7/site-packages/radical/entk -m pytest -vvv $LOC/radical.entk/tests -->
+<!-- coverage run --source $VENV/lib/python3.7/site-packages/radical/entk -m pytest -vvv $LOC/radical.entk/tests -->
 <!-- coverage html -->

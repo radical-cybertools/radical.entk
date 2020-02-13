@@ -21,9 +21,9 @@
                 "2": "SCHEDULING",
                 "3": "SUSPENDED",
                 "10": [
+                    "DONE",
                     "FAILED",
-                    "CANCELED",
-                    "DONE"
+                    "CANCELED"
                 ]
             }
         },
@@ -42,9 +42,9 @@
                 "2": "SCHEDULING",
                 "4": "SCHEDULED",
                 "10": [
+                    "DONE",
                     "FAILED",
-                    "CANCELED",
-                    "DONE"
+                    "CANCELED"
                 ]
             }
         },
@@ -63,9 +63,9 @@
             "state_values": {
                 "1": "DESCRIBED",
                 "10": [
+                    "DONE",
                     "FAILED",
-                    "CANCELED",
-                    "DONE"
+                    "CANCELED"
                 ],
                 "2": "SCHEDULING",
                 "4": "SCHEDULED",

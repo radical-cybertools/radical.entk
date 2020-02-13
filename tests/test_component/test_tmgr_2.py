@@ -19,10 +19,10 @@ os.environ['ENTK_HB_INTERVAL'] = '5'
 
 # ------------------------------------------------------------------------------
 #
-def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
+def func_for_mock_tmgr_test(mq_hostname, mq_port, pending_queue, completed_queue):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=port))
+                                                   host=mq_hostname, port=mq_port))
     mq_channel = mq_connection.channel()
 
     tasks = list()
@@ -41,7 +41,7 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
     cnt = 0
     while cnt < 15:
 
-        method_frame, props, body = mq_channel.basic_get(queue=completed_queue)
+        method_frame, _, body = mq_channel.basic_get(queue=completed_queue)
 
         if not body:
             continue
@@ -68,6 +68,7 @@ def test_tmgr_rp_tmgr():
                 "db_cleanup"     : False}
     rmgr_id  = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     rmgr._validate_resource_desc()
     rmgr._populate()
@@ -77,8 +78,7 @@ def test_tmgr_rp_tmgr():
                   pending_queue=['pendingq-1'],
                   completed_queue=['completedq-1'],
                   rmgr=rmgr,
-                  mq_hostname=hostname,
-                  port=port)
+                  rmq_conn_params=rmq_conn_params)
 
     tmgr.start_manager()
 

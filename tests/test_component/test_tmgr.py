@@ -37,10 +37,7 @@ os.environ['ENTK_HB_INTERVAL'] = '5'
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_base_initialization(s, l, i):
+def test_tmgr_base_initialization():
 
     try:
         home   = os.environ.get('HOME', '/home')
@@ -51,21 +48,20 @@ def test_tmgr_base_initialization(s, l, i):
     except:
         pass
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0001'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     assert tmgr._uid             == 'task_manager.0000'
     assert tmgr._pending_queue   == ['pending-1']
     assert tmgr._completed_queue == ['completed-1']
-    assert tmgr._hostname        == hostname
-    assert tmgr._port            == port
+    assert tmgr._rmq_conn_params == rmq_conn_params
     assert tmgr._rts             is None
 
     assert tmgr._log
@@ -89,6 +85,7 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
     sid = 'test.0002'
     rmgr = BaseRmgr({}, sid, None, {})
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
 
     data_type = [s, l, i, b, se, di]
 
@@ -99,22 +96,22 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
             with pytest.raises(ree.TypeError):
 
                 BaseTmgr(sid=s, pending_queue=s, completed_queue=s,
-                         rmgr=rmgr, mq_hostname=s, port=d, rts=None)
+                         rmgr=rmgr, rmq_conn_params=rmq_conn_params, rts=None)
 
         if not isinstance(d, int):
 
             with pytest.raises(ree.TypeError):
 
                 BaseTmgr(sid=s, pending_queue=s, completed_queue=s,
-                         rmgr=rmgr, mq_hostname=s, port=d, rts=None)
+                         rmgr=rmgr, rmq_conn_params=rmq_conn_params, rts=None)
 
 
 # ------------------------------------------------------------------------------
 #
-def func_for_heartbeat_test(mq_hostname, port, hb_request_q, hb_response_q):
+def func_for_heartbeat_test(mq_hostname, mq_port, hb_request_q, hb_response_q):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=port))
+                                                   host=mq_hostname, port=mq_port))
     mq_channel = mq_connection.channel()
 
     while True:
@@ -139,14 +136,14 @@ def func_for_heartbeat_test(mq_hostname, port, hb_request_q, hb_response_q):
 #
 def test_tmgr_base_heartbeat():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0003'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     tmgr._hb_terminate = mt.Event()
@@ -165,14 +162,14 @@ def test_tmgr_base_heartbeat():
 #
 def test_tmgr_base_start_heartbeat():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0004'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     assert     tmgr.start_heartbeat()
@@ -190,14 +187,14 @@ def test_tmgr_base_start_heartbeat():
 #
 def test_tmgr_base_terminate_heartbeat():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0005'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     tmgr._hb_terminate = mt.Event()
@@ -217,14 +214,14 @@ def test_tmgr_base_terminate_heartbeat():
 #
 def test_tmgr_base_terminate_manager():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0006'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     tmgr._tmgr_process   = mp.Process(target=tmgr._tmgr, name='heartbeat')
@@ -240,14 +237,14 @@ def test_tmgr_base_terminate_manager():
 #
 def test_tmgr_base_check_heartbeat():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0007'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     tmgr._hb_thread    = mt.Thread(target=tmgr._heartbeat, name='heartbeat')
@@ -263,14 +260,14 @@ def test_tmgr_base_check_heartbeat():
 #
 def test_tmgr_base_check_manager():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0008'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     tmgr._tmgr_process = mp.Process(target=tmgr._tmgr, name='heartbeat')
@@ -286,21 +283,20 @@ def test_tmgr_base_check_manager():
 #
 def test_tmgr_base_methods():
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0009'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
     with pytest.raises(NotImplementedError):
         tmgr._tmgr(uid=None,
                    rmgr=None,
-                   mq_hostname=None,
-                   port=None,
+                   rmq_conn_params=None,
                    pending_queue=None,
                    completed_queue=None)
 
@@ -310,33 +306,20 @@ def test_tmgr_base_methods():
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_mock_initialization(s, l, i):
+def test_tmgr_mock_initialization():
 
-    try:
-        home   = os.environ.get('HOME', '/home')
-        folder = glob.glob('%s/.radical/utils/test.*' % home)
-        for f in folder:
-            shutil.rmtree(f)
-    except:
-        pass
-
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     sid  = 'test.0010'
     rmgr = MockRmgr(resource_desc={}, sid=sid)
     tmgr = MockTmgr(sid=sid,
                     pending_queue=['pending'],
                     completed_queue=['completed'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port)
+                    rmq_conn_params=rmq_conn_params)
 
-    assert tmgr._uid               == 'task_manager.0000'
     assert tmgr._pending_queue     == ['pending']
     assert tmgr._completed_queue   == ['completed']
-    assert tmgr._hostname          == hostname
-    assert tmgr._port              == port
+    assert tmgr._rmq_conn_params    == rmq_conn_params
     assert tmgr._rts               == 'mock'
 
     assert tmgr._log
@@ -350,10 +333,10 @@ def test_tmgr_mock_initialization(s, l, i):
 
 # ------------------------------------------------------------------------------
 #
-def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
+def func_for_mock_tmgr_test(mq_hostname, mq_port, pending_queue, completed_queue):
 
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=port))
+                                                   host=mq_hostname, port=mq_port))
     mq_channel = mq_connection.channel()
 
     tasks = list()
@@ -370,7 +353,7 @@ def func_for_mock_tmgr_test(mq_hostname, port, pending_queue, completed_queue):
     cnt = 0
     while cnt < 15:
 
-        method_frame, props, body = mq_channel.basic_get(queue=completed_queue)
+        method_frame, _, body = mq_channel.basic_get(queue=completed_queue)
 
         if not body:
             continue
@@ -397,13 +380,13 @@ def test_tmgr_mock_tmgr():
                 'cpus'    : 20,
                 'project' : 'Random'}
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     rmgr = MockRmgr(resource_desc=res_dict, sid='test.0018')
     tmgr = MockTmgr(sid='test.0019',
                     pending_queue=['pendingq-1'],
                     completed_queue=['completedq-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port)
+                    rmq_conn_params=rmq_conn_params)
 
     tmgr.start_manager()
 
@@ -417,29 +400,25 @@ def test_tmgr_mock_tmgr():
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.characters()),
-       i=st.integers())
-def test_tmgr_rp_initialization(s, l, i):
+def test_tmgr_rp_initialization():
 
     sid  = ru.generate_id('test', ru.ID_UNIQUE)
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
     rmgr = RPRmgr({}, sid, cfg)
     tmgr = RPTmgr(sid=sid,
                   pending_queue=['pending'],
                   completed_queue=['completed'],
                   rmgr=rmgr,
-                  mq_hostname=hostname,
-                  port=port)
+                  rmq_conn_params=rmq_conn_params)
 
     assert 'task_manager' in tmgr._uid
 
     assert tmgr._pending_queue   == ['pending']
     assert tmgr._completed_queue == ['completed']
-    assert tmgr._hostname        == hostname
-    assert tmgr._port            == port
+    assert tmgr._rmq_conn_params == rmq_conn_params
     assert tmgr._rts             == 'radical.pilot'
     assert tmgr._umgr            is None
     assert tmgr._tmgr_process    is None

@@ -19,18 +19,18 @@ def func(obj, obj_type, new_state, queue1):
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
     port = int(os.environ.get('RMQ_PORT', 5672))
 
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+
     sid  = 'test.0013'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
                     pending_queue=['pending-1'],
                     completed_queue=['completed-1'],
                     rmgr=rmgr,
-                    mq_hostname=hostname,
-                    port=port,
+                    rmq_conn_params=rmq_conn_params,
                     rts=None)
 
-    mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=hostname, port=port))
+    mq_connection = pika.BlockingConnection(rmq_conn_params)
     mq_channel = mq_connection.channel()
 
     tmgr._advance(obj, obj_type, new_state, mq_channel, queue1)

@@ -11,7 +11,7 @@ from radical.entk.execman.rp         import TaskManager
 from radical.entk.utils              import get_session_profile
 from radical.entk.utils              import get_session_description
 from radical.entk.utils              import write_session_description
-from radical.entk.utils              import write_workflow
+from radical.entk.utils              import write_workflows
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
@@ -43,7 +43,7 @@ def test_write_session_description():
 
     amgr = AppManager(hostname=hostname, port=port)
     amgr.resource_desc = {'resource' : 'xsede.stampede',
-                          'walltime' : 60,
+                          'walltime' : 59,
                           'cpus'     : 128,
                           'gpus'     : 64,
                           'project'  : 'xyz',
@@ -56,18 +56,16 @@ def test_write_session_description():
                             workflow=amgr._workflow,
                             pending_queue=amgr._pending_queue,
                             completed_queue=amgr._completed_queue,
-                            mq_hostname=amgr._hostname,
-                            port=amgr._port,
-                            resubmit_failed=amgr._resubmit_failed)
+                            resubmit_failed=amgr._resubmit_failed,
+                            rmq_conn_params=amgr._rmq_conn_params)
     amgr._wfp.initialize_workflow()
     amgr._workflow = amgr._wfp.workflow
 
     amgr._task_manager = TaskManager(sid=amgr._sid,
                                      pending_queue=amgr._pending_queue,
                                      completed_queue=amgr._completed_queue,
-                                     mq_hostname=amgr._hostname,
                                      rmgr=amgr._rmgr,
-                                     port=amgr._port
+                                     rmq_conn_params=amgr._rmq_conn_params
                                      )
 
     write_session_description(amgr)
@@ -128,7 +126,7 @@ def generate_pipeline(nid):
 
 # ------------------------------------------------------------------------------
 #
-def test_write_workflow():
+def test_write_workflows():
 
     # --------------------------------------------------------------------------
     def check_stack(stack):
@@ -144,7 +142,6 @@ def test_write_workflow():
         assert 'radical.saga'  in stack['radical']
         assert 'radical.pilot' in stack['radical']
         assert 'radical.entk'  in stack['radical']
-
 
     # --------------------------------------------------------------------------
     def check_wf(wf, check):
@@ -176,9 +173,8 @@ def test_write_workflow():
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._hostname,
-                                    port=amgr._port,
-                                    resubmit_failed=amgr._resubmit_failed)
+                                    resubmit_failed=amgr._resubmit_failed,
+                                    rmq_conn_params=amgr._rmq_conn_params)
 
         amgr._wfp.initialize_workflow()
         check = amgr.workflow
@@ -186,7 +182,7 @@ def test_write_workflow():
         # ----------------------------------------------------------------------
         # check json output, with defaut and custom fname
         for fname in [None, 'wf.json']:
-            write_workflow(amgr.workflows, 'test', fname=fname)
+            write_workflows(amgr.workflows, 'test', fname=fname)
 
             if not fname: fname = 'entk_workflow.json'
             data = ru.read_json('test/%s' % fname)
@@ -201,7 +197,7 @@ def test_write_workflow():
 
         # ----------------------------------------------------------------------
         # check with data return
-        data = write_workflow(amgr.workflows, 'test', fwrite=False)
+        data = write_workflows(amgr.workflows, 'test', fwrite=False)
 
         check_stack(data['stack'])
         check_wf(data['workflows'][0], check)
@@ -215,13 +211,12 @@ def test_write_workflow():
                                     workflow=amgr._workflow,
                                     pending_queue=amgr._pending_queue,
                                     completed_queue=amgr._completed_queue,
-                                    mq_hostname=amgr._hostname,
-                                    port=amgr._port,
-                                    resubmit_failed=amgr._resubmit_failed)
+                                    resubmit_failed=amgr._resubmit_failed,
+                                    rmq_conn_params=amgr._rmq_conn_params)
         amgr._wfp.initialize_workflow()
         check = amgr.workflows
 
-        data = write_workflow(amgr.workflows, 'test', fwrite=False)
+        data = write_workflows(amgr.workflows, 'test', fwrite=False)
 
         check_stack(data['stack'])
         check_wf(data['workflows'][0], check[0])
@@ -243,7 +238,7 @@ if __name__ == '__main__':
     test_get_session_profile()
     test_write_session_description()
     test_get_session_description()
-    test_write_workflow()
+    test_write_workflows()
 
 
 # ------------------------------------------------------------------------------

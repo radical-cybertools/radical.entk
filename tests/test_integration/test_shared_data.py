@@ -1,7 +1,6 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 from glob import glob
-import shutil
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -12,7 +11,6 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 
 def generate_pipeline():
@@ -29,7 +27,7 @@ def generate_pipeline():
     t1.arguments = ['file1.txt','file2.txt']
     t1.stdout = 'output.txt'
     t1.copy_input_data = ['$SHARED/file1.txt', '$SHARED/file2.txt']
-    t1.download_output_data = ['output.txt > %s/output.txt' %cur_dir]
+    t1.download_output_data = ['output.txt > %s/output.txt' % cur_dir]
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -39,13 +37,14 @@ def generate_pipeline():
 
     return p
 
+
 def test_shared_data():
 
-    for f in glob('%s/file*.txt' %cur_dir):
+    for f in glob('%s/file*.txt' % cur_dir):
         os.remove(f)
 
-    os.system('echo "Hello" > %s/file1.txt' %cur_dir)
-    os.system('echo "World" > %s/file2.txt' %cur_dir)
+    os.system('echo "Hello" > %s/file1.txt' % cur_dir)
+    os.system('echo "World" > %s/file2.txt' % cur_dir)
 
 
     # Create a dictionary describe four mandatory keys:
@@ -58,14 +57,13 @@ def test_shared_data():
             'cpus': 1
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)
 
     # Assign resource manager to the Application Manager
     appman.resource_desc = res_dict
-    appman.shared_data = ['%s/file1.txt' %cur_dir, '%s/file2.txt' %cur_dir]
+    appman.shared_data = ['%s/file1.txt' % cur_dir, '%s/file2.txt' % cur_dir]
 
     p = generate_pipeline()
 
@@ -75,9 +73,9 @@ def test_shared_data():
     # Run the Application Manager
     appman.run()
 
-    with open('%s/output.txt' %cur_dir, 'r') as fp:
+    with open('%s/output.txt' % cur_dir, 'r') as fp:
         assert [d.strip() for d in fp.readlines()] == ['Hello', 'World']
 
-    os.remove('%s/file1.txt' %cur_dir)
-    os.remove('%s/file2.txt' %cur_dir)
-    os.remove('%s/output.txt' %cur_dir)
+    os.remove('%s/file1.txt' % cur_dir)
+    os.remove('%s/file2.txt' % cur_dir)
+    os.remove('%s/output.txt' % cur_dir)
