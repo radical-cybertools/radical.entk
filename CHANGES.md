@@ -6,6 +6,15 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.0.1  Release                                                        2020-02-13
+--------------------------------------------------------------------------------
+
+  - Documentation Update
+    - Instructions with Python 3
+    - Fix of API reference pages
+  - Travis CI updated, removing unnecessary tests, updating flake8/pylint
+  - Workaround for EnTK deadlock on non-trivial pipeline counts. #410
+ 
 
 1.0.0  Release                                                        2019-12-26
 --------------------------------------------------------------------------------
