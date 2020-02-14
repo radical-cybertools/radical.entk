@@ -5,7 +5,6 @@ import os
 
 hostname = 'two.radical-project.org'
 port = 33142
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def test_diff_rmq():
 
@@ -37,7 +36,6 @@ def test_diff_rmq():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
     appman = AppManager(hostname=hostname, port=port)
     appman.resource_desc = res_dict
 

@@ -12,7 +12,6 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
 
 def generate_pipeline():
 
@@ -63,7 +62,6 @@ def test_issue_236():
             'cpus': 1
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)

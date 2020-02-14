@@ -278,15 +278,6 @@ def test_rmgr_base_terminate_resource_request():
 @given(d=st.dictionaries(st.text(), st.text()))
 def test_rmgr_mock_initialization(d):
 
-    try:
-        home   = os.environ.get('HOME', '/home')
-        folder = glob.glob('%s/.radical/utils/test.*' % home)
-
-        for f in folder:
-            shutil.rmtree(f)
-    except:
-        pass
-
     rmgr = MockRmgr(resource_desc=d, sid='test.0016')
 
     assert rmgr._resource_desc == d
@@ -300,7 +291,6 @@ def test_rmgr_mock_initialization(d):
     assert rmgr._access_schema is None
     assert rmgr._queue         is None
     assert rmgr._validated     is False
-    assert rmgr._uid           == 'resource_manager.0000'
 
     assert rmgr._logger
     assert rmgr._prof
