@@ -6,6 +6,11 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.0.2  Release                                                        2020-02-18
+--------------------------------------------------------------------------------
+
+  - Fix #424, None directory name for units
+
 1.0.1  Release                                                        2020-02-13
 --------------------------------------------------------------------------------
 
