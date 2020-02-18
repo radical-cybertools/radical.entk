@@ -28,14 +28,14 @@ class Task(object):
     def __init__(self, from_dict=None):
 
         self._uid        = None
-        self._name       = None
+        self._name       = ""
         self._state      = res.INITIAL
 
         # Attributes necessary for execution
         self._pre_exec   = list()
-        self._executable = None
+        self._executable = ""
         self._arguments  = list()
-        self._sandbox    = None
+        self._sandbox    = ""
         self._post_exec  = list()
 
         self._lfs_per_process = 0
@@ -59,8 +59,8 @@ class Task(object):
         self._download_output_data = list()
 
         # Name of file to write stdout and stderr of task
-        self._stdout = None
-        self._stderr = None
+        self._stdout = ""
+        self._stderr = ""
 
         # Additional attributes that help in mapping tasks
         # to cuds and cus to tasks
