@@ -65,16 +65,18 @@ def get_session_profile(sid, src=None):
     if os.path.exists(src):
 
         # EnTK profiles are always on localhost
-        profiles = glob.glob("%s/%s/*.prof" % (src, sid))
+        profiles  = glob.glob("%s/*.prof"   % (src))
+        profiles += glob.glob("%s/*/*.prof" % (src))
 
     else:
-        raise EnTKError('%s/%s does not exist' % (src, sid))
+        profiles  = glob.glob("./%s/*.prof"   % (sid))
+        profiles += glob.glob("./%s/*/*.prof" % (sid))
 
     if not profiles:
         raise EnTKError('No profiles found at %s' % src)
 
-    try:
 
+    try:
         profiles = ru.read_profiles(profiles=profiles, sid=sid)
         prof, acc = ru.combine_profiles(profiles)
         prof = ru.clean_profile(prof,
@@ -207,17 +209,12 @@ def write_session_description(amgr):
 def get_session_description(sid, src=None):
 
     if not src:
-        src = os.getcwd()
+        src = './%s/' % sid
 
-    if os.path.exists(src):
+    if not os.path.isdir(src):
+        raise EnTKError('No such directory %s' % src)
 
-        # EnTK profiles are always on localhost
-        desc = ru.read_json("%s/%s/radical.entk.%s.json" % (src, sid, sid))
-
-    else:
-        raise EnTKError('%s/%s does not exist' % (src, sid))
-
-    return desc
+    return ru.read_json('%s/%s.json' % (src, sid))
 
 
 # ------------------------------------------------------------------------------
