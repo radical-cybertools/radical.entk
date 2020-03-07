@@ -9,15 +9,16 @@ from collections import Iterable
 class Pipeline(object):
 
     """
-    A pipeline represents a collection of objects that have a linear temporal execution order.
-    In this case, a pipeline consists of multiple 'Stage' objects. Each ```Stage_i``` can execute only
-    after all stages up to ```Stage_(i-1)``` have completed execution.
+    A pipeline represents a collection of objects that have a linear temporal
+    execution order.  In this case, a pipeline consists of multiple 'Stage'
+    objects. Each ```Stage_i``` can execute only after all stages up to
+    ```Stage_(i-1)``` have completed execution.
 
     """
 
     def __init__(self):
 
-        self._uid = None
+        self._uid  = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM)
         self._name = None
 
         self._stages = list()
@@ -204,6 +205,14 @@ class Pipeline(object):
         if self._cur_stage == 0:
             self._cur_stage = 1
 
+        for stage in stages:
+            stage.parent_pipeline['uid']  = self._uid
+            stage.parent_pipeline['name'] = self._name
+
+            for task in stage.tasks:
+                task.parent_pipeline['uid']  = self._uid
+                task.parent_pipeline['name'] = self._name
+
 
     def to_dict(self):
         """
@@ -382,27 +391,6 @@ class Pipeline(object):
         for stage in self._stages:
             stage._validate()
 
-    def _assign_uid(self, sid):
-        """
-        Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
-        current object
-        """
-        self._uid = ru.generate_id('pipeline.%(item_counter)04d',
-                                   ru.ID_CUSTOM, ns=sid)
-        for stage in self._stages:
-            stage._assign_uid(sid)
 
-        self._pass_uid()
+# ------------------------------------------------------------------------------
 
-    def _pass_uid(self):
-        """
-        Purpose: Pass current Pipeline's uid to all Stages.
-
-        :argument: List of Stage objects (optional)
-        """
-
-        for stage in self._stages:
-            stage.parent_pipeline['uid'] = self._uid
-            stage.parent_pipeline['name'] = self._name
-            stage._pass_uid()
-    # ------------------------------------------------------------------------------------------------------------------

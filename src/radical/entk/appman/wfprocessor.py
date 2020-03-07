@@ -149,7 +149,6 @@ class WFprocessor(object):
                     # TODO: Move parent uid, name assignment to assign_uid()
                     exec_stage.parent_pipeline['uid']  = pipe.uid
                     exec_stage.parent_pipeline['name'] = pipe.name
-                    exec_stage._assign_uid(self._sid)
 
                 # If its a new stage, update its state
                 if exec_stage.state == states.INITIAL:
@@ -486,28 +485,6 @@ class WFprocessor(object):
     # --------------------------------------------------------------------------
     #
     # Public Methods
-    #
-    def initialize_workflow(self):
-        """
-        **Purpose**: Initialize the PST of the workflow with a uid and type
-        checks
-        """
-
-        try:
-
-            self._prof.prof('wf_init_start', uid=self._uid)
-
-            for p in self._workflow:
-                p._assign_uid(self._sid)
-
-            self._prof.prof('wf_init_stop', uid=self._uid)
-
-        except Exception:
-            self._logger.exception('Fatal error when initializing workflow')
-            raise
-
-
-    # --------------------------------------------------------------------------
     #
     def start_processor(self):
         """

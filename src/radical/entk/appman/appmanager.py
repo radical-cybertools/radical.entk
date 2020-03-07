@@ -616,7 +616,6 @@ class AppManager(object):
             # start the threads again.
             self._wfp.terminate_processor()
             self._wfp._workflow = self._workflow
-            self._wfp.initialize_workflow()
             self._wfp.start_processor()
             return
 
@@ -629,7 +628,6 @@ class AppManager(object):
                                 completed_queue=self._completed_queue,
                                 resubmit_failed=self._resubmit_failed,
                                 rmq_conn_params=self._rmq_conn_params)
-        self._wfp.initialize_workflow()
         self._prof.prof('wfp_create_stop', uid=self._uid)
 
         # Start synchronizer thread AM OK
