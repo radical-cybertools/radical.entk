@@ -62,9 +62,9 @@ class AppManager(object):
     # --------------------------------------------------------------------------
     #
     def __init__(self,
-                 config_path=None,
                  hostname=None,
                  port=None,
+                 config_path=None,
                  username=None,
                  password=None,
                  reattempts=None,
