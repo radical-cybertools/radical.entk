@@ -7,13 +7,14 @@ from collections import Iterable
 
 class Stage(object):
     """
-    A stage represents a collection of objects that have no relative order of execution. In this case, a
-    stage consists of a set of 'Task' objects. All tasks of the same stage may execute concurrently.
+    A stage represents a collection of objects that have no relative order of
+    execution. In this case, a stage consists of a set of 'Task' objects. All
+    tasks of the same stage may execute concurrently.
     """
 
     def __init__(self):
 
-        self._uid = None
+        self._uid = ru.generate_id('stage.%(counter)04d', ru.ID_CUSTOM)
         self._name = None
 
         self._tasks = set()
@@ -191,9 +192,9 @@ class Stage(object):
         self._post_exec = value
 
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Public methods
-    # ------------------------------------------------------------------------------------------------------------------
+    #
     def add_tasks(self, value):
         """
         Adds tasks to the existing set of tasks of the Stage
@@ -203,6 +204,14 @@ class Stage(object):
         tasks = self._validate_entities(value)
         self._tasks.update(tasks)
         self._task_count = len(self._tasks)
+
+        for task in self._tasks:
+            task.parent_stage['uid']  = self._uid
+            task.parent_stage['name'] = self._name
+
+            task.parent_pipeline['uid']  = self.parent_pipeline['uid']
+            task.parent_pipeline['name'] = self.parent_pipeline['name']
+
 
     def to_dict(self):
         """
@@ -344,29 +353,6 @@ class Stage(object):
         for task in self._tasks:
             task._validate()
 
-    def _assign_uid(self, sid):
-        """
-        Purpose: Assign a uid to the current object based on the sid passed. Pass the current uid to children of
-        current object
-        """
-        self._uid = ru.generate_id('stage.%(item_counter)04d',
-                                   ru.ID_CUSTOM, ns=sid)
-        for task in self._tasks:
-            task._assign_uid(sid)
 
-        self._pass_uid()
+# ------------------------------------------------------------------------------
 
-    def _pass_uid(self):
-        """
-        Purpose: Assign the parent Stage and the parent Pipeline to all the tasks of the current stage.
-
-        :arguments: set of Tasks (optional)
-        :return: list of updated Tasks
-        """
-
-        for task in self._tasks:
-            task.parent_stage['uid'] = self._uid
-            task.parent_stage['name'] = self._name
-            task.parent_pipeline['uid'] = self._p_pipeline['uid']
-            task.parent_pipeline['name'] = self._p_pipeline['name']
-    # ------------------------------------------------------------------------------------------------------------------

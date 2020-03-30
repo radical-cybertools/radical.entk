@@ -27,9 +27,9 @@ class Task(object):
     #
     def __init__(self, from_dict=None):
 
-        self._uid        = None
-        self._name       = ""
-        self._state      = res.INITIAL
+        self._uid   = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+        self._name  = ""
+        self._state = res.INITIAL
 
         # Attributes necessary for execution
         self._pre_exec   = list()
@@ -929,17 +929,6 @@ class Task(object):
             if k not in ['uid', 'name', 'state']:
                 if v is not None:
                     setattr(self, k, v)
-
-
-    # --------------------------------------------------------------------------
-    #
-    def _assign_uid(self, sid):
-        '''
-        Purpose: Assign uid to the current object based on the session ID passed
-        '''
-
-        self.uid = ru.generate_id('task.%(item_counter)04d',
-                                  ru.ID_CUSTOM, ns=sid)
 
 
     # --------------------------------------------------------------------------

@@ -52,8 +52,8 @@ class Base_ResourceManager(object):
         self._validated     = False
 
         # Utility parameters
-        self._uid = ru.generate_id('resource_manager.%(item_counter)04d',
-                                   ru.ID_CUSTOM, ns=self._sid)
+        self._uid = ru.generate_id('resource_manager.%(counter)04d',
+                                   ru.ID_CUSTOM)
         self._path = os.getcwd() + '/' + self._sid
 
         name = 'radical.entk.%s' % self._uid
