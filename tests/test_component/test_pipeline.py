@@ -260,7 +260,6 @@ def test_pipeline_validate():
 #
 def test_pipeline_assign_uid():
 
-    p = Pipeline()
     try:
         import glob
         import shutil
@@ -271,7 +270,7 @@ def test_pipeline_assign_uid():
             shutil.rmtree(f)
     except:
         pass
-    p._assign_uid('test')
+    p = Pipeline()
     assert p.uid == 'pipeline.0000'
 
 

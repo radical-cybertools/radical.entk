@@ -295,7 +295,6 @@ def test_stage_validate():
 #
 def test_stage_assign_uid():
 
-    s = Stage()
     try:
         import glob
         import shutil
@@ -306,7 +305,7 @@ def test_stage_assign_uid():
             shutil.rmtree(f)
     except:
         pass
-    s._assign_uid('test')
+    s = Stage()
     assert s.uid == 'stage.0000'
 
 
