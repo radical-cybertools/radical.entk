@@ -61,34 +61,6 @@ def test_wfp_initialization(s, b, l):
 
 # ------------------------------------------------------------------------------
 #
-def test_wfp_initialize_workflow():
-
-    p = Pipeline()
-    s = Stage()
-    t = Task()
-
-    t.executable = '/bin/date'
-    s.add_tasks(t)
-    p.add_stages(s)
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
-
-    wfp = WFprocessor(sid='test',
-                      workflow=[p],
-                      pending_queue=list(),
-                      completed_queue=list(),
-                      rmq_conn_params=rmq_conn_params,
-                      resubmit_failed=False)
-
-    wfp.initialize_workflow()
-    assert p.uid           is not None
-    assert p.stages[0].uid is not None
-
-    for t in p.stages[0].tasks:
-        assert t.uid is not None
-
-
-# ------------------------------------------------------------------------------
-#
 def func_for_enqueue_test(p):
 
     while True:
@@ -124,7 +96,11 @@ def test_wfp_enqueue():
                       rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
 
-    wfp.initialize_workflow()
+    assert p.uid           is not None
+    assert p.stages[0].uid is not None
+
+    for t in p.stages[0].tasks:
+        assert t.uid is not None
 
     assert p.state           == states.INITIAL
     assert p.stages[0].state == states.INITIAL
@@ -183,8 +159,6 @@ def test_wfp_dequeue():
                       completed_queue=amgr._completed_queue,
                       rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
-
-    wfp.initialize_workflow()
 
     assert p.state           == states.INITIAL
     assert p.stages[0].state == states.INITIAL
@@ -306,8 +280,6 @@ def test_wfp_workflow_incomplete():
                       completed_queue=amgr._completed_queue,
                       rmq_conn_params=amgr._rmq_conn_params,
                       resubmit_failed=False)
-
-    wfp.initialize_workflow()
 
     for t in p.stages[0].tasks:
         t.state = states.COMPLETED
