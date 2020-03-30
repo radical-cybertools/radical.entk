@@ -27,7 +27,7 @@ class Task(object):
     #
     def __init__(self, from_dict=None):
 
-        self._uid   = ru.generate_id('task.%(item_counter)04d', ru.ID_CUSTOM)
+        self._uid   = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
         self._name  = ""
         self._state = res.INITIAL
 

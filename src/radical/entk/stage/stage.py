@@ -14,7 +14,7 @@ class Stage(object):
 
     def __init__(self):
 
-        self._uid = ru.generate_id('stage.%(item_counter)04d', ru.ID_CUSTOM)
+        self._uid = ru.generate_id('stage.%(counter)04d', ru.ID_CUSTOM)
         self._name = None
 
         self._tasks = set()

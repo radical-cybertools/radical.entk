@@ -18,7 +18,7 @@ class Pipeline(object):
 
     def __init__(self):
 
-        self._uid  = ru.generate_id('pipeline.%(item_counter)04d', ru.ID_CUSTOM)
+        self._uid  = ru.generate_id('pipeline.%(counter)04d', ru.ID_CUSTOM)
         self._name = None
 
         self._stages = list()

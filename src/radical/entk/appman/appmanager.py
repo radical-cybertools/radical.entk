@@ -91,8 +91,7 @@ class AppManager(object):
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
 
-        self._uid    = ru.generate_id('appmanager.%(item_counter)04d',
-                                      ru.ID_CUSTOM, ns=self._sid)
+        self._uid = ru.generate_id('appmanager.%(counter)04d', ru.ID_CUSTOM)
 
         path = os.getcwd() + '/' + self._sid
         name = 'radical.entk.%s' % self._uid
