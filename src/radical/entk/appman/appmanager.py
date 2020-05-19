@@ -91,8 +91,7 @@ class AppManager(object):
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
 
-        self._uid    = ru.generate_id('appmanager.%(item_counter)04d',
-                                      ru.ID_CUSTOM, ns=self._sid)
+        self._uid = ru.generate_id('appmanager.%(counter)04d', ru.ID_CUSTOM)
 
         path = os.getcwd() + '/' + self._sid
         name = 'radical.entk.%s' % self._uid
@@ -616,7 +615,6 @@ class AppManager(object):
             # start the threads again.
             self._wfp.terminate_processor()
             self._wfp._workflow = self._workflow
-            self._wfp.initialize_workflow()
             self._wfp.start_processor()
             return
 
@@ -629,7 +627,6 @@ class AppManager(object):
                                 completed_queue=self._completed_queue,
                                 resubmit_failed=self._resubmit_failed,
                                 rmq_conn_params=self._rmq_conn_params)
-        self._wfp.initialize_workflow()
         self._prof.prof('wfp_create_stop', uid=self._uid)
 
         # Start synchronizer thread AM OK

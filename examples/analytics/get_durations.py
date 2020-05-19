@@ -45,20 +45,20 @@ if __name__ == '__main__':
     tasks = session.filter(etype='task', inplace=False)
     print('#tasks   : %d' % len(tasks.get()))
 
-    # We use the 're.states.SCHEDULING' and 're.states.SUBMITTED' probes to find
+    # We use the 're.states.SCHEDULING' and 're.states.SUBMITTING' probes to find
     # the time taken by EnTK to create and submit all tasks for execution
     ppheader("Time spent to create and submit the tasks")
     duration = tasks.duration(event=[{ru.EVENT: 'state',
                                     ru.STATE: re.states.SCHEDULING},
                                     {ru.EVENT: 'state',
-                                    ru.STATE: re.states.SUBMITTED}])
+                                    ru.STATE: re.states.SUBMITTING}])
     print('duration : %.2f' % duration)
 
-    # We use the 're.states.SUBMITTED' and 're.states.COMPLETED' probes to find
+    # We use the 're.states.SUBMITTING' and 're.states.COMPLETED' probes to find
     # the time taken by EnTK to execute all tasks
     ppheader("Time spent to execute the tasks")
     duration = tasks.duration(event=[{ru.EVENT: 'state',
-                                    ru.STATE: re.states.SUBMITTED},
+                                    ru.STATE: re.states.SUBMITTING},
                                     {ru.EVENT: 'state',
                                     ru.STATE: re.states.COMPLETED}])
     print('duration : %.2f' % duration)
@@ -73,11 +73,11 @@ if __name__ == '__main__':
     print('duration : %.2f' % duration)
 
     # Finally, we produce a list of the number of concurrent tasks between
-    # states 're.states.SUBMITTED' and 're.states.COMPLETED' over the course
+    # states 're.states.SUBMITTING' and 're.states.COMPLETED' over the course
     # of the entire execution sampled every 10 seconds
-    ppheader("concurrent tasks in between SUBMITTED and EXECUTED states")
+    ppheader("concurrent tasks in between SUBMITTING and EXECUTED states")
     concurrency = tasks.concurrency(event=[{ru.EVENT: 'state',
-                                            ru.STATE: re.states.SUBMITTED},
+                                            ru.STATE: re.states.SUBMITTING},
                                             {ru.EVENT: 'state',
                                             ru.STATE: re.states.COMPLETED}],
                                     sampling=10)

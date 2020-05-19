@@ -58,7 +58,6 @@ def test_write_session_description():
                             completed_queue=amgr._completed_queue,
                             resubmit_failed=amgr._resubmit_failed,
                             rmq_conn_params=amgr._rmq_conn_params)
-    amgr._wfp.initialize_workflow()
     amgr._workflow = amgr._wfp.workflow
 
     amgr._task_manager = TaskManager(sid=amgr._sid,
@@ -176,7 +175,6 @@ def test_write_workflows():
                                     resubmit_failed=amgr._resubmit_failed,
                                     rmq_conn_params=amgr._rmq_conn_params)
 
-        amgr._wfp.initialize_workflow()
         check = amgr.workflow
 
         # ----------------------------------------------------------------------
@@ -213,7 +211,6 @@ def test_write_workflows():
                                     completed_queue=amgr._completed_queue,
                                     resubmit_failed=amgr._resubmit_failed,
                                     rmq_conn_params=amgr._rmq_conn_params)
-        amgr._wfp.initialize_workflow()
         check = amgr.workflows
 
         data = write_workflows(amgr.workflows, 'test', fwrite=False)

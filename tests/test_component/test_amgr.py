@@ -429,7 +429,6 @@ def test_amgr_synchronizer():
         s.add_tasks(t)
 
     p.add_stages(s)
-    p._assign_uid(amgr._sid)
     p._validate()
 
     amgr.workflow = [p]

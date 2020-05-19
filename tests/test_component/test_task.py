@@ -418,7 +418,6 @@ def test_task_from_dict():
 #
 def test_task_assign_uid():
 
-    t = Task()
     try:
         home   = os.environ.get('HOME', '/home')
         folder = glob.glob('%s/.radical/utils/test*' % home)
@@ -428,7 +427,7 @@ def test_task_assign_uid():
     except:
         pass
 
-    t._assign_uid('test')
+    t = Task()
     assert t.uid == 'task.0000'
 
 
