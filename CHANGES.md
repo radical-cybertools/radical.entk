@@ -6,6 +6,13 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.4.0  Release                                                        2020-05-18
+--------------------------------------------------------------------------------
+
+  - Early assignment of UIDs #435
+  - Improved profile handling consistency #434
+
+
 1.0.1  Release                                                        2020-02-13
 --------------------------------------------------------------------------------
 
