@@ -75,10 +75,10 @@ Dependencies
 Ensemble Toolkit uses `RADICAL Pilot (RP) <http://radicalpilot.readthedocs.org>`_ 
 as the runtime system. RP is targeted currently only for a set of high 
 performance computing (HPC) systems 
-(`see here <http://radicalpilot.readthedocs.io/en/latest/resources.html#chapter-resources>`_). 
+(`see here <http://radicalpilot.readthedocs.io/en/stable/resources.html#chapter-resources>`_). 
 RP can be extended to support more HPC systems by contacting the developers of 
 RP/EnTK or by the user themselves by following 
-`this page <http://radicalpilot.readthedocs.io/en/latest/machconf.html#writing-a-custom-resource-configuration-file>`_.
+`this page <http://radicalpilot.readthedocs.io/en/stable/machconf.html#writing-a-custom-resource-configuration-file>`_.
 
 Ensemble Toolkit also relies on RabbitMQ to support messaging capabilities 
 between its various components. Read more about it `here <http://www.rabbitmq.com/>`_.

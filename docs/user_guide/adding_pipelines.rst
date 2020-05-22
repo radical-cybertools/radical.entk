@@ -33,12 +33,6 @@ of this function is as follows.
     :language: python
     :lines: 19-45
 
-To run the script, simply execute the following from the command line:
-
-.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use 
-        it::
-
-            export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
 .. code-block:: bash
 
