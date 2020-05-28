@@ -58,8 +58,6 @@ if __name__ == '__main__':
             'cpus': 1
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://ACTIVE_MONGODB_URI'
-
     # Create Application Manager
     appman = AppManager(hostname=hostname, port=port)
 
