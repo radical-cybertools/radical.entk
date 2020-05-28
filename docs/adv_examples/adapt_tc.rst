@@ -15,19 +15,27 @@ pattern.
 You can download the complete code discussed in this section :download:`here <../../examples/advanced/adapt_tc.py>` or
 find it in your virtualenv under ``share/radical.entk/advanced/scripts``.
 
-For any adaptive capability within a Pipeline, we need to use the post execution property of a Stage object. Decisions
-can only be performed once all tasks of a Stage are completed as the concurrent tasks cannot be interrupted by design.
-The post execution property of a Stage requires 3 function handles: a function that returns a boolean, a function that is
-executed when the boolean result is True, and a function that is executed when the boolean result is False.
+For any adaptive capability within a Pipeline, we need to use the post
+execution property of a Stage object. Decisions can only be performed once all
+tasks of a Stage are completed as the concurrent tasks cannot be interrupted by
+design.  The post execution property of a Stage requires a callable function
+that determines next stages of a workflow, and a (True) function is called to
+add a new stage or continue when a condition is satisfied, of not a (False)
+function is called to stop.
 
 .. code-block:: python
 
-    s = Stage()
-    s.post_exec = {
-                    'condition': name of boolean function,
-                    'on_true': function to be executed if boolean result is True,
-                    'on_false': function to be executed if boolean result is False
-                }
+        CUR_NEW_STAGE=0
+        MAX_NEW_STAGE=4
+
+        def func_on_true():
+            ...
+
+        def func_on_false():
+            ...
+
+        s = Stage()
+        s.post_exec = lambda: func_on_true() if CUR_NEW_STAGE <= MAX_NEW_STAGE else func_on_false()
 
 
 

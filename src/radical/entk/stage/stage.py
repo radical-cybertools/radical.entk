@@ -124,15 +124,37 @@ class Stage(object):
     @property
     def post_exec(self):
         '''
-        The post_exec property enables adaptivity in EnTK. A function, func_1,
-        is evaluated to produce a boolean result. Function func_2 is executed
-        if the result is True and func_3 is executed if the result is False.
-        Following is the expected structure:
+        The post_exec property enables adaptivity in EnTK. post_exec receives a
+        Python callable object i.e. function, which will be evaluated when a
+        stage is finished. The post_exec property value is expected to have
+        selection criteria with two conditional functions like this: it checks
+        matching conditions to determine the next stage of workflow, and
+        a (True) function (when a condition is met) is called to add a new
+        stage or continue, if not a (False) function is called to stop.
 
-        self._post_exec = {
-                            |  'condition' : func_1,
-                            |  'on_true'   : func_2,
-                            |  'on_false'  : func_3}
+        Example:
+
+        s1.post_exec = func_condition
+
+        def func_condition():
+
+            if condition is met:
+                func_on_true():
+            func_on_false()
+
+        def func_on_true():
+           
+            s = Stage()
+            t = Task()
+            t.executable = '/bin/sleep'
+            t.arguments = ['30']
+            s.add_tasks(t)
+            p.add_stages(s)
+
+        def func_on_false():
+          
+            # do nothing
+            pass
         '''
         return self._post_exec
 
