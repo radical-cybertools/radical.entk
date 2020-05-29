@@ -323,6 +323,17 @@ class Task(object):
         Copies data (filenames in a list) from another task to a current task
         (or data staging area) before it starts.
 
+        The following is an example
+
+        ```python
+        t2.copy_input_data =
+        ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'%(p.name,
+        s1.name, t1.name)]
+
+        # output.txt is copied from a t1 task to a current task before it
+        # starts.
+        ```
+
         :getter: return the list of files
         :setter: assign the list of files
         :arguments: list of strings
@@ -365,6 +376,15 @@ class Task(object):
         Copies data (filenames in a list) from a current task to another task
         (or data staging area) when a task is finished.
 
+        The following is an example
+
+        ```python
+        t.copy_output_data = [ 'results.txt > $SHARED/results.txt' ]
+
+        # results.txt is copied to a data staging area `$SHARED` when a task is
+        # finised.
+        ```
+
         :getter: return the list of files
         :setter: assign the list of files
         :arguments: list of strings
@@ -406,6 +426,16 @@ class Task(object):
         '''
         Downloads data (filenames in a list) from a current task to a local
         client (e.g. laptop) when a task is finished.
+
+        The following is an example
+
+        ```python
+        t.download_output_data = [ 'results.txt' ]
+
+        # results.txt is transferred to a local client (e.g. laptop) when a
+        # current task finised.
+        ```
+
 
         :getter: return the list of files
         :setter: assign the list of files
