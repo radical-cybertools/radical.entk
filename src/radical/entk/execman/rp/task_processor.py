@@ -152,14 +152,36 @@ def resolve_arguments(args, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def resolve_tags(tag, parent_pipeline_name, placeholders):
+def resolve_tags(tags, parent_pipeline_name, placeholders):
+
+    # entk only handles co_location tags.  If tags are given as strings, they
+    # get translated into `{'colocation': '<tag>'}`.  Tags passed as dictionaies
+    # are checked to conform with above form.
+    #
+    # In both cases, the tag string is expanded with the given placeholders.
+
+    if not tags:
+        return
+
+    val = None
+    if isinstance(tags, str):
+        val = tags
+
+    elif isinstance(tags, dict):
+
+        if list(tags.keys()) != ['colocation']:
+            raise ValueError('unsupported task tags %s' % tags.keys())
+
+        val = tags['colocation']
+
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
         for tname in placeholders[parent_pipeline_name][sname]:
-            if tag != tname:
+            if val != tname:
                 continue
-            return placeholders[parent_pipeline_name][sname][tname]['rts_uid']
+            return {'colocation':
+                    placeholders[parent_pipeline_name][sname][tname]['rts_uid']}
 
     for pname in placeholders:
 
@@ -169,12 +191,13 @@ def resolve_tags(tag, parent_pipeline_name, placeholders):
 
         for sname in placeholders[pname]:
             for tname in placeholders[pname][sname]:
-                if tag != tname:
+                if val != tname:
                     continue
-                return placeholders[pname][sname][tname]['rts_uid']
+                return {'colocation':
+                        placeholders[pname][sname][tname]['rts_uid']}
 
-    raise ree.EnTKError(msg='Tag %s cannot be used as no previous task with '
-                            'that name is found' % tag)
+    raise ree.EnTKError(msg='colocation tag %s cannot be used as no previous'
+                            'task with that name is found' % val)
 
 
 # ------------------------------------------------------------------------------
@@ -444,10 +467,10 @@ def create_cud_from_task(task, placeholders, prof=None):
         cud.sandbox    = task.sandbox
         cud.post_exec  = task.post_exec
 
-        if task.tag:
+        if task.tags:
             if task.parent_pipeline['name']:
-                cud.tag = resolve_tags(
-                        tag=task.tag,
+                cud.tags = resolve_tags(
+                        tags=task.tags,
                         parent_pipeline_name=task.parent_pipeline['name'],
                         placeholders=placeholders)
 

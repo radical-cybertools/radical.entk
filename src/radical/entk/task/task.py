@@ -466,12 +466,21 @@ class Task(object):
     @property
     def tag(self):
         '''
-        Set the tag for the task that can be used while scheduling by the RTS
-
-        :getter: return the tag of the current task
+        DEPRECATED: use `self.tags`
         '''
 
-        return self._tag
+        return self.tags
+
+
+    @property
+    def tags(self):
+        '''
+        Set the tags for the task that can be used while scheduling by the RTS
+
+        :getter: return the tags of the current task
+        '''
+
+        return self._tags
 
 
     @property
@@ -826,11 +835,18 @@ class Task(object):
     @tag.setter
     def tag(self, value):
 
+        # this method exists for backward compatibility
+        self.tags = value
+
+
+    @tags.setter
+    def tags(self, value):
+
         if not isinstance(value, str):
-            raise ree.TypeError(entity='tag', expected_type=str,
+            raise ree.TypeError(entity='tags', expected_type=str,
                                 actual_type=type(value))
 
-        self._tag = value
+        self._tags = value
 
 
     @parent_stage.setter
@@ -889,7 +905,7 @@ class Task(object):
 
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
-            'tag'                  : self._tag,
+            'tags'                 : self._tags,
 
             'parent_stage'         : self._p_stage,
             'parent_pipeline'      : self._p_pipeline,
