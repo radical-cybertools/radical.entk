@@ -19,9 +19,7 @@ For any adaptive capability within a Pipeline, we need to use the post
 execution property of a Stage object. Decisions can only be performed once all
 tasks of a Stage are completed as the concurrent tasks cannot be interrupted by
 design.  The post execution property of a Stage requires a callable function
-that determines next stages of a workflow, and a (True) function is called to
-add a new stage or continue when a condition is satisfied, of not a (False)
-function is called to stop.
+that determines next stages of a workflow.
 
 .. code-block:: python
 

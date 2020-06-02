@@ -128,9 +128,7 @@ class Stage(object):
         Python callable object i.e. function, which will be evaluated when a
         stage is finished. The post_exec property value is expected to have
         selection criteria with two conditional functions like this: it checks
-        matching conditions to determine the next stage of workflow, and
-        a (True) function (when a condition is met) is called to add a new
-        stage or continue, if not a (False) function is called to stop.
+        matching conditions to determine the next stage of workflow.
 
         Example:
 
@@ -139,8 +137,9 @@ class Stage(object):
         def func_condition():
 
             if condition is met:
-                func_on_true():
-            func_on_false()
+                func_on_true()
+            else:
+                func_on_false()
 
         def func_on_true():
            
