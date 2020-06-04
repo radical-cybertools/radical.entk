@@ -218,9 +218,11 @@ class Stage(object):
     #
     def add_tasks(self, value):
         """
-        Adds tasks to the existing set of tasks of the Stage
+        Adds task(s) to a Stage by using a set union operation. Every Task
+        element is unique, no duplicate is allowed. Existing Task
+        won't be added but updated with changes.
 
-        :argument: set of tasks
+        :argument: iterable task object
         """
         tasks = self._validate_entities(value)
         self._tasks.update(tasks)
