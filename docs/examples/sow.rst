@@ -4,7 +4,7 @@
 Sequence of Workflows
 *********************
 
-Another common execution pattern consists of same-session sequential workflows with a single or mulitple concurrent Pipelines with multiple Stages where each Stage consists of several Tasks. We call this a **Sequence of Workflows**.
+Another common execution pattern consists of same-session sequential workflows with mulitple concurrent Pipelines with multiple Stages where each Stage consists of several Tasks. We call this a **Sequence of Workflows**.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
