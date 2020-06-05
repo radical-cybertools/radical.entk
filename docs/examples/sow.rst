@@ -4,17 +4,16 @@
 Sequence of Workflows
 *********************
 
-Another common execution pattern consists of sequential workflows with a single or mulitple concurrent Pipelines with multiple Stages where each Stage
-consists of several Tasks. We call this a **Sequence of Workflows**.
+Another common execution pattern consists of same-session sequential workflows with a single or mulitple concurrent Pipelines with multiple Stages where each Stage consists of several Tasks. We call this a **Sequence of Workflows**.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
-In the following example, we create 2 Pipelines, each with three Stages. For demonstration purposes, each Task does nothing but "sleep" for 3 seconds.
+In the following example, we create 2 sequential workflows, each with 2 Pipelines and 3 Stages per Pipeline. For demonstration purposes, each Task does nothing but "sleep" for 3 seconds.
 
 You can download the complete code discussed in this section :download:`here <../../examples/simple/sow.py>` or find it in
-your virtualenv under ``share/radical.entk/simple/scripts``.
+your virtualenv under ``share/radical.entk/simple/scripts``. The example suggests starting AppManager with autoterminate=False and using appman.terminate() once all pipelines are finished. This allows you to use the same application manager for the second workflow.
 
 .. code-block:: bash
 
