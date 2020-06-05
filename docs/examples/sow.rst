@@ -10,10 +10,10 @@ Another common execution pattern consists of same-session sequential workflows w
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
-In the following example, we create 2 sequential workflows, each with 2 Pipelines and 3 Stages per Pipeline. For demonstration purposes, each Task does nothing but "sleep" for 3 seconds.
+In the following example, we create 2 sequential workflows, each with 2 Pipelines and 3 Stages per Pipeline. For demonstration purposes, each Task does nothing but "sleep" for 3 seconds. The example suggests starting AppManager with autoterminate=False and using appman.terminate() once all pipelines are finished. This allows you to use the same application manager for the second workflow.
 
 You can download the complete code discussed in this section :download:`here <../../examples/simple/sow.py>` or find it in
-your virtualenv under ``share/radical.entk/simple/scripts``. The example suggests starting AppManager with autoterminate=False and using appman.terminate() once all pipelines are finished. This allows you to use the same application manager for the second workflow.
+your virtualenv under ``share/radical.entk/simple/scripts``.
 
 .. code-block:: bash
 
