@@ -340,8 +340,11 @@ class AppManager(object):
                 raise ree.TypeError(expected_type=str,
                                     actual_type=type(value))
 
+        self._shared_data = data
+
         if self._rmgr:
             self._rmgr.shared_data = data
+
 
 
     # --------------------------------------------------------------------------
