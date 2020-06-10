@@ -12,14 +12,6 @@ t_0 = time.time()
 
 # ------------------------------------------------------------------------------
 #
-def void():
-    # entk needs callables as post_exec conditionals, even if there is nothing
-    # to decide...
-    pass
-
-
-# ------------------------------------------------------------------------------
-#
 class ReplicaExchange(re.AppManager):
 
     _glyphs = {re.states.INITIAL:    '+',
@@ -42,10 +34,10 @@ class ReplicaExchange(re.AppManager):
         self._log  = ru.Logger('radical.repex.exc')
         self._dout = open('dump.log', 'a')
 
-        re.AppManager.__init__(self, autoterminate=False, port=5672) 
+        re.AppManager.__init__(self, autoterminate=False, port=5672)
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
-                              "cpus"     : 16}                                
+                              "cpus"     : 16}
 
         self._replicas = list()
         self._waitlist = list()
@@ -63,7 +55,7 @@ class ReplicaExchange(re.AppManager):
 
         # run the replica pipelines
         self.workflow = set(self._replicas)
-        self.run() 
+        self.run()
 
 
     # --------------------------------------------------------------------------
