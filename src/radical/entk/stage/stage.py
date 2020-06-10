@@ -121,45 +121,43 @@ class Stage(object):
 
         return self._state_history
 
+
     @property
     def post_exec(self):
         '''
         The post_exec property enables adaptivity in EnTK. post_exec receives a
         Python callable object i.e. function, which will be evaluated when a
-        stage is finished. The post_exec property value is expected to have
-        selection criteria with two conditional functions like this: it checks
-        matching conditions to determine the next stage of workflow.
+        stage is finished.
+
+        Note: if a post_exec callback resumes any suspended pipelines, it MUST
+        return a list with the IDs of those pipelines - otherwise the resume
+        will not be acted upon.
 
         Example:
 
-        s1.post_exec = func_condition
+        s1.post_exec = func_post
 
-        def func_condition():
+        def func_post():
 
             if condition is met:
-                func_on_true()
+                s = Stage()
+                t = Task()
+                t.executable = '/bin/sleep'
+                t.arguments = ['30']
+                s.add_tasks(t)
+                p.add_stages(s)
+
             else:
-                func_on_false()
-
-        def func_on_true():
-           
-            s = Stage()
-            t = Task()
-            t.executable = '/bin/sleep'
-            t.arguments = ['30']
-            s.add_tasks(t)
-            p.add_stages(s)
-
-        def func_on_false():
-          
-            # do nothing
-            pass
+                # do nothing
+                pass
         '''
+
         return self._post_exec
 
-    # ------------------------------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     # Setter functions
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
