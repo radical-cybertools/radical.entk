@@ -15,24 +15,16 @@ MAX_NEW_STAGE=4
 
 def generate_pipeline():
 
-    def func_condition():
+    def func_post():
 
         global CUR_NEW_STAGE, MAX_NEW_STAGE
 
         if CUR_NEW_STAGE <= MAX_NEW_STAGE:
-            func_on_true()
+            CUR_NEW_STAGE += 1
+            shuffle(p.stages[CUR_NEW_STAGE:])
 
-        func_on_false()
-
-    def func_on_true():
-
-        global CUR_NEW_STAGE
-        CUR_NEW_STAGE += 1
-
-        shuffle(p.stages[CUR_NEW_STAGE:])
-
-    def func_on_false():
-        print('Done')
+        else:
+            print('Done')
 
     # Create a Pipeline object
     p = Pipeline()
@@ -52,7 +44,7 @@ def generate_pipeline():
             s1.add_tasks(t1)
 
         # Add post-exec to the Stage
-        s1.post_exec = func_condition
+        s1.post_exec = func_post
 
         # Add Stage to the Pipeline
         p.add_stages(s1)

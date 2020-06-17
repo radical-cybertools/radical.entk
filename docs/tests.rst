@@ -9,11 +9,17 @@ Following are the unit tests and functional tests currently covered in
 Ensemble Toolkit.
 
 All tests are run on a Jenkins VM. Tests are run using pytest and test coverage
-is measured using `coverage <https://coverage.readthedocs.io/en/coverage-4.5.1a/index.html>`_ and reported using `codecov <https://codecov.io>`_ .
+is measured using `coverage <https://coverage.readthedocs.io/>`_ and reported using `codecov <https://codecov.io>`_ .
 
-Build status: [![Build Status](https://jenkins.radical-project.org/job/radical.entk/badge/icon)](https://jenkins.radical-project.org/job/radical.entk/)
+Build status: |travis|
 
-Test coverage: [![codecov](https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg)](https://codecov.io/gh/radical-cybertools/radical.entk)
+.. |travis| image:: https://travis-ci.com/radical-cybertools/radical.entk.svg?branch=master
+                 :target: https://travis-ci.com/radical-cybertools/radical.entk
+
+Test coverage: |codecov|
+
+.. |codecov| image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg
+                  :target: https://codecov.io/gh/radical-cybertools/radical.entk
 
 Click the above to look at the test logs. The following are tests are performed
 at every commit in every branch.

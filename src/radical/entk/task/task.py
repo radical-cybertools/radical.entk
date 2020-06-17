@@ -305,8 +305,9 @@ class Task(object):
     @property
     def upload_input_data(self):
         '''
-        List of files to be transferred from local machine to the location of
-        the current task on the remote machine.
+        Transfers data (filenames in a list) from a local client (e.g. laptop)
+        to the location of the current task (or data staging area) before it
+        starts.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -319,8 +320,19 @@ class Task(object):
     @property
     def copy_input_data(self):
         '''
-        List of files to be copied from a location on the remote machine to the
-        location of current task on the remote machine.
+        Copies data (filenames in a list) from another task to a current task
+        (or data staging area) before it starts.
+
+        The following is an example
+
+        ```python
+        t2.copy_input_data =
+        ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'%(p.name,
+        s1.name, t1.name)]
+
+        # output.txt is copied from a t1 task to a current task before it
+        # starts.
+        ```
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -333,8 +345,8 @@ class Task(object):
     @property
     def link_input_data(self):
         '''
-        List of files to be linked from a location on the remote machine to the
-        location of current task on the remote machine.
+        Symlinks data (filenames in a list) from another task to a current task
+        (or data staging area) before it starts.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -347,8 +359,8 @@ class Task(object):
     @property
     def move_input_data(self):
         '''
-        List of files to be move from a location on the remote machine to the
-        location of current task on the remote machine.
+        Moves data (filenames in a list) from another task to a current task
+        (or data staging area) before it starts.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -361,8 +373,17 @@ class Task(object):
     @property
     def copy_output_data(self):
         '''
-        List of files to be copied from the location of the current task to
-        another location on the remote machine.
+        Copies data (filenames in a list) from a current task to another task
+        (or data staging area) when a task is finished.
+
+        The following is an example
+
+        ```python
+        t.copy_output_data = [ 'results.txt > $SHARED/results.txt' ]
+
+        # results.txt is copied to a data staging area `$SHARED` when a task is
+        # finised.
+        ```
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -375,8 +396,8 @@ class Task(object):
     @property
     def link_output_data(self):
         '''
-        List of files to be linked from the location of current task on the
-        remote machine to a location on the remote machine.
+        Symlins data (filenames in a list) from a current task to another task
+        (or data staging area) when a task is finished.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -389,8 +410,8 @@ class Task(object):
     @property
     def move_output_data(self):
         '''
-        List of files to be copied from the location of the current task to
-        another location on the remote machine.
+        Moves data (filenames in a list) from a current task to another task
+        (or data staging area) when a task is finished.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -403,8 +424,18 @@ class Task(object):
     @property
     def download_output_data(self):
         '''
-        List of files to be downloaded from the location of the current task to
-        a location on the local machine.
+        Downloads data (filenames in a list) from a current task to a local
+        client (e.g. laptop) when a task is finished.
+
+        The following is an example
+
+        ```python
+        t.download_output_data = [ 'results.txt' ]
+
+        # results.txt is transferred to a local client (e.g. laptop) when a
+        # current task finised.
+        ```
+
 
         :getter: return the list of files
         :setter: assign the list of files

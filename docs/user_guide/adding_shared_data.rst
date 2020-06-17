@@ -42,13 +42,6 @@ file movement description of the task.
 In the example provided, the two files contain the words 'Hello' and 'World', respectively, and the output files
 are expected to contain 'Hello World'
 
-To run the script, simply execute the following from the command line:
-
-.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use 
-        it::
-
-            export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
-
 .. code-block:: bash
 
     python add_shared_data.py

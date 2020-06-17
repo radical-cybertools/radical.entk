@@ -34,12 +34,6 @@ You can download the complete code discussed in this section :download:`here
 <../../examples/user_guide/change_target.py>` or find it in your virtualenv under 
 ``share/radical.entk/user_guide/scripts``.
 
-To run the script, simply execute the following from the command line:
-
-.. tip:: For the purposes of this user guide, we have a MongoDB setup to use. Please run the following command to use 
-        it::
-
-            export RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
 
 .. code-block:: bash
 

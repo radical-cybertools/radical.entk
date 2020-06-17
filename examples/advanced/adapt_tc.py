@@ -15,37 +15,24 @@ MAX_NEW_STAGE=4
 
 def generate_pipeline():
 
-    def func_condition():
+    def func_post():
 
         global CUR_NEW_STAGE, MAX_NEW_STAGE
 
         if CUR_NEW_STAGE <= MAX_NEW_STAGE:
-            func_on_true()
 
-        func_on_false()
-
-    def func_on_true():
-
-        global CUR_NEW_STAGE
-
-        CUR_NEW_STAGE += 1
-
-        s = Stage()
-
-        for i in range(10):
-            t = Task()
-            t.executable = '/bin/sleep'
-            t.arguments = [ '30']
-
-            s.add_tasks(t)
+            CUR_NEW_STAGE += 1
+            s = Stage()
+            for i in range(10):
+                t = Task()
+                t.executable = '/bin/sleep'
+                t.arguments  = [ '30']
+                s.add_tasks(t)
 
         # Add post-exec to the Stage
-        s.post_exec = func_condition
+        s.post_exec = func_post
 
         p.add_stages(s)
-
-    def func_on_false():
-        print('Done')
 
     # Create a Pipeline object
     p = Pipeline()
@@ -63,7 +50,7 @@ def generate_pipeline():
         s1.add_tasks(t1)
 
     # Add post-exec to the Stage
-    s1.post_exec = func_condition
+    s1.post_exec = func_post
 
     # Add Stage to the Pipeline
     p.add_stages(s1)
