@@ -34,9 +34,6 @@ def generate_pipeline():
 
         p.add_stages(s)
 
-    def func_on_false():
-        print('Done')
-
     # Create a Pipeline object
     p = Pipeline()
 
