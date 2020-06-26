@@ -82,6 +82,13 @@ To run the script, simply execute the following from the command line:
 .. code-block:: bash
 
     python get_started.py
+    
+.. warning:: The first run may fail for different reasons, most of which
+        related to setting up the execution environment or requesting the correct
+        resources. Upon failure, Python may incorrectly raise the exception
+        ``KeyboardInterrupt``. This may be confusion because it is reported even when
+        no keyboard interrupt has been issued. Currently, we did not find a way to
+        avoid to raise that exception.
 
 
 And that's it! That's all the steps in this example. You can generate more verbose output
