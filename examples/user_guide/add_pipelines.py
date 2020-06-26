@@ -16,7 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = os.environ.get('RMQ_PORT', 5672)
-
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 def generate_pipeline(name, stages):
 
@@ -56,7 +57,8 @@ if __name__ == '__main__':
     p2 = generate_pipeline(name='Pipeline 2', stages=2)
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Assign the workflow as a set or list of Pipelines to the Application Manager
     # Note: The list order is not guaranteed to be preserved

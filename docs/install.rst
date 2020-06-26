@@ -170,11 +170,25 @@ Installation instructions can be found at
 <https://www.rabbitmq.com/download.html>. At the end of the installation run
 ```rabbitmq-server``` to start the server.
 
-The following configuration defines a default server and port number to communicate.
+The following configuration defines a default server and port number to
+communicate. Note that RMQ username and password are required to complete
+authentication.
 
 .. code-block:: bash
 
-        export RMQ_HOSTNAME=two.radical-project.org; export RMQ_PORT=33239
+        export RMQ_HOSTNAME={IP ADDRESS};
+        export RMQ_PORT={PORT NUMBER};
+        export RMQ_USERNAME={USERNAME};
+        export RMQ_PASSWORD={PASSWORD};
+
+.. note:: {} sections need to be replaced with actual values, and EnTK
+        administrators are able to provide these information.
+
+RMQ Account
+-----------
+
+Open a new ticket asking a new RMQ account:
+https://github.com/radical-cybertools/radical.entk/issues
 
 .. comments
 

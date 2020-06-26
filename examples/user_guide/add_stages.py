@@ -16,6 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = os.environ.get('RMQ_PORT', 5672)
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 if __name__ == '__main__':
 
@@ -61,7 +63,8 @@ if __name__ == '__main__':
 
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus
