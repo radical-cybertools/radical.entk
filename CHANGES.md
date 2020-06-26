@@ -6,6 +6,13 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.4.1  Release                                                        2020-07-17
+--------------------------------------------------------------------------------
+
+  - Documentation updated, PR #453, #451, #450, #446
+  - Shared data fix #449
+ 
+
 1.4.0  Release                                                        2020-05-18
 --------------------------------------------------------------------------------
 
