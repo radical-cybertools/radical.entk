@@ -171,8 +171,8 @@ Installation instructions can be found at
 ```rabbitmq-server``` to start the server.
 
 The following configuration defines a default server and port number to
-communicate. Note that RMQ username and password are required to complete
-authentication.
+communicate. Note that RMQ username and password might be required to 
+complete authentication.
 
 .. code-block:: bash
 
