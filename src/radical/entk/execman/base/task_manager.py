@@ -158,7 +158,7 @@ class Base_TaskManager(object):
         reply_queue = '-'.join(list(reversed(qname)))
         reply_queue = sid + '-' + reply_queue
 
-        while True:
+        while False:
 
             # FIXME: is this a busy loop?
 
