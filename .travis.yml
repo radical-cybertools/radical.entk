@@ -6,7 +6,6 @@ os:
 
 env:
   global:
-    - RADICAL_PILOT_DBURL="mongodb://rct:rct_test@138.201.86.166/rct_test"
     - CODECOV_TOKEN="790b223f-07e4-4707-bb97-3abe58e29cd8"
     - LOG=`git log -n 1 | grep Merge`
     - OLD=`echo $LOG | cut -d ' ' -f2`
