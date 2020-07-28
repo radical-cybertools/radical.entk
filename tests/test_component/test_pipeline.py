@@ -276,26 +276,6 @@ def test_pipeline_assign_uid():
 
 # ------------------------------------------------------------------------------
 #
-def test_pipeline_pass_uid():
-
-    p = Pipeline()
-    p._uid = 'test'
-    p.name = 'p1'
-
-    s1 = Stage()
-    s2 = Stage()
-    p.add_stages([s1,s2])
-
-    p._pass_uid()
-
-    assert s1.parent_pipeline['uid'] == p.uid
-    assert s1.parent_pipeline['name'] == p.name
-    assert s2.parent_pipeline['uid'] == p.uid
-    assert s2.parent_pipeline['name'] == p.name
-
-
-# ------------------------------------------------------------------------------
-#
 def test_pipeline_suspend_resume():
 
     p = Pipeline()
