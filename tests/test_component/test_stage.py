@@ -24,7 +24,7 @@ def test_stage_initialization():
 
     s = Stage()
 
-    assert s.uid == None
+    assert s.uid == 'stage.0000'
     assert s.name == None
     assert s.tasks == set()
     assert s.state == states.INITIAL
