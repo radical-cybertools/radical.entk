@@ -309,32 +309,3 @@ def test_stage_assign_uid():
     assert s.uid == 'stage.0000'
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_pass_uid():
-
-    s = Stage()
-    s._uid = 's'
-    s.name = 's1'
-    s.parent_pipeline['uid'] = 'p'
-    s.parent_pipeline['name'] = 'p1'
-
-    t1 = Task()
-    t2 = Task()
-    s.add_tasks([t1,t2])
-
-    s._pass_uid()
-
-    assert t1.parent_stage['uid'] == s.uid
-    assert t1.parent_stage['name'] == s.name
-    assert t1.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t1.parent_pipeline['name'] == s.parent_pipeline['name']
-
-    assert t2.parent_stage['uid'] == s.uid
-    assert t2.parent_stage['name'] == s.name
-    assert t2.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t2.parent_pipeline['name'] == s.parent_pipeline['name']
-
-
-# ------------------------------------------------------------------------------
-
