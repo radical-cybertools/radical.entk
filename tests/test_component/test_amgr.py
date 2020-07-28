@@ -86,7 +86,7 @@ def test_amgr_initialization():
 
     amgr = Amgr(hostname=host, port=port)
 
-    assert amgr._uid.split('.') == ['appmanager', '0000']
+    assert amgr._uid.split('.') == ['appmanager', '0001']
     assert isinstance(amgr._logger, ru.Logger)
     assert isinstance(amgr._prof,   ru.Profiler)
     assert isinstance(amgr._report, ru.Reporter)
