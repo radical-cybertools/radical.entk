@@ -128,7 +128,7 @@ def test_pipeline_to_dict():
 
     p = Pipeline()
     d = p.to_dict()
-    assert d == {'uid': None,
+    assert d == {'uid': 'pipeline.0000',
                  'name': None,
                  'state': states.INITIAL,
                  'state_history': [states.INITIAL],

@@ -2,7 +2,6 @@ import radical.utils as ru
 from radical.entk.exceptions import *
 from radical.entk.task.task import Task
 from radical.entk import states
-from collections import Iterable
 
 
 class Stage(object):
