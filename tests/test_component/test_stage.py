@@ -4,9 +4,9 @@ import pytest
 from   hypothesis import given, settings
 import hypothesis.strategies as st
 
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import *
+from radical.entk.exceptions import TypeError, ValueError, MissingError
 
 
 # ------------------------------------------------------------------------------
@@ -15,6 +15,7 @@ from radical.entk.exceptions import *
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
+
 
 def test_stage_initialization():
     """
@@ -25,14 +26,14 @@ def test_stage_initialization():
     s = Stage()
 
     assert s.uid == 'stage.0000'
-    assert s.name == None
+    assert s.name is None
     assert s.tasks == set()
     assert s.state == states.INITIAL
     assert s.state_history == [states.INITIAL]
     assert s._task_count == 0
-    assert s.parent_pipeline['uid'] == None
-    assert s.parent_pipeline['name'] == None
-    assert s.post_exec == None
+    assert s.parent_pipeline['uid'] is None
+    assert s.parent_pipeline['name'] is None
+    assert s.post_exec is None
 
 
 # ------------------------------------------------------------------------------
@@ -247,9 +248,9 @@ def test_stage_check_complete():
     t2.executable = '/bin/date'
     s.add_tasks([t1, t2])
 
-    assert s._check_stage_complete() == False
+    assert s._check_stage_complete() is False
     s._set_tasks_state(states.DONE)
-    assert s._check_stage_complete() == True
+    assert s._check_stage_complete() is True
 
 
 # ------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ def test_stage_assign_uid():
         import shutil
         import os
         home = os.environ.get('HOME','/home')
-        test_fold = glob.glob('%s/.radical/utils/test*'%home)
+        test_fold = glob.glob('%s/.radical/utils/test*' % home)
         for f in test_fold:
             shutil.rmtree(f)
     except:

@@ -1,5 +1,5 @@
 import radical.utils as ru
-from radical.entk.exceptions import *
+from radical.entk.exceptions import ValueError, TypeError, EnTKError, MissingError
 from radical.entk.task.task import Task
 from radical.entk import states
 
@@ -272,6 +272,7 @@ class Stage(object):
                 if d['state'] in list(states._stage_state_values.keys()):
                     self._state = d['state']
                 else:
+                    value = d['state']
                     raise ValueError(obj=self._uid,
                                      attribute='state',
                                      expected_value=list(states._stage_state_values.keys()),
