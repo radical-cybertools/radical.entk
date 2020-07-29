@@ -6,6 +6,7 @@ import os
 hostname = 'two.radical-project.org'
 port = 33142
 
+@pytest.mark.skip(reason="no need to test this for the moment")
 def test_diff_rmq():
 
     def create_pipeline():
