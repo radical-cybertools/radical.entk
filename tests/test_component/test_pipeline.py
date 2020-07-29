@@ -29,8 +29,8 @@ def test_pipeline_initialization():
     assert p.state_history == [states.INITIAL]
     assert p._stage_count == 0
     assert p.current_stage == 0
-    assert isinstance(p.lock, threading.Lock())
-    assert isinstance(p._completed_flag, threading.Event())
+    assert isinstance(p.lock, type(threading.Lock()))
+    assert isinstance(p._completed_flag, type(threading.Event()))
     assert p.completed is False
 
 

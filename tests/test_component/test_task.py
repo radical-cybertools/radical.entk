@@ -451,18 +451,3 @@ def test_task_validate():
         t._validate()
 
 
-# ------------------------------------------------------------------------------
-#
-if __name__ == '__main__':
-
-    test_task_initialization()
-    test_task_exceptions()
-    test_dict_to_task()
-    test_task_to_dict()
-    test_task_from_dict()
-    test_task_assign_uid()
-    test_task_validate()
-
-
-# ------------------------------------------------------------------------------
-
