@@ -70,6 +70,12 @@ def test_write_session_description():
     write_session_description(amgr)
 
     desc = ru.read_json('%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
+    # tasks are originally set but saved as a list in json
+    # uses sorting for convenient comparison, this doesn't change validity
+    for k, v in (desc['tree'].items()):
+        if k.startswith("stage"):
+            desc['tree'][k]['children'] = sorted(v['children'])
+
     src  = '%s/sample_data' % pwd
 
     assert desc == ru.read_json('%s/expected_desc_write_session.json' % src)
