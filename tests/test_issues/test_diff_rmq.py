@@ -1,10 +1,9 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
-from radical.entk.exceptions import *
 import pytest
-import os
 
 hostname = 'two.radical-project.org'
 port = 33142
+
 
 @pytest.mark.skip(reason="no need to test this for the moment")
 def test_diff_rmq():
@@ -27,7 +26,7 @@ def test_diff_rmq():
         p.add_stages(s)
 
         return p
-    
+
 
     res_dict = {
 
