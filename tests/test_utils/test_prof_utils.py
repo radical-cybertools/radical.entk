@@ -15,6 +15,8 @@ from radical.entk.utils              import write_workflows
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME', 'guest')
+password = os.environ.get('RMQ_PASSWORD', 'guest')
 pwd      = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -41,7 +43,8 @@ def test_get_session_profile():
 #
 def test_write_session_description():
 
-    amgr = AppManager(hostname=hostname, port=port)
+    amgr = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
     amgr.resource_desc = {'resource' : 'xsede.stampede',
                           'walltime' : 59,
                           'cpus'     : 128,
@@ -172,7 +175,8 @@ def test_write_workflows():
         wf.append(generate_pipeline(1))
         wf.append(generate_pipeline(2))
 
-        amgr          = AppManager(hostname=hostname, port=port)
+        amgr          = AppManager(hostname=hostname, port=port,
+                username=username, password=password)
         amgr.workflow = wf
         amgr._wfp     = WFprocessor(sid=amgr._sid,
                                     workflow=amgr._workflow,

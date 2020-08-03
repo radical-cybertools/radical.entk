@@ -22,6 +22,8 @@ from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 host     =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',      5672))
+username = os.environ.get('RMQ_USERNAME', 'guest')
+password = os.environ.get('RMQ_PASSWORD', 'guest')
 user     = 'guest'
 passwd   = 'guest'
 
@@ -35,12 +37,12 @@ settings.load_profile("travis")
 def test_amgr_rmq_auth():
 
     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
-    amgr      = Amgr(hostname=host, port=port, username=user, password=passwd,
-                     name=amgr_name)
+    amgr      = Amgr(hostname=host, port=port, username=username,
+            password=password, name=amgr_name)
 
     assert(amgr._rmq_conn_params.credentials)
-    assert(amgr._rmq_conn_params.credentials.username == user)
-    assert(amgr._rmq_conn_params.credentials.password == passwd)
+    assert(amgr._rmq_conn_params.credentials.username == username)
+    assert(amgr._rmq_conn_params.credentials.password == password)
 
 
 # ------------------------------------------------------------------------------
@@ -48,7 +50,8 @@ def test_amgr_rmq_auth():
 def test_amgr_initialization():
 
     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
-    amgr      = Amgr(hostname=host, port=port, name=amgr_name)
+    amgr      = Amgr(hostname=host, port=port, username=username,
+            password=password, name=amgr_name)
 
     assert amgr._name.split('.') == amgr_name.split('.')
     assert amgr._sid.split('.')  == amgr_name.split('.')
@@ -84,7 +87,7 @@ def test_amgr_initialization():
     assert amgr._cur_attempt == 1
     assert isinstance(amgr.shared_data, list)
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
 
     assert amgr._uid.split('.') == ['appmanager', '0001']
     assert isinstance(amgr._logger, ru.Logger)
@@ -123,7 +126,7 @@ def test_amgr_initialization():
 #
 def test_amgr_read_config():
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
 
     assert amgr._reattempts == 3
 
@@ -141,8 +144,8 @@ def test_amgr_read_config():
 
     d = {"hostname"       : "radical.two",
          "port"           : 25672,
-         "username"       : user,
-         "password"       : passwd,
+         "username"       : username,
+         "password"       : password,
          "reattempts"     : 5,
          "resubmit_failed": True,
          "autoterminate"  : False,
@@ -229,7 +232,8 @@ def test_amgr_assign_workflow():
 #
 def test_amgr_assign_shared_data():
 
-    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port,
+            username=username, password=password)
 
     res_dict = {'resource': 'xsede.supermic',
                 'walltime': 30,
@@ -246,7 +250,7 @@ def test_amgr_assign_shared_data():
 #
 def test_amgr_run():
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
 
     with pytest.raises(MissingError):
         amgr.run()
@@ -280,7 +284,8 @@ def test_amgr_run_mock():
                 'cpus'    : 1,
                 'project' : ''}
 
-    appman = Amgr(hostname=host, port=port, rts="mock")
+    appman = Amgr(hostname=host, port=port, username=username,
+            password=password, rts="mock")
     appman.resource_desc = res_dict
 
     appman.workflow = [p]
@@ -298,7 +303,8 @@ def test_amgr_resource_terminate():
 
     from radical.entk.execman.rp import TaskManager
 
-    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port,
+            username=username, password=password)
     amgr.resource_desc = res_dict
 
     amgr._setup_mqs()
@@ -324,7 +330,8 @@ def test_amgr_terminate():
 
     from radical.entk.execman.rp import TaskManager
 
-    amgr = Amgr(rts='radical.pilot', hostname=host, port=port)
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port,
+            username=username, password=password)
     amgr.resource_desc = res_dict
 
     amgr._setup_mqs()
@@ -343,7 +350,7 @@ def test_amgr_terminate():
 #
 def test_amgr_setup_mqs():
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
     amgr._setup_mqs()
 
     assert len(amgr._pending_queue)   == 1
@@ -368,7 +375,7 @@ def test_amgr_setup_mqs():
 #
 def test_amgr_cleanup_mqs():
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
     sid  = amgr._sid
 
     amgr._setup_mqs()
@@ -414,7 +421,7 @@ def func_for_synchronizer_test(sid, p, tmgr):
 #
 def test_amgr_synchronizer():
 
-    amgr = Amgr(hostname=host, port=port)
+    amgr = Amgr(hostname=host, port=port, username=username, password=password)
     amgr._setup_mqs()
 
     p = Pipeline()
@@ -477,7 +484,7 @@ def test_sid_in_mqs():
 
     # FIXME: what is tested / asserted here?
 
-    appman = Amgr(hostname=host, port=port)
+    appman = Amgr(hostname=host, port=port, username=username, password=password)
     sid    = appman._sid
     appman._setup_mqs()
 
@@ -535,7 +542,7 @@ def test_state_order():
 
     os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
-    appman = Amgr(hostname=host, port=port)
+    appman = Amgr(hostname=host, port=port, username=username, password=password)
     appman.resource_desc = res_dict
 
     appman.workflow = [p1]

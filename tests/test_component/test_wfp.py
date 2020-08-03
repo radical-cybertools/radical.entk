@@ -13,6 +13,8 @@ from radical.entk                    import Pipeline, Stage, Task, states
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME', 'guest')
+password = os.environ.get('RMQ_PASSWORD', 'guest')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -86,7 +88,8 @@ def test_wfp_enqueue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -150,7 +153,8 @@ def test_wfp_dequeue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -206,7 +210,8 @@ def test_wfp_start_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -239,7 +244,8 @@ def test_wfp_terminate_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -271,7 +277,8 @@ def test_wfp_workflow_incomplete():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -316,7 +323,8 @@ def test_wfp_check_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,

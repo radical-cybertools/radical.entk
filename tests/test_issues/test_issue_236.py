@@ -11,6 +11,8 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+username = os.environ.get('RMQ_USERNAME', 'guest')
+password = os.environ.get('RMQ_PASSWORD', 'guest')
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def generate_pipeline():
@@ -64,7 +66,8 @@ def test_issue_236():
 
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Assign resource manager to the Application Manager
     appman.resource_desc = res_dict
