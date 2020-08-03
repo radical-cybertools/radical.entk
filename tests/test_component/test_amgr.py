@@ -355,7 +355,7 @@ def test_amgr_setup_mqs():
 
     assert len(amgr._pending_queue)   == 1
     assert len(amgr._completed_queue) == 1
-    
+
     credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
                                        host=amgr._hostname, port=amgr._port,

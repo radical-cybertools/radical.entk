@@ -281,7 +281,7 @@ def test_tmgr_base_check_heartbeat():
 # ------------------------------------------------------------------------------
 #
 def test_tmgr_base_check_manager():
-    
+
     credentials = pika.PlainCredentials(username, password)
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
             credentials=credentials)
@@ -441,7 +441,7 @@ def test_tmgr_rp_initialization():
     sid  = ru.generate_id('test', ru.ID_UNIQUE)
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
-    
+
     credentials = pika.PlainCredentials(username, password)
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
             credentials=credentials)
