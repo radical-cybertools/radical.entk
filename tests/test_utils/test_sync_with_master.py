@@ -15,8 +15,12 @@ def syncer(obj, obj_type, queue1):
 
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
     port = int(os.environ.get('RMQ_PORT', 5672))
+    username = os.environ.get('RMQ_USERNAME', 'guest')
+    password = os.environ.get('RMQ_PASSWORD', 'guest')
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
     mq_connection = pika.BlockingConnection(rmq_conn_params)
     mq_channel = mq_connection.channel()
 
@@ -40,9 +44,13 @@ def master(obj, obj_type):
 
     hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
     port     = int(os.environ.get('RMQ_PORT', 5672))
+    username = os.environ.get('RMQ_USERNAME', 'guest')
+    password = os.environ.get('RMQ_PASSWORD', 'guest')
 
+    credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=hostname, port=port))
+                                                      host=hostname, port=port, 
+                                                      credentials=credentials))
     mq_channel = mq_connection.channel()
 
     queue1 = 'test-1-2-3'       # Expected queue name structure 'X-A-B-C'

@@ -355,9 +355,11 @@ def test_amgr_setup_mqs():
 
     assert len(amgr._pending_queue)   == 1
     assert len(amgr._completed_queue) == 1
-
+    
+    credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                       host=amgr._hostname, port=amgr._port))
+                                       host=amgr._hostname, port=amgr._port,
+                                       credentials=credentials))
     mq_channel    = mq_connection.channel()
 
     qs = ['%s-tmgr-to-sync' % amgr._sid,
@@ -381,8 +383,10 @@ def test_amgr_cleanup_mqs():
     amgr._setup_mqs()
     amgr._cleanup_mqs()
 
+    credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=host, port=port))
+                                                      host=host, port=port,
+                                                      credentials=credentials))
 
     qs = ['%s-tmgr-to-sync' % sid,
           '%s-cb-to-sync'   % sid,
@@ -403,8 +407,10 @@ def func_for_synchronizer_test(sid, p, tmgr):
 
     # FIXME: what is tested / asserted here?
 
+    credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=host, port=port))
+                                                      host=host, port=port,
+                                                      credentials=credentials))
     mq_channel    = mq_connection.channel()
 
     for t in p.stages[0].tasks:
@@ -493,8 +499,10 @@ def test_sid_in_mqs():
           '%s-sync-to-tmgr' % sid,
           '%s-sync-to-cb'   % sid]
 
+    credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                      host=host, port=port))
+                                                      host=host, port=port,
+                                                      credentials=credentials))
     mq_channel    = mq_connection.channel()
 
     def callback():
