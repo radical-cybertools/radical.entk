@@ -1,14 +1,11 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
-from radical.entk import states
-from radical.entk.exceptions import *
-import pytest
 import os
-from time import sleep
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 username = os.environ.get('RMQ_USERNAME', 'guest')
 password = os.environ.get('RMQ_PASSWORD', 'guest')
+
 
 def test_issue_255():
 

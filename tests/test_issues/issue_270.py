@@ -1,9 +1,9 @@
-from radical.entk import Pipeline, Stage, Task, AppManager, states
+from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -16,6 +16,7 @@ hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
 username = os.environ.get('RMQ_USERNAME', 'guest')
 password = os.environ.get('RMQ_PASSWORD', 'guest')
+
 
 def generate_pipeline():
 

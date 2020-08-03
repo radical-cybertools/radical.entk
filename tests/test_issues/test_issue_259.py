@@ -3,7 +3,7 @@ import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -49,7 +49,7 @@ def generate_pipeline():
     t2 = Task()
     t2.name = 't2'
     t2.executable = '/bin/cat'
-    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt'%(p.name, s1.name, t1.name)]
+    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt' % (p.name, s1.name, t1.name)]
     t2.stdout = 'output.txt'
     t2.download_output_data = ['output.txt']
 
@@ -60,6 +60,7 @@ def generate_pipeline():
     p.add_stages(s2)
 
     return p
+
 
 def test_issue_259():
 
