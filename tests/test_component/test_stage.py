@@ -189,7 +189,7 @@ def test_stage_to_dict():
     s = Stage()
     d = s.to_dict()
 
-    assert d == {'uid': None,
+    assert d == {'uid': 'stage.0000',
                  'name': None,
                  'state': states.INITIAL,
                  'state_history': [states.INITIAL],
