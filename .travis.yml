@@ -47,6 +47,7 @@ addons:
 
 # command to install dependencies
 install:
+  - pip install git+https://github.com/radical-cybertools/radical.pilot@devel
   - pip install .
   - pip install hypothesis
   - pip install coverage
