@@ -158,7 +158,16 @@ class Base_TaskManager(object):
         reply_queue = '-'.join(list(reversed(qname)))
         reply_queue = sid + '-' + reply_queue
 
-        # while False:
+        # The `while` loop is diabled with PR #466, and the explanation is:
+        #  The task manager and app manager continue to have ack semantics with
+        #  this PR. They exchange messages to sync through two channels,
+        #  sync-to-tmgr and sync-to-cb, these have not been touched. The ack
+        #  that located here is to  send an acknowledgment from the app manager
+        #  to the task manager although it doesn't take any further action. 
+        #  This is redundant and doesn't break or reduce reliability by
+        #  commenting out.
+
+        # while True:
 
         #     # FIXME: is this a busy loop?
 
