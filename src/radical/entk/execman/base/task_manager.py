@@ -158,24 +158,24 @@ class Base_TaskManager(object):
         reply_queue = '-'.join(list(reversed(qname)))
         reply_queue = sid + '-' + reply_queue
 
-        while False:
+        # while False:
 
-            # FIXME: is this a busy loop?
+        #     # FIXME: is this a busy loop?
 
-            method_frame, props, body = channel.basic_get(queue=reply_queue)
+        #     method_frame, props, body = channel.basic_get(queue=reply_queue)
 
-            if not body:
-                continue
+        #     if not body:
+        #         continue
 
-            if corr_id != props.correlation_id:
-                continue
+        #     if corr_id != props.correlation_id:
+        #         continue
 
-            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        #     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-            self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
-            self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
+        #     self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
+        #     self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
 
-            break
+        #     break
 
     # --------------------------------------------------------------------------
     #

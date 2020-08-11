@@ -807,13 +807,12 @@ class AppManager(object):
                         if completed_task.path:
                             task.path = str(completed_task.path)
 
-                        """mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=reply_to,
-                                properties=pika.BasicProperties(
-                                    correlation_id=corr_id),
-                                body='%s-ack' % task.uid)
-                        """
+                        # mq_channel.basic_publish(
+                        #        exchange='',
+                        #        routing_key=reply_to,
+                        #        properties=pika.BasicProperties(
+                        #            correlation_id=corr_id),
+                        #        body='%s-ack' % task.uid)
 
                         state = msg['object']['state']
                         self._prof.prof('pub_ack_state_%s' % state,
