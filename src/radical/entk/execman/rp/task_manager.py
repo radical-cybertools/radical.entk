@@ -286,7 +286,7 @@ class TaskManager(Base_TaskManager):
         umgr.register_callback(unit_state_cb)
 
         try:
-
+                    
             while not self._tmgr_terminate.is_set():
 
                 body = None
@@ -306,6 +306,9 @@ class TaskManager(Base_TaskManager):
                 bulk_tasks = list()
                 bulk_cuds  = list()
 
+                mq_connection = pika.BlockingConnection(rmq_conn_params)
+                mq_channel = mq_connection.channel()
+
                 for msg in body:
 
                     task = Task()
@@ -314,14 +317,11 @@ class TaskManager(Base_TaskManager):
                     bulk_cuds.append(create_cud_from_task(
                                             task, placeholders, self._prof))
 
-                    mq_connection = pika.BlockingConnection(rmq_conn_params)
-                    mq_channel = mq_connection.channel()
-
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, '%s-tmgr-to-sync' % self._sid)
-                    mq_connection.close()
 
                 umgr.submit_units(bulk_cuds)
+                mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '

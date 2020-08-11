@@ -164,15 +164,24 @@ be printed.
 RabbitMQ
 ========
 
-Ensemble Toolkit relies on RabbitMQ for message transfers. RabbitMQ needs to be
-configured or it can be installed on the same machine as EnTK is installed.
-Installation instructions can be found at
-<https://www.rabbitmq.com/download.html>. At the end of the installation run
-```rabbitmq-server``` to start the server.
+Ensemble Toolkit relies on RabbitMQ for message transfers. Users have three
+choices: (1) self-deploying and using a local RabbiMQ server; (2) self-deploying
+and using a remote RabbitMQ server that is accessible from the target HPC
+machine; (3) use a local or remote RabbitMQ server provided by the HPC
+organization or by an external partner. Note that most HPC infrastructures
+forbid executing servers on their login nodes. If you have no other option,
+please open an issue on the `EnTK GitHub repository
+<https://github.com/radical-cybertools/radical.entk/issues>`_and we will provide
+you with a testing account on our RabbitMQ server.
+
+In case, installation instructions can be found at
+<https://www.rabbitmq.com/download.html>. At the end of the installation, do not
+forget to run ```rabbitmq-server``` to start the server.
 
 The following configuration defines a default server and port number to
-communicate. Note that RMQ username and password might be required to 
-complete authentication.
+communicate. Note that remote RabbitMQ servers may require username and
+password. If you are using one of the RADICAL servers, username and password
+are mandatory.
 
 .. code-block:: bash
 
