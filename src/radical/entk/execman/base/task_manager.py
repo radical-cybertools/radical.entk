@@ -158,24 +158,33 @@ class Base_TaskManager(object):
         reply_queue = '-'.join(list(reversed(qname)))
         reply_queue = sid + '-' + reply_queue
 
-        while True:
+        # The `while` loop is diabled with PR #466, and the explanation is:
+        #  The task manager and app manager continue to have ack semantics with
+        #  this PR. They exchange messages to sync through two channels,
+        #  sync-to-tmgr and sync-to-cb, these have not been touched. The ack
+        #  that located here is to  send an acknowledgment from the app manager
+        #  to the task manager although it doesn't take any further action. 
+        #  This is redundant and doesn't break or reduce reliability by
+        #  commenting out.
 
-            # FIXME: is this a busy loop?
+        # while True:
 
-            method_frame, props, body = channel.basic_get(queue=reply_queue)
+        #     # FIXME: is this a busy loop?
 
-            if not body:
-                continue
+        #     method_frame, props, body = channel.basic_get(queue=reply_queue)
 
-            if corr_id != props.correlation_id:
-                continue
+        #     if not body:
+        #         continue
 
-            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        #     if corr_id != props.correlation_id:
+        #         continue
 
-            self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
-            self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
+        #     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-            break
+        #     self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
+        #     self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
+
+        #     break
 
     # --------------------------------------------------------------------------
     #
