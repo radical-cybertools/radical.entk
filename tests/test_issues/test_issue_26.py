@@ -42,10 +42,11 @@ def test_issue_26():
                             'project' : ''}
 
     p1 = create_pipeline()
+    p2 = create_pipeline()
+
     appman.workflow = [p1]
     appman.run()
 
-    p2 = create_pipeline()
     appman.workflow = [p2]
     appman.run()
 
