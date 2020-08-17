@@ -13,8 +13,7 @@ env:
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
     - PYTEST="coverage run -m pytest -ra --maxfail=3 --timeout=600 -vvv --showlocals --forked"
-    - CMD_PYTEST_UNITTESTS="  $PYTEST tests/test_component/  ;
-                              $PYTEST tests/test_utils/      "
+    - CMD_PYTEST_UNITTESTS="  $PYTEST tests/test_component tests/test_utils/ "
     - CMD_PYTEST_INTEGRATION="$PYTEST tests/test_integration/"
     - CMD_PYTEST_ISSUES="     $PYTEST tests/test_issues/"
     - CMD_FLAKE8="test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF"

@@ -276,7 +276,7 @@ def test_amgr_run_mock():
 
     t.name       = 'simulation'
     t.executable = '/bin/date'
-    s.tasks      = t
+    s.add_tasks(t)
     p.add_stages(s)
 
     res_dict = {'resource': 'local.localhost',
