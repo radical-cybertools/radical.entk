@@ -22,7 +22,7 @@ def test_pipeline_initialization():
 
     p = Pipeline()
 
-    assert p.uid is None
+    assert p.uid == 'pipeline.0000'
     assert p.name is None
     assert p.stages == list()
     assert p.state == states.INITIAL

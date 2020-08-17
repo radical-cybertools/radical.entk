@@ -195,13 +195,15 @@ def test_amgr_resource_description_assignment():
                 'cpus'    : 1000,
                 'project' : 'TG-MCB090174'}
 
-    amgr = Amgr(rts='radical.pilot')
+    amgr = Amgr(rts='radical.pilot', hostname=host, port=port,
+            username=username, password=password)
     amgr.resource_desc = res_dict
 
     from radical.entk.execman.rp import ResourceManager as RM_RP
     assert isinstance(amgr._rmgr, RM_RP)
 
-    amgr = Amgr(rts='mock')
+    amgr = Amgr(rts='mock', hostname=host, port=port, username=username,
+            password=password)
     amgr.resource_desc = res_dict
 
     from radical.entk.execman.mock import ResourceManager as RM_MOCK
@@ -212,7 +214,8 @@ def test_amgr_resource_description_assignment():
 #
 def test_amgr_assign_workflow():
 
-    amgr = Amgr()
+    amgr = Amgr(hostname=host, port=port, username=username,
+            password=password)
 
     with pytest.raises(TypeError):
         amgr.workflow = [1, 2, 3]

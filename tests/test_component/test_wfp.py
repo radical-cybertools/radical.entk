@@ -35,7 +35,9 @@ def test_wfp_initialization(s, b, l):
     t.executable = '/bin/date'
     stage.add_tasks(t)
     p.add_stages(stage)
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
 
     wfp = WFprocessor(sid='rp.session.local.0000',
                       workflow=set([p]),
@@ -174,8 +176,10 @@ def test_wfp_dequeue():
         t.state = states.COMPLETED
 
     task_as_dict  = json.dumps(t.to_dict())
+    credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                          host=amgr._hostname, port=amgr._port))
+                                          host=amgr._hostname, port=amgr._port,
+                                          credentials=credentials))
     mq_channel    = mq_connection.channel()
 
 
@@ -292,6 +296,7 @@ def test_wfp_workflow_incomplete():
         t.state = states.COMPLETED
 
     task_as_dict  = json.dumps(t.to_dict())
+    credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
                                           host=amgr._hostname, port=amgr._port))
     mq_channel    = mq_connection.channel()

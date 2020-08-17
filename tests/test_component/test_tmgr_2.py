@@ -13,6 +13,8 @@ from radical.entk            import Task, states
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',     5672))
+username = os.environ.get('RMQ_USERNAME', 'guest')
+password = os.environ.get('RMQ_PASSWORD', 'guest')
 
 os.environ['ENTK_HB_INTERVAL'] = '5'
 
@@ -21,8 +23,9 @@ os.environ['ENTK_HB_INTERVAL'] = '5'
 #
 def func_for_mock_tmgr_test(mq_hostname, mq_port, pending_queue, completed_queue):
 
+    credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=mq_port))
+                                                   host=mq_hostname, port=mq_port, credentials=credentials))
     mq_channel = mq_connection.channel()
 
     tasks = list()
@@ -68,7 +71,8 @@ def test_tmgr_rp_tmgr():
                 "db_cleanup"     : False}
     rmgr_id  = ru.generate_id('test', ru.ID_UNIQUE)
     rmgr     = RPRmgr(resource_desc=res_dict, sid=rmgr_id, rts_config=config)
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port, credentials=credentials)
 
     rmgr._validate_resource_desc()
     rmgr._populate()
