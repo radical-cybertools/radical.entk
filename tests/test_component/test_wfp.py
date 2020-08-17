@@ -182,7 +182,6 @@ def test_wfp_dequeue():
                                           credentials=credentials))
     mq_channel    = mq_connection.channel()
 
-
     mq_channel.basic_publish(exchange    = '',
                              routing_key = '%s' % amgr._completed_queue[0],
                              body        = task_as_dict)
@@ -298,7 +297,8 @@ def test_wfp_workflow_incomplete():
     task_as_dict  = json.dumps(t.to_dict())
     credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                          host=amgr._hostname, port=amgr._port))
+                                          host=amgr._hostname, port=amgr._port,
+                                          credentials=credentials))
     mq_channel    = mq_connection.channel()
 
     mq_channel.basic_publish(exchange    = '',
