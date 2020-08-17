@@ -762,7 +762,42 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _task_update(self, msg, reply_to, corr_id, mq_channel, method_frame):
+    def _get_message_to_sync(self, mq_channel, qname):
+        '''
+        Reads a message from the queue, and exchange the message to where it
+        was published by `update_task`
+        '''
+
+        # --------------------------------------------------------------
+        # Messages between tmgr Main thread and synchronizer -- only
+        # Task objects
+        method_frame, props, body = mq_channel.basic_get(queue=qname)
+        q_sid, q_from, _, q_to = qname.split("-")
+        return_queue_name = f"{q_sid}-{q_to}-to-{q_from}"
+
+        # The message received is a JSON object with the following
+        # structure:
+        # msg = {
+        #         'type': 'Pipeline'/'Stage'/'Task',
+        #         'object': json/dict
+        #         }
+        if body:
+
+            msg   = json.loads(body)
+            uid   = msg['object']['uid']
+            state = msg['object']['state']
+
+            self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
+            self._logger.debug('recv %s in state %s (sync)' % (uid, state))
+
+            if msg['type'] == 'Task':
+                self._update_task(msg, return_queue_name, props.correlation_id,
+                        mq_channel, method_frame)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _update_task(self, msg, reply_to, corr_id, mq_channel, method_frame):
 
         completed_task = Task()
         completed_task.from_dict(msg['object'])
@@ -904,54 +939,9 @@ class AppManager(object):
 
         while not self._terminate_sync.is_set():
 
-            # --------------------------------------------------------------
-            # Messages between tmgr Main thread and synchronizer -- only
-            # Task objects
-            method_frame, props, body = mq_channel.basic_get(queue=qname_t2s)
-
-            # The message received is a JSON object with the following
-            # structure:
-            # msg = {
-            #         'type': 'Pipeline'/'Stage'/'Task',
-            #         'object': json/dict
-            #         }
-            if body:
-
-                msg   = json.loads(body)
-                uid   = msg['object']['uid']
-                state = msg['object']['state']
-
-                self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
-                self._logger.debug('recv %s in state %s (sync)' % (uid, state))
-
-                if msg['type'] == 'Task':
-                    self._task_update(msg, '%s-sync-to-tmgr' % self._sid,
-                            props.correlation_id, mq_channel, method_frame)
-
-
-            # --------------------------------------------------------------
-            # Messages between callback thread and synchronizer -- only
-            # Task objects
-            method_frame, props, body = mq_channel.basic_get(queue=qname_c2s)
-
-            # The message received is a JSON object with the following structure:
-            # msg = {
-            #         'type': 'Pipeline'/'Stage'/'Task',
-            #         'object': json/dict
-            #         }
-            if body:
-
-                msg   = json.loads(body)
-                uid   = msg['object']['uid']
-                state = msg['object']['state']
-
-                self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
-                self._logger.debug('recv %s in state %s (sync)' % (uid, state))
-
-                if msg['type'] == 'Task':
-                    self._task_update(msg, '%s-sync-to-cb' % self._sid,
-                            props.correlation_id, mq_channel, method_frame)
-
+            # wrapper to call `_update_task()`
+            self._get_message_to_sync(mq_channel, qname_t2s)
+            self._get_message_to_sync(mq_channel, qname_c2s)
 
             # Appease pika cos it thinks the connection is dead
             now = time.time()

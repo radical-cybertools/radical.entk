@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import time
 import pika
 import pytest
 
@@ -480,6 +481,9 @@ def test_amgr_synchronizer():
     proc.start()
     proc.join()
 
+    # Wait for AppManager to finish the message exchange
+    time.sleep(5)
+
     amgr._terminate_sync.set()
     sync_thread.join()
 
@@ -541,7 +545,6 @@ def test_state_order():
 
     s = Stage()
     s.name  = 's1'
-    s.tasks = create_single_task()
     s.add_tasks(create_single_task())
 
     p1.add_stages(s)
@@ -566,8 +569,12 @@ def test_state_order():
     assert s_state_hist == ['DESCRIBED', 'SCHEDULING', 'SCHEDULED', 'DONE']
 
     for t in p1.stages[0].tasks:
-        assert t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
-                                   'SUBMITTING', 'EXECUTED',   'DONE']
+        assert (t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
+                                   'SUBMITTING', 'EXECUTED',   'DONE'] 
+                                   or
+                t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
+                                   'SUBMITTING', 'DONE'])
+
 
 
 # ------------------------------------------------------------------------------
