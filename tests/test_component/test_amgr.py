@@ -570,11 +570,7 @@ def test_state_order():
 
     for t in p1.stages[0].tasks:
         assert (t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
-                                   'SUBMITTING', 'EXECUTED',   'DONE'] 
-                                   or
-                t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED',
-                                   'SUBMITTING', 'DONE'])
-
+            'SUBMITTING', 'EXECUTED',   'DONE'] or t.state_history == ['DESCRIBED',  'SCHEDULING', 'SCHEDULED', 'SUBMITTING', 'DONE'])
 
 
 # ------------------------------------------------------------------------------
