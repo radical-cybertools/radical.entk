@@ -23,10 +23,8 @@ from radical.entk.execman.base import Base_ResourceManager as BaseRmgr
 
 host     =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT',      5672))
-username = os.environ.get('RMQ_USERNAME', 'guest')
-password = os.environ.get('RMQ_PASSWORD', 'guest')
-user     = 'guest'
-passwd   = 'guest'
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)

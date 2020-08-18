@@ -18,8 +18,8 @@ def func(obj, obj_type, new_state, queue1):
 
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
     port = int(os.environ.get('RMQ_PORT', 5672))
-    username = os.environ.get('RMQ_USERNAME', 'guest')
-    password = os.environ.get('RMQ_PASSWORD', 'guest')
+    username = os.environ.get('RMQ_USERNAME')
+    password = os.environ.get('RMQ_PASSWORD')
 
     credentials = pika.PlainCredentials(username, password)
     rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
@@ -48,8 +48,8 @@ def master(obj, obj_type, new_state):
 
     hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
     port = int(os.environ.get('RMQ_PORT', 5672))
-    username = os.environ.get('RMQ_USERNAME', 'guest')
-    password = os.environ.get('RMQ_PASSWORD', 'guest')
+    username = os.environ.get('RMQ_USERNAME')
+    password = os.environ.get('RMQ_PASSWORD')
 
     credentials = pika.PlainCredentials(username, password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(

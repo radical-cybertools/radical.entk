@@ -14,8 +14,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-username = os.environ.get('RMQ_USERNAME', 'guest')
-password = os.environ.get('RMQ_PASSWORD', 'guest')
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 
 def generate_pipeline():
