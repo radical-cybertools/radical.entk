@@ -1,8 +1,11 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import pytest
+import os
 
-hostname = 'two.radical-project.org'
-port = 33142
+hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+port = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 
 @pytest.mark.skip(reason="no need to test this for the moment")
@@ -36,7 +39,7 @@ def test_diff_rmq():
 
     }
 
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username, password=password)
     appman.resource_desc = res_dict
 
     p1 = create_pipeline()
