@@ -16,6 +16,7 @@ from .. import exceptions as ree
 
 from ..pipeline    import Pipeline
 from ..task        import Task
+from radical.entk  import states
 from ..utils       import write_session_description
 from ..utils       import write_workflows
 
@@ -827,6 +828,13 @@ class AppManager(object):
                             completed_task.state == task.state:
                             continue
 
+                        self._logger.debug(('Found task %s in state (%s)' + \
+                                ' changing to %s ==') %
+                                (task.uid, task.state, completed_task.state))
+                        if task.state in [states.DONE, states.FAILED]:
+                            self._logger.debug(('No change on task state %s ' + \
+                                    'in state %s') % (task.uid, task.state))
+                            break
                         task.state = str(completed_task.state)
                         self._logger.debug('Found task %s in state %s'
                                           % (task.uid, task.state))
@@ -834,12 +842,12 @@ class AppManager(object):
                         if completed_task.path:
                             task.path = str(completed_task.path)
 
-                        mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=reply_to,
-                                properties=pika.BasicProperties(
-                                    correlation_id=corr_id),
-                                body='%s-ack' % task.uid)
+                        # mq_channel.basic_publish(
+                        #        exchange='',
+                        #        routing_key=reply_to,
+                        #        properties=pika.BasicProperties(
+                        #            correlation_id=corr_id),
+                        #        body='%s-ack' % task.uid)
 
                         state = msg['object']['state']
                         self._prof.prof('pub_ack_state_%s' % state,
