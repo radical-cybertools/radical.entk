@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import time
 import pika
 import pytest
 
@@ -479,11 +478,11 @@ def test_amgr_synchronizer():
     proc.start()
     proc.join()
 
-    # Wait for AppManager to finish the message exchange
-    time.sleep(5)
 
-    amgr._terminate_sync.set()
-    sync_thread.join()
+    # Wait for AppManager to finish the message exchange
+    # no need to set *)terminate_sync* but a timeout instead
+    # amgr._terminate_sync.set()
+    sync_thread.join(15)
 
     for t in p.stages[0].tasks:
         assert t.state == states.COMPLETED
