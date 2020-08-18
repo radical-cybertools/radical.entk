@@ -773,7 +773,10 @@ class AppManager(object):
         # Messages between tmgr Main thread and synchronizer -- only
         # Task objects
         method_frame, props, body = mq_channel.basic_get(queue=qname)
-        q_sid, q_from, _, q_to = qname.split("-")
+        tmp = qname.split("-")
+        q_sid = ''.join(tmp[:-3])
+        q_from = tmp[-3]
+        q_to = tmp[-1]
         return_queue_name = f"{q_sid}-{q_to}-to-{q_from}"
 
         # The message received is a JSON object with the following
