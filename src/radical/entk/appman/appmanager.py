@@ -831,12 +831,12 @@ class AppManager(object):
                             completed_task.state == task.state:
                             continue
 
-                        self._logger.debug(('Found task %s in state (%s)' + \
-                                ' changing to %s ==') %
+                        self._logger.debug(('Found task %s in state (%s)'
+                            ' changing to %s ==') %
                                 (task.uid, task.state, completed_task.state))
                         if task.state in [states.DONE, states.FAILED]:
-                            self._logger.debug(('No change on task state %s ' + \
-                                    'in state %s') % (task.uid, task.state))
+                            self._logger.debug(('No change on task state %s '
+                                'in state %s') % (task.uid, task.state))
                             break
                         task.state = str(completed_task.state)
                         self._logger.debug('Found task %s in state %s'
