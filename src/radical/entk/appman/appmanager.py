@@ -127,7 +127,7 @@ class AppManager(object):
         # Setup rabbitmq queues
         self._setup_mqs()
 
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', "10"))
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr_created', uid=self._uid)
@@ -845,6 +845,8 @@ class AppManager(object):
                         if completed_task.path:
                             task.path = str(completed_task.path)
 
+                        _ = reply_to
+                        __ = corr_id
                         # mq_channel.basic_publish(
                         #        exchange='',
                         #        routing_key=reply_to,
