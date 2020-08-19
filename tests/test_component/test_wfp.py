@@ -13,6 +13,8 @@ from radical.entk                    import Pipeline, Stage, Task, states
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -33,7 +35,9 @@ def test_wfp_initialization(s, b, l):
     t.executable = '/bin/date'
     stage.add_tasks(t)
     p.add_stages(stage)
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
 
     wfp = WFprocessor(sid='rp.session.local.0000',
                       workflow=set([p]),
@@ -86,7 +90,8 @@ def test_wfp_enqueue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -150,7 +155,8 @@ def test_wfp_dequeue():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -170,10 +176,11 @@ def test_wfp_dequeue():
         t.state = states.COMPLETED
 
     task_as_dict  = json.dumps(t.to_dict())
+    credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                          host=amgr._hostname, port=amgr._port))
+                                          host=amgr._hostname, port=amgr._port,
+                                          credentials=credentials))
     mq_channel    = mq_connection.channel()
-
 
     mq_channel.basic_publish(exchange    = '',
                              routing_key = '%s' % amgr._completed_queue[0],
@@ -206,7 +213,8 @@ def test_wfp_start_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -239,7 +247,8 @@ def test_wfp_terminate_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -271,7 +280,8 @@ def test_wfp_workflow_incomplete():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,
@@ -285,8 +295,10 @@ def test_wfp_workflow_incomplete():
         t.state = states.COMPLETED
 
     task_as_dict  = json.dumps(t.to_dict())
+    credentials = pika.PlainCredentials(amgr._username, amgr._password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                          host=amgr._hostname, port=amgr._port))
+                                          host=amgr._hostname, port=amgr._port,
+                                          credentials=credentials))
     mq_channel    = mq_connection.channel()
 
     mq_channel.basic_publish(exchange    = '',
@@ -316,7 +328,8 @@ def test_wfp_check_processor():
     s.add_tasks(t)
     p.add_stages(s)
 
-    amgr = Amgr(hostname=hostname, port=port)
+    amgr = Amgr(hostname=hostname, port=port, username=username,
+            password=password)
     amgr._setup_mqs()
 
     wfp = WFprocessor(sid=amgr._sid,

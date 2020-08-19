@@ -6,6 +6,8 @@ import os
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port     = int(os.environ.get('RMQ_PORT',5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 
 # ------------------------------------------------------------------------------
@@ -32,17 +34,19 @@ def create_pipeline():
 #
 def test_issue_26():
 
-    appman = AppManager(hostname=hostname, port=port, autoterminate=False)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password, autoterminate=False)
     appman.resource_desc = {'resource': 'local.localhost',
                             'walltime': 10,
                             'cpus'    : 1,
                             'project' : ''}
 
     p1 = create_pipeline()
+    p2 = create_pipeline()
+
     appman.workflow = [p1]
     appman.run()
 
-    p2 = create_pipeline()
     appman.workflow = [p2]
     appman.run()
 
