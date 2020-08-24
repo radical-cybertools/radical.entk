@@ -27,6 +27,8 @@ from radical.entk              import Task, states
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
@@ -47,8 +49,9 @@ def test_tmgr_base_initialization():
             shutil.rmtree(f)
     except:
         pass
-
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
     sid  = 'test.0001'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -85,7 +88,9 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
     sid = 'test.0002'
     rmgr = BaseRmgr({}, sid, None, {})
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
 
     data_type = [s, l, i, b, se, di]
 
@@ -108,10 +113,13 @@ def test_tmgr_base_assignment_exceptions(s, l, i, b, se, di):
 
 # ------------------------------------------------------------------------------
 #
-def func_for_heartbeat_test(mq_hostname, mq_port, hb_request_q, hb_response_q):
+def func_for_heartbeat_test(mq_hostname, mq_port, mq_username, mq_password, hb_request_q, hb_response_q):
 
+    mq_credentials = pika.PlainCredentials(mq_username, mq_password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=mq_port))
+                                                   host=mq_hostname,
+                                                   port=mq_port,
+                                                   credentials=mq_credentials))
     mq_channel = mq_connection.channel()
 
     while True:
@@ -136,7 +144,9 @@ def func_for_heartbeat_test(mq_hostname, mq_port, hb_request_q, hb_response_q):
 #
 def test_tmgr_base_heartbeat():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
     sid  = 'test.0003'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -151,7 +161,7 @@ def test_tmgr_base_heartbeat():
     tmgr._hb_thread.start()
 
     proc = mp.Process(target=func_for_heartbeat_test,
-                      args=(hostname, port, tmgr._hb_request_q,
+                      args=(hostname, port, username, password, tmgr._hb_request_q,
                             tmgr._hb_response_q))
     proc.start()
     proc.join()
@@ -162,7 +172,10 @@ def test_tmgr_base_heartbeat():
 #
 def test_tmgr_base_start_heartbeat():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0004'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -187,7 +200,10 @@ def test_tmgr_base_start_heartbeat():
 #
 def test_tmgr_base_terminate_heartbeat():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0005'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -214,7 +230,10 @@ def test_tmgr_base_terminate_heartbeat():
 #
 def test_tmgr_base_terminate_manager():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0006'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -237,7 +256,10 @@ def test_tmgr_base_terminate_manager():
 #
 def test_tmgr_base_check_heartbeat():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0007'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -260,7 +282,10 @@ def test_tmgr_base_check_heartbeat():
 #
 def test_tmgr_base_check_manager():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0008'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -283,7 +308,10 @@ def test_tmgr_base_check_manager():
 #
 def test_tmgr_base_methods():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0009'
     rmgr = BaseRmgr({}, sid, None, {})
     tmgr = BaseTmgr(sid=sid,
@@ -308,7 +336,10 @@ def test_tmgr_base_methods():
 #
 def test_tmgr_mock_initialization():
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     sid  = 'test.0010'
     rmgr = MockRmgr(resource_desc={}, sid=sid)
     tmgr = MockTmgr(sid=sid,
@@ -333,10 +364,13 @@ def test_tmgr_mock_initialization():
 
 # ------------------------------------------------------------------------------
 #
-def func_for_mock_tmgr_test(mq_hostname, mq_port, pending_queue, completed_queue):
+def func_for_mock_tmgr_test(mq_hostname, mq_port, mq_username, mq_password, pending_queue, completed_queue):
 
+    mq_credentials = pika.PlainCredentials(mq_username, mq_password)
     mq_connection = pika.BlockingConnection(pika.ConnectionParameters(
-                                                   host=mq_hostname, port=mq_port))
+                                                   host=mq_hostname,
+                                                   port=mq_port,
+                                                   credentials=mq_credentials))
     mq_channel = mq_connection.channel()
 
     tasks = list()
@@ -380,7 +414,9 @@ def test_tmgr_mock_tmgr():
                 'cpus'    : 20,
                 'project' : 'Random'}
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
     rmgr = MockRmgr(resource_desc=res_dict, sid='test.0018')
     tmgr = MockTmgr(sid='test.0019',
                     pending_queue=['pendingq-1'],
@@ -391,7 +427,7 @@ def test_tmgr_mock_tmgr():
     tmgr.start_manager()
 
     proc = mp.Process(target=func_for_mock_tmgr_test,
-                      args=(hostname, port, tmgr._pending_queue[0],
+                      args=(hostname, port, username, password, tmgr._pending_queue[0],
                             tmgr._completed_queue[0]))
     proc.start()
     proc.join()
@@ -406,7 +442,10 @@ def test_tmgr_rp_initialization():
     cfg  = {"sandbox_cleanup": False,
             "db_cleanup"     : False}
 
-    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port)
+    credentials = pika.PlainCredentials(username, password)
+    rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+            credentials=credentials)
+
     rmgr = RPRmgr({}, sid, cfg)
     tmgr = RPTmgr(sid=sid,
                   pending_queue=['pending'],

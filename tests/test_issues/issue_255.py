@@ -1,13 +1,11 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
-from radical.entk import states
-from radical.entk.exceptions import *
-import pytest
 import os
-from time import sleep
 
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-MLAB = os.environ.get('RADICAL_PILOT_DBURL')
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
+
 
 def test_issue_255():
 
@@ -37,9 +35,9 @@ def test_issue_255():
 
     }
 
-    os.environ['RADICAL_PILOT_DBURL'] = MLAB
 
-    appman = AppManager(hostname=hostname, port=port, autoterminate=False)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password, autoterminate=False)
     appman.resource_desc = res_dict
 
     p1 = create_pipeline()

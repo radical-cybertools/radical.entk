@@ -50,7 +50,11 @@ def test_rmgr_base_initialization(d):
     assert rmgr.queue          is None
     assert rmgr._validated     is False
 
-    assert rmgr._uid == 'resource_manager.0000'
+    # rmgr id is incremental, and it is valid as long as it is in the range
+    prefix, uid = rmgr._uid.split(".")
+    assert prefix == 'resource_manager'
+    assert int(uid) >= 0
+    assert int(uid) <= 9999
     assert rmgr._logger
     assert rmgr._prof
 
@@ -352,8 +356,12 @@ def test_rmgr_rp_initialization(d):
     assert rmgr._access_schema       is None
     assert rmgr._queue               is None
     assert rmgr._validated           is False
-    assert rmgr._uid                 == 'resource_manager.0000'
     assert rmgr._download_rp_profile is False
+    # rmgr id is incremental, and it is valid as long as it is in the range
+    prefix, uid = rmgr._uid.split(".")
+    assert prefix == 'resource_manager'
+    assert int(uid) >= 0
+    assert int(uid) <= 9999
 
     assert rmgr._logger
     assert rmgr._prof

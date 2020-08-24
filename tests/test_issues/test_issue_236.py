@@ -11,7 +11,10 @@ if not os.environ.get('RADICAL_ENTK_VERBOSE'):
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
 port = int(os.environ.get('RMQ_PORT',5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 cur_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def generate_pipeline():
 
@@ -25,7 +28,7 @@ def generate_pipeline():
     t1 = Task()
     t1.executable = 'mv'
     t1.arguments = ['temp','/tmp/']
-    t1.upload_input_data = ['%s/temp'%cur_dir]
+    t1.upload_input_data = ['%s/temp' % cur_dir]
 
     # Add the Task to the Stage
     s1.add_tasks(t1)
@@ -34,6 +37,7 @@ def generate_pipeline():
     p.add_stages(s1)
 
     return p
+
 
 def test_issue_236():
 
@@ -46,10 +50,10 @@ def test_issue_236():
     ./temp/file1.txt
     '''
 
-    os.makedirs('%s/temp' %cur_dir)
-    os.makedirs('%s/temp/dir1' %cur_dir)
-    os.system('echo "Hello world" > %s/temp/file1.txt' %cur_dir)
-    os.system('echo "Hello world" > %s/temp/dir1/file2.txt' %cur_dir)
+    os.makedirs('%s/temp' % cur_dir)
+    os.makedirs('%s/temp/dir1' % cur_dir)
+    os.system('echo "Hello world" > %s/temp/file1.txt' % cur_dir)
+    os.system('echo "Hello world" > %s/temp/dir1/file2.txt' % cur_dir)
 
 
     # Create a dictionary describe four mandatory keys:
@@ -64,7 +68,8 @@ def test_issue_236():
 
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Assign resource manager to the Application Manager
     appman.resource_desc = res_dict
@@ -78,11 +83,11 @@ def test_issue_236():
     appman.run()
 
     # Assert folder movement
-    assert len(glob('/tmp/temp*')) >=1
-    assert len(glob('/tmp/temp/dir*')) ==1
-    assert len(glob('/tmp/temp/*.txt')) ==1
-    assert len(glob('/tmp/temp/dir1/*.txt')) ==1
+    assert len(glob('/tmp/temp*')) >= 1
+    assert len(glob('/tmp/temp/dir*')) == 1
+    assert len(glob('/tmp/temp/*.txt')) == 1
+    assert len(glob('/tmp/temp/dir1/*.txt')) == 1
 
     # Cleanup
-    shutil.rmtree('%s/temp' %cur_dir)
+    shutil.rmtree('%s/temp' % cur_dir)
     shutil.rmtree('/tmp/temp')

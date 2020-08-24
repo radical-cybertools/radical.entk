@@ -28,13 +28,13 @@ def test_task_initialization():
 
     t = Task()
 
-    assert t._uid                             is None
-    assert t.name                             is None
+    assert t._uid                             == 'task.0000'
+    assert t.name                             == ''
 
     assert t.state                            == states.INITIAL
     assert t.state_history                    == [states.INITIAL]
 
-    assert t.executable                       is None
+    assert t.executable                       == ''
     assert t.arguments                        == list()
     assert t.pre_exec                         == list()
     assert t.post_exec                        == list()
@@ -57,8 +57,8 @@ def test_task_initialization():
     assert t.move_input_data                  == list()
     assert t.download_output_data             == list()
 
-    assert t.stdout                           is None
-    assert t.stderr                           is None
+    assert t.stdout                           == ''
+    assert t.stderr                           == ''
     assert t.exit_code                        is None
     assert t.tag                              is None
     assert t.path                             is None
@@ -207,12 +207,12 @@ def test_task_to_dict():
     t = Task()
     d = t.to_dict()
 
-    assert d == {'uid'                  : None,
-                 'name'                 : None,
+    assert d == {'uid'                  : 'task.0000',
+                 'name'                 : '',
                  'state'                : states.INITIAL,
                  'state_history'        : [states.INITIAL],
                  'pre_exec'             : [],
-                 'executable'           : None,
+                 'executable'           : '',
                  'arguments'            : [],
                  'post_exec'            : [],
                  'cpu_reqs'             : {'processes'           : 1,
@@ -227,12 +227,14 @@ def test_task_to_dict():
                  'upload_input_data'    : [],
                  'copy_input_data'      : [],
                  'link_input_data'      : [],
+                 'link_output_data'     : [],
                  'move_input_data'      : [],
                  'copy_output_data'     : [],
                  'move_output_data'     : [],
                  'download_output_data' : [],
-                 'stdout'               : None,
-                 'stderr'               : None,
+                 'sandbox'              : '',
+                 'stdout'               : '',
+                 'stderr'               : '',
                  'exit_code'            : None,
                  'path'                 : None,
                  'tag'                  : None,
@@ -288,10 +290,12 @@ def test_task_to_dict():
                  'upload_input_data'    : ['test1'],
                  'copy_input_data'      : ['test2'],
                  'link_input_data'      : ['test3'],
+                 'link_output_data'      : [],
                  'move_input_data'      : ['test4'],
                  'copy_output_data'     : ['test5'],
                  'move_output_data'     : ['test6'],
                  'download_output_data' : ['test7'],
+                 'sandbox'              : '',
                  'stdout'               : 'out',
                  'stderr'               : 'err',
                  'exit_code'            : 1,
@@ -324,10 +328,12 @@ def test_task_to_dict():
                  'upload_input_data'    : ['test1'],
                  'copy_input_data'      : ['test2'],
                  'link_input_data'      : ['test3'],
+                 'link_output_data'      : [],
                  'move_input_data'      : ['test4'],
                  'copy_output_data'     : ['test5'],
                  'move_output_data'     : ['test6'],
                  'download_output_data' : ['test7'],
+                 'sandbox'              : '',
                  'stdout'               : 'out',
                  'stderr'               : 'err',
                  'exit_code'            : 1,
@@ -444,19 +450,4 @@ def test_task_validate():
     with pytest.raises(ree.MissingError):
         t._validate()
 
-
-# ------------------------------------------------------------------------------
-#
-if __name__ == '__main__':
-
-    test_task_initialization()
-    test_task_exceptions()
-    test_dict_to_task()
-    test_task_to_dict()
-    test_task_from_dict()
-    test_task_assign_uid()
-    test_task_validate()
-
-
-# ------------------------------------------------------------------------------
 

@@ -15,6 +15,8 @@ from radical.entk.utils              import write_workflows
 
 hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
 port     = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 pwd      = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -41,7 +43,8 @@ def test_get_session_profile():
 #
 def test_write_session_description():
 
-    amgr = AppManager(hostname=hostname, port=port)
+    amgr = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
     amgr.resource_desc = {'resource' : 'xsede.stampede',
                           'walltime' : 59,
                           'cpus'     : 128,
@@ -70,6 +73,12 @@ def test_write_session_description():
     write_session_description(amgr)
 
     desc = ru.read_json('%s/radical.entk.%s.json' % (amgr._sid, amgr._sid))
+    # tasks are originally set but saved as a list in json
+    # uses sorting for convenient comparison, this doesn't change validity
+    for k, v in (desc['tree'].items()):
+        if k.startswith("stage"):
+            desc['tree'][k]['children'] = sorted(v['children'])
+
     src  = '%s/sample_data' % pwd
 
     assert desc == ru.read_json('%s/expected_desc_write_session.json' % src)
@@ -79,7 +88,7 @@ def test_write_session_description():
 #
 def test_get_session_description():
 
-    sid  = 're.session.host.user.012345.1234'
+    sid  = 're.session.host.user.012345.1234/radical.entk.re.session.host.user.012345.1234'
     src  = '%s/sample_data/profiler' % pwd
     desc = get_session_description(sid=sid, src=src)
 
@@ -166,7 +175,8 @@ def test_write_workflows():
         wf.append(generate_pipeline(1))
         wf.append(generate_pipeline(2))
 
-        amgr          = AppManager(hostname=hostname, port=port)
+        amgr          = AppManager(hostname=hostname, port=port,
+                username=username, password=password)
         amgr.workflow = wf
         amgr._wfp     = WFprocessor(sid=amgr._sid,
                                     workflow=amgr._workflow,

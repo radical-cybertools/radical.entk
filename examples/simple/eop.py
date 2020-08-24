@@ -45,7 +45,7 @@ def generate_pipeline():
     t2.executable = '/bin/bash'
     t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
     # Copy data from the task in the first stage to the current task's location
-    t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.uid, s1.uid, t1.uid)]
+    t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
 
     # Add the Task to the Stage
     s2.add_tasks(t2)
@@ -61,7 +61,7 @@ def generate_pipeline():
     t3.executable = '/bin/bash'
     t3.arguments = ['-l', '-c', 'sha1sum ccount.txt > chksum.txt']
     # Copy data from the task in the first stage to the current task's location
-    t3.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/ccount.txt' % (p.uid, s2.uid, t2.uid)]
+    t3.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/ccount.txt' % (p.name, s2.name, t2.name)]
     # Download the output of the current task to the current location
     t3.download_output_data = ['chksum.txt > chksum_%s.txt' % cnt]
 

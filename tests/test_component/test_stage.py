@@ -4,9 +4,9 @@ import pytest
 from   hypothesis import given, settings
 import hypothesis.strategies as st
 
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import *
+from radical.entk.exceptions import TypeError, ValueError, MissingError
 
 
 # ------------------------------------------------------------------------------
@@ -16,6 +16,7 @@ from radical.entk.exceptions import *
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
 
+
 def test_stage_initialization():
     """
     ***Purpose***: Test if all attributes have, thus expect, the
@@ -24,15 +25,15 @@ def test_stage_initialization():
 
     s = Stage()
 
-    assert s.uid == None
-    assert s.name == None
+    assert s.uid == 'stage.0000'
+    assert s.name is None
     assert s.tasks == set()
     assert s.state == states.INITIAL
     assert s.state_history == [states.INITIAL]
     assert s._task_count == 0
-    assert s.parent_pipeline['uid'] == None
-    assert s.parent_pipeline['name'] == None
-    assert s.post_exec == None
+    assert s.parent_pipeline['uid'] is None
+    assert s.parent_pipeline['name'] is None
+    assert s.post_exec is None
 
 
 # ------------------------------------------------------------------------------
@@ -188,7 +189,7 @@ def test_stage_to_dict():
     s = Stage()
     d = s.to_dict()
 
-    assert d == {'uid': None,
+    assert d == {'uid': 'stage.0000',
                  'name': None,
                  'state': states.INITIAL,
                  'state_history': [states.INITIAL],
@@ -247,9 +248,9 @@ def test_stage_check_complete():
     t2.executable = '/bin/date'
     s.add_tasks([t1, t2])
 
-    assert s._check_stage_complete() == False
+    assert s._check_stage_complete() is False
     s._set_tasks_state(states.DONE)
-    assert s._check_stage_complete() == True
+    assert s._check_stage_complete() is True
 
 
 # ------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ def test_stage_assign_uid():
         import shutil
         import os
         home = os.environ.get('HOME','/home')
-        test_fold = glob.glob('%s/.radical/utils/test*'%home)
+        test_fold = glob.glob('%s/.radical/utils/test*' % home)
         for f in test_fold:
             shutil.rmtree(f)
     except:
@@ -308,33 +309,4 @@ def test_stage_assign_uid():
     s = Stage()
     assert s.uid == 'stage.0000'
 
-
-# ------------------------------------------------------------------------------
-#
-def test_stage_pass_uid():
-
-    s = Stage()
-    s._uid = 's'
-    s.name = 's1'
-    s.parent_pipeline['uid'] = 'p'
-    s.parent_pipeline['name'] = 'p1'
-
-    t1 = Task()
-    t2 = Task()
-    s.add_tasks([t1,t2])
-
-    s._pass_uid()
-
-    assert t1.parent_stage['uid'] == s.uid
-    assert t1.parent_stage['name'] == s.name
-    assert t1.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t1.parent_pipeline['name'] == s.parent_pipeline['name']
-
-    assert t2.parent_stage['uid'] == s.uid
-    assert t2.parent_stage['name'] == s.name
-    assert t2.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t2.parent_pipeline['name'] == s.parent_pipeline['name']
-
-
-# ------------------------------------------------------------------------------
 

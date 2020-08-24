@@ -7,7 +7,7 @@ import hypothesis.strategies as st
 
 from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import *
+from radical.entk.exceptions import TypeError, ValueError, MissingError, EnTKError
 
 
 # ------------------------------------------------------------------------------
@@ -17,20 +17,21 @@ from radical.entk.exceptions import *
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
 
+
 def test_pipeline_initialization():
 
     p = Pipeline()
 
-    assert p.uid == None
-    assert p.name == None
+    assert p.uid == 'pipeline.0000'
+    assert p.name is None
     assert p.stages == list()
     assert p.state == states.INITIAL
     assert p.state_history == [states.INITIAL]
     assert p._stage_count == 0
     assert p.current_stage == 0
-    assert type(p.lock) == type(threading.Lock())
-    assert type(p._completed_flag) == type(threading.Event())
-    assert p.completed == False
+    assert isinstance(p.lock, type(threading.Lock()))
+    assert isinstance(p._completed_flag, type(threading.Event()))
+    assert p.completed is False
 
 
 # ------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ def test_pipeline_to_dict():
 
     p = Pipeline()
     d = p.to_dict()
-    assert d == {'uid': None,
+    assert d == {'uid': 'pipeline.0000',
                  'name': None,
                  'state': states.INITIAL,
                  'state_history': [states.INITIAL],
@@ -172,17 +173,17 @@ def test_pipeline_increment_stage():
 
     assert p._stage_count == 2
     assert p._cur_stage == 1
-    assert p._completed_flag.is_set() == False
+    assert p._completed_flag.is_set() is False
 
     p._increment_stage()
     assert p._stage_count == 2
     assert p._cur_stage == 2
-    assert p._completed_flag.is_set() == False
+    assert p._completed_flag.is_set() is False
 
     p._increment_stage()
     assert p._stage_count == 2
     assert p._cur_stage == 2
-    assert p._completed_flag.is_set() == True
+    assert p._completed_flag.is_set() is True
 
 
 # ------------------------------------------------------------------------------
@@ -204,17 +205,17 @@ def test_pipeline_decrement_stage():
     p._increment_stage()
     assert p._stage_count == 2
     assert p._cur_stage == 2
-    assert p._completed_flag.is_set() == True
+    assert p._completed_flag.is_set() is True
 
     p._decrement_stage()
     assert p._stage_count == 2
     assert p._cur_stage == 1
-    assert p._completed_flag.is_set() == False
+    assert p._completed_flag.is_set() is False
 
     p._decrement_stage()
     assert p._stage_count == 2
     assert p._cur_stage == 0
-    assert p._completed_flag.is_set() == False
+    assert p._completed_flag.is_set() is False
 
 
 # ------------------------------------------------------------------------------
@@ -265,33 +266,13 @@ def test_pipeline_assign_uid():
         import shutil
         import os
         home = os.environ.get('HOME','/home')
-        test_fold = glob.glob('%s/.radical/utils/test*'%home)
+        test_fold = glob.glob('%s/.radical/utils/test*' % home)
         for f in test_fold:
             shutil.rmtree(f)
     except:
         pass
     p = Pipeline()
     assert p.uid == 'pipeline.0000'
-
-
-# ------------------------------------------------------------------------------
-#
-def test_pipeline_pass_uid():
-
-    p = Pipeline()
-    p._uid = 'test'
-    p.name = 'p1'
-
-    s1 = Stage()
-    s2 = Stage()
-    p.add_stages([s1,s2])
-
-    p._pass_uid()
-
-    assert s1.parent_pipeline['uid'] == p.uid
-    assert s1.parent_pipeline['name'] == p.name
-    assert s2.parent_pipeline['uid'] == p.uid
-    assert s2.parent_pipeline['name'] == p.name
 
 
 # ------------------------------------------------------------------------------
