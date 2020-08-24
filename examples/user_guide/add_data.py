@@ -5,7 +5,7 @@ import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     t2.executable = '/bin/bash'
     t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
     # Copy data from the task in the first stage to the current task's location
-    t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'%(p.name, s1.name, t1.name)]
+    t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
     # Download the output of the current task to the current location
     t2.download_output_data = ['ccount.txt']
 

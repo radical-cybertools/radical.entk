@@ -459,7 +459,6 @@ def test_tmgr_rp_initialization():
     assert tmgr._completed_queue == ['completed']
     assert tmgr._rmq_conn_params == rmq_conn_params
     assert tmgr._rts             == 'radical.pilot'
-    assert tmgr._umgr            is None
     assert tmgr._tmgr_process    is None
     assert tmgr._hb_thread       is None
 
