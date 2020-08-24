@@ -6,6 +6,14 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+
+1.5.0  Release                                                        2020-08-24
+--------------------------------------------------------------------------------
+ 
+  - CI tests updated, PR #471
+  - Task sync enhancement, PR #466
+ 
+
 1.4.1  Release                                                        2020-07-17
 --------------------------------------------------------------------------------
 
