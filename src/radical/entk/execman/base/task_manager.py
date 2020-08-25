@@ -258,12 +258,12 @@ class Base_TaskManager(object):
                 if not body:
                     # no usable response
                     return
-                    #raise EnTKError('heartbeat timeout')
+                    # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
                     return
-                    #raise EnTKError('heartbeat timeout')
+                    # raise EnTKError('heartbeat timeout')
 
                 self._log.info('Received heartbeat response')
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
@@ -282,10 +282,10 @@ class Base_TaskManager(object):
             # we did indeed race with termination - exit gracefully
             return
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as e:
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
-            raise KeyboardInterrupt
+            raise KeyboardInterrupt from e
 
         except Exception as e:
             self._log.exception('Heartbeat failed with error: %s', e)

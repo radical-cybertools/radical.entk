@@ -191,7 +191,7 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
 
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
 
@@ -270,10 +270,10 @@ class TaskManager(Base_TaskManager):
 
                     mq_connection.close()
 
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as e:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt
+                raise KeyboardInterrupt from e
 
             except Exception as e:
                 self._log.exception('Error in RP callback thread: %s', e)
@@ -328,7 +328,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
             umgr.close()
