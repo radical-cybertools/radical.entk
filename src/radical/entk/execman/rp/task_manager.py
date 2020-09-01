@@ -55,10 +55,9 @@ class TaskManager(Base_TaskManager):
         super(TaskManager, self).__init__(sid, pending_queue, completed_queue,
                                           rmgr, rmq_conn_params,
                                           rts='radical.pilot')
-        self._umgr       = None
         self._rts_runner = None
 
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -66,7 +65,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, umgr, rmgr, pending_queue, completed_queue,
+    def _tmgr(self, uid, rmgr, pending_queue, completed_queue,
                     rmq_conn_params):
         """
         **Purpose**: This method has 3 purposes: Respond to a heartbeat thread
@@ -164,7 +163,7 @@ class TaskManager(Base_TaskManager):
                 try:
 
                     # Get tasks from the pending queue
-                    method_frame, header_frame, body = \
+                    method_frame, _ , body = \
                                     mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
@@ -192,7 +191,7 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
 
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
 
@@ -271,10 +270,10 @@ class TaskManager(Base_TaskManager):
 
                     mq_connection.close()
 
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as e:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt
+                raise KeyboardInterrupt from e
 
             except Exception as e:
                 self._log.exception('Error in RP callback thread: %s', e)
@@ -286,7 +285,7 @@ class TaskManager(Base_TaskManager):
         umgr.register_callback(unit_state_cb)
 
         try:
-                    
+
             while not self._tmgr_terminate.is_set():
 
                 body = None
@@ -329,7 +328,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
             umgr.close()
@@ -357,7 +356,6 @@ class TaskManager(Base_TaskManager):
             self._tmgr_process = mp.Process(target=self._tmgr,
                                             name='task-manager',
                                             args=(self._uid,
-                                                  self._umgr,
                                                   self._rmgr,
                                                   self._pending_queue,
                                                   self._completed_queue,

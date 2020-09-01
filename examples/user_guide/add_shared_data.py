@@ -3,12 +3,11 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 from glob import glob
-import shutil
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 hostname = os.environ.get('RMQ_HOSTNAME','localhost')
@@ -18,37 +17,39 @@ password = os.environ.get('RMQ_PASSWORD')
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
+
 def generate_pipeline():
 
     # Create a Pipeline object
-    p = Pipeline()
+    p1 = Pipeline()
 
     # Create a Stage object
     s1 = Stage()
 
     # Create a Task object which creates a file named 'output.txt' of size 1 MB
-    for x in range(10):
+    for i in range(10):
         t1 = Task()
         t1.executable = 'cat'
         t1.arguments = ['file1.txt','file2.txt','>','output.txt']
         t1.copy_input_data = ['$SHARED/file1.txt', '$SHARED/file2.txt']
-        t1.download_output_data = ['output.txt > %s/output_%s.txt' %(cur_dir,x+1)]
+        t1.download_output_data = ['output.txt > %s/output_%s.txt'  % (cur_dir, i + 1)]
 
         # Add the Task to the Stage
         s1.add_tasks(t1)
 
     # Add Stage to the Pipeline
-    p.add_stages(s1)
+    p1.add_stages(s1)
 
-    return p
+    return p1
+
 
 if __name__ == '__main__':
 
-    for f in glob('%s/file*.txt' %cur_dir):
+    for f in glob('%s/file*.txt' % cur_dir):
         os.remove(f)
 
-    os.system('echo "Hello" > %s/file1.txt' %cur_dir)
-    os.system('echo "World" > %s/file2.txt' %cur_dir)
+    os.system('echo "Hello" > %s/file1.txt' % cur_dir)
+    os.system('echo "World" > %s/file2.txt' % cur_dir)
 
 
     # Create a dictionary describe four mandatory keys:
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
     # Assign resource manager to the Application Manager
     appman.resource_desc = res_dict
-    appman.shared_data = ['%s/file1.txt' %cur_dir, '%s/file2.txt' %cur_dir]
+    appman.shared_data = ['%s/file1.txt' % cur_dir, '%s/file2.txt' % cur_dir]
 
     p = generate_pipeline()
 
@@ -78,10 +79,10 @@ if __name__ == '__main__':
     appman.run()
 
     for x in range(10):
-        with open('%s/output_%s.txt' %(cur_dir,x+1), 'r') as fp:
-            print('Output %s: '%(x+1), fp.readlines())
-        os.remove('%s/output_%s.txt' %(cur_dir,x+1))
+        with open('%s/output_%s.txt' % (cur_dir,x + 1), 'r') as fp:
+            print('Output %s: ' % (x + 1), fp.readlines())
+        os.remove('%s/output_%s.txt' % (cur_dir,x + 1))
 
 
-    os.remove('%s/file1.txt' %cur_dir)
-    os.remove('%s/file2.txt' %cur_dir)
+    os.remove('%s/file1.txt' % cur_dir)
+    os.remove('%s/file2.txt' % cur_dir)
