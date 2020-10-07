@@ -245,10 +245,6 @@ class TaskManager(Base_TaskManager):
 
                 if unit.state in rp.FINAL:
 
-                    # Acquire a connection+channel to the rmq server
-                    mq_connection = pika.BlockingConnection(rmq_conn_params)
-                    mq_channel = mq_connection.channel()
-
                     task = None
                     task = create_task_from_cu(unit, self._prof)
 
@@ -268,8 +264,6 @@ class TaskManager(Base_TaskManager):
                                    'queue %s-completedq-1',
                                    task.uid, task.state, self._sid)
 
-                    mq_connection.close()
-
             except KeyboardInterrupt as e:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
@@ -279,6 +273,9 @@ class TaskManager(Base_TaskManager):
                 self._log.exception('Error in RP callback thread: %s', e)
         # ----------------------------------------------------------------------
 
+
+        mq_connection = pika.BlockingConnection(rmq_conn_params)
+        mq_channel = mq_connection.channel()
 
         umgr = rp.UnitManager(session=rmgr._session)
         umgr.add_pilots(rmgr.pilot)
@@ -305,8 +302,6 @@ class TaskManager(Base_TaskManager):
                 bulk_tasks = list()
                 bulk_cuds  = list()
 
-                mq_connection = pika.BlockingConnection(rmq_conn_params)
-                mq_channel = mq_connection.channel()
 
                 for msg in body:
 
@@ -320,7 +315,7 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, '%s-tmgr-to-sync' % self._sid)
 
                 umgr.submit_units(bulk_cuds)
-                mq_connection.close()
+            mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
