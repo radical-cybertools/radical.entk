@@ -6,9 +6,7 @@ __license__   = "MIT"
 
 from unittest import TestCase
 
-import os
 import pytest
-import radical.utils as ru
 
 from radical.entk.task import Task
 from radical.entk import states
@@ -19,6 +17,7 @@ try:
     import mock
 except ImportError:
     from unittest import mock
+
 
 # ------------------------------------------------------------------------------
 #
@@ -101,9 +100,9 @@ class TestTask(TestCase):
         assert(task._cpu_reqs == cpu_reqs)
         assert(task.cpu_reqs == {'cpu_processes' : 2, 
                                  'cpu_process_type' : None, 
-                                 'cpu_threads_per_process' : 1, 
+                                 'cpu_threads' : 1, 
                                  'cpu_thread_type' : 'OpenMP'})
-                                 
+
         with pytest.raises(ree.MissingError):
             task.cpu_reqs = {'cpu_processes' : 2, 
                              'cpu_process_type' : None, 
@@ -112,13 +111,13 @@ class TestTask(TestCase):
         with pytest.raises(ree.TypeError):
             task.cpu_reqs = {'cpu_processes' : 'a', 
                              'cpu_process_type' : None, 
-                             'cpu_threads_per_process' : 1,
+                             'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
         with pytest.raises(ree.TypeError):
             task.cpu_reqs = {'cpu_processes' : 1, 
                              'cpu_process_type' : None, 
-                             'cpu_threads_per_process' : 'a',
+                             'cpu_threads' : 'a',
                              'cpu_thread_type' : 'OpenMP'}
 
         with pytest.raises(ree.TypeError):
@@ -127,13 +126,13 @@ class TestTask(TestCase):
         with pytest.raises(ree.ValueError):
             task.cpu_reqs = {'cpu_processes' : 1, 
                              'cpu_process_type' : None, 
-                             'cpu_threads_per_process' : 1,
+                             'cpu_threads' : 1,
                              'cpu_thread_type' : 'MPI'}
 
         with pytest.raises(ree.ValueError):
             task.cpu_reqs = {'cpu_processes' : 1, 
                              'cpu_process_type' : 'test', 
-                             'cpu_threads_per_process' : 1,
+                             'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
 
@@ -159,12 +158,12 @@ class TestTask(TestCase):
         assert(task._gpu_reqs == gpu_reqs)
         assert(task.gpu_reqs == {'gpu_processes' : 2, 
                                  'gpu_process_type' : None, 
-                                 'gpu_threads_per_process' : 1, 
+                                 'gpu_threads' : 1, 
                                  'gpu_thread_type' : 'OpenMP'})
 
         with pytest.raises(ree.TypeError):
             task.gpu_reqs = list()
-                                 
+
         with pytest.raises(ree.MissingError):
             task.gpu_reqs = {'gpu_processes' : 2, 
                              'gpu_process_type' : None, 
@@ -173,25 +172,25 @@ class TestTask(TestCase):
         with pytest.raises(ree.TypeError):
             task.gpu_reqs = {'gpu_processes' : 'a', 
                              'gpu_process_type' : None, 
-                             'gpu_threads_per_process' : 1,
+                             'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
         with pytest.raises(ree.TypeError):
             task.gpu_reqs = {'gpu_processes' : 1, 
                              'gpu_process_type' : None, 
-                             'gpu_threads_per_process' : 'a',
+                             'gpu_threads' : 'a',
                              'gpu_thread_type' : 'OpenMP'}
 
         with pytest.raises(ree.ValueError):
             task.gpu_reqs = {'gpu_processes' : 1, 
                              'gpu_process_type' : None, 
-                             'gpu_threads_per_process' : 1,
+                             'gpu_threads' : 1,
                              'gpu_thread_type' : 'MPI'}
 
         with pytest.raises(ree.ValueError):
             task.gpu_reqs = {'gpu_processes' : 1, 
                              'gpu_process_type' : 'test', 
-                             'gpu_threads_per_process' : 1,
+                             'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
     # --------------------------------------------------------------------------

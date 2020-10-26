@@ -1,4 +1,4 @@
-import copy
+
 import radical.utils as ru
 
 from .. import exceptions as ree
@@ -225,10 +225,10 @@ class Task(object):
         threads to be run in this Task. The expected format is:
 
         task.cpu_reqs = {
-                          | 'cpu_processes'           : X,
-                          | 'cpu_process_type'        : None/MPI,
-                          | 'cpu_threads_per_process' : Y,
-                          | 'cpu_thread_type'         : None/OpenMP}
+                          | 'cpu_processes'    : X,
+                          | 'cpu_process_type' : None/MPI,
+                          | 'cpu_threads'      : Y,
+                          | 'cpu_thread_type'  : None/OpenMP}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on CPUs. Hence, the total
@@ -239,10 +239,10 @@ class Task(object):
         The default value is:
 
         task.cpu_reqs = {
-                          | 'cpu_processes'           : 1,
-                          | 'cpu_process_type'        : None,
-                          | 'cpu_threads_per_process' : 1,
-                          | 'cpu_thread_type'         : None}
+                          | 'cpu_processes'    : 1,
+                          | 'cpu_process_type' : None,
+                          | 'cpu_threads'      : 1,
+                          | 'cpu_thread_type'  : None}
 
         This description requests 1 core and expected the executable to non-MPI
         and single threaded.
@@ -252,8 +252,10 @@ class Task(object):
         :arguments: dict
         '''
         tmp_val = dict()
-        for key in self._cpu_reqs.keys():
-            tmp_val['cpu_'+key] = self._cpu_reqs[key]
+        tmp_val['cpu_processes'] = self._cpu_reqs['processes']
+        tmp_val['cpu_process_type'] = self._cpu_reqs['process_type']
+        tmp_val['cpu_threads'] = self._cpu_reqs['threads_per_process']
+        tmp_val['cpu_thread_type'] = self._cpu_reqs['thread_type']
 
         return tmp_val
 
@@ -267,10 +269,10 @@ class Task(object):
         threads to be run in this Task. The expected format is:
 
         task.gpu_reqs = {
-                          | 'gpu_processes'           : X,
-                          | 'gpu_process_type'        : None/MPI,
-                          | 'gpu_threads_per_process' : Y,
-                          | 'gpu_thread_type'         : None/OpenMP/CUDA}
+                          | 'gpu_processes'    : X,
+                          | 'gpu_process_type' : None/MPI,
+                          | 'gpu_threads'      : Y,
+                          | 'gpu_thread_type'  : None/OpenMP/CUDA}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on GPUs. Hence, the total
@@ -281,10 +283,10 @@ class Task(object):
         The default value is:
 
         task.gpu_reqs = {
-                          | 'gpu_processes'           : 0,
-                          | 'gpu_process_type'        : None,
-                          | 'gpu_threads_per_process' : 0,
-                          | 'gpu_thread_type'         : None}
+                          | 'gpu_processes'    : 0,
+                          | 'gpu_process_type' : None,
+                          | 'gpu_threads'      : 0,
+                          | 'gpu_thread_type'  : None}
 
         This description requests 0 gpus as not all machines have GPUs.
 
@@ -293,8 +295,10 @@ class Task(object):
         :arguments: dict
         '''
         tmp_val = dict()
-        for key in self._gpu_reqs.keys():
-            tmp_val['gpu_'+key] = self._gpu_reqs[key]
+        tmp_val['gpu_processes'] = self._gpu_reqs['processes']
+        tmp_val['gpu_process_type'] = self._gpu_reqs['process_type']
+        tmp_val['gpu_threads'] = self._gpu_reqs['threads_per_process']
+        tmp_val['gpu_thread_type'] = self._gpu_reqs['thread_type']
 
         return tmp_val
 
@@ -666,7 +670,7 @@ class Task(object):
         depr_expected_keys = set(['processes', 'threads_per_process',
                              'process_type', 'thread_type'])
 
-        expected_keys = set(['cpu_processes', 'cpu_threads_per_process',
+        expected_keys = set(['cpu_processes', 'cpu_threads',
                              'cpu_process_type', 'cpu_thread_type'])
 
         if set(value.keys()).issubset(depr_expected_keys):
@@ -674,9 +678,11 @@ class Task(object):
             warnings.simplefilter("once")
             warnings.warn("CPU requirements keys are renamed using 'cpu_'" +
                            "as a prefix for all keys.",DeprecationWarning)
-            tmp_keys = value.keys()
-            for key in list(tmp_keys):
-                value['cpu_'+key] = value.pop(key)
+
+            value['cpu_processes'] = value.pop('processes')
+            value['cpu_process_type'] = value.pop('process_type')
+            value['cpu_threads'] = value.pop('threads_per_process')
+            value['cpu_thread_type'] = value.pop('thread_type')
 
         missing = expected_keys - set(value.keys())
 
@@ -694,10 +700,10 @@ class Task(object):
                                  obj='cpu_reqs',
                                  attribute='cpu_process_type')
 
-        if not isinstance(value.get('cpu_threads_per_process'), (type(None), int)):
+        if not isinstance(value.get('cpu_threads'), (type(None), int)):
             raise ree.TypeError(expected_type=int,
-                             actual_type=type(value.get('cpu_threads_per_process')),
-                             entity='cpu_threads_per_process')
+                             actual_type=type(value.get('cpu_threads')),
+                             entity='cpu_threads')
 
         if value.get('cpu_thread_type') not in [None, 'OpenMP', '']:
             raise ree.ValueError(expected_value='None or OpenMP', obj='cpu_reqs',
@@ -706,7 +712,7 @@ class Task(object):
 
         self._cpu_reqs['processes']           = value.get('cpu_processes', 1)
         self._cpu_reqs['process_type']        = value.get('cpu_process_type')
-        self._cpu_reqs['threads_per_process'] = value.get('cpu_threads_per_process', 1)
+        self._cpu_reqs['threads_per_process'] = value.get('cpu_threads', 1)
         self._cpu_reqs['thread_type']         = value.get('cpu_thread_type')
 
 
@@ -721,7 +727,7 @@ class Task(object):
         depr_expected_keys = set(['processes', 'threads_per_process',
                              'process_type', 'thread_type'])
 
-        expected_keys = set(['gpu_processes', 'gpu_threads_per_process',
+        expected_keys = set(['gpu_processes', 'gpu_threads',
                              'gpu_process_type', 'gpu_thread_type'])
 
         if set(value.keys()).issubset(depr_expected_keys):
@@ -729,9 +735,11 @@ class Task(object):
             warnings.simplefilter("once")
             warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
                            "as a prefix for all keys.",DeprecationWarning)
-            tmp_keys = value.keys()
-            for key in list(tmp_keys):
-                value['gpu_'+key] = value.pop(key)
+
+            value['gpu_processes'] = value.pop('processes')
+            value['gpu_process_type'] = value.pop('process_type')
+            value['gpu_threads'] = value.pop('threads_per_process')
+            value['gpu_thread_type'] = value.pop('thread_type')
 
         missing = expected_keys - set(value.keys())
 
@@ -749,10 +757,10 @@ class Task(object):
                                  obj='gpu_reqs',
                                  attribute='gpu_process_type')
 
-        if not isinstance(value.get('gpu_threads_per_process'), (type(None), int)):
+        if not isinstance(value.get('gpu_threads'), (type(None), int)):
             raise ree.TypeError(expected_type=int,
-                             actual_type=type(value.get('gpu_threads_per_process')),
-                             entity='gpu_threads_per_process')
+                             actual_type=type(value.get('gpu_threads')),
+                             entity='gpu_threads')
 
         if value.get('gpu_thread_type') not in [None, 'OpenMP', 'CUDA','']:
             raise ree.ValueError(expected_value='None or OpenMP or CUDA',
@@ -762,7 +770,7 @@ class Task(object):
 
         self._gpu_reqs['processes']           = value.get('gpu_processes', 1)
         self._gpu_reqs['process_type']        = value.get('gpu_process_type')
-        self._gpu_reqs['threads_per_process'] = value.get('gpu_threads_per_process', 1)
+        self._gpu_reqs['threads_per_process'] = value.get('gpu_threads', 1)
         self._gpu_reqs['thread_type']         = value.get('gpu_thread_type')
 
 
@@ -935,8 +943,8 @@ class Task(object):
             'arguments'            : self._arguments,
             'sandbox'              : self._sandbox,
             'post_exec'            : self._post_exec,
-            'cpu_reqs'             : self._cpu_reqs,
-            'gpu_reqs'             : self._gpu_reqs,
+            'cpu_reqs'             : self.cpu_reqs,
+            'gpu_reqs'             : self.gpu_reqs,
             'lfs_per_process'      : self._lfs_per_process,
 
             'upload_input_data'    : self._upload_input_data,
