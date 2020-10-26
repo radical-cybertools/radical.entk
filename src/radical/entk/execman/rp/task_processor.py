@@ -96,7 +96,8 @@ def resolve_placeholders(path, placeholders):
 
     except Exception as ex:
 
-        logger.exception('Failed to resolve placeholder %s, error: %s' %(path, ex))
+        logger.exception('Failed to resolve placeholder %s, error: %s' %
+                         (path, ex))
         raise
 
 
