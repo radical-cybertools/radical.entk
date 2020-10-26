@@ -374,7 +374,10 @@ class WFprocessor(object):
     # --------------------------------------------------------------------------
     #
     def _execute_post_exec(self, pipe, stage):
-
+        """
+        **Purpose**: This method executes the post_exec step of a stage for a
+        pipeline.
+        """
         try:
             self._logger.info('Executing post-exec for stage %s' % stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
