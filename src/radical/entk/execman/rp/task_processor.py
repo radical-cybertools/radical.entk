@@ -451,14 +451,14 @@ def create_cud_from_task(task, placeholders, prof=None):
                         parent_pipeline_name=task.parent_pipeline['name'],
                         placeholders=placeholders)
 
-        cud.cpu_processes    = task.cpu_reqs['processes']
-        cud.cpu_threads      = task.cpu_reqs['threads_per_process']
-        cud.cpu_process_type = task.cpu_reqs['process_type']
-        cud.cpu_thread_type  = task.cpu_reqs['thread_type']
-        cud.gpu_processes    = task.gpu_reqs['processes']
-        cud.gpu_threads      = task.gpu_reqs['threads_per_process']
-        cud.gpu_process_type = task.gpu_reqs['process_type']
-        cud.gpu_thread_type  = task.gpu_reqs['thread_type']
+        cud.cpu_processes    = task.cpu_reqs['cpu_processes']
+        cud.cpu_threads      = task.cpu_reqs['cpu_threads']
+        cud.cpu_process_type = task.cpu_reqs['cpu_process_type']
+        cud.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
+        cud.gpu_processes    = task.gpu_reqs['gpu_processes']
+        cud.gpu_threads      = task.gpu_reqs['gpu_threads']
+        cud.gpu_process_type = task.gpu_reqs['gpu_process_type']
+        cud.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
 
         if task.lfs_per_process:
             cud.lfs_per_process = task.lfs_per_process
