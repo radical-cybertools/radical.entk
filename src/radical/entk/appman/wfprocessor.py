@@ -70,7 +70,7 @@ class WFprocessor(object):
         self._wfp_process       = None
         self._enqueue_thread    = None
         self._dequeue_thread    = None
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', 10))
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
