@@ -328,7 +328,6 @@ class WFprocessor(object):
                         if task.state == states.FAILED and \
                             self._resubmit_failed:
                             task_state = states.INITIAL
-                        print('Task Done')
                         self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
@@ -345,7 +344,6 @@ class WFprocessor(object):
                 # stage of the pipeline -- update pipeline
                 # state if yes.
                 if stage._check_stage_complete():
-                    print('Stage done')
                     self._advance(stage, 'Stage', states.DONE)
 
                     # Check if the current stage has a post-exec
@@ -363,7 +361,6 @@ class WFprocessor(object):
 
                     # If pipeline has completed, advance state to DONE
                     if pipe.completed:
-                        print('Pipe done')
                         self._advance(pipe, 'Pipeline', states.DONE)
 
 
