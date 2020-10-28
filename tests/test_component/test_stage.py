@@ -372,3 +372,36 @@ class TestBase(TestCase):
         self.assertEqual(s.uid, 'stage.0000')
 
 
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_luid(self, mocked_init):
+
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
+        s._uid = 'stage.0000'
+        s._name = None
+        
+        self.assertEqual(s.luid, 'pipe.0000.stage.0000')
+        
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
+        s._uid = 'stage.0000'
+        s._name = None
+        
+        self.assertEqual(s.luid, 'test_pipe.stage.0000')
+        
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
+        s._uid = 'stage.0000'
+        s._name = 'test_stage'
+        
+        self.assertEqual(s.luid, 'pipe.0000.test_stage')
+        
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
+        s._uid = 'stage.0000'
+        s._name = 'test_stage'
+        
+        self.assertEqual(s.luid, 'test_pipe.test_stage')
+        

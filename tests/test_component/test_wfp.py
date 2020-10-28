@@ -76,7 +76,22 @@ class TestBase(TestCase):
         self.assertTrue(wfp._resubmit_failed)
         self.assertEqual(wfp._rmq_conn_params, 'test_rmq_params')
         self.assertEqual(wfp._uid, 'wfp.0000')
-    
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    def test_workflow(self, mocked_init, mocked_Logger):
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+
+        wfp._workflow = 'test_workflow'
+
+        self.assertEqual(wfp.workflow, 'test_workflow')
     
     # ------------------------------------------------------------------------------
     #
@@ -246,3 +261,161 @@ class TestBase(TestCase):
 
         self.assertEqual(workload, [task])
         self.assertEqual(scheduled_stages, [stage])
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('json.dumps', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Reporter')
+    @mock.patch('pika.BlockingConnection')
+    def test_execute_workload(self, mocked_init, mocked_dumps,
+                              mocked_Logger, mocked_Reporter,
+                              mocked_BlockingConnection):
+
+        global_advs = []
+        def _advance_side_effect(obj, obj_type, state):
+            nonlocal global_advs
+            global_advs.append([obj, obj_type, state])
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+        wfp._rmq_conn_params = 'test_rmq_params'
+        wfp._pending_queue = ['test_queue']
+        wfp._logger = mocked_Logger
+        wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
+        
+        stage = mock.Mock()
+        stage.uid = 'stage.0000'
+        stage.state = states.SCHEDULING
+
+        task = mock.Mock()
+        task.uid = 'task.0000'
+        task.state = states.INITIAL
+        workload = [task]
+        stage.tasks = [task]
+        scheduled_stages = [stage]
+
+
+        wfp._execute_workload(workload, scheduled_stages)
+        self.assertEqual(global_advs[0], [task, 'Task', 'SCHEDULED'])
+        self.assertEqual(global_advs[1], [stage, 'Stage', 'SCHEDULED'])
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_execute_post_exec(self, mocked_init,
+                              mocked_Logger, mocked_Profiler):
+
+        global_advs = set()
+        def _advance_side_effect(obj, obj_type, state):
+            nonlocal global_advs
+            global_advs.add((obj, obj_type, state))
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+        wfp._uid = 'wfp.0000'
+        wfp._logger = mocked_Logger
+        wfp._prof = mocked_Profiler
+        wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
+        
+        pipe = mock.Mock()
+        pipe.lock = mt.Lock()
+        pipe.state = states.INITIAL
+        pipe.uid = 'pipe.0000'
+        pipe.completed = False
+        pipe._increment_stage = mock.MagicMock(return_value=True)
+        pipe.current_stage = 1
+        
+        pipe2 = mock.Mock()
+        pipe2.lock = mt.Lock()
+        pipe2.state = states.INITIAL
+        pipe2.uid = 'pipe.0001'
+        pipe2.completed = False
+        pipe2._increment_stage = mock.MagicMock(return_value=True)
+        pipe2.current_stage = 1
+
+        pipe3 = mock.Mock()
+        pipe3.lock = mt.Lock()
+        pipe3.state = states.INITIAL
+        pipe3.uid = 'pipe.0002'
+        pipe3.completed = True
+        pipe3._increment_stage = mock.MagicMock(return_value=True)
+        pipe3.current_stage = 1
+        wfp._workflow = set([pipe2, pipe3])
+
+        stage = mock.Mock()
+        stage.uid = 'stage.0000'
+        stage.state = states.SCHEDULING
+        stage.post_exec = mock.MagicMock(return_value=['pipe.0001', 'pipe.0002'])
+
+        wfp._execute_post_exec(pipe, stage)
+        exp_out = set([(pipe2, 'Pipeline', states.INITIAL),
+                       (pipe3, 'Pipeline', states.DONE)])
+        self.assertEqual(global_advs, exp_out)
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch.object(WFprocessor, '_advance', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_update_dequeued_task(self, mocked_init, mocked_advance, mocked_Logger,
+                             mocked_Profiler):
+        global_advs = list()
+        def _advance_side_effect(obj, obj_type, state):
+            nonlocal global_advs
+            global_advs.append([obj, obj_type, state])
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+        
+        wfp._uid = 'wfp.0000'
+        wfp._logger = mocked_Logger
+        wfp._prof = mocked_Profiler
+        wfp._resubmit_failed = False
+        wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
+        
+        pipe = mock.Mock()
+        pipe.uid = 'pipe.0000'
+        pipe.lock = mt.Lock()
+        pipe.state = states.INITIAL
+        pipe.completed = False
+        pipe.current_stage = 1
+        pipe._increment_stage = mock.MagicMock(return_value=2)
+        
+        stage = mock.Mock()
+        stage.uid = 'stage.0000'
+        stage.state = states.SCHEDULING
+        stage._check_stage_complete = mock.MagicMock(return_value=True)
+        stage.post_exec = None
+
+        task = mock.Mock()
+        task.uid = 'task.0000'
+        task.parent_pipeline = {'uid': 'pipe.0000'}
+        task.parent_stage = {'uid': 'stage.0000'}
+        task.state = states.INITIAL
+        task.exit_code = 0
+
+        stage.tasks = [task]
+        pipe.stages = [stage]
+        wfp._workflow = set([pipe])
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[0], [task, 'Task', states.DONE])
+        self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
+
+
