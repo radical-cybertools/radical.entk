@@ -42,6 +42,8 @@ class TestBase(TestCase):
         self.assertIsNone(wfp._wfp_process)
         self.assertIsNone(wfp._enqueue_thread)
         self.assertIsNone(wfp._dequeue_thread)
+        self.assertIsNone(wfp._enqueue_thread_terminate)
+        self.assertIsNone(wfp._dequeue_thread_terminate)
         self.assertEqual(wfp._rmq_ping_interval, 10)
         self.assertEqual(wfp._path, 'test_folder/test_sid')
         self.assertEqual(wfp._workflow, 'workflow')

@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from radical.entk.execman.base   import Base_TaskManager as Tmgr
 from radical.entk.execman.base   import Base_ResourceManager
-from radical.entk.exceptions import EnTKError
+
 from pika.connection import ConnectionParameters
 
 import pika
@@ -82,7 +82,7 @@ class TestBase(TestCase):
     @mock.patch('pika.BlockingConnection')
     def test_advance(self, mocked_init, mocked_Logger, mocked_Profiler,
                      mocked_BlockingConnection):
-        
+
         mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
         mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
         mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
@@ -114,4 +114,3 @@ class TestBase(TestCase):
         tmgr._advance(obj, 'Stage', 'new_state', 'channel','queue')
         self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel','queue'])
         self.assertEqual(obj.state, 'new_state')
-        

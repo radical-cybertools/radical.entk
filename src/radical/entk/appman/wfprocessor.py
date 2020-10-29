@@ -70,7 +70,9 @@ class WFprocessor(object):
         self._wfp_process       = None
         self._enqueue_thread    = None
         self._dequeue_thread    = None
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', 10))
+        self._enqueue_thread_terminate = None
+        self._dequeue_thread_terminate = None
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
@@ -255,12 +257,12 @@ class WFprocessor(object):
             self._logger.info('Enqueue thread terminated')
             self._prof.prof('enq_stop', uid=self._uid)
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-            raise KeyboardInterrupt
+            raise ex
 
         except Exception:
 
@@ -299,6 +301,8 @@ class WFprocessor(object):
 
                 # Next search across all stages of a matching
                 # pipelines
+                stage = None
+
                 for stage in pipe.stages:
 
                     # Skip stages that don't match the UID
@@ -432,7 +436,7 @@ class WFprocessor(object):
             last = time.time()
             while not self._dequeue_thread_terminate.is_set():
 
-                method_frame, header_frame, body = mq_channel.basic_get(
+                method_frame, _ , body = mq_channel.basic_get(
                     queue=self._completed_queue[0])
 
                 # When there is no msg received, body is None
@@ -459,11 +463,11 @@ class WFprocessor(object):
             self._prof.prof('deq_stop', uid=self._uid)
 
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to exit \
                                     gracefully...')
-            raise KeyboardInterrupt
+            raise ex
 
 
         except Exception:
