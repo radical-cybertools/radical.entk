@@ -353,7 +353,7 @@ class WFprocessor(object):
 
                     # if pipeline got suspended, advance state accordingly
                     if pipe.state == states.SUSPENDED:
-                      self._advance(pipe, 'Pipeline', states.SUSPENDED)
+                        self._advance(pipe, 'Pipeline', states.SUSPENDED)
 
                     else:
                         # otherwise perform normal stage progression
