@@ -1,27 +1,24 @@
+# pylint: disable=protected-access, unused-argument
+# pylint: disable=no-value-for-parameter
 
 import os
-import json
-import pika
 
 from unittest import TestCase
-from random import shuffle
 
-from hypothesis import given, settings, strategies as st
+# from hypothesis import given, settings, strategies as st
 import threading as mt
 
 from radical.entk.appman.wfprocessor import WFprocessor
-from radical.entk                    import AppManager as Amgr
-from radical.entk                    import Pipeline, Stage, Task, states
+from radical.entk                    import states
 
-import radical.utils as ru
 try:
     import mock
 except ImportError:
     from unittest import mock
 
 # Hypothesis settings
-settings.register_profile("travis", max_examples=100, deadline=None)
-settings.load_profile("travis")
+# settings.register_profile("travis", max_examples=100, deadline=None)
+# settings.load_profile("travis")
 
 
 # ------------------------------------------------------------------------------
@@ -48,7 +45,7 @@ class TestBase(TestCase):
         self.assertEqual(wfp._rmq_ping_interval, 10)
         self.assertEqual(wfp._path, 'test_folder/test_sid')
         self.assertEqual(wfp._workflow, 'workflow')
-        
+
 
         self.assertEqual(wfp._sid, 'test_sid')
         self.assertEqual(wfp._pending_queue, 'pending_queue')
@@ -56,14 +53,14 @@ class TestBase(TestCase):
         self.assertFalse(wfp._resubmit_failed)
         self.assertEqual(wfp._rmq_conn_params, 'test_rmq_params')
         self.assertEqual(wfp._uid, 'wfp.0000')
-        
+
         os.environ['RMQ_PING_INTERVAL'] = '20'
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
                           pending_queue='pending_queue',
                           completed_queue='completed_queue',
                           rmq_conn_params='test_rmq_params',
                           resubmit_failed=True)
-        
+
         self.assertIsNone(wfp._wfp_process)
         self.assertIsNone(wfp._enqueue_thread)
         self.assertIsNone(wfp._dequeue_thread)
@@ -92,7 +89,7 @@ class TestBase(TestCase):
         wfp._workflow = 'test_workflow'
 
         self.assertEqual(wfp.workflow, 'test_workflow')
-    
+
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(WFprocessor, '__init__', return_value=None)
@@ -130,7 +127,7 @@ class TestBase(TestCase):
                           resubmit_failed=False)
         with self.assertRaises(Exception):
             wfp.workflow_incomplete()
-    
+
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(WFprocessor, '__init__', return_value=None)
@@ -153,7 +150,7 @@ class TestBase(TestCase):
         wfp._dequeue_thread = mock.Mock()
         wfp._dequeue_thread.is_alive = mock.MagicMock(side_effect=[False, True,
                                                                    False, True])
-        
+
         self.assertFalse(wfp.check_processor())
         self.assertFalse(wfp.check_processor())
         self.assertFalse(wfp.check_processor())
@@ -200,6 +197,7 @@ class TestBase(TestCase):
                           resubmit_failed=False)
 
         global_profs = []
+
         def _log(log_entry, uid, state, msg):
             nonlocal global_profs
             global_profs.append([log_entry, uid, state, msg])
@@ -237,14 +235,14 @@ class TestBase(TestCase):
                           completed_queue='completed_queue',
                           rmq_conn_params='test_rmq_params',
                           resubmit_failed=False)
-        
+
         wfp._resubmit_failed = False
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
         pipe.state = states.INITIAL
         pipe.completed = False
         pipe.current_stage = 1
-        
+
         stage = mock.Mock()
         stage.uid = 'stage.0000'
         stage.state = states.SCHEDULING
@@ -275,6 +273,7 @@ class TestBase(TestCase):
                               mocked_BlockingConnection):
 
         global_advs = []
+
         def _advance_side_effect(obj, obj_type, state):
             nonlocal global_advs
             global_advs.append([obj, obj_type, state])
@@ -288,7 +287,7 @@ class TestBase(TestCase):
         wfp._pending_queue = ['test_queue']
         wfp._logger = mocked_Logger
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
-        
+
         stage = mock.Mock()
         stage.uid = 'stage.0000'
         stage.state = states.SCHEDULING
@@ -315,6 +314,7 @@ class TestBase(TestCase):
                               mocked_Logger, mocked_Profiler):
 
         global_advs = set()
+
         def _advance_side_effect(obj, obj_type, state):
             nonlocal global_advs
             global_advs.add((obj, obj_type, state))
@@ -328,7 +328,7 @@ class TestBase(TestCase):
         wfp._logger = mocked_Logger
         wfp._prof = mocked_Profiler
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
-        
+
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
         pipe.state = states.INITIAL
@@ -336,7 +336,7 @@ class TestBase(TestCase):
         pipe.completed = False
         pipe._increment_stage = mock.MagicMock(return_value=True)
         pipe.current_stage = 1
-        
+
         pipe2 = mock.Mock()
         pipe2.lock = mt.Lock()
         pipe2.state = states.INITIAL
@@ -373,6 +373,7 @@ class TestBase(TestCase):
     def test_update_dequeued_task(self, mocked_init, mocked_advance, mocked_Logger,
                              mocked_Profiler):
         global_advs = list()
+
         def _advance_side_effect(obj, obj_type, state):
             nonlocal global_advs
             global_advs.append([obj, obj_type, state])
@@ -382,13 +383,13 @@ class TestBase(TestCase):
                           completed_queue='completed_queue',
                           rmq_conn_params='test_rmq_params',
                           resubmit_failed=False)
-        
+
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
         wfp._prof = mocked_Profiler
         wfp._resubmit_failed = False
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
-        
+
         pipe = mock.Mock()
         pipe.uid = 'pipe.0000'
         pipe.lock = mt.Lock()
@@ -396,7 +397,7 @@ class TestBase(TestCase):
         pipe.completed = False
         pipe.current_stage = 1
         pipe._increment_stage = mock.MagicMock(return_value=2)
-        
+
         stage = mock.Mock()
         stage.uid = 'stage.0000'
         stage.state = states.SCHEDULING
@@ -417,5 +418,3 @@ class TestBase(TestCase):
         wfp._update_dequeued_task(task)
         self.assertEqual(global_advs[0], [task, 'Task', states.DONE])
         self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
-
-

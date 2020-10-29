@@ -212,7 +212,6 @@ class TestBase(TestCase):
             def func(self):
                 return True
 
-
         tmp = Tmp()
         s.post_exec = tmp.func
         self.assertEqual(s._post_exec, tmp.func)
@@ -381,27 +380,26 @@ class TestBase(TestCase):
         s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
         s._uid = 'stage.0000'
         s._name = None
-        
+
         self.assertEqual(s.luid, 'pipe.0000.stage.0000')
-        
+
         s = Stage()
         s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
         s._uid = 'stage.0000'
         s._name = None
-        
+
         self.assertEqual(s.luid, 'test_pipe.stage.0000')
-        
+
         s = Stage()
         s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
         s._uid = 'stage.0000'
         s._name = 'test_stage'
-        
+
         self.assertEqual(s.luid, 'pipe.0000.test_stage')
-        
+
         s = Stage()
         s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
         s._uid = 'stage.0000'
         s._name = 'test_stage'
-        
+
         self.assertEqual(s.luid, 'test_pipe.test_stage')
-        

@@ -1,10 +1,13 @@
+# pylint: disable=protected-access, unused-argument
+# pylint: disable=no-value-for-parameter
+
 from unittest import TestCase
 
 from radical.entk import states
 
 
 class TestBase(TestCase):
-    
+
     def test_states_list(self):
 
         self.assertEqual(states.INITIAL, 'DESCRIBED')
