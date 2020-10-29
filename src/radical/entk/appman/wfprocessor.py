@@ -257,12 +257,12 @@ class WFprocessor(object):
             self._logger.info('Enqueue thread terminated')
             self._prof.prof('enq_stop', uid=self._uid)
 
-        except KeyboardInterrupt as ex:
+        except KeyboardInterrupt:
 
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-            raise ex
+            raise
 
         except Exception:
 
@@ -463,11 +463,11 @@ class WFprocessor(object):
             self._prof.prof('deq_stop', uid=self._uid)
 
 
-        except KeyboardInterrupt as ex:
+        except KeyboardInterrupt:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to exit \
                                     gracefully...')
-            raise ex
+            raise
 
 
         except Exception:
