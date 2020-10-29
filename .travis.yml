@@ -1,8 +1,11 @@
-language: python
-python: "3.6"
 
-os:
-  - linux
+language: python
+python:   "3.6"
+os:       linux
+dist:     xenial
+
+git:
+  depth: 1
 
 env:
   global:
@@ -12,7 +15,7 @@ env:
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    - PYTEST="coverage run -m pytest -ra --timeout=600 -vvv --showlocals --forked"
+    - PYTEST="coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals --forked"
     - CMD_PYTEST_UNITTESTS="  $PYTEST tests/test_component tests/test_utils/ "
     - CMD_PYTEST_INTEGRATION="$PYTEST tests/test_integration/"
     - CMD_PYTEST_ISSUES="     $PYTEST tests/test_issues/"
@@ -30,19 +33,19 @@ before_install:
   - uname -a
   - ulimit -a
   - python -V
-  - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
-  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-  - echo "Host localhost" >> /home/travis/.ssh/config
-  - echo "  StrictHostKeyChecking no" >> /home/travis/.ssh/config
-  - chmod g-rw,o-rw /home/travis/.ssh/*
-  - ssh localhost hostname
-  - ssh localhost uname -a
+#  - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+#  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+#  - echo "Host localhost" >> /home/travis/.ssh/config
+#  - echo "  StrictHostKeyChecking no" >> /home/travis/.ssh/config
+#  - chmod g-rw,o-rw /home/travis/.ssh/*
+#  - ssh localhost hostname
+#  - ssh localhost uname -a
 
 # Xenial needs rmq installation
-addons:
-  apt:
-    packages:
-    - rabbitmq-server
+# addons:
+#  apt:
+#    packages:
+#    - rabbitmq-server
 
 # command to install dependencies
 install:
@@ -58,9 +61,11 @@ install:
   - pip install pytest-timeout
 
 before_script:
-  - LOC=/home/travis/virtualenv/python3.6  # Location where VE is created on travis
-  - sed -i 's|VENV|'"$LOC"'|g' .coveragerc  # Update source in coveragerc
-  - cat .coveragerc
+  - tmpLOC=`which python`
+  - tmpLOC=(${tmpLOC///bin/ })
+  - LOC=`find $tmpLOC/lib -name "site-packages"`
+  - echo $tmpLOC
+  - echo $LOC
 
 script:
   - echo $MAIN_CMD
@@ -75,7 +80,7 @@ after_success:
       curl -s https://codecov.io/bash | bash
     fi
 
-services:
-  - rabbitmq
-  - mongod
+#services:
+#  - rabbitmq
+#  - mongod
 

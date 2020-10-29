@@ -2,8 +2,4 @@
 [run]
 concurrency = multiprocessing
 parallel = True
-source = VENV/lib/python3.6/site-packages/radical/entk
-
-# $ coverage run -m pytest -vvv test_*
-# $ coverage combine
-# $ coverage html
+include = $LOC/radical/entk/*
