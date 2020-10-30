@@ -22,7 +22,7 @@ class TestBase(TestCase):
         self.assertEqual(states.DONE,       'DONE')
         self.assertEqual(states.FAILED,     'FAILED')
         self.assertEqual(states.CANCELED,   'CANCELED')
-        self.assertEqual(states.FINAL, 
+        self.assertEqual(states.FINAL,
                          [states.DONE, states.FAILED, states.CANCELED])
 
 
@@ -30,7 +30,7 @@ class TestBase(TestCase):
     #
     def test_state_numeric_vals(self):
 
-        self.assertEqual(states.state_numbers, 
+        self.assertEqual(states.state_numbers,
                          {
                              states.INITIAL   :  1,
                              states.SCHEDULING:  2,
@@ -48,7 +48,7 @@ class TestBase(TestCase):
     #
     def test_pipeline_states(self):
 
-        self.assertEqual(states._pipeline_state_values, 
+        self.assertEqual(states._pipeline_state_values,
                          {
                              states.INITIAL    :  1,
                              states.SCHEDULING :  2,
@@ -58,7 +58,7 @@ class TestBase(TestCase):
                              states.CANCELED   : 10
                          })
 
-        self.assertEqual(states._pipeline_state_inv, 
+        self.assertEqual(states._pipeline_state_inv,
                          {
                              1: states.INITIAL,
                              2: states.SCHEDULING,
@@ -80,7 +80,7 @@ class TestBase(TestCase):
                              states.FAILED     : 10,
                              states.CANCELED   : 10
                          })
-        self.assertEqual(states._stage_state_inv, 
+        self.assertEqual(states._stage_state_inv,
                          {
                              1: states.INITIAL,
                              2: states.SCHEDULING,
@@ -88,13 +88,13 @@ class TestBase(TestCase):
                              10: [states.DONE, states.FAILED, states.CANCELED]
                          })
 
-                          
+
     # --------------------------------------------------------------------------
     #
     def test_task_states(self):
 
-        self.assertEqual(states._task_state_values, 
-                         { 
+        self.assertEqual(states._task_state_values,
+                         {
                              states.INITIAL    :  1,
                              states.SCHEDULING :  2,
                              states.SCHEDULED  :  4,
@@ -105,7 +105,7 @@ class TestBase(TestCase):
                              states.CANCELED   : 10
                          }
 
-        self.assertEqual(states._task_state_inv, 
+        self.assertEqual(states._task_state_inv,
                          {
                               1: states.INITIAL,
                               2: states.SCHEDULING,
