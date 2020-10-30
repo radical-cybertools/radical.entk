@@ -103,7 +103,7 @@ class TestBase(TestCase):
                              states.DONE       : 10,
                              states.FAILED     : 10,
                              states.CANCELED   : 10
-                         }
+                         })
 
         self.assertEqual(states._task_state_inv,
                          {
@@ -113,8 +113,4 @@ class TestBase(TestCase):
                               5: states.SUBMITTING,
                               7: states.COMPLETED,
                              10: [states.DONE, states.FAILED, states.CANCELED]
-                         }
-
-
-# ------------------------------------------------------------------------------
-
+                         })
