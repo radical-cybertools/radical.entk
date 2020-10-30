@@ -341,7 +341,7 @@ class WFprocessor(object):
                     # Found the stage and processed it -- no more
                     # iterations needed for the current task
                     break
-                
+
                 assert(stage)
                 # Check if current stage has completed
                 # If yes, we need to (i) check for post execs to
