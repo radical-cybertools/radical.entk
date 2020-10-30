@@ -164,12 +164,11 @@ class ResourceManager(Base_ResourceManager):
 
             # Create Compute Pilot with validated resource description
             pdesc = rp.ComputePilotDescription(pd_init)
-
             self._prof.prof('rreq created', uid=self._uid)
 
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
-
+            print(self._pilot)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
@@ -189,7 +188,7 @@ class ResourceManager(Base_ResourceManager):
 
             self._logger.exception('Execution interrupted (probably by Ctrl+C) '
                                    'exit callback thread gracefully...')
-            raise KeyboardInterrupt
+            raise
 
         except Exception:
             self._logger.exception('Resource request submission failed')
@@ -236,7 +235,7 @@ class ResourceManager(Base_ResourceManager):
 
             self._logger.exception('Execution interrupted (probably by Ctrl+C) '
                                    'exit callback thread gracefully...')
-            raise KeyboardInterrupt
+            raise
 
 
         except Exception:
