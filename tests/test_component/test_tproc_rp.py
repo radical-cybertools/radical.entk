@@ -3,11 +3,11 @@
 
 from unittest import TestCase
 
-import radical.entk.exceptions as rse
+import radical.entk.exceptions as ree
 
 import radical.entk
 
-# from radical.entk.execman.rp.task_processor import resolve_placeholders
+from radical.entk.execman.rp.task_processor import resolve_placeholders
 from radical.entk.execman.rp.task_processor import resolve_arguments
 from radical.entk.execman.rp.task_processor import resolve_tags
 # from radical.entk.execman.rp.task_processor import get_input_list_from_task
@@ -23,6 +23,38 @@ except ImportError:
 
 
 class TestBase(TestCase):
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.Logger')
+    def test_resolve_placeholders(self, mocked_Logger):
+
+        pipeline_name = 'p1'
+        stage_name    = 's1'
+        t1_name       = 't1'
+
+        placeholders = {
+            pipeline_name: {
+                stage_name: {
+                    t1_name: {
+                        'path'   : '/home/vivek/t1',
+                        'rts_uid': 'unit.0002'
+                    }
+                }
+            }
+        }
+
+        paths = ['test_file > $SHARED/test_file',
+                 'test_file > $Pipeline_%s_Stage_%s_Task_%s/test_file' % (pipeline_name, stage_name, t1_name),
+                 'test_file > $NODE_LFS_PATH/test.txt']
+
+        self.assertEqual(resolve_placeholders(paths[0], placeholders),
+                    'test_file > pilot:///test_file')
+        self.assertEqual(resolve_placeholders(paths[1], placeholders),
+                    'test_file > /home/vivek/t1/test_file')
+        with self.assertRaises(ree.ValueError):
+            self.assertEqual(resolve_placeholders(paths[2], placeholders))
+
 
     # ------------------------------------------------------------------------------
     #
@@ -84,11 +116,11 @@ class TestBase(TestCase):
             }
         }
 
-        assert resolve_tags(tag=t1_name,
+        self.assertEqual(resolve_tags(tag=t1_name,
                             parent_pipeline_name=pipeline_name,
-                            placeholders=placeholders) == 'unit.0002'
+                            placeholders=placeholders), 'unit.0002')
 
-        with self.assertRaises(rse.EnTKError):
+        with self.assertRaises(ree.EnTKError):
             resolve_tags(tag='t3', parent_pipeline_name=pipeline_name,
                          placeholders=placeholders)
 

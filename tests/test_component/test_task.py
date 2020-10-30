@@ -52,7 +52,7 @@ class TestTask(TestCase):
         self.assertIsNone(t._gpu_reqs['process_type'])
         self.assertEqual(t._gpu_reqs['threads_per_process'], 0)
         self.assertIsNone(t._gpu_reqs['thread_type'])
-        
+
         self.assertEqual(t.lfs_per_process, 0)
         self.assertEqual(t.sandbox, '')
         self.assertIsInstance(t.upload_input_data, list)
@@ -242,8 +242,8 @@ class TestTask(TestCase):
         t = Task(from_dict=d)
 
         for k,v in d.items():
-            self.assertEqual(t.__getattribute__(k), v), '%s != %s' \
-                % (t.__getattribute__(k), v)
+            self.assertEqual(t.__getattribute__(k), v, msg='%s != %s'
+                % (t.__getattribute__(k), v))
 
         d = {'name'      : 'foo',
             'pre_exec'  : ['bar'],
@@ -261,10 +261,10 @@ class TestTask(TestCase):
         t.from_dict(d)
 
         for k,v in d.items():
-            self.assertEqual(t.__getattribute__(k), v), '%s != %s' \
-                % (t.__getattribute__(k), v)
+            self.assertEqual(t.__getattribute__(k), v, msg='%s != %s'
+                % (t.__getattribute__(k), v))
 
         # make sure the type checks kick in
         d = 'test'
-        with self.assertRaises(ree.TypeError):
+        with pytest.raises(ree.TypeError):
             t = Task(from_dict=d)
