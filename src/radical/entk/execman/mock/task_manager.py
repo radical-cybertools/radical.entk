@@ -16,6 +16,7 @@ from ...exceptions       import EnTKError
 from ...                 import states, Task
 from ..base.task_manager import Base_TaskManager
 
+
 # pylint: disable=unused-argument
 # ------------------------------------------------------------------------------
 #

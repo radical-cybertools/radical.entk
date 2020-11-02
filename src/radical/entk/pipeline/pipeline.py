@@ -3,7 +3,7 @@ __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
 import radical.utils as ru
-from radical.entk.exceptions import EnTKError, MissingError
+from radical.entk.exceptions import TypeError, ValueError, MissingError, EnTKError
 from radical.entk.stage.stage import Stage
 import threading
 from radical.entk import states
