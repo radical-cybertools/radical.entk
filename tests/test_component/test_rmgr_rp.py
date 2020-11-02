@@ -156,8 +156,6 @@ class TestBase(TestCase):
         rmgr._shared_data = 'test_data'
         rmgr._outputs = 'test_outputs'
         rmgr._pmgr = mock.MagicMock()
-        rmgr._pmgr.submit_pilot.return_value = 'test_pilot'
 
         rmgr._submit_resource_request()
         self.assertEqual(rmgr._session, 'test_session')
-
