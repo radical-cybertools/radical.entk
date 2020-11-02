@@ -39,7 +39,7 @@ class TestBase(TestCase):
             rmgr = RPRmgr(resource_desc={'resource': 'localhost'},
                       sid='test.0000',
                       rts_config={"sandbox_cleanup": 'test_sandbox'})
-        
+
         with self.assertRaises(ree.ValueError):
             rmgr = RPRmgr(resource_desc={'resource': 'localhost'},
                           sid='test.0000',
@@ -110,7 +110,7 @@ class TestBase(TestCase):
                       sid='test.0000',
                       rts_config={"sandbox_cleanup": 'test_sandbox',
                                   "db_cleanup": False})
-        
+
         state = rmgr.get_completed_states()
 
         self.assertEqual(state, ['DONE', 'FAILED', 'CANCELED'])
@@ -123,12 +123,10 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.pilot.Session', return_value='test_session')
     @mock.patch('radical.pilot.PilotManager')
-    @mock.patch('radical.pilot.ComputePilotDescription')
     @mock.patch('radical.pilot.ComputePilot')
     def test_submit_resource_request(self, mocked_init, mocked_Logger,
                                      mocked_Profiler, mocked_Session,
                                      mocked_PilotManager,
-                                     mocked_ComputePilotDescription,
                                      mocked_ComputePilot):
 
         global_pilots = []
@@ -141,7 +139,6 @@ class TestBase(TestCase):
         def _submit_pilots_side_effect(pdesc):
             return mocked_ComputePilot
 
-        mocked_ComputePilotDescription = mock.MagicMock(side_effect=_pdesc_side_effect)
         mocked_ComputePilot.wait = mock.MagicMock()
         rmgr = RPRmgr()
         rmgr._logger = mocked_Logger

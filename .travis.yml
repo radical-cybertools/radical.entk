@@ -24,7 +24,7 @@ env:
     - CMD_PYLINT="test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF"
     - COVERAGE=false
   jobs:
-    - MAIN_CMD="$PYTEST tests/test_component" COVERAGE=true
+    - MAIN_CMD=CMD_PYTEST_UNITTESTS COVERAGE=true
     #- MAIN_CMD=$CMD_PYTEST_INTEGRATION COVERAGE=true
     #- MAIN_CMD=$CMD_PYTEST_ISSUES      COVERAGE=true
     - MAIN_CMD=$CMD_FLAKE8
