@@ -16,7 +16,7 @@ from ...exceptions       import EnTKError
 from ...                 import states, Task
 from ..base.task_manager import Base_TaskManager
 
-
+# pylint: disable=unused-argument
 # ------------------------------------------------------------------------------
 #
 class TaskManager(Base_TaskManager):
@@ -51,7 +51,7 @@ class TaskManager(Base_TaskManager):
                                           rmgr, rmq_conn_params, rts='mock')
         self._rts_runner = None
 
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -144,7 +144,7 @@ class TaskManager(Base_TaskManager):
                 try:
 
                     # Get tasks from the pending queue
-                    method_frame, header_frame, body = \
+                    method_frame, _, body = \
                                     mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
@@ -172,7 +172,7 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
 
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
 
@@ -194,24 +194,24 @@ class TaskManager(Base_TaskManager):
                      'task_queue' and submits them to the RADICAL Pilot RTS.
         '''
 
-        placeholders = dict()
+        # placeholders = dict()
 
-        # ----------------------------------------------------------------------
-        def load_placeholder(task):
-
-            parent_pipeline = str(task.parent_pipeline['name'])
-            parent_stage = str(task.parent_stage['name'])
-
-            if parent_pipeline not in placeholders:
-                placeholders[parent_pipeline] = dict()
-
-            if parent_stage not in placeholders[parent_pipeline]:
-                placeholders[parent_pipeline][parent_stage] = dict()
-
-            if None not in [parent_pipeline, parent_stage, task.name]:
-                placeholders[parent_pipeline][parent_stage][str(
-                    task.name)] = str(task.path)
-        # ----------------------------------------------------------------------
+        # # --------------------------------------------------------------------
+        # def load_placeholder(task):
+        # 
+        #     parent_pipeline = str(task.parent_pipeline['name'])
+        #     parent_stage = str(task.parent_stage['name'])
+        # 
+        #     if parent_pipeline not in placeholders:
+        #         placeholders[parent_pipeline] = dict()
+        # 
+        #     if parent_stage not in placeholders[parent_pipeline]:
+        #         placeholders[parent_pipeline][parent_stage] = dict()
+        # 
+        #     if None not in [parent_pipeline, parent_stage, task.name]:
+        #         placeholders[parent_pipeline][parent_stage][str(
+        #             task.name)] = str(task.path)
+        # # --------------------------------------------------------------------
 
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
@@ -267,7 +267,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
 
     # --------------------------------------------------------------------------

@@ -439,7 +439,7 @@ class AppManager(object):
                                    'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise KeyboardInterrupt
+            raise
 
         except Exception:
 

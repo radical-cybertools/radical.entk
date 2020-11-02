@@ -1,4 +1,7 @@
 
+__copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
+__license__   = 'MIT'
+
 import radical.utils as ru
 
 from .. import exceptions as ree
