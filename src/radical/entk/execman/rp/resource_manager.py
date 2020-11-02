@@ -104,7 +104,7 @@ class ResourceManager(Base_ResourceManager):
         **Purpose**: Get the state of the resource allocation
 
         """
-
+        # TODO: add case where there is no pilot
         if self._pilot:
             return self._pilot.state
 
@@ -168,7 +168,6 @@ class ResourceManager(Base_ResourceManager):
 
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
-            print(self._pilot)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
