@@ -321,27 +321,6 @@ def get_output_list_from_task(task, placeholders):
 
         output_data = list()
 
-        if task.copy_output_data:
-
-            for path in task.copy_output_data:
-
-                path = resolve_placeholders(path, placeholders)
-
-                if len(path.split('>')) > 1:
-                    temp = {
-                        'source': path.split('>')[0].strip(),
-                        'target': path.split('>')[1].strip(),
-                        'action': rp.COPY
-                    }
-
-                else:
-                    temp = {
-                        'source': path.split('>')[0].strip(),
-                        'target': os.path.basename(path.split('>')[0].strip()),
-                        'action': rp.COPY
-                    }
-                output_data.append(temp)
-
         if task.link_output_data:
 
             for path in task.link_output_data:
@@ -362,7 +341,6 @@ def get_output_list_from_task(task, placeholders):
                     }
                 output_data.append(temp)
 
-
         if task.download_output_data:
 
             for path in task.download_output_data:
@@ -382,6 +360,26 @@ def get_output_list_from_task(task, placeholders):
                     }
                 output_data.append(temp)
 
+        if task.copy_output_data:
+
+            for path in task.copy_output_data:
+
+                path = resolve_placeholders(path, placeholders)
+
+                if len(path.split('>')) > 1:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': path.split('>')[1].strip(),
+                        'action': rp.COPY
+                    }
+
+                else:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': os.path.basename(path.split('>')[0].strip()),
+                        'action': rp.COPY
+                    }
+                output_data.append(temp)
 
         if task.move_output_data:
 

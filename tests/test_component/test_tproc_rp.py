@@ -10,8 +10,8 @@ import radical.entk
 from radical.entk.execman.rp.task_processor import resolve_placeholders
 from radical.entk.execman.rp.task_processor import resolve_arguments
 from radical.entk.execman.rp.task_processor import resolve_tags
-# from radical.entk.execman.rp.task_processor import get_input_list_from_task
-# from radical.entk.execman.rp.task_processor import get_output_list_from_task
+from radical.entk.execman.rp.task_processor import get_input_list_from_task
+from radical.entk.execman.rp.task_processor import get_output_list_from_task
 from radical.entk.execman.rp.task_processor import create_cud_from_task
 from radical.entk.execman.rp.task_processor import create_task_from_cu
 
@@ -248,3 +248,74 @@ class TestBase(TestCase):
         self.assertEqual(task.parent_pipeline, {'uid': 'pipe.0000', 'name': 'pipe.0000'})
         self.assertEqual(task.path, 'test_folder')
         self.assertEqual(task.rts_uid, 'unit.0000')
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.Logger')
+    def test_get_input_list_from_task(self, mocked_Logger):
+
+
+        task = mock.Mock()
+
+        with self.assertRaises(ree.TypeError):
+            get_input_list_from_task(task, '')
+
+        task = mock.MagicMock(spec=radical.entk.Task)
+        task.link_input_data = ['test_file > $SHARED/test_file']
+        task.upload_input_data = ['test_file > $SHARED/test_file']
+        task.copy_input_data = ['test_file > $SHARED/test_file']
+        task.move_input_data = ['test_file > $SHARED/test_file']
+        test = get_input_list_from_task(task, {})
+
+        input_list = [{'source': 'test_file', 
+                       'target': 'pilot:///test_file',
+                       'action': 'Link'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file', 
+                       'action': 'Copy'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file', 
+                       'action': 'Move'}]
+
+        self.assertEqual(test[0], input_list[0])
+        self.assertEqual(test[1], input_list[1])
+        self.assertEqual(test[2], input_list[2])
+        self.assertEqual(test[3], input_list[3])
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.Logger')
+    def test_get_output_list_from_task(self, mocked_Logger):
+
+
+        task = mock.Mock()
+
+        with self.assertRaises(ree.TypeError):
+            get_output_list_from_task(task, '')
+
+        task = mock.MagicMock(spec=radical.entk.Task)
+        task.link_output_data = ['test_file > $SHARED/test_file']
+        task.download_output_data = ['test_file > $SHARED/test_file']
+        task.copy_output_data = ['test_file > $SHARED/test_file']
+        task.move_output_data = ['test_file > $SHARED/test_file']
+        test = get_output_list_from_task(task, {})
+
+        output_list = [{'source': 'test_file', 
+                       'target': 'pilot:///test_file',
+                       'action': 'Link'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file', 
+                       'action': 'Copy'}, 
+                      {'source': 'test_file',
+                       'target': 'pilot:///test_file', 
+                       'action': 'Move'}]
+
+        self.assertEqual(test[0], output_list[0])
+        self.assertEqual(test[1], output_list[1])
+        self.assertEqual(test[2], output_list[2])
+        self.assertEqual(test[3], output_list[3])
