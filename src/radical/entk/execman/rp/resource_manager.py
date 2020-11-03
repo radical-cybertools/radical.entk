@@ -159,7 +159,8 @@ class ResourceManager(Base_ResourceManager):
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
                        'input_staging' : self._shared_data,
-                       'output_staging': self._outputs
+                       'output_staging': self._outputs,
+                       'job_name'      : self._job_name
                        }
 
             # Create Compute Pilot with validated resource description

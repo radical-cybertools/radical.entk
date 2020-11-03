@@ -24,9 +24,11 @@ class Base_ResourceManager(object):
                                     |  'resource'      : 'xsede.stampede',
                                     |  'walltime'      : 120,
                                     |  'cpus'          : 64,
+                                    |  'gpus'          : 0,  # optional
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
-                                    |  'access_schema' : 'ssh'     # optional}
+                                    |  'access_schema' : 'ssh'  # optional
+                                    |  'job_name'      : 'test_job'  # optional}
     """
 
     # --------------------------------------------------------------------------
@@ -49,6 +51,7 @@ class Base_ResourceManager(object):
         self._project       = None
         self._access_schema = None
         self._queue         = None
+        self._job_name      = None
         self._validated     = False
 
         # Utility parameters
@@ -121,6 +124,14 @@ class Base_ResourceManager(object):
         :getter: Return user specified resource queue to be used
         """
         return self._queue
+
+
+    @property
+    def job_name(self):
+        """
+        :getter:    Return user specified job_name
+        """
+        return self._job_name
 
 
     @property
@@ -266,6 +277,7 @@ class Base_ResourceManager(object):
         self._project       = self._resource_desc.get('project',       None)
         self._access_schema = self._resource_desc.get('access_schema', None)
         self._queue         = self._resource_desc.get('queue',         None)
+        self._job_name      = self._resource_desc.get('job_name',      None)
 
         self._logger.debug('Resource manager population successful')
         self._prof.prof('rmgr populated', uid=self._uid)
