@@ -1,12 +1,11 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
-import os
 
 from unittest import TestCase
 
 import radical.utils as ru
 
-import radical.entk.exceptions as ree
+# import radical.entk.exceptions as ree
 
 from radical.entk import AppManager as Amgr
 
@@ -23,83 +22,62 @@ except ImportError:
 
 class TestBase(TestCase):
 
-    #
     # ------------------------------------------------------------------------------
-#    def test_amgr_initialization():
-#        amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
-#        amgr      = Amgr(hostname=host, port=port, username=username,
-#
-#                password=password, name=amgr_name)
-#        assert amgr._name.split('.') == amgr_name.split('.')
-#        assert amgr._sid.split('.')  == amgr_name.split('.')
-#
-#        assert amgr._uid.split('.')  == ['appmanager', '0000']
-#        assert isinstance(amgr._logger, ru.Logger)
-#        assert isinstance(amgr._prof,   ru.Profiler)
-#
-#        assert isinstance(amgr._report, ru.Reporter)
-#        assert isinstance(amgr.name,    str)
-#        # RabbitMQ inits
-#        assert amgr._hostname == host
-#
-#        assert amgr._port     == port
-#        # RabbitMQ Queues
-#        assert amgr._num_pending_qs   == 1
-#
-#        assert amgr._num_completed_qs == 1
-#        assert isinstance(amgr._pending_queue,   list)
-#        assert isinstance(amgr._completed_queue, list)
-#
-#        # Global parameters to have default values
-#        assert amgr._mqs_setup
-#
-#        assert amgr._autoterminate
-#        assert amgr._resource_desc is None
-#        assert amgr._task_manager  is None
-#
-#        assert amgr._workflow      is None
-#        assert not amgr._resubmit_failed
-#
-#        assert amgr._reattempts  == 3
-#        assert amgr._cur_attempt == 1
-#
-#        assert isinstance(amgr.shared_data, list)
-#
-#        amgr = Amgr(hostname=host, port=port, username=username, password=password)
-#
-#        assert amgr._uid.split('.') == ['appmanager', '0001']
-#        assert isinstance(amgr._logger, ru.Logger)
-#        assert isinstance(amgr._prof,   ru.Profiler)
-#        assert isinstance(amgr._report, ru.Reporter)
-#        assert isinstance(amgr.name, str)
-#
-#        # RabbitMQ inits
-#        assert amgr._hostname == host
-#        assert amgr._port     == port
-#
-#        # RabbitMQ Queues
-#        assert amgr._num_pending_qs   == 1
-#        assert amgr._num_completed_qs == 1
-#
-#        assert isinstance(amgr._pending_queue, list)
-#        assert isinstance(amgr._completed_queue, list)
-#
-#        # Global parameters to have default values
-#        assert amgr._mqs_setup
-#        assert amgr._autoterminate
-#
-#        assert not amgr._resubmit_failed
-#
-#        assert amgr._resource_desc is None
-#        assert amgr._task_manager  is None
-#        assert amgr._workflow      is None
-#
-#        assert amgr._reattempts  == 3
-#        assert amgr._cur_attempt == 1
-#
-#        assert isinstance(amgr.shared_data, list)
-#
-#
+    #
+    # def test_amgr_initialization():
+    #     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
+    #     amgr      = Amgr(hostname=host, port=port, username=username,
+    #                       password=password, name=amgr_name)
+    #     assert amgr._name.split('.') == amgr_name.split('.')
+    #     assert amgr._sid.split('.')  == amgr_name.split('.')
+    #     assert amgr._uid.split('.')  == ['appmanager', '0000']
+    #     assert isinstance(amgr._logger, ru.Logger)
+    #     assert isinstance(amgr._prof,   ru.Profiler)
+    #     assert isinstance(amgr._report, ru.Reporter)
+    #     assert isinstance(amgr.name,    str)
+    #     # RabbitMQ inits
+    #     assert amgr._hostname == host
+    #     assert amgr._port     == port
+    #     # RabbitMQ Queues
+    #     assert amgr._num_pending_qs   == 1
+    #     assert amgr._num_completed_qs == 1
+    #     assert isinstance(amgr._pending_queue,   list)
+    #     assert isinstance(amgr._completed_queue, list)
+    #     # Global parameters to have default values
+    #     assert amgr._mqs_setup
+    #     assert amgr._autoterminate
+    #     assert amgr._resource_desc is None
+    #     assert amgr._task_manager  is None
+    #     assert amgr._workflow      is None
+    #     assert not amgr._resubmit_failed
+    #     assert amgr._reattempts  == 3
+    #     assert amgr._cur_attempt == 1
+    #     assert isinstance(amgr.shared_data, list)
+    #     amgr = Amgr(hostname=host, port=port, username=username, password=password)
+    #     assert amgr._uid.split('.') == ['appmanager', '0001']
+    #     assert isinstance(amgr._logger, ru.Logger)
+    #     assert isinstance(amgr._prof,   ru.Profiler)
+    #     assert isinstance(amgr._report, ru.Reporter)
+    #     assert isinstance(amgr.name, str)
+    #     # RabbitMQ inits
+    #     assert amgr._hostname == host
+    #     assert amgr._port     == port
+    #     # RabbitMQ Queues
+    #     assert amgr._num_pending_qs   == 1
+    #     assert amgr._num_completed_qs == 1
+    #     assert isinstance(amgr._pending_queue, list)
+    #     assert isinstance(amgr._completed_queue, list)
+    #     # Global parameters to have default values
+    #     assert amgr._mqs_setup
+    #     assert amgr._autoterminate
+    #     assert not amgr._resubmit_failed
+    #     assert amgr._resource_desc is None
+    #     assert amgr._task_manager  is None
+    #     assert amgr._workflow      is None
+    #     assert amgr._reattempts  == 3
+    #     assert amgr._cur_attempt == 1
+    #     assert isinstance(amgr.shared_data, list)
+
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(Amgr, '__init__', return_value=None)
@@ -118,10 +96,10 @@ class TestBase(TestCase):
                                     'completed_qs' : st.integers()}))
     def test_amgr_read_config(self, mocked_init, mocked_PlainCredentials,
                               mocked_ConnectionParameters, d):
-        
+
         amgr = Amgr(hostname='host', port='port',
                     username='username', password='password')
-        
+
         d["rts"]        = "mock"
         d["rts_config"] = {"sandbox_cleanup": True,
                            "db_cleanup"     : True}
@@ -185,10 +163,10 @@ class TestBase(TestCase):
                                     'completed_qs' : st.integers()}))
     def test_amgr_read_config2(self, mocked_init, mocked_PlainCredentials,
                               mocked_ConnectionParameters, d2):
-        
+
         amgr = Amgr(hostname='host', port='port',
                     username='username', password='password')
-        
+
         amgr._read_config(config_path='./',
                           hostname=d2['hostname'],
                           port=d2['port'],
@@ -213,6 +191,3 @@ class TestBase(TestCase):
         self.assertEqual(amgr._rts_config ,{"sandbox_cleanup": True,
                                             "db_cleanup"     : True})
         self.assertEqual(amgr._rmq_cleanup ,d2['rmq_cleanup'])
-
-
-
