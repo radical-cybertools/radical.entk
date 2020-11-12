@@ -29,7 +29,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, resource_desc, sid, rts_config):
+    def __init__(self, resource_desc, sid, rts_config={}):
 
         super(ResourceManager, self).__init__(resource_desc=resource_desc,
                                               sid=sid,

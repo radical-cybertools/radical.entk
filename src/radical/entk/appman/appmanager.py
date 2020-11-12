@@ -838,7 +838,7 @@ class AppManager(object):
 
                         if completed_task.path:
                             task.path = str(completed_task.path)
-                            self._logger.debug('Task %s path set to%s' %
+                            self._logger.debug('Task %s path set to %s' %
                                                (task.uid, task.path))
 
                         if task.state in [states.DONE, states.FAILED]:
