@@ -55,10 +55,9 @@ class TaskManager(Base_TaskManager):
         super(TaskManager, self).__init__(sid, pending_queue, completed_queue,
                                           rmgr, rmq_conn_params,
                                           rts='radical.pilot')
-        self._umgr       = None
         self._rts_runner = None
 
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -66,7 +65,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, umgr, rmgr, pending_queue, completed_queue,
+    def _tmgr(self, uid, rmgr, pending_queue, completed_queue,
                     rmq_conn_params):
         """
         **Purpose**: This method has 3 purposes: Respond to a heartbeat thread
@@ -164,7 +163,7 @@ class TaskManager(Base_TaskManager):
                 try:
 
                     # Get tasks from the pending queue
-                    method_frame, header_frame, body = \
+                    method_frame, _ , body = \
                                     mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
@@ -192,7 +191,7 @@ class TaskManager(Base_TaskManager):
         except Exception as e:
 
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
 
@@ -246,10 +245,6 @@ class TaskManager(Base_TaskManager):
 
                 if unit.state in rp.FINAL:
 
-                    # Acquire a connection+channel to the rmq server
-                    mq_connection = pika.BlockingConnection(rmq_conn_params)
-                    mq_channel = mq_connection.channel()
-
                     task = None
                     task = create_task_from_cu(unit, self._prof)
 
@@ -269,17 +264,18 @@ class TaskManager(Base_TaskManager):
                                    'queue %s-completedq-1',
                                    task.uid, task.state, self._sid)
 
-                    mq_connection.close()
-
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as e:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt
+                raise KeyboardInterrupt from e
 
             except Exception as e:
                 self._log.exception('Error in RP callback thread: %s', e)
         # ----------------------------------------------------------------------
 
+
+        mq_connection = pika.BlockingConnection(rmq_conn_params)
+        mq_channel = mq_connection.channel()
 
         umgr = rp.UnitManager(session=rmgr._session)
         umgr.add_pilots(rmgr.pilot)
@@ -306,6 +302,7 @@ class TaskManager(Base_TaskManager):
                 bulk_tasks = list()
                 bulk_cuds  = list()
 
+
                 for msg in body:
 
                     task = Task()
@@ -314,14 +311,11 @@ class TaskManager(Base_TaskManager):
                     bulk_cuds.append(create_cud_from_task(
                                             task, placeholders, self._prof))
 
-                    mq_connection = pika.BlockingConnection(rmq_conn_params)
-                    mq_channel = mq_connection.channel()
-
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, '%s-tmgr-to-sync' % self._sid)
-                    mq_connection.close()
 
                 umgr.submit_units(bulk_cuds)
+            mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
@@ -329,7 +323,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as e:
             self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e)
+            raise EnTKError(e) from e
 
         finally:
             umgr.close()
@@ -357,7 +351,6 @@ class TaskManager(Base_TaskManager):
             self._tmgr_process = mp.Process(target=self._tmgr,
                                             name='task-manager',
                                             args=(self._uid,
-                                                  self._umgr,
                                                   self._rmgr,
                                                   self._pending_queue,
                                                   self._completed_queue,

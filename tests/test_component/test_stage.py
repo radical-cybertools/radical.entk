@@ -1,340 +1,405 @@
-
-import pytest
+# pylint: disable=protected-access, unused-argument
+# pylint: disable=no-value-for-parameter
+from unittest import TestCase
+from random import shuffle
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
 
-from radical.entk import Pipeline, Stage, Task
+from radical.entk import Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import *
+from radical.entk.exceptions import TypeError, ValueError, MissingError
 
-
-# ------------------------------------------------------------------------------
-#
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 
 # Hypothesis settings
 settings.register_profile("travis", max_examples=100, deadline=None)
 settings.load_profile("travis")
 
-def test_stage_initialization():
-    """
-    ***Purpose***: Test if all attributes have, thus expect, the
-    correct data types
-    """
-
-    s = Stage()
-
-    assert s.uid == None
-    assert s.name == None
-    assert s.tasks == set()
-    assert s.state == states.INITIAL
-    assert s.state_history == [states.INITIAL]
-    assert s._task_count == 0
-    assert s.parent_pipeline['uid'] == None
-    assert s.parent_pipeline['name'] == None
-    assert s.post_exec == None
-
 
 # ------------------------------------------------------------------------------
 #
-@given(t=st.text(),
+class TestBase(TestCase):
+
+    @mock.patch('radical.utils.generate_id', return_value='stage.0000')
+    def test_stage_initialization(self, mocked_generate_id):
+        """
+        ***Purpose***: Test if all attributes have, thus expect, the
+        correct data types
+        """
+
+        s = Stage()
+
+        self.assertEqual(s.uid, 'stage.0000')
+        self.assertEqual(s.tasks, set())
+        self.assertEqual(s.state, states.INITIAL)
+        self.assertEqual(s.state_history, [states.INITIAL])
+        self.assertEqual(s._task_count, 0)
+        self.assertIsNone(s.name)
+        self.assertIsNone(s.parent_pipeline['uid'])
+        self.assertIsNone(s.parent_pipeline['name'])
+        self.assertIsNone(s.post_exec)
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.generate_id', return_value='stage.0000')
+    @given(t=st.text(),
+           l=st.lists(st.text()),
+           i=st.integers().filter(lambda x: type(x) == int),
+           b=st.booleans(),
+           se=st.sets(st.text()))
+    def test_stage_exceptions(self, mocked_generate_id, t, l, i, b, se):
+        """
+        ***Purpose***: Test if correct exceptions are raised when attributes are
+        assigned unacceptable values.
+        """
+
+        s = Stage()
+
+        data_type = [t, l, i, b, se]
+
+        for data in data_type:
+
+            print('Using: %s, %s' % (data, type(data)))
+
+            if not isinstance(data, str):
+                with self.assertRaises(TypeError):
+                    s.name = data
+
+            with self.assertRaises(TypeError):
+                s.tasks = data
+
+            with self.assertRaises(TypeError):
+                s.add_tasks(data)
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    @given(t=st.text(),
        l=st.lists(st.text()),
        i=st.integers().filter(lambda x: type(x) == int),
        b=st.booleans(),
        se=st.sets(st.text()))
-def test_stage_exceptions(t, l, i, b, se):
-    """
-    ***Purpose***: Test if correct exceptions are raised when attributes are
-    assigned unacceptable values.
-    """
+    def test_stage_validate_entities(self, mocked_init, t, l, i, b, se):
 
-    s = Stage()
+        s = Stage()
 
-    data_type = [t, l, i, b, se]
+        data_type = [t, l, i, b, se]
 
-    for data in data_type:
+        for data in data_type:
+            with self.assertRaises(TypeError):
+                s._validate_entities(data)
 
-        print('Using: %s, %s' % (data, type(data)))
+        t = mock.MagicMock(spec=Task)
+        self.assertIsInstance(s._validate_entities(t), set)
 
-        if not isinstance(data, str):
-            with pytest.raises(TypeError):
-                s.name = data
-
-        with pytest.raises(TypeError):
-            s.tasks = data
-
-        with pytest.raises(TypeError):
-            s.add_tasks(data)
+        t1 = mock.MagicMock(spec=Task)
+        t2 = mock.MagicMock(spec=Task)
+        self.assertEqual(set([t1, t2]), s._validate_entities([t1, t2]))
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_task_assignment():
-    """
-    ***Purpose***: Test if necessary attributes are automatically updates upon task assignment
-    """
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_task_assignment(self, mocked_init):
+        """
+        ***Purpose***: Test if necessary attributes are automatically updates upon task assignment
+        """
 
-    s = Stage()
-    t = Task()
-    t.executable = '/bin/date'
-    s.tasks = t
+        global_tasks = set()
 
-    assert type(s.tasks) == set
-    assert s._task_count == 1
-    assert t in s.tasks
+        # ------------------------------------------------------------------------------
+        #
+        def _validate_entities_side_effect(things):
+            nonlocal global_tasks
+            global_tasks.add(things)
+            return global_tasks
 
+        s = Stage()
+        s._validate_entities = mock.MagicMock(side_effect=_validate_entities_side_effect)
+        t = mock.MagicMock(spec=Task)
+        s.tasks = t
 
-# ------------------------------------------------------------------------------
-#
-@given(l=st.lists(st.text()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans())
-def test_stage_parent_pipeline_assignment(l, i, b):
-
-    s = Stage()
-    data_type = [l, i, b]
-    for data in data_type:
-        with pytest.raises(TypeError):
-            s.parent_pipeline = data
+        self.assertIsInstance(s.tasks, set)
+        self.assertEqual(s._task_count, 1)
+        self.assertIn(t, s.tasks)
 
 
-# ------------------------------------------------------------------------------
-#
-@given(t=st.text(),
-       l=st.lists(st.text()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans())
-def test_stage_state_assignment(t, l, i, b):
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    @given(l=st.lists(st.text()),
+        i=st.integers().filter(lambda x: type(x) == int),
+        b=st.booleans())
+    def test_stage_parent_pipeline_assignment(self, mocked_init, l, i, b):
 
-    s = Stage()
+        s = Stage()
+        data_type = [l, i, b]
+        for data in data_type:
+            with self.assertRaises(TypeError):
+                s.parent_pipeline = data
 
-    data_type = [l, i, b]
+        s = Stage()
+        data = {'test': 'pipeline.0000'}
+        s.parent_pipeline = data
+        self.assertEqual(s._p_pipeline, {'test': 'pipeline.0000'})
 
-    for data in data_type:
-        with pytest.raises(TypeError):
-            s.state = data
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    @given(t=st.text(),
+        l=st.lists(st.text()),
+        i=st.integers().filter(lambda x: type(x) == int),
+        b=st.booleans())
+    def test_stage_state_assignment(self, mocked_init, t, l, i, b):
 
-    if isinstance(t, str):
-        with pytest.raises(ValueError):
-            s.state = t
+        s = Stage()
+        s._uid = 'test_stage'
 
-    for val in list(states._stage_state_values.keys()):
-        s.state = val
+        data_type = [l, i, b]
 
+        for data in data_type:
+            with self.assertRaises(TypeError):
+                s.state = data
 
-# ------------------------------------------------------------------------------
-#
-@given(l=st.lists(st.text()),
-       d=st.dictionaries(st.text(), st.text()))
-def test_stage_post_exec_assignment(l, d):
+        if isinstance(t, str):
+            with self.assertRaises(ValueError):
+                s.state = t
 
-    s = Stage()
+        s = Stage()
+        s._uid = 'test_stage'
+        s._state = None
+        s._state_history = list()
+        state_history = list()
+        states_list = list(states._stage_state_values.keys())
+        shuffle(states_list)
+        for val in states_list:
+            s.state = val
+            if val != states.SUSPENDED:
+                state_history.append(val)
+            self.assertEqual(s._state, val)
+            self.assertEqual(s._state_history, state_history)
 
-    def func():
-        return True
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    @given(l=st.lists(st.text()),
+        d=st.dictionaries(st.text(), st.text()))
+    def test_stage_post_exec_assignment(self, mocked_init, l, d):
 
-    with pytest.raises(TypeError):
-        s.post_exec = l
+        s = Stage()
+        s._uid = 'test_stage'
 
-    with pytest.raises(TypeError):
-        s.post_exec = d
-
-
-    s.post_exec = func
-
-    class Tmp(object):
-
-        def func(self):
+        def func():
             return True
 
+        with self.assertRaises(TypeError):
+            s.post_exec = l
 
-    tmp = Tmp()
-    s.post_exec = tmp.func
-
-
-# ------------------------------------------------------------------------------
-#
-def test_stage_task_addition():
-
-    s = Stage()
-    t1 = Task()
-    t1.executable = '/bin/date'
-    t2 = Task()
-    t2.executable = '/bin/date'
-    s.add_tasks(set([t1, t2]))
-
-    assert type(s.tasks) == set
-    assert s._task_count == 2
-    assert t1 in s.tasks
-    assert t2 in s.tasks
-
-    s = Stage()
-    t1 = Task()
-    t1.executable = '/bin/date'
-    t2 = Task()
-    t2.executable = '/bin/date'
-    s.add_tasks([t1, t2])
-
-    assert type(s.tasks) == set
-    assert s._task_count == 2
-    assert t1 in s.tasks
-    assert t2 in s.tasks
+        with self.assertRaises(TypeError):
+            s.post_exec = d
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_to_dict():
+        s.post_exec = func
+        self.assertEqual(s._post_exec, func)
 
-    s = Stage()
-    d = s.to_dict()
+        class Tmp(object):
 
-    assert d == {'uid': None,
-                 'name': None,
-                 'state': states.INITIAL,
-                 'state_history': [states.INITIAL],
-                 'parent_pipeline': {'uid': None, 'name': None}}
+            def func(self):
+                return True
 
-
-# ------------------------------------------------------------------------------
-#
-def test_stage_from_dict():
-
-    d = {'uid': 're.Stage.0000',
-         'name': 's1',
-         'state': states.DONE,
-         'state_history': [states.INITIAL, states.DONE],
-         'parent_pipeline': {'uid': 'p1',
-                             'name': 'pipe1'}
-         }
-
-    s = Stage()
-    s.from_dict(d)
-
-    assert s.uid == d['uid']
-    assert s.name == d['name']
-    assert s.state == d['state']
-    assert s.state_history == d['state_history']
-    assert s.parent_pipeline == d['parent_pipeline']
+        tmp = Tmp()
+        s.post_exec = tmp.func
+        self.assertEqual(s._post_exec, tmp.func)
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_set_tasks_state():
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_task_addition(self, mocked_init):
 
-    s = Stage()
-    t1 = Task()
-    t1.executable = '/bin/date'
-    t2 = Task()
-    t2.executable = '/bin/date'
-    s.add_tasks([t1, t2])
+        s = Stage()
+        s._p_pipeline = {'uid': None, 'name': None}
+        s._uid = 'stage.0000'
+        s._name = None
+        s._tasks = set()
+        t1 = mock.MagicMock(spec=Task)
+        t2 = mock.MagicMock(spec=Task)
+        s.add_tasks(set([t1, t2]))
 
-    with pytest.raises(ValueError):
-        s._set_tasks_state(2)
+        self.assertIsInstance(s.tasks, set)
+        self.assertEqual(s._task_count, 2)
+        self.assertIn(t1, s.tasks)
+        self.assertIn(t2, s.tasks)
 
-    s._set_tasks_state(states.DONE)
-    assert t1.state == states.DONE
-    assert t2.state == states.DONE
+        s = Stage()
+        s._uid = 'stage.0000'
+        s._name = None
+        s._p_pipeline = {'uid': None, 'name': None}
+        s._tasks = set()
+        t1 = mock.MagicMock(spec=Task)
+        t2 = mock.MagicMock(spec=Task)
+        s.add_tasks([t1, t2])
 
-
-# ------------------------------------------------------------------------------
-#
-def test_stage_check_complete():
-
-    s = Stage()
-    t1 = Task()
-    t1.executable = '/bin/date'
-    t2 = Task()
-    t2.executable = '/bin/date'
-    s.add_tasks([t1, t2])
-
-    assert s._check_stage_complete() == False
-    s._set_tasks_state(states.DONE)
-    assert s._check_stage_complete() == True
-
-
-# ------------------------------------------------------------------------------
-#
-@given(t=st.text(),
-       l=st.lists(st.text()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans(),
-       se=st.sets(st.text()))
-def test_stage_validate_entities(t, l, i, b, se):
-
-    s = Stage()
-
-    data_type = [t, l, i, b, se]
-
-    for data in data_type:
-        with pytest.raises(TypeError):
-            s._validate_entities(data)
-
-    t = Task()
-    assert isinstance(s._validate_entities(t), set)
-
-    t1 = Task()
-    t2 = Task()
-    assert set([t1, t2]) == s._validate_entities([t1, t2])
+        self.assertIsInstance(s.tasks, set)
+        self.assertEqual(s._task_count, 2)
+        self.assertIn(t1, s.tasks)
+        self.assertIn(t2, s.tasks)
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_validate():
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_to_dict(self, mocked_init):
 
-    s = Stage()
-    s._state = 'test'
-    with pytest.raises(ValueError):
+        s = Stage()        
+        s._uid = 'stage.0000'
+        s._name = 'test_stage'
+        s._state = states.INITIAL
+        s._state_history = [states.INITIAL]
+        s._p_pipeline = {'uid': 'pipeline.0000', 'name': 'parent'}
+
+        self.assertEqual(s.to_dict(),{'uid': 'stage.0000',
+                                      'name': 'test_stage',
+                                      'state': states.INITIAL,
+                                      'state_history': [states.INITIAL],
+                                      'parent_pipeline': {'uid': 'pipeline.0000', 
+                                                          'name': 'parent'}})
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_from_dict(self, mocked_init):
+
+        d = {'uid': 're.Stage.0000',
+            'name': 's1',
+            'state': states.DONE,
+            'state_history': [states.INITIAL, states.DONE],
+            'parent_pipeline': {'uid': 'p1',
+                                'name': 'pipe1'}
+            }
+
+        s = Stage()
+        s._uid = None
+        s._name = None
+        s._state = None
+        s._state_history = None
+        s._p_pipeline = None
+        s.from_dict(d)
+
+        self.assertEqual(s._uid, d['uid'])
+        self.assertEqual(s._name, d['name'])
+        self.assertEqual(s._state, d['state'])
+        self.assertEqual(s._state_history, d['state_history'])
+        self.assertEqual(s._p_pipeline, d['parent_pipeline'])
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_set_tasks_state(self, mocked_init):
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        t1 = mock.MagicMock(spec=Task)
+        t2 = mock.MagicMock(spec=Task)
+        s._tasks = set([t1, t2])
+
+        with self.assertRaises(ValueError):
+            s._set_tasks_state(2)
+
+        s._set_tasks_state(states.DONE)
+        self.assertEqual(t1.state, states.DONE)
+        self.assertEqual(t2.state, states.DONE)
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_check_complete(self, mocked_init):
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        t1 = mock.MagicMock(spec=Task)
+        t2 = mock.MagicMock(spec=Task)
+        s._tasks = set([t1, t2])
+
+        self.assertFalse(s._check_stage_complete())
+        for t in s._tasks:
+            t.state = states.DONE
+        self.assertTrue(s._check_stage_complete())
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_validate(self, mocked_init):
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        s._state = 'test'
+        with self.assertRaises(ValueError):
+            s._validate()
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        s._state = states.INITIAL
+        s._tasks = None
+        with self.assertRaises(MissingError):
+            s._validate()
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        t = mock.MagicMock(spec=Stage)
+        t._validate = mock.MagicMock(return_value=True)
+        s._tasks = set([t])
+        s._state = states.INITIAL
         s._validate()
 
-    s = Stage()
-    with pytest.raises(MissingError):
-        s._validate()
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_stage_assign_uid(self, mocked_init):
+
+        s = Stage()
+        s._uid = 'stage.0000'
+        self.assertEqual(s.uid, 'stage.0000')
 
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_assign_uid():
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Stage, '__init__', return_value=None)
+    def test_luid(self, mocked_init):
 
-    try:
-        import glob
-        import shutil
-        import os
-        home = os.environ.get('HOME','/home')
-        test_fold = glob.glob('%s/.radical/utils/test*'%home)
-        for f in test_fold:
-            shutil.rmtree(f)
-    except:
-        pass
-    s = Stage()
-    assert s.uid == 'stage.0000'
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
+        s._uid = 'stage.0000'
+        s._name = None
 
+        self.assertEqual(s.luid, 'pipe.0000.stage.0000')
 
-# ------------------------------------------------------------------------------
-#
-def test_stage_pass_uid():
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
+        s._uid = 'stage.0000'
+        s._name = None
 
-    s = Stage()
-    s._uid = 's'
-    s.name = 's1'
-    s.parent_pipeline['uid'] = 'p'
-    s.parent_pipeline['name'] = 'p1'
+        self.assertEqual(s.luid, 'test_pipe.stage.0000')
 
-    t1 = Task()
-    t2 = Task()
-    s.add_tasks([t1,t2])
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': None}
+        s._uid = 'stage.0000'
+        s._name = 'test_stage'
 
-    s._pass_uid()
+        self.assertEqual(s.luid, 'pipe.0000.test_stage')
 
-    assert t1.parent_stage['uid'] == s.uid
-    assert t1.parent_stage['name'] == s.name
-    assert t1.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t1.parent_pipeline['name'] == s.parent_pipeline['name']
+        s = Stage()
+        s._p_pipeline = {'uid': 'pipe.0000', 'name': 'test_pipe'}
+        s._uid = 'stage.0000'
+        s._name = 'test_stage'
 
-    assert t2.parent_stage['uid'] == s.uid
-    assert t2.parent_stage['name'] == s.name
-    assert t2.parent_pipeline['uid'] == s.parent_pipeline['uid']
-    assert t2.parent_pipeline['name'] == s.parent_pipeline['name']
-
-
-# ------------------------------------------------------------------------------
-
+        self.assertEqual(s.luid, 'test_pipe.test_stage')

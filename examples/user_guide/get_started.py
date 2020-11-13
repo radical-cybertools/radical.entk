@@ -6,7 +6,7 @@ import os
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 # Description of how the RabbitMQ process is accessible
@@ -16,6 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 if __name__ == '__main__':
 
@@ -38,7 +40,8 @@ if __name__ == '__main__':
     p.add_stages(s)
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus

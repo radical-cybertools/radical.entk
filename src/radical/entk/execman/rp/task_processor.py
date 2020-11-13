@@ -96,7 +96,8 @@ def resolve_placeholders(path, placeholders):
 
     except Exception as ex:
 
-        logger.exception('Failed to resolve placeholder %s, error: %s' %(path, ex))
+        logger.exception('Failed to resolve placeholder %s, error: %s' %
+                         (path, ex))
         raise
 
 
@@ -343,27 +344,6 @@ def get_output_list_from_task(task, placeholders):
 
         output_data = list()
 
-        if task.copy_output_data:
-
-            for path in task.copy_output_data:
-
-                path = resolve_placeholders(path, placeholders)
-
-                if len(path.split('>')) > 1:
-                    temp = {
-                        'source': path.split('>')[0].strip(),
-                        'target': path.split('>')[1].strip(),
-                        'action': rp.COPY
-                    }
-
-                else:
-                    temp = {
-                        'source': path.split('>')[0].strip(),
-                        'target': os.path.basename(path.split('>')[0].strip()),
-                        'action': rp.COPY
-                    }
-                output_data.append(temp)
-
         if task.link_output_data:
 
             for path in task.link_output_data:
@@ -384,7 +364,6 @@ def get_output_list_from_task(task, placeholders):
                     }
                 output_data.append(temp)
 
-
         if task.download_output_data:
 
             for path in task.download_output_data:
@@ -404,6 +383,26 @@ def get_output_list_from_task(task, placeholders):
                     }
                 output_data.append(temp)
 
+        if task.copy_output_data:
+
+            for path in task.copy_output_data:
+
+                path = resolve_placeholders(path, placeholders)
+
+                if len(path.split('>')) > 1:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': path.split('>')[1].strip(),
+                        'action': rp.COPY
+                    }
+
+                else:
+                    temp = {
+                        'source': path.split('>')[0].strip(),
+                        'target': os.path.basename(path.split('>')[0].strip()),
+                        'action': rp.COPY
+                    }
+                output_data.append(temp)
 
         if task.move_output_data:
 
@@ -474,14 +473,14 @@ def create_cud_from_task(task, placeholders, prof=None):
                         parent_pipeline_name=task.parent_pipeline['name'],
                         placeholders=placeholders)
 
-        cud.cpu_processes    = task.cpu_reqs['processes']
-        cud.cpu_threads      = task.cpu_reqs['threads_per_process']
-        cud.cpu_process_type = task.cpu_reqs['process_type']
-        cud.cpu_thread_type  = task.cpu_reqs['thread_type']
-        cud.gpu_processes    = task.gpu_reqs['processes']
-        cud.gpu_threads      = task.gpu_reqs['threads_per_process']
-        cud.gpu_process_type = task.gpu_reqs['process_type']
-        cud.gpu_thread_type  = task.gpu_reqs['thread_type']
+        cud.cpu_processes    = task.cpu_reqs['cpu_processes']
+        cud.cpu_threads      = task.cpu_reqs['cpu_threads']
+        cud.cpu_process_type = task.cpu_reqs['cpu_process_type']
+        cud.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
+        cud.gpu_processes    = task.gpu_reqs['gpu_processes']
+        cud.gpu_threads      = task.gpu_reqs['gpu_threads']
+        cud.gpu_process_type = task.gpu_reqs['gpu_process_type']
+        cud.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
 
         if task.lfs_per_process:
             cud.lfs_per_process = task.lfs_per_process

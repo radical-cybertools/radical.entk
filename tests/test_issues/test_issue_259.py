@@ -3,7 +3,7 @@ import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -14,6 +14,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 
 def generate_pipeline():
@@ -47,7 +49,7 @@ def generate_pipeline():
     t2 = Task()
     t2.name = 't2'
     t2.executable = '/bin/cat'
-    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt'%(p.name, s1.name, t1.name)]
+    t2.arguments = ['$Pipeline_%s_Stage_%s_Task_%s/temp.txt' % (p.name, s1.name, t1.name)]
     t2.stdout = 'output.txt'
     t2.download_output_data = ['output.txt']
 
@@ -59,10 +61,12 @@ def generate_pipeline():
 
     return p
 
+
 def test_issue_259():
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus

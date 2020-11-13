@@ -3,7 +3,7 @@ from radical.entk.exceptions import *
 from radical.entk.stage.stage import Stage
 import threading
 from radical.entk import states
-from collections import Iterable
+from collections.abc import Iterable
 
 
 class Pipeline(object):

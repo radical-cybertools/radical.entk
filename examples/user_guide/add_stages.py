@@ -5,7 +5,7 @@ import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -16,6 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = os.environ.get('RMQ_PORT', 5672)
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 if __name__ == '__main__':
 
@@ -32,7 +34,7 @@ if __name__ == '__main__':
         t = Task()
         t.name = 'my-task'        # Assign a name to the task (optional)
         t.executable = '/bin/echo'   # Assign executable to the task
-        t.arguments = ['I am task %s in %s'%(cnt, s1.name)]  # Assign arguments for the task executable
+        t.arguments = ['I am task %s in %s' % (cnt, s1.name)]  # Assign arguments for the task executable
 
         # Add the Task to the Stage
         s1.add_tasks(t)
@@ -51,7 +53,7 @@ if __name__ == '__main__':
         t = Task()
         t.name = 'my-task'        # Assign a name to the task (optional, do not use ',' or '_')
         t.executable = '/bin/echo'   # Assign executable to the task
-        t.arguments = ['I am task %s in %s'%(cnt, s2.name)]  # Assign arguments for the task executable
+        t.arguments = ['I am task %s in %s' % (cnt, s2.name)]  # Assign arguments for the task executable
 
         # Add the Task to the Stage
         s2.add_tasks(t)
@@ -61,7 +63,8 @@ if __name__ == '__main__':
 
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus
