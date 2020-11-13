@@ -1,1 +1,0 @@
-git+git://github.com/radical-cybertools/radical.pilot@devel
