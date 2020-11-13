@@ -389,7 +389,7 @@ class AppManager(object):
             # Ensure that a workflow and a resource description have
             # been defined
             if not self._workflow:
-                self._logger.error('No workflow assignedcurrently, please \
+                self._logger.error('No workflow assigned currently, please \
                                     check your script')
                 raise ree.MissingError(obj=self._uid,
                                        missing_attribute='workflow')

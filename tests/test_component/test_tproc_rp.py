@@ -252,6 +252,53 @@ class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
     #
+    @mock.patch('radical.entk.Task')
+    @mock.patch('radical.utils.Logger')
+    def test_issue_271(self, mocked_Task, mocked_Logger):
+        test_cud = mock.Mock()
+        test_cud.name             = 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000'
+        test_cud.pre_exec         = 'post_exec'
+        test_cud.executable       = '/bin/date'
+        test_cud.arguments        = 'test_args'
+        test_cud.sandbox          = 'unit.0000'
+        test_cud.post_exec        = ''
+        test_cud.cpu_processes    = 5
+        test_cud.cpu_threads      = 6
+        test_cud.cpu_process_type = 'POSIX'
+        test_cud.cpu_thread_type  = None
+        test_cud.gpu_processes    = 5
+        test_cud.gpu_threads      = 6
+        test_cud.gpu_process_type = 'POSIX'
+        test_cud.gpu_thread_type  = None
+        test_cud.lfs_per_process  = 235
+        test_cud.stdout           = 'stdout'
+        test_cud.stderr           = 'stderr'
+        test_cud.input_staging    = 'inputs'
+        test_cud.output_staging   = 'outputs'
+        test_cud.uid              = 'unit.0000'
+        test_cud.state            = 'DONE'
+        test_cud.sandbox          = 'test_folder'
+
+        mocked_Task.uid             = None
+        mocked_Task.name            = None
+        mocked_Task.parent_stage    = {}
+        mocked_Task.parent_pipeline = {}
+        mocked_Task.path            = None
+        mocked_Task.rts_uid         = None
+
+        task = create_task_from_cu(test_cud, None)
+        self.assertEqual(task.exit_code, 0)
+
+        test_cud.state = 'FAILED'
+        task = create_task_from_cu(test_cud, None)
+        self.assertEqual(task.exit_code, 1)
+
+        test_cud.state = 'EXECUTING'
+        task = create_task_from_cu(test_cud, None)
+        self.assertIsNone(task.exit_code)
+
+    # ------------------------------------------------------------------------------
+    #
     @mock.patch('radical.utils.Logger')
     def test_get_input_list_from_task(self, mocked_Logger):
 

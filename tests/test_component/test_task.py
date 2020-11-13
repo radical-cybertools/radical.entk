@@ -268,3 +268,16 @@ class TestTask(TestCase):
         d = 'test'
         with pytest.raises(ree.TypeError):
             t = Task(from_dict=d)
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_executable(self, mocked_init):
+        # Tests issue #324
+        task = Task()
+        task.executable = 'test_exec'
+        self.assertEqual(task._executable, 'test_exec')
+
+        task = Task()
+        with self.assertRaises(ree.TypeError):
+            task.executable = ['test_exec']
