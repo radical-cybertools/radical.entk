@@ -417,6 +417,20 @@ class TestBase(TestCase):
         pipe.stages = [stage]
         wfp._workflow = set([pipe])
 
+        # Test for issue #271
         wfp._update_dequeued_task(task)
         self.assertEqual(global_advs[0], [task, 'Task', states.DONE])
         self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
+
+        task.state = states.INITIAL
+        task.exit_code = None
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[2], [task, 'Task', states.INITIAL])
+        self.assertEqual(global_advs[3], [stage, 'Stage', states.DONE])
+
+        task.exit_code = 1
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[4], [task, 'Task', states.FAILED])
+        self.assertEqual(global_advs[5], [stage, 'Stage', states.DONE])
