@@ -1,14 +1,7 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
 
-from unittest import TestCase
-
-import radical.utils as ru
-
-# import radical.entk.exceptions as ree
-
-from radical.entk import AppManager as Amgr
-
+from unittest   import TestCase
 from hypothesis import given
 
 import hypothesis.strategies as st
@@ -18,6 +11,10 @@ try:
 except ImportError:
     from unittest import mock
 
+import radical.utils as ru
+# import radical.entk.exceptions as ree
+
+from radical.entk import AppManager as Amgr
 
 
 class TestBase(TestCase):
@@ -106,17 +103,17 @@ class TestBase(TestCase):
 
         ru.write_json(d, './config.json')
         amgr._read_config(config_path='./',
-                        hostname=None,
-                        port=None,
-                        username=None,
-                        password=None,
-                        reattempts=None,
-                        resubmit_failed=None,
-                        autoterminate=None,
-                        write_workflow=None,
-                        rts=None,
-                        rmq_cleanup=None,
-                        rts_config=None)
+                          hostname=None,
+                          port=None,
+                          username=None,
+                          password=None,
+                          reattempts=None,
+                          resubmit_failed=None,
+                          autoterminate=None,
+                          write_workflow=None,
+                          rts=None,
+                          rmq_cleanup=None,
+                          rts_config=None)
 
         self.assertEqual(amgr._hostname ,d['hostname'])
         self.assertEqual(amgr._port ,d['port'])
@@ -151,18 +148,18 @@ class TestBase(TestCase):
     @mock.patch('pika.PlainCredentials')
     @mock.patch('pika.connection.ConnectionParameters')
     @given(d2=st.fixed_dictionaries({'hostname': st.text(),
-                                    'port': st.integers(),
-                                    'username': st.text(),
-                                    'password': st.text(),
-                                    'reattempts': st.integers(),
-                                    'resubmit_failed': st.booleans(),
-                                    'autoterminate': st.booleans(),
-                                    'write_workflow': st.booleans(),
-                                    'rmq_cleanup': st.booleans(),
-                                    'pending_qs' : st.integers(),
-                                    'completed_qs' : st.integers()}))
+                                     'port': st.integers(),
+                                     'username': st.text(),
+                                     'password': st.text(),
+                                     'reattempts': st.integers(),
+                                     'resubmit_failed': st.booleans(),
+                                     'autoterminate': st.booleans(),
+                                     'write_workflow': st.booleans(),
+                                     'rmq_cleanup': st.booleans(),
+                                     'pending_qs' : st.integers(),
+                                     'completed_qs' : st.integers()}))
     def test_amgr_read_config2(self, mocked_init, mocked_PlainCredentials,
-                              mocked_ConnectionParameters, d2):
+                               mocked_ConnectionParameters, d2):
 
         amgr = Amgr(hostname='host', port='port',
                     username='username', password='password')
