@@ -57,7 +57,7 @@ def get_pipeline(shared_fs=False, size=1):
         t.cpu_reqs['threads_per_process'] = 24
         t.cpu_reqs['thread_type'] = ''
         t.cpu_reqs['process_type'] = ''
-        t.tag = 't%s'%x
+        t.tags = 't%s'%x
 
         s2.add_tasks(t)
 

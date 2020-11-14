@@ -164,22 +164,12 @@ def resolve_tags(tags, parent_pipeline_name, placeholders):
     if not tags:
         return
 
-    val = None
-    if isinstance(tags, str):
-        val = tags
-
-    elif isinstance(tags, dict):
-
-        if list(tags.keys()) != ['colocation']:
-            raise ValueError('unsupported task tags %s' % tags.keys())
-
-        val = tags['colocation']
-
+    colo_tag = tags['colocation']
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
         for tname in placeholders[parent_pipeline_name][sname]:
-            if val != tname:
+            if colo_tag != tname:
                 continue
             return {'colocation':
                     placeholders[parent_pipeline_name][sname][tname]['rts_uid']}
@@ -192,13 +182,13 @@ def resolve_tags(tags, parent_pipeline_name, placeholders):
 
         for sname in placeholders[pname]:
             for tname in placeholders[pname][sname]:
-                if val != tname:
+                if colo_tag != tname:
                     continue
                 return {'colocation':
                         placeholders[pname][sname][tname]['rts_uid']}
 
     raise ree.EnTKError(msg='colocation tag %s cannot be used as no previous'
-                            'task with that name is found' % val)
+                            'task with that name is found' % colo_tag)
 
 
 # ------------------------------------------------------------------------------

@@ -908,17 +908,23 @@ class Task(object):
     def tag(self, value):
 
         # this method exists for backward compatibility
-        self.tags = value
+        if not isinstance(value, str):
+            raise ree.TypeError(entity='tags', expected_type=str,
+                                actual_type=type(value))
+        self.tags = {'colocate': value}
 
 
     @tags.setter
     def tags(self, value):
 
-        if not isinstance(value, str):
-            raise ree.TypeError(entity='tags', expected_type=str,
+        if not isinstance(value, dict):
+            raise ree.TypeError(entity='tags', expected_type=dict,
                                 actual_type=type(value))
 
-        self._tags = value
+        if list(tags.keys()) != ['colocation']:
+            raise ree.TypeError('unsupported tags %s' % tags.keys())
+
+        self.tags = value
 
 
     @parent_stage.setter

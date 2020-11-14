@@ -98,12 +98,12 @@ def test_resolve_tags():
         }
     }
 
-    resolved = resolve_tags(tag=t1_name, parent_pipeline_name=pipeline_name,
+    resolved = resolve_tags(tags=t1_name, parent_pipeline_name=pipeline_name,
                             placeholders=placeholders)
-    assert resolved == 'unit.0002'
+    assert resolved == {'colocate': 'unit.0002}'
 
     with pytest.raises(EnTKError):
-        resolve_tags(tag='t3', parent_pipeline_name=pipeline_name,
+        resolve_tags(tags='t3', parent_pipeline_name=pipeline_name,
                      placeholders=placeholders)
 
 

@@ -29,7 +29,7 @@ class TestTask(TestCase):
     @mock.patch('radical.utils.generate_id', return_value='test.0000')
     def test_task_initialization(self, mocked_generate_id):
         '''
-        **Purpose**: Test if the task attributes have, thus expect, the correct 
+        **Purpose**: Test if the task attributes have, thus expect, the correct
         data types
         '''
 
@@ -84,35 +84,35 @@ class TestTask(TestCase):
                           'process_type'        : None,
                           'threads_per_process' : 1,
                           'thread_type'         : None}
-        cpu_reqs = {'processes' : 2, 
-                    'process_type' : None, 
-                    'threads_per_process' : 1, 
+        cpu_reqs = {'processes' : 2,
+                    'process_type' : None,
+                    'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.cpu_reqs = {'processes' : 2, 
-                         'process_type' : None, 
-                         'threads_per_process' : 1, 
+        task.cpu_reqs = {'processes' : 2,
+                         'process_type' : None,
+                         'threads_per_process' : 1,
                          'thread_type' : 'OpenMP'}
 
         self.assertEqual(task._cpu_reqs, cpu_reqs)
-        self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2, 
-                                         'cpu_process_type' : None, 
-                                         'cpu_threads' : 1, 
+        self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2,
+                                         'cpu_process_type' : None,
+                                         'cpu_threads' : 1,
                                          'cpu_thread_type' : 'OpenMP'})
 
         with self.assertRaises(ree.MissingError):
-            task.cpu_reqs = {'cpu_processes' : 2, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 2,
+                             'cpu_process_type' : None,
                              'cpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.cpu_reqs = {'cpu_processes' : 'a', 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 'a',
+                             'cpu_process_type' : None,
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : None,
                              'cpu_threads' : 'a',
                              'cpu_thread_type' : 'OpenMP'}
 
@@ -120,14 +120,14 @@ class TestTask(TestCase):
             task.cpu_reqs = list()
 
         with self.assertRaises(ree.ValueError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : None,
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'MPI'}
 
         with self.assertRaises(ree.ValueError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : 'test', 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : 'test',
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
@@ -142,50 +142,50 @@ class TestTask(TestCase):
                           'process_type'        : None,
                           'threads_per_process' : 1,
                           'thread_type'         : None}
-        gpu_reqs = {'processes' : 2, 
-                    'process_type' : None, 
-                    'threads_per_process' : 1, 
+        gpu_reqs = {'processes' : 2,
+                    'process_type' : None,
+                    'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.gpu_reqs = {'processes' : 2, 
-                         'process_type' : None, 
-                         'threads_per_process' : 1, 
+        task.gpu_reqs = {'processes' : 2,
+                         'process_type' : None,
+                         'threads_per_process' : 1,
                          'thread_type' : 'OpenMP'}
 
         self.assertEqual(task._gpu_reqs, gpu_reqs)
-        self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2, 
-                                         'gpu_process_type' : None, 
-                                         'gpu_threads' : 1, 
+        self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2,
+                                         'gpu_process_type' : None,
+                                         'gpu_threads' : 1,
                                          'gpu_thread_type' : 'OpenMP'})
 
         with self.assertRaises(ree.TypeError):
             task.gpu_reqs = list()
 
         with self.assertRaises(ree.MissingError):
-            task.gpu_reqs = {'gpu_processes' : 2, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 2,
+                             'gpu_process_type' : None,
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.gpu_reqs = {'gpu_processes' : 'a', 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 'a',
+                             'gpu_process_type' : None,
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : None,
                              'gpu_threads' : 'a',
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.ValueError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : None,
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'MPI'}
 
         with self.assertRaises(ree.ValueError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : 'test', 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : 'test',
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 

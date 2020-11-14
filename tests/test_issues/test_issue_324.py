@@ -36,7 +36,7 @@ def test_issue_271():
             'stderr': 'err',
             'exit_code': 555,
             'path': 'here/it/is',
-            'tag': 'task.0010',
+            'tags': {'colocate': 'task.0010'},
             'parent_stage': {'uid': 's1', 'name': 'stage1'},
             'parent_pipeline': {'uid': 'p1', 'name': 'pipe1'}}
 
