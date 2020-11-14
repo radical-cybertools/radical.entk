@@ -24,10 +24,10 @@ class Base_ResourceManager(object):
                                     |  'resource'      : 'xsede.stampede',
                                     |  'walltime'      : 120,
                                     |  'cpus'          : 64,
-                                    |  'gpus'          : 0,  # optional
+                                    |  'gpus'          : 0,          # optional
                                     |  'project'       : 'TG-abcxyz',
-                                    |  'queue'         : 'abc',    # optional
-                                    |  'access_schema' : 'ssh'  # optional
+                                    |  'queue'         : 'abc',      # optional
+                                    |  'access_schema' : 'ssh'       # optional
                                     |  'job_name'      : 'test_job'  # optional}
     """
 
