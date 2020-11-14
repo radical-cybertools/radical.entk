@@ -178,13 +178,13 @@ class TestBase(TestCase):
                           rts_config={"sandbox_cleanup": True,
                                       "db_cleanup"     : True})
 
-        self.assertEqual(amgr._hostname ,d2['hostname'])
-        self.assertEqual(amgr._port ,d2['port'])
-        self.assertEqual(amgr._reattempts ,d2['reattempts'])
-        self.assertEqual(amgr._resubmit_failed ,d2['resubmit_failed'])
-        self.assertEqual(amgr._autoterminate ,d2['autoterminate'])
-        self.assertEqual(amgr._write_workflow ,d2['write_workflow'])
-        self.assertEqual(amgr._rts ,"mock")
-        self.assertEqual(amgr._rts_config ,{"sandbox_cleanup": True,
+        self.assertEqual(amgr._hostname, d2['hostname'])
+        self.assertEqual(amgr._port, d2['port'])
+        self.assertEqual(amgr._reattempts, d2['reattempts'])
+        self.assertEqual(amgr._resubmit_failed, d2['resubmit_failed'])
+        self.assertEqual(amgr._autoterminate, d2['autoterminate'])
+        self.assertEqual(amgr._write_workflow, d2['write_workflow'])
+        self.assertEqual(amgr._rts, "mock")
+        self.assertEqual(amgr._rts_config, {"sandbox_cleanup": True,
                                             "db_cleanup"     : True})
-        self.assertEqual(amgr._rmq_cleanup ,d2['rmq_cleanup'])
+        self.assertEqual(amgr._rmq_cleanup, d2['rmq_cleanup'])
