@@ -69,7 +69,7 @@ class Task(object):
         # to cuds and cus to tasks
         self._path      = None
         self._exit_code = None
-        self._tag       = None
+        self._tags      = None
 
         # Keep track of res attained
         self._state_history = [res.INITIAL]
@@ -513,7 +513,7 @@ class Task(object):
         DEPRECATED: use `self.tags`
         '''
 
-        return self.tags
+        return self._tags
 
 
     @property
@@ -914,7 +914,7 @@ class Task(object):
         if not isinstance(value, str):
             raise ree.TypeError(entity='tags', expected_type=str,
                                 actual_type=type(value))
-        self.tags = {'colocate': value}
+        self._tags = {'colocate': value}
 
 
     @tags.setter
@@ -924,10 +924,12 @@ class Task(object):
             raise ree.TypeError(entity='tags', expected_type=dict,
                                 actual_type=type(value))
 
-        if list(tags.keys()) != ['colocation']:
-            raise ree.TypeError('unsupported tags %s' % tags.keys())
+        if list(value.keys()) != ['colocation']:
+            raise ree.TypeError(expected_type=dict,
+                                actual_type=type(value.get('colocation')),
+                                entity='colocation')
 
-        self.tags = value
+        self._tags = value
 
 
     @parent_stage.setter
