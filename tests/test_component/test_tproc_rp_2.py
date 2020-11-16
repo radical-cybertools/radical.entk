@@ -105,12 +105,12 @@ def test_resolve_tags():
 
     assert resolve_tags(tag=t1_name,
                         parent_pipeline_name=pipeline_name,
-                        placeholders=placeholders) == {'colocate': 'unit.0002}'
+                        placeholders=placeholders) == {'colocate': 'unit.0002'}
 
     with pytest.raises(rse.EnTKError):
             resolve_tags(tag='t3',
                          parent_pipeline_name=pipeline_name,
-                         placeholders=placeholders) == {'colocate': 'unit.0002}'
+                         placeholders=placeholders)
 
 
 # ------------------------------------------------------------------------------

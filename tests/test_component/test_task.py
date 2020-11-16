@@ -66,7 +66,7 @@ class TestTask(TestCase):
         self.assertEqual(t._stdout, '')
         self.assertEqual(t._stderr, '')
         self.assertIsNone(t._exit_code)
-        self.assertIsNone(t._tag)
+        self.assertIsNone(t._tags)
         self.assertIsNone(t._path)
         self.assertIsNone(t._p_pipeline['uid'])
         self.assertIsNone(t._p_pipeline['name'])
@@ -268,3 +268,135 @@ class TestTask(TestCase):
         d = 'test'
         with pytest.raises(ree.TypeError):
             t = Task(from_dict=d)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_name(self, mocked_init):
+
+        task = Task()
+        task._uid = 'test'
+        task._name = 'test_name'
+        self.assertEqual(task.name, 'test_name')
+
+        task.name = 'task.0000'
+        self.assertEqual(task._name, 'task.0000')
+
+        with self.assertRaises(ree.TypeError):
+            task.name = 0
+        
+        with self.assertRaises(ree.ValueError):
+            task.name = 'task,0000'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_state_history(self, mocked_init):
+
+        task = Task()
+        task._uid = 'test'
+        task._state_history = [states.INITIAL]
+        self.assertEqual(task.state_history, [states.INITIAL])
+
+        task.state_history = [states.SCHEDULED]
+        self.assertEqual(task._state_history, [states.SCHEDULED])
+
+        with self.assertRaises(ree.TypeError):
+            task.state_history = states.SCHEDULING
+
+        with self.assertRaises(ree.ValueError):
+            task.state_history = ['EXECUTING']
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_pre_exec(self, mocked_init):
+
+        task = Task()
+        task._pre_exec = ['module load mymodule']
+        self.assertEqual(task.pre_exec, ['module load mymodule'])
+        
+        task.pre_exec = ['module load mymodule2']
+        self.assertEqual(task._pre_exec, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.pre_exec = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_arguments(self, mocked_init):
+
+        task = Task()
+        task._arguments = ['module load mymodule']
+        self.assertEqual(task.arguments, ['module load mymodule'])
+        
+        task.arguments = ['module load mymodule2']
+        self.assertEqual(task._arguments, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.arguments = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_sandbox(self, mocked_init):
+
+        task = Task()
+        task._sandbox = '/path/to/a/sandbox'
+        self.assertEqual(task.sandbox, '/path/to/a/sandbox')
+        
+        task.sandbox = '/path_to_a_sandbox'
+        self.assertEqual(task._sandbox, '/path_to_a_sandbox')
+        with self.assertRaises(ree.TypeError):
+            task.sandbox = []
+    
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_post_exec(self, mocked_init):
+
+        task = Task()
+        task._post_exec = ['module load mymodule']
+        self.assertEqual(task.post_exec, ['module load mymodule'])
+        
+        task.post_exec = ['module load mymodule2']
+        self.assertEqual(task._post_exec, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.post_exec = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_tag(self, mocked_init):
+
+        task = Task()
+        task._tags = {'colocate':'tasks'}
+        self.assertEqual(task.tag, {'colocate':'tasks'})
+        
+        task.tag = 'task'
+        self.assertEqual(task._tags, {'colocate':'task'})
+        with self.assertRaises(ree.TypeError):
+            task.tag = {'colocate':'tasks'}
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_tags(self, mocked_init):
+
+        task = Task()
+        task._tags = {'colocate':'tasks'}
+        self.assertEqual(task.tag, {'colocate':'tasks'})
+        
+        task.tags = {'colocation':'task'}
+        self.assertEqual(task._tags, {'colocation':'task'})
+
+        with self.assertRaises(ree.TypeError):
+            task.tags = 'task'
+
+        with self.assertRaises(ree.TypeError):
+            task.tags = {'key':'task'}

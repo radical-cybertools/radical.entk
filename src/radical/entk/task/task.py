@@ -1,6 +1,7 @@
-
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
+
+import warnings
 
 import radical.utils as ru
 
@@ -743,7 +744,6 @@ class Task(object):
                              'gpu_process_type', 'gpu_thread_type'])
 
         if set(value.keys()).issubset(depr_expected_keys):
-            import warnings
             warnings.simplefilter("once")
             warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
                            "as a prefix for all keys.",DeprecationWarning)
@@ -909,6 +909,10 @@ class Task(object):
 
     @tag.setter
     def tag(self, value):
+
+        warnings.simplefilter("once")
+        warnings.warn("Attribute tag is depcrecated. Please use tags",
+                       DeprecationWarning)        
 
         # this method exists for backward compatibility
         if not isinstance(value, str):
