@@ -44,6 +44,7 @@ class TestBase(TestCase):
         self.assertEqual(rmgr._uid, 'rmgr.0000')
         self.assertEqual(rmgr._path, 'test_folder/test_rmgr')
         self.assertIsInstance(rmgr._shared_data, list)
+        self.assertIsNone(rmgr._job_name)
         self.assertIsNone(rmgr._outputs)
 
         with self.assertRaises(TypeError):
@@ -61,7 +62,8 @@ class TestBase(TestCase):
                                             'gpus': st.integers(),
                                             'project': st.text(),
                                             'access_schema': st.text(),
-                                            'queue': st.text()}))
+                                            'queue': st.text(),
+                                            'job_name': st.text()}))
     def test_validate(self, mocked_init, mocked_Logger, mocked_Profiler,
                       res_descr):
 
