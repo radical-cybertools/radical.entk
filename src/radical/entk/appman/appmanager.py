@@ -167,6 +167,7 @@ class AppManager(object):
                                         port=self._port,
                                         credentials=credentials)
 
+        # TODO: Pass these values also as parameters
         self._num_pending_qs   = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
 

@@ -155,6 +155,7 @@ class TestBase(TestCase):
         rmgr._queue = 'test_queue'
         rmgr._shared_data = 'test_data'
         rmgr._outputs = 'test_outputs'
+        rmgr._job_name = None
         rmgr._pmgr = mock.MagicMock()
 
         rmgr._submit_resource_request()
