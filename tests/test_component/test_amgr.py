@@ -21,62 +21,6 @@ class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
     #
-    # def test_amgr_initialization():
-    #     amgr_name = ru.generate_id('test.amgr.%(item_counter)04d', ru.ID_CUSTOM)
-    #     amgr      = Amgr(hostname=host, port=port, username=username,
-    #                       password=password, name=amgr_name)
-    #     assert amgr._name.split('.') == amgr_name.split('.')
-    #     assert amgr._sid.split('.')  == amgr_name.split('.')
-    #     assert amgr._uid.split('.')  == ['appmanager', '0000']
-    #     assert isinstance(amgr._logger, ru.Logger)
-    #     assert isinstance(amgr._prof,   ru.Profiler)
-    #     assert isinstance(amgr._report, ru.Reporter)
-    #     assert isinstance(amgr.name,    str)
-    #     # RabbitMQ inits
-    #     assert amgr._hostname == host
-    #     assert amgr._port     == port
-    #     # RabbitMQ Queues
-    #     assert amgr._num_pending_qs   == 1
-    #     assert amgr._num_completed_qs == 1
-    #     assert isinstance(amgr._pending_queue,   list)
-    #     assert isinstance(amgr._completed_queue, list)
-    #     # Global parameters to have default values
-    #     assert amgr._mqs_setup
-    #     assert amgr._autoterminate
-    #     assert amgr._resource_desc is None
-    #     assert amgr._task_manager  is None
-    #     assert amgr._workflow      is None
-    #     assert not amgr._resubmit_failed
-    #     assert amgr._reattempts  == 3
-    #     assert amgr._cur_attempt == 1
-    #     assert isinstance(amgr.shared_data, list)
-    #     amgr = Amgr(hostname=host, port=port, username=username, password=password)
-    #     assert amgr._uid.split('.') == ['appmanager', '0001']
-    #     assert isinstance(amgr._logger, ru.Logger)
-    #     assert isinstance(amgr._prof,   ru.Profiler)
-    #     assert isinstance(amgr._report, ru.Reporter)
-    #     assert isinstance(amgr.name, str)
-    #     # RabbitMQ inits
-    #     assert amgr._hostname == host
-    #     assert amgr._port     == port
-    #     # RabbitMQ Queues
-    #     assert amgr._num_pending_qs   == 1
-    #     assert amgr._num_completed_qs == 1
-    #     assert isinstance(amgr._pending_queue, list)
-    #     assert isinstance(amgr._completed_queue, list)
-    #     # Global parameters to have default values
-    #     assert amgr._mqs_setup
-    #     assert amgr._autoterminate
-    #     assert not amgr._resubmit_failed
-    #     assert amgr._resource_desc is None
-    #     assert amgr._task_manager  is None
-    #     assert amgr._workflow      is None
-    #     assert amgr._reattempts  == 3
-    #     assert amgr._cur_attempt == 1
-    #     assert isinstance(amgr.shared_data, list)
-
-    # ------------------------------------------------------------------------------
-    #
     @mock.patch.object(Amgr, '__init__', return_value=None)
     @mock.patch('pika.PlainCredentials')
     @mock.patch('pika.connection.ConnectionParameters')
