@@ -1,3 +1,8 @@
+
+__copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
+__license__   = 'MIT'
+
+
 import radical.utils as ru
 from radical.entk.exceptions import ValueError, TypeError, EnTKError, MissingError
 from radical.entk.task.task import Task
@@ -328,7 +333,7 @@ class Stage(object):
             return True
 
         except Exception as ex:
-            raise EnTKError(ex)
+            raise EnTKError(msg=ex) from ex
 
     @classmethod
     def _validate_entities(self, tasks):

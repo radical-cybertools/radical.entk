@@ -167,6 +167,7 @@ class AppManager(object):
                                         port=self._port,
                                         credentials=credentials)
 
+        # TODO: Pass these values also as parameters
         self._num_pending_qs   = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
 
@@ -439,7 +440,7 @@ class AppManager(object):
                                    'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise KeyboardInterrupt
+            raise
 
         except Exception:
 
@@ -835,6 +836,12 @@ class AppManager(object):
                         self._logger.debug(('Found task %s in state (%s)'
                             ' changing to %s ==') %
                                 (task.uid, task.state, completed_task.state))
+
+                        if completed_task.path:
+                            task.path = str(completed_task.path)
+                            self._logger.debug('Task %s path set to %s' %
+                                               (task.uid, task.path))
+
                         if task.state in [states.DONE, states.FAILED]:
                             self._logger.debug(('No change on task state %s '
                                 'in state %s') % (task.uid, task.state))
@@ -842,9 +849,6 @@ class AppManager(object):
                         task.state = str(completed_task.state)
                         self._logger.debug('Found task %s in state %s'
                                           % (task.uid, task.state))
-
-                        if completed_task.path:
-                            task.path = str(completed_task.path)
 
                         # mq_channel.basic_publish(
                         #        exchange='',
