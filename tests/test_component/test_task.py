@@ -44,7 +44,7 @@ class TestTask(TestCase):
         self.assertIsInstance(t.arguments, list)
         self.assertIsInstance(t.pre_exec, list)
         self.assertIsInstance(t.post_exec, list)
-        
+
         self.assertEqual(t._cpu_reqs['processes'], 1)
         self.assertIsNone(t._cpu_reqs['process_type'])
         self.assertEqual(t._cpu_reqs['threads_per_process'], 1)
