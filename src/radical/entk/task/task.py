@@ -928,10 +928,10 @@ class Task(object):
             raise ree.TypeError(entity='tags', expected_type=dict,
                                 actual_type=type(value))
 
-        if list(value.keys()) != ['colocation']:
+        if list(value.keys()) != ['colocate']:
             raise ree.TypeError(expected_type=dict,
-                                actual_type=type(value.get('colocation')),
-                                entity='colocation')
+                                actual_type=type(value.get('colocate')),
+                                entity='colocate')
 
         self._tags = value
 

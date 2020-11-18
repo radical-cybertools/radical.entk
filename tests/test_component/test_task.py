@@ -392,8 +392,8 @@ class TestTask(TestCase):
         task._tags = {'colocate':'tasks'}
         self.assertEqual(task.tag, {'colocate':'tasks'})
         
-        task.tags = {'colocation':'task'}
-        self.assertEqual(task._tags, {'colocation':'task'})
+        task.tags = {'colocate':'task'}
+        self.assertEqual(task._tags, {'colocate':'task'})
 
         with self.assertRaises(ree.TypeError):
             task.tags = 'task'

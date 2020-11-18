@@ -164,14 +164,14 @@ def resolve_tags(tags, parent_pipeline_name, placeholders):
     if not tags:
         return
 
-    colo_tag = tags['colocation']
+    colo_tag = tags['colocate']
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
         for tname in placeholders[parent_pipeline_name][sname]:
             if colo_tag != tname:
                 continue
-            return {'colocation':
+            return {'colocate':
                     placeholders[parent_pipeline_name][sname][tname]['rts_uid']}
 
     for pname in placeholders:
@@ -184,7 +184,7 @@ def resolve_tags(tags, parent_pipeline_name, placeholders):
             for tname in placeholders[pname][sname]:
                 if colo_tag != tname:
                     continue
-                return {'colocation':
+                return {'colocate':
                         placeholders[pname][sname][tname]['rts_uid']}
 
     raise ree.EnTKError(msg='colocation tag %s cannot be used as no previous'

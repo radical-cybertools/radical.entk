@@ -116,12 +116,15 @@ class TestBase(TestCase):
             }
         }
 
-        self.assertEqual(resolve_tags(tag=t1_name,
+
+
+        self.assertEqual(resolve_tags(tags={'colocation': 't1'},
                             parent_pipeline_name=pipeline_name,
-                            placeholders=placeholders), 'unit.0002')
+                            placeholders=placeholders),
+                            {'colocation':'unit.0002'})
 
         with self.assertRaises(ree.EnTKError):
-            resolve_tags(tag='t3', parent_pipeline_name=pipeline_name,
+            resolve_tags(tags={'colocation': 't3'}, parent_pipeline_name=pipeline_name,
                          placeholders=placeholders)
 
     # ------------------------------------------------------------------------------
@@ -177,7 +180,7 @@ class TestBase(TestCase):
                          'gpu_threads': 6,
                          'gpu_process_type': 'POSIX',
                          'gpu_thread_type': None}
-        task.tag = None
+        task.tags = None
 
         task.lfs_per_process = 235
         task.stderr = 'stderr'
