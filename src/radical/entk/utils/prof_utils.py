@@ -96,7 +96,7 @@ def get_session_profile(sid, src=None):
 
         # Push the exception raised by child functions
         print(traceback.format_exc())
-        raise EnTKError('Error: %s' % ex)
+        raise EnTKError('Error: %s' % ex) from ex
 
 
 def write_session_description(amgr):
@@ -230,8 +230,8 @@ def write_workflows(workflows, uid, fname=None, fwrite=True):
 
     import warnings
     warnings.simplefilter("once")
-    warnings.warn("The function write_workflows will be deprecated in favor of \
-                   the profiles. Please set RADICAL_ENTK_PROFILE=TRUE",
+    warnings.warn("The function write_workflows will be deprecated in favor " +
+                  "of the profiles. Please set RADICAL_ENTK_PROFILE=TRUE",
                    DeprecationWarning)
     try:
         os.mkdir(uid)

@@ -25,7 +25,6 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     def test_write_session_description(self):
-        self.maxDiff = None
         global_jsons = []
 
         def _write_json_side_effect(desc, path):
