@@ -842,6 +842,11 @@ class AppManager(object):
                             self._logger.debug('Task %s path set to %s' %
                                                (task.uid, task.path))
 
+                        if completed_task.rts_uid:
+                            task.rts_uid = str(completed_task.rts_uid)
+                            self._logger.debug('Task %s rts_uid set to %s' %
+                                               (task.uid, task.rts_uid))
+
                         if task.state in [states.DONE, states.FAILED]:
                             self._logger.debug(('No change on task state %s '
                                 'in state %s') % (task.uid, task.state))
