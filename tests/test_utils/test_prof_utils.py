@@ -25,7 +25,7 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     def test_write_session_description(self):
-
+        self.maxDiff = None
         global_jsons = []
 
         def _write_json_side_effect(desc, path):
@@ -55,13 +55,20 @@ class TestBase(TestCase):
         amgr._task_manager._uid = 'tmgr.0000'
 
         pipe = mock.Mock()
-        pipe._uid = 'pipe.0000'
+        pipe.uid = 'pipe.0000'
+        pipe.name = 'pipe.0000'
+        pipe.state_history = ['DESCRIBED']
 
         stage = mock.Mock()
-        stage._uid = 'stage.0000'
+        stage.uid = 'stage.0000'
+        stage.name = 'stage.0000'
+        stage.state_history = ['DESCRIBED']
 
         task = mock.Mock()
-        task._uid = 'task.0000'
+        task.uid = 'task.0000'
+        task.name = 'task.0000'
+        task.rts_uid = 'unit.000000'
+        task.state_history = ['DESCRIBED']
 
         stage.tasks = [task]
         pipe.stages = [stage]

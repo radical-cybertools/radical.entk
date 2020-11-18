@@ -37,11 +37,13 @@ class TestTask(TestCase):
 
         self.assertEqual(t._uid, 'test.0000')
         self.assertEqual(t.name, '')
+        self.assertIsNone(t.rts_uid, list)
         self.assertEqual(t.state, states.INITIAL)
         self.assertEqual(t.state_history, [states.INITIAL])
         self.assertEqual(t.executable, '')
         self.assertIsInstance(t.arguments, list)
         self.assertIsInstance(t.pre_exec, list)
+        self.assertIsInstance(t.post_exec, list)
         self.assertIsInstance(t.post_exec, list)
 
         self.assertEqual(t._cpu_reqs['processes'], 1)

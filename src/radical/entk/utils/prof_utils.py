@@ -174,30 +174,37 @@ def write_session_description(amgr):
     for wf in amgr._workflows:
 
         for pipe in wf:
-            tree[amgr._uid]['children'].append(pipe._uid)
-            tree[pipe._uid] = {'uid': pipe._uid,
-                               'etype': 'pipeline',
-                               'cfg': {},
-                               'has': ['stage'],
-                               'children': list()
-                               }
+            tree[amgr._uid]['children'].append(pipe.uid)
+            tree[pipe.uid] = {'uid': pipe.uid,
+                              'name': pipe.name,
+                              'state_history' : pipe.state_history,
+                              'etype': 'pipeline',
+                              'cfg': {},
+                              'has': ['stage'],
+                              'children': list()
+                              }
             # Adding stages to the tree
             for stage in pipe.stages:
-                tree[pipe._uid]['children'].append(stage._uid)
-                tree[stage._uid] = {'uid': stage._uid,
-                                    'etype': 'stage',
-                                    'cfg': {},
-                                    'has': ['task'],
-                                    'children': list()
-                                    }
+                tree[pipe.uid]['children'].append(stage.uid)
+                tree[stage.uid] = {'uid': stage.uid,
+                                   'name': stage.name,
+                                   'state_history' : stage.state_history,
+                                   'etype': 'stage',
+                                   'cfg': {},
+                                   'has': ['task'],
+                                   'children': list()
+                                   }
                 # Adding tasks to the tree
                 for task in stage.tasks:
-                    tree[stage._uid]['children'].append(task._uid)
-                    tree[task._uid] = {'uid': task._uid,
-                                       'etype': 'task',
-                                       'cfg': {},
-                                       'has': [],
-                                       'children': list()
+                    tree[stage.uid]['children'].append(task.uid)
+                    tree[task.uid] = {'uid': task.uid,
+                                      'name': task.name,
+                                      'state_history' : task.state_history,
+                                      'etype': 'task',
+                                      'cfg': {},
+                                      'has': [],
+                                      'children': list(),
+                                      'rts_uid': task.rts_uid
                                    }
 
     desc['tree'] = tree
@@ -221,6 +228,11 @@ def get_session_description(sid, src=None):
 #
 def write_workflows(workflows, uid, fname=None, fwrite=True):
 
+    import warnings
+    warnings.simplefilter("once")
+    warnings.warn("The function write_workflows will be deprecated in favor of \
+                   the profiles. Please set RADICAL_ENTK_PROFILE=TRUE",
+                   DeprecationWarning)
     try:
         os.mkdir(uid)
 
