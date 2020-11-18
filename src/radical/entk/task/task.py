@@ -985,6 +985,7 @@ class Task(object):
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
             'tag'                  : self._tag,
+            'rts_uid'              : self._rts_uid,
 
             'parent_stage'         : self._p_stage,
             'parent_pipeline'      : self._p_pipeline,
