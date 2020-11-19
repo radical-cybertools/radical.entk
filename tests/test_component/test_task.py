@@ -37,6 +37,7 @@ class TestTask(TestCase):
 
         self.assertEqual(t._uid, 'test.0000')
         self.assertEqual(t._name, '')
+        self.assertIsNone(t._rts_uid)
         self.assertEqual(t._state, states.INITIAL)
         self.assertEqual(t._state_history, [states.INITIAL])
         self.assertEqual(t._executable, '')
@@ -400,3 +401,88 @@ class TestTask(TestCase):
 
         with self.assertRaises(ree.TypeError):
             task.tags = {'key':'task'}
+    def test_task_to_dict(self, mocked_init):
+
+        t = Task()
+
+        t._uid = 'test.0000'
+        t._name = ''
+        t._rts_uid = 'unit.0000'
+        t._state = states.INITIAL
+        t._state_history = [states.INITIAL]
+        t._executable = ''
+        t._arguments = list()
+        t._pre_exec = list()
+        t._post_exec = list()
+        t._cpu_reqs = dict()
+        t._cpu_reqs['processes'] = 1
+        t._cpu_reqs['process_type'] = 'POSIX'
+        t._cpu_reqs['threads_per_process'] = 1
+        t._cpu_reqs['thread_type'] = 'POSIX'
+        t._gpu_reqs = dict()
+        t._gpu_reqs['processes'] = 0
+        t._gpu_reqs['process_type'] = 'POSIX'
+        t._gpu_reqs['threads_per_process'] = 0
+        t._gpu_reqs['thread_type'] = 'POSIX'
+        t._lfs_per_process = 0
+        t._sandbox = ''
+        t._upload_input_data = list()
+        t._copy_input_data = list()
+        t._link_input_data = list()
+        t._move_input_data = list()
+        t._copy_output_data = list()
+        t._link_output_data = list()
+        t._move_output_data = list()
+        t._download_output_data = list()
+        t._stdout = 'Hello World'
+        t._stderr = 'Hello World'
+        t._exit_code = 0
+        t._tag = None
+        t._path = 'some_path'
+        t._p_pipeline = dict()
+        t._p_pipeline['uid'] = 'pipe.0000'
+        t._p_pipeline['name'] = 'pipe.0000'
+        t._p_stage = dict()
+        t._p_stage['name'] = 'stage.0000'
+        t._p_stage['uid'] = 'stage.0000'
+
+        expected_dict = {'uid': 'test.0000',
+                         'name': '',
+                         'state': 'DESCRIBED',
+                         'state_history': ['DESCRIBED'],
+                         'pre_exec': [],
+                         'executable': '',
+                         'arguments': [],
+                         'sandbox': '',
+                         'post_exec': [],
+                         'cpu_reqs': {'cpu_processes': 1,
+                                      'cpu_process_type': 'POSIX',
+                                      'cpu_threads': 1,
+                                      'cpu_thread_type': 'POSIX'},
+                         'gpu_reqs': {'gpu_processes': 0,
+                                      'gpu_process_type': 'POSIX',
+                                      'gpu_threads': 0,
+                                      'gpu_thread_type': 'POSIX'},
+                         'lfs_per_process': 0,
+                         'upload_input_data': [],
+                         'copy_input_data': [],
+                         'link_input_data': [],
+                         'move_input_data': [],
+                         'copy_output_data': [],
+                         'link_output_data': [],
+                         'move_output_data': [],
+                         'download_output_data': [],
+                         'stdout': 'Hello World',
+                         'stderr': 'Hello World',
+                         'exit_code': 0,
+                         'path': 'some_path',
+                         'tag': None,
+                         'rts_uid': 'unit.0000',
+                         'parent_stage': {'name': 'stage.0000',
+                                          'uid': 'stage.0000'},
+                         'parent_pipeline': {'uid': 'pipe.0000',
+                                             'name': 'pipe.0000'}}
+
+        task_dict = t.to_dict()
+
+        self.assertEqual(task_dict, expected_dict)

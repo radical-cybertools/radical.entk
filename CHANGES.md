@@ -6,6 +6,25 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.5.7  Release                                                        2020-11-17
+--------------------------------------------------------------------------------
+
+  - PR #503, Deleting unnecessary files
+  - PR #502, Feature/job name
+  - PR #499, Additional unit tests
+  - PR #498, Linting and fixing task path in appmanager 
+  - PR #497, Fix warning regarding ABC import from collections 
+  - PR #496, Fix/unittests 
+  - PR #494, Silence Integration and Issues tests 
+  - PR #492, Aligning thread/processes definitions between EnTK and RP 
+  - PR #491, Doc string for a method 
+
+
+1.5.5  Release                                                        2020-10-13
+--------------------------------------------------------------------------------
+
+  - PR #483, reuse rmq connections
+
 
 1.5.1  Release                                                        2020-09-01
 --------------------------------------------------------------------------------

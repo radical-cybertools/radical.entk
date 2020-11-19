@@ -31,9 +31,10 @@ class Task(object):
     #
     def __init__(self, from_dict=None):
 
-        self._uid   = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
-        self._name  = ""
-        self._state = res.INITIAL
+        self._uid     = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+        self._name    = ""
+        self._state   = res.INITIAL
+        self._rts_uid = None
 
         # Attributes necessary for execution
         self._pre_exec   = list()
@@ -558,6 +559,17 @@ class Task(object):
 
         return self._state_history
 
+    @property
+    def rts_uid(self):
+        '''
+        Unique RTS ID of the current task
+
+        :getter: Returns the RTS unique id of the current task
+        :type: String
+        '''
+
+        return self._rts_uid
+
 
     # --------------------------------------------------------------------------
     #
@@ -570,6 +582,14 @@ class Task(object):
 
         self._uid = value
 
+    @rts_uid.setter
+    def rts_uid(self, value):
+
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
+                                actual_type=type(value))
+
+        self._rts_uid = value
 
     @name.setter
     def name(self, value):
@@ -992,7 +1012,8 @@ class Task(object):
 
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
-            'tags'                 : self._tags,
+            'tag'                  : self._tag,
+            'rts_uid'              : self._rts_uid,
 
             'parent_stage'         : self._p_stage,
             'parent_pipeline'      : self._p_pipeline,
