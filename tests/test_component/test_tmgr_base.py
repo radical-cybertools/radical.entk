@@ -10,6 +10,7 @@ from pika.connection import ConnectionParameters
 
 import pika
 import threading as mt
+import multiprocessing as mp
 
 try:
     import mock
@@ -19,7 +20,18 @@ except ImportError:
 
 class TestBase(TestCase):
 
-    # ------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
+    #
+    def _tmgr_side_effect(self, event):
+    
+        while not event.is_set():
+            continue
+
+        return True
+
+
+    # --------------------------------------------------------------------------
     #
     @mock.patch('radical.utils.generate_id', return_value='tmgr.0000')
     @mock.patch('os.getcwd', return_value='test_folder')
@@ -150,3 +162,60 @@ class TestBase(TestCase):
         finally:
             if tmgr._hb_thread.is_alive():
                 tmgr._hb_thread.join()
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Tmgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_check_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
+
+        rmq_params = mock.MagicMock(spec=ConnectionParameters)
+        rmgr = mock.MagicMock(spec=Base_ResourceManager)
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
+                     rmgr, rmq_params, 'test_rts')
+
+        def _tmgr_side_effect(time):
+            import time
+            time.sleep()
+
+        tmgr._tmgr_process = mt.Thread(target=_tmgr_side_effect,
+                                       name='test_tmgr', args=(2))
+        tmgr._tmgr_process.start()
+
+        self.assertTrue(tmgr.check_manager())
+        tmgr._tmgr_process.join()
+        self.assertFalse(tmgr.check_manager())
+
+        tmgr._tmgr_process = None
+        self.assertFalse(tmgr.check_manager())
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Tmgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_terminate_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
+
+        rmq_params = mock.MagicMock(spec=ConnectionParameters)
+        rmgr = mock.MagicMock(spec=Base_ResourceManager)
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
+                     rmgr, rmq_params, 'test_rts')
+
+        tmgr._log = mocked_Logger
+        tmgr._prof = mocked_Profiler
+        tmgr._uid = 'tmgr.0000'
+
+        tmgr._tmgr_terminate = mp.Event()
+
+        tmgr._tmgr_process = mp.Process(target=self._tmgr_side_effect,
+                                       name='test_tmgr',
+                                       args=(tmgr._tmgr_terminate,))
+        tmgr._tmgr_process.start()
+        print(tmgr._tmgr_process.pid, tmgr._tmgr_process.is_alive())
+        
+        import time
+        time.sleep(30)
+        tmgr._tmgr_terminate.set()
+        tmgr._tmgr_process.join(2)
+        assert False
