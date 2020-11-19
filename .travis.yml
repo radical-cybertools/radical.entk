@@ -51,6 +51,7 @@ before_install:
 # command to install dependencies
 install:
   - pip install .
+  - pip install psutil
   - pip install hypothesis
   - pip install coverage
   - pip install flake8

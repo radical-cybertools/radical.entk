@@ -28,6 +28,7 @@ def _tmgr_side_effect(event):
         continue
     return True
 
+
 class TestBase(TestCase):
 
     # --------------------------------------------------------------------------
