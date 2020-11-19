@@ -25,7 +25,7 @@ except ImportError:
 def _tmgr_side_effect(event):
 
     while not event.is_set():
-        continue
+        time.sleep(0.1)
     return True
 
 
@@ -259,20 +259,29 @@ class TestBase(TestCase):
         mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
         mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
         mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.close = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
         rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
         tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
                      rmgr, rmq_params, 'test_rts')
 
-        global_syncs = []
-
-        def _sync_side_effect(log_entry, uid, state, msg):
-            nonlocal global_syncs
-            global_syncs.append([log_entry, uid, state, msg])
+        tmgr._rmq_conn_params = rmq_params
+        tmgr._hb_request_q = 'test_tmgr-hb-request'
+        tmgr._hb_response_q = 'test_tmgr-hb-response'
 
         tmgr._log = mocked_Logger
         tmgr._prof = mocked_Profiler
-        tmgr._sync_with_master = mock.MagicMock(side_effect=_sync_side_effect)
         tmgr._uid = 'tmgr.0000'
-        obj = mock.Mock()
+        tmgr.check_heartbeat = mock.MagicMock(return_value=True)
+        tmgr.check_manager = mock.MagicMock(return_value=True)
+
+        tmgr._hb_terminate = mt.Event()
+
+        tmgr._hb_thread = mt.Thread(target=_tmgr_side_effect,
+                                       name='test_tmgr',
+                                       args=(tmgr._hb_terminate,))
+        tmgr._hb_thread.start()
+
+        tmgr.terminate_heartbeat()
+
+        self.assertIsNone(tmgr._hb_thread)
