@@ -9,6 +9,7 @@ from radical.entk.execman.base   import Base_ResourceManager
 from pika.connection import ConnectionParameters
 
 import pika
+import threading as mt
 
 try:
     import mock
@@ -114,3 +115,38 @@ class TestBase(TestCase):
         tmgr._advance(obj, 'Stage', 'new_state', 'channel','queue')
         self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel','queue'])
         self.assertEqual(obj.state, 'new_state')
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Tmgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_start_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler):
+
+        rmq_params = mock.MagicMock(spec=ConnectionParameters)
+        rmgr = mock.MagicMock(spec=Base_ResourceManager)
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
+                     rmgr, rmq_params, 'test_rts')
+
+        global_boolean = False
+
+        def _heartbeat_side_effect():
+            nonlocal global_boolean
+            global_boolean = True
+
+        tmgr._log = mocked_Logger
+        tmgr._prof = mocked_Profiler
+        tmgr._heartbeat = mock.MagicMock(side_effect=_heartbeat_side_effect)
+        tmgr._uid = 'tmgr.0000'
+        tmgr._hb_terminate = None
+        tmgr._hb_thread = None
+
+        tmgr.start_heartbeat()
+
+        try:
+            self.assertTrue(global_boolean)
+            self.assertIsInstance(tmgr._hb_terminate, mt.Event)
+            self.assertIsInstance(tmgr._hb_thread, mt.Thread)
+        finally:
+            if tmgr._hb_thread.is_alive():
+                tmgr._hb_thread.join()
