@@ -4,6 +4,11 @@ python:   "3.6"
 os:       linux
 dist:     xenial
 
+# safelist
+branches:
+  only:
+  - devel
+
 git:
   depth: 1
 
