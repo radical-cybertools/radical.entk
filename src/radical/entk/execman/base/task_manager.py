@@ -429,6 +429,8 @@ class Base_TaskManager(object):
 
         if self._hb_thread:
             return self._hb_thread.is_alive()
+        else:
+            return False
 
 
     # --------------------------------------------------------------------------

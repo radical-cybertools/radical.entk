@@ -219,3 +219,60 @@ class TestBase(TestCase):
         self.assertIsNone(tmgr._tmgr_process)
 
         self.assertFalse(psutil.pid_exists(pid))
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Tmgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_check_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler):
+
+        rmq_params = mock.MagicMock(spec=ConnectionParameters)
+        rmgr = mock.MagicMock(spec=Base_ResourceManager)
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
+                     rmgr, rmq_params, 'test_rts')
+
+        def _tmgr_side_effect(amount):
+            time.sleep(amount)
+
+        tmgr._hb_thread = mt.Thread(target=_tmgr_side_effect,
+                                       name='test_tmgr', args=(1))
+        tmgr._hb_thread.start()
+
+        self.assertTrue(tmgr.check_heartbeat())
+        tmgr._hb_thread.join()
+        self.assertFalse(tmgr.check_heartbeat())
+
+        tmgr._hb_thread = None
+        self.assertFalse(tmgr.check_heartbeat())
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(Tmgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    @mock.patch('pika.BlockingConnection')
+    def test_terminate_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler,
+                     mocked_BlockingConnection):
+
+        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
+        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.channel.close = mock.MagicMock(return_value=None)
+        rmq_params = mock.MagicMock(spec=ConnectionParameters)
+        rmgr = mock.MagicMock(spec=Base_ResourceManager)
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
+                     rmgr, rmq_params, 'test_rts')
+
+        global_syncs = []
+
+        def _sync_side_effect(log_entry, uid, state, msg):
+            nonlocal global_syncs
+            global_syncs.append([log_entry, uid, state, msg])
+
+        tmgr._log = mocked_Logger
+        tmgr._prof = mocked_Profiler
+        tmgr._sync_with_master = mock.MagicMock(side_effect=_sync_side_effect)
+        tmgr._uid = 'tmgr.0000'
+        obj = mock.Mock()
