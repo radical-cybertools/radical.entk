@@ -552,7 +552,7 @@ class Task(object):
     @property
     def rts_uid(self):
         '''
-        Unique RTD ID of the current task
+        Unique RTS ID of the current task
 
         :getter: Returns the RTS unique id of the current task
         :type: String
