@@ -88,6 +88,9 @@ class TestBase(TestCase):
                               rmq_cleanup=None,
                               rts_config=None)
 
+
+    # ------------------------------------------------------------------------------
+    #
     @mock.patch.object(Amgr, '__init__', return_value=None)
     @mock.patch('pika.PlainCredentials')
     @mock.patch('pika.connection.ConnectionParameters')
@@ -132,3 +135,8 @@ class TestBase(TestCase):
         self.assertEqual(amgr._rts_config, {"sandbox_cleanup": True,
                                             "db_cleanup"     : True})
         self.assertEqual(amgr._rmq_cleanup, d2['rmq_cleanup'])
+
+
+    # --------------------------------------------------------------------------
+    #
+    
