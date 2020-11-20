@@ -518,8 +518,8 @@ def create_task_from_cu(cu, prof=None):
         task.parent_pipeline['name'] = cu.name.split(',')[5].strip()
         task.rts_uid                 = cu.uid
 
-        if cu.state == rp.DONE: task.exit_code = 0
-        else                  : task.exit_code = 1
+        if cu.state == rp.DONE                    : task.exit_code = 0
+        elif cu.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
 
         task.path = ru.Url(cu.sandbox).path
 

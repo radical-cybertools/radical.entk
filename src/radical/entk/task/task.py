@@ -646,9 +646,6 @@ class Task(object):
     @executable.setter
     def executable(self, value):
 
-        if isinstance(value, list):
-            value = value[0]
-
         if not isinstance(value, str):
             raise ree.TypeError(expected_type='str',
                                 actual_type=type(value))
