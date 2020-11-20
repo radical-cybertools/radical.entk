@@ -37,7 +37,7 @@ class TestTask(TestCase):
 
         self.assertEqual(t._uid, 'test.0000')
         self.assertEqual(t.name, '')
-        self.assertIsNone(t.rts_uid, list)
+        self.assertIsNone(t.rts_uid)
         self.assertEqual(t.state, states.INITIAL)
         self.assertEqual(t.state_history, [states.INITIAL])
         self.assertEqual(t.executable, '')
@@ -270,6 +270,18 @@ class TestTask(TestCase):
         with pytest.raises(ree.TypeError):
             t = Task(from_dict=d)
 
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_executable(self, mocked_init):
+        # Tests issue #324
+        task = Task()
+        task.executable = 'test_exec'
+        self.assertEqual(task._executable, 'test_exec')
+
+        task = Task()
+        with self.assertRaises(ree.TypeError):
+            task.executable = ['test_exec']
 
     # --------------------------------------------------------------------------
     #
