@@ -215,12 +215,12 @@ class AppManager(object):
         '''
         The resource description is a dictionary that holds information about the
         reousrce that will be used to execute a workflow.
-        
+
         The following keys are mandatory in all resource descritpions:
             | 'resource'      : Label of the resource that will be used.
             | 'runtime'       : Amount of time the workflow is expected to execute.
             | 'cores'         : Number of CPU cores.
-        
+
         Optional keys include:
             | 'project'       : The project that will be charged.
             | 'gpus'          : Number of GPU devices to be used by the workflow.

@@ -345,11 +345,11 @@ class Task(object):
         (or data staging area) before it starts.
 
         The following is an example
-        
+
         .. highlight:: python
 
         .. code-block:: python
-            
+
             t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' %
                                   (p.name, s1.name, t1.name)]
             # output.txt is copied from a t1 task to a current task before it
@@ -402,7 +402,7 @@ class Task(object):
         .. highlight:: python
 
         .. code-block:: python
-            
+
             t.copy_output_data = [ 'results.txt > $SHARED/results.txt' ]
             # results.txt is copied to a data staging area `$SHARED` when a task is
             # finised.
