@@ -12,11 +12,11 @@ import threading     as mt
 
 import radical.utils as ru
 
-from .. import exceptions as ree
+from ..            import exceptions as ree
+from ..            import states
 
 from ..pipeline    import Pipeline
 from ..task        import Task
-from radical.entk  import states
 from ..utils       import write_session_description
 from ..utils       import write_workflows
 
@@ -299,10 +299,10 @@ class AppManager(object):
     def resource_desc(self, value):
 
         if self._rts == 'radical.pilot':
-            from radical.entk.execman.rp import ResourceManager
+            from ..execman.rp import ResourceManager
 
         elif self._rts == 'mock':
-            from radical.entk.execman.mock import ResourceManager
+            from ..execman.mock import ResourceManager
 
         self._rmgr = ResourceManager(resource_desc=value, sid=self._sid,
                                      rts_config=self._rts_config)
@@ -664,10 +664,10 @@ class AppManager(object):
 
         # Create tmgr object only if it does not already exist
         if self._rts == 'radical.pilot':
-            from radical.entk.execman.rp import TaskManager
+            from ..execman.rp import TaskManager
 
         elif self._rts == 'mock':
-            from radical.entk.execman.mock import TaskManager
+            from ..execman.mock import TaskManager
 
         if not self._task_manager:
 

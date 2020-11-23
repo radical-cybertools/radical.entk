@@ -12,7 +12,6 @@ import threading
 
 import radical.utils as ru
 
-# EnTK imports
 from .. import states, Task
 
 
