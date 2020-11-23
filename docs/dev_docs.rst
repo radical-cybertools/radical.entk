@@ -10,3 +10,4 @@ Developer Documentation
 
    ./dev_docs/uml
    ./dev_docs/dev_api
+   ./dev_docs/tests

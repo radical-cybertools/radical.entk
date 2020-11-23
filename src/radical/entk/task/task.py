@@ -228,11 +228,13 @@ class Task(object):
         The requirements are described in terms of the number of processes and
         threads to be run in this Task. The expected format is:
 
-        task.cpu_reqs = {
-                          | 'cpu_processes'    : X,
-                          | 'cpu_process_type' : None/MPI,
-                          | 'cpu_threads'      : Y,
-                          | 'cpu_thread_type'  : None/OpenMP}
+        .. highlight:: python
+        .. code-block:: python
+
+            task.cpu_reqs = {'cpu_processes'    : X,
+                             'cpu_process_type' : None/MPI,
+                             'cpu_threads'      : Y,
+                             'cpu_thread_type'  : None/OpenMP}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on CPUs. Hence, the total
@@ -242,11 +244,13 @@ class Task(object):
 
         The default value is:
 
-        task.cpu_reqs = {
-                          | 'cpu_processes'    : 1,
-                          | 'cpu_process_type' : None,
-                          | 'cpu_threads'      : 1,
-                          | 'cpu_thread_type'  : None}
+        .. highlight:: python
+        .. code-block:: python
+
+            task.cpu_reqs = {'cpu_processes'    : 1,
+                             'cpu_process_type' : None,
+                             'cpu_threads'      : 1,
+                             'cpu_thread_type'  : None}
 
         This description requests 1 core and expected the executable to non-MPI
         and single threaded.
@@ -272,11 +276,13 @@ class Task(object):
         The requirements are described in terms of the number of processes and
         threads to be run in this Task. The expected format is:
 
-        task.gpu_reqs = {
-                          | 'gpu_processes'    : X,
-                          | 'gpu_process_type' : None/MPI,
-                          | 'gpu_threads'      : Y,
-                          | 'gpu_thread_type'  : None/OpenMP/CUDA}
+        .. highlight:: python
+        .. code-block:: python
+
+            task.gpu_reqs = {'gpu_processes'    : X,
+                             'gpu_process_type' : None/MPI,
+                             'gpu_threads'      : Y,
+                             'gpu_thread_type'  : None/OpenMP/CUDA}
 
         This description means that the Task is going to spawn X processes and
         Y threads per each of these processes to run on GPUs. Hence, the total
@@ -285,12 +291,13 @@ class Task(object):
         implementation and X*Y gpus are requested for this Task.
 
         The default value is:
+        .. highlight:: python
+        .. code-block:: python
 
-        task.gpu_reqs = {
-                          | 'gpu_processes'    : 0,
-                          | 'gpu_process_type' : None,
-                          | 'gpu_threads'      : 0,
-                          | 'gpu_thread_type'  : None}
+            task.gpu_reqs = {'gpu_processes'    : 0,
+                             'gpu_process_type' : None,
+                             'gpu_threads'      : 0,
+                             'gpu_thread_type'  : None}
 
         This description requests 0 gpus as not all machines have GPUs.
 
@@ -338,15 +345,15 @@ class Task(object):
         (or data staging area) before it starts.
 
         The following is an example
+        
+        .. highlight:: python
 
-        ```python
-        t2.copy_input_data =
-        ['$Pipeline_%s_Stage_%s_Task_%s/output.txt'%(p.name,
-        s1.name, t1.name)]
-
-        # output.txt is copied from a t1 task to a current task before it
-        # starts.
-        ```
+        .. code-block:: python
+            
+            t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' %
+                                  (p.name, s1.name, t1.name)]
+            # output.txt is copied from a t1 task to a current task before it
+            # starts.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -392,12 +399,13 @@ class Task(object):
 
         The following is an example
 
-        ```python
-        t.copy_output_data = [ 'results.txt > $SHARED/results.txt' ]
+        .. highlight:: python
 
-        # results.txt is copied to a data staging area `$SHARED` when a task is
-        # finised.
-        ```
+        .. code-block:: python
+            
+            t.copy_output_data = [ 'results.txt > $SHARED/results.txt' ]
+            # results.txt is copied to a data staging area `$SHARED` when a task is
+            # finised.
 
         :getter: return the list of files
         :setter: assign the list of files
@@ -442,14 +450,13 @@ class Task(object):
         client (e.g. laptop) when a task is finished.
 
         The following is an example
+        .. highlight:: python
 
-        ```python
-        t.download_output_data = [ 'results.txt' ]
+        .. code-block:: python
 
-        # results.txt is transferred to a local client (e.g. laptop) when a
-        # current task finised.
-        ```
-
+            t.download_output_data = [ 'results.txt' ]
+            # results.txt is transferred to a local client (e.g. laptop) when a
+           # current task finised.
 
         :getter: return the list of files
         :setter: assign the list of files
