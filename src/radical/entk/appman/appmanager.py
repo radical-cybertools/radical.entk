@@ -12,7 +12,8 @@ import threading     as mt
 
 import radical.utils as ru
 
-from .. import exceptions as ree
+from ..            import exceptions as ree
+from ..            import states
 
 from ..pipeline    import Pipeline
 from ..task        import Task
@@ -126,7 +127,7 @@ class AppManager(object):
         # Setup rabbitmq queues
         self._setup_mqs()
 
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', "10"))
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr_created', uid=self._uid)
@@ -166,6 +167,7 @@ class AppManager(object):
                                         port=self._port,
                                         credentials=credentials)
 
+        # TODO: Pass these values also as parameters
         self._num_pending_qs   = config['pending_qs']
         self._num_completed_qs = config['completed_qs']
 
@@ -282,10 +284,10 @@ class AppManager(object):
     def resource_desc(self, value):
 
         if self._rts == 'radical.pilot':
-            from radical.entk.execman.rp import ResourceManager
+            from ..execman.rp import ResourceManager
 
         elif self._rts == 'mock':
-            from radical.entk.execman.mock import ResourceManager
+            from ..execman.mock import ResourceManager
 
         self._rmgr = ResourceManager(resource_desc=value, sid=self._sid,
                                      rts_config=self._rts_config)
@@ -340,8 +342,11 @@ class AppManager(object):
                 raise ree.TypeError(expected_type=str,
                                     actual_type=type(value))
 
+        self._shared_data = data
+
         if self._rmgr:
             self._rmgr.shared_data = data
+
 
 
     # --------------------------------------------------------------------------
@@ -385,7 +390,7 @@ class AppManager(object):
             # Ensure that a workflow and a resource description have
             # been defined
             if not self._workflow:
-                self._logger.error('No workflow assignedcurrently, please \
+                self._logger.error('No workflow assigned currently, please \
                                     check your script')
                 raise ree.MissingError(obj=self._uid,
                                        missing_attribute='workflow')
@@ -435,7 +440,7 @@ class AppManager(object):
                                    'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise KeyboardInterrupt
+            raise
 
         except Exception:
 
@@ -644,10 +649,10 @@ class AppManager(object):
 
         # Create tmgr object only if it does not already exist
         if self._rts == 'radical.pilot':
-            from radical.entk.execman.rp import TaskManager
+            from ..execman.rp import TaskManager
 
         elif self._rts == 'mock':
-            from radical.entk.execman.mock import TaskManager
+            from ..execman.mock import TaskManager
 
         if not self._task_manager:
 
@@ -759,7 +764,46 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _task_update(self, msg, reply_to, corr_id, mq_channel, method_frame):
+    def _get_message_to_sync(self, mq_channel, qname):
+        '''
+        Reads a message from the queue, and exchange the message to where it
+        was published by `update_task`
+        '''
+
+        # --------------------------------------------------------------
+        # Messages between tmgr Main thread and synchronizer -- only
+        # Task objects
+        method_frame, props, body = mq_channel.basic_get(queue=qname)
+        tmp = qname.split("-")
+        q_sid = ''.join(tmp[:-3])
+        q_from = tmp[-3]
+        q_to = tmp[-1]
+        return_queue_name = f"{q_sid}-{q_to}-to-{q_from}"
+
+        # The message received is a JSON object with the following
+        # structure:
+        # msg = {
+        #         'type': 'Pipeline'/'Stage'/'Task',
+        #         'object': json/dict
+        #         }
+        if body:
+
+            msg   = json.loads(body)
+            uid   = msg['object']['uid']
+            state = msg['object']['state']
+
+            self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
+            self._logger.debug('recv %s in state %s (sync)' % (uid, state))
+
+            if msg['type'] == 'Task':
+                self._update_task(msg, return_queue_name, props.correlation_id,
+                        mq_channel, method_frame)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _update_task(self, msg, reply_to, corr_id, mq_channel, method_frame):
+        # pylint: disable=W0612,W0613
 
         completed_task = Task()
         completed_task.from_dict(msg['object'])
@@ -789,19 +833,34 @@ class AppManager(object):
                             completed_task.state == task.state:
                             continue
 
+                        self._logger.debug(('Found task %s in state (%s)'
+                            ' changing to %s ==') %
+                                (task.uid, task.state, completed_task.state))
+
+                        if completed_task.path:
+                            task.path = str(completed_task.path)
+                            self._logger.debug('Task %s path set to %s' %
+                                               (task.uid, task.path))
+
+                        if completed_task.rts_uid:
+                            task.rts_uid = str(completed_task.rts_uid)
+                            self._logger.debug('Task %s rts_uid set to %s' %
+                                               (task.uid, task.rts_uid))
+
+                        if task.state in [states.DONE, states.FAILED]:
+                            self._logger.debug(('No change on task state %s '
+                                'in state %s') % (task.uid, task.state))
+                            break
                         task.state = str(completed_task.state)
                         self._logger.debug('Found task %s in state %s'
                                           % (task.uid, task.state))
 
-                        if completed_task.path:
-                            task.path = str(completed_task.path)
-
-                        mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=reply_to,
-                                properties=pika.BasicProperties(
-                                    correlation_id=corr_id),
-                                body='%s-ack' % task.uid)
+                        # mq_channel.basic_publish(
+                        #        exchange='',
+                        #        routing_key=reply_to,
+                        #        properties=pika.BasicProperties(
+                        #            correlation_id=corr_id),
+                        #        body='%s-ack' % task.uid)
 
                         state = msg['object']['state']
                         self._prof.prof('pub_ack_state_%s' % state,
@@ -901,54 +960,9 @@ class AppManager(object):
 
         while not self._terminate_sync.is_set():
 
-            # --------------------------------------------------------------
-            # Messages between tmgr Main thread and synchronizer -- only
-            # Task objects
-            method_frame, props, body = mq_channel.basic_get(queue=qname_t2s)
-
-            # The message received is a JSON object with the following
-            # structure:
-            # msg = {
-            #         'type': 'Pipeline'/'Stage'/'Task',
-            #         'object': json/dict
-            #         }
-            if body:
-
-                msg   = json.loads(body)
-                uid   = msg['object']['uid']
-                state = msg['object']['state']
-
-                self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
-                self._logger.debug('recv %s in state %s (sync)' % (uid, state))
-
-                if msg['type'] == 'Task':
-                    self._task_update(msg, '%s-sync-to-tmgr' % self._sid,
-                            props.correlation_id, mq_channel, method_frame)
-
-
-            # --------------------------------------------------------------
-            # Messages between callback thread and synchronizer -- only
-            # Task objects
-            method_frame, props, body = mq_channel.basic_get(queue=qname_c2s)
-
-            # The message received is a JSON object with the following structure:
-            # msg = {
-            #         'type': 'Pipeline'/'Stage'/'Task',
-            #         'object': json/dict
-            #         }
-            if body:
-
-                msg   = json.loads(body)
-                uid   = msg['object']['uid']
-                state = msg['object']['state']
-
-                self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
-                self._logger.debug('recv %s in state %s (sync)' % (uid, state))
-
-                if msg['type'] == 'Task':
-                    self._task_update(msg, '%s-sync-to-cb' % self._sid,
-                            props.correlation_id, mq_channel, method_frame)
-
+            # wrapper to call `_update_task()`
+            self._get_message_to_sync(mq_channel, qname_t2s)
+            self._get_message_to_sync(mq_channel, qname_c2s)
 
             # Appease pika cos it thinks the connection is dead
             now = time.time()

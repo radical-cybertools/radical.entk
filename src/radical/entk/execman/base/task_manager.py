@@ -101,8 +101,10 @@ class Base_TaskManager(object):
         mq_channel.queue_declare(queue=self._hb_request_q)
 
         self._tmgr_process = None
+        self._tmgr_terminate = None
         self._hb_thread    = None
-        self._hb_interval  = int(os.getenv('ENTK_HB_INTERVAL', 30))
+        self._hb_terminate = None
+        self._hb_interval  = int(os.getenv('ENTK_HB_INTERVAL', '30'))
 
         mq_connection.close()
 
@@ -158,24 +160,33 @@ class Base_TaskManager(object):
         reply_queue = '-'.join(list(reversed(qname)))
         reply_queue = sid + '-' + reply_queue
 
-        while True:
+        # The `while` loop is diabled with PR #466, and the explanation is:
+        #  The task manager and app manager continue to have ack semantics with
+        #  this PR. They exchange messages to sync through two channels,
+        #  sync-to-tmgr and sync-to-cb, these have not been touched. The ack
+        #  that located here is to  send an acknowledgment from the app manager
+        #  to the task manager although it doesn't take any further action. 
+        #  This is redundant and doesn't break or reduce reliability by
+        #  commenting out.
 
-            # FIXME: is this a busy loop?
+        # while True:
 
-            method_frame, props, body = channel.basic_get(queue=reply_queue)
+        #     # FIXME: is this a busy loop?
 
-            if not body:
-                continue
+        #     method_frame, props, body = channel.basic_get(queue=reply_queue)
 
-            if corr_id != props.correlation_id:
-                continue
+        #     if not body:
+        #         continue
 
-            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        #     if corr_id != props.correlation_id:
+        #         continue
 
-            self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
-            self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
+        #     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-            break
+        #     self._prof.prof('sync', state=obj.state, uid=obj.uid, msg=msg)
+        #     self._log.debug('%s (%s) synced with amgr', obj.uid, obj.state)
+
+        #     break
 
     # --------------------------------------------------------------------------
     #
@@ -196,7 +207,6 @@ class Base_TaskManager(object):
 
 
         except Exception as ex:
-
             self._log.exception('Transition %s to state %s failed, error: %s',
                                 obj.uid, new_state, ex)
             obj.state = old_state
@@ -222,7 +232,6 @@ class Base_TaskManager(object):
         """
 
         try:
-
             self._prof.prof('hbeat_start', uid=self._uid)
 
             mq_connection = pika.BlockingConnection(self._rmq_conn_params)
@@ -249,12 +258,12 @@ class Base_TaskManager(object):
                 if not body:
                     # no usable response
                     return
-                    raise EnTKError('heartbeat timeout')
+                    # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
                     return
-                    raise EnTKError('heartbeat timeout')
+                    # raise EnTKError('heartbeat timeout')
 
                 self._log.info('Received heartbeat response')
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
@@ -262,19 +271,7 @@ class Base_TaskManager(object):
                 # Appease pika cos it thinks the connection is dead
                 # mq_connection.close()
 
-        except KeyboardInterrupt:
-            self._log.exception('Execution interrupted by user (probably '
-                                   ' hit Ctrl+C), cancel tmgr gracefully...')
-            raise KeyboardInterrupt
-
-
-        except Exception as e:
-            self._log.exception('Heartbeat failed with error: %s', e)
-            raise
-
-
         except EnTKError as e:
-
             # make sure that timeouts did not race with termination
             if 'heartbeat timeout' not in str(e):
                 raise
@@ -285,6 +282,14 @@ class Base_TaskManager(object):
             # we did indeed race with termination - exit gracefully
             return
 
+        except KeyboardInterrupt as e:
+            self._log.exception('Execution interrupted by user (probably '
+                                   ' hit Ctrl+C), cancel tmgr gracefully...')
+            raise KeyboardInterrupt from e
+
+        except Exception as e:
+            self._log.exception('Heartbeat failed with error: %s', e)
+            raise
 
         finally:
             try:
@@ -397,9 +402,10 @@ class Base_TaskManager(object):
         try:
             if self._tmgr_process:
                 self._log.debug('Trying to terminate task manager.')
-                if not self._tmgr_terminate.is_set():
-                    self._tmgr_terminate.set()
-                self._log.debug('TMGR terminate is set %s' % self._tmgr_terminate.is_set())
+                if self._tmgr_terminate is not None:
+                    if not self._tmgr_terminate.is_set():
+                        self._tmgr_terminate.set()
+                    self._log.debug('TMGR terminate is set %s' % self._tmgr_terminate.is_set())
                 if self.check_manager():
                     self._log.debug('TMGR process is alive')
                     self._tmgr_process.join(30)
@@ -423,6 +429,8 @@ class Base_TaskManager(object):
 
         if self._hb_thread:
             return self._hb_thread.is_alive()
+        else:
+            return False
 
 
     # --------------------------------------------------------------------------
@@ -432,8 +440,11 @@ class Base_TaskManager(object):
         **Purpose**: Check if the tmgr process is alive and running
         """
 
+        # Return False if the process does not exist
         if self._tmgr_process:
             return self._tmgr_process.is_alive()
+        else:
+            return False
 
 
 # ------------------------------------------------------------------------------

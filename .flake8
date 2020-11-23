@@ -32,7 +32,9 @@ ignore          =
     # Do not use bare 'except'
     E722,
     # we can spot the difference between I, l and 1, thank you.
-    E741
+    E741,
+    # line break after binary operator
+    W504
 
 per-file-ignores =
     # imported but unused

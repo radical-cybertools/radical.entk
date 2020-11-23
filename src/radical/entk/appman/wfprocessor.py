@@ -12,7 +12,6 @@ import threading
 
 import radical.utils as ru
 
-# EnTK imports
 from .. import states, Task
 
 
@@ -70,7 +69,9 @@ class WFprocessor(object):
         self._wfp_process       = None
         self._enqueue_thread    = None
         self._dequeue_thread    = None
-        self._rmq_ping_interval = os.getenv('RMQ_PING_INTERVAL', 10)
+        self._enqueue_thread_terminate = None
+        self._dequeue_thread_terminate = None
+        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
@@ -260,7 +261,7 @@ class WFprocessor(object):
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-            raise KeyboardInterrupt
+            raise
 
         except Exception:
 
@@ -299,6 +300,8 @@ class WFprocessor(object):
 
                 # Next search across all stages of a matching
                 # pipelines
+                assert(pipe.stages)
+
                 for stage in pipe.stages:
 
                     # Skip stages that don't match the UID
@@ -320,15 +323,16 @@ class WFprocessor(object):
                         # If there is no exit code, we assume success
                         # We are only concerned about state of task and not
                         # deq_task
-                        if not deq_task.exit_code:
+                        if deq_task.exit_code == 0:
                             task_state = states.DONE
-                        else:
+                        elif deq_task.exit_code == 1:
                             task_state = states.FAILED
+                        else:
+                            task_state = deq_task.state
 
                         if task.state == states.FAILED and \
                             self._resubmit_failed:
                             task_state = states.INITIAL
-
                         self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
@@ -339,13 +343,13 @@ class WFprocessor(object):
                     # iterations needed for the current task
                     break
 
+                assert(stage)
                 # Check if current stage has completed
                 # If yes, we need to (i) check for post execs to
                 # be executed and (ii) check if it is the last
                 # stage of the pipeline -- update pipeline
                 # state if yes.
                 if stage._check_stage_complete():
-
                     self._advance(stage, 'Stage', states.DONE)
 
                     # Check if the current stage has a post-exec
@@ -355,7 +359,7 @@ class WFprocessor(object):
 
                     # if pipeline got suspended, advance state accordingly
                     if pipe.state == states.SUSPENDED:
-                      self._advance(pipe, 'Pipeline', states.SUSPENDED)
+                        self._advance(pipe, 'Pipeline', states.SUSPENDED)
 
                     else:
                         # otherwise perform normal stage progression
@@ -374,13 +378,14 @@ class WFprocessor(object):
     # --------------------------------------------------------------------------
     #
     def _execute_post_exec(self, pipe, stage):
-
+        """
+        **Purpose**: This method executes the post_exec step of a stage for a
+        pipeline.
+        """
         try:
             self._logger.info('Executing post-exec for stage %s' % stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
-
             resumed_pipe_uids = stage.post_exec()
-
             self._logger.info('Post-exec executed for stage %s' % stage.uid)
             self._prof.prof('post_exec_stop', uid=self._uid)
 
@@ -398,7 +403,6 @@ class WFprocessor(object):
                     continue
 
                 with r_pipe.lock:
-
                     if r_pipe.uid in resumed_pipe_uids:
 
                         # Resumed pipelines already have the correct state,
@@ -434,7 +438,7 @@ class WFprocessor(object):
             last = time.time()
             while not self._dequeue_thread_terminate.is_set():
 
-                method_frame, header_frame, body = mq_channel.basic_get(
+                method_frame, _ , body = mq_channel.basic_get(
                     queue=self._completed_queue[0])
 
                 # When there is no msg received, body is None
@@ -465,7 +469,7 @@ class WFprocessor(object):
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to exit \
                                     gracefully...')
-            raise KeyboardInterrupt
+            raise
 
 
         except Exception:

@@ -139,7 +139,9 @@ disable=raising-format-tuple,
         R,
         relative-import,
         bare-except,
-        W0212
+        W0212,
+        W0622,
+        undefined-loop-variable
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

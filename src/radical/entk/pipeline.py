@@ -1,9 +1,14 @@
-import radical.utils as ru
-from radical.entk.exceptions import *
-from radical.entk.stage.stage import Stage
+
+__copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
+__license__   = 'MIT'
+
 import threading
-from radical.entk import states
-from collections import Iterable
+
+import radical.utils as ru
+
+from .exceptions import TypeError, ValueError, MissingError, EnTKError
+from .stage      import Stage
+from .           import states
 
 
 class Pipeline(object):
@@ -46,8 +51,8 @@ class Pipeline(object):
     @property
     def name(self):
         """
-        Name of the pipeline useful for bookkeeping and to refer to this pipeline while data staging.
-        Do not use a ',' or '_' in an object's name.
+        Name of the pipeline useful for bookkeeping and to refer to this
+        pipeline while data staging. Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the pipeline
         :setter: Assigns the name of the pipeline
@@ -335,7 +340,7 @@ class Pipeline(object):
                 self._completed_flag.set()
 
         except Exception as ex:
-            raise EnTKError(text=ex)
+            raise EnTKError(msg=ex) from ex
 
     def _decrement_stage(self):
         """
@@ -349,7 +354,7 @@ class Pipeline(object):
                 self._completed_flag = threading.Event()  # reset
 
         except Exception as ex:
-            raise EnTKError(text=ex)
+            raise EnTKError(msg=ex) from ex
 
     @classmethod
     def _validate_entities(self, stages):

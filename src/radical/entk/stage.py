@@ -1,8 +1,13 @@
+
+__copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
+__license__   = 'MIT'
+
+
 import radical.utils as ru
-from radical.entk.exceptions import *
-from radical.entk.task.task import Task
-from radical.entk import states
-from collections import Iterable
+
+from .exceptions import ValueError, TypeError, EnTKError, MissingError
+from .task       import Task
+from .           import states
 
 
 class Stage(object):
@@ -121,24 +126,43 @@ class Stage(object):
 
         return self._state_history
 
+
     @property
     def post_exec(self):
         '''
-        The post_exec property enables adaptivity in EnTK. A function, func_1,
-        is evaluated to produce a boolean result. Function func_2 is executed
-        if the result is True and func_3 is executed if the result is False.
-        Following is the expected structure:
+        The post_exec property enables adaptivity in EnTK. post_exec receives a
+        Python callable object i.e. function, which will be evaluated when a
+        stage is finished.
 
-        self._post_exec = {
-                            |  'condition' : func_1,
-                            |  'on_true'   : func_2,
-                            |  'on_false'  : func_3}
+        Note: if a post_exec callback resumes any suspended pipelines, it MUST
+        return a list with the IDs of those pipelines - otherwise the resume
+        will not be acted upon.
+
+        Example:
+
+        s1.post_exec = func_post
+
+        def func_post():
+
+            if condition is met:
+                s = Stage()
+                t = Task()
+                t.executable = '/bin/sleep'
+                t.arguments = ['30']
+                s.add_tasks(t)
+                p.add_stages(s)
+
+            else:
+                # do nothing
+                pass
         '''
+
         return self._post_exec
 
-    # ------------------------------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     # Setter functions
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
@@ -197,9 +221,11 @@ class Stage(object):
     #
     def add_tasks(self, value):
         """
-        Adds tasks to the existing set of tasks of the Stage
+        Adds task(s) to a Stage by using a set union operation. Every Task
+        element is unique, no duplicate is allowed. Existing Task
+        won't be added but updated with changes.
 
-        :argument: set of tasks
+        :argument: iterable task object
         """
         tasks = self._validate_entities(value)
         self._tasks.update(tasks)
@@ -252,6 +278,7 @@ class Stage(object):
                 if d['state'] in list(states._stage_state_values.keys()):
                     self._state = d['state']
                 else:
+                    value = d['state']
                     raise ValueError(obj=self._uid,
                                      attribute='state',
                                      expected_value=list(states._stage_state_values.keys()),
@@ -307,7 +334,7 @@ class Stage(object):
             return True
 
         except Exception as ex:
-            raise EnTKError(ex)
+            raise EnTKError(msg=ex) from ex
 
     @classmethod
     def _validate_entities(self, tasks):

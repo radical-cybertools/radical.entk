@@ -1,462 +1,373 @@
-#!/usr/bin/env python
+# pylint: disable=protected-access, unused-argument
+# pylint: disable=no-value-for-parameter
 
-import os
-import glob
-import shutil
+__copyright__ = "Copyright 2020, http://radical.rutgers.edu"
+__license__   = "MIT"
+
+from unittest import TestCase
+
 import pytest
 
-import hypothesis.strategies as st
-from   hypothesis   import given, settings
-
-from   radical.entk import Task
-from   radical.entk import states
+from radical.entk.task import Task
+from radical.entk import states
 
 import radical.entk.exceptions as ree
 
-
-# Hypothesis settings
-settings.register_profile("travis", max_examples=100, deadline=None)
-settings.load_profile("travis")
-
-
-# ------------------------------------------------------------------------------
-#
-def test_task_initialization():
-    '''
-    **Purpose**: Test if the task attributes have, thus expect, the correct data types
-    '''
-
-    t = Task()
-
-    assert t._uid                             is None
-    assert t.name                             is None
-
-    assert t.state                            == states.INITIAL
-    assert t.state_history                    == [states.INITIAL]
-
-    assert t.executable                       is None
-    assert t.arguments                        == list()
-    assert t.pre_exec                         == list()
-    assert t.post_exec                        == list()
-
-    assert t.cpu_reqs['processes']            == 1
-    assert t.cpu_reqs['process_type']         is None
-    assert t.cpu_reqs['threads_per_process']  == 1
-    assert t.cpu_reqs['thread_type']          is None
-    assert t.gpu_reqs['processes']            == 0
-    assert t.gpu_reqs['process_type']         is None
-    assert t.gpu_reqs['threads_per_process']  == 0
-    assert t.gpu_reqs['thread_type']          is None
-    assert t.lfs_per_process                  == 0
-
-    assert t.upload_input_data                == list()
-    assert t.copy_input_data                  == list()
-    assert t.link_input_data                  == list()
-    assert t.move_input_data                  == list()
-    assert t.copy_output_data                 == list()
-    assert t.move_input_data                  == list()
-    assert t.download_output_data             == list()
-
-    assert t.stdout                           is None
-    assert t.stderr                           is None
-    assert t.exit_code                        is None
-    assert t.tag                              is None
-    assert t.path                             is None
-
-    assert t.parent_pipeline['uid']           is None
-    assert t.parent_pipeline['name']          is None
-    assert t.parent_stage['uid']              is None
-    assert t.parent_stage['name']             is None
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 
 
 # ------------------------------------------------------------------------------
 #
-@given(s=st.text(),
-       l=st.lists(st.text()),
-       i=st.integers().filter(lambda x: type(x) == int),
-       b=st.booleans())
-def test_task_exceptions(s, l, i, b):
-    '''
-    **Purpose**: Test if all attribute assignments raise exceptions
-                 for invalid values
-    '''
-
-    t = Task()
-
-    data_type = [s, l, i, b]
-
-    for data in data_type:
-
-        # special case due to backward compatibility
-        if not isinstance(data, str) and \
-           not isinstance(data, list):
-
-            with pytest.raises(ree.TypeError): t.executable = data
+class TestTask(TestCase):
 
 
-        if not isinstance(data, str):
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.generate_id', return_value='test.0000')
+    def test_task_initialization(self, mocked_generate_id):
+        '''
+        **Purpose**: Test if the task attributes have, thus expect, the correct 
+        data types
+        '''
 
-            with pytest.raises(ree.TypeError): t.name                 = data
-            with pytest.raises(ree.TypeError): t.path                 = data
-            with pytest.raises(ree.TypeError): t.parent_stage         = data
-            with pytest.raises(ree.TypeError): t.parent_pipeline      = data
-            with pytest.raises(ree.TypeError): t.stdout               = data
-            with pytest.raises(ree.TypeError): t.stderr               = data
+        t = Task()
 
+        self.assertEqual(t._uid, 'test.0000')
+        self.assertEqual(t.name, '')
+        self.assertIsNone(t.rts_uid)
+        self.assertEqual(t.state, states.INITIAL)
+        self.assertEqual(t.state_history, [states.INITIAL])
+        self.assertEqual(t.executable, '')
+        self.assertIsInstance(t.arguments, list)
+        self.assertIsInstance(t.pre_exec, list)
+        self.assertIsInstance(t.post_exec, list)
 
-        if not isinstance(data, list):
+        self.assertEqual(t._cpu_reqs['processes'], 1)
+        self.assertIsNone(t._cpu_reqs['process_type'])
+        self.assertEqual(t._cpu_reqs['threads_per_process'], 1)
+        self.assertIsNone(t._cpu_reqs['thread_type'])
+        self.assertEqual(t._gpu_reqs['processes'], 0)
+        self.assertIsNone(t._gpu_reqs['process_type'])
+        self.assertEqual(t._gpu_reqs['threads_per_process'], 0)
+        self.assertIsNone(t._gpu_reqs['thread_type'])
 
-            with pytest.raises(ree.TypeError): t.pre_exec             = data
-            with pytest.raises(ree.TypeError): t.arguments            = data
-            with pytest.raises(ree.TypeError): t.post_exec            = data
-            with pytest.raises(ree.TypeError): t.upload_input_data    = data
-            with pytest.raises(ree.TypeError): t.copy_input_data      = data
-            with pytest.raises(ree.TypeError): t.link_input_data      = data
-            with pytest.raises(ree.TypeError): t.move_input_data      = data
-            with pytest.raises(ree.TypeError): t.copy_output_data     = data
-            with pytest.raises(ree.TypeError): t.download_output_data = data
-            with pytest.raises(ree.TypeError): t.move_output_data     = data
-
-        if not isinstance(data, str) and \
-           not isinstance(data, str):
-
-            with pytest.raises(ree.ValueError):
-                t.cpu_reqs = {'processes'          : 1,
-                              'process_type'       : data,
-                              'threads_per_process': 1,
-                              'thread_type'        : None}
-                t.cpu_reqs = {'processes'          : 1,
-                              'process_type'       : None,
-                              'threads_per_process': 1,
-                              'thread_type'        : data
-                            }
-                t.gpu_reqs = {'processes'          : 1,
-                              'process_type'       : data,
-                              'threads_per_process': 1,
-                              'thread_type'        : None
-                            }
-                t.gpu_reqs = {'processes'          : 1,
-                              'process_type'       : None,
-                              'threads_per_process': 1,
-                              'thread_type'        : data}
-
-        if not isinstance(data, int):
-
-            with pytest.raises(ree.TypeError):
-                t.cpu_reqs = {'processes'           : data,
-                              'process_type'        : None,
-                              'threads_per_process' : 1,
-                              'thread_type'         : None}
-
-            with pytest.raises(ree.TypeError):
-                t.cpu_reqs = {'processes'           : 1,
-                              'process_type'        : None,
-                              'threads_per_process' : data,
-                              'thread_type'         : None}
-
-            with pytest.raises(ree.TypeError):
-                t.gpu_reqs = {'processes'           : data,
-                              'process_type'        : None,
-                              'threads_per_process' : 1,
-                              'thread_type'         : None}
-
-            with pytest.raises(ree.TypeError):
-                t.gpu_reqs = {'processes'           : 1,
-                              'process_type'        : None,
-                              'threads_per_process' : data,
-                              'thread_type'         : None}
+        self.assertEqual(t.lfs_per_process, 0)
+        self.assertEqual(t.sandbox, '')
+        self.assertIsInstance(t.upload_input_data, list)
+        self.assertIsInstance(t.copy_input_data, list)
+        self.assertIsInstance(t.link_input_data, list)
+        self.assertIsInstance(t.move_input_data, list)
+        self.assertIsInstance(t.copy_output_data, list)
+        self.assertIsInstance(t.link_output_data, list)
+        self.assertIsInstance(t.move_output_data, list)
+        self.assertIsInstance(t.download_output_data, list)
+        self.assertEqual(t.stdout, '')
+        self.assertEqual(t.stderr, '')
+        self.assertIsNone(t.exit_code)
+        self.assertIsNone(t.tag)
+        self.assertIsNone(t.path)
+        self.assertIsNone(t.parent_pipeline['uid'])
+        self.assertIsNone(t.parent_pipeline['name'])
+        self.assertIsNone(t.parent_stage['name'])
+        self.assertIsNone(t.parent_stage['uid'])
 
 
-# ------------------------------------------------------------------------------
-#
-def test_dict_to_task():
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.generate_id', return_value='test.0000')
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_cpu_reqs(self, mocked_generate_id, mocked_init):
+        task = Task()
+        task._cpu_reqs = {'processes'           : 1,
+                          'process_type'        : None,
+                          'threads_per_process' : 1,
+                          'thread_type'         : None}
+        cpu_reqs = {'processes' : 2, 
+                    'process_type' : None, 
+                    'threads_per_process' : 1, 
+                    'thread_type' : 'OpenMP'}
+        task.cpu_reqs = {'processes' : 2, 
+                         'process_type' : None, 
+                         'threads_per_process' : 1, 
+                         'thread_type' : 'OpenMP'}
 
-    # make sure the type checks kick in
-    d = {'name' : 1}
-    with pytest.raises(ree.TypeError):
-        Task(from_dict=d)
+        self.assertEqual(task._cpu_reqs, cpu_reqs)
+        self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2, 
+                                         'cpu_process_type' : None, 
+                                         'cpu_threads' : 1, 
+                                         'cpu_thread_type' : 'OpenMP'})
 
+        with self.assertRaises(ree.MissingError):
+            task.cpu_reqs = {'cpu_processes' : 2, 
+                             'cpu_process_type' : None, 
+                             'cpu_thread_type' : 'OpenMP'}
 
-    d = {'name'      : 'foo',
-         'pre_exec'  : ['bar'],
-         'executable': 'buz',
-         'arguments' : ['baz', 'fiz'],
-         'cpu_reqs'  : {'processes'          : 1,
-                        'process_type'       : None,
-                        'threads_per_process': 1,
-                        'thread_type'        : None},
-         'gpu_reqs'  : {'processes'          : 0,
-                        'process_type'       : None,
-                        'threads_per_process': 0,
-                        'thread_type'        : None}}
-    t = Task(from_dict=d)
+        with self.assertRaises(ree.TypeError):
+            task.cpu_reqs = {'cpu_processes' : 'a', 
+                             'cpu_process_type' : None, 
+                             'cpu_threads' : 1,
+                             'cpu_thread_type' : 'OpenMP'}
 
-    for k,v in d.items():
-        assert(t.__getattribute__(k) == v), '%s != %s' \
-            % (t.__getattribute__(k), v)
+        with self.assertRaises(ree.TypeError):
+            task.cpu_reqs = {'cpu_processes' : 1, 
+                             'cpu_process_type' : None, 
+                             'cpu_threads' : 'a',
+                             'cpu_thread_type' : 'OpenMP'}
 
+        with self.assertRaises(ree.TypeError):
+            task.cpu_reqs = list()
 
-# ------------------------------------------------------------------------------
-#
-def test_task_to_dict():
-    '''
-    **Purpose**: Test if the 'to_dict' function of Task class converts all
-                 expected attributes of the Task into a dictionary
-    '''
+        with self.assertRaises(ree.ValueError):
+            task.cpu_reqs = {'cpu_processes' : 1, 
+                             'cpu_process_type' : None, 
+                             'cpu_threads' : 1,
+                             'cpu_thread_type' : 'MPI'}
 
-    t = Task()
-    d = t.to_dict()
-
-    assert d == {'uid'                  : None,
-                 'name'                 : None,
-                 'state'                : states.INITIAL,
-                 'state_history'        : [states.INITIAL],
-                 'pre_exec'             : [],
-                 'executable'           : None,
-                 'arguments'            : [],
-                 'post_exec'            : [],
-                 'cpu_reqs'             : {'processes'           : 1,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 1,
-                                           'thread_type'         : None},
-                 'gpu_reqs'             : {'processes'           : 0,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 0,
-                                           'thread_type'         : None},
-                 'lfs_per_process'      : 0,
-                 'upload_input_data'    : [],
-                 'copy_input_data'      : [],
-                 'link_input_data'      : [],
-                 'move_input_data'      : [],
-                 'copy_output_data'     : [],
-                 'move_output_data'     : [],
-                 'download_output_data' : [],
-                 'stdout'               : None,
-                 'stderr'               : None,
-                 'exit_code'            : None,
-                 'path'                 : None,
-                 'tag'                  : None,
-                 'parent_stage'         : {'uid' : None, 'name' : None},
-                 'parent_pipeline'      : {'uid' : None, 'name' : None}}
+        with self.assertRaises(ree.ValueError):
+            task.cpu_reqs = {'cpu_processes' : 1, 
+                             'cpu_process_type' : 'test', 
+                             'cpu_threads' : 1,
+                             'cpu_thread_type' : 'OpenMP'}
 
 
-    t                                 = Task()
-    t.uid                             = 'test.0017'
-    t.name                            = 'new'
-    t.pre_exec                        = ['module load abc']
-    t.executable                      = ['sleep']
-    t.arguments                       = ['10']
-    t.cpu_reqs['processes']           = 10
-    t.cpu_reqs['threads_per_process'] = 2
-    t.gpu_reqs['processes']           = 5
-    t.gpu_reqs['threads_per_process'] = 3
-    t.lfs_per_process                 = 1024
-    t.upload_input_data               = ['test1']
-    t.copy_input_data                 = ['test2']
-    t.link_input_data                 = ['test3']
-    t.move_input_data                 = ['test4']
-    t.copy_output_data                = ['test5']
-    t.move_output_data                = ['test6']
-    t.download_output_data            = ['test7']
-    t.stdout                          = 'out'
-    t.stderr                          = 'err'
-    t.exit_code                       = 1
-    t.path                            = 'a/b/c'
-    t.tag                             = 'task.0010'
-    t.parent_stage                    = {'uid': 's1', 'name': 'stage1'}
-    t.parent_pipeline                 = {'uid': 'p1', 'name': 'pipeline1'}
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.generate_id', return_value='test.0000')
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_gpu_reqs(self, mocked_generate_id, mocked_init):
+        task = Task()
+        task._gpu_reqs = {'processes'           : 1,
+                          'process_type'        : None,
+                          'threads_per_process' : 1,
+                          'thread_type'         : None}
+        gpu_reqs = {'processes' : 2, 
+                    'process_type' : None, 
+                    'threads_per_process' : 1, 
+                    'thread_type' : 'OpenMP'}
+        task.gpu_reqs = {'processes' : 2, 
+                         'process_type' : None, 
+                         'threads_per_process' : 1, 
+                         'thread_type' : 'OpenMP'}
 
-    d = t.to_dict()
+        self.assertEqual(task._gpu_reqs, gpu_reqs)
+        self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2, 
+                                         'gpu_process_type' : None, 
+                                         'gpu_threads' : 1, 
+                                         'gpu_thread_type' : 'OpenMP'})
 
-    assert d == {'uid'                  : 'test.0017',
-                 'name'                 : 'new',
-                 'state'                : states.INITIAL,
-                 'state_history'        : [states.INITIAL],
-                 'pre_exec'             : ['module load abc'],
-                 'executable'           : 'sleep',
-                 'arguments'            : ['10'],
-                 'post_exec'            : [],
-                 'cpu_reqs'             : {'processes'           : 10,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 2,
-                                           'thread_type'         : None},
-                 'gpu_reqs'             : {'processes'           : 5,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 3,
-                                           'thread_type'         : None},
-                 'lfs_per_process'      : 1024,
-                 'upload_input_data'    : ['test1'],
-                 'copy_input_data'      : ['test2'],
-                 'link_input_data'      : ['test3'],
-                 'move_input_data'      : ['test4'],
-                 'copy_output_data'     : ['test5'],
-                 'move_output_data'     : ['test6'],
-                 'download_output_data' : ['test7'],
-                 'stdout'               : 'out',
-                 'stderr'               : 'err',
-                 'exit_code'            : 1,
-                 'path'                 : 'a/b/c',
-                 'tag'                  : 'task.0010',
-                 'parent_stage'         : {'uid': 's1', 'name' : 'stage1'},
-                 'parent_pipeline'      : {'uid': 'p1', 'name' : 'pipeline1'}}
+        with self.assertRaises(ree.TypeError):
+            task.gpu_reqs = list()
 
+        with self.assertRaises(ree.MissingError):
+            task.gpu_reqs = {'gpu_processes' : 2, 
+                             'gpu_process_type' : None, 
+                             'gpu_thread_type' : 'OpenMP'}
 
-    t.executable = 'sleep'
-    d = t.to_dict()
+        with self.assertRaises(ree.TypeError):
+            task.gpu_reqs = {'gpu_processes' : 'a', 
+                             'gpu_process_type' : None, 
+                             'gpu_threads' : 1,
+                             'gpu_thread_type' : 'OpenMP'}
 
-    assert d == {'uid'                  : 'test.0017',
-                 'name'                 : 'new',
-                 'state'                : states.INITIAL,
-                 'state_history'        : [states.INITIAL],
-                 'pre_exec'             : ['module load abc'],
-                 'executable'           : 'sleep',
-                 'arguments'            : ['10'],
-                 'post_exec'            : [],
-                 'cpu_reqs'             : {'processes'           : 10,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 2,
-                                           'thread_type'         : None},
-                 'gpu_reqs'             : {'processes'           : 5,
-                                           'process_type'        : None,
-                                           'threads_per_process' : 3,
-                                           'thread_type'         : None},
-                 'lfs_per_process'      : 1024,
-                 'upload_input_data'    : ['test1'],
-                 'copy_input_data'      : ['test2'],
-                 'link_input_data'      : ['test3'],
-                 'move_input_data'      : ['test4'],
-                 'copy_output_data'     : ['test5'],
-                 'move_output_data'     : ['test6'],
-                 'download_output_data' : ['test7'],
-                 'stdout'               : 'out',
-                 'stderr'               : 'err',
-                 'exit_code'            : 1,
-                 'path'                 : 'a/b/c',
-                 'tag'                  : 'task.0010',
-                 'parent_stage'         : {'uid': 's1', 'name' : 'stage1'},
-                 'parent_pipeline'      : {'uid': 'p1', 'name' : 'pipeline1'}}
+        with self.assertRaises(ree.TypeError):
+            task.gpu_reqs = {'gpu_processes' : 1, 
+                             'gpu_process_type' : None, 
+                             'gpu_threads' : 'a',
+                             'gpu_thread_type' : 'OpenMP'}
 
+        with self.assertRaises(ree.ValueError):
+            task.gpu_reqs = {'gpu_processes' : 1, 
+                             'gpu_process_type' : None, 
+                             'gpu_threads' : 1,
+                             'gpu_thread_type' : 'MPI'}
 
-# ------------------------------------------------------------------------------
-#
-def test_task_from_dict():
-    '''
-    **Purpose**: Test if the 'from_dict' function of Task class converts a
-                 dictionary into a Task correctly with all the expected
-                 attributes
-    '''
+        with self.assertRaises(ree.ValueError):
+            task.gpu_reqs = {'gpu_processes' : 1, 
+                             'gpu_process_type' : 'test', 
+                             'gpu_threads' : 1,
+                             'gpu_thread_type' : 'OpenMP'}
 
-    d = {'uid'                  : 're.Task.0000',
-         'name'                 : 't1',
-         'state'                : states.DONE,
-         'state_history'        : [states.INITIAL, states.DONE],
-         'pre_exec'             : [],
-         'executable'           : '',
-         'arguments'            : [],
-         'post_exec'            : [],
-         'cpu_reqs'             : {'processes'           : 1,
-                                   'process_type'        : None,
-                                   'threads_per_process' : 1,
-                                   'thread_type'         : None},
-         'gpu_reqs'             : {'processes'           : 0,
-                                   'process_type'        : None,
-                                   'threads_per_process' : 0,
-                                   'thread_type'         : None},
-         'lfs_per_process'      : 1024,
-         'upload_input_data'    : [],
-         'copy_input_data'      : [],
-         'link_input_data'      : [],
-         'move_input_data'      : [],
-         'copy_output_data'     : [],
-         'move_output_data'     : [],
-         'download_output_data' : [],
-         'stdout'               : 'out',
-         'stderr'               : 'err',
-         'exit_code'            : 555,
-         'path'                 : 'here/it/is',
-         'tag'                  : 'task.0010',
-         'parent_stage'         : {'uid': 's1', 'name' : 'stage1'},
-         'parent_pipeline'      : {'uid': 'p1', 'name' : 'pipe1'}}
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_uid(self, mocked_init):
 
-    t = Task()
-    t.from_dict(d)
+        task = Task()
+        task._uid = 'test.0000'
+        self.assertEqual(task.uid, 'test.0000')
 
-    assert t._uid                  == d['uid']
-    assert t.name                  == d['name']
-    assert t.state                 == d['state']
-    assert t.state_history         == d['state_history']
-    assert t.pre_exec              == d['pre_exec']
-    assert t.executable            == d['executable']
-    assert t.arguments             == d['arguments']
-    assert t.post_exec             == d['post_exec']
-    assert t.cpu_reqs              == d['cpu_reqs']
-    assert t.gpu_reqs              == d['gpu_reqs']
-    assert t.lfs_per_process       == d['lfs_per_process']
-    assert t.upload_input_data     == d['upload_input_data']
-    assert t.copy_input_data       == d['copy_input_data']
-    assert t.link_input_data       == d['link_input_data']
-    assert t.move_input_data       == d['move_input_data']
-    assert t.copy_output_data      == d['copy_output_data']
-    assert t.move_output_data      == d['move_output_data']
-    assert t.download_output_data  == d['download_output_data']
-    assert t.stdout                == d['stdout']
-    assert t.stderr                == d['stderr']
-    assert t.exit_code             == d['exit_code']
-    assert t.path                  == d['path']
-    assert t.tag                   == d['tag']
-    assert t.parent_stage          == d['parent_stage']
-    assert t.parent_pipeline       == d['parent_pipeline']
+        task.uid = 'test.0001'
+        self.assertEqual(task._uid, 'test.0001')
 
+        with self.assertRaises(ree.TypeError):
+            task.uid = 1
 
-    d['executable'] = 'sleep'
-    t = Task()
-    t.from_dict(d)
-    assert t.executable == d['executable']
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_luid(self, mocked_init):
 
+        task = Task()
+        task._name = ""
+        task.parent_pipeline = {'name':'p0'}
+        task.parent_stage = {'name':'s0'}
+        task.name = 'test.0000'
+        self.assertEqual(task.luid, 'p0.s0.test.0000')
 
-# ------------------------------------------------------------------------------
-#
-def test_task_assign_uid():
+        task = Task()
+        task._name = ""
+        task.parent_pipeline = {'uid':'p0'}
+        task.parent_stage = {'uid':'s0'}
+        task.uid = 'test.0000'
+        self.assertEqual(task.luid, 'p0.s0.test.0000')
 
-    try:
-        home   = os.environ.get('HOME', '/home')
-        folder = glob.glob('%s/.radical/utils/test*' % home)
+    # --------------------------------------------------------------------------
+    #
+    def test_dict_to_task(self):
 
-        for f in folder:
-            shutil.rmtree(f)
-    except:
-        pass
+        d = {'name'      : 'foo',
+            'pre_exec'  : ['bar'],
+            'executable': 'buz',
+            'arguments' : ['baz', 'fiz'],
+            'cpu_reqs'  : {'processes'          : 1,
+                            'process_type'       : None,
+                            'threads_per_process': 1,
+                            'thread_type'        : None},
+            'gpu_reqs'  : {'processes'          : 0,
+                            'process_type'       : None,
+                            'threads_per_process': 0,
+                            'thread_type'        : None}}
+        t = Task(from_dict=d)
 
-    t = Task()
-    assert t.uid == 'task.0000'
+        for k,v in d.items():
+            self.assertEqual(t.__getattribute__(k), v, msg='%s != %s'
+                % (t.__getattribute__(k), v))
 
+        d = {'name'      : 'foo',
+            'pre_exec'  : ['bar'],
+            'executable': 'buz',
+            'arguments' : ['baz', 'fiz'],
+            'cpu_reqs'  : {'processes'          : 1,
+                            'process_type'       : None,
+                            'threads_per_process': 1,
+                            'thread_type'        : None},
+            'gpu_reqs'  : {'processes'          : 0,
+                            'process_type'       : None,
+                            'threads_per_process': 0,
+                            'thread_type'        : None}}
+        t = Task()
+        t.from_dict(d)
 
-# ------------------------------------------------------------------------------
-#
-def test_task_validate():
+        for k,v in d.items():
+            self.assertEqual(t.__getattribute__(k), v, msg='%s != %s'
+                % (t.__getattribute__(k), v))
 
-    t = Task()
-    t._state = 'test'
-    with pytest.raises(ree.ValueError):
-        t._validate()
+        # make sure the type checks kick in
+        d = 'test'
+        with pytest.raises(ree.TypeError):
+            t = Task(from_dict=d)
 
-    t = Task()
-    with pytest.raises(ree.MissingError):
-        t._validate()
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_executable(self, mocked_init):
+        # Tests issue #324
+        task = Task()
+        task.executable = 'test_exec'
+        self.assertEqual(task._executable, 'test_exec')
 
+        task = Task()
+        with self.assertRaises(ree.TypeError):
+            task.executable = ['test_exec']
 
-# ------------------------------------------------------------------------------
-#
-if __name__ == '__main__':
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_task_to_dict(self, mocked_init):
 
-    test_task_initialization()
-    test_task_exceptions()
-    test_dict_to_task()
-    test_task_to_dict()
-    test_task_from_dict()
-    test_task_assign_uid()
-    test_task_validate()
+        t = Task()
 
+        t._uid = 'test.0000'
+        t._name = ''
+        t._rts_uid = 'unit.0000'
+        t._state = states.INITIAL
+        t._state_history = [states.INITIAL]
+        t._executable = ''
+        t._arguments = list()
+        t._pre_exec = list()
+        t._post_exec = list()
+        t._cpu_reqs = dict()
+        t._cpu_reqs['processes'] = 1
+        t._cpu_reqs['process_type'] = 'POSIX'
+        t._cpu_reqs['threads_per_process'] = 1
+        t._cpu_reqs['thread_type'] = 'POSIX'
+        t._gpu_reqs = dict()
+        t._gpu_reqs['processes'] = 0
+        t._gpu_reqs['process_type'] = 'POSIX'
+        t._gpu_reqs['threads_per_process'] = 0
+        t._gpu_reqs['thread_type'] = 'POSIX'
+        t._lfs_per_process = 0
+        t._sandbox = ''
+        t._upload_input_data = list()
+        t._copy_input_data = list()
+        t._link_input_data = list()
+        t._move_input_data = list()
+        t._copy_output_data = list()
+        t._link_output_data = list()
+        t._move_output_data = list()
+        t._download_output_data = list()
+        t._stdout = 'Hello World'
+        t._stderr = 'Hello World'
+        t._exit_code = 0
+        t._tag = None
+        t._path = 'some_path'
+        t._p_pipeline = dict()
+        t._p_pipeline['uid'] = 'pipe.0000'
+        t._p_pipeline['name'] = 'pipe.0000'
+        t._p_stage = dict()
+        t._p_stage['name'] = 'stage.0000'
+        t._p_stage['uid'] = 'stage.0000'
 
-# ------------------------------------------------------------------------------
+        expected_dict = {'uid': 'test.0000',
+                         'name': '',
+                         'state': 'DESCRIBED',
+                         'state_history': ['DESCRIBED'],
+                         'pre_exec': [],
+                         'executable': '',
+                         'arguments': [],
+                         'sandbox': '',
+                         'post_exec': [],
+                         'cpu_reqs': {'cpu_processes': 1,
+                                      'cpu_process_type': 'POSIX',
+                                      'cpu_threads': 1,
+                                      'cpu_thread_type': 'POSIX'},
+                         'gpu_reqs': {'gpu_processes': 0,
+                                      'gpu_process_type': 'POSIX',
+                                      'gpu_threads': 0,
+                                      'gpu_thread_type': 'POSIX'},
+                         'lfs_per_process': 0,
+                         'upload_input_data': [],
+                         'copy_input_data': [],
+                         'link_input_data': [],
+                         'move_input_data': [],
+                         'copy_output_data': [],
+                         'link_output_data': [],
+                         'move_output_data': [],
+                         'download_output_data': [],
+                         'stdout': 'Hello World',
+                         'stderr': 'Hello World',
+                         'exit_code': 0,
+                         'path': 'some_path',
+                         'tag': None,
+                         'rts_uid': 'unit.0000',
+                         'parent_stage': {'name': 'stage.0000',
+                                          'uid': 'stage.0000'},
+                         'parent_pipeline': {'uid': 'pipe.0000',
+                                             'name': 'pipe.0000'}}
 
+        task_dict = t.to_dict()
+
+        self.assertEqual(task_dict, expected_dict)
