@@ -1,11 +1,14 @@
+
 import os
 import glob
 import traceback
 import radical.utils as ru
 
-from radical.entk.exceptions import EnTKError
-from radical.entk import states as res
 from radical.pilot import states as rps
+
+from ..exceptions import EnTKError
+from ..           import states as res
+
 
 # pylint: disable=protected-access
 

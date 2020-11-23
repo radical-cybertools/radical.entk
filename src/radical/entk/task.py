@@ -4,8 +4,8 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
-from .. import exceptions as ree
-from .. import states     as res
+from . import exceptions as ree
+from . import states     as res
 
 
 # ------------------------------------------------------------------------------
