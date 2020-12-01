@@ -438,7 +438,7 @@ class WFprocessor(object):
             last = time.time()
             while not self._dequeue_thread_terminate.is_set():
 
-                method_frame, _ , body = mq_channel.basic_get(
+                method_frame, _, body = mq_channel.basic_get(
                     queue=self._completed_queue[0])
 
                 # When there is no msg received, body is None

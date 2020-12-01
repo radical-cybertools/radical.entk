@@ -685,9 +685,7 @@ class AppManager(object):
         final      = self._rmgr.get_completed_states()
         incomplete = self._wfp.workflow_incomplete()
 
-        while active_pipe_count and \
-              incomplete        and \
-              state not in final:
+        while active_pipe_count and incomplete and state not in final:
 
             state = self._rmgr.get_resource_allocation_state()
 
@@ -696,7 +694,7 @@ class AppManager(object):
                 with pipe.lock:
 
                     if pipe.completed and \
-                        pipe.uid not in finished_pipe_uids:
+                       pipe.uid not in finished_pipe_uids:
 
                         finished_pipe_uids.append(pipe.uid)
                         active_pipe_count -= 1
@@ -704,9 +702,8 @@ class AppManager(object):
                         self._logger.info('Pipe %s completed' % pipe.uid)
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
-
             if not self._sync_thread.is_alive() and \
-                self._cur_attempt <= self._reattempts:
+               self._cur_attempt <= self._reattempts:
 
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
@@ -715,7 +712,6 @@ class AppManager(object):
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
                 self._logger.info('Restarting synchronizer thread')
-
 
             if not self._wfp.check_processor() and \
                 self._cur_attempt <= self._reattempts:
