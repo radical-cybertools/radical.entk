@@ -13,3 +13,4 @@ description in the website as well as comments made in the python scripts.
 
    ./examples/poe
    ./examples/eop
+   ./examples/sow
