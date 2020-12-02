@@ -242,7 +242,8 @@ class TaskManager(Base_TaskManager):
             try:
 
                 self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
-
+                # self._log.debug('CB Connection State %s channel state %s' 
+                #                 % (mq_connection.is_open, mq_channel.is_open))
                 if unit.state in rp.FINAL:
 
                     task = None
@@ -313,7 +314,7 @@ class TaskManager(Base_TaskManager):
 
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, '%s-tmgr-to-sync' % self._sid)
-                    self._logger.debug('Connection State %s channel state %s'
+                    self._log.debug('Connection State %s channel state %s'
                                         % (mq_connection.is_open,
                                            mq_channel.is_open))
                 umgr.submit_units(bulk_cuds)

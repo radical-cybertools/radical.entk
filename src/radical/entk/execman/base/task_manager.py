@@ -145,9 +145,9 @@ class Base_TaskManager(object):
         if   obj_type == 'Task' : msg = obj.parent_stage['uid']
         elif obj_type == 'Stage': msg = obj.parent_pipeline['uid']
         else                    : msg = ''
-
+       
         self._prof.prof('pub_sync', state=obj.state, uid=obj.uid, msg=msg)
-        self._log.debug('%s (%s) to sync with amgr', obj.uid, obj.state)
+        self._log.debug('%s (%s) to sync with amgr, channel %s', obj.uid, obj.state, channel.is_open)
 
         channel.basic_publish(exchange='', routing_key=queue, body=body,
                         properties=pika.BasicProperties(correlation_id=corr_id))

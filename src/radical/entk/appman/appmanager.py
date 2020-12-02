@@ -22,6 +22,8 @@ from ..utils       import write_workflows
 
 from .wfprocessor  import WFprocessor
 
+pika.connection.Parameters.DEFAULT_HEARTBEAT_INTERVAL = 0
+pika.connection.Parameters.DEFAULT_HEARTBEAT_TIMEOUT = 0
 
 # pylint: disable=protected-access
 
