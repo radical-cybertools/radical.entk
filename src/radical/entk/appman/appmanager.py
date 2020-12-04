@@ -776,6 +776,8 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
+        if state in ['FAILED','CANCELED']:
+            self._logger.debug('RTS failed')
 
     # --------------------------------------------------------------------------
     #
