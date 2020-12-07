@@ -104,23 +104,14 @@ class TestBase(TestCase):
                           completed_queue='completed_queue',
                           rmq_conn_params='test_rmq_params',
                           resubmit_failed=False)
-
+        wfp._logger = mocked_Logger
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
         pipe.completed = False
         wfp._workflow = set([pipe])
         self.assertTrue(wfp.workflow_incomplete())
 
-        wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
-
-        pipe = mock.Mock()
-        pipe.lock = mt.Lock()
         pipe.completed = True
-        wfp._workflow = set([pipe])
         self.assertFalse(wfp.workflow_incomplete())
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',

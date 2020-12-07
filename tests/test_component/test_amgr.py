@@ -15,7 +15,7 @@ except ImportError:
     from unittest import mock
 
 import radical.utils as ru
-# import radical.entk.exceptions as ree
+import radical.entk.exceptions as ree
 
 from radical.entk import AppManager as Amgr
 
@@ -180,8 +180,6 @@ class TestBase(TestCase):
         appman._task_manager = mocked_TaskManager
         appman._sync_thread = mock.Mock()
         appman._sync_thread.is_alive = mock.MagicMock(return_value=True)
-        try:
+
+        with self.assertRaises(ree.EnTKError):
             appman._run_workflow()
-        except timeout_decorator.timeout_decorator.TimeoutError as e:
-            print(e)
-            self.assertLess(appman._cur_attempt, 3)
