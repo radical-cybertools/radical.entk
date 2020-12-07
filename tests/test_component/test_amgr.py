@@ -182,5 +182,6 @@ class TestBase(TestCase):
         appman._sync_thread.is_alive = mock.MagicMock(return_value=True)
         try:
             appman._run_workflow()
-        except timeout_decorator.timeout_decorator.TimeoutError:
+        except timeout_decorator.timeout_decorator.TimeoutError as e:
+            print(e)
             self.assertLess(appman._cur_attempt, 3)
