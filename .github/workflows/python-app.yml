@@ -44,7 +44,7 @@ jobs:
     #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest -vvv tests/test_component test_utils
+        pytest -vvv tests/test_component tests/test_utils/
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
