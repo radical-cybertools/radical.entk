@@ -34,6 +34,7 @@ jobs:
         pip install pytest
         pip install pytest-xdist
         pip install pytest-timeout
+        pip install timeout_decorator
     #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     #- name: Lint with flake8
     #  run: |
