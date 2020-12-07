@@ -45,21 +45,21 @@ jobs:
     - name: Test with pytest
       run: |
         pytest -vvv tests/test_component tests/test_utils/
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        LOG=`git log -n 1 | grep Merge`
-        OLD=`echo $LOG | cut -d ' ' -f2`
-        NEW=`echo $LOG | cut -d ' ' -f3`
-        DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-        test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
-    - name: Lint with pylint
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        LOG=`git log -n 1 | grep Merge`
-        OLD=`echo $LOG | cut -d ' ' -f2`
-        NEW=`echo $LOG | cut -d ' ' -f3`
-        DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-        test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
+    #- name: Lint with flake8
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    LOG=`git log -n 1 | grep Merge`
+    #    OLD=`echo $LOG | cut -d ' ' -f2`
+    #    NEW=`echo $LOG | cut -d ' ' -f3`
+    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
+    #    test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
+    #- name: Lint with pylint
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    LOG=`git log -n 1 | grep Merge`
+    #    OLD=`echo $LOG | cut -d ' ' -f2`
+    #    NEW=`echo $LOG | cut -d ' ' -f3`
+    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
+    #    test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
