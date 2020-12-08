@@ -751,11 +751,11 @@ class Task(object):
 
         # Deprecated keys will issue a deprecation message and change them to
         # the expected.
-        depr_expected_keys = set(['processes', 'threads_per_process',
-                             'process_type', 'thread_type'])
+        depr_expected_keys = {'processes', 'threads_per_process',
+                              'process_type', 'thread_type'}
 
-        expected_keys = set(['gpu_processes', 'gpu_threads',
-                             'gpu_process_type', 'gpu_thread_type'])
+        expected_keys = {'gpu_processes', 'gpu_threads', 'gpu_process_type',
+                         'gpu_thread_type'}
 
         if set(value.keys()).issubset(depr_expected_keys):
             import warnings

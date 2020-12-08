@@ -7,9 +7,8 @@ class EnTKError(Exception):
     """EnTKError is the generic exception type used by EnTK -- exception arg
     messages are usually 
     """
+    pass
 
-    def __init__(self, msg):
-        super(EnTKError, self).__init__(msg)
 
 class TypeError(TypeError):
     """TypeError is raised if value of a wrong type is passed to a function or

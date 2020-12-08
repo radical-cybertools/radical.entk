@@ -211,7 +211,7 @@ class Base_TaskManager(object):
                                 obj.uid, new_state, ex)
             obj.state = old_state
             self._sync_with_master(obj, obj_type, channel, queue)
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -271,25 +271,25 @@ class Base_TaskManager(object):
                 # Appease pika cos it thinks the connection is dead
                 # mq_connection.close()
 
-        except EnTKError as e:
+        except EnTKError as ex:
             # make sure that timeouts did not race with termination
-            if 'heartbeat timeout' not in str(e):
-                raise
+            if 'heartbeat timeout' not in str(ex):
+                raise EnTKError(ex) from ex
 
             if not self._hb_terminate.is_set():
-                raise
+                raise EnTKError(ex) from ex
 
             # we did indeed race with termination - exit gracefully
             return
 
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
-            raise KeyboardInterrupt from e
+            raise KeyboardInterrupt from ex
 
-        except Exception as e:
-            self._log.exception('Heartbeat failed with error: %s', e)
-            raise
+        except Exception as ex:
+            self._log.exception('Heartbeat failed with error: %s', ex)
+            raise EnTKError(ex) from ex
 
         finally:
             try:
@@ -326,11 +326,11 @@ class Base_TaskManager(object):
 
             return True
 
-        except Exception as e:
+        except Exception as ex:
 
-            self._log.exception('Heartbeat not started, error: %s', e)
+            self._log.exception('Heartbeat not started, error: %s', ex)
             self.terminate_heartbeat()
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -359,9 +359,9 @@ class Base_TaskManager(object):
                 self._prof.prof('hbeat_term', uid=self._uid)
 
 
-        except Exception:
+        except Exception as ex:
             self._log.exception('Could not terminate heartbeat thread')
-            raise
+            raise EnTKError(ex) from ex
 
 
         finally:
@@ -415,9 +415,9 @@ class Base_TaskManager(object):
                 self._log.info('Task manager process closed')
                 self._prof.prof('tmgr_term', uid=self._uid)
 
-        except Exception:
+        except Exception as ex:
             self._log.exception('Could not terminate task manager process')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
