@@ -44,12 +44,10 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
+        git --version
         LOG=`git log -n 1 | grep Merge`
         OLD=`echo $LOG | cut -d ' ' -f2`
         NEW=`echo $LOG | cut -d ' ' -f3`
-        DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-        echo $DIFF
         flake8 $PWD/src/radical/
     - name: Lint with pylint
       run: |
