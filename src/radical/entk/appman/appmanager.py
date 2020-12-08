@@ -702,7 +702,8 @@ class AppManager(object):
 
         while active_pipe_count and \
               incomplete        and \
-              state not in final:
+              state not in final and \
+              self._cur_attempt <= self._reattempts:
 
             state = self._rmgr.get_resource_allocation_state()
 
@@ -720,8 +721,7 @@ class AppManager(object):
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
 
-            if not self._sync_thread.is_alive() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._sync_thread.is_alive():
 
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
@@ -732,8 +732,7 @@ class AppManager(object):
                 self._logger.info('Restarting synchronizer thread')
 
 
-            if not self._wfp.check_processor() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._wfp.check_processor():
 
                 # If WFP dies, both child threads are also cleaned out.
                 # We simply recreate the wfp object with a copy of the
@@ -753,8 +752,7 @@ class AppManager(object):
                 self._cur_attempt += 1
 
 
-            if not self._task_manager.check_heartbeat() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._task_manager.check_heartbeat():
 
                 # If the tmgr process or heartbeat dies, we simply start a
                 # new process using the start_manager method. We do not
@@ -776,6 +774,9 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
+        if self._cur_attempt > self._reattempts:
+            raise ree.EnTKError('Too many failures in synchronizer, wfp or ' +
+                                'task manager')
 
     # --------------------------------------------------------------------------
     #

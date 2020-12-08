@@ -3,6 +3,9 @@
 
 from unittest   import TestCase
 from hypothesis import given
+import threading as mt
+import timeout_decorator
+
 
 import hypothesis.strategies as st
 
@@ -12,7 +15,7 @@ except ImportError:
     from unittest import mock
 
 import radical.utils as ru
-# import radical.entk.exceptions as ree
+import radical.entk.exceptions as ree
 
 from radical.entk import AppManager as Amgr
 
@@ -139,3 +142,44 @@ class TestBase(TestCase):
 
     # --------------------------------------------------------------------------
     #
+    @timeout_decorator.timeout(5)
+    @mock.patch.object(Amgr, '__init__', return_value=None)
+    @mock.patch('radical.entk.execman.mock.ResourceManager')
+    @mock.patch('radical.entk.appman.wfprocessor.WFprocessor')
+    @mock.patch('radical.entk.execman.mock.TaskManager')
+    @mock.patch('radical.utils.Profiler')
+    def test_run_workflow(self, mocked_init, mocked_ResourceManager,
+                          mocked_WFprocessor, mocked_TaskManager, mocked_Profiler):
+        mocked_TaskManager.check_heartbeat = mock.MagicMock(return_value=False)
+        mocked_TaskManager.terminate_heartbeat = mock.MagicMock(
+            return_value=True)
+        mocked_TaskManager.terminate_manager = mock.MagicMock(return_value=True)
+        mocked_TaskManager.start_manager = mock.MagicMock(return_value=True)
+        mocked_TaskManager.start_heartbeat = mock.MagicMock(return_value=True)
+        mocked_ResourceManager.get_resource_allocation_state = mock.MagicMock(
+            return_value='RUNNING')
+        mocked_ResourceManager.get_completed_states = mock.MagicMock(
+            return_value=['DONE'])
+        mocked_WFprocessor.workflow_incomplete = mock.MagicMock(
+            return_value=True)
+        mocked_WFprocessor.check_processor = mock.MagicMock(return_value=True)
+
+        appman = Amgr()
+        appman._uid = 'appman.0000'
+        appman._logger = ru.Logger(name='radical.entk.taskmanager', ns='radical.entk')
+        appman._prof = mocked_Profiler
+        pipe = mock.Mock()
+        pipe.lock = mt.Lock()
+        pipe.completed = False
+        pipe.uid = 'pipe.0000'
+        appman._workflow = set([pipe])
+        appman._cur_attempt = 0
+        appman._reattempts = 3
+        appman._rmgr = mocked_ResourceManager
+        appman._wfp = mocked_WFprocessor
+        appman._task_manager = mocked_TaskManager
+        appman._sync_thread = mock.Mock()
+        appman._sync_thread.is_alive = mock.MagicMock(return_value=True)
+
+        with self.assertRaises(ree.EnTKError):
+            appman._run_workflow()
