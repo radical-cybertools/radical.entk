@@ -45,8 +45,8 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         LOG=`git log -n 1 | grep Merge`
-        NEW=`echo $LOG | cut -d ' ' -f2`
-        OLD=`echo $LOG | cut -d ' ' -f4`
+        OLD=`echo $LOG | cut -d ' ' -f2`
+        NEW=`echo $LOG | cut -d ' ' -f4`
         echo $OLD
         echo $NEW
         DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
@@ -55,7 +55,7 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         LOG=`git log -n 1 | grep Merge`
-        NEW=`echo $LOG | cut -d ' ' -f2`
-        OLD=`echo $LOG | cut -d ' ' -f4`
+        OLD=`echo $LOG | cut -d ' ' -f2`
+        NEW=`echo $LOG | cut -d ' ' -f4`
         DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
         test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
