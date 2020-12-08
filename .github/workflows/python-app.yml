@@ -48,6 +48,9 @@ jobs:
         LOG=`git log -n 1 | grep Merge`
         OLD=`echo $LOG | cut -d ' ' -f2`
         NEW=`echo $LOG | cut -d ' ' -f3`
+        echo $OLD
+        echo $NEW
+        git diff --name-only --diff-filter=b $OLD...$NEW
         flake8 $PWD/src/radical/
     - name: Lint with pylint
       run: |
