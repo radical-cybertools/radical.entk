@@ -44,21 +44,18 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        git --version
         LOG=`git log -n 1 | grep Merge`
-        OLD=`echo $LOG | cut -d ' ' -f2`
-        NEW=`echo $LOG | cut -d ' ' -f3`
+        NEW=`echo $LOG | cut -d ' ' -f2`
+        OLD=`echo $LOG | cut -d ' ' -f4`
         echo $OLD
         echo $NEW
-        git diff --name-only --diff-filter=b $OLD...$NEW
-        flake8 $PWD/src/radical/
+        DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+        test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
     - name: Lint with pylint
       run: |
-        pylint src/radical/
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    LOG=`git log -n 1 | grep Merge`
-    #    OLD=`echo $LOG | cut -d ' ' -f2`
-    #    NEW=`echo $LOG | cut -d ' ' -f3`
-    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    #    test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
+        # stop the build if there are Python syntax errors or undefined names
+        LOG=`git log -n 1 | grep Merge`
+        NEW=`echo $LOG | cut -d ' ' -f2`
+        OLD=`echo $LOG | cut -d ' ' -f4`
+        DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+        test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
