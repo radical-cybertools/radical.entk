@@ -378,7 +378,7 @@ class Stage(object):
                                missing_attribute='tasks')
 
         for task in self._tasks:
-            task._validate()
+            task.verify()
 
 
 # ------------------------------------------------------------------------------
