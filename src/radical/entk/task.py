@@ -10,6 +10,14 @@ from . import states     as res
 
 # ------------------------------------------------------------------------------
 #
+class CompReqs(ru.Munch):
+    _schema = {'processes': int, 
+               'process_type': str, 
+               'threads_per_process': int, 
+               'thread_type': str}
+
+# ------------------------------------------------------------------------------
+#
 class Task(ru.Munch):
     '''
     A Task is an abstraction of a computational unit. In this case, a Task
@@ -32,8 +40,8 @@ class Task(ru.Munch):
                'arguments'            : [str],
                'sandbox'              : str,
                'post_exec'            : [str],
-               'cpu_reqs'             : {str: int, str: str, str: int, str: str},
-               'gpu_reqs'             : {str: int, str: str, str: int, str: str},
+               '_cpu_reqs'            : CompReqs,
+               '_gpu_reqs'            : CompReqs,
                'lfs_per_process'      : int,
                'upload_input_data'    : [str],
                'copy_input_data'      : [str],
@@ -62,10 +70,14 @@ class Task(ru.Munch):
                  'arguments'            : list(),
                  'sandbox'              : '',
                  'post_exec'            : list(),
-                 'cpu_reqs'             : {'cpu_processes'           : 1,
-                                           'cpu_process_type'        : None,
-                                           'cpu_threads_per_process' : 1,
-                                           'cpu_thread_type'         : None},
+                 '_cpu_reqs'             : {'processes'           : 1,
+                                            'process_type'        : None,
+                                            'threads_per_process' : 1,
+                                            'thread_type'         : None},
+                 '_gpu_reqs'             : {'processes'           : 0,
+                                            'process_type'        : None,
+                                            'threads_per_process' : 0,
+                                            'thread_type'         : None},
                  'lfs_per_process'      : 0,
                  'upload_input_data'    : list(),
                  'copy_input_data'      : list(),
@@ -91,10 +103,7 @@ class Task(ru.Munch):
 
         super(Task, self).__init__()
 
-        self.gpu_reqs = {'processes'           : 1,
-                         'process_type'        : None,
-                         'threads_per_process' : 1,
-                         'thread_type'         : None}
+
     @property
     def gpu_reqs(self):
         '''
@@ -125,10 +134,10 @@ class Task(ru.Munch):
         :arguments: dict
         '''
         tmp_val = dict()
-        tmp_val['gpu_processes'] = self.gpu_reqs['processes']
-        tmp_val['gpu_process_type'] = self.gpu_reqs['process_type']
-        tmp_val['gpu_threads'] = self.gpu_reqs['threads_per_process']
-        tmp_val['gpu_thread_type'] = self.gpu_reqs['thread_type']
+        tmp_val['gpu_processes'] = self._gpu_reqs.processes
+        tmp_val['gpu_process_type'] = self._gpu_reqs.process_type
+        tmp_val['gpu_threads'] = self._gpu_reqs.threads_per_process
+        tmp_val['gpu_thread_type'] = self._gpu_reqs.thread_type
 
         return tmp_val
 
@@ -148,7 +157,7 @@ class Task(ru.Munch):
 
         if set(value.keys()).issubset(depr_expected_keys):
             import warnings
-            warnings.simplefilter("once")
+            #warnings.simplefilter("once")
             warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
                            "as a prefix for all keys.",DeprecationWarning)
 
@@ -184,7 +193,7 @@ class Task(ru.Munch):
                                  obj='gpu_reqs',
                                  attribute='gpu_thread_type')
 
-        self.gpu_reqs['processes']           = value.get('gpu_processes', 1)
-        self.gpu_reqs['process_type']        = value.get('gpu_process_type')
-        self.gpu_reqs['threads_per_process'] = value.get('gpu_threads', 1)
-        self.gpu_reqs['thread_type']         = value.get('gpu_thread_type')
+        self._gpu_reqs.processes           = value.get('gpu_processes', 1)
+        self._gpu_reqs.process_type        = value.get('gpu_process_type')
+        self._gpu_reqs.threads_per_process = value.get('gpu_threads', 1)
+        self._gpu_reqs.thread_type         = value.get('gpu_thread_type')
