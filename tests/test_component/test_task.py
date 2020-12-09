@@ -26,8 +26,7 @@ class TestTask(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    @mock.patch('radical.utils.generate_id', return_value='test.0000')
-    def test_task_initialization(self, mocked_generate_id):
+    def test_task_initialization(self):
         '''
         **Purpose**: Test if the task attributes have, thus expect, the correct 
         data types
@@ -35,7 +34,7 @@ class TestTask(TestCase):
 
         t = Task()
 
-        self.assertEqual(t._uid, 'test.0000')
+        self.assertEqual(t.uid, 'task.0000')
         self.assertEqual(t.name, '')
         self.assertIsNone(t.rts_uid)
         self.assertEqual(t.state, states.INITIAL)
@@ -45,14 +44,14 @@ class TestTask(TestCase):
         self.assertIsInstance(t.pre_exec, list)
         self.assertIsInstance(t.post_exec, list)
 
-        self.assertEqual(t._cpu_reqs['processes'], 1)
-        self.assertIsNone(t._cpu_reqs['process_type'])
-        self.assertEqual(t._cpu_reqs['threads_per_process'], 1)
-        self.assertIsNone(t._cpu_reqs['thread_type'])
-        self.assertEqual(t._gpu_reqs['processes'], 0)
-        self.assertIsNone(t._gpu_reqs['process_type'])
-        self.assertEqual(t._gpu_reqs['threads_per_process'], 0)
-        self.assertIsNone(t._gpu_reqs['thread_type'])
+        self.assertEqual(t.cpu_reqs['cpu_processes'], 1)
+        self.assertIsNone(t.cpu_reqs['cpu_process_type'])
+        self.assertEqual(t.cpu_reqs['cpu_threads_per_process'], 1)
+        self.assertIsNone(t.cpu_reqs['cpu_thread_type'])
+        self.assertEqual(t.gpu_reqs['gpu_processes'], 0)
+        self.assertIsNone(t.gpu_reqs['gpu_process_type'])
+        self.assertEqual(t.gpu_reqs['gpu_threads_per_process'], 0)
+        self.assertIsNone(t.gpu_reqs['gpu_thread_type'])
 
         self.assertEqual(t.lfs_per_process, 0)
         self.assertEqual(t.sandbox, '')
@@ -68,7 +67,7 @@ class TestTask(TestCase):
         self.assertEqual(t.stderr, '')
         self.assertIsNone(t.exit_code)
         self.assertIsNone(t.tag)
-        self.assertIsNone(t.path)
+        self.assertEqual(t.path, '')
         self.assertIsNone(t.parent_pipeline['uid'])
         self.assertIsNone(t.parent_pipeline['name'])
         self.assertIsNone(t.parent_stage['name'])
