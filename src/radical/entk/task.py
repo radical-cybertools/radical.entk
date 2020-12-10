@@ -2,19 +2,80 @@
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
+import warnings
 import radical.utils as ru
 
 from . import exceptions as ree
 from . import states     as res
 
+warnings.simplefilter('always')
+# ------------------------------------------------------------------------------
+#
+class CpuReqs(ru.Munch):
+    _schema = {'cpu_processes': int, 
+               'cpu_process_type': str, 
+               'cpu_threads': int, 
+               'cpu_thread_type': str}
 
 # ------------------------------------------------------------------------------
 #
-class CompReqs(ru.Munch):
-    _schema = {'processes': int, 
-               'process_type': str, 
-               'threads_per_process': int, 
-               'thread_type': str}
+class GpuReqs(ru.Munch):
+    _schema = {'gpu_processes': int, 
+               'gpu_process_type': str, 
+               'gpu_threads': int, 
+               'gpu_thread_type': str}
+    @property
+    def processes(self):
+        return self.gpu_processes
+
+    @property
+    def threads_per_process(self):
+        return self.gpu_threads
+
+    @property
+    def process_type(self):
+        return self.gpu_process_type
+
+    @property
+    def thread_type(self):
+        return self.gpu_thread_type
+
+
+    @processes.setter
+    def processes(self, value):
+        # Deprecated keys will issue a deprecation message and change them to
+        # the expected.
+        #warnings.simplefilter("once")
+        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
+                           "as a prefix for all keys.",DeprecationWarning)
+        self.gpu_processes = value
+
+    @threads_per_process.setter
+    def threads_per_process(self, value):
+        # Deprecated keys will issue a deprecation message and change them to
+        # the expected.
+        #warnings.simplefilter("once")
+        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
+                           "as a prefix for all keys.",DeprecationWarning)
+        self.gpu_threads = value
+
+    @process_type.setter
+    def process_type(self, value):
+        # Deprecated keys will issue a deprecation message and change them to
+        # the expected.
+        #warnings.simplefilter("once")
+        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
+                           "as a prefix for all keys.",DeprecationWarning)
+        self.gpu_process_type = value
+
+    @thread_type.setter
+    def thread_type(self, value):
+        # Deprecated keys will issue a deprecation message and change them to
+        # the expected.
+        #warnings.simplefilter("once")
+        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
+                           "as a prefix for all keys.",DeprecationWarning)
+        self.gpu_thread_type = value
 
 # ------------------------------------------------------------------------------
 #
@@ -40,8 +101,8 @@ class Task(ru.Munch):
                'arguments'            : [str],
                'sandbox'              : str,
                'post_exec'            : [str],
-               '_cpu_reqs'            : CompReqs,
-               '_gpu_reqs'            : CompReqs,
+               'cpu_reqs'            : CpuReqs,
+               'gpu_reqs'            : GpuReqs,
                'lfs_per_process'      : int,
                'upload_input_data'    : [str],
                'copy_input_data'      : [str],
@@ -70,14 +131,14 @@ class Task(ru.Munch):
                  'arguments'            : list(),
                  'sandbox'              : '',
                  'post_exec'            : list(),
-                 '_cpu_reqs'             : {'processes'           : 1,
-                                            'process_type'        : None,
-                                            'threads_per_process' : 1,
-                                            'thread_type'         : None},
-                 '_gpu_reqs'             : {'processes'           : 0,
-                                            'process_type'        : None,
-                                            'threads_per_process' : 0,
-                                            'thread_type'         : None},
+                 'cpu_reqs'             : {'cpu_processes'           : 1,
+                                           'cpu_process_type'        : None,
+                                           'cpu_threads' : 1,
+                                           'cpu_thread_type'         : None},
+                 'gpu_reqs'             : {'gpu_processes': 0, 
+                                           'gpu_process_type': None, 
+                                           'gpu_threads': 0, 
+                                           'gpu_thread_type': None},
                  'lfs_per_process'      : 0,
                  'upload_input_data'    : list(),
                  'copy_input_data'      : list(),
