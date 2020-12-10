@@ -6,7 +6,6 @@ __license__   = "MIT"
 
 from unittest import TestCase
 
-import pytest
 
 from radical.entk.task import Task
 from radical.entk import states
