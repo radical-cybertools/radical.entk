@@ -73,7 +73,7 @@ jobs:
         pip install flake8-per-file-ignores
     - name: Lint with flake8
       run: |
-        flake8 src/radical/
+        flake8 $PWD/src/radical/
     #    # stop the build if there are Python syntax errors or undefined names
     #    LOG=`git log -n 1 | grep Merge`
     #    OLD=`echo $LOG | cut -d ' ' -f2`
