@@ -66,12 +66,9 @@ jobs:
         pip install . --upgrade
         pip install flake8
         pip install flake8-per-file-ignores
-    - name: SSH connection
-      uses: mxschmitt/action-tmate@v3
-      with:
-        sudo: false
     - name: Lint with flake8
       run: |
+        git log
         LOG=`git log -n 1 | grep Merge`
         echo $LOG
         NEW=`echo $LOG | cut -d ' ' -f2`
