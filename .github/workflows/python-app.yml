@@ -73,7 +73,7 @@ jobs:
         OLD=`echo $LOG | cut -d ' ' -f3`
         DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
         DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
-        test -z $DIFF && echo 'nothing to flake8' || flake8 $DIFF
+        test -z "$DIFF" && echo 'nothing to flake8' || flake8 $DIFF
 
   pylint:
     runs-on: ubuntu-latest
@@ -89,6 +89,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install . --upgrade
+        pip install psutil
+        pip install hypothesis
+        pip install coverage
+        pip install codecov
+        pip install pytest
+        pip install pytest-xdist
+        pip install pytest-timeout
+        pip install timeout_decorator
         pip install pylint
     - name: Lint with pylint
       run: |
@@ -97,4 +105,4 @@ jobs:
         OLD=`echo $LOG | cut -d ' ' -f3`
         DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
         DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
-        test -z $DIFF && echo 'nothing to pylint' || pylint $DIFF
+        test -z "$DIFF" && echo 'nothing to pylint' || pylint $DIFF
