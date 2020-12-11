@@ -37,8 +37,8 @@ class TestTask(TestCase):
         task.parent_stage = {'uid':'stage.0000', 'name': 'stage.0000'}
         hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
         port = int(os.environ.get('RMQ_PORT', '5672'))
-        username = os.environ.get('RMQ_USERNAME')
-        password = os.environ.get('RMQ_PASSWORD')
+        username = os.environ.get('RMQ_USERNAME','guest')
+        password = os.environ.get('RMQ_PASSWORD','guest')
         packets = [('Task', task)]
         stage = Stage()
         stage.parent_pipeline = {'uid':'pipe.0000', 'name': 'pipe.0000'}
@@ -65,7 +65,7 @@ class TestTask(TestCase):
                 method_frame, props, body = mq_channel.basic_get(queue='master')
                 msg = json.loads(body)
                 self.assertEqual(msg['object'], packet[1].to_dict())
-                self.assertEqual(msg['type'], 'what')
+                self.assertEqual(msg['type'], packet[0])
         except Exception as ex:
             print(body)
             print(json.loads(body))

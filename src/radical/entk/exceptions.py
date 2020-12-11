@@ -11,6 +11,7 @@ class EnTKError(Exception):
     def __init__(self, msg):
         super(EnTKError, self).__init__(msg)
 
+
 class TypeError(TypeError):
     """TypeError is raised if value of a wrong type is passed to a function or
     assigned as an attribute of an object"""
