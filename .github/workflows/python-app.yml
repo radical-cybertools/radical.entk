@@ -74,15 +74,13 @@ jobs:
         pip install flake8-per-file-ignores
     - name: Lint with flake8
       run: |
-        flake8 $PWD/src/radical/
-    #    # stop the build if there are Python syntax errors or undefined names
         LOG=`git log -n 1 | grep Merge`
         OLD=`echo $LOG | cut -d ' ' -f2`
         NEW=`echo $LOG | cut -d ' ' -f3`
         DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
         DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
         echo $DIFF
-        #test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
+        test -z \"$DIFF\" && echo 'nothing to pylint' || flake8 $DIFF
     #- name: Lint with pylint
     #  run: |
     #    # stop the build if there are Python syntax errors or undefined names
