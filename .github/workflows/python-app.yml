@@ -68,7 +68,12 @@ jobs:
         pip install flake8-per-file-ignores
     - name: Lint with flake8
       run: |
-        flake8 $PWD/src/radical
+        LOG=`git log -n 1 | grep Merge`
+        NEW=`echo $LOG | cut -d ' ' -f2`
+        OLD=`echo $LOG | cut -d ' ' -f3`
+        DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
+        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
+        test -z $DIFF && echo 'nothing to flake8' || flake8 $DIFF
 
   pylint:
     runs-on: ubuntu-latest
@@ -87,16 +92,9 @@ jobs:
         pip install pylint
     - name: Lint with pylint
       run: |
-        pylint $PWD/src/radical
-        git log
         LOG=`git log -n 1 | grep Merge`
-        echo $LOG
         NEW=`echo $LOG | cut -d ' ' -f2`
-        echo $NEW
         OLD=`echo $LOG | cut -d ' ' -f3`
-        echo $OLD
-        DIFF=`git diff --name-only --diff-filter=b $NEW...$OLD`
-        echo $DIFF
-        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-        echo $DIFF
-    #    test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
+        DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
+        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
+        test -z $DIFF && echo 'nothing to pylint' || pylint $DIFF

@@ -1,5 +1,5 @@
 # pylint: disable=protected-access, unused-argument
-# pylint: disable=no-value-for-parameterimport os
+# pylint: disable=no-value-for-parameter
 import os
 import pika
 import json
@@ -16,7 +16,6 @@ from radical.entk.execman.base import Base_TaskManager     as BaseTmgr
 #
 class TestTask(TestCase):
 
-    
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(BaseTmgr, '__init__',   return_value=None)
@@ -27,7 +26,7 @@ class TestTask(TestCase):
         # --------------------------------------------------------------------------
         #
         def component_execution(inputs, method, channel, queue):
-            
+
             for obj_type, obj, in inputs:
                 method(obj, obj_type, channel, queue)
             return True
@@ -62,7 +61,7 @@ class TestTask(TestCase):
         try:
             while packets:
                 packet = packets.pop(0)
-                method_frame, props, body = mq_channel.basic_get(queue='master')
+                _, _, body = mq_channel.basic_get(queue='master')
                 msg = json.loads(body)
                 self.assertEqual(msg['object'], packet[1].to_dict())
                 self.assertEqual(msg['type'], packet[0])
