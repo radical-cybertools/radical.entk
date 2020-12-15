@@ -1,6 +1,7 @@
 __author__ = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __copyright__ = "Copyright 2017, http://radical.rutgers.edu"
 __license__ = "MIT"
+# pylint: disable=useless-super-delegation
 
 
 class EnTKError(Exception):
@@ -72,6 +73,5 @@ class MissingError(AttributeError):
 
         msg = 'Attribute %s in %s undefined' % (str(missing_attribute), str(obj))
         super(MissingError, self).__init__(msg)
-
 
 # pylint: enable=useless-super-delegation
