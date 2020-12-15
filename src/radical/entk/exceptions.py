@@ -8,7 +8,7 @@ class EnTKError(Exception):
     """EnTKError is the generic exception type used by EnTK -- exception arg
     messages are usually 
     """
-
+    # pylint: disable=useless-super-delegation
     def __init__(self, msg):
         super(EnTKError, self).__init__(msg)
 
@@ -73,3 +73,5 @@ class MissingError(AttributeError):
 
         msg = 'Attribute %s in %s undefined' % (str(missing_attribute), str(obj))
         super(MissingError, self).__init__(msg)
+
+# pylint: enable=useless-super-delegation

@@ -12,15 +12,15 @@ import threading     as mt
 
 import radical.utils as ru
 
-from ..            import exceptions as ree
-from ..            import states
+from ..exceptions import EnTKError, TypeError, MissingError
+from ..           import states
 
-from ..pipeline    import Pipeline
-from ..task        import Task
-from ..utils       import write_session_description
-from ..utils       import write_workflows
+from ..pipeline   import Pipeline
+from ..task       import Task
+from ..utils      import write_session_description
+from ..utils      import write_workflows
 
-from .wfprocessor  import WFprocessor
+from .wfprocessor import WFprocessor
 
 
 # pylint: disable=protected-access
@@ -288,7 +288,7 @@ class AppManager(object):
     def name(self, value):
 
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise TypeError(expected_type=str, actual_type=type(value))
 
         self._name = value
 
@@ -311,7 +311,7 @@ class AppManager(object):
 
         if not self._rmgr._validate_resource_desc():
             self._logger.error('Could not validate resource description')
-            raise ree.EnTKError('Could not validate resource description')
+            raise EnTKError('Could not validate resource description')
 
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
@@ -331,9 +331,8 @@ class AppManager(object):
 
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise ree.TypeError(expected_type=['Pipeline',
-                                                   'set of Pipelines'],
-                                    actual_type=type(p))
+                raise TypeError(expected_type=['Pipeline', 'set of Pipelines'],
+                                actual_type=type(p))
             p._validate()
 
         # keep history
@@ -354,8 +353,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str,
-                                    actual_type=type(value))
+                raise TypeError(expected_type=str, actual_type=type(value))
 
         self._shared_data = data
 
@@ -374,8 +372,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str,
-                                    actual_type=type(value))
+                raise TypeError(expected_type=str, actual_type=type(value))
 
         if self._rmgr:
             self._rmgr.outputs = data
@@ -407,15 +404,13 @@ class AppManager(object):
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please \
                                     check your script')
-                raise ree.MissingError(obj=self._uid,
-                                       missing_attribute='workflow')
+                raise MissingError(obj=self._uid, missing_attribute='workflow')
 
             if not self._rmgr:
                 self._logger.error('No resource manager assigned currently, \
                                     please create and add a valid resource \
                                     manager')
-                raise ree.MissingError(obj=self._uid,
-                                   missing_attribute='resource_manager')
+                raise MissingError(obj=self._uid, missing_attribute='resource_manager')
             self._prof.prof('amgr run started', uid=self._uid)
 
             # ensure rabbitmq setup
@@ -434,8 +429,8 @@ class AppManager(object):
 
                 res_alloc_state = self._rmgr.get_resource_allocation_state()
                 if res_alloc_state in self._rmgr.get_completed_states():
-                    raise ree.EnTKError(msg='Cannot proceed. Resource '
-                                        'ended in state %s' % res_alloc_state)
+                    raise EnTKError(msg='Cannot proceed. Resource ended in ' +
+                                    'state %s' % res_alloc_state)
 
 
             # Start all components and subcomponents
@@ -449,19 +444,19 @@ class AppManager(object):
                 self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
                 self.terminate()
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
-            self._logger.exception('Execution interrupted by user (you '
-                                   'probably hit Ctrl+C), trying to cancel '
+            self._logger.exception('Execution interrupted by user (you ' +
+                                   'probably hit Ctrl+C), trying to cancel ' +
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise
+            raise KeyboardInterrupt from ex
 
-        except Exception:
+        except Exception as ex:
 
             self._logger.exception('Error in AppManager')
             self.terminate()
-            raise
+            raise EnTKError(ex) from ex
 
         # return list of fetched output data, or None.
         outputs = self.outputs
@@ -587,7 +582,7 @@ class AppManager(object):
         except Exception as ex:
 
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -617,9 +612,9 @@ class AppManager(object):
 
             self._mqs_setup = False
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Message queues not deleted, error')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -775,8 +770,7 @@ class AppManager(object):
                 self._cur_attempt += 1
 
         if self._cur_attempt > self._reattempts:
-            raise ree.EnTKError('Too many failures in synchronizer, wfp or ' +
-                                'task manager')
+            raise EnTKError('Too many failures in synchronizer, wfp or task manager')
 
     # --------------------------------------------------------------------------
     #
@@ -937,16 +931,16 @@ class AppManager(object):
         try:
             self._synchronizer_work()
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to terminate \
                                     synchronizer thread gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
-        except Exception:
-            self._logger.exception('Unknown error in synchronizer: %s. \
+        except Exception as ex:
+            self._logger.exception('Unknown error in synchronizer.\
                                     Terminating thread')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -990,5 +984,5 @@ class AppManager(object):
 
 
 # ------------------------------------------------------------------------------
-# pylint: disable=protected-access
+# pylint: enable=protected-access
 

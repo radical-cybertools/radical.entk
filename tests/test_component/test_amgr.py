@@ -2,7 +2,7 @@
 # pylint: disable=no-value-for-parameter
 
 from unittest   import TestCase
-from hypothesis import given
+from hypothesis import given, settings
 import threading as mt
 import timeout_decorator
 
@@ -38,6 +38,7 @@ class TestBase(TestCase):
                                     'rmq_cleanup': st.booleans(),
                                     'pending_qs' : st.integers(),
                                     'completed_qs' : st.integers()}))
+    @settings(max_examples=10)
     def test_amgr_read_config(self, mocked_init, mocked_PlainCredentials,
                               mocked_ConnectionParameters, d):
 
@@ -108,6 +109,7 @@ class TestBase(TestCase):
                                      'rmq_cleanup': st.booleans(),
                                      'pending_qs' : st.integers(),
                                      'completed_qs' : st.integers()}))
+    @settings(max_examples=10)
     def test_amgr_read_config2(self, mocked_init, mocked_PlainCredentials,
                                mocked_ConnectionParameters, d2):
 
