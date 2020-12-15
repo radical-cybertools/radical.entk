@@ -16,10 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.6
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -35,35 +35,27 @@ jobs:
         pip install pytest-xdist
         pip install pytest-timeout
         pip install timeout_decorator
-    #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        LOC=/opt/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages
+        LOC=/opt/hostedtoolcache/Python/3.6.12/x64/lib/python3.6/site-packages
         coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/
     - name: Codecov
       uses: codecov/codecov-action@v1.0.15
-
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    LOG=`git log -n 1 | grep Merge`
-    #    OLD=`echo $LOG | cut -d ' ' -f2`
-    #    NEW=`echo $LOG | cut -d ' ' -f3`
-    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    #    test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
-    #- name: Lint with pylint
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    LOG=`git log -n 1 | grep Merge`
-    #    OLD=`echo $LOG | cut -d ' ' -f2`
-    #    NEW=`echo $LOG | cut -d ' ' -f3`
-    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    #    test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        LOG=`git log -n 1 | grep Merge`
+        OLD=`echo $LOG | cut -d ' ' -f2`
+        NEW=`echo $LOG | cut -d ' ' -f4`
+        echo $LOC
+        git log -n 1
+        flake8 $PWD/src/radical/
+    - name: Lint with pylint
+      run: |
+        pylint $PWD/src/radical/
+        # # stop the build if there are Python syntax errors or undefined names
+        # LOG=`git log -n 1 | grep Merge`
+        # OLD=`echo $LOG | cut -d ' ' -f2`
+        # NEW=`echo $LOG | cut -d ' ' -f4`
+        # DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
+        # test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
