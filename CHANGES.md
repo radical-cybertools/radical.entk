@@ -6,6 +6,18 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.5.8  Release                                                        2020-12-15
+--------------------------------------------------------------------------------
+
+  - PR #525, Moving warning filter to the whole file
+  - PR #522, Fix/integration tests
+  - PR #519, Small refactoring changes
+  - PR #518, AppManager raises error when there are multiple reattempts 
+  - PR #511, Documentation update
+  - PR #510, move to relative imports, simplify code hierarchy 
+  - PR #508, Unit tests for methods that use threads and processes 
+  - PR #507, Feature/id mapping
+
 1.5.7  Release                                                        2020-11-17
 --------------------------------------------------------------------------------
 
