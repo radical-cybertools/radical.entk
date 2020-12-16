@@ -105,6 +105,7 @@ class Base_TaskManager(object):
         self._hb_thread    = None
         self._hb_terminate = None
         self._hb_interval  = int(os.getenv('ENTK_HB_INTERVAL', '30'))
+        self._heartbeat_error = mt.Event()  # Capture heartbeat errors
 
         mq_connection.close()
 
@@ -248,7 +249,7 @@ class Base_TaskManager(object):
                                          routing_key=self._hb_request_q,
                                          properties=props,
                                          body='request')
-                self._log.info('Sent heartbeat request')
+                self._log.info('Sent heartbeat request %s' % self._hb_interval)
 
                 # Sleep for hb_interval and then check if tmgr responded
                 mq_connection.sleep(self._hb_interval)
@@ -257,13 +258,15 @@ class Base_TaskManager(object):
                                                       queue=self._hb_response_q)
                 if not body:
                     # no usable response
+                    self._log.error('heartbeat not received')
+                    self._heartbeat_error.set()
                     return
-                    # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
+                    self._log.error('heartbeat wrong correlation id')
+                    self._heartbeat_error.set()
                     return
-                    # raise EnTKError('heartbeat timeout')
 
                 self._log.info('Received heartbeat response')
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
@@ -271,25 +274,10 @@ class Base_TaskManager(object):
                 # Appease pika cos it thinks the connection is dead
                 # mq_connection.close()
 
-        except EnTKError as ex:
-            # make sure that timeouts did not race with termination
-            if 'heartbeat timeout' not in str(ex):
-                raise EnTKError(ex) from ex
-
-            if not self._hb_terminate.is_set():
-                raise EnTKError(ex) from ex
-
-            # we did indeed race with termination - exit gracefully
-            return
-
         except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
             raise KeyboardInterrupt from ex
-
-        except Exception as ex:
-            self._log.exception('Heartbeat failed with error: %s', ex)
-            raise EnTKError(ex) from ex
 
         finally:
             try:
