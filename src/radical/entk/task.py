@@ -4,6 +4,7 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
+from string import punctuation
 from . import exceptions as ree
 from . import states     as res
 
@@ -84,7 +85,7 @@ class Task(object):
 
         # populate task attributes if so requesteed
         if from_dict:
-
+            
             if not isinstance(from_dict, dict):
                 raise ree.TypeError(expected_type=dict,
                                     actual_type=type(from_dict))
@@ -593,17 +594,18 @@ class Task(object):
 
     @name.setter
     def name(self, value):
-
+        invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
             raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
-        if ',' in value:
+        if any(symbol in value for symbol in invalid_symbols):
             raise ree.ValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
-                                 expected_value="Using ',' in an object's name"
-                                 "will corrupt internal mapping tables")
+                                 expected_value="Valid object names can " +
+                                 "contains letters, numbers and '.'. Any "
+                                 "other character is not allowed")
 
         self._name = value
 

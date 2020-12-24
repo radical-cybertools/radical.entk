@@ -5,6 +5,7 @@ from random import shuffle
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
+import string
 
 from radical.entk import Stage, Task
 from radical.entk import states
@@ -47,7 +48,9 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     @mock.patch('radical.utils.generate_id', return_value='stage.0000')
-    @given(t=st.text(),
+    @given(t=st.text(alphabet=string.ascii_letters +
+                              string.punctuation.replace('.',''),
+                              min_size=10).filter(lambda x: any(symbol in x for symbol in string.punctuation)),
            l=st.lists(st.text()),
            i=st.integers().filter(lambda x: type(x) == int),
            b=st.booleans(),
@@ -64,10 +67,12 @@ class TestBase(TestCase):
 
         for data in data_type:
 
-            print('Using: %s, %s' % (data, type(data)))
-
             if not isinstance(data, str):
                 with self.assertRaises(TypeError):
+                    s.name = data
+
+            if isinstance(data,str):
+                with self.assertRaises(ValueError):
                     s.name = data
 
             with self.assertRaises(TypeError):
