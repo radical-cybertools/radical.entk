@@ -175,8 +175,11 @@ class TestBase(TestCase):
         tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
                      rmgr, rmq_params, 'test_rts')
 
+        def _tmgr_side_effect(amount):
+            time.sleep(amount)
+
         tmgr._tmgr_process = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr', args=(1))
+                                       name='test_tmgr', args=(1,))
         tmgr._tmgr_process.start()
 
         self.assertTrue(tmgr.check_manager())
