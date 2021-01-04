@@ -12,6 +12,7 @@ import warnings
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
 
+
 # ------------------------------------------------------------------------------
 #
 class Task(object):
@@ -85,7 +86,7 @@ class Task(object):
 
         # populate task attributes if so requesteed
         if from_dict:
-            
+
             if not isinstance(from_dict, dict):
                 raise ree.TypeError(expected_type=dict,
                                     actual_type=type(from_dict))
