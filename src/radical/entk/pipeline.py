@@ -150,9 +150,9 @@ class Pipeline(object):
 
         return self._state_history
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setter functions
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @name.setter
     def name(self, value):
@@ -161,7 +161,10 @@ class Pipeline(object):
                 raise ValueError(obj=self._uid,
                                 attribute='name',
                                 actual_value=value,
-                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
+                                expected_value="Using ',' in an object's " +
+                                               "name will corrupt the " +
+                                               "profiling and internal " +
+                                               "mapping tables")
             else:
                 self._name = value
 

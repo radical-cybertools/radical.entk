@@ -228,7 +228,8 @@ setup_args = {
                             'pylint',
                             'flake8',
                             'coverage',
-                            'hypothesis'
+                            'hypothesis',
+                            'timeout_decorator'
                            ],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,

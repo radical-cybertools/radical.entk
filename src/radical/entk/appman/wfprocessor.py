@@ -12,7 +12,8 @@ import threading
 
 import radical.utils as ru
 
-from .. import states, Task
+from ..           import states, Task
+from ..exceptions import EnTKError
 
 
 # ------------------------------------------------------------------------------
@@ -256,17 +257,17 @@ class WFprocessor(object):
             self._logger.info('Enqueue thread terminated')
             self._prof.prof('enq_stop', uid=self._uid)
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to cancel \
                                     enqueuer thread gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
-        except Exception:
+        except Exception as ex:
 
             self._logger.exception('Error in enqueue-thread')
-            raise
+            raise EnTKError(ex) from ex
 
 
 
@@ -390,10 +391,10 @@ class WFprocessor(object):
             self._prof.prof('post_exec_stop', uid=self._uid)
 
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('post_exec of stage %s failed' % stage.uid)
             self._prof.prof('post_exec_fail', uid=self._uid)
-            raise
+            raise EnTKError(ex) from ex
 
         if resumed_pipe_uids:
 
@@ -465,16 +466,16 @@ class WFprocessor(object):
             self._prof.prof('deq_stop', uid=self._uid)
 
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to exit \
                                     gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Error in dequeue-thread')
-            raise
+            raise EnTKError(ex) from ex
 
 
         finally:
@@ -521,11 +522,11 @@ class WFprocessor(object):
             self._logger.info('WFprocessor started')
             self._prof.prof('wfp_started', uid=self._uid)
 
-        except:
+        except Exception as ex:
 
             self._logger.exception('WFprocessor failed')
             self.terminate_processor()
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -558,10 +559,10 @@ class WFprocessor(object):
             self._prof.prof('wfp_stop', uid=self._uid)
             self._prof.close()
 
-        except:
+        except Exception as ex:
 
             self._logger.exception('Could not terminate wfprocessor process')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -583,7 +584,7 @@ class WFprocessor(object):
         except Exception as ex:
             self._logger.exception(
                 'Could not check if workflow is incomplete, error:%s' % ex)
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------

@@ -7,7 +7,7 @@ import os
 
 import radical.pilot as rp
 
-from ...                     import exceptions as ree
+from ...exceptions           import EnTKError, ValueError
 from ..base.resource_manager import Base_ResourceManager
 
 
@@ -48,11 +48,10 @@ class ResourceManager(Base_ResourceManager):
         if "sandbox_cleanup" not in self._rts_config or \
            "db_cleanup"      not in self._rts_config:
 
-            raise ree.ValueError(obj=self._uid,
-                                 attribute='config',
-                                 expected_value={"sandbox_cleanup": False,
-                                                 "db_cleanup"     : False},
-                                 actual_value=self._rts_config)
+            raise ValueError(obj=self._uid, attribute='config',
+                             expected_value={"sandbox_cleanup": False,
+                                             "db_cleanup"     : False},
+                             actual_value=self._rts_config)
 
         self._logger.info('Created resource manager object: %s' % self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
@@ -190,9 +189,9 @@ class ResourceManager(Base_ResourceManager):
                                    'exit callback thread gracefully...')
             raise
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Resource request submission failed')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -231,16 +230,15 @@ class ResourceManager(Base_ResourceManager):
 
                 self._prof.prof('rreq_canceled', uid=self._uid)
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._logger.exception('Execution interrupted (probably by Ctrl+C) '
                                    'exit callback thread gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
-
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Could not cancel resource request')
-            raise
+            raise EnTKError(ex) from ex
 
 
 # ------------------------------------------------------------------------------
