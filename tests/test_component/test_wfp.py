@@ -7,6 +7,7 @@ from unittest import TestCase
 
 # from hypothesis import given, settings, strategies as st
 import threading as mt
+import time
 
 from radical.entk.appman.wfprocessor import WFprocessor
 from radical.entk                    import states
@@ -417,6 +418,119 @@ class TestBase(TestCase):
         pipe.stages = [stage]
         wfp._workflow = set([pipe])
 
+        # Test for issue #271
         wfp._update_dequeued_task(task)
         self.assertEqual(global_advs[0], [task, 'Task', states.DONE])
         self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
+
+        task.state = states.INITIAL
+        task.exit_code = None
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[2], [task, 'Task', states.INITIAL])
+        self.assertEqual(global_advs[3], [stage, 'Stage', states.DONE])
+
+        task.exit_code = 1
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[4], [task, 'Task', states.FAILED])
+        self.assertEqual(global_advs[5], [stage, 'Stage', states.DONE])
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_start_processor(self, mocked_init, mocked_Logger,
+                             mocked_Profiler):
+
+        global_boolean = {}
+
+        def _dequeue_side_effect():
+            nonlocal global_boolean
+            global_boolean['dequeue'] = True
+
+
+        def _enqueue_side_effect():
+            nonlocal global_boolean
+            global_boolean['enqueue'] = True
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+
+        wfp._uid = 'wfp.0000'
+        wfp._logger = mocked_Logger
+        wfp._prof = mocked_Profiler
+        wfp._enqueue_thread = None
+        wfp._dequeue_thread = None
+        wfp._enqueue_thread_terminate = None
+        wfp._dequeue_thread_terminate = None
+        wfp._dequeue = mock.MagicMock(side_effect=_dequeue_side_effect)
+        wfp._enqueue = mock.MagicMock(side_effect=_enqueue_side_effect)
+
+        wfp.start_processor()
+
+        try:
+            self.assertIsInstance(wfp._enqueue_thread_terminate, mt.Event)
+            self.assertIsInstance(wfp._dequeue_thread_terminate, mt.Event)
+            self.assertIsInstance(wfp._dequeue_thread, mt.Thread)
+            self.assertIsInstance(wfp._enqueue_thread, mt.Thread)
+            self.assertTrue(global_boolean['dequeue'])
+            self.assertTrue(global_boolean['enqueue'])
+        finally:
+            if wfp._dequeue_thread.is_alive():
+                wfp._dequeue_thread.join()
+            if wfp._enqueue_thread.is_alive():
+                wfp._enqueue_thread.join()
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_terminate_processor(self, mocked_init, mocked_Logger,
+                                 mocked_Profiler):
+
+        global_boolean = {}
+
+        def _dequeue_side_effect():
+            nonlocal global_boolean
+            time.sleep(0.1)
+            global_boolean['dequeue'] = True
+
+
+        def _enqueue_side_effect():
+            nonlocal global_boolean
+            time.sleep(0.1)
+            global_boolean['enqueue'] = True
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+
+        wfp._uid = 'wfp.0000'
+        wfp._logger = mocked_Logger
+        wfp._prof = mocked_Profiler
+        wfp._enqueue_thread = mt.Thread(target=_enqueue_side_effect)
+        wfp._dequeue_thread = mt.Thread(target=_dequeue_side_effect)
+        wfp._enqueue_thread_terminate = mt.Event()
+        wfp._dequeue_thread_terminate = mt.Event()
+
+
+        wfp._enqueue_thread.start()
+        wfp._dequeue_thread.start()
+
+        wfp.terminate_processor()
+
+        self.assertTrue(wfp._enqueue_thread_terminate.is_set())
+        self.assertTrue(wfp._dequeue_thread_terminate.is_set())
+        self.assertIsNone(wfp._dequeue_thread)
+        self.assertIsNone(wfp._enqueue_thread)
+        self.assertTrue(global_boolean['dequeue'])
+        self.assertTrue(global_boolean['enqueue'])

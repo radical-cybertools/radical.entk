@@ -12,7 +12,6 @@ import threading
 
 import radical.utils as ru
 
-# EnTK imports
 from .. import states, Task
 
 
@@ -324,10 +323,12 @@ class WFprocessor(object):
                         # If there is no exit code, we assume success
                         # We are only concerned about state of task and not
                         # deq_task
-                        if not deq_task.exit_code:
+                        if deq_task.exit_code == 0:
                             task_state = states.DONE
-                        else:
+                        elif deq_task.exit_code == 1:
                             task_state = states.FAILED
+                        else:
+                            task_state = deq_task.state
 
                         if task.state == states.FAILED and \
                             self._resubmit_failed:

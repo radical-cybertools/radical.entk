@@ -429,6 +429,8 @@ class Base_TaskManager(object):
 
         if self._hb_thread:
             return self._hb_thread.is_alive()
+        else:
+            return False
 
 
     # --------------------------------------------------------------------------
@@ -438,8 +440,11 @@ class Base_TaskManager(object):
         **Purpose**: Check if the tmgr process is alive and running
         """
 
+        # Return False if the process does not exist
         if self._tmgr_process:
             return self._tmgr_process.is_alive()
+        else:
+            return False
 
 
 # ------------------------------------------------------------------------------

@@ -36,14 +36,14 @@ class TestTask(TestCase):
         t = Task()
 
         self.assertEqual(t._uid, 'test.0000')
-        self.assertEqual(t._name, '')
-        self.assertIsNone(t._rts_uid)
-        self.assertEqual(t._state, states.INITIAL)
-        self.assertEqual(t._state_history, [states.INITIAL])
-        self.assertEqual(t._executable, '')
-        self.assertIsInstance(t._arguments, list)
-        self.assertIsInstance(t._pre_exec, list)
-        self.assertIsInstance(t._post_exec, list)
+        self.assertEqual(t.name, '')
+        self.assertIsNone(t.rts_uid)
+        self.assertEqual(t.state, states.INITIAL)
+        self.assertEqual(t.state_history, [states.INITIAL])
+        self.assertEqual(t.executable, '')
+        self.assertIsInstance(t.arguments, list)
+        self.assertIsInstance(t.pre_exec, list)
+        self.assertIsInstance(t.post_exec, list)
 
         self.assertEqual(t._cpu_reqs['processes'], 1)
         self.assertIsNone(t._cpu_reqs['process_type'])
@@ -270,6 +270,18 @@ class TestTask(TestCase):
         with pytest.raises(ree.TypeError):
             t = Task(from_dict=d)
 
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_executable(self, mocked_init):
+        # Tests issue #324
+        task = Task()
+        task.executable = 'test_exec'
+        self.assertEqual(task._executable, 'test_exec')
+
+        task = Task()
+        with self.assertRaises(ree.TypeError):
+            task.executable = ['test_exec']
 
     # --------------------------------------------------------------------------
     #
@@ -286,7 +298,7 @@ class TestTask(TestCase):
 
         with self.assertRaises(ree.TypeError):
             task.name = 0
-        
+
         with self.assertRaises(ree.ValueError):
             task.name = 'task,0000'
 
@@ -318,7 +330,7 @@ class TestTask(TestCase):
         task = Task()
         task._pre_exec = ['module load mymodule']
         self.assertEqual(task.pre_exec, ['module load mymodule'])
-        
+
         task.pre_exec = ['module load mymodule2']
         self.assertEqual(task._pre_exec, ['module load mymodule2'])
         with self.assertRaises(ree.TypeError):
@@ -333,7 +345,7 @@ class TestTask(TestCase):
         task = Task()
         task._arguments = ['module load mymodule']
         self.assertEqual(task.arguments, ['module load mymodule'])
-        
+
         task.arguments = ['module load mymodule2']
         self.assertEqual(task._arguments, ['module load mymodule2'])
         with self.assertRaises(ree.TypeError):
@@ -348,12 +360,12 @@ class TestTask(TestCase):
         task = Task()
         task._sandbox = '/path/to/a/sandbox'
         self.assertEqual(task.sandbox, '/path/to/a/sandbox')
-        
+
         task.sandbox = '/path_to_a_sandbox'
         self.assertEqual(task._sandbox, '/path_to_a_sandbox')
         with self.assertRaises(ree.TypeError):
             task.sandbox = []
-    
+
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Task, '__init__',   return_value=None)
@@ -362,7 +374,7 @@ class TestTask(TestCase):
         task = Task()
         task._post_exec = ['module load mymodule']
         self.assertEqual(task.post_exec, ['module load mymodule'])
-        
+
         task.post_exec = ['module load mymodule2']
         self.assertEqual(task._post_exec, ['module load mymodule2'])
         with self.assertRaises(ree.TypeError):
@@ -377,7 +389,7 @@ class TestTask(TestCase):
         task = Task()
         task._tags = {'colocate':'tasks'}
         self.assertEqual(task.tag, {'colocate':'tasks'})
-        
+
         task.tag = 'task'
         self.assertEqual(task._tags, {'colocate':'task'})
         with self.assertRaises(ree.TypeError):
@@ -392,7 +404,7 @@ class TestTask(TestCase):
         task = Task()
         task._tags = {'colocate':'tasks'}
         self.assertEqual(task.tag, {'colocate':'tasks'})
-        
+
         task.tags = {'colocate':'task'}
         self.assertEqual(task._tags, {'colocate':'task'})
 

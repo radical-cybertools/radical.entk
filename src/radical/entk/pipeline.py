@@ -2,11 +2,13 @@
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
-import radical.utils as ru
-from radical.entk.exceptions import TypeError, ValueError, MissingError, EnTKError
-from radical.entk.stage.stage import Stage
 import threading
-from radical.entk import states
+
+import radical.utils as ru
+
+from .exceptions import TypeError, ValueError, MissingError, EnTKError
+from .stage      import Stage
+from .           import states
 
 
 class Pipeline(object):
@@ -49,7 +51,7 @@ class Pipeline(object):
     @property
     def name(self):
         """
-        Name of the pipeline useful for bookkeeping and to refer to this 
+        Name of the pipeline useful for bookkeeping and to refer to this
         pipeline while data staging. Do not use a ',' or '_' in an object's name.
 
         :getter: Returns the name of the pipeline

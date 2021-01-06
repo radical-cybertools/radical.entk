@@ -5,8 +5,8 @@ import warnings
 
 import radical.utils as ru
 
-from .. import exceptions as ree
-from .. import states     as res
+from . import exceptions as ree
+from . import states     as res
 
 
 # ------------------------------------------------------------------------------
@@ -655,9 +655,6 @@ class Task(object):
 
     @executable.setter
     def executable(self, value):
-
-        if isinstance(value, list):
-            value = value[0]
 
         if not isinstance(value, str):
             raise ree.TypeError(expected_type='str',

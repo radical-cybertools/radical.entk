@@ -4,9 +4,10 @@ __license__   = 'MIT'
 
 
 import radical.utils as ru
-from radical.entk.exceptions import ValueError, TypeError, EnTKError, MissingError
-from radical.entk.task.task import Task
-from radical.entk import states
+
+from .exceptions import ValueError, TypeError, EnTKError, MissingError
+from .task       import Task
+from .           import states
 
 
 class Stage(object):
