@@ -75,6 +75,7 @@ class Task(object):
         self._path      = None
         self._exit_code = None
         self._tags      = None
+        self._tag       = None
 
         # Keep track of res attained
         self._state_history = [res.INITIAL]
@@ -522,10 +523,10 @@ class Task(object):
     @property
     def tag(self):
         '''
-        DEPRECATED: use `self.tags`
+        WARNING: It will be deprecated.
         '''
 
-        return self._tags
+        return self._tag
 
 
     @property
@@ -939,14 +940,13 @@ class Task(object):
     def tag(self, value):
 
         warnings.simplefilter("once")
-        warnings.warn("Attribute tag is depcrecated. Please use tags",
-                       DeprecationWarning)
+        warnings.warn("Attribute tag will be depcrecated", DeprecationWarning)
 
         # this method exists for backward compatibility
         if not isinstance(value, str):
-            raise ree.TypeError(entity='tags', expected_type=str,
+            raise ree.TypeError(entity='tag', expected_type=str,
                                 actual_type=type(value))
-        self._tags = {'colocate': value}
+        self._tag = value
 
 
     @tags.setter
@@ -1021,6 +1021,7 @@ class Task(object):
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
             'tags'                 : self._tags,
+            'tag'                  : self._tag,
             'rts_uid'              : self._rts_uid,
 
             'parent_stage'         : self._p_stage,

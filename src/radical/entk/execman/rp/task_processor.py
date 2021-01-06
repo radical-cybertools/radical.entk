@@ -456,12 +456,18 @@ def create_cud_from_task(task, placeholders, prof=None):
         cud.sandbox    = task.sandbox
         cud.post_exec  = task.post_exec
 
-        if task.tags:
-            if task.parent_pipeline['name']:
-                cud.tags = resolve_tags(
-                        tags=task.tags,
-                        parent_pipeline_name=task.parent_pipeline['name'],
-                        placeholders=placeholders)
+        # FIXME: Use tags properly.
+        # if task.tags:
+        #     if task.parent_pipeline['name']:
+        #         cud.tags = resolve_tags(
+        #                 tags=task.tags,
+        #                 parent_pipeline_name=task.parent_pipeline['name'],
+        #                 placeholders=placeholders)
+
+        if task.tag:
+            cud.tag = task.tag
+        else:
+            cud.tag = task.name
 
         cud.cpu_processes    = task.cpu_reqs['cpu_processes']
         cud.cpu_threads      = task.cpu_reqs['cpu_threads']
