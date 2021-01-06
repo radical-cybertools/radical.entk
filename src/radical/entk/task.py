@@ -929,7 +929,7 @@ class Task(object):
 
         warnings.simplefilter("once")
         warnings.warn("Attribute tag is depcrecated. Please use tags",
-                       DeprecationWarning)        
+                       DeprecationWarning)
 
         # this method exists for backward compatibility
         if not isinstance(value, str):
@@ -1009,7 +1009,7 @@ class Task(object):
 
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
-            'tag'                  : self._tag,
+            'tags'                 : self._tags,
             'rts_uid'              : self._rts_uid,
 
             'parent_stage'         : self._p_stage,
