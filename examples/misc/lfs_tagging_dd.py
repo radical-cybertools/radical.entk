@@ -1,41 +1,46 @@
 #!/usr/bin/env python
 
 from radical.entk import Pipeline, Stage, Task, AppManager
-from radical.entk.exceptions import *
 import os
-import sys
-import argparse
 
-hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = int(os.environ.get('RMQ_PORT',5672))
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
+    os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
+# Description of how the RabbitMQ process is accessible
+# No need to change/set any variables if you installed RabbitMQ has a system
+# process. If you are running RabbitMQ under a docker container or another
+# VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running
+# this script.
+hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
+port = int(os.environ.get('RMQ_PORT', 5672))
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
-def get_pipeline(shared_fs=False, size=1):
+# Each task in this example prints the hostname of the node it executed. Tagged
+# tasks should print the same hostname as the respective task in the first stage
+# of the pipeline the following function returns.
+
+def get_pipeline(n=2):
+
+    # We create a pipeline which has 3 stages. The tasks from the second and
+    # and third stage will execute at the same node as the respective tasks from
+    # the first stage. 
 
     p = Pipeline()
     p.name = 'p'
 
-    n = 4
-
     s1 = Stage()
     s1.name = 's1'
     for x in range(n):
+        # The tasks from the first stage will execute at the first available node
+        # they fit.
         t = Task()
-        t.name = 't%s'%x
-
-        # dd if=/dev/random bs=<byte size of a chunk> count=<number of chunks> of=<output file name>
-
-        t.executable = 'dd'
-
-        if not shared_fs:
-            t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s1_t%s.txt'%x]
-        else:
-            t.arguments = ['if=/dev/urandom','bs=%sM'%size, 'count=1', 'of=/home/vivek91/s1_t%s.txt'%x]
-
-        t.cpu_reqs['processes'] = 1
-        t.cpu_reqs['threads_per_process'] = 24
-        t.cpu_reqs['thread_type'] = ''
-        t.cpu_reqs['process_type'] = ''
+        t.name = 't1.%04d' % x
+        t.executable = 'hostname'
+        t.cpu_reqs = {'cpu_processes': 1,
+                      'cpu_threads': ,  # Set enough threads for this task to get a whole node
+                      'cpu_process_type': None, 
+                      'cpu_thread_type': None}
         t.lfs_per_process = 1024
 
         s1.add_tasks(t)
@@ -44,25 +49,42 @@ def get_pipeline(shared_fs=False, size=1):
 
     s2 = Stage()
     s2.name = 's2'
-    for x in range(n):
+    for x in range(2 * n):
+        # Tasks from this stage will execute on the node the task from stage 1
+        # it depends executed.
         t = Task()
-        t.executable = 'dd'
-
-        if not shared_fs:
-            t.arguments = ['if=$NODE_LFS_PATH/s1_t%s.txt'%x,'bs=%sM'%size, 'count=1', 'of=$NODE_LFS_PATH/s2_t%s.txt'%x]
-        else:
-            t.arguments = ['if=/home/vivek91/s1_t%s.txt'%x,'bs=%sM'%size, 'count=1', 'of=/home/vivek91/s2_t%s.txt'%x]
-
-        t.cpu_reqs['processes'] = 1
-        t.cpu_reqs['threads_per_process'] = 24
-        t.cpu_reqs['thread_type'] = ''
-        t.cpu_reqs['process_type'] = ''
-        t.tags = 't%s'%x
+        t.name = 't2.%04d' % x
+        t.executable = 'hostname'
+        t.cpu_reqs = {'cpu_processes': 1, 
+                      'cpu_threads': 1,
+                      'cpu_process_type': None,
+                      'cpu_thread_type': None}
+        t.lfs_per_process = 1024
+        t.tag = 't1.%04d' % (x % 4)  # As a tag we use the name of the task this task depends upon.
 
         s2.add_tasks(t)
 
 
     p.add_stages(s2)
+
+    s3 = Stage()
+    s3.name = 's3'
+    for x in range(n):
+        # Tasks from this stage will execute on the node the task from stage 1
+        # it depends executed.
+        t = Task()
+        t.name = 't3.%04d' % x
+        t.executable = 'hostname'
+        t.cpu_reqs = {'cpu_processes': 1, 
+                      'cpu_threads': 1,
+                      'cpu_process_type': None,
+                      'cpu_thread_type': None}
+        t.lfs_per_process = 1024
+        t.tag = 't1.%04d' % x   # As a tag we use the name of the task this task depends upon.
+        s3.add_tasks(t)
+
+
+    p.add_stages(s3)
 
     return p
 
@@ -70,33 +92,18 @@ def get_pipeline(shared_fs=False, size=1):
 
 if __name__ == '__main__':
 
-    args = argparse.ArgumentParser()
-    args.add_argument('sharedfs')
-    args.add_argument('size')
-
-    args = args.parse_args()
-    if args.sharedfs == 'shared':
-        shared_fs = True
-    else:
-        shared_fs = False
-    size = args.size
-
-    print('SharedFS: ', shared_fs, size)
-
-    os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://entk:entk123@ds159631.mlab.com:59631/da-lfs-test'
-
+    # Request at least two nodes 
     res_dict = {
-                'resource'      : 'xsede.comet',
-                'walltime'      : 30,
-                'cpus'          : 120,
-                'project'       : 'unc100'
-                # 'project'       : 'gk4',
-                # 'queue'         : 'high'
+                'resource'      : '',
+                'walltime'      : ,
+                'cpus'          : ,
+                'project'       : '',
+                'queue'         : ''
             }
 
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username, password=password)
     appman.resource_desc = res_dict
 
-    p = get_pipeline(shared_fs=shared_fs, size=size)
-    appman.workflow = [p]
+    p = get_pipeline(n=2)  # Select n to be greater or equal to the number of nodes.
+    appman.workflow = set([p])
     appman.run()
