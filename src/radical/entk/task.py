@@ -8,9 +8,9 @@ import radical.utils as ru
 from . import exceptions as ree
 from . import states     as res
 
-import warnings
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
+
 
 # ------------------------------------------------------------------------------
 #
