@@ -491,7 +491,7 @@ def create_cud_from_task(task, placeholders, prof=None):
             prof.prof('cud from task - done', uid=task.uid)
 
         logger.debug('CU %s created from Task %s' % (cud.name, task.uid))
-
+        
         return cud
 
 

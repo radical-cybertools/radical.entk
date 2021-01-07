@@ -10,6 +10,7 @@ from . import states     as res
 
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=943)
 
 
 # ------------------------------------------------------------------------------
@@ -939,7 +940,6 @@ class Task(object):
     @tag.setter
     def tag(self, value):
 
-        warnings.simplefilter("once")
         warnings.warn("Attribute tag will be depcrecated", DeprecationWarning)
 
         # this method exists for backward compatibility
