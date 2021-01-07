@@ -5,10 +5,11 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
-from string import punctuation
-from .      import exceptions as ree
-from .task  import Task
-from .      import states
+from string    import punctuation
+from .         import exceptions as ree
+from .constants import NAME_MESSAGE
+from .task     import Task
+from .         import states
 
 
 class Stage(object):
@@ -176,9 +177,7 @@ class Stage(object):
             raise ree.ValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
-                                 expected_value="Valid object names can " +
-                                 "contains letters, numbers and '.'. Any "
-                                 "other character is not allowed")
+                                 expected_value=NAME_MESSAGE)
         self._name = value
 
     @tasks.setter

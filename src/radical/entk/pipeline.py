@@ -6,10 +6,11 @@ import threading
 
 import radical.utils as ru
 
-from string import punctuation
-from .      import exceptions as ree
-from .stage import Stage
-from .      import states
+from string     import punctuation
+from .constants import NAME_MESSAGE
+from .          import exceptions as ree
+from .stage     import Stage
+from .          import states
 
 
 class Pipeline(object):
@@ -167,9 +168,7 @@ class Pipeline(object):
             raise ree.ValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
-                                 expected_value="Valid object names can " +
-                                 "contains letters, numbers and '.'. Any "
-                                 "other character is not allowed")
+                                 expected_value=NAME_MESSAGE)
 
         self._name = value
 
