@@ -118,13 +118,13 @@ class TestBase(TestCase):
 
 
 
-        self.assertEqual(resolve_tags(tags={'colocation': 't1'},
+        self.assertEqual(resolve_tags(tags={'colocate': 't1'},
                             parent_pipeline_name=pipeline_name,
                             placeholders=placeholders),
-                            {'colocation':'unit.0002'})
+                            {'colocate':'unit.0002'})
 
         with self.assertRaises(ree.EnTKError):
-            resolve_tags(tags={'colocation': 't3'}, parent_pipeline_name=pipeline_name,
+            resolve_tags(tags={'colocate': 't3'}, parent_pipeline_name=pipeline_name,
                          placeholders=placeholders)
 
     # ------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ class TestBase(TestCase):
 
         task = mock.Mock()
         task.uid = 'task.0000' 
-        task.name = 'task.0000'
+        task.name = 'task.name'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}
         task.parent_pipeline = {'uid' : 'pipe.0000',
@@ -180,14 +180,14 @@ class TestBase(TestCase):
                          'gpu_threads': 6,
                          'gpu_process_type': 'POSIX',
                          'gpu_thread_type': None}
-        task.tags = None
+        task.tag = None
 
         task.lfs_per_process = 235
         task.stderr = 'stderr'
         task.stdout = 'stdout'
 
         test_cud = create_cud_from_task(task, None)
-        self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
+        self.assertEqual(test_cud.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')
         self.assertEqual(test_cud.arguments, 'test_args')
@@ -206,7 +206,11 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.stderr, 'stderr')
         self.assertEqual(test_cud.input_staging, 'inputs')
         self.assertEqual(test_cud.output_staging, 'outputs')
+        self.assertEqual(test_cud.tag, 'task.name')
 
+        task.tag = 'task.tag'
+        test_cud = create_cud_from_task(task, None)
+        self.assertEqual(test_cud.tag, 'task.tag')
 
     # ------------------------------------------------------------------------------
     #

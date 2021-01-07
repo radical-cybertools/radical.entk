@@ -67,6 +67,7 @@ class TestTask(TestCase):
         self.assertEqual(t._stderr, '')
         self.assertIsNone(t._exit_code)
         self.assertIsNone(t._tags)
+        self.assertIsNone(t._tag)
         self.assertIsNone(t._path)
         self.assertIsNone(t._p_pipeline['uid'])
         self.assertIsNone(t._p_pipeline['name'])
@@ -386,11 +387,11 @@ class TestTask(TestCase):
     def test_tag(self, mocked_init):
 
         task = Task()
-        task._tags = {'colocate':'tasks'}
+        task._tag = {'colocate':'tasks'}
         self.assertEqual(task.tag, {'colocate':'tasks'})
 
-        task.tag = 'task'
-        self.assertEqual(task._tags, {'colocate':'task'})
+        task.tag = 'task.tag'
+        self.assertEqual(task._tag, 'task.tag')
         with self.assertRaises(ree.TypeError):
             task.tag = {'colocate':'tasks'}
 
@@ -402,7 +403,7 @@ class TestTask(TestCase):
 
         task = Task()
         task._tags = {'colocate':'tasks'}
-        self.assertEqual(task.tag, {'colocate':'tasks'})
+        self.assertEqual(task.tags, {'colocate':'tasks'})
 
         task.tags = {'colocate':'task'}
         self.assertEqual(task._tags, {'colocate':'task'})
@@ -412,6 +413,10 @@ class TestTask(TestCase):
 
         with self.assertRaises(ree.TypeError):
             task.tags = {'key':'task'}
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
     def test_task_to_dict(self, mocked_init):
 
         t = Task()
@@ -449,6 +454,7 @@ class TestTask(TestCase):
         t._stderr = 'Hello World'
         t._exit_code = 0
         t._tag = None
+        t._tags = None
         t._path = 'some_path'
         t._p_pipeline = dict()
         t._p_pipeline['uid'] = 'pipe.0000'
@@ -488,6 +494,7 @@ class TestTask(TestCase):
                          'exit_code': 0,
                          'path': 'some_path',
                          'tag': None,
+                         'tags': None,
                          'rts_uid': 'unit.0000',
                          'parent_stage': {'name': 'stage.0000',
                                           'uid': 'stage.0000'},
