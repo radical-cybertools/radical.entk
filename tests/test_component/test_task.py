@@ -67,7 +67,6 @@ class TestTask(TestCase):
         self.assertEqual(t._stderr, '')
         self.assertIsNone(t._exit_code)
         self.assertIsNone(t._tags)
-        self.assertIsNone(t._tag)
         self.assertIsNone(t._path)
         self.assertIsNone(t._p_pipeline['uid'])
         self.assertIsNone(t._p_pipeline['name'])
@@ -387,11 +386,11 @@ class TestTask(TestCase):
     def test_tag(self, mocked_init):
 
         task = Task()
-        task._tag = {'colocate':'tasks'}
+        task._tags = {'colocate':'tasks'}
         self.assertEqual(task.tag, {'colocate':'tasks'})
 
         task.tag = 'task.tag'
-        self.assertEqual(task._tag, 'task.tag')
+        self.assertEqual(task._tags, {'colocate': 'task.tag'})
         with self.assertRaises(ree.TypeError):
             task.tag = {'colocate':'tasks'}
 
@@ -453,7 +452,6 @@ class TestTask(TestCase):
         t._stdout = 'Hello World'
         t._stderr = 'Hello World'
         t._exit_code = 0
-        t._tag = None
         t._tags = None
         t._path = 'some_path'
         t._p_pipeline = dict()
@@ -493,7 +491,6 @@ class TestTask(TestCase):
                          'stderr': 'Hello World',
                          'exit_code': 0,
                          'path': 'some_path',
-                         'tag': None,
                          'tags': None,
                          'rts_uid': 'unit.0000',
                          'parent_stage': {'name': 'stage.0000',

@@ -217,23 +217,23 @@ class TaskManager(Base_TaskManager):
         '''
 
         placeholders = dict()
-
+        placeholder_lock = mt.Lock()
         # ----------------------------------------------------------------------
-        def load_placeholder(task, rts_uid):
+        def load_placeholder(task):
+            with placeholder_lock:
+                parent_pipeline = str(task.parent_pipeline['uid'])
+                parent_stage = str(task.parent_stage['uid'])
 
-            parent_pipeline = str(task.parent_pipeline['name'])
-            parent_stage    = str(task.parent_stage['name'])
+                if parent_pipeline not in placeholders:
+                    placeholders[parent_pipeline] = dict()
 
-            if parent_pipeline not in placeholders:
-                placeholders[parent_pipeline] = dict()
+                if parent_stage not in placeholders[parent_pipeline]:
+                    placeholders[parent_pipeline][parent_stage] = dict()
 
-            if parent_stage not in placeholders[parent_pipeline]:
-                placeholders[parent_pipeline][parent_stage] = dict()
-
-            if None not in [parent_pipeline, parent_stage, task.name]:
-                placeholders[parent_pipeline][parent_stage][task.name] = \
-                                                          {'path'   : task.path,
-                                                           'rts_uid': rts_uid}
+                if None not in [parent_pipeline, parent_stage, task.uid]:
+                    placeholders[parent_pipeline][parent_stage][task.uid] = \
+                                                            {'path': task.path,
+                                                             'uid': task.uid}
 
         # ----------------------------------------------------------------------
         def unit_state_cb(unit, state):
@@ -250,7 +250,7 @@ class TaskManager(Base_TaskManager):
                     self._advance(task, 'Task', states.COMPLETED,
                                   mq_channel, '%s-cb-to-sync' % self._sid)
 
-                    load_placeholder(task, unit.uid)
+                    load_placeholder(task)
 
                     task_as_dict = json.dumps(task.to_dict())
 
@@ -307,6 +307,7 @@ class TaskManager(Base_TaskManager):
                     task = Task()
                     task.from_dict(msg)
                     bulk_tasks.append(task)
+                    load_placeholder(task)
                     bulk_cuds.append(create_cud_from_task(
                                             task, placeholders, self._prof))
 
