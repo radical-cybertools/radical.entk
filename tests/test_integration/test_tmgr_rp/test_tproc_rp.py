@@ -23,11 +23,11 @@ class TestBase(TestCase):
                 stage_name: {
                     t1_name: {
                         'path'   : '/home/vivek/t1',
-                        'rts_uid': 'unit.0000'
+                        'uid': 'task.0000'
                     },
                     t2_name: {
                         'path'   : '/home/vivek/t2',
-                        'rts_uid': 'unit.0003'
+                        'uid': 'task.0003'
                     }
                 }
             }
@@ -78,9 +78,9 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.stderr, 'stderr')
         self.assertEqual(test_cud.input_staging, [])
         self.assertEqual(test_cud.output_staging, [])
-        self.assertEqual(test_cud.tag, 'unit.0000')
+        self.assertEqual(test_cud.tag, 'task.0000')
 
-        task.tag = 'task.tag'
-        test_cud = create_cud_from_task(task, None)
-        self.assertEqual(test_cud.tag, 'task.tag')
+        task.tag = 'task.0001'
+        test_cud = create_cud_from_task(task, placeholders)
+        self.assertEqual(test_cud.tag, 'task.0003')
 

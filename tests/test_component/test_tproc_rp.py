@@ -98,19 +98,24 @@ class TestBase(TestCase):
 
         pipeline_name = 'p1'
         stage_name    = 's1'
-        t1_name       = 't1'
+        task = mock.Mock()
+        task.uid = 'task.0000'
+        task.tags = {'colocate': task.uid}
+        task2 = mock.Mock()
+        task2.uid = 'task.0001'
+        task2.tags = None
         t2_name       = 't2'
 
         placeholders = {
             pipeline_name: {
                 stage_name: {
-                    t1_name: {
+                    task.uid: {
                         'path'   : '/home/vivek/t1',
-                        'rts_uid': 'unit.0002'
+                        'uid': 'unit.0002'
                     },
                     t2_name: {
                         'path'   : '/home/vivek/t2',
-                        'rts_uid': 'unit.0003'
+                        'uid': 'unit.0003'
                     }
                 }
             }
@@ -118,14 +123,13 @@ class TestBase(TestCase):
 
 
 
-        self.assertEqual(resolve_tags(tags={'colocate': 't1'},
+        self.assertEqual(resolve_tags(task=task,
                             parent_pipeline_name=pipeline_name,
                             placeholders=placeholders),
-                            {'colocate':'unit.0002'})
+                            'unit.0002')
 
-        with self.assertRaises(ree.EnTKError):
-            resolve_tags(tags={'colocate': 't3'}, parent_pipeline_name=pipeline_name,
-                         placeholders=placeholders)
+        self.assertEqual(resolve_tags(task=task2, parent_pipeline_name=pipeline_name,
+                         placeholders=placeholders), 'task.0001')
 
     # ------------------------------------------------------------------------------
     #
@@ -408,11 +412,11 @@ class TestBase(TestCase):
                 stage_name: {
                     t1_name: {
                         'path'   : '/home/vivek/t1',
-                        'rts_uid': 'unit.0002'
+                        'uid': 'unit.0002'
                     },
                     t2_name: {
                         'path'   : '/home/vivek/t2',
-                        'rts_uid': 'unit.0003'
+                        'uid': 'unit.0003'
                     }
                 }
             }
