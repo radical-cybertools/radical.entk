@@ -4,12 +4,16 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
+from string     import punctuation
+from .constants import NAME_MESSAGE
+
 from . import exceptions as ree
 from . import states     as res
 
 import warnings
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -593,17 +597,16 @@ class Task(object):
 
     @name.setter
     def name(self, value):
-
+        invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
             raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
-        if ',' in value:
+        if any(symbol in value for symbol in invalid_symbols):
             raise ree.ValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
-                                 expected_value="Using ',' in an object's name"
-                                 "will corrupt internal mapping tables")
+                                 expected_value=NAME_MESSAGE)
 
         self._name = value
 

@@ -5,9 +5,11 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
-from .exceptions import ValueError, TypeError, EnTKError, MissingError
-from .task       import Task
-from .           import states
+from string    import punctuation
+from .         import exceptions as ree
+from .constants import NAME_MESSAGE
+from .task     import Task
+from .         import states
 
 
 class Stage(object):
@@ -166,16 +168,17 @@ class Stage(object):
 
     @name.setter
     def name(self, value):
-        if isinstance(value, str):
-            if ',' in value:
-                raise ValueError(obj=self._uid,
-                                attribute='name',
-                                actual_value=value,
-                                expected_value="Using ',' in an object's name will corrupt the profiling and internal mapping tables")
-            else:
-                self._name = value
-        else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+        invalid_symbols = punctuation.replace('.','')
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
+                                actual_type=type(value))
+
+        if any(symbol in value for symbol in invalid_symbols):
+            raise ree.ValueError(obj=self._uid,
+                                 attribute='name',
+                                 actual_value=value,
+                                 expected_value=NAME_MESSAGE)
+        self._name = value
 
     @tasks.setter
     def tasks(self, value):
@@ -187,7 +190,7 @@ class Stage(object):
         if isinstance(value, dict):
             self._p_pipeline = value
         else:
-            raise TypeError(expected_type=dict, actual_type=type(value))
+            raise ree.TypeError(expected_type=dict, actual_type=type(value))
 
     @state.setter
     def state(self, value):
@@ -196,19 +199,19 @@ class Stage(object):
                 self._state = value
                 self._state_history.append(value)
             else:
-                raise ValueError(obj=self._uid,
+                raise ree.ValueError(obj=self._uid,
                                  attribute='state',
                                  expected_value=list(states._stage_state_values.keys()),
                                  actual_value=value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise ree.TypeError(expected_type=str, actual_type=type(value))
 
     @post_exec.setter
     def post_exec(self, value):
 
         if not callable(value):
 
-            raise TypeError(entity='stage %s branch' % self._uid,
+            raise ree.TypeError(entity='stage %s branch' % self._uid,
                             expected_type='callable',
                             actual_type=type(value)
                             )
@@ -271,6 +274,18 @@ class Stage(object):
 
         if 'name' in d:
             if d['name']:
+                invalid_symbols = punctuation.replace('.','')
+                if not isinstance(d['name'], str):
+                    raise ree.TypeError(expected_type=str,
+                                        actual_type=type(d['name']))
+
+                if any(symbol in d['name'] for symbol in invalid_symbols):
+                    raise ree.ValueError(obj=self._uid,
+                                        attribute='name',
+                                        actual_value=d['name'],
+                                        expected_value="Valid object names can " +
+                                        "contains letters, numbers and '.'. Any "
+                                        "other character is not allowed")
                 self._name = d['name']
 
         if 'state' in d:
@@ -279,12 +294,12 @@ class Stage(object):
                     self._state = d['state']
                 else:
                     value = d['state']
-                    raise ValueError(obj=self._uid,
+                    raise ree.ValueError(obj=self._uid,
                                      attribute='state',
                                      expected_value=list(states._stage_state_values.keys()),
                                      actual_value=value)
             else:
-                raise TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+                raise ree.TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
             self._state = states.INITIAL
@@ -293,13 +308,13 @@ class Stage(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
         if 'parent_pipeline' in d:
             if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
+                raise ree.TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -312,7 +327,7 @@ class Stage(object):
         :arguments: String
         """
         if value not in list(states.state_numbers.keys()):
-            raise ValueError(obj=self._uid,
+            raise ree.ValueError(obj=self._uid,
                              attribute='set_tasks_state',
                              expected_value=list(states.state_numbers.keys()),
                              actual_value=value)
@@ -334,7 +349,7 @@ class Stage(object):
             return True
 
         except Exception as ex:
-            raise EnTKError(msg=ex) from ex
+            raise ree.EnTKError(msg=ex) from ex
 
     @classmethod
     def _validate_entities(self, tasks):
@@ -343,7 +358,7 @@ class Stage(object):
         """
 
         if not tasks:
-            raise TypeError(expected_type=Task, actual_type=type(tasks))
+            raise ree.TypeError(expected_type=Task, actual_type=type(tasks))
 
         if not isinstance(tasks, set):
 
@@ -355,7 +370,7 @@ class Stage(object):
         for t in tasks:
 
             if not isinstance(t, Task):
-                raise TypeError(expected_type=Task, actual_type=type(t))
+                raise ree.TypeError(expected_type=Task, actual_type=type(t))
 
         return tasks
 
@@ -367,14 +382,14 @@ class Stage(object):
 
         if self._state is not states.INITIAL:
 
-            raise ValueError(obj=self._uid,
+            raise ree.ValueError(obj=self._uid,
                              attribute='state',
                              expected_value=states.INITIAL,
                              actual_value=self._state)
 
         if not self._tasks:
 
-            raise MissingError(obj=self._uid,
+            raise ree.MissingError(obj=self._uid,
                                missing_attribute='tasks')
 
         for task in self._tasks:

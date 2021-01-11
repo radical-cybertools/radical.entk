@@ -56,7 +56,9 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
     @mock.patch('threading.Event', return_value='test_event')
-    @given(t=st.text(alphabet=string.ascii_letters + ',', min_size=10).filter(lambda x: ',' in x),
+    @given(t=st.text(alphabet=string.ascii_letters +
+                              string.punctuation.replace('.',''),
+                              min_size=10).filter(lambda x: any(symbol in x for symbol in string.punctuation)),
         l=st.lists(st.text()),
         i=st.integers().filter(lambda x: type(x) == int),
         b=st.booleans(),
