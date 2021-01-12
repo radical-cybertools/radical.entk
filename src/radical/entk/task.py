@@ -11,8 +11,8 @@ from . import exceptions as ree
 from . import states     as res
 
 import warnings
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
+warnings.simplefilter(action="once", stacklevel=2, category=DeprecationWarning, lineno=707)
+warnings.simplefilter(action="once", stacklevel=2, category=DeprecationWarning, lineno=764)
 
 
 # ------------------------------------------------------------------------------
@@ -603,10 +603,11 @@ class Task(object):
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            raise ree.ValueError(obj=self._uid,
-                                 attribute='name',
-                                 actual_value=value,
-                                 expected_value=NAME_MESSAGE)
+            warnings.warn(NAME_MESSAGE, DeprecationWarning)
+            # raise ree.ValueError(obj=self._uid,
+            #                      attribute='name',
+            #                      actual_value=value,
+            #                      expected_value=NAME_MESSAGE)
 
         self._name = value
 
