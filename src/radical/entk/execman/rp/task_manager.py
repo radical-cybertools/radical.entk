@@ -218,6 +218,7 @@ class TaskManager(Base_TaskManager):
 
         placeholders = dict()
         placeholder_lock = mt.Lock()
+
         # ----------------------------------------------------------------------
         def load_placeholder(task):
             with placeholder_lock:

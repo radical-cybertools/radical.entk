@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 from radical.entk import Pipeline, Stage, Task, AppManager
@@ -21,6 +20,7 @@ password = os.environ.get('RMQ_PASSWORD')
 # tasks should print the same hostname as the respective task in the first stage
 # of the pipeline the following function returns.
 
+
 def get_pipeline(n=2):
 
     # We create a pipeline which has 3 stages. The tasks from the second and
@@ -28,60 +28,60 @@ def get_pipeline(n=2):
     # the first stage.
     pipelines = list()
     for x in range(n):
-        p = Pipeline()
-        p.name = 'p.%04d' % x
+        pipeline = Pipeline()
+        pipeline.name = 'p.%04d' % x
 
-        s1 = Stage()
-        s1.name = 's1'
+        stage1 = Stage()
+        stage1.name = 'stage1'
         # The tasks from the first stage will execute at the first available node
         # they fit.
-        t1 = Task()
-        t1.name = 't1.%04d' % x
-        t1.executable = 'hostname'
-        t1.cpu_reqs = {'cpu_processes': 1,
-                      'cpu_threads': 1,  # Set enough threads for this task to get a whole node
-                      'cpu_process_type': None,
-                      'cpu_thread_type': None}
-        t1.lfs_per_process = 10
-        s1.add_tasks(t1)
+        task1 = Task()
+        task1.name = 'task1.%04d' % x
+        task1.executable = 'hostname'
+        task1.cpu_reqs = {'cpu_processes': 1,
+                          'cpu_threads': 1,  # Set enough threads for this task to get a whole node
+                          'cpu_process_type': None,
+                          'cpu_thread_type': None}
+        task1.lfs_per_process = 10
+        stage1.add_tasks(task1)
 
-        p.add_stages(s1)
+        pipeline.add_stages(stage1)
 
-        s2 = Stage()
-        s2.name = 's2'
+        stage2 = Stage()
+        stage2.name = 'stage2'
         # Tasks from this stage will execute on the node the task from stage 1
         # it depends executed.
-        t2 = Task()
-        t2.name = 't2.%04d' % x
-        t2.executable = 'hostname'
-        t2.cpu_reqs = {'cpu_processes': 1,
-                      'cpu_threads': 1,
-                      'cpu_process_type': None,
-                      'cpu_thread_type': None}
-        t2.tag = t1.uid  # As a tag we use the ID of the first task this task depends upon.
-        t2.lfs_per_process = 10
-        s2.add_tasks(t2)
+        task2 = Task()
+        task2.name = 'task2.%04d' % x
+        task2.executable = 'hostname'
+        task2.cpu_reqs = {'cpu_processes': 1,
+                          'cpu_threads': 1,
+                          'cpu_process_type': None,
+                          'cpu_thread_type': None}
+        task2.tag = task1.uid  # As a tag we use the ID of the first task this task depends upon.
+        task2.lfs_per_process = 10
+        stage2.add_tasks(task2)
 
 
-        p.add_stages(s2)
+        pipeline.add_stages(stage2)
 
-        s3 = Stage()
-        s3.name = 's3'
+        stage3 = Stage()
+        stage3.name = 'stage3'
         # Tasks from this stage will execute on the node the task from stage 1
         # it depends executed.
-        t3 = Task()
-        t3.name = 't3.%04d' % x
-        t3.executable = 'hostname'
-        t3.cpu_reqs = {'cpu_processes': 1,
-                      'cpu_threads': 1,
-                      'cpu_process_type': None,
-                      'cpu_thread_type': None}
-        t3.lfs_per_process = 10
-        t3.tag = t1.uid   # As a tag we use the ID of the first task this task depends upon.
-        s3.add_tasks(t3)
+        task3 = Task()
+        task3.name = 'task3.%04d' % x
+        task3.executable = 'hostname'
+        task3.cpu_reqs = {'cpu_processes': 1,
+                          'cpu_threads': 1,
+                          'cpu_process_type': None,
+                          'cpu_thread_type': None}
+        task3.lfs_per_process = 10
+        task3.tag = task1.uid   # As a tag we use the ID of the first task this task depends upon.
+        stage3.add_tasks(task3)
 
-        p.add_stages(s3)
-        pipelines.append(p)
+        pipeline.add_stages(stage3)
+        pipelines.append(pipeline)
 
     return pipelines
 

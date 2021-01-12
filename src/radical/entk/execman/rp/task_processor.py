@@ -185,8 +185,6 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
                 return placeholders[pname][sname][tname]['uid']
 
     return task.uid
-    #raise ree.EnTKError(msg='colocation tag %s cannot be used as no previous'
-    #                        'task with that name is found' % colo_tag)
 
 
 # ------------------------------------------------------------------------------
