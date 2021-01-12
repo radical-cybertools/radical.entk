@@ -27,6 +27,7 @@ class Task(object):
     `uid` offset the uid count file in radical.utils and can potentially affect
     the profiling if not taken care.
     '''
+    _uids = list()
 
     # FIXME: this should be converted into an RU/RS Attribute object, almost all
     #        of the code is redundant with the attribute class...
@@ -1072,6 +1073,11 @@ class Task(object):
         Purpose: Validate that the state of the task is 'DESCRIBED' and that an
         executable has been specified for the task.
         '''
+
+        if self._uid in Task._uids:
+            raise ree.EnTKError(msg='Task ID %s already exists' % self._uid)
+        else:
+            Task._uids.append(self._uid)
 
         if self._state is not res.INITIAL:
             raise ree.ValueError(obj=self._uid, attribute='state',
