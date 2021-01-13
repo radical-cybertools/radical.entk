@@ -18,10 +18,11 @@ password = os.environ.get('RMQ_PASSWORD')
 # Each task of this example prints the hostname of the node on which it is
 # executed. Tagged tasks should print the same hostname.
 def get_pipeline(n=2):
-
-    # We create a pipeline with 3 stages, each with 1 task. The tasks of the
-    # second and third stage will execute on the same compute node on which the
-    # task of the first stage executed.
+    '''
+    We create a pipeline with 3 stages, each with 1 task. The tasks of the
+    second and third stage will be tagged so that they will execute on the same
+    compute node on which the task of the first stage executed.
+    '''
     pipelines = list()
     for x in range(n):
         pipeline = Pipeline()
