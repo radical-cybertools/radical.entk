@@ -11,8 +11,8 @@ from . import exceptions as ree
 from . import states     as res
 
 import warnings
-warnings.simplefilter(action="once", stacklevel=2, category=DeprecationWarning, lineno=707)
-warnings.simplefilter(action="once", stacklevel=2, category=DeprecationWarning, lineno=764)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
 
 
 # ------------------------------------------------------------------------------
@@ -603,7 +603,7 @@ class Task(object):
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            warnings.warn(NAME_MESSAGE, DeprecationWarning)
+            warnings.warn(NAME_MESSAGE, DeprecationWarning, stacklevel=2)
             # raise ree.ValueError(obj=self._uid,
             #                      attribute='name',
             #                      actual_value=value,
@@ -711,7 +711,8 @@ class Task(object):
             warnings.warn("CPU requirements keys are renamed. Please use " +
                           "cpu_processes for processes, cpu_process_type for " +
                           "process_type, cpu_threads for threads_per_process " +
-                          "and cpu_thread_type for thread_type",DeprecationWarning)
+                          "and cpu_thread_type for thread_type",
+                          DeprecationWarning, stacklevel=2)
 
             value['cpu_processes'] = value.pop('processes')
             value['cpu_process_type'] = value.pop('process_type')
@@ -768,7 +769,8 @@ class Task(object):
             warnings.warn("GPU requirements keys are renamed. Please use " +
                           "gpu_processes for processes, gpu_process_type for " +
                           "process_type, gpu_threads for threads_per_process " +
-                          "and gpu_thread_type for thread_type",DeprecationWarning)
+                          "and gpu_thread_type for thread_type",
+                          DeprecationWarning, stacklevel=2)
 
             value['gpu_processes'] = value.pop('processes')
             value['gpu_process_type'] = value.pop('process_type')
