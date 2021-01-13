@@ -5,12 +5,16 @@ import warnings
 
 import radical.utils as ru
 
+from string     import punctuation
+from .constants import NAME_MESSAGE
+
 from . import exceptions as ree
 from . import states     as res
 
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=721)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=778)
 warnings.simplefilter(action="once", category=DeprecationWarning, lineno=945)
+
 
 
 # ------------------------------------------------------------------------------
@@ -607,17 +611,17 @@ class Task(object):
 
     @name.setter
     def name(self, value):
-
+        invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
             raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
-        if ',' in value:
-            raise ree.ValueError(obj=self._uid,
-                                 attribute='name',
-                                 actual_value=value,
-                                 expected_value="Using ',' in an object's name"
-                                 "will corrupt internal mapping tables")
+        if any(symbol in value for symbol in invalid_symbols):
+            warnings.warn(NAME_MESSAGE, DeprecationWarning, stacklevel=2)
+            # raise ree.ValueError(obj=self._uid,
+            #                      attribute='name',
+            #                      actual_value=value,
+            #                      expected_value=NAME_MESSAGE)
 
         self._name = value
 
@@ -721,7 +725,8 @@ class Task(object):
             warnings.warn("CPU requirements keys are renamed. Please use " +
                           "cpu_processes for processes, cpu_process_type for " +
                           "process_type, cpu_threads for threads_per_process " +
-                          "and cpu_thread_type for thread_type",DeprecationWarning)
+                          "and cpu_thread_type for thread_type",
+                          DeprecationWarning, stacklevel=2)
 
             value['cpu_processes'] = value.pop('processes')
             value['cpu_process_type'] = value.pop('process_type')
@@ -778,7 +783,8 @@ class Task(object):
             warnings.warn("GPU requirements keys are renamed. Please use " +
                           "gpu_processes for processes, gpu_process_type for " +
                           "process_type, gpu_threads for threads_per_process " +
-                          "and gpu_thread_type for thread_type",DeprecationWarning)
+                          "and gpu_thread_type for thread_type",
+                          DeprecationWarning, stacklevel=2)
 
             value['gpu_processes'] = value.pop('processes')
             value['gpu_process_type'] = value.pop('process_type')
