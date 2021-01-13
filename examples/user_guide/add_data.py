@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # Create another Stage object
     s2 = Stage()
-    s2.name = 'Stage 2'
+    s2.name = 'Stage.2'
 
     # Create a Task object
     t2 = Task()

@@ -3,12 +3,15 @@ __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
 import threading
+import warnings
 
 import radical.utils as ru
 
-from .exceptions import TypeError, ValueError, MissingError, EnTKError
-from .stage      import Stage
-from .           import states
+from string     import punctuation
+from .constants import NAME_MESSAGE
+from .          import exceptions as ree
+from .stage     import Stage
+from .          import states
 
 
 class Pipeline(object):
@@ -156,20 +159,20 @@ class Pipeline(object):
 
     @name.setter
     def name(self, value):
-        if isinstance(value, str):
-            if ',' in value:
-                raise ValueError(obj=self._uid,
-                                attribute='name',
-                                actual_value=value,
-                                expected_value="Using ',' in an object's " +
-                                               "name will corrupt the " +
-                                               "profiling and internal " +
-                                               "mapping tables")
-            else:
-                self._name = value
 
-        else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+        invalid_symbols = punctuation.replace('.','')
+        if not isinstance(value, str):
+            raise ree.TypeError(expected_type=str,
+                                actual_type=type(value))
+
+        if any(symbol in value for symbol in invalid_symbols):
+            warnings.warn(NAME_MESSAGE, DeprecationWarning)
+            # raise ree.ValueError(obj=self._uid,
+            #                      attribute='name',
+            #                      actual_value=value,
+            #                      expected_value=NAME_MESSAGE)
+
+        self._name = value
 
     @stages.setter
     def stages(self, value):
@@ -190,12 +193,12 @@ class Pipeline(object):
                 if self._state != states.SUSPENDED:
                     self._state_history.append(value)
             else:
-                raise ValueError(obj=self._uid,
+                raise ree.ValueError(obj=self._uid,
                                  attribute='state',
                                  expected_value=list(states._pipeline_state_values.keys()),
                                  actual_value=value)
         else:
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise ree.TypeError(expected_type=str, actual_type=type(value))
 
 
     # --------------------------------------------------------------------------
@@ -254,6 +257,19 @@ class Pipeline(object):
 
         if 'name' in d:
             if d['name']:
+                invalid_symbols = punctuation.replace('.','')
+                if not isinstance(d['name'], str):
+                    raise ree.TypeError(expected_type=str,
+                                        actual_type=type(d['name']))
+
+                if any(symbol in d['name'] for symbol in invalid_symbols):
+                    raise ree.ValueError(obj=self._uid,
+                                        attribute='name',
+                                        actual_value=d['name'],
+                                        expected_value="Valid object names can " +
+                                        "contains letters, numbers and '.'. Any "
+                                        "other character is not allowed")
+
                 self._name = d['name']
 
         if 'state' in d:
@@ -261,12 +277,12 @@ class Pipeline(object):
                 if d['state'] in list(states._pipeline_state_values.keys()):
                     self._state = d['state']
                 else:
-                    raise ValueError(obj=self._uid,
+                    raise ree.ValueError(obj=self._uid,
                                      attribute='state',
                                      expected_value=list(states._pipeline_state_values.keys()),
                                      actual_value=d['state'])
             else:
-                raise TypeError(entity='state', expected_type=str,
+                raise ree.TypeError(entity='state', expected_type=str,
                                 actual_type=type(d['state']))
 
         else:
@@ -276,7 +292,7 @@ class Pipeline(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise TypeError(entity='state_history', expected_type=list, actual_type=type(
+                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(
                     d['state_history']))
 
         if 'completed' in d:
@@ -284,7 +300,7 @@ class Pipeline(object):
                 if d['completed']:
                     self._completed_flag.set()
             else:
-                raise TypeError(entity='completed', expected_type=bool,
+                raise ree.TypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
     # --------------------------------------------------------------------------
@@ -300,7 +316,7 @@ class Pipeline(object):
          - The state of the pipeline will be set to `SUSPENDED`.
         '''
         if self._state == states.SUSPENDED:
-            raise EnTKError(
+            raise ree.EnTKError(
                 'suspend() called on Pipeline %s that is already suspended' % self._uid)
 
         self._state = states.SUSPENDED
@@ -319,7 +335,7 @@ class Pipeline(object):
            had before suspension.
         '''
         if self._state != states.SUSPENDED:
-            raise EnTKError('Cannot resume Pipeline %s: not suspended [%s] [%s]'
+            raise ree.EnTKError('Cannot resume Pipeline %s: not suspended [%s] [%s]'
                     % (self._uid, self._state, self._state_history))
 
         self._state = self._state_history[-2]
@@ -343,7 +359,7 @@ class Pipeline(object):
                 self._completed_flag.set()
 
         except Exception as ex:
-            raise EnTKError(msg=ex) from ex
+            raise ree.EnTKError(msg=ex) from ex
 
     def _decrement_stage(self):
         """
@@ -357,7 +373,7 @@ class Pipeline(object):
                 self._completed_flag = threading.Event()  # reset
 
         except Exception as ex:
-            raise EnTKError(msg=ex) from ex
+            raise ree.EnTKError(msg=ex) from ex
 
     @classmethod
     def _validate_entities(self, stages):
@@ -367,14 +383,14 @@ class Pipeline(object):
         :argument: list of Stage objects
         """
         if not stages:
-            raise TypeError(expected_type=Stage, actual_type=type(stages))
+            raise ree.TypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]
 
         for value in stages:
             if not isinstance(value, Stage):
-                raise TypeError(expected_type=Stage, actual_type=type(value))
+                raise ree.TypeError(expected_type=Stage, actual_type=type(value))
 
         return stages
 
@@ -386,14 +402,14 @@ class Pipeline(object):
 
         if self._state is not states.INITIAL:
 
-            raise ValueError(obj=self._uid,
+            raise ree.ValueError(obj=self._uid,
                              attribute='state',
                              expected_value=states.INITIAL,
                              actual_value=self._state)
 
         if not self._stages:
 
-            raise MissingError(obj=self._uid,
+            raise ree.MissingError(obj=self._uid,
                                missing_attribute='stages')
 
         for stage in self._stages:
