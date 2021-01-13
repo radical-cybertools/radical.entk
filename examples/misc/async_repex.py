@@ -10,6 +10,7 @@ import radical.utils as ru
 
 t_0 = time.time()
 
+
 # ------------------------------------------------------------------------------
 #
 class ReplicaExchange(re.AppManager):
@@ -226,7 +227,7 @@ class Replica(re.Pipeline):
         task = re.Task()
         task.name        = 'mdtsk.%s.%s' % (self.rid, self.cycle)
         task.executable  = 'sleep'
-        task.arguments   = [str(random.randint(0, 20)/10.0)]
+        task.arguments   = [str(random.randint(0, 20) / 10.0)]
 
         stage = re.Stage()
         stage.add_tasks(task)

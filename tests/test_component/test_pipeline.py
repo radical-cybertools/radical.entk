@@ -3,7 +3,7 @@
 
 from unittest import TestCase
 from random import shuffle
-import string
+# import string
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st

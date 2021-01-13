@@ -5,7 +5,7 @@ from random import shuffle
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
-import string
+# import string
 
 from radical.entk import Stage, Task
 from radical.entk import states
