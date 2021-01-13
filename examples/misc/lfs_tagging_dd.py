@@ -88,7 +88,7 @@ def get_pipeline(n=2):
 
 if __name__ == '__main__':
 
-    # Request at least two nodes
+    # Request at least two compute nodes
     res_dict = {
                 'resource'      : 'local.localhost',
                 'walltime'      : 20,
