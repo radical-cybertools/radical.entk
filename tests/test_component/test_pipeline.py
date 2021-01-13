@@ -3,6 +3,7 @@
 
 from unittest import TestCase
 from random import shuffle
+# import string
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
@@ -50,28 +51,35 @@ class TestBase(TestCase):
         self.assertFalse(p.completed)
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
+    # @given(t=st.text(alphabet=string.ascii_letters +
+    #                           string.punctuation.replace('.', ''),
+    #                  min_size=10).filter(
+    #     lambda x: any(symbol in x for symbol in string.punctuation)),
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
     @mock.patch('threading.Event', return_value='test_event')
-    @given(t=st.text(),
-        l=st.lists(st.text()),
+    @given(l=st.lists(st.text()),
         i=st.integers().filter(lambda x: type(x) == int),
         b=st.booleans(),
         se=st.sets(st.text()))
     def test_pipeline_assignment_exceptions(self, mocked_generate_id,
-                                            mocked_Lock, mocked_Event, t, l, i,
+                                            mocked_Lock, mocked_Event, l, i,
                                             b, se):
 
         p = Pipeline()
 
-        data_type = [t, l, i, b, se]
+        data_type = [l, i, b, se]
+        print(data_type)
 
         for data in data_type:
-
             if not isinstance(data, str):
                 with self.assertRaises(TypeError):
+                    p.name = data
+
+            if isinstance(data,str):
+                with self.assertRaises(ValueError):
                     p.name = data
 
             with self.assertRaises(TypeError):
@@ -80,8 +88,7 @@ class TestBase(TestCase):
             with self.assertRaises(TypeError):
                 p.add_stages(data)
 
-
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
@@ -99,7 +106,7 @@ class TestBase(TestCase):
         self.assertEqual(p.stages[0], s)
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
@@ -136,7 +143,7 @@ class TestBase(TestCase):
             self.assertEqual(p._state, val)
             self.assertEqual(p._state_history, state_history)
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
@@ -156,7 +163,7 @@ class TestBase(TestCase):
         self.assertEqual(p.stages[1], s2)
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_to_dict(self, mocked_init):
@@ -180,7 +187,7 @@ class TestBase(TestCase):
                              'completed': False})
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_from_dict(self, mocked_init):
@@ -203,7 +210,7 @@ class TestBase(TestCase):
         self.assertEqual(p.completed, d['completed'])
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_increment_stage(self, mocked_init):
@@ -230,7 +237,7 @@ class TestBase(TestCase):
         self.assertTrue(p._completed_flag.is_set())
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_decrement_stage(self, mocked_init):
@@ -252,7 +259,7 @@ class TestBase(TestCase):
         self.assertFalse(p._completed_flag.is_set(), False)
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     @given(t=st.text(),
@@ -278,7 +285,7 @@ class TestBase(TestCase):
         self.assertEqual([s1,s2], p._validate_entities([s1,s2]))
 
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_validate(self, mocked_init):
@@ -304,7 +311,7 @@ class TestBase(TestCase):
         p._state = states.INITIAL
         p._validate()
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_properties(self, mocked_init):
@@ -345,7 +352,7 @@ class TestBase(TestCase):
         p._state_history = ['state1','state2']
         self.assertEqual(p.state_history, ['state1','state2'])
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
     def test_pipeline_suspend(self, mocked_init):

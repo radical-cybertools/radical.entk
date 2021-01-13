@@ -776,8 +776,11 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
-        if state in ['FAILED','CANCELED']:
+        if state in ['FAILED', 'CANCELED']:
             self._logger.debug('RTS failed')
+
+        if self._cur_attempt > self._reattempts:
+            raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')
 
     # --------------------------------------------------------------------------
     #

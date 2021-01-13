@@ -10,6 +10,7 @@ import radical.utils as ru
 
 t_0 = time.time()
 
+
 # ------------------------------------------------------------------------------
 #
 class ReplicaExchange(re.AppManager):
@@ -195,7 +196,7 @@ class Replica(re.Pipeline):
         self._ex_list   = None  # list of replicas used in exchange step
 
         re.Pipeline.__init__(self)
-        self.name = 'p_%s' % self.rid
+        self.name = 'p.%s' % self.rid
         self._log = ru.Logger('radical.repex.rep')
 
         # add an initial md stage
@@ -224,9 +225,9 @@ class Replica(re.Pipeline):
         self._log.debug('=== %s add md', self.rid)
 
         task = re.Task()
-        task.name        = 'mdtsk-%s-%s' % (self.rid, self.cycle)
+        task.name        = 'mdtsk.%s.%s' % (self.rid, self.cycle)
         task.executable  = 'sleep'
-        task.arguments   = [str(random.randint(0, 20)/10.0)]
+        task.arguments   = [str(random.randint(0, 20) / 10.0)]
 
         stage = re.Stage()
         stage.add_tasks(task)
