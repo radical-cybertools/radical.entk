@@ -167,10 +167,8 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
-        for tname in placeholders[parent_pipeline_name][sname]:
-            if colo_tag != tname:
-                continue
-            return placeholders[parent_pipeline_name][sname][tname]['uid']
+        if colo_tag in placeholders[parent_pipeline_name][sname]:
+            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
 
     for pname in placeholders:
 
@@ -179,10 +177,8 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
             continue
 
         for sname in placeholders[pname]:
-            for tname in placeholders[pname][sname]:
-                if colo_tag != tname:
-                    continue
-                return placeholders[pname][sname][tname]['uid']
+            if colo_tag in placeholders[pname][sname]:
+                return placeholders[pname][sname][colo_tag]['uid']
 
     return task.uid
 

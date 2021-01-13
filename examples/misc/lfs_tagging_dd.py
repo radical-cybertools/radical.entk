@@ -15,6 +15,7 @@ port = int(os.environ.get('RMQ_PORT', 5672))
 username = os.environ.get('RMQ_USERNAME')
 password = os.environ.get('RMQ_PASSWORD')
 
+
 # Each task of this example prints the hostname of the node on which it is
 # executed. Tagged tasks should print the same hostname.
 def get_pipeline(n=2):

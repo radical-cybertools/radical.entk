@@ -11,10 +11,9 @@ from .constants import NAME_MESSAGE
 from . import exceptions as ree
 from . import states     as res
 
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=725)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=783)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=951)
-
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=724)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=782)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=950)
 
 
 # ------------------------------------------------------------------------------
