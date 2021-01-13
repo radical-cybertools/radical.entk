@@ -44,3 +44,37 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 A look at the complete code in this section:
 
 .. literalinclude:: ../../examples/user_guide/add_data.py
+
+Handling data from login node
+=============================
+
+The following example shows how to configure a task to run executable on 
+a login node (e.g., in case of some data should be downloaded from Internet 
+and compute nodes don't have an access to the outside).
+
+.. code-block:: python
+
+    t = Task()
+    t.name = 'download-task'
+    t.executable = '/usr/bin/ssh'
+    t.arguments = ["<username>@<hostname>",
+                   "'bash -l /path/to/download_script.sh <input1> <input2>'"]
+    t.download_output_data = ['STDOUT', 'STDERR']
+    t.cpu_reqs = {'cpu_processes': 1,
+                  'cpu_process_type': None,
+                  'cpu_threads': 1,
+                  'cpu_thread_type': None}
+
+
+.. note:: ``bash -l`` makes this shell act as if it had been directly invoked
+          by login.
+
+.. note:: Need to make sure that, on the login node, the following works
+          without a password prompt: ``ssh localhost hostname``. If a password
+          is prompt then need to create a ssh keypair (ssh-keygen), which should
+          by default create two keys in ``~/.ssh``, likely named ``id_rsa`` and
+          ``id_rsa.pub`` (the key names may differ, depending on system
+          defaults IIRC), and the following commands should be run after:
+          ``cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys``
+          ``chmod 0600 $HOME/.ssh/authorized_keys``
+
