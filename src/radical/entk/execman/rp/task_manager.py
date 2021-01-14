@@ -157,7 +157,10 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
 
-            while not self._tmgr_terminate.is_set():
+            # While we are supposed to run and the thread that does the work is
+            # alive go.
+            while not self._tmgr_terminate.is_set() and \
+                      self._rts_runner.is_alive():
 
                 try:
 
