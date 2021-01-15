@@ -44,3 +44,36 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 A look at the complete code in this section:
 
 .. literalinclude:: ../../examples/user_guide/add_data.py
+
+Handling data from login node
+=============================
+
+The following example shows how to configure a task to fetch data at runtime, when compute nodes do not have internet access.
+
+.. code-block:: python
+
+    t = Task()
+    t.name = 'download-task'
+    t.executable = '/usr/bin/ssh'
+    t.arguments = ["<username>@<hostname>",
+                   "'bash -l /path/to/download_script.sh <input1> <input2>'"]
+    t.download_output_data = ['STDOUT', 'STDERR']
+    t.cpu_reqs = {'cpu_processes': 1,
+                  'cpu_process_type': None,
+                  'cpu_threads': 1,
+                  'cpu_thread_type': None}
+
+
+.. note:: ``bash -l`` makes the shell act as if it had been directly invoked
+          by logging in.
+
+.. note:: Verify that the command ``ssh localhost hostname`` works on the 
+          login node without a password prompt. If you are asked for a 
+          password, please create an ssh keypair with the command 
+          ``ssh-keygen``. That should create two keys in ``~/.ssh``, named 
+          ``id_rsa`` and ``id_rsa.pub``. Now, execute the following commands:
+
+          .. code-block:: bash
+
+              cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+              chmod 0600 $HOME/.ssh/authorized_keys
