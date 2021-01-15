@@ -65,7 +65,7 @@ The following example shows how to configure a task to fetch data during runtime
 
 
 .. note:: ``bash -l`` makes the shell act as if it had been directly invoked
-          by login.
+          by logging in.
 
 .. note:: Need to make sure that, on the login node, the following works
           without a password prompt: ``ssh localhost hostname``. If a password
