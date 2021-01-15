@@ -67,11 +67,14 @@ The following example shows how to configure a task to fetch data during runtime
 .. note:: ``bash -l`` makes the shell act as if it had been directly invoked
           by logging in.
 
-.. note:: Need to make sure that, on the login node, the following works
-          without a password prompt: ``ssh localhost hostname``. If a password
-          is prompt then need to create a ssh keypair (ssh-keygen), which should
-          by default create two keys in ``~/.ssh``, likely named ``id_rsa`` and
-          ``id_rsa.pub`` (the key names may differ, depending on system
-          defaults IIRC), and the following commands should be run after:
-          ``cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys``
-          ``chmod 0600 $HOME/.ssh/authorized_keys``
+.. note:: Verify that the following works without a password prompt: 
+          ``ssh localhost hostname`` on the login node. If you are asked for a 
+          password, please create an ssh keypair (``ssh-keygen``), which should 
+          create two keys in ``~/.ssh``, named ``id_rsa`` and ``id_rsa.pub``. 
+          After that, execute the following commands:
+
+          .. code-block:: bash
+
+              cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+              chmod 0600 $HOME/.ssh/authorized_keys
+
