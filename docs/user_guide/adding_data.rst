@@ -48,7 +48,7 @@ A look at the complete code in this section:
 Handling data from login node
 =============================
 
-The following example shows how to configure a task to fetch data during runtime when compute nodes do not have internet access.
+The following example shows how to configure a task to fetch data at runtime, when compute nodes do not have internet access.
 
 .. code-block:: python
 
@@ -67,14 +67,13 @@ The following example shows how to configure a task to fetch data during runtime
 .. note:: ``bash -l`` makes the shell act as if it had been directly invoked
           by logging in.
 
-.. note:: Verify that the following works without a password prompt: 
-          ``ssh localhost hostname`` on the login node. If you are asked for a 
-          password, please create an ssh keypair (``ssh-keygen``), which should 
-          create two keys in ``~/.ssh``, named ``id_rsa`` and ``id_rsa.pub``. 
-          After that, execute the following commands:
+.. note:: Verify that the command ``ssh localhost hostname`` works on the 
+          login node without a password prompt. If you are asked for a 
+          password, please create an ssh keypair with the command 
+          ``ssh-keygen``. That should create two keys in ``~/.ssh``, named 
+          ``id_rsa`` and ``id_rsa.pub``. Now, execute the following commands:
 
           .. code-block:: bash
 
               cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
               chmod 0600 $HOME/.ssh/authorized_keys
-
