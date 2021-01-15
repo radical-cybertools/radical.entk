@@ -64,7 +64,7 @@ The following example shows how to configure a task to fetch data during runtime
                   'cpu_thread_type': None}
 
 
-.. note:: ``bash -l`` makes this shell act as if it had been directly invoked
+.. note:: ``bash -l`` makes the shell act as if it had been directly invoked
           by login.
 
 .. note:: Need to make sure that, on the login node, the following works
