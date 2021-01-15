@@ -48,9 +48,7 @@ A look at the complete code in this section:
 Handling data from login node
 =============================
 
-The following example shows how to configure a task to run executable on 
-a login node (e.g., in case of some data should be downloaded from Internet 
-and compute nodes don't have an access to the outside).
+The following example shows how to configure a task to fetch data during runtime when compute nodes do not have internet access.
 
 .. code-block:: python
 
@@ -77,4 +75,3 @@ and compute nodes don't have an access to the outside).
           defaults IIRC), and the following commands should be run after:
           ``cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys``
           ``chmod 0600 $HOME/.ssh/authorized_keys``
-
