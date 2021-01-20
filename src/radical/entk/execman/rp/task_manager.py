@@ -346,6 +346,15 @@ class TaskManager(Base_TaskManager):
 
 
         try:
+            # Redeclare the heartbeat queues in case they got deleted because
+            # of the task manager failure.
+            # If the queues exist this has no effect.
+
+            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+            mq_channel = mq_connection.channel()
+
+            mq_channel.queue_declare(queue=self._hb_response_q)
+            mq_channel.queue_declare(queue=self._hb_request_q)
 
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()

@@ -177,7 +177,7 @@ class ResourceManager(Base_ResourceManager):
             self._pilot.wait([rp.PMGR_ACTIVE, rp.DONE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
-            self._logger.info('Pilot is now active [%s]', self._pilot.state)
+            self._logger.info('Pilot is now at state [%s]', self._pilot.state)
 
         except KeyboardInterrupt:
 
