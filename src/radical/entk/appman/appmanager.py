@@ -449,19 +449,19 @@ class AppManager(object):
                 self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
                 self.terminate()
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._logger.exception('Execution interrupted by user (you '
                                    'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise
+            raise ree.EnTKError(ex) from ex
 
-        except Exception:
+        except Exception as ex:
 
             self._logger.exception('Error in AppManager')
             self.terminate()
-            raise
+            raise ree.EnTKError(ex) from ex
 
         # return list of fetched output data, or None.
         outputs = self.outputs
@@ -702,6 +702,7 @@ class AppManager(object):
 
         while active_pipe_count and \
               incomplete        and \
+              self._cur_attempt <= self._reattempts and \
               state not in final:
 
             state = self._rmgr.get_resource_allocation_state()
@@ -720,20 +721,19 @@ class AppManager(object):
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
 
-            if not self._sync_thread.is_alive() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._sync_thread.is_alive():
 
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
                 self._sync_thread.start()
                 self._cur_attempt += 1
+                self._wfp._reset_workflow()
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
-                self._logger.info('Restarting synchronizer thread')
+                self._logger.info('Restarting synchronizer thread.')
 
 
-            if not self._wfp.check_processor() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._wfp.check_processor():
 
                 # If WFP dies, both child threads are also cleaned out.
                 # We simply recreate the wfp object with a copy of the
@@ -747,14 +747,14 @@ class AppManager(object):
                                         resubmit_failed=self._resubmit_failed,
                                         rmq_conn_params=self._rmq_conn_params)
 
-                self._logger.info('Restarting WFProcessor')
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
+                self._wfp._reset_workflow()
+                self._logger.info('Restarting WFProcessor.')
 
 
-            if not self._task_manager.check_heartbeat() and \
-                self._cur_attempt <= self._reattempts:
+            if not self._task_manager.check_heartbeat():
 
                 # If the tmgr process or heartbeat dies, we simply start a
                 # new process using the start_manager method. We do not
@@ -773,6 +773,7 @@ class AppManager(object):
                 self._task_manager.start_manager()
                 self._logger.info('Restarting heartbeat thread')
                 self._task_manager.start_heartbeat()
+                self._wfp._reset_workflow()
 
                 self._cur_attempt += 1
 

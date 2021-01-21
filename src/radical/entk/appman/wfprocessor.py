@@ -191,6 +191,26 @@ class WFprocessor(object):
 
     # --------------------------------------------------------------------------
     #
+    def _reset_workflow(self):
+        '''
+        When a component is restarted we reset all the tasks that did not finish
+        to the first state. Then they are scheduled again for execution.
+        '''
+
+        for pipe in self._workflow:
+
+            with pipe.lock:
+                if pipe.state in states.FINAL or  \
+                    pipe.completed or \
+                    pipe.state == states.SUSPENDED:
+
+                    continue
+
+                for task in pipe.current_stage.tasks:
+                    if task.state not in states.FINAL:
+                        self._advance(task, 'Task', states.INITIAL)
+    # --------------------------------------------------------------------------
+    #
     def _execute_workload(self, workload, scheduled_stages):
 
         # Tasks of the workload need to be converted into a dict
