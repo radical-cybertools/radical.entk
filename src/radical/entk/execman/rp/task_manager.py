@@ -372,6 +372,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
+            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
 
             return True
 

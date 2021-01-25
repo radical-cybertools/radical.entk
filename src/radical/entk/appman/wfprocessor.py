@@ -129,7 +129,7 @@ class WFprocessor(object):
         for pipe in self._workflow:
 
             with pipe.lock:
-
+                self._logger.debug('Pipeline %s state %s %s' % (pipe.uid, pipe.state, pipe.completed))
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
                 if pipe.state in states.FINAL or  \
@@ -137,7 +137,6 @@ class WFprocessor(object):
                     pipe.state == states.SUSPENDED:
 
                     continue
-
                 if pipe.state == states.INITIAL:
 
                     # Set state of pipeline to SCHEDULING if it is in INITIAL
@@ -183,6 +182,7 @@ class WFprocessor(object):
                         # stage is already in the correct state
                         if exec_task.state == states.FAILED:
                             continue
+
                         if exec_stage not in scheduled_stages:
                             scheduled_stages.append(exec_stage)
 
@@ -206,10 +206,13 @@ class WFprocessor(object):
 
                     continue
 
-                for task in pipe.current_stage.tasks:
+                curr_stage = pipe.stages[pipe.current_stage - 1]
+                for task in curr_stage.tasks:
                     if task.state not in states.FINAL:
                         self._advance(task, 'Task', states.INITIAL)
-    # --------------------------------------------------------------------------
+                self._advance(curr_stage, 'Stage', states.SCHEDULING)
+
+# --------------------------------------------------------------------------
     #
     def _execute_workload(self, workload, scheduled_stages):
 
@@ -267,7 +270,6 @@ class WFprocessor(object):
             while not self._enqueue_thread_terminate.is_set():
 
                 time.sleep(3)
-
                 workload, scheduled_stages = self._create_workload()
 
                 # If there are tasks to be executed
