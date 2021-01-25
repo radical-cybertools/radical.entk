@@ -334,7 +334,20 @@ class TestBase(TestCase):
 
         stage.tasks = [task]
         pipe.stages = [stage]
-        wfp._workflow = set([pipe])
+
+        pipe2 = mock.Mock()
+        pipe2.lock = mt.Lock()
+        pipe2.state = states.DONE
+        pipe2.uid = 'pipe.0001'
+        pipe2.completed = True
+
+        pipe3 = mock.Mock()
+        pipe3.lock = mt.Lock()
+        pipe3.state = states.SUSPENDED
+        pipe3.uid = 'pipe.0002'
+        pipe3.completed = False
+
+        wfp._workflow = set([pipe, pipe2, pipe3])
 
 
         wfp._reset_workflow()

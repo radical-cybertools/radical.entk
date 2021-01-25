@@ -204,7 +204,6 @@ class WFprocessor(object):
                 if pipe.state in states.FINAL or  \
                     pipe.completed or \
                     pipe.state == states.SUSPENDED:
-
                     continue
 
                 curr_stage = pipe.stages[pipe.current_stage - 1]
