@@ -129,14 +129,14 @@ class WFprocessor(object):
         for pipe in self._workflow:
 
             with pipe.lock:
-                self._logger.debug('Pipeline %s state %s %s' % (pipe.uid, pipe.state, pipe.completed))
+
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
                 if pipe.state in states.FINAL or  \
                     pipe.completed or \
                     pipe.state == states.SUSPENDED:
-
                     continue
+
                 if pipe.state == states.INITIAL:
 
                     # Set state of pipeline to SCHEDULING if it is in INITIAL
@@ -197,6 +197,7 @@ class WFprocessor(object):
         to the first state. Then they are scheduled again for execution.
         '''
 
+        self._logger('Reseting workflow execution')
         for pipe in self._workflow:
 
             with pipe.lock:

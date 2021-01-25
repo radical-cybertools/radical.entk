@@ -76,6 +76,8 @@ class TestBase(TestCase):
         tmgr._rmq_conn_params = rmq_params
         tmgr._pending_queue = ['pending_queues']
         tmgr._completed_queue = ['completed_queues']
+        tmgr._hb_response_q = 'hb_response_q'
+        tmgr._hb_request_q = 'hb_request_q'
         tmgr._tmgr = _tmgr_side_effect
 
 
