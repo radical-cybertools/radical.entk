@@ -151,7 +151,8 @@ class Base_TaskManager(object):
         try:
             channel.basic_publish(exchange='', routing_key=queue, body=body,
                         properties=pika.BasicProperties(correlation_id=corr_id))
-        except pika.exceptions.ConnectionClosed:
+        except (pika.exceptions.ConnectionClosed,
+                pika.exceptions.ChannelClosed):
             connection = pika.BlockingConnection(conn_params)
             channel = connection.channel()
             channel.basic_publish(exchange='', routing_key=queue, body=body,
@@ -254,7 +255,8 @@ class Base_TaskManager(object):
                                              routing_key=self._hb_request_q,
                                              properties=props,
                                              body='request')
-                except pika.exceptions.ConnectionClosed:
+                except (pika.exceptions.ConnectionClosed,
+                        pika.exceptions.ChannelClosed):
                     mq_connection = pika.BlockingConnection(self._rmq_conn_params)
                     mq_channel = mq_connection.channel()
                     props = pika.BasicProperties(reply_to=self._hb_response_q,

@@ -124,7 +124,8 @@ class TaskManager(Base_TaskManager):
                                                  routing_key=self._hb_response_q,
                                                  properties=nprops,
                                                  body='response')
-                    except pika.exceptions.ConnectionClosed:
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
                         connection = pika.BlockingConnection(conn_params)
                         channel = connection.channel()
                         nprops = pika.BasicProperties(
@@ -268,7 +269,8 @@ class TaskManager(Base_TaskManager):
                         channel.basic_publish(exchange='',
                                                  routing_key='%s-completedq-1' % self._sid,
                                                  body=task_as_dict)
-                    except pika.exceptions.ConnectionClosed:
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
                         connection = pika.BlockingConnection(conn_params)
                         channel = connection.channel()
                         channel.basic_publish(exchange='',
