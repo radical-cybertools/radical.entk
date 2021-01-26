@@ -245,10 +245,11 @@ class TaskManager(Base_TaskManager):
                                                            'rts_uid': rts_uid}
 
         # ----------------------------------------------------------------------
-        def unit_state_cb(unit, state, mq_channel, conn_params):
+        def unit_state_cb(unit, state, cb_data):
 
             try:
-                channel = mq_channel
+                channel = cb_data['channel']
+                conn_params = cb_data['params']
                 self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
                 if unit.state in rp.FINAL:
@@ -295,7 +296,8 @@ class TaskManager(Base_TaskManager):
 
         umgr = rp.UnitManager(session=rmgr._session)
         umgr.add_pilots(rmgr.pilot)
-        umgr.register_callback(unit_state_cb)
+        umgr.register_callback(unit_state_cb, cb_data={'channel': mq_channel,
+                                                       'params': rmq_conn_params})
 
         try:
 
