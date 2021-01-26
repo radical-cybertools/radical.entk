@@ -136,7 +136,7 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _sync_with_master(self, obj, obj_type, channel, queue):
+    def _sync_with_master(self, obj, obj_type, channel, conn_params, queue):
 
         corr_id = str(uuid.uuid4())
         body    = json.dumps({'object': obj.to_dict(),
@@ -148,9 +148,15 @@ class Base_TaskManager(object):
 
         self._prof.prof('pub_sync', state=obj.state, uid=obj.uid, msg=msg)
         self._log.debug('%s (%s) to sync with amgr', obj.uid, obj.state)
-
-        channel.basic_publish(exchange='', routing_key=queue, body=body,
+        try:
+            channel.basic_publish(exchange='', routing_key=queue, body=body,
                         properties=pika.BasicProperties(correlation_id=corr_id))
+        except pika.exceptions.ConnectionClosed:
+            connection = pika.BlockingConnection(conn_params)
+            channel = connection.channel()
+            channel.basic_publish(exchange='', routing_key=queue, body=body,
+                        properties=pika.BasicProperties(correlation_id=corr_id))
+
 
         # all queue name parts up to the last three are used as sid, the last
         # three parts are channel specifiers which need to be inversed to obtain
@@ -190,7 +196,7 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _advance(self, obj, obj_type, new_state, channel, queue):
+    def _advance(self, obj, obj_type, new_state, channel, conn_params, queue):
 
         try:
             old_state = obj.state
@@ -203,14 +209,14 @@ class Base_TaskManager(object):
             self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
             self._log.info('Transition %s to %s', obj.uid, new_state)
 
-            self._sync_with_master(obj, obj_type, channel, queue)
+            self._sync_with_master(obj, obj_type, channel, conn_params, queue)
 
 
         except Exception as ex:
             self._log.exception('Transition %s to state %s failed, error: %s',
                                 obj.uid, new_state, ex)
             obj.state = old_state
-            self._sync_with_master(obj, obj_type, channel, queue)
+            self._sync_with_master(obj, obj_type, channel, conn_params, queue)
             raise EnTKError(ex) from ex
 
 
@@ -240,14 +246,24 @@ class Base_TaskManager(object):
             while not self._hb_terminate.is_set():
 
                 corr_id  = str(uuid.uuid4())
+                try:
+                    # Heartbeat request signal sent to task manager via rpc-queue
+                    props = pika.BasicProperties(reply_to=self._hb_response_q,
+                                                 correlation_id=corr_id)
+                    mq_channel.basic_publish(exchange='',
+                                             routing_key=self._hb_request_q,
+                                             properties=props,
+                                             body='request')
+                except pika.exceptions.ConnectionClosed:
+                    mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+                    mq_channel = mq_connection.channel()
+                    props = pika.BasicProperties(reply_to=self._hb_response_q,
+                                                 correlation_id=corr_id)
+                    mq_channel.basic_publish(exchange='',
+                                             routing_key=self._hb_request_q,
+                                             properties=props,
+                                             body='request')
 
-                # Heartbeat request signal sent to task manager via rpc-queue
-                props = pika.BasicProperties(reply_to=self._hb_response_q,
-                                             correlation_id=corr_id)
-                mq_channel.basic_publish(exchange='',
-                                         routing_key=self._hb_request_q,
-                                         properties=props,
-                                         body='request')
                 self._log.info('Sent heartbeat request')
 
                 # Sleep for hb_interval and then check if tmgr responded
