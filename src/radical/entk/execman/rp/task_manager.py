@@ -245,10 +245,10 @@ class TaskManager(Base_TaskManager):
                                                            'rts_uid': rts_uid}
 
         # ----------------------------------------------------------------------
-        def unit_state_cb(unit, state):
+        def unit_state_cb(unit, state, mq_channel, conn_params):
 
             try:
-
+                channel = mq_channel
                 self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
                 if unit.state in rp.FINAL:
@@ -257,20 +257,20 @@ class TaskManager(Base_TaskManager):
                     task = create_task_from_cu(unit, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
-                                  mq_channel, rmq_conn_params,
+                                  channel, conn_params,
                                   '%s-cb-to-sync' % self._sid)
 
                     load_placeholder(task, unit.uid)
 
                     task_as_dict = json.dumps(task.to_dict())
                     try:
-                        mq_channel.basic_publish(exchange='',
+                        channel.basic_publish(exchange='',
                                                  routing_key='%s-completedq-1' % self._sid,
                                                  body=task_as_dict)
                     except pika.exceptions.ConnectionClosed:
-                        connection = pika.BlockingConnection(rmq_conn_params)
-                        mq_channel = connection.channel()
-                        mq_channel.basic_publish(exchange='',
+                        connection = pika.BlockingConnection(conn_params)
+                        channel = connection.channel()
+                        channel.basic_publish(exchange='',
                                                  routing_key='%s-completedq-1' % self._sid,
                                                  body=task_as_dict)
 
