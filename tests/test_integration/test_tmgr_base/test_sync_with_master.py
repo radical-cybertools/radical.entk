@@ -65,6 +65,7 @@ class TestTask(TestCase):
                 msg = json.loads(body)
                 self.assertEqual(msg['object'], packet[1].to_dict())
                 self.assertEqual(msg['type'], packet[0])
+                time.sleep(200)
         except Exception as ex:
             print(body)
             print(json.loads(body))
