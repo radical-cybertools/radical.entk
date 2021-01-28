@@ -17,7 +17,7 @@ import radical.pilot   as rp
 from ...exceptions     import EnTKError
 from ...               import states, Task
 from ..base            import Base_TaskManager
-from .task_processor   import create_cud_from_task, create_task_from_cu
+from .task_processor   import create_td_from_task, create_task_from_rp
 
 
 # ------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ class TaskManager(Base_TaskManager):
 
                      The new thread is responsible for pushing completed tasks
                      (returned by the RTS) to the dequeueing queue. It also
-                     converts Tasks into CUDs and CUs into (partially described)
+                     converts Tasks into TDs and CUs into (partially described)
                      Tasks. This conversion is necessary since the current RTS
                      is RADICAL Pilot. Once Tasks are recovered from a CU, they
                      are then pushed to the completed_queue. At all state
@@ -236,21 +236,21 @@ class TaskManager(Base_TaskManager):
                                                            'rts_uid': rts_uid}
 
         # ----------------------------------------------------------------------
-        def unit_state_cb(unit, state):
+        def task_state_cb(rp_task, state):
 
             try:
 
-                self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
+                self._log.debug('Task %s in state %s' % (rp_task.uid, rp_task.state))
 
-                if unit.state in rp.FINAL:
+                if rp_task.state in rp.FINAL:
 
                     task = None
-                    task = create_task_from_cu(unit, self._prof)
+                    task = create_task_from_rp(rp_task, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
                                   mq_channel, '%s-cb-to-sync' % self._sid)
 
-                    load_placeholder(task, unit.uid)
+                    load_placeholder(task, task.uid)
 
                     task_as_dict = json.dumps(task.to_dict())
 
@@ -277,9 +277,9 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        umgr = rp.UnitManager(session=rmgr._session)
+        umgr = rp.TaskManager(session=rmgr._session)
         umgr.add_pilots(rmgr.pilot)
-        umgr.register_callback(unit_state_cb)
+        umgr.register_callback(task_state_cb)
 
         try:
 
@@ -300,20 +300,20 @@ class TaskManager(Base_TaskManager):
                 task_queue.task_done()
 
                 bulk_tasks = list()
-                bulk_cuds  = list()
+                bulk_tds   = list()
 
                 for msg in body:
 
                     task = Task()
                     task.from_dict(msg)
                     bulk_tasks.append(task)
-                    bulk_cuds.append(create_cud_from_task(
+                    bulk_tds.append(create_td_from_task(
                                             task, placeholders, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, '%s-tmgr-to-sync' % self._sid)
 
-                umgr.submit_units(bulk_cuds)
+                umgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
