@@ -31,7 +31,7 @@ class TestTask(TestCase):
             tmgr._log = mocked_Logger
             tmgr._prof = mocked_Profiler
             mq_connection2 = pika.BlockingConnection(rmq_conn_params)
-            mq_channel2 = mq_connection.channel()
+            mq_channel2 = mq_connection2.channel()
             for obj_type, obj, in packets:
                 tmgr._sync_with_master(obj, obj_type, mq_channel2, conn_params,
                                        queue)
