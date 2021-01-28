@@ -266,7 +266,6 @@ class Base_ResourceManager(object):
         if not self._validated:
             raise EnTKError('Resource description not validated')
 
-
         self._prof.prof('populating rmgr', uid=self._uid)
         self._logger.debug('Populating resource manager object')
 

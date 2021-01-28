@@ -6,7 +6,6 @@ __license__   = "MIT"
 
 from unittest import TestCase
 
-import pytest
 
 from radical.entk.task import Task
 from radical.entk import states
@@ -267,7 +266,7 @@ class TestTask(TestCase):
 
         # make sure the type checks kick in
         d = 'test'
-        with pytest.raises(ree.TypeError):
+        with self.assertRaises(ree.TypeError):
             t = Task(from_dict=d)
 
     # --------------------------------------------------------------------------

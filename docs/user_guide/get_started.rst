@@ -38,7 +38,7 @@ In the below snippet, we first create a Pipeline then a Stage.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 22-26
+    :lines: 22-28
     :linenos:
     :lineno-start: 22
 
@@ -46,9 +46,9 @@ Next, we create a Task and assign its name, executable and arguments of the exec
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 28-32
+    :lines: 30-34
     :linenos:
-    :lineno-start: 28
+    :lineno-start: 30
 
 
 Now, that we have a fully described Task, a Stage and a Pipeline. We create our workflow by adding the Task to the
@@ -56,9 +56,9 @@ Stage and adding the Stage to the Pipeline.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 34-38
+    :lines: 37-41
     :linenos:
-    :lineno-start: 34
+    :lineno-start: 37
 
 
 Creating the AppManager 
@@ -71,18 +71,25 @@ AppManager and ``run`` our application.
 
 .. literalinclude:: ../../examples/user_guide/get_started.py
     :language: python
-    :lines: 40-61
+    :lines: 42-64
     :linenos:
-    :lineno-start: 40
+    :lineno-start: 42
 
 
+.. warning:: If the python version your system has by default is Anaconda python,
+          please change line 51 in the above code block to 
+          
+          .. code-block:: python
+
+                'resource': 'local.localhost_anaconda',
 
 To run the script, simply execute the following from the command line:
 
 .. code-block:: bash
 
     python get_started.py
-    
+
+
 .. warning:: The first run may fail for different reasons, most of which
         related to setting up the execution environment or requesting the correct
         resources. Upon failure, Python may incorrectly raise the exception
@@ -92,8 +99,16 @@ To run the script, simply execute the following from the command line:
 
 
 And that's it! That's all the steps in this example. You can generate more verbose output
-by setting the environment variable **``export  RADICAL_LOG_TGT=radical.log;
-export RADICAL_LOG_LVL=DEBUG``**.
+by setting the environment variable **`export  RADICAL_LOG_TGT=radical.log;export RADICAL_LOG_LVL=DEBUG`**.
+
+After the execution of the example, you may want to check the output. Under your
+home folder, you will find a folder named `radical.pilot.sandbox`. In that folder,
+there will be a `re.session.*` folder and a `ve.local.localhost` folder. Inside,
+`re.session.*`, there is a `pilot.0000` folder and in there a `unit.000000` folder.
+In the unit folder, you will see several files including a `unit.000000.out` and
+`unit.000000.err` files. The `unit.000000.out` holds the messages from the standard
+output and `unit.000000.err` holds the messages from standard error. The `unit.000000.out`
+file should have a `Hello World` message.
 
 Let's look at the complete code for this example:
 

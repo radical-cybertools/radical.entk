@@ -14,10 +14,10 @@ import multiprocessing as mp
 
 import radical.pilot   as rp
 
-from ...exceptions       import EnTKError
-from ...                 import states, Task
-from ..base.task_manager import Base_TaskManager
-from .task_processor     import create_cud_from_task, create_task_from_cu
+from ...exceptions     import EnTKError
+from ...               import states, Task
+from ..base            import Base_TaskManager
+from .task_processor   import create_cud_from_task, create_task_from_cu
 
 
 # ------------------------------------------------------------------------------
@@ -129,11 +129,10 @@ class TaskManager(Base_TaskManager):
 
                     mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
-
-                except Exception as e:
-                    self._log.exception('Failed to respond to heartbeat, '
-                                        'error: %s', e)
-                    raise
+                except Exception as ex:
+                    self._log.exception('Failed to respond to heartbeat, ' +
+                                        'error: %s', ex)
+                    raise EnTKError(ex) from ex
             # ------------------------------------------------------------------
 
             self._prof.prof('tmgr process started', uid=self._uid)
@@ -176,22 +175,22 @@ class TaskManager(Base_TaskManager):
 
                     heartbeat_response(mq_channel)
 
-                except Exception as e:
-                    self._log.exception('Error in task execution: %s', e)
-                    raise
+                except Exception as ex:
+                    self._log.exception('Error in task execution: %s', ex)
+                    raise EnTKError(ex) from ex
             self._log.debug('Exited TMGR main loop')
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel tmgr process gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
 
-        except Exception as e:
+        except Exception as ex:
 
-            self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e) from e
+            self._log.exception('%s failed with %s', self._uid, ex)
+            raise EnTKError(ex) from ex
 
         finally:
 
@@ -264,13 +263,14 @@ class TaskManager(Base_TaskManager):
                                    'queue %s-completedq-1',
                                    task.uid, task.state, self._sid)
 
-            except KeyboardInterrupt as e:
+            except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt from e
+                raise KeyboardInterrupt from ex
 
-            except Exception as e:
-                self._log.exception('Error in RP callback thread: %s', e)
+            except Exception as ex:
+                self._log.exception('Error in RP callback thread: %s', ex)
+                raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
 
 
@@ -302,7 +302,6 @@ class TaskManager(Base_TaskManager):
                 bulk_tasks = list()
                 bulk_cuds  = list()
 
-
                 for msg in body:
 
                     task = Task()
@@ -317,13 +316,13 @@ class TaskManager(Base_TaskManager):
                 umgr.submit_units(bulk_cuds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
-
-        except Exception as e:
-            self._log.exception('%s failed with %s', self._uid, e)
-            raise EnTKError(e) from e
+            raise KeyboardInterrupt from ex
+        except Exception as ex:
+            self._log.exception('%s failed with %s', self._uid, ex)
+            raise EnTKError(ex) from ex
 
         finally:
             umgr.close()
@@ -337,7 +336,7 @@ class TaskManager(Base_TaskManager):
                      is not to be accessed directly. The function is started
                      in a separate thread using this method.
         """
-
+        # pylint: disable=attribute-defined-outside-init, access-member-before-definition
         if self._tmgr_process:
             self._log.warn('tmgr process already running!')
             return
@@ -364,12 +363,12 @@ class TaskManager(Base_TaskManager):
 
             return True
 
-        except Exception as e:
+        except Exception as ex:
 
-            self._log.exception('Task manager not started, error: %s', e)
+            self._log.exception('Task manager not started, error: %s', ex)
             self.terminate_manager()
-            raise
-
+            raise EnTKError(ex) from ex
+        # pylint: enable=attribute-defined-outside-init, access-member-before-definition
 
 # ------------------------------------------------------------------------------
 

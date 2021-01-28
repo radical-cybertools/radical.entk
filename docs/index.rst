@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Ensemble Toolkit
-================
+RADICAL-Ensemble Toolkit
+========================
 
 The Ensemble Toolkit is a Python library for developing and executing 
 large-scale ensemble-based workflows. It is being developed by the 
@@ -34,6 +34,15 @@ More details about the science enabled by EnTK can be found in the following pub
 * For users: https://groups.google.com/d/forum/ensemble-toolkit-users
 * For developers: https://groups.google.com/d/forum/ensemble-toolkit-dev
 
+Build status: |travis|
+
+.. |travis| image:: https://travis-ci.com/radical-cybertools/radical.entk.svg?branch=master
+                 :target: https://travis-ci.com/radical-cybertools/radical.entk
+
+Test coverage: |codecov|
+
+.. |codecov| image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg
+                  :target: https://codecov.io/gh/radical-cybertools/radical.entk
 
 .. toctree::
    :maxdepth: 2
@@ -47,7 +56,6 @@ More details about the science enabled by EnTK can be found in the following pub
    examples
    advanced_examples
    api
-   tests
    exceptions
    dev_docs
 

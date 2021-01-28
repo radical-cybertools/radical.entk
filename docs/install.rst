@@ -161,6 +161,7 @@ be printed.
                 0.70.0
 
 
+
 RabbitMQ
 ========
 
@@ -171,7 +172,7 @@ machine; (3) use a local or remote RabbitMQ server provided by the HPC
 organization or by an external partner. Note that most HPC infrastructures
 forbid executing servers on their login nodes. If you have no other option,
 please open an issue on the `EnTK GitHub repository
-<https://github.com/radical-cybertools/radical.entk/issues>`_and we will provide
+<https://github.com/radical-cybertools/radical.entk/issues>`_ and we will provide
 you with a testing account on our RabbitMQ server.
 
 In case, installation instructions can be found at
