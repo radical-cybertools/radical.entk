@@ -22,7 +22,7 @@ class TestTask(TestCase):
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
     def test_sync_with_master(self, mocked_init, mocked_Logger, mocked_Profiler):
-        self.maxDiff = None
+
         # --------------------------------------------------------------------------
         #
         def component_execution(packets, conn_params, queue):

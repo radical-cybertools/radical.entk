@@ -275,11 +275,13 @@ class Base_TaskManager(object):
                                                       queue=self._hb_response_q)
                 if not body:
                     # no usable response
+                    self._log.error('Heartbeat response no body')
                     return
                     # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
+                    self._log.error('Heartbeat response wrong correlation')
                     return
                     # raise EnTKError('heartbeat timeout')
 
