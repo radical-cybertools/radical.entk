@@ -6,7 +6,7 @@ import json
 import time
 
 from unittest import TestCase, mock
-import multiprocessing as mp
+import threading as mt
 
 from radical.entk              import Task, Stage
 from radical.entk.execman.base import Base_TaskManager     as BaseTmgr
@@ -30,13 +30,13 @@ class TestTask(TestCase):
             tmgr = BaseTmgr(None, None, None, None, None, None)
             tmgr._log = mocked_Logger
             tmgr._prof = mocked_Profiler
-            mq_connection = pika.BlockingConnection(rmq_conn_params)
-            mq_channel = mq_connection.channel()
+            mq_connection2 = pika.BlockingConnection(rmq_conn_params)
+            mq_channel2 = mq_connection.channel()
             for obj_type, obj, in packets:
-                tmgr._sync_with_master(obj, obj_type, mq_channel, conn_params,
+                tmgr._sync_with_master(obj, obj_type, mq_channel2, conn_params,
                                        queue)
-                if mq_channel.is_open:
-                    mq_channel.close()
+                if mq_channel2.is_open:
+                    mq_channel2.close()
 
         task = Task()
         task.parent_stage = {'uid':'stage.0000', 'name': 'stage.0000'}
@@ -54,7 +54,7 @@ class TestTask(TestCase):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
         mq_channel.queue_declare(queue='master')
-        master_thread = mp.Process(target=component_execution,
+        master_thread = mt.Thread(target=component_execution,
                                   name='tmgr_sync', 
                                   args=(packets, rmq_conn_params, 'master'))
         master_thread.start()

@@ -2,7 +2,6 @@
 # pylint: disable=no-value-for-parameter
 import os
 import pika
-import json
 import time
 
 from unittest import TestCase, mock
@@ -51,7 +50,7 @@ class TestTask(TestCase):
         time.sleep(0.1)
         body = None
         try:
-            for i in range(5):
+            for _ in range(5):
                 while body is None:
                     _, props, body = mq_channel.basic_get(queue='tmgr-hb-request')
                 self.assertEqual(body, b'request')
