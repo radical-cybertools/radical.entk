@@ -66,7 +66,7 @@ class TestBase(TestCase):
         tmgr._prof = mocked_Profiler
         tmgr._uid = 'tmgr.0000'
         tmgr._rmgr = 'test_rmgr'
-        tmgr._rmq_conn_params = 'test_params'
+        tmgr._rmq_conn_params = rmq_params
         tmgr._pending_queue = ['pending_queues']
         tmgr._completed_queue = ['completed_queues']
         tmgr._tmgr = _tmgr_side_effect

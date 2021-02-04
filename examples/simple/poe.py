@@ -5,7 +5,7 @@ import os
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
-if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
@@ -86,6 +86,7 @@ def generate_pipeline():
 
     return p
 
+
 if __name__ == '__main__':
 
     # Create Application Manager
@@ -95,16 +96,10 @@ if __name__ == '__main__':
     # resource, walltime, and cpus
     # resource is 'local.localhost' to execute locally
     res_dict = {
-
-    #    'resource': 'ncsa.bw_aprun',
-    #    'walltime': 10,
-    #    'cpus': 32,
-    #'project': 'bamm',
-    #'queue': 'high'
-	'resource': 'local.localhost',
-	'walltime': 10,
-	'cpus':2
-    }
+                'resource': 'local.localhost',
+                'walltime': 10,
+                'cpus':2
+                 }
 
     # Assign resource request description to the Application Manager
     appman.resource_desc = res_dict
