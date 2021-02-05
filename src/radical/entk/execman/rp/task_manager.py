@@ -104,30 +104,40 @@ class TaskManager(Base_TaskManager):
         try:
 
             # ------------------------------------------------------------------
-            def heartbeat_response(mq_channel):
+            def heartbeat_response(mq_channel, conn_params):
 
+                channel = mq_channel
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
                     method_frame, props, body = \
-                                  mq_channel.basic_get(queue=self._hb_request_q)
+                                  channel.basic_get(queue=self._hb_request_q)
 
                     if not body:
                         return
 
                     self._log.info('Received heartbeat request')
-
-                    nprops = pika.BasicProperties(
+                    try:
+                        nprops = pika.BasicProperties(
                                             correlation_id=props.correlation_id)
-                    mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=self._hb_response_q,
-                                properties=nprops,
-                                body='response')
+                        channel.basic_publish(exchange='',
+                                                 routing_key=self._hb_response_q,
+                                                 properties=nprops,
+                                                 body='response')
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
+                        connection = pika.BlockingConnection(conn_params)
+                        channel = connection.channel()
+                        nprops = pika.BasicProperties(
+                                            correlation_id=props.correlation_id)
+                        channel.basic_publish(exchange='',
+                                                 routing_key=self._hb_response_q,
+                                                 properties=nprops,
+                                                 body='response')
 
                     self._log.info('Sent heartbeat response')
 
-                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 except Exception as ex:
                     self._log.exception('Failed to respond to heartbeat, ' +
@@ -176,7 +186,7 @@ class TaskManager(Base_TaskManager):
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
 
-                    heartbeat_response(mq_channel)
+                    heartbeat_response(mq_channel, rmq_conn_params)
 
                 except Exception as ex:
                     self._log.exception('Error in task execution: %s', ex)
@@ -239,10 +249,11 @@ class TaskManager(Base_TaskManager):
                                                            'rts_uid': rts_uid}
 
         # ----------------------------------------------------------------------
-        def unit_state_cb(unit, state):
+        def unit_state_cb(unit, state, cb_data):
 
             try:
-
+                channel = cb_data['channel']
+                conn_params = cb_data['params']
                 self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
 
                 if unit.state in rp.FINAL:
@@ -251,16 +262,24 @@ class TaskManager(Base_TaskManager):
                     task = create_task_from_cu(unit, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
-                                  mq_channel, '%s-cb-to-sync' % self._sid)
+                                  channel, conn_params,
+                                  '%s-cb-to-sync' % self._sid)
 
                     load_placeholder(task, unit.uid)
 
                     task_as_dict = json.dumps(task.to_dict())
+                    try:
+                        channel.basic_publish(exchange='',
+                                                 routing_key='%s-completedq-1' % self._sid,
+                                                 body=task_as_dict)
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
+                        connection = pika.BlockingConnection(conn_params)
+                        channel = connection.channel()
+                        channel.basic_publish(exchange='',
+                                                 routing_key='%s-completedq-1' % self._sid,
+                                                 body=task_as_dict)
 
-                    mq_channel.basic_publish(
-                            exchange='',
-                            routing_key='%s-completedq-1' % self._sid,
-                            body=task_as_dict)
 
                     self._log.info('Pushed task %s with state %s to completed '
                                    'queue %s-completedq-1',
@@ -282,7 +301,8 @@ class TaskManager(Base_TaskManager):
 
         umgr = rp.UnitManager(session=rmgr._session)
         umgr.add_pilots(rmgr.pilot)
-        umgr.register_callback(unit_state_cb)
+        umgr.register_callback(unit_state_cb, cb_data={'channel': mq_channel,
+                                                       'params': rmq_conn_params})
 
         try:
 
@@ -314,7 +334,8 @@ class TaskManager(Base_TaskManager):
                                             task, placeholders, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, '%s-tmgr-to-sync' % self._sid)
+                                  mq_channel, rmq_conn_params,
+                                  '%s-tmgr-to-sync' % self._sid)
 
                 umgr.submit_units(bulk_cuds)
             mq_connection.close()
