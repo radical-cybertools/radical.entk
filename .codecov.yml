@@ -6,4 +6,5 @@ coverage:
         threshold: 1%
         paths: 
           - "src"
+        base: "pr"
     patch: off
