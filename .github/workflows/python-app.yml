@@ -36,6 +36,7 @@ jobs:
         pip install hypothesis
         pip install coverage
         pip install codecov
+        pip install coveralls
         pip install pytest
         pip install pytest-xdist
         pip install pytest-timeout
