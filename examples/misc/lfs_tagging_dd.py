@@ -11,7 +11,7 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
 # virtual machine, set the variables "RMQ_HOSTNAME" and "RMQ_PORT" in the shell
 # environment in which you are running this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = int(os.environ.get('RMQ_PORT', 5672))
+port = int(os.environ.get('RMQ_PORT', '5672'))
 username = os.environ.get('RMQ_USERNAME')
 password = os.environ.get('RMQ_PASSWORD')
 
@@ -20,10 +20,11 @@ password = os.environ.get('RMQ_PASSWORD')
 # executed. Tagged tasks should print the same hostname.
 def get_pipeline(n=2):
     '''
-    We create a pipeline with 3 stages, each with 1 task. The tasks of the
-    second and third stage will be tagged so that they will execute on the same
-    compute node on which the task of the first stage executed.
+    We create a pipeline with three stages, each with 1 task. The tasks of the
+    second and third stages are tagged to execute on the same compute node on
+    which the first stage's task executed.
     '''
+
     pipelines = list()
     for x in range(n):
         pipeline = Pipeline()
@@ -47,8 +48,7 @@ def get_pipeline(n=2):
 
         stage2 = Stage()
         stage2.name = 'stage2'
-        # task2 of stage2 depends on task1 of stage1, i.e., it cannot execute
-        # before task1 has completed its execution.
+
         task2 = Task()
         task2.name = 'task2.%04d' % x
         task2.executable = 'hostname'
@@ -58,7 +58,7 @@ def get_pipeline(n=2):
                           'cpu_thread_type': None}
         # We use the ID of task1 as the tag of task2. In this way, task2 will
         # execute on the same node on which task1 executed.
-        task2.tag = task1.uid
+        task2.tags = {'colocate': task1.uid}
         task2.lfs_per_process = 10
         stage2.add_tasks(task2)
 
@@ -67,8 +67,7 @@ def get_pipeline(n=2):
 
         stage3 = Stage()
         stage3.name = 'stage3'
-        # task3 of stage3 depends on task2 of stage2, i.e., it cannot execute
-        # before task2 has completed its execution.
+
         task3 = Task()
         task3.name = 'task3.%04d' % x
         task3.executable = 'hostname'
@@ -79,7 +78,7 @@ def get_pipeline(n=2):
         task3.lfs_per_process = 10
         # We use the ID of task1 as the tag of task3. In this way, task3 will
         # execute on the same node on which task1 and task2 executed.
-        task3.tag = task1.uid
+        task3.tag = {'colocate': task1.uid}
         stage3.add_tasks(task3)
 
         pipeline.add_stages(stage3)
