@@ -452,13 +452,6 @@ def create_td_from_task(task, placeholders, prof=None):
         td.sandbox    = task.sandbox
         td.post_exec  = task.post_exec
 
-        if task.tag:
-            if task.parent_pipeline['name']:
-                td.tag = resolve_tags(
-                        tag=task.tag,
-                        parent_pipeline_name=task.parent_pipeline['name'],
-                        placeholders=placeholders)
-
         if task.parent_pipeline['uid']:
             td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
                                    placeholders=placeholders)

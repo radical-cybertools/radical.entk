@@ -57,8 +57,6 @@ class TaskManager(Base_TaskManager):
                                           rts='radical.pilot')
         self._rts_runner = None
 
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
-
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
 
@@ -121,9 +119,9 @@ class TaskManager(Base_TaskManager):
                         nprops = pika.BasicProperties(
                                             correlation_id=props.correlation_id)
                         channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=nprops,
-                                                 body='response')
+                                              routing_key=self._hb_response_q,
+                                              properties=nprops,
+                                              body='response')
                     except (pika.exceptions.ConnectionClosed,
                             pika.exceptions.ChannelClosed):
                         connection = pika.BlockingConnection(conn_params)
@@ -131,9 +129,9 @@ class TaskManager(Base_TaskManager):
                         nprops = pika.BasicProperties(
                                             correlation_id=props.correlation_id)
                         channel.basic_publish(exchange='',
-                                                 routing_key=self._hb_response_q,
-                                                 properties=nprops,
-                                                 body='response')
+                                              routing_key=self._hb_response_q,
+                                              properties=nprops,
+                                              body='response')
 
                     self._log.info('Sent heartbeat response')
 
@@ -253,11 +251,11 @@ class TaskManager(Base_TaskManager):
 
                 channel = cb_data['channel']
                 conn_params = cb_data['params']
-                self._log.debug('Task %s in state %s' % (rp_task.uid, rp_task.state))
+                self._log.debug('Task %s in state %s' % (rp_task.uid,
+                                                         rp_task.state))
 
                 if rp_task.state in rp.FINAL:
 
-                    task = None
                     task = create_task_from_rp(rp_task, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
@@ -269,16 +267,15 @@ class TaskManager(Base_TaskManager):
                     task_as_dict = json.dumps(task.to_dict())
                     try:
                         channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1' % self._sid,
-                                                 body=task_as_dict)
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
                     except (pika.exceptions.ConnectionClosed,
                             pika.exceptions.ChannelClosed):
                         connection = pika.BlockingConnection(conn_params)
                         channel = connection.channel()
                         channel.basic_publish(exchange='',
-                                                 routing_key='%s-completedq-1' % self._sid,
-                                                 body=task_as_dict)
-
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
 
                     self._log.info('Pushed task %s with state %s to completed '
                                    'queue %s-completedq-1',
@@ -287,7 +284,7 @@ class TaskManager(Base_TaskManager):
             except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt from ex
+                raise KeyboardInterrupt(ex) from ex
 
             except Exception as ex:
                 self._log.exception('Error in RP callback thread: %s', ex)
@@ -298,11 +295,11 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        umgr = rp.TaskManager(session=rmgr._session)
-        umgr.add_pilots(rmgr.pilot)
-        umgr.register_callback(task_state_cb,
-                               cb_data={'channel': mq_channel,
-                                        'params' : rmq_conn_params})
+        rp_tmgr = rp.TaskManager(session=rmgr._session)
+        rp_tmgr.add_pilots(rmgr.pilot)
+        rp_tmgr.register_callback(task_state_cb,
+                                  cb_data={'channel': mq_channel,
+                                           'params' : rmq_conn_params})
 
         try:
 
@@ -322,14 +319,12 @@ class TaskManager(Base_TaskManager):
 
                 task_queue.task_done()
 
-                bulk_tasks = list()
                 bulk_tds   = list()
 
                 for msg in body:
 
                     task = Task()
                     task.from_dict(msg)
-                    bulk_tasks.append(task)
 
                     load_placeholder(task)
                     bulk_tds.append(create_td_from_task(
@@ -339,7 +334,7 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, rmq_conn_params,
                                   '%s-tmgr-to-sync' % self._sid)
 
-                umgr.submit_tasks(bulk_tds)
+                rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
@@ -351,7 +346,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(ex) from ex
 
         finally:
-            umgr.close()
+            rp_tmgr.close()
 
 
     # --------------------------------------------------------------------------

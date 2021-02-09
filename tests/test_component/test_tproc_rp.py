@@ -142,6 +142,7 @@ class TestBase(TestCase):
     def test_create_td_from_task(self, mocked_TaskDescription,
                                   mocked_Logger, mocked_get_input_list_from_task,
                                   mocked_get_output_list_from_task,
+                                 mocked_resolve_arguments, mocked_resolve_tags):
 
         mocked_TaskDescription.name             = None
         mocked_TaskDescription.pre_exec         = None
@@ -191,7 +192,7 @@ class TestBase(TestCase):
         task.stdout = 'stdout'
 
         test_td = create_td_from_task(task, None)
-        self.assertEqual(test_td.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
+        self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
         self.assertEqual(test_td.arguments, 'test_args')
