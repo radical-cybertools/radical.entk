@@ -156,14 +156,22 @@ def resolve_arguments(args, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def resolve_tags(tag, parent_pipeline_name, placeholders):
+def resolve_tags(task, parent_pipeline_name, placeholders):
+
+    # entk only handles co_location tags.  If tags are given as strings, they
+    # get translated into `{'colocation': '<tag>'}`.  Tags passed as dictionaies
+    # are checked to conform with above form.
+    #
+    # In both cases, the tag string is expanded with the given placeholders.
+
+    tags = task.tags if task.tags else {'colocate': task.uid}
+
+    colo_tag = tags['colocate']
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
-        for tname in placeholders[parent_pipeline_name][sname]:
-            if tag != tname:
-                continue
-            return placeholders[parent_pipeline_name][sname][tname]['rts_uid']
+        if colo_tag in placeholders[parent_pipeline_name][sname]:
+            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
 
     for pname in placeholders:
 
@@ -172,13 +180,10 @@ def resolve_tags(tag, parent_pipeline_name, placeholders):
             continue
 
         for sname in placeholders[pname]:
-            for tname in placeholders[pname][sname]:
-                if tag != tname:
-                    continue
-                return placeholders[pname][sname][tname]['rts_uid']
+            if colo_tag in placeholders[pname][sname]:
+                return placeholders[pname][sname][colo_tag]['uid']
 
-    raise ree.EnTKError(msg='Tag %s cannot be used as no previous task with '
-                            'that name is found' % tag)
+    return task.uid
 
 
 # ------------------------------------------------------------------------------
@@ -435,6 +440,7 @@ def create_td_from_task(task, placeholders, prof=None):
             prof.prof('td_create', uid=task.uid)
 
         td = rp.TaskDescription()
+        td.uid  = task.uid
         td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                          task.parent_stage['uid'],
                                          task.parent_stage['name'],
@@ -452,6 +458,10 @@ def create_td_from_task(task, placeholders, prof=None):
                         tag=task.tag,
                         parent_pipeline_name=task.parent_pipeline['name'],
                         placeholders=placeholders)
+
+        if task.parent_pipeline['uid']:
+            td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
+                                   placeholders=placeholders)
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
@@ -478,7 +488,6 @@ def create_td_from_task(task, placeholders, prof=None):
 
         return td
 
-
     except Exception:
         logger.exception('Task creation failed')
         raise
@@ -495,9 +504,6 @@ def create_task_from_rp(rp_task, prof=None):
              cannot be recovered as the RP API does not provide the same
              attributes for a Task as for a TD.  Also, this is not required for
              the most part.
-
-    TODO:    Add exit code, stdout, stderr and path attributes to a Task.
-             These can be extracted from a RP Task
 
     :arguments:
         :task: RP Task
