@@ -53,7 +53,7 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v1.2.1
     - name: Coveralls Python
-      uses: AndreMiras/coveralls-python-action@v20201129
+      uses: AndreMiras/coveralls-python-action@develop
       with:
         github-token: ${{ secrets.COVERALL_TOKEN }}
 
