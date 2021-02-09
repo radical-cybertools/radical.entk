@@ -1,6 +1,7 @@
-
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
+
+import warnings
 
 import radical.utils as ru
 
@@ -10,9 +11,9 @@ from .constants import NAME_MESSAGE
 from . import exceptions as ree
 from . import states     as res
 
-import warnings
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=707)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=764)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=724)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=782)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=950)
 
 
 # ------------------------------------------------------------------------------
@@ -29,6 +30,9 @@ class Task(object):
     `uid` offset the uid count file in radical.utils and can potentially affect
     the profiling if not taken care.
     '''
+
+
+    _uids = list()
 
     # FIXME: this should be converted into an RU/RS Attribute object, almost all
     #        of the code is redundant with the attribute class...
@@ -77,7 +81,7 @@ class Task(object):
         # to cuds and cus to tasks
         self._path      = None
         self._exit_code = None
-        self._tag       = None
+        self._tags      = None
 
         # Keep track of res attained
         self._state_history = [res.INITIAL]
@@ -525,12 +529,21 @@ class Task(object):
     @property
     def tag(self):
         '''
-        Set the tag for the task that can be used while scheduling by the RTS
-
-        :getter: return the tag of the current task
+        WARNING: It will be deprecated.
         '''
 
-        return self._tag
+        return self._tags
+
+
+    @property
+    def tags(self):
+        '''
+        Set the tags for the task that can be used while scheduling by the RTS
+
+        :getter: return the tags of the current task
+        '''
+
+        return self._tags
 
 
     @property
@@ -934,11 +947,32 @@ class Task(object):
     @tag.setter
     def tag(self, value):
 
+        warnings.warn("Attribute tag is depcrecated. Use tags instead", DeprecationWarning)
+
+        # this method exists for backward compatibility
         if not isinstance(value, str):
             raise ree.TypeError(entity='tag', expected_type=str,
                                 actual_type=type(value))
+        self._tags = {'colocate': value}
 
-        self._tag = value
+
+    @tags.setter
+    def tags(self, value):
+
+        if not isinstance(value, dict):
+            raise ree.TypeError(entity='tags', expected_type=dict,
+                                actual_type=type(value))
+
+        if list(value.keys()) != ['colocate']:
+            raise ree.TypeError(expected_type=dict,
+                                actual_type=type(value.get('colocate')),
+                                entity='colocate')
+
+        if not isinstance(value['colocate'], str):
+            raise ree.TypeError(entity='tag', expected_type=str,
+                                actual_type=type(value))
+
+        self._tags = value
 
 
     @parent_stage.setter
@@ -997,7 +1031,7 @@ class Task(object):
 
             'exit_code'            : self._exit_code,
             'path'                 : self._path,
-            'tag'                  : self._tag,
+            'tags'                 : self._tags,
             'rts_uid'              : self._rts_uid,
 
             'parent_stage'         : self._p_stage,
@@ -1046,6 +1080,11 @@ class Task(object):
         Purpose: Validate that the state of the task is 'DESCRIBED' and that an
         executable has been specified for the task.
         '''
+
+        if self._uid in Task._uids:
+            raise ree.EnTKError(msg='Task ID %s already exists' % self._uid)
+        else:
+            Task._uids.append(self._uid)
 
         if self._state is not res.INITIAL:
             raise ree.ValueError(obj=self._uid, attribute='state',
