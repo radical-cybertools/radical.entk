@@ -49,7 +49,6 @@ class TestBase(TestCase):
         tmgr = RPTmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
                      rmgr, rmq_params)
         self.assertIsNone(tmgr._rts_runner)
-        self.assertEqual(tmgr._rmq_ping_interval, 10)
 
     # --------------------------------------------------------------------------
     #

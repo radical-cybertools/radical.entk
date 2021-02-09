@@ -4,7 +4,6 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __license__   = "MIT"
 
 
-import os
 import json
 import pika
 import queue

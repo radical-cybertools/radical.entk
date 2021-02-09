@@ -88,10 +88,10 @@ class TestTask(TestCase):
                     'process_type' : None,
                     'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.cpu_reqs = {'processes' : 2,
-                         'process_type' : None,
-                         'threads_per_process' : 1,
-                         'thread_type' : 'OpenMP'}
+        task.cpu_reqs = {'cpu_processes' : 2,
+                         'cpu_process_type' : None,
+                         'cpu_threads' : 1,
+                         'cpu_thread_type' : 'OpenMP'}
 
         self.assertEqual(task._cpu_reqs, cpu_reqs)
         self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2,
@@ -146,10 +146,10 @@ class TestTask(TestCase):
                     'process_type' : None,
                     'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.gpu_reqs = {'processes' : 2,
-                         'process_type' : None,
-                         'threads_per_process' : 1,
-                         'thread_type' : 'OpenMP'}
+        task.gpu_reqs = {'gpu_processes' : 2,
+                         'gpu_process_type' : None,
+                         'gpu_threads' : 1,
+                         'gpu_thread_type' : 'OpenMP'}
 
         self.assertEqual(task._gpu_reqs, gpu_reqs)
         self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2,
@@ -231,14 +231,14 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'cpu_reqs'  : {'processes'          : 1,
-                            'process_type'       : None,
-                            'threads_per_process': 1,
-                            'thread_type'        : None},
-            'gpu_reqs'  : {'processes'          : 0,
-                            'process_type'       : None,
-                            'threads_per_process': 0,
-                            'thread_type'        : None}}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None},
+            'gpu_reqs'  : {'gpu_processes'   : 0,
+                           'gpu_process_type': None,
+                           'gpu_threads'     : 0,
+                           'gpu_thread_type' : None}}
         t = Task(from_dict=d)
 
         for k,v in d.items():
@@ -249,14 +249,14 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'cpu_reqs'  : {'processes'          : 1,
-                            'process_type'       : None,
-                            'threads_per_process': 1,
-                            'thread_type'        : None},
-            'gpu_reqs'  : {'processes'          : 0,
-                            'process_type'       : None,
-                            'threads_per_process': 0,
-                            'thread_type'        : None}}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None},
+            'gpu_reqs'  : {'gpu_processes'   : 0,
+                           'gpu_process_type': None,
+                           'gpu_threads'     : 0,
+                           'gpu_thread_type' : None}}
         t = Task()
         t.from_dict(d)
 
@@ -391,6 +391,7 @@ class TestTask(TestCase):
 
         task.tag = 'task.tag'
         self.assertEqual(task._tags, {'colocate': 'task.tag'})
+
         with self.assertRaises(ree.TypeError):
             task.tag = {'colocate':'tasks'}
 
