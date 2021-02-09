@@ -39,7 +39,7 @@ jobs:
         pip install pytest
         pip install pytest-xdist
         pip install pytest-timeout
-        pip install timeout_decorator
+        pip install timeout-decorator
     - name: Test with pytest
       env:
         RMQ_HOSTNAME: localhost

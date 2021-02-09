@@ -12,8 +12,8 @@ from radical.entk.execman.rp.task_processor import resolve_arguments
 from radical.entk.execman.rp.task_processor import resolve_tags
 from radical.entk.execman.rp.task_processor import get_input_list_from_task
 from radical.entk.execman.rp.task_processor import get_output_list_from_task
-from radical.entk.execman.rp.task_processor import create_cud_from_task
-from radical.entk.execman.rp.task_processor import create_task_from_cu
+from radical.entk.execman.rp.task_processor import create_td_from_task
+from radical.entk.execman.rp.task_processor import create_task_from_rp
 
 try:
     import mock
@@ -131,7 +131,7 @@ class TestBase(TestCase):
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_output_list_from_task', return_value='outputs')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_arguments', return_value='test_args')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_input_list_from_task', return_value='inputs')
-    def test_create_cud_from_task(self, mocked_ComputeUnitDescription,
+    def test_create_td_from_task(self, mocked_ComputeUnitDescription,
                                   mocked_Logger, mocked_get_input_list_from_task,
                                   mocked_get_output_list_from_task,
                                   mocked_resolve_arguments):
@@ -183,7 +183,7 @@ class TestBase(TestCase):
         task.stderr = 'stderr'
         task.stdout = 'stdout'
 
-        test_cud = create_cud_from_task(task, None)
+        test_cud = create_td_from_task(task, None)
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')
@@ -209,7 +209,7 @@ class TestBase(TestCase):
     #
     @mock.patch('radical.entk.Task')
     @mock.patch('radical.utils.Logger')
-    def test_create_task_from_cu(self, mocked_Task, mocked_Logger):
+    def test_create_task_from_rp(self, mocked_Task, mocked_Logger):
         test_cud = mock.Mock()
         test_cud.name             = 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000'
         test_cud.pre_exec         = 'post_exec'
@@ -241,7 +241,7 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.uid, 'task.0000')
         self.assertEqual(task.name, 'task.0000')
         self.assertEqual(task.parent_stage, {'uid': 'stage.0000', 'name': 'stage.0000'})
@@ -286,15 +286,15 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.exit_code, 0)
 
         test_cud.state = 'FAILED'
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.exit_code, 1)
 
         test_cud.state = 'EXECUTING'
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertIsNone(task.exit_code)
 
     # ------------------------------------------------------------------------------
@@ -479,7 +479,7 @@ class TestBase(TestCase):
         task.copy_output_data = ['test_file > $SHARED/test_file']
         task.move_output_data = ['test_file > $SHARED/test_file']
 
-        test_cud = create_cud_from_task(task, placeholders)
+        test_cud = create_td_from_task(task, placeholders)
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')

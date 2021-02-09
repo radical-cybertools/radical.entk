@@ -246,7 +246,7 @@ class TaskManager(Base_TaskManager):
                                                            'rts_uid': rts_uid}
 
         # ----------------------------------------------------------------------
-        def task_state_cb(rp_task, state):
+        def task_state_cb(rp_task, state, cb_data):
 
             try:
 
@@ -363,7 +363,6 @@ class TaskManager(Base_TaskManager):
         if self._tmgr_process:
             self._log.warn('tmgr process already running!')
             return
-
 
         try:
 

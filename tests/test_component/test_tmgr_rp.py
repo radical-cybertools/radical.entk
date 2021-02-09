@@ -71,7 +71,6 @@ class TestBase(TestCase):
         tmgr._completed_queue = ['completed_queues']
         tmgr._tmgr = _tmgr_side_effect
 
-
         tmgr._tmgr_terminate = None
         tmgr._tmgr_process = None
         tmgr.start_manager()
