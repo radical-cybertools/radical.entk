@@ -1,4 +1,6 @@
 
+import radical.utils as ru
+
 from .task import Task
 
 
@@ -8,29 +10,47 @@ class Stage(object):
 
     def __init__(self, descr):
 
-        self._tasks    = [Task(td) for td in descr]
-        self._state    = 'NEW'
-        self._cb       = None
-
-        self._pipeline = None  # pipeline uid
-        self._workflow = None  # workflow uid
+        self._descr  = descr
+        self._state  = 'NEW'
+        self._tasks  = dict()
+        self._cbs    = list()
+        self._uid    = ru.generate_uid('stage')
+        self._pipe   = None
 
 
     @property
     def state(self):
+
         return self._state
 
+
     def cancel(self):
-        pass
+
+        self._pipe._wf._wfmgr.cancel(self)
+
 
     def add_callback(self, cb):
-        self._cb = cb
 
-    def _advance(self, state):
+        self._cbs.append(cb)
 
-        self._state = state
-        if self._cb:
-            self._cb()
+
+    # --------------------------------------------------------------------------
+    #
+    def add_task(self, task):
+
+        self._tasks[task.uid] = task
+        task._stage = weakref(self)
+
+
+    def list_tasks(self):
+
+        return self._tasks
+
+
+    def cancel_tasks(self, uids):
+
+        for uid in uids:
+            self._tasks[uid].cancel()
 
 
 # ------------------------------------------------------------------------------
