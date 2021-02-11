@@ -8,4 +8,3 @@ coverage:
         paths: 
           - "src"
         base: "pr"
-  require_ci_to_pass: no
