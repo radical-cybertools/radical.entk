@@ -34,15 +34,27 @@ More details about the science enabled by EnTK can be found in the following pub
 * For users: https://groups.google.com/d/forum/ensemble-toolkit-users
 * For developers: https://groups.google.com/d/forum/ensemble-toolkit-dev
 
-Build status: |travis|
+**Badges**
 
-.. |travis| image:: https://travis-ci.com/radical-cybertools/radical.entk.svg?branch=master
-                 :target: https://travis-ci.com/radical-cybertools/radical.entk
+.. image:: https://github.com/radical-cybertools/radical.entk/workflows/Build/badge.svg
+                 :target: https://github.com/radical-cybertools/radical.entk/workflows/Build
+                 :alt: Build Status
 
-Test coverage: |codecov|
+.. image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/devel/graph/badge.svg?token=dHn74ChzmX
+                :target: https://codecov.io/gh/radical-cybertools/radical.entk
+                :alt: Test Coverage
 
-.. |codecov| image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/master/graph/badge.svg
-                  :target: https://codecov.io/gh/radical-cybertools/radical.entk
+.. image:: https://badge.fury.io/py/radical.entk.svg
+               :target: https://badge.fury.io/py/radical.entk
+               :alt: PyPI version
+
+.. image:: https://anaconda.org/conda-forge/radical.entk/badges/version.svg
+               :target: https://anaconda.org/conda-forge/radical.entk
+               :alt: Conda Version
+
+.. image:: https://img.shields.io/pypi/pyversions/radical.entk.svg
+               :alt: Python version
+
 
 .. toctree::
    :maxdepth: 2
