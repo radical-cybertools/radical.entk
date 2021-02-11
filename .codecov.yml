@@ -8,3 +8,4 @@ coverage:
           - "src"
         base: "pr"
     patch: off
+  require_ci_to_pass: no
