@@ -98,31 +98,38 @@ class TestBase(TestCase):
 
         pipeline_name = 'p1'
         stage_name    = 's1'
-        t1_name       = 't1'
+        task = mock.Mock()
+        task.uid = 'task.0000'
+        task.tags = {'colocate': task.uid}
+        task2 = mock.Mock()
+        task2.uid = 'task.0001'
+        task2.tags = None
         t2_name       = 't2'
 
         placeholders = {
             pipeline_name: {
                 stage_name: {
-                    t1_name: {
+                    task.uid: {
                         'path'   : '/home/vivek/t1',
-                        'rts_uid': 'unit.0002'
+                        'uid': 'unit.0002'
                     },
                     t2_name: {
                         'path'   : '/home/vivek/t2',
-                        'rts_uid': 'unit.0003'
+                        'uid': 'unit.0003'
                     }
                 }
             }
         }
 
-        self.assertEqual(resolve_tags(tag=t1_name,
-                            parent_pipeline_name=pipeline_name,
-                            placeholders=placeholders), 'unit.0002')
 
-        with self.assertRaises(ree.EnTKError):
-            resolve_tags(tag='t3', parent_pipeline_name=pipeline_name,
-                         placeholders=placeholders)
+
+        self.assertEqual(resolve_tags(task=task,
+                            parent_pipeline_name=pipeline_name,
+                            placeholders=placeholders),
+                            'unit.0002')
+
+        self.assertEqual(resolve_tags(task=task2, parent_pipeline_name=pipeline_name,
+                         placeholders=placeholders), 'task.0001')
 
     # ------------------------------------------------------------------------------
     #
@@ -130,11 +137,10 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_output_list_from_task', return_value='outputs')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_arguments', return_value='test_args')
+    @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_tags', return_value='test_tag')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_input_list_from_task', return_value='inputs')
-    def test_create_cud_from_task(self, mocked_ComputeUnitDescription,
-                                  mocked_Logger, mocked_get_input_list_from_task,
-                                  mocked_get_output_list_from_task,
-                                  mocked_resolve_arguments):
+    def test_create_cud_from_task(self, mocked_ComputeUnitDescription, mocked_Logger, mocked_get_input_list_from_task,
+                                  mocked_get_output_list_from_task, mocked_resolve_arguments, mocked_resolve_tags):
 
         mocked_ComputeUnitDescription.name             = None
         mocked_ComputeUnitDescription.pre_exec         = None
@@ -159,7 +165,7 @@ class TestBase(TestCase):
 
         task = mock.Mock()
         task.uid = 'task.0000' 
-        task.name = 'task.0000'
+        task.name = 'task.name'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}
         task.parent_pipeline = {'uid' : 'pipe.0000',
@@ -177,14 +183,15 @@ class TestBase(TestCase):
                          'gpu_threads': 6,
                          'gpu_process_type': 'POSIX',
                          'gpu_thread_type': None}
-        task.tag = None
+        task.tags = None
 
         task.lfs_per_process = 235
         task.stderr = 'stderr'
         task.stdout = 'stdout'
 
         test_cud = create_cud_from_task(task, None)
-        self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
+
+        self.assertEqual(test_cud.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')
         self.assertEqual(test_cud.arguments, 'test_args')
@@ -203,7 +210,7 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.stderr, 'stderr')
         self.assertEqual(test_cud.input_staging, 'inputs')
         self.assertEqual(test_cud.output_staging, 'outputs')
-
+        self.assertEqual(test_cud.tag, 'test_tag')
 
     # ------------------------------------------------------------------------------
     #
@@ -372,8 +379,7 @@ class TestBase(TestCase):
     #
     @mock.patch('radical.pilot.ComputeUnitDescription')
     @mock.patch('radical.utils.Logger')
-    def test_issue_259(self, mocked_ComputeUnitDescription,
-                       mocked_Logger):
+    def test_issue_259(self, mocked_ComputeUnitDescription, mocked_Logger):
 
         mocked_ComputeUnitDescription.name             = None
         mocked_ComputeUnitDescription.pre_exec         = None
@@ -396,21 +402,21 @@ class TestBase(TestCase):
         mocked_ComputeUnitDescription.input_staging    = None
         mocked_ComputeUnitDescription.output_staging   = None
 
-        pipeline_name = 'p1'
-        stage_name    = 's1'
-        t1_name       = 't1'
-        t2_name       = 't2'
+        pipeline_name = 'pipe.0000'
+        stage_name    = 'stage.0000'
+        t1_name       = 'task.0000'
+        t2_name       = 'task.0001'
 
         placeholders = {
             pipeline_name: {
                 stage_name: {
                     t1_name: {
                         'path'   : '/home/vivek/t1',
-                        'rts_uid': 'unit.0002'
+                        'uid': 'unit.0002'
                     },
                     t2_name: {
                         'path'   : '/home/vivek/t2',
-                        'rts_uid': 'unit.0003'
+                        'uid': 'unit.0003'
                     }
                 }
             }
@@ -443,7 +449,7 @@ class TestBase(TestCase):
                          'gpu_threads': 6,
                          'gpu_process_type': 'POSIX',
                          'gpu_thread_type': None}
-        task.tag = None
+        task.tags = None
 
         task.lfs_per_process = 235
         task.stderr = 'stderr'

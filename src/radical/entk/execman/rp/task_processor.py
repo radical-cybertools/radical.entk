@@ -153,14 +153,22 @@ def resolve_arguments(args, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def resolve_tags(tag, parent_pipeline_name, placeholders):
+def resolve_tags(task, parent_pipeline_name, placeholders):
+
+    # entk only handles co_location tags.  If tags are given as strings, they
+    # get translated into `{'colocation': '<tag>'}`.  Tags passed as dictionaies
+    # are checked to conform with above form.
+    #
+    # In both cases, the tag string is expanded with the given placeholders.
+
+    tags = task.tags if task.tags else {'colocate': task.uid}
+
+    colo_tag = tags['colocate']
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
-        for tname in placeholders[parent_pipeline_name][sname]:
-            if tag != tname:
-                continue
-            return placeholders[parent_pipeline_name][sname][tname]['rts_uid']
+        if colo_tag in placeholders[parent_pipeline_name][sname]:
+            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
 
     for pname in placeholders:
 
@@ -169,13 +177,10 @@ def resolve_tags(tag, parent_pipeline_name, placeholders):
             continue
 
         for sname in placeholders[pname]:
-            for tname in placeholders[pname][sname]:
-                if tag != tname:
-                    continue
-                return placeholders[pname][sname][tname]['rts_uid']
+            if colo_tag in placeholders[pname][sname]:
+                return placeholders[pname][sname][colo_tag]['uid']
 
-    raise ree.EnTKError(msg='Tag %s cannot be used as no previous task with '
-                            'that name is found' % tag)
+    return task.uid
 
 
 # ------------------------------------------------------------------------------
@@ -432,6 +437,7 @@ def create_cud_from_task(task, placeholders, prof=None):
             prof.prof('cud_create', uid=task.uid)
 
         cud = rp.ComputeUnitDescription()
+        cud.uid  = task.uid
         cud.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                           task.parent_stage['uid'],
                                           task.parent_stage['name'],
@@ -443,12 +449,9 @@ def create_cud_from_task(task, placeholders, prof=None):
         cud.sandbox    = task.sandbox
         cud.post_exec  = task.post_exec
 
-        if task.tag:
-            if task.parent_pipeline['name']:
-                cud.tag = resolve_tags(
-                        tag=task.tag,
-                        parent_pipeline_name=task.parent_pipeline['name'],
-                        placeholders=placeholders)
+        if task.parent_pipeline['uid']:
+            cud.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
+                                   placeholders=placeholders)
 
         cud.cpu_processes    = task.cpu_reqs['cpu_processes']
         cud.cpu_threads      = task.cpu_reqs['cpu_threads']
@@ -475,7 +478,6 @@ def create_cud_from_task(task, placeholders, prof=None):
 
         return cud
 
-
     except Exception:
         logger.exception('CU creation failed')
         raise
@@ -493,11 +495,8 @@ def create_task_from_cu(cu, prof=None):
              attributes for a CU as for a CUD.  Also, this is not required for
              the most part.
 
-    TODO:    Add exit code, stdout, stderr and path attributes to a Task.
-             These can be extracted from a CU
-
     :arguments:
-        :cu: RP Compute Unit
+        :cu: RADICAL.Pilot Compute Unit
 
     :return: Task
     """
