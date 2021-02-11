@@ -1,5 +1,6 @@
 coverage:
   status:
+    patch: off
     project:
       default:
         target: auto
@@ -7,5 +8,4 @@ coverage:
         paths: 
           - "src"
         base: "pr"
-    patch: off
   require_ci_to_pass: no
