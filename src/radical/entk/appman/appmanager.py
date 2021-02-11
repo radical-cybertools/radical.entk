@@ -740,7 +740,7 @@ class AppManager(object):
                 # workflow in the appmanager and start the processor.
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
-                self._wfp.terminate()
+                self._wfp.terminate_processor()
                 self._wfp = WFprocessor(sid=self._sid,
                                         workflow=self._workflow,
                                         pending_queue=self._pending_queue,
