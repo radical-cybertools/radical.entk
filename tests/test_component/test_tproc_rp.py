@@ -12,8 +12,8 @@ from radical.entk.execman.rp.task_processor import resolve_arguments
 from radical.entk.execman.rp.task_processor import resolve_tags
 from radical.entk.execman.rp.task_processor import get_input_list_from_task
 from radical.entk.execman.rp.task_processor import get_output_list_from_task
-from radical.entk.execman.rp.task_processor import create_cud_from_task
-from radical.entk.execman.rp.task_processor import create_task_from_cu
+from radical.entk.execman.rp.task_processor import create_td_from_task
+from radical.entk.execman.rp.task_processor import create_task_from_rp
 
 try:
     import mock
@@ -133,35 +133,37 @@ class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
     #
-    @mock.patch('radical.pilot.ComputeUnitDescription')
+    @mock.patch('radical.pilot.TaskDescription')
     @mock.patch('radical.utils.Logger')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_output_list_from_task', return_value='outputs')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_arguments', return_value='test_args')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_tags', return_value='test_tag')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_input_list_from_task', return_value='inputs')
-    def test_create_cud_from_task(self, mocked_ComputeUnitDescription, mocked_Logger, mocked_get_input_list_from_task,
-                                  mocked_get_output_list_from_task, mocked_resolve_arguments, mocked_resolve_tags):
+    def test_create_td_from_task(self, mocked_TaskDescription,
+                                  mocked_Logger, mocked_get_input_list_from_task,
+                                  mocked_get_output_list_from_task,
+                                 mocked_resolve_arguments, mocked_resolve_tags):
 
-        mocked_ComputeUnitDescription.name             = None
-        mocked_ComputeUnitDescription.pre_exec         = None
-        mocked_ComputeUnitDescription.executable       = None
-        mocked_ComputeUnitDescription.arguments        = None
-        mocked_ComputeUnitDescription.sandbox          = None
-        mocked_ComputeUnitDescription.post_exec        = None
-        mocked_ComputeUnitDescription.tag              = None
-        mocked_ComputeUnitDescription.cpu_processes    = None
-        mocked_ComputeUnitDescription.cpu_threads      = None
-        mocked_ComputeUnitDescription.cpu_process_type = None
-        mocked_ComputeUnitDescription.cpu_thread_type  = None
-        mocked_ComputeUnitDescription.gpu_processes    = None
-        mocked_ComputeUnitDescription.gpu_threads      = None
-        mocked_ComputeUnitDescription.gpu_process_type = None
-        mocked_ComputeUnitDescription.gpu_thread_type  = None
-        mocked_ComputeUnitDescription.lfs_per_process  = None
-        mocked_ComputeUnitDescription.stdout           = None
-        mocked_ComputeUnitDescription.stderr           = None
-        mocked_ComputeUnitDescription.input_staging    = None
-        mocked_ComputeUnitDescription.output_staging   = None
+        mocked_TaskDescription.name             = None
+        mocked_TaskDescription.pre_exec         = None
+        mocked_TaskDescription.executable       = None
+        mocked_TaskDescription.arguments        = None
+        mocked_TaskDescription.sandbox          = None
+        mocked_TaskDescription.post_exec        = None
+        mocked_TaskDescription.tag              = None
+        mocked_TaskDescription.cpu_processes    = None
+        mocked_TaskDescription.cpu_threads      = None
+        mocked_TaskDescription.cpu_process_type = None
+        mocked_TaskDescription.cpu_thread_type  = None
+        mocked_TaskDescription.gpu_processes    = None
+        mocked_TaskDescription.gpu_threads      = None
+        mocked_TaskDescription.gpu_process_type = None
+        mocked_TaskDescription.gpu_thread_type  = None
+        mocked_TaskDescription.lfs_per_process  = None
+        mocked_TaskDescription.stdout           = None
+        mocked_TaskDescription.stderr           = None
+        mocked_TaskDescription.input_staging    = None
+        mocked_TaskDescription.output_staging   = None
 
         task = mock.Mock()
         task.uid = 'task.0000' 
@@ -189,34 +191,33 @@ class TestBase(TestCase):
         task.stderr = 'stderr'
         task.stdout = 'stdout'
 
-        test_cud = create_cud_from_task(task, None)
-
-        self.assertEqual(test_cud.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
-        self.assertEqual(test_cud.pre_exec, 'post_exec')
-        self.assertEqual(test_cud.executable, '/bin/date')
-        self.assertEqual(test_cud.arguments, 'test_args')
-        self.assertEqual(test_cud.sandbox, 'unit.0000')
-        self.assertEqual(test_cud.post_exec, '')
-        self.assertEqual(test_cud.cpu_processes, 5)
-        self.assertEqual(test_cud.cpu_threads, 6)
-        self.assertEqual(test_cud.cpu_process_type, 'POSIX')
-        self.assertIsNone(test_cud.cpu_thread_type)
-        self.assertEqual(test_cud.gpu_processes, 5)
-        self.assertEqual(test_cud.gpu_threads, 6)
-        self.assertEqual(test_cud.gpu_process_type, 'POSIX')
-        self.assertIsNone(test_cud.gpu_thread_type)
-        self.assertEqual(test_cud.lfs_per_process, 235)
-        self.assertEqual(test_cud.stdout, 'stdout')
-        self.assertEqual(test_cud.stderr, 'stderr')
-        self.assertEqual(test_cud.input_staging, 'inputs')
-        self.assertEqual(test_cud.output_staging, 'outputs')
-        self.assertEqual(test_cud.tag, 'test_tag')
+        test_td = create_td_from_task(task, None)
+        self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
+        self.assertEqual(test_td.pre_exec, 'post_exec')
+        self.assertEqual(test_td.executable, '/bin/date')
+        self.assertEqual(test_td.arguments, 'test_args')
+        self.assertEqual(test_td.sandbox, 'unit.0000')
+        self.assertEqual(test_td.post_exec, '')
+        self.assertEqual(test_td.cpu_processes, 5)
+        self.assertEqual(test_td.cpu_threads, 6)
+        self.assertEqual(test_td.cpu_process_type, 'POSIX')
+        self.assertIsNone(test_td.cpu_thread_type)
+        self.assertEqual(test_td.gpu_processes, 5)
+        self.assertEqual(test_td.gpu_threads, 6)
+        self.assertEqual(test_td.gpu_process_type, 'POSIX')
+        self.assertIsNone(test_td.gpu_thread_type)
+        self.assertEqual(test_td.lfs_per_process, 235)
+        self.assertEqual(test_td.stdout, 'stdout')
+        self.assertEqual(test_td.stderr, 'stderr')
+        self.assertEqual(test_td.input_staging, 'inputs')
+        self.assertEqual(test_td.output_staging, 'outputs')
+        self.assertEqual(test_td.tag, 'test_tag')
 
     # ------------------------------------------------------------------------------
     #
     @mock.patch('radical.entk.Task')
     @mock.patch('radical.utils.Logger')
-    def test_create_task_from_cu(self, mocked_Task, mocked_Logger):
+    def test_create_task_from_rp(self, mocked_Task, mocked_Logger):
         test_cud = mock.Mock()
         test_cud.name             = 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000'
         test_cud.pre_exec         = 'post_exec'
@@ -248,7 +249,7 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.uid, 'task.0000')
         self.assertEqual(task.name, 'task.0000')
         self.assertEqual(task.parent_stage, {'uid': 'stage.0000', 'name': 'stage.0000'})
@@ -293,15 +294,15 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.exit_code, 0)
 
         test_cud.state = 'FAILED'
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertEqual(task.exit_code, 1)
 
         test_cud.state = 'EXECUTING'
-        task = create_task_from_cu(test_cud, None)
+        task = create_task_from_rp(test_cud, None)
         self.assertIsNone(task.exit_code)
 
     # ------------------------------------------------------------------------------
@@ -485,7 +486,7 @@ class TestBase(TestCase):
         task.copy_output_data = ['test_file > $SHARED/test_file']
         task.move_output_data = ['test_file > $SHARED/test_file']
 
-        test_cud = create_cud_from_task(task, placeholders)
+        test_cud = create_td_from_task(task, placeholders)
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')

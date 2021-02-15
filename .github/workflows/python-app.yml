@@ -40,7 +40,7 @@ jobs:
         pip install pytest
         pip install pytest-xdist
         pip install pytest-timeout
-        pip install timeout_decorator
+        pip install timeout-decorator
     - name: Test with pytest
       env:
         RMQ_HOSTNAME: localhost
@@ -58,10 +58,6 @@ jobs:
         coverage xml; \
         coverage report; \
         curl -s https://codecov.io/bash | bash
-    - name: Coveralls Python
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        github-token: ${{ secrets.COVERALL_TOKEN }}
 
   flake8:
     runs-on: ubuntu-latest
