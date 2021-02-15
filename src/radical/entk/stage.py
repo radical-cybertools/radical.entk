@@ -4,7 +4,6 @@ __license__   = 'MIT'
 
 
 import radical.utils as ru
-import warnings
 
 from string    import punctuation
 from .         import exceptions as ree
@@ -175,11 +174,10 @@ class Stage(object):
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            warnings.warn(NAME_MESSAGE, DeprecationWarning)
-            # raise ree.ValueError(obj=self._uid,
-            #                      attribute='name',
-            #                      actual_value=value,
-            #                      expected_value=NAME_MESSAGE)
+            raise ree.ValueError(obj=self._uid,
+                                 attribute='name',
+                                 actual_value=value,
+                                 expected_value=NAME_MESSAGE)
         self._name = value
 
     @tasks.setter
@@ -285,9 +283,7 @@ class Stage(object):
                     raise ree.ValueError(obj=self._uid,
                                         attribute='name',
                                         actual_value=d['name'],
-                                        expected_value="Valid object names can " +
-                                        "contains letters, numbers and '.'. Any "
-                                        "other character is not allowed")
+                                        expected_value=NAME_MESSAGE)
                 self._name = d['name']
 
         if 'state' in d:

@@ -11,9 +11,9 @@ from .constants import NAME_MESSAGE
 from . import exceptions as ree
 from . import states     as res
 
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=724)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=782)
-warnings.simplefilter(action="once", category=DeprecationWarning, lineno=950)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=728)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=786)
+warnings.simplefilter(action="once", category=DeprecationWarning, lineno=954)
 
 
 # ------------------------------------------------------------------------------
@@ -592,11 +592,16 @@ class Task(object):
     #
     @uid.setter
     def uid(self, value):
-
+        invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
             raise ree.TypeError(expected_type=str,
                                 actual_type=type(value))
 
+        if any(symbol in value for symbol in invalid_symbols):
+            raise ree.ValueError(obj=self._uid,
+                                 attribute='uid',
+                                 actual_value=value,
+                                 expected_value=NAME_MESSAGE)
         self._uid = value
 
     @rts_uid.setter
@@ -616,11 +621,10 @@ class Task(object):
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            warnings.warn(NAME_MESSAGE, DeprecationWarning, stacklevel=2)
-            # raise ree.ValueError(obj=self._uid,
-            #                      attribute='name',
-            #                      actual_value=value,
-            #                      expected_value=NAME_MESSAGE)
+            raise ree.ValueError(obj=self._uid,
+                                 attribute='name',
+                                 actual_value=value,
+                                 expected_value=NAME_MESSAGE)
 
         self._name = value
 
@@ -1051,13 +1055,28 @@ class Task(object):
         :return: None
         '''
 
+        invalid_symbols = punctuation.replace('.','')
         # FIXME: uid, name, state and state_history to use setter type checks
-        if d.get('uid')  is not None: self._uid  = d['uid']
-        if d.get('name') is not None: self._name = d['name']
+        if d.get('uid') is not None:
+            if any(symbol in d['uid'] for symbol in invalid_symbols):
+                raise ree.ValueError(obj=self._uid,
+                                     attribute='uid',
+                                     actual_value=d['uid'],
+                                     expected_value=NAME_MESSAGE)
+            else:
+                self._uid = d['uid']
+
+        if d.get('name') is not None:
+            if any(symbol in d['name'] for symbol in invalid_symbols):
+                raise ree.ValueError(obj=self._uid,
+                                     attribute='name',
+                                     actual_value=d['name'],
+                                     expected_value=NAME_MESSAGE)
+            else:
+                self._name = d['name']
 
         if 'state' not in d:
             self._state = res.INITIAL
-
         else:
             # avoid adding state to state history, thus do typecheck here
             if not isinstance(d['state'], str):
