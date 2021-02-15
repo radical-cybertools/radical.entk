@@ -12,15 +12,15 @@ import threading     as mt
 
 import radical.utils as ru
 
-from ..            import exceptions as ree
-from ..            import states
+from ..           import exceptions as ree
+from ..           import states
 
-from ..pipeline    import Pipeline
-from ..task        import Task
-from ..utils       import write_session_description
-from ..utils       import write_workflows
+from ..pipeline   import Pipeline
+from ..task       import Task
+from ..utils      import write_session_description
+from ..utils      import write_workflows
 
-from .wfprocessor  import WFprocessor
+from .wfprocessor import WFprocessor
 
 
 # pylint: disable=protected-access
@@ -587,7 +587,7 @@ class AppManager(object):
         except Exception as ex:
 
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
-            raise
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -617,9 +617,9 @@ class AppManager(object):
 
             self._mqs_setup = False
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Message queues not deleted, error')
-            raise
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -700,8 +700,7 @@ class AppManager(object):
         final      = self._rmgr.get_completed_states()
         incomplete = self._wfp.workflow_incomplete()
 
-        while active_pipe_count and \
-              incomplete        and \
+        while active_pipe_count and incomplete      and \
               self._cur_attempt <= self._reattempts and \
               state not in final:
 
@@ -712,7 +711,7 @@ class AppManager(object):
                 with pipe.lock:
 
                     if pipe.completed and \
-                        pipe.uid not in finished_pipe_uids:
+                       pipe.uid not in finished_pipe_uids:
 
                         finished_pipe_uids.append(pipe.uid)
                         active_pipe_count -= 1
@@ -722,6 +721,7 @@ class AppManager(object):
 
 
             if not self._sync_thread.is_alive():
+                self._logger.info('Synchronizer thread is not alive.')
 
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
@@ -730,10 +730,11 @@ class AppManager(object):
                 self._wfp._reset_workflow()
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
-                self._logger.info('Restarting synchronizer thread.')
+                self._logger.info('Restarted synchronizer thread.')
 
 
             if not self._wfp.check_processor():
+                self._logger.info('WFP is not alive.')
 
                 # If WFP dies, both child threads are also cleaned out.
                 # We simply recreate the wfp object with a copy of the
@@ -752,7 +753,7 @@ class AppManager(object):
 
                 self._cur_attempt += 1
                 self._wfp._reset_workflow()
-                self._logger.info('Restarting WFProcessor.')
+                self._logger.info('Restarted WFProcessor.')
 
 
             if not self._task_manager.check_heartbeat():
@@ -949,10 +950,10 @@ class AppManager(object):
                                     synchronizer thread gracefully...')
             raise
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Unknown error in synchronizer: %s. \
                                     Terminating thread')
-            raise
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -996,5 +997,5 @@ class AppManager(object):
 
 
 # ------------------------------------------------------------------------------
-# pylint: disable=protected-access
+# pylint: enable=protected-access
 

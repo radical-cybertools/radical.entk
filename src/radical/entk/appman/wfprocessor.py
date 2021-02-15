@@ -133,8 +133,8 @@ class WFprocessor(object):
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
                 if pipe.state in states.FINAL or  \
-                    pipe.completed or \
-                    pipe.state == states.SUSPENDED:
+                   pipe.completed or \
+                   pipe.state == states.SUSPENDED:
                     continue
 
                 if pipe.state == states.INITIAL:
@@ -202,8 +202,8 @@ class WFprocessor(object):
 
             with pipe.lock:
                 if pipe.state in states.FINAL or  \
-                    pipe.completed or \
-                    pipe.state == states.SUSPENDED:
+                   pipe.completed or \
+                   pipe.state == states.SUSPENDED:
                     continue
 
                 curr_stage = pipe.stages[pipe.current_stage - 1]
