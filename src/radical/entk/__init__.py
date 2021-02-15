@@ -1,4 +1,4 @@
-
+# pylint: disable=unused-argument
 # ------------------------------------------------------------------------------
 #
 from .pipeline import Pipeline
@@ -17,9 +17,11 @@ import radical.utils                as _ru
 import requests                     as req
 from packaging.version import parse as parse_version
 
+
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
     return str(msg) + '\n'
+
 
 warnings.formatwarning = custom_formatwarning
 

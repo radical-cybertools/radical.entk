@@ -244,13 +244,15 @@ class TaskManager(Base_TaskManager):
                     bulk_tasks.append(task)
 
                     self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, '%s-tmgr-to-sync' % self._sid)
+                                  mq_channel, rmq_conn_params,
+                                  '%s-tmgr-to-sync' % self._sid)
 
                 # this mock RTS immmedialtely completes all tasks
                 for task in bulk_tasks:
 
                     self._advance(task, 'Task', states.COMPLETED,
-                                  mq_channel, '%s-cb-to-sync' % self._sid)
+                                  mq_channel, rmq_conn_params,
+                                  '%s-cb-to-sync' % self._sid)
 
                     task_as_dict = json.dumps(task.to_dict())
                     mq_channel.basic_publish(

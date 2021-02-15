@@ -162,8 +162,8 @@ class ResourceManager(Base_ResourceManager):
                        'job_name'      : self._job_name
                        }
 
-            # Create Compute Pilot with validated resource description
-            pdesc = rp.ComputePilotDescription(pd_init)
+            # Create Pilot with validated resource description
+            pdesc = rp.PilotDescription(pd_init)
             self._prof.prof('rreq created', uid=self._uid)
 
             # Launch the pilot
