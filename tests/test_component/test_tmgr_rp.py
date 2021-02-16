@@ -49,7 +49,6 @@ class TestBase(TestCase):
         tmgr = RPTmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
                      rmgr, rmq_params)
         self.assertIsNone(tmgr._rts_runner)
-        self.assertEqual(tmgr._rmq_ping_interval, 10)
 
     # --------------------------------------------------------------------------
     #
@@ -70,7 +69,6 @@ class TestBase(TestCase):
         tmgr._pending_queue = ['pending_queues']
         tmgr._completed_queue = ['completed_queues']
         tmgr._tmgr = _tmgr_side_effect
-
 
         tmgr._tmgr_terminate = None
         tmgr._tmgr_process = None

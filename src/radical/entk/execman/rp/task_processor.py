@@ -1,5 +1,6 @@
 
 import os
+
 import radical.pilot as rp
 import radical.utils as ru
 
@@ -101,6 +102,8 @@ def resolve_placeholders(path, placeholders):
         raise
 
 
+# ------------------------------------------------------------------------------
+#
 def resolve_arguments(args, placeholders):
 
     resolved_args = list()
@@ -153,14 +156,22 @@ def resolve_arguments(args, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def resolve_tags(tag, parent_pipeline_name, placeholders):
+def resolve_tags(task, parent_pipeline_name, placeholders):
+
+    # entk only handles co_location tags.  If tags are given as strings, they
+    # get translated into `{'colocation': '<tag>'}`.  Tags passed as dictionaies
+    # are checked to conform with above form.
+    #
+    # In both cases, the tag string is expanded with the given placeholders.
+
+    tags = task.tags if task.tags else {'colocate': task.uid}
+
+    colo_tag = tags['colocate']
 
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
-        for tname in placeholders[parent_pipeline_name][sname]:
-            if tag != tname:
-                continue
-            return placeholders[parent_pipeline_name][sname][tname]['rts_uid']
+        if colo_tag in placeholders[parent_pipeline_name][sname]:
+            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
 
     for pname in placeholders:
 
@@ -169,13 +180,10 @@ def resolve_tags(tag, parent_pipeline_name, placeholders):
             continue
 
         for sname in placeholders[pname]:
-            for tname in placeholders[pname][sname]:
-                if tag != tname:
-                    continue
-                return placeholders[pname][sname][tname]['rts_uid']
+            if colo_tag in placeholders[pname][sname]:
+                return placeholders[pname][sname][colo_tag]['uid']
 
-    raise ree.EnTKError(msg='Tag %s cannot be used as no previous task with '
-                            'that name is found' % tag)
+    return task.uid
 
 
 # ------------------------------------------------------------------------------
@@ -413,126 +421,120 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_cud_from_task(task, placeholders, prof=None):
+def create_td_from_task(task, placeholders, prof=None):
     """
-    Purpose: Create a Compute Unit description based on the defined Task.
+    Purpose: Create an RP Task description based on the defined Task.
 
     :arguments:
         :task:         EnTK Task object
         :placeholders: dictionary holding the values for placeholders
 
-    :return: ComputeUnitDescription
+    :return: rp.TaskDescription
     """
 
     try:
 
-        logger.debug('Creating CU from Task %s' % (task.uid))
+        logger.debug('Creating Task from Task %s: %s' % (task.uid, task.sandbox))
 
         if prof:
-            prof.prof('cud_create', uid=task.uid)
+            prof.prof('td_create', uid=task.uid)
 
-        cud = rp.ComputeUnitDescription()
-        cud.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
-                                          task.parent_stage['uid'],
-                                          task.parent_stage['name'],
-                                          task.parent_pipeline['uid'],
-                                          task.parent_pipeline['name'])
-        cud.pre_exec   = task.pre_exec
-        cud.executable = task.executable
-        cud.arguments  = resolve_arguments(task.arguments, placeholders)
-        cud.sandbox    = task.sandbox
-        cud.post_exec  = task.post_exec
+        td = rp.TaskDescription()
+        td.uid  = task.uid
+        td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
+                                         task.parent_stage['uid'],
+                                         task.parent_stage['name'],
+                                         task.parent_pipeline['uid'],
+                                         task.parent_pipeline['name'])
+        td.pre_exec   = task.pre_exec
+        td.executable = task.executable
+        td.arguments  = resolve_arguments(task.arguments, placeholders)
+        td.sandbox    = task.sandbox
+        td.post_exec  = task.post_exec
 
-        if task.tag:
-            if task.parent_pipeline['name']:
-                cud.tag = resolve_tags(
-                        tag=task.tag,
-                        parent_pipeline_name=task.parent_pipeline['name'],
-                        placeholders=placeholders)
+        if task.parent_pipeline['uid']:
+            td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
+                                   placeholders=placeholders)
 
-        cud.cpu_processes    = task.cpu_reqs['cpu_processes']
-        cud.cpu_threads      = task.cpu_reqs['cpu_threads']
-        cud.cpu_process_type = task.cpu_reqs['cpu_process_type']
-        cud.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
-        cud.gpu_processes    = task.gpu_reqs['gpu_processes']
-        cud.gpu_threads      = task.gpu_reqs['gpu_threads']
-        cud.gpu_process_type = task.gpu_reqs['gpu_process_type']
-        cud.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
+        td.cpu_processes    = task.cpu_reqs['cpu_processes']
+        td.cpu_threads      = task.cpu_reqs['cpu_threads']
+        td.cpu_process_type = task.cpu_reqs['cpu_process_type']
+        td.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
+        td.gpu_processes    = task.gpu_reqs['gpu_processes']
+        td.gpu_threads      = task.gpu_reqs['gpu_threads']
+        td.gpu_process_type = task.gpu_reqs['gpu_process_type']
+        td.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
 
         if task.lfs_per_process:
-            cud.lfs_per_process = task.lfs_per_process
+            td.lfs_per_process = task.lfs_per_process
 
-        if task.stdout: cud.stdout = task.stdout
-        if task.stderr: cud.stderr = task.stderr
+        if task.stdout: td.stdout = task.stdout
+        if task.stderr: td.stderr = task.stderr
 
-        cud.input_staging  = get_input_list_from_task(task, placeholders)
-        cud.output_staging = get_output_list_from_task(task, placeholders)
+        td.input_staging  = get_input_list_from_task(task, placeholders)
+        td.output_staging = get_output_list_from_task(task, placeholders)
 
         if prof:
-            prof.prof('cud from task - done', uid=task.uid)
+            prof.prof('td from task - done', uid=task.uid)
 
-        logger.debug('CU %s created from Task %s' % (cud.name, task.uid))
+        logger.debug('Task %s created from Task %s' % (td.name, task.uid))
 
-        return cud
-
+        return td
 
     except Exception:
-        logger.exception('CU creation failed')
+        logger.exception('Task creation failed')
         raise
 
 
 # ------------------------------------------------------------------------------
 #
-def create_task_from_cu(cu, prof=None):
+def create_task_from_rp(rp_task, prof=None):
     """
-    Purpose: Create a Task based on the Compute Unit.
+    Purpose: Create a Task based on the RP Task.
 
     Details: Currently, only the uid, parent_stage and parent_pipeline are
-             retrieved. The exact initial Task (that was converted to a CUD)
+             retrieved. The exact initial Task (that was converted to a TD)
              cannot be recovered as the RP API does not provide the same
-             attributes for a CU as for a CUD.  Also, this is not required for
+             attributes for a Task as for a TD.  Also, this is not required for
              the most part.
 
-    TODO:    Add exit code, stdout, stderr and path attributes to a Task.
-             These can be extracted from a CU
-
     :arguments:
-        :cu: RP Compute Unit
+        :task: RP Task
 
     :return: Task
     """
 
     try:
-        logger.debug('Create Task from CU %s' % cu.name)
+        logger.debug('Create Task from Task %s' % rp_task.name)
 
         if prof:
-            prof.prof('task_create', uid=cu.name.split(',')[0].strip())
+            prof.prof('task_create', uid=rp_task.name.split(',')[0].strip())
 
         task = Task()
 
-        task.uid                     = cu.name.split(',')[0].strip()
-        task.name                    = cu.name.split(',')[1].strip()
-        task.parent_stage['uid']     = cu.name.split(',')[2].strip()
-        task.parent_stage['name']    = cu.name.split(',')[3].strip()
-        task.parent_pipeline['uid']  = cu.name.split(',')[4].strip()
-        task.parent_pipeline['name'] = cu.name.split(',')[5].strip()
-        task.rts_uid                 = cu.uid
+        task.uid                     = rp_task.name.split(',')[0].strip()
+        task.name                    = rp_task.name.split(',')[1].strip()
+        task.parent_stage['uid']     = rp_task.name.split(',')[2].strip()
+        task.parent_stage['name']    = rp_task.name.split(',')[3].strip()
+        task.parent_pipeline['uid']  = rp_task.name.split(',')[4].strip()
+        task.parent_pipeline['name'] = rp_task.name.split(',')[5].strip()
+        task.rts_uid                 = rp_task.uid
 
-        if cu.state == rp.DONE                    : task.exit_code = 0
-        elif cu.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
+        if   rp_task.state == rp.DONE                  : task.exit_code = 0
+        elif rp_task.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
 
-        task.path = ru.Url(cu.sandbox).path
+        task.path = ru.Url(rp_task.sandbox).path
 
         if prof:
-            prof.prof('task_created', uid=cu.name.split(',')[0].strip())
+            prof.prof('task_created', uid=task.uid)
 
-        logger.debug('Task %s created from CU %s' % (task.uid, cu.name))
+        logger.debug('Task %s created from Task %s' % (task.uid, rp_task.name))
 
         return task
 
 
     except Exception:
-        logger.exception('Task creation from CU failed, error')
+        logger.exception('Task creation from RP Task failed, error')
         raise
 
 
