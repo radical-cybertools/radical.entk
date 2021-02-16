@@ -298,7 +298,7 @@ class TestTask(TestCase):
         with self.assertRaises(ree.TypeError):
             task.name = 0
 
-        with self.assertWarns(DeprecationWarning):
+        with self.assertRaises(ree.ValueError):
             task.name = 'task,0000'
 
 
