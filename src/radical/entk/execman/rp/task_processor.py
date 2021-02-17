@@ -435,6 +435,7 @@ def create_td_from_task(task, placeholders, task_hash_table, prof=None):
     try:
 
         logger.debug('Creating Task from Task %s: %s' % (task.uid, task.sandbox))
+        logger.debug('Hash table state: %s' % task_hash_table)
 
         if prof:
             prof.prof('td_create', uid=task.uid)
@@ -448,6 +449,8 @@ def create_td_from_task(task, placeholders, task_hash_table, prof=None):
             tmp_uid = ru.generate_id(prefix=task.uid, ns=task.uid)
             td.uid = tmp_uid
         task_hash_table[task.uid] = td.uid
+
+        logger.debug('Hash table state: %s' % task_hash_table)
 
         td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                          task.parent_stage['uid'],
@@ -513,7 +516,7 @@ def create_task_from_rp(rp_task, prof=None):
     """
 
     try:
-        logger.debug('Create Task from Task %s' % rp_task.name)
+        logger.debug('Create Task from RP Task %s' % rp_task.name)
 
         if prof:
             prof.prof('task_create', uid=rp_task.name.split(',')[0].strip())
@@ -536,7 +539,7 @@ def create_task_from_rp(rp_task, prof=None):
         if prof:
             prof.prof('task_created', uid=task.uid)
 
-        logger.debug('Task %s created from Task %s' % (task.uid, rp_task.name))
+        logger.debug('Task %s created from RP Task %s' % (task.uid, rp_task.name))
 
         return task
 
