@@ -727,7 +727,7 @@ class AppManager(object):
                                               name='synchronizer-thread')
                 self._sync_thread.start()
                 self._cur_attempt += 1
-                self._wfp._reset_workflow()
+                self._wfp.reset_workflow()
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
                 self._logger.info('Restarted synchronizer thread.')
@@ -752,7 +752,7 @@ class AppManager(object):
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
-                self._wfp._reset_workflow()
+                self._wfp.reset_workflow()
                 self._logger.info('Restarted WFProcessor.')
 
 
@@ -775,7 +775,7 @@ class AppManager(object):
                 self._task_manager.start_manager()
                 self._logger.info('Restarting heartbeat thread')
                 self._task_manager.start_heartbeat()
-                self._wfp._reset_workflow()
+                self._wfp.reset_workflow()
 
                 self._cur_attempt += 1
 

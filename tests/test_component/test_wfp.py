@@ -349,8 +349,7 @@ class TestBase(TestCase):
 
         wfp._workflow = set([pipe, pipe2, pipe3])
 
-
-        wfp._reset_workflow()
+        wfp.reset_workflow()
         self.assertEqual(global_advs[0], [task, 'Task', 'DESCRIBED'])
         self.assertEqual(global_advs[1], [stage, 'Stage', 'SCHEDULING'])
 

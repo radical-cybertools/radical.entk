@@ -139,10 +139,12 @@ class TestBase(TestCase):
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_arguments', return_value='test_args')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_tags', return_value='test_tag')
     @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_input_list_from_task', return_value='inputs')
+    @mock.patch('radical.utils.generate_id', return_value='task.0000.0000')
     def test_create_td_from_task(self, mocked_TaskDescription,
                                   mocked_Logger, mocked_get_input_list_from_task,
                                   mocked_get_output_list_from_task,
-                                 mocked_resolve_arguments, mocked_resolve_tags):
+                                 mocked_resolve_arguments, mocked_resolve_tags,
+                                 mocked_generate_id):
 
         mocked_TaskDescription.name             = None
         mocked_TaskDescription.pre_exec         = None
@@ -190,8 +192,9 @@ class TestBase(TestCase):
         task.lfs_per_process = 235
         task.stderr = 'stderr'
         task.stdout = 'stdout'
-
-        test_td = create_td_from_task(task, None)
+        hash_table = {}
+        test_td = create_td_from_task(task=task, placeholders=None,
+                                      task_hash_table=hash_table)
         self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
@@ -212,6 +215,34 @@ class TestBase(TestCase):
         self.assertEqual(test_td.input_staging, 'inputs')
         self.assertEqual(test_td.output_staging, 'outputs')
         self.assertEqual(test_td.tag, 'test_tag')
+        self.assertEqual(test_td.uid, 'task.0000')
+        self.assertEqual(hash_table, {'task.0000':'task.0000'})
+
+
+        test_td = create_td_from_task(task=task, placeholders=None,
+                                      task_hash_table=hash_table)
+        self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
+        self.assertEqual(test_td.pre_exec, 'post_exec')
+        self.assertEqual(test_td.executable, '/bin/date')
+        self.assertEqual(test_td.arguments, 'test_args')
+        self.assertEqual(test_td.sandbox, 'unit.0000')
+        self.assertEqual(test_td.post_exec, '')
+        self.assertEqual(test_td.cpu_processes, 5)
+        self.assertEqual(test_td.cpu_threads, 6)
+        self.assertEqual(test_td.cpu_process_type, 'POSIX')
+        self.assertIsNone(test_td.cpu_thread_type)
+        self.assertEqual(test_td.gpu_processes, 5)
+        self.assertEqual(test_td.gpu_threads, 6)
+        self.assertEqual(test_td.gpu_process_type, 'POSIX')
+        self.assertIsNone(test_td.gpu_thread_type)
+        self.assertEqual(test_td.lfs_per_process, 235)
+        self.assertEqual(test_td.stdout, 'stdout')
+        self.assertEqual(test_td.stderr, 'stderr')
+        self.assertEqual(test_td.input_staging, 'inputs')
+        self.assertEqual(test_td.output_staging, 'outputs')
+        self.assertEqual(test_td.tag, 'test_tag')
+        self.assertEqual(test_td.uid, 'task.0000.0000')
+        self.assertEqual(hash_table, {'task.0000':'task.0000.0000'})
 
     # ------------------------------------------------------------------------------
     #
@@ -378,30 +409,30 @@ class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
     #
-    @mock.patch('radical.pilot.ComputeUnitDescription')
+    @mock.patch('radical.pilot.TaskDescription')
     @mock.patch('radical.utils.Logger')
-    def test_issue_259(self, mocked_ComputeUnitDescription, mocked_Logger):
+    def test_issue_259(self, mocked_TaskDescription, mocked_Logger):
 
-        mocked_ComputeUnitDescription.name             = None
-        mocked_ComputeUnitDescription.pre_exec         = None
-        mocked_ComputeUnitDescription.executable       = None
-        mocked_ComputeUnitDescription.arguments        = None
-        mocked_ComputeUnitDescription.sandbox          = None
-        mocked_ComputeUnitDescription.post_exec        = None
-        mocked_ComputeUnitDescription.tag              = None
-        mocked_ComputeUnitDescription.cpu_processes    = None
-        mocked_ComputeUnitDescription.cpu_threads      = None
-        mocked_ComputeUnitDescription.cpu_process_type = None
-        mocked_ComputeUnitDescription.cpu_thread_type  = None
-        mocked_ComputeUnitDescription.gpu_processes    = None
-        mocked_ComputeUnitDescription.gpu_threads      = None
-        mocked_ComputeUnitDescription.gpu_process_type = None
-        mocked_ComputeUnitDescription.gpu_thread_type  = None
-        mocked_ComputeUnitDescription.lfs_per_process  = None
-        mocked_ComputeUnitDescription.stdout           = None
-        mocked_ComputeUnitDescription.stderr           = None
-        mocked_ComputeUnitDescription.input_staging    = None
-        mocked_ComputeUnitDescription.output_staging   = None
+        mocked_TaskDescription.name             = None
+        mocked_TaskDescription.pre_exec         = None
+        mocked_TaskDescription.executable       = None
+        mocked_TaskDescription.arguments        = None
+        mocked_TaskDescription.sandbox          = None
+        mocked_TaskDescription.post_exec        = None
+        mocked_TaskDescription.tag              = None
+        mocked_TaskDescription.cpu_processes    = None
+        mocked_TaskDescription.cpu_threads      = None
+        mocked_TaskDescription.cpu_process_type = None
+        mocked_TaskDescription.cpu_thread_type  = None
+        mocked_TaskDescription.gpu_processes    = None
+        mocked_TaskDescription.gpu_threads      = None
+        mocked_TaskDescription.gpu_process_type = None
+        mocked_TaskDescription.gpu_thread_type  = None
+        mocked_TaskDescription.lfs_per_process  = None
+        mocked_TaskDescription.stdout           = None
+        mocked_TaskDescription.stderr           = None
+        mocked_TaskDescription.input_staging    = None
+        mocked_TaskDescription.output_staging   = None
 
         pipeline_name = 'pipe.0000'
         stage_name    = 'stage.0000'
@@ -485,8 +516,8 @@ class TestBase(TestCase):
         task.download_output_data = ['test_file > $SHARED/test_file']
         task.copy_output_data = ['test_file > $SHARED/test_file']
         task.move_output_data = ['test_file > $SHARED/test_file']
-
-        test_cud = create_td_from_task(task, placeholders)
+        hash_table = {}
+        test_cud = create_td_from_task(task, placeholders, hash_table)
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')

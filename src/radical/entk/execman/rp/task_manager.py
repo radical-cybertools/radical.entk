@@ -55,7 +55,7 @@ class TaskManager(Base_TaskManager):
                                           rmgr, rmq_conn_params,
                                           rts='radical.pilot')
         self._rts_runner = None
-
+        self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
 
@@ -330,7 +330,8 @@ class TaskManager(Base_TaskManager):
 
                     load_placeholder(task)
                     bulk_tds.append(create_td_from_task(
-                                            task, placeholders, self._prof))
+                                            task, placeholders,
+                                            self._submitted_tasks, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, rmq_conn_params,

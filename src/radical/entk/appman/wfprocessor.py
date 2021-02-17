@@ -191,7 +191,7 @@ class WFprocessor(object):
 
     # --------------------------------------------------------------------------
     #
-    def _reset_workflow(self):
+    def reset_workflow(self):
         '''
         When a component is restarted we reset all the tasks that did not finish
         to the first state. Then they are scheduled again for execution.

@@ -421,7 +421,7 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_td_from_task(task, placeholders, prof=None):
+def create_td_from_task(task, placeholders, task_hash_table, prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -440,7 +440,15 @@ def create_td_from_task(task, placeholders, prof=None):
             prof.prof('td_create', uid=task.uid)
 
         td = rp.TaskDescription()
-        td.uid  = task.uid
+
+        task_pre_uid = task_hash_table.get(task.uid, None)
+        if task_pre_uid is None:
+            td.uid = task.uid
+        else:
+            tmp_uid = ru.generate_id(prefix=task.uid, ns=task.uid)
+            td.uid = tmp_uid
+        task_hash_table[task.uid] = td.uid
+
         td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                          task.parent_stage['uid'],
                                          task.parent_stage['name'],
