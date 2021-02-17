@@ -3,7 +3,6 @@ __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
 import threading
-import warnings
 
 import radical.utils as ru
 
@@ -166,11 +165,10 @@ class Pipeline(object):
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            warnings.warn(NAME_MESSAGE, DeprecationWarning)
-            # raise ree.ValueError(obj=self._uid,
-            #                      attribute='name',
-            #                      actual_value=value,
-            #                      expected_value=NAME_MESSAGE)
+            raise ree.ValueError(obj=self._uid,
+                                 attribute='name',
+                                 actual_value=value,
+                                 expected_value=NAME_MESSAGE)
 
         self._name = value
 
@@ -266,9 +264,7 @@ class Pipeline(object):
                     raise ree.ValueError(obj=self._uid,
                                         attribute='name',
                                         actual_value=d['name'],
-                                        expected_value="Valid object names can " +
-                                        "contains letters, numbers and '.'. Any "
-                                        "other character is not allowed")
+                                        expected_value=NAME_MESSAGE)
 
                 self._name = d['name']
 
