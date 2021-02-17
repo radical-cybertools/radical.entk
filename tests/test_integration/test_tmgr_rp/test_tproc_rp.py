@@ -57,8 +57,8 @@ class TestBase(TestCase):
         task.lfs_per_process = 235
         task.stderr = 'stderr'
         task.stdout = 'stdout'
-
-        test_td = create_td_from_task(task, placeholders)
+        hash_table = {}
+        test_td = create_td_from_task(task, placeholders, hash_table)
         self.assertEqual(test_td.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, ['post_exec'])
         self.assertEqual(test_td.executable, '/bin/date')
@@ -79,8 +79,11 @@ class TestBase(TestCase):
         self.assertEqual(test_td.input_staging, [])
         self.assertEqual(test_td.output_staging, [])
         self.assertEqual(test_td.tag, 'task.0000')
-
+        self.assertEqual(test_td.uid,'task.0000')
+        self.assertEqual(hash_table, {'task.0000': 'task.0000'})
         task.tags = {'colocate': 'task.0001'}
-        test_td = create_td_from_task(task, placeholders)
+        test_td = create_td_from_task(task, placeholders, hash_table)
         self.assertEqual(test_td.tag, 'task.0003')
+        self.assertEqual(test_td.uid, 'task.0000.0000')
+        self.assertEqual(hash_table, {'task.0000': 'task.0000.0000'})
 
