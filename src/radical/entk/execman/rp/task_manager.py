@@ -7,6 +7,8 @@ __license__   = "MIT"
 import json
 import pika
 import queue
+import os
+import pickle
 
 import threading       as mt
 import multiprocessing as mp
@@ -156,6 +158,12 @@ class TaskManager(Base_TaskManager):
             # Queue for communication between threads of this process
             task_queue = queue.Queue()
 
+            # Pickle file for task id history.
+            # TODO: How do you take care the first execution.
+            if os.path.exists('.task_submitted.pkl'):
+                with open('.task_submitted.pkl', 'rb') as f:
+                    self._submitted_tasks = pickle.load(f)
+
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
                                          args=(task_queue, rmgr,
@@ -304,7 +312,7 @@ class TaskManager(Base_TaskManager):
                                            'params' : rmq_conn_params})
 
         try:
-
+            pickle_file = open('.task_submitted.pkl', 'wb')
             while not self._tmgr_terminate.is_set():
 
                 body = None
@@ -331,7 +339,8 @@ class TaskManager(Base_TaskManager):
                     load_placeholder(task)
                     bulk_tds.append(create_td_from_task(
                                             task, placeholders,
-                                            self._submitted_tasks, self._prof))
+                                            self._submitted_tasks, pickle_file,
+                                            self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, rmq_conn_params,

@@ -1,5 +1,6 @@
 
 import os
+import pickle
 
 import radical.pilot as rp
 import radical.utils as ru
@@ -421,7 +422,7 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_td_from_task(task, placeholders, task_hash_table, prof=None):
+def create_td_from_task(task, placeholders, task_hash_table, task_pickle, prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -449,6 +450,8 @@ def create_td_from_task(task, placeholders, task_hash_table, prof=None):
             tmp_uid = ru.generate_id(prefix=task.uid, ns=task.uid)
             td.uid = tmp_uid
         task_hash_table[task.uid] = td.uid
+
+        pickle.dump(task_hash_table, task_pickle, pickle.HIGHEST_PROTOCOL)
 
         logger.debug('Hash table state: %s' % task_hash_table)
 
