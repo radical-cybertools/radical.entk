@@ -160,7 +160,8 @@ class TaskManager(Base_TaskManager):
 
             # Pickle file for task id history.
             # TODO: How do you take care the first execution.
-            if os.path.exists('.task_submitted.pkl'):
+            pkl_path = self._path + '/.task_submitted.pkl'
+            if os.path.exists(pkl_path):
                 with open('.task_submitted.pkl', 'rb') as f:
                     self._submitted_tasks = pickle.load(f)
 
@@ -312,7 +313,8 @@ class TaskManager(Base_TaskManager):
                                            'params' : rmq_conn_params})
 
         try:
-            pickle_file = open('.task_submitted.pkl', 'wb')
+            pkl_path = self._path + '/.task_submitted.pkl'
+            pickle_file = open(pkl_path, 'wb')
             while not self._tmgr_terminate.is_set():
 
                 body = None
