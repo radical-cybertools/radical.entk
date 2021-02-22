@@ -8,6 +8,7 @@ from radical.entk                           import Task
 
 import pickle
 
+
 class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
