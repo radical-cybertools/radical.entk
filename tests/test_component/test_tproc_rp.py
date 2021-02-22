@@ -194,7 +194,9 @@ class TestBase(TestCase):
         task.stdout = 'stdout'
         hash_table = {}
         test_td = create_td_from_task(task=task, placeholders=None,
-                                      task_hash_table=hash_table)
+                                      task_hash_table=hash_table,
+                                      pkl_path='.test.pkl',
+                                      sid='test.sid')
         self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
@@ -220,7 +222,9 @@ class TestBase(TestCase):
 
 
         test_td = create_td_from_task(task=task, placeholders=None,
-                                      task_hash_table=hash_table)
+                                      task_hash_table=hash_table,
+                                      pkl_path='.test.pkl',
+                                      sid='test.sid')
         self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
@@ -517,7 +521,9 @@ class TestBase(TestCase):
         task.copy_output_data = ['test_file > $SHARED/test_file']
         task.move_output_data = ['test_file > $SHARED/test_file']
         hash_table = {}
-        test_cud = create_td_from_task(task, placeholders, hash_table)
+        test_cud = create_td_from_task(task, placeholders, hash_table,
+                                      pkl_path='.test.pkl',
+                                      sid='test.sid')
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')

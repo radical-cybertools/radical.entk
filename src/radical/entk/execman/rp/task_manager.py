@@ -412,7 +412,6 @@ class TaskManager(Base_TaskManager):
             self._log.exception('Task manager not started, error: %s', ex)
             self.terminate_manager()
             raise EnTKError(ex) from ex
-        # pylint: enable=attribute-defined-outside-init, access-member-before-definition
 
 # ------------------------------------------------------------------------------
-
+# pylint: enable=attribute-defined-outside-init, access-member-before-definition
