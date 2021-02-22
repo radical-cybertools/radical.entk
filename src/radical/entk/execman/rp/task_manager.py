@@ -314,7 +314,7 @@ class TaskManager(Base_TaskManager):
 
         try:
             pkl_path = self._path + '/.task_submitted.pkl'
-            pickle_file = open(pkl_path, 'wb')
+
             while not self._tmgr_terminate.is_set():
 
                 body = None
@@ -341,8 +341,8 @@ class TaskManager(Base_TaskManager):
                     load_placeholder(task)
                     bulk_tds.append(create_td_from_task(
                                             task, placeholders,
-                                            self._submitted_tasks, pickle_file,
-                                            self._prof))
+                                            self._submitted_tasks, pkl_path,
+                                            self._sid, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, rmq_conn_params,

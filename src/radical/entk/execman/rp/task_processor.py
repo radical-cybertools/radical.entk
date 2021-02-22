@@ -422,7 +422,8 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_td_from_task(task, placeholders, task_hash_table, task_pickle, prof=None):
+def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
+                        prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -447,11 +448,11 @@ def create_td_from_task(task, placeholders, task_hash_table, task_pickle, prof=N
         if task_pre_uid is None:
             td.uid = task.uid
         else:
-            tmp_uid = ru.generate_id(prefix=task.uid, ns=task.uid)
+            tmp_uid = ru.generate_id(prefix=task.uid, ns=sid)
             td.uid = tmp_uid
         task_hash_table[task.uid] = td.uid
-
-        pickle.dump(task_hash_table, task_pickle, pickle.HIGHEST_PROTOCOL)
+        with open(pkl_path, 'wb') as pickle_file:
+            pickle.dump(task_hash_table, pickle_file, pickle.HIGHEST_PROTOCOL)
 
         logger.debug('Hash table state: %s' % task_hash_table)
 
@@ -467,8 +468,9 @@ def create_td_from_task(task, placeholders, task_hash_table, task_pickle, prof=N
         td.post_exec  = task.post_exec
 
         if task.parent_pipeline['uid']:
-            td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
-                                   placeholders=placeholders)
+            td.tag = resolve_tags(task=task,
+                                  parent_pipeline_name=task.parent_pipeline['uid'],
+                                  placeholders=placeholders)
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
