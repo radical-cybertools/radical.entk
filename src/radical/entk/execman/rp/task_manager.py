@@ -162,7 +162,7 @@ class TaskManager(Base_TaskManager):
             # TODO: How do you take care the first execution.
             pkl_path = self._path + '/.task_submitted.pkl'
             if os.path.exists(pkl_path):
-                with open('.task_submitted.pkl', 'rb') as f:
+                with open(pkl_path, 'rb') as f:
                     self._submitted_tasks = pickle.load(f)
 
             # Start second thread to receive tasks and push to RTS
