@@ -6,6 +6,7 @@ from unittest import TestCase
 from radical.entk.execman.rp.task_processor import create_td_from_task
 from radical.entk                           import Task
 
+import pickle
 
 class TestBase(TestCase):
 
@@ -58,7 +59,8 @@ class TestBase(TestCase):
         task.stderr = 'stderr'
         task.stdout = 'stdout'
         hash_table = {}
-        test_td = create_td_from_task(task, placeholders, hash_table)
+        test_td = create_td_from_task(task, placeholders, hash_table,
+                                      '.test.pkl', 'test_sid')
         self.assertEqual(test_td.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, ['post_exec'])
         self.assertEqual(test_td.executable, '/bin/date')
@@ -82,8 +84,11 @@ class TestBase(TestCase):
         self.assertEqual(test_td.uid,'task.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000'})
         task.tags = {'colocate': 'task.0001'}
-        test_td = create_td_from_task(task, placeholders, hash_table)
+        test_td = create_td_from_task(task, placeholders, hash_table,
+                                      '.test.pkl', 'test_sid')
         self.assertEqual(test_td.tag, 'task.0003')
         self.assertEqual(test_td.uid, 'task.0000.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000.0000'})
-
+        with open('.test.pkl', 'rb') as f:
+            submitted_tasks = pickle.load(f)
+        self.assertEqual(submitted_tasks, hash_table)
