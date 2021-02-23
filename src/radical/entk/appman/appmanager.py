@@ -700,9 +700,8 @@ class AppManager(object):
         final      = self._rmgr.get_completed_states()
         incomplete = self._wfp.workflow_incomplete()
 
-        while active_pipe_count and incomplete      and \
-              self._cur_attempt <= self._reattempts and \
-              state not in final:
+        while active_pipe_count and incomplete and \
+              self._cur_attempt <= self._reattempts:
 
             state = self._rmgr.get_resource_allocation_state()
 
@@ -779,8 +778,8 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
-        if state in ['FAILED', 'CANCELED']:
-            self._logger.debug('RTS failed')
+            if state in ['FAILED', 'CANCELED']:
+                self._logger.debug('RTS failed')
 
         if self._cur_attempt > self._reattempts:
             raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')
