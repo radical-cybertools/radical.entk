@@ -157,8 +157,6 @@ class ResourceManager(Base_ResourceManager):
                        'access_schema' : self._access_schema,
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
-                       'input_staging' : self._shared_data,
-                       'output_staging': self._outputs,
                        'job_name'      : self._job_name
                        }
 
@@ -168,6 +166,8 @@ class ResourceManager(Base_ResourceManager):
 
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
+            if self._shared_data:
+                self._pilot.stage_in(self._shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
@@ -212,7 +212,7 @@ class ResourceManager(Base_ResourceManager):
 
                 # once the workflow is completed, fetch output data
                 if self._outputs:
-                    self._pilot.stage_out()
+                    self._pilot.stage_out(self._outputs)
 
                 # make this a config option?
                 if 'RADICAL_PILOT_PROFILE' in os.environ or \
