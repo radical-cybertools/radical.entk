@@ -225,6 +225,11 @@ class TaskManager(Base_TaskManager):
             self._prof.close()
             self._log.debug('TMGR profile closed')
 
+    def  update_resource(self, pilot):
+        curr_pilot = self._tmgr.list_pilots()
+        if curr_pilot:
+            self._tmgr.remove_pilots(pilot_ids=curr_pilot)
+        self._tmgr.add_pilot(pilot)
 
     # --------------------------------------------------------------------------
     #
