@@ -171,12 +171,12 @@ class ResourceManager(Base_ResourceManager):
                 for data in self._shared_data:
                     data = data.split('>')
                     if len(data) > 1:
-                        shared_data.append({'source': data[0],
-                                            'target': data[1],
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[1].strip(),
                                             'action': rp.TRANSFER})
                     else:
-                        shared_data.append({'source': data[0],
-                                            'target': data[0].split('/')[-1],
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[0].split('/')[-1].strip(),
                                             'action': rp.TRANSFER})
                 self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
