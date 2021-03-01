@@ -167,7 +167,13 @@ class ResourceManager(Base_ResourceManager):
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
             if self._shared_data:
-                self._pilot.stage_in(self._shared_data)
+                shared_data = []
+                for data in self._shared_data:
+                    source, target = data.split('>')
+                    shared_data.append({'source': source,
+                                        'target': target,
+                                        'action': rp.TRANSFER})
+                self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
