@@ -1,21 +1,19 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
 
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import radical.entk.exceptions as ree
 
 from radical.entk.execman.rp   import ResourceManager as RPRmgr
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
 
 stage_ins = []
 
+
 def _pilot_stage_in(sds):
     stage_ins.append(sds)
+
 
 def _submit_pilot_side_effect(*args):
     mocked_Pilot = mock.MagicMock()
