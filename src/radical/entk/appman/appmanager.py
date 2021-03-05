@@ -689,6 +689,34 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
+    def _submit_rts_tmgr(self, rts_info):
+        '''
+        **Purpose**: Update the runtime system information in the task manager
+        '''
+        rts_msg = {
+                   'type': 'rts',
+                   'body': rts_info
+                   }
+        rts_msg = json.dumps(rts_msg)
+
+        # Acquire a connection+channel to the rmq server
+        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+        mq_channel = mq_connection.channel()
+
+        # Send the workload to the pending queue
+        mq_channel.basic_publish(exchange='',
+                                 routing_key=self._pending_queue[0],
+                                 body=rts_msg
+                                 # TODO: Make durability parameters
+                                 # as a config parameter and then
+                                 # enable the following accordingly
+                                 # properties=pika.BasicProperties(
+                                 # make message persistent
+                                 # delivery_mode = 2)
+                                )
+
+    # --------------------------------------------------------------------------
+    #
     def _run_workflow(self):
 
         active_pipe_count  = len(self._workflow)
@@ -696,14 +724,12 @@ class AppManager(object):
 
         # We wait till all pipelines of the workflow are marked
         # complete
-        state      = self._rmgr.get_resource_allocation_state()
-        final      = self._rmgr.get_completed_states()
         incomplete = self._wfp.workflow_incomplete()
+
+        self._submit_rts_tmgr(self._rmgr.get_rts_info())
 
         while active_pipe_count and incomplete and \
               self._cur_attempt <= self._reattempts:
-
-            state = self._rmgr.get_resource_allocation_state()
 
             for pipe in self._workflow:
 
@@ -778,8 +804,13 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
+            state = self._rmgr.get_resource_allocation_state()
             if state in ['FAILED', 'CANCELED']:
-                self._logger.debug('RTS failed')
+                self._logger.debug('RTS failed, trying to resubmit')
+                self._rmgr._submit_resource_request()
+                self._submit_rts_tmgr(self._rmgr.get_rts_info())
+                self._cur_attempt += 1
+                self._logger.debug('RTS resubmitted')
 
         if self._cur_attempt > self._reattempts:
             raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')

@@ -187,7 +187,13 @@ class TaskManager(Base_TaskManager):
                     if body:
 
                         body = json.loads(body)
-                        task_queue.put(body)
+
+                        if body['type'] == 'workload':
+                            task_queue.put(body['body'])
+                        elif body['type'] == 'rts':
+                            self._update_resource(body['body'])
+                        else:
+                            self._log.error('TMGR receiver wrong message type')
 
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
@@ -225,11 +231,18 @@ class TaskManager(Base_TaskManager):
             self._prof.close()
             self._log.debug('TMGR profile closed')
 
-    def  update_resource(self, pilot):
+
+    # --------------------------------------------------------------------------
+    #
+    def _update_resource(self, pilot):
+        '''
+        Update used pilot.
+        '''
         curr_pilot = self._tmgr.list_pilots()
         if curr_pilot:
             self._tmgr.remove_pilots(pilot_ids=curr_pilot)
         self._tmgr.add_pilot(pilot)
+
 
     # --------------------------------------------------------------------------
     #

@@ -194,6 +194,39 @@ class Base_ResourceManager(object):
 
     # --------------------------------------------------------------------------
     #
+    def get_done_state(self):
+        """
+        **Purpose**: Get RTS state that describes graceful RTS termination
+        """
+
+        raise NotImplementedError('get_done_state() method not implemented '
+                                  'in ResourceManager for %s' % self._rts)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def get_failed_states(self):
+        """
+        **Purpose**: Get RTS states that describe ungraceful RTS termination
+        """
+
+        raise NotImplementedError('get_failed_states() method not implemented '
+                                  'in ResourceManager for %s' % self._rts)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        raise NotImplementedError('get_rts_info() method not implemented '
+                                  'in ResourceManager for %s' % self._rts)
+
+
+    # --------------------------------------------------------------------------
+    #
     def _validate_resource_desc(self):
         """
         **Purpose**: Validate the provided resource description

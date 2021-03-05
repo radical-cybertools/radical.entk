@@ -96,6 +96,17 @@ class ResourceManager(Base_ResourceManager):
         return self._pilot
 
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        return self._pilot.as_dict()
+
+
     # --------------------------------------------------------------------------
     #
     def get_resource_allocation_state(self):
@@ -117,6 +128,26 @@ class ResourceManager(Base_ResourceManager):
         """
 
         return rp.FINAL
+
+
+    # --------------------------------------------------------------------------
+    #
+    def get_done_state(self):
+        """
+        **Purpose**: Get RTS state that describes graceful RTS termination
+        """
+
+        return rp.DONE
+
+
+    # --------------------------------------------------------------------------
+    #
+    def get_failed_states(self):
+        """
+        **Purpose**: Get RTS states that describe ungraceful RTS termination
+        """
+
+        return [rp.FAILED, rp.CANCELED]
 
 
     # --------------------------------------------------------------------------
