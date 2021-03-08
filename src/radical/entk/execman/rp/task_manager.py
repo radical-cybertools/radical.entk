@@ -249,7 +249,7 @@ class TaskManager(Base_TaskManager):
         self._log.debug('Got old pilots')
         if curr_pilot:
             self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
-        self._rp_tmgr.add_pilot(pilot)
+        self._rp_tmgr.add_pilots(pilot)
         self._log.debug('Added new pilot')
 
 
