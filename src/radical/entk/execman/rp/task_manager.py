@@ -239,10 +239,18 @@ class TaskManager(Base_TaskManager):
         '''
         Update used pilot.
         '''
+
+        # Busy wait unit RP TMGR exists. Does some other way make sense?
+        self._log.debug('Adding pilot.')
+        while self._rp_tmgr is None:
+            pass
+
         curr_pilot = self._rp_tmgr.list_pilots()
+        self._log.debug('Got old pilots')
         if curr_pilot:
             self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
         self._rp_tmgr.add_pilot(pilot)
+        self._log.debug('Added new pilot')
 
 
     # --------------------------------------------------------------------------
@@ -326,7 +334,6 @@ class TaskManager(Base_TaskManager):
         mq_channel = mq_connection.channel()
 
         self._rp_tmgr = rp.TaskManager(session=rmgr._session)
-        self._rp_tmgr.add_pilots(rmgr.pilot)
         self._rp_tmgr.register_callback(task_state_cb,
                                   cb_data={'channel': mq_channel,
                                            'params' : rmq_conn_params})
