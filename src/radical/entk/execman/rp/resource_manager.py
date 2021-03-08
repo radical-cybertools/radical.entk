@@ -152,7 +152,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description

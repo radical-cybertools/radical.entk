@@ -212,7 +212,7 @@ class WFprocessor(object):
                         self._advance(task, 'Task', states.INITIAL)
                 self._advance(curr_stage, 'Stage', states.SCHEDULING)
 
-# --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def _execute_workload(self, workload, scheduled_stages):
 

@@ -317,12 +317,12 @@ class Base_ResourceManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**:  Submit resource request per provided description
         """
 
-        raise NotImplementedError('_submit_resource_request() method not '
+        raise NotImplementedError('submit_resource_request() method not '
                             'implemented in ResourceManager for %s' % self._rts)
 
 

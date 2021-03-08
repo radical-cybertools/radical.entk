@@ -430,7 +430,7 @@ class AppManager(object):
                 self._logger.info('Starting resource request submission')
                 self._prof.prof('rreq_init', uid=self._uid)
 
-                self._rmgr._submit_resource_request()
+                self._rmgr.submit_resource_request()
 
                 res_alloc_state = self._rmgr.get_resource_allocation_state()
                 if res_alloc_state in self._rmgr.get_completed_states():
@@ -683,7 +683,7 @@ class AppManager(object):
 
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
-
+            self._submit_rts_tmgr(self._rmgr.get_rts_info())
             self._prof.prof('tmgr_create_stop', uid=self._uid)
 
 
@@ -724,12 +724,9 @@ class AppManager(object):
 
         # We wait till all pipelines of the workflow are marked
         # complete
-        incomplete = self._wfp.workflow_incomplete()
+        # incomplete = self._wfp.workflow_incomplete()
 
-        self._submit_rts_tmgr(self._rmgr.get_rts_info())
-
-        while active_pipe_count and incomplete and \
-              self._cur_attempt <= self._reattempts:
+        while active_pipe_count and self._cur_attempt <= self._reattempts:
 
             for pipe in self._workflow:
 
@@ -744,7 +741,6 @@ class AppManager(object):
                         self._logger.info('Pipe %s completed' % pipe.uid)
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
-
             if not self._sync_thread.is_alive():
                 self._logger.info('Synchronizer thread is not alive.')
 
@@ -756,7 +752,6 @@ class AppManager(object):
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
                 self._logger.info('Restarted synchronizer thread.')
-
 
             if not self._wfp.check_processor():
                 self._logger.info('WFP is not alive.')
@@ -807,7 +802,7 @@ class AppManager(object):
             state = self._rmgr.get_resource_allocation_state()
             if state in ['FAILED', 'CANCELED']:
                 self._logger.debug('RTS failed, trying to resubmit')
-                self._rmgr._submit_resource_request()
+                self._rmgr.submit_resource_request()
                 self._submit_rts_tmgr(self._rmgr.get_rts_info())
                 self._cur_attempt += 1
                 self._logger.debug('RTS resubmitted')
