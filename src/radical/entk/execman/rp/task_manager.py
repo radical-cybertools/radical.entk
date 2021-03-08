@@ -60,6 +60,7 @@ class TaskManager(Base_TaskManager):
         self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
+        self._rp_tmgr = None
 
 
     # --------------------------------------------------------------------------
@@ -238,10 +239,10 @@ class TaskManager(Base_TaskManager):
         '''
         Update used pilot.
         '''
-        curr_pilot = self._tmgr.list_pilots()
+        curr_pilot = self._rp_tmgr.list_pilots()
         if curr_pilot:
-            self._tmgr.remove_pilots(pilot_ids=curr_pilot)
-        self._tmgr.add_pilot(pilot)
+            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
+        self._rp_tmgr.add_pilot(pilot)
 
 
     # --------------------------------------------------------------------------
@@ -324,9 +325,9 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        rp_tmgr = rp.TaskManager(session=rmgr._session)
-        rp_tmgr.add_pilots(rmgr.pilot)
-        rp_tmgr.register_callback(task_state_cb,
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr.add_pilots(rmgr.pilot)
+        self._rp_tmgr.register_callback(task_state_cb,
                                   cb_data={'channel': mq_channel,
                                            'params' : rmq_conn_params})
 
@@ -366,7 +367,7 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, rmq_conn_params,
                                   '%s-tmgr-to-sync' % self._sid)
 
-                rp_tmgr.submit_tasks(bulk_tds)
+                self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
@@ -378,7 +379,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(ex) from ex
 
         finally:
-            rp_tmgr.close()
+            self._rp_tmgr.close()
 
 
     # --------------------------------------------------------------------------
