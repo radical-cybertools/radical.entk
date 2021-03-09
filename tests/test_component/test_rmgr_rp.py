@@ -158,5 +158,5 @@ class TestBase(TestCase):
         rmgr._job_name = None
         rmgr._pmgr = mock.MagicMock()
 
-        rmgr._submit_resource_request()
+        rmgr.submit_resource_request()
         self.assertEqual(rmgr._session, 'test_session')

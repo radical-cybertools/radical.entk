@@ -132,26 +132,6 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def get_done_state(self):
-        """
-        **Purpose**: Get RTS state that describes graceful RTS termination
-        """
-
-        return rp.DONE
-
-
-    # --------------------------------------------------------------------------
-    #
-    def get_failed_states(self):
-        """
-        **Purpose**: Get RTS states that describe ungraceful RTS termination
-        """
-
-        return [rp.FAILED, rp.CANCELED]
-
-
-    # --------------------------------------------------------------------------
-    #
     def submit_resource_request(self):
         """
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
