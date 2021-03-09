@@ -725,6 +725,7 @@ class AppManager(object):
         # We wait till all pipelines of the workflow are marked
         # complete
         # incomplete = self._wfp.workflow_incomplete()
+        rts_final_states = self._rmgr.get_completed_states()
 
         while active_pipe_count and self._cur_attempt <= self._reattempts:
 
@@ -800,10 +801,11 @@ class AppManager(object):
                 self._cur_attempt += 1
 
             state = self._rmgr.get_resource_allocation_state()
-            if state in ['FAILED', 'CANCELED']:
-                self._logger.debug('RTS failed, trying to resubmit')
+            if state in rts_final_states:
+                self._logger.debug('Workflow not done. Resubmitting RTS.')
                 self._rmgr.submit_resource_request()
                 self._submit_rts_tmgr(self._rmgr.get_rts_info())
+                self._wfp.reset_workflow()
                 self._cur_attempt += 1
                 self._logger.debug('RTS resubmitted')
 
