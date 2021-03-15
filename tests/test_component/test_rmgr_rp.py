@@ -2,6 +2,7 @@
 # pylint: disable=no-value-for-parameter
 
 from unittest import TestCase
+import radical.utils as ru
 
 import radical.entk.exceptions as ree
 
@@ -160,3 +161,20 @@ class TestBase(TestCase):
 
         rmgr.submit_resource_request()
         self.assertEqual(rmgr._session, 'test_session')
+
+
+
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(RPRmgr,'__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    def test_get_rts_info(self, mocked_init, mocked_Logger,
+                                     mocked_Profiler):
+        rmgr = RPRmgr()
+        rmgr._logger = mocked_Logger
+        rmgr._prof = mocked_Profiler
+        rmgr._pilot = mock.Mock()
+        rmgr._pilot.as_dict = mock.MagicMock(return_value={'pilot': 'pilot.0000'})
+
+        self.assertEqual(rmgr.get_rts_info(), {'pilot': 'pilot.0000'})

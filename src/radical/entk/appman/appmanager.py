@@ -572,12 +572,9 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-          # f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 mq_channel.queue_declare(queue=q)
-          #     f.write(q + '\n')
-          # f.close()
 
             self._mqs_setup = True
 
@@ -763,19 +760,20 @@ class AppManager(object):
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
                 self._wfp.terminate_processor()
-                self._wfp = WFprocessor(sid=self._sid,
-                                        workflow=self._workflow,
-                                        pending_queue=self._pending_queue,
-                                        completed_queue=self._completed_queue,
-                                        resubmit_failed=self._resubmit_failed,
-                                        rmq_conn_params=self._rmq_conn_params)
+                # I am not sure this is needed. The object exists with the
+                # AppManager process.
+                # self._wfp = WFprocessor(sid=self._sid,
+                #                        workflow=self._workflow,
+                #                        pending_queue=self._pending_queue,
+                #                        completed_queue=self._completed_queue,
+                #                        resubmit_failed=self._resubmit_failed,
+                #                        rmq_conn_params=self._rmq_conn_params)
 
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
                 self._wfp.reset_workflow()
                 self._logger.info('Restarted WFProcessor.')
-
 
             if not self._task_manager.check_heartbeat():
 
@@ -804,7 +802,8 @@ class AppManager(object):
             if state in rts_final_states:
                 self._logger.debug('Workflow not done. Resubmitting RTS.')
                 self._rmgr.submit_resource_request()
-                self._submit_rts_tmgr(self._rmgr.get_rts_info())
+                rts_info = self._rmgr.get_rts_info()
+                self._submit_rts_tmgr(rts_info=rts_info)
                 self._wfp.reset_workflow()
                 self._cur_attempt += 1
                 self._logger.debug('RTS resubmitted')
