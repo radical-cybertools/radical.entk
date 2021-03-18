@@ -212,31 +212,32 @@ class WFprocessor(object):
                         self._advance(task, 'Task', states.INITIAL)
                 self._advance(curr_stage, 'Stage', states.SCHEDULING)
 
-# --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     def _execute_workload(self, workload, scheduled_stages):
 
         # Tasks of the workload need to be converted into a dict
         # as pika can send and receive only json/dict data
-        wl_json = json.dumps([task.to_dict() for task in workload])
+        wl_json = {'type': 'workload',
+                   'body': [task.to_dict() for task in workload]}
+
+        wl_json = json.dumps(wl_json)
 
         # Acquire a connection+channel to the rmq server
         mq_connection = pika.BlockingConnection(self._rmq_conn_params)
         mq_channel = mq_connection.channel()
 
         # Send the workload to the pending queue
-        mq_channel.basic_publish(exchange = '',
-                                    routing_key=self._pending_queue[0],
-                                    body=wl_json
-
-                                    # TODO: Make durability parameters
-                                    # as a config parameter and then
-                                    # enable the following accordingly
-                                    # properties=pika.BasicProperties(
-                                    # make message persistent
-                                    # delivery_mode = 2)
-
-                                    )
+        mq_channel.basic_publish(exchange='',
+                                 routing_key=self._pending_queue[0],
+                                 body=wl_json
+                                 # TODO: Make durability parameters
+                                 # as a config parameter and then
+                                 # enable the following accordingly
+                                 # properties=pika.BasicProperties(
+                                 # make message persistent
+                                 # delivery_mode = 2)
+                                )
         self._logger.debug('Workload submitted to Task Manager')
 
         # Update the state of the tasks in the workload

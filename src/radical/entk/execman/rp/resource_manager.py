@@ -96,6 +96,17 @@ class ResourceManager(Base_ResourceManager):
         return self._pilot
 
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        return self._pilot.as_dict()
+
+
     # --------------------------------------------------------------------------
     #
     def get_resource_allocation_state(self):
@@ -121,7 +132,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
