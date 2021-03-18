@@ -690,10 +690,8 @@ class AppManager(object):
         '''
         **Purpose**: Update the runtime system information in the task manager
         '''
-        rts_msg = {
-                   'type': 'rts',
-                   'body': rts_info
-                   }
+        rts_msg = {'type': 'rts',
+                   'body': rts_info}
         rts_msg = json.dumps(rts_msg)
 
         # Acquire a connection+channel to the rmq server

@@ -2,7 +2,6 @@
 # pylint: disable=no-value-for-parameter
 
 from unittest import TestCase
-import radical.utils as ru
 
 import radical.entk.exceptions as ree
 
