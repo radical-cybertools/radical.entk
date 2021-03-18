@@ -270,6 +270,9 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
+                # Raise an exception while running tests
+                ru.raise_on(tag='enqueue_fail')
+
                 time.sleep(3)
                 workload, scheduled_stages = self._create_workload()
 
@@ -461,6 +464,9 @@ class WFprocessor(object):
 
             last = time.time()
             while not self._dequeue_thread_terminate.is_set():
+
+                # Raise an exception while running tests
+                ru.raise_on(tag='dequeue_fail')
 
                 method_frame, _ , body = mq_channel.basic_get(
                     queue=self._completed_queue[0])

@@ -5,6 +5,7 @@ __license__   = 'MIT'
 
 
 from ..base.resource_manager import Base_ResourceManager
+import radical.utils as ru
 
 
 # ------------------------------------------------------------------------------
@@ -44,7 +45,11 @@ class ResourceManager(Base_ResourceManager):
         **Purpose**: get the state of the resource allocation
 
         '''
-        return None
+        try:
+            ru.raise_on(tag='resource_fail')
+            return 'Running'
+        except:
+            return 'Final'
 
 
     # --------------------------------------------------------------------------
@@ -52,9 +57,9 @@ class ResourceManager(Base_ResourceManager):
     def get_completed_states(self):
         '''
         **Purpose**: test if a resource allocation was submitted
-
         '''
-        return list()
+
+        return ['Final']
 
 
     # --------------------------------------------------------------------------
@@ -79,7 +84,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def submit_resource_request(self):
+    def submit_resource_request(self, *args):
         '''
         **Purpose**: Create a resourceas per provided resource description
         '''

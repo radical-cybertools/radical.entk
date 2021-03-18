@@ -1011,6 +1011,9 @@ class AppManager(object):
             self._get_message_to_sync(mq_channel, qname_t2s)
             self._get_message_to_sync(mq_channel, qname_c2s)
 
+            # Raise an exception while running tests
+            ru.raise_on(tag='sync_fail')
+
             # Appease pika cos it thinks the connection is dead
             now = time.time()
             if now - last >= self._rmq_ping_interval:
