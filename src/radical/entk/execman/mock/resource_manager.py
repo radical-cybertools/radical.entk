@@ -79,13 +79,19 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         '''
         **Purpose**: Create a resourceas per provided resource description
         '''
 
         return None
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+
+        return None
 
     # --------------------------------------------------------------------------
     #

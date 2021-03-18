@@ -430,7 +430,7 @@ class AppManager(object):
                 self._logger.info('Starting resource request submission')
                 self._prof.prof('rreq_init', uid=self._uid)
 
-                self._rmgr._submit_resource_request()
+                self._rmgr.submit_resource_request()
 
                 res_alloc_state = self._rmgr.get_resource_allocation_state()
                 if res_alloc_state in self._rmgr.get_completed_states():
@@ -572,12 +572,9 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-          # f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 mq_channel.queue_declare(queue=q)
-          #     f.write(q + '\n')
-          # f.close()
 
             self._mqs_setup = True
 
@@ -683,9 +680,37 @@ class AppManager(object):
 
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
-
+            self._submit_rts_tmgr(self._rmgr.get_rts_info())
             self._prof.prof('tmgr_create_stop', uid=self._uid)
 
+
+    # --------------------------------------------------------------------------
+    #
+    def _submit_rts_tmgr(self, rts_info):
+        '''
+        **Purpose**: Update the runtime system information in the task manager
+        '''
+        rts_msg = {
+                   'type': 'rts',
+                   'body': rts_info
+                   }
+        rts_msg = json.dumps(rts_msg)
+
+        # Acquire a connection+channel to the rmq server
+        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+        mq_channel = mq_connection.channel()
+
+        # Send the workload to the pending queue
+        mq_channel.basic_publish(exchange='',
+                                 routing_key=self._pending_queue[0],
+                                 body=rts_msg
+                                 # TODO: Make durability parameters
+                                 # as a config parameter and then
+                                 # enable the following accordingly
+                                 # properties=pika.BasicProperties(
+                                 # make message persistent
+                                 # delivery_mode = 2)
+                                )
 
     # --------------------------------------------------------------------------
     #
@@ -696,15 +721,10 @@ class AppManager(object):
 
         # We wait till all pipelines of the workflow are marked
         # complete
-        state      = self._rmgr.get_resource_allocation_state()
-        final      = self._rmgr.get_completed_states()
-        incomplete = self._wfp.workflow_incomplete()
+        # incomplete = self._wfp.workflow_incomplete()
+        rts_final_states = self._rmgr.get_completed_states()
 
-        while active_pipe_count and incomplete      and \
-              self._cur_attempt <= self._reattempts and \
-              state not in final:
-
-            state = self._rmgr.get_resource_allocation_state()
+        while active_pipe_count and self._cur_attempt <= self._reattempts:
 
             for pipe in self._workflow:
 
@@ -719,7 +739,6 @@ class AppManager(object):
                         self._logger.info('Pipe %s completed' % pipe.uid)
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
-
             if not self._sync_thread.is_alive():
                 self._logger.info('Synchronizer thread is not alive.')
 
@@ -732,7 +751,6 @@ class AppManager(object):
                 self._prof.prof('sync_thread_restart', uid=self._uid)
                 self._logger.info('Restarted synchronizer thread.')
 
-
             if not self._wfp.check_processor():
                 self._logger.info('WFP is not alive.')
 
@@ -742,19 +760,20 @@ class AppManager(object):
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
                 self._wfp.terminate_processor()
-                self._wfp = WFprocessor(sid=self._sid,
-                                        workflow=self._workflow,
-                                        pending_queue=self._pending_queue,
-                                        completed_queue=self._completed_queue,
-                                        resubmit_failed=self._resubmit_failed,
-                                        rmq_conn_params=self._rmq_conn_params)
+                # I am not sure this is needed. The object exists with the
+                # AppManager process.
+                # self._wfp = WFprocessor(sid=self._sid,
+                #                        workflow=self._workflow,
+                #                        pending_queue=self._pending_queue,
+                #                        completed_queue=self._completed_queue,
+                #                        resubmit_failed=self._resubmit_failed,
+                #                        rmq_conn_params=self._rmq_conn_params)
 
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
                 self._wfp.reset_workflow()
                 self._logger.info('Restarted WFProcessor.')
-
 
             if not self._task_manager.check_heartbeat():
 
@@ -779,8 +798,15 @@ class AppManager(object):
 
                 self._cur_attempt += 1
 
-        if state in ['FAILED', 'CANCELED']:
-            self._logger.debug('RTS failed')
+            state = self._rmgr.get_resource_allocation_state()
+            if state in rts_final_states:
+                self._logger.debug('Workflow not done. Resubmitting RTS.')
+                self._rmgr.submit_resource_request()
+                rts_info = self._rmgr.get_rts_info()
+                self._submit_rts_tmgr(rts_info=rts_info)
+                self._wfp.reset_workflow()
+                self._cur_attempt += 1
+                self._logger.debug('RTS resubmitted')
 
         if self._cur_attempt > self._reattempts:
             raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')

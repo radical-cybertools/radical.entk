@@ -60,6 +60,7 @@ class TaskManager(Base_TaskManager):
         self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
+        self._rp_tmgr = None
 
 
     # --------------------------------------------------------------------------
@@ -187,7 +188,13 @@ class TaskManager(Base_TaskManager):
                     if body:
 
                         body = json.loads(body)
-                        task_queue.put(body)
+
+                        if body['type'] == 'workload':
+                            task_queue.put(body['body'])
+                        elif body['type'] == 'rts':
+                            self._update_resource(body['body'])
+                        else:
+                            self._log.error('TMGR receiver wrong message type')
 
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
@@ -224,6 +231,26 @@ class TaskManager(Base_TaskManager):
             self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
             self._log.debug('TMGR profile closed')
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _update_resource(self, pilot):
+        '''
+        Update used pilot.
+        '''
+
+        # Busy wait unit RP TMGR exists. Does some other way make sense?
+        self._log.debug('Adding pilot.')
+        while self._rp_tmgr is None:
+            pass
+
+        curr_pilot = self._rp_tmgr.list_pilots()
+        self._log.debug('Got old pilots')
+        if curr_pilot:
+            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
+        self._rp_tmgr.add_pilots(pilot)
+        self._log.debug('Added new pilot')
 
 
     # --------------------------------------------------------------------------
@@ -306,9 +333,8 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        rp_tmgr = rp.TaskManager(session=rmgr._session)
-        rp_tmgr.add_pilots(rmgr.pilot)
-        rp_tmgr.register_callback(task_state_cb,
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr.register_callback(task_state_cb,
                                   cb_data={'channel': mq_channel,
                                            'params' : rmq_conn_params})
 
@@ -348,7 +374,7 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, rmq_conn_params,
                                   '%s-tmgr-to-sync' % self._sid)
 
-                rp_tmgr.submit_tasks(bulk_tds)
+                self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
@@ -360,7 +386,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(ex) from ex
 
         finally:
-            rp_tmgr.close()
+            self._rp_tmgr.close()
 
 
     # --------------------------------------------------------------------------
