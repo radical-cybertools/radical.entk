@@ -5,9 +5,7 @@ from unittest   import TestCase
 from hypothesis import given, settings
 import threading as mt
 import timeout_decorator
-
-
-import hypothesis.strategies as st
+import os
 
 try:
     import mock
@@ -25,7 +23,6 @@ class TestBase(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    @mock.patch.object(Amgr, '__init__', return_value=None)
     @mock.patch.object(Amgr, '_submit_rts_tmgr', return_value=True)
     @mock.patch('radical.entk.execman.mock.ResourceManager',
                 return_value=mock.MagicMock(get_resource_allocation_state=mock.MagicMock(return_value='RUNNING'),
@@ -47,7 +44,7 @@ class TestBase(TestCase):
                                             ))
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.Logger')
-    def test_run_workflow(self, mocked_init, mocked_submit_rts_tmgr, mocked_ResourceManager,
+    def test_run_workflow(self, mocked_submit_rts_tmgr, mocked_ResourceManager,
                           mocked_WFprocessor, mocked_TaskManager, mocked_Profiler,
                           mocked_Logger):
         os.environ['RU_RAISE_ON_SYNC_FAIL']='5'
@@ -70,7 +67,9 @@ class TestBase(TestCase):
         appman._workflow = set([pipe])
         appman._cur_attempt = 1
         appman._reattempts = 3
-
+        appman._sync_thread = mt.Thread(target=appman._synchronizer,
+                                          name='synchronizer-thread')
+        appman._sync_thread.start()
         with self.assertRaises(ree.EnTKError):
             appman._run_workflow()
 
