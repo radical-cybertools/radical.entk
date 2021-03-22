@@ -2,9 +2,7 @@
 # pylint: disable=no-value-for-parameter
 
 from unittest   import TestCase
-from hypothesis import given, settings
 import threading as mt
-import timeout_decorator
 import os
 
 try:
@@ -12,7 +10,7 @@ try:
 except ImportError:
     from unittest import mock
 
-import radical.utils as ru
+# import radical.utils as ru
 import radical.entk.exceptions as ree
 
 from radical.entk import AppManager as Amgr
@@ -42,9 +40,9 @@ class TestBase(TestCase):
     def test_run_workflow(self, mocked_submit_rts_tmgr,
                           mocked_WFprocessor, mocked_TaskManager, mocked_Profiler,
                           mocked_Logger):
-        os.environ['RU_RAISE_ON_SYNC_FAIL']='3'
-        os.environ['RU_RAISE_ON_RESOURCE_FAIL']='15'
-        os.environ['RU_RAISE_ON_TMGR_FAIL']='10'
+        os.environ['RU_RAISE_ON_SYNC_FAIL'] = '3'
+        os.environ['RU_RAISE_ON_RESOURCE_FAIL'] = '15'
+        os.environ['RU_RAISE_ON_TMGR_FAIL'] = '10'
         hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
         port = int(os.environ.get('RMQ_PORT', '5672'))
         username = os.environ.get('RMQ_USERNAME')
