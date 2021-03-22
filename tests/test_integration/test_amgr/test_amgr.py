@@ -38,10 +38,13 @@ class TestBase(TestCase):
                                             start_heartbeat=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.utils.Profiler')
+    @mock.patch('radical.utils.Logger')
     def test_run_workflow(self, mocked_submit_rts_tmgr,
-                          mocked_WFprocessor, mocked_TaskManager, mocked_Profiler):
+                          mocked_WFprocessor, mocked_TaskManager, mocked_Profiler,
+                          mocked_Logger):
         os.environ['RU_RAISE_ON_SYNC_FAIL']='3'
         os.environ['RU_RAISE_ON_RESOURCE_FAIL']='15'
+        os.environ['RU_RAISE_ON_TMGR_FAIL']='10'
         hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
         port = int(os.environ.get('RMQ_PORT', '5672'))
         username = os.environ.get('RMQ_USERNAME')
@@ -52,7 +55,7 @@ class TestBase(TestCase):
         appman._task_manager = re.execman.mock.TaskManager()
         appman._rmgr = re.execman.mock.ResourceManager(resource_desc={}, sid='test',rts_config=None)
         appman._uid = 'appman.0000'
-        appman._logger = ru.Logger('dummy', level="DEBUG")
+        appman._logger = mocked_Logger
         appman._prof = mocked_Profiler
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
