@@ -24,11 +24,6 @@ class TestBase(TestCase):
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Amgr, '_submit_rts_tmgr', return_value=True)
-    @mock.patch('radical.entk.execman.mock.ResourceManager',
-                return_value=mock.MagicMock(get_resource_allocation_state=mock.MagicMock(return_value='RUNNING'),
-                                            get_completed_states=mock.MagicMock(return_value=['DONE']),
-                                            get_rts_info=mock.MagicMock(return_value={'pilot': 'pilot.0000'})
-                                            ))
     @mock.patch('radical.entk.appman.wfprocessor.WFprocessor',
                 return_value=mock.MagicMock(workflow_incomplete=mock.MagicMock(return_value=True),
                                             check_processor=mock.MagicMock(return_value=True),
@@ -43,11 +38,10 @@ class TestBase(TestCase):
                                             start_heartbeat=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.utils.Profiler')
-    @mock.patch('radical.utils.Logger')
-    def test_run_workflow(self, mocked_submit_rts_tmgr, mocked_ResourceManager,
-                          mocked_WFprocessor, mocked_TaskManager, mocked_Profiler,
-                          mocked_Logger):
-        os.environ['RU_RAISE_ON_SYNC_FAIL']='5'
+    def test_run_workflow(self, mocked_submit_rts_tmgr,
+                          mocked_WFprocessor, mocked_TaskManager, mocked_Profiler):
+        os.environ['RU_RAISE_ON_SYNC_FAIL']='3'
+        os.environ['RU_RAISE_ON_RESOURCE_FAIL']='15'
         hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
         port = int(os.environ.get('RMQ_PORT', '5672'))
         username = os.environ.get('RMQ_USERNAME')
@@ -56,9 +50,9 @@ class TestBase(TestCase):
             password=password)
         appman._wfp = re.appman.wfprocessor.WFprocessor()
         appman._task_manager = re.execman.mock.TaskManager()
-        appman._rmgr = re.execman.mock.ResourceManager()
+        appman._rmgr = re.execman.mock.ResourceManager(resource_desc={}, sid='test',rts_config=None)
         appman._uid = 'appman.0000'
-        appman._logger = mocked_Logger
+        appman._logger = ru.Logger('dummy', level="DEBUG")
         appman._prof = mocked_Profiler
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
