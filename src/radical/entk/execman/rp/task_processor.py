@@ -37,61 +37,64 @@ def resolve_placeholders(path, placeholders):
         if '$' not in path:
             return path
 
+        path_placeholders = []
         # Extract placeholder from path
         if len(path.split('>')) == 1:
-            placeholder = path.split('/')[0]
+            path_placeholders.append(path.split('/')[0])
         else:
             if path.split('>')[0].strip().startswith('$'):
-                placeholder = path.split('>')[0].strip().split('/')[0]
-            else:
-                placeholder = path.split('>')[1].strip().split('/')[0]
+                path_placeholders.append(path.split('>')[0].strip().split('/')[0])
+            if path.split('>')[1].strip().startswith('$'):
+                path_placeholders.append(path.split('>')[1].strip().split('/')[0])
 
-        # SHARED
-        if placeholder == "$SHARED":
-            return path.replace(placeholder, 'pilot://')
+        resolved = path
 
-        # Expected placeholder format:
-        # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
+        for placeholder in path_placeholders:
 
-        elems = placeholder.split('/')[0].split('_')
+            # SHARED
+            if placeholder == "$SHARED":
+                resolved = resolved.replace(placeholder, 'pilot://')
+                continue
 
-        if not len(elems) == 6:
+            # Expected placeholder format:
+            # $Pipeline_{pipeline.uid}_Stage_{stage.uid}_Task_{task.uid}
+            elems = placeholder.split('/')[0].split('_')
+            if not len(elems) == 6:
 
-            expected = '$Pipeline_(pipeline_name)_' \
-                       'Stage_(stage_name)_' \
-                       'Task_(task_name) or $SHARED',
-            raise ree.ValueError(obj='placeholder', attribute='task',
-                                 expected_value=expected, actual_value=elems)
+                expected = '$Pipeline_(pipeline_name)_' \
+                           'Stage_(stage_name)_' \
+                           'Task_(task_name) or $SHARED',
+                raise ree.ValueError(obj='placeholder', attribute='task',
+                                     expected_value=expected, actual_value=elems)
 
-        pname    = elems[1]
-        sname    = elems[3]
-        tname    = elems[5]
-        resolved = None
+            pname    = elems[1]
+            sname    = elems[3]
+            tname    = elems[5]
 
-        if pname in placeholders:
-            if sname in placeholders[pname]:
-                if tname in placeholders[pname][sname]:
-                    resolved = path.replace(placeholder,
-                               placeholders[pname][sname][tname]['path'])
+            if pname in placeholders:
+                if sname in placeholders[pname]:
+                    if tname in placeholders[pname][sname]:
+                        resolved = resolved.replace(placeholder,
+                                   placeholders[pname][sname][tname]['path'])
+                    else:
+                        logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
+                                       (tname, sname, pname))
                 else:
-                    logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
-                                   (tname, sname, pname))
+                    logger.warning('%s not assigned to any Stage in Pipeline %s' % (
+                        sname, pname))
             else:
-                logger.warning('%s not assigned to any Stage in Pipeline %s' % (
-                    sname, pname))
-        else:
-            logger.warning('%s not assigned to any Pipeline' % (pname))
+                logger.warning('%s not assigned to any Pipeline' % (pname))
 
-        if not resolved:
-            logger.warning('No placeholder could be found for task name %s \
-                        stage name %s and pipeline name %s. Please be sure to \
-                        use object names and not uids in your references,i.e, \
-                        $Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name)')
-            expected = '$Pipeline_(pipeline_name)_' \
-                       'Stage_(stage_name)_' \
-                       'Task_(task_name) or $SHARED'
-            raise ree.ValueError(obj='placeholder', attribute='task',
-                                 expected_value=expected, actual_value=elems)
+            if not resolved:
+                logger.warning('No placeholder could be found for task name %s \
+                            stage name %s and pipeline name %s. Please be sure to \
+                            use object names and not uids in your references,i.e, \
+                            $Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name)')
+                expected = '$Pipeline_(pipeline_name)_' \
+                           'Stage_(stage_name)_' \
+                           'Task_(task_name) or $SHARED'
+                raise ree.ValueError(obj='placeholder', attribute='task',
+                                     expected_value=expected, actual_value=elems)
 
         return resolved
 
