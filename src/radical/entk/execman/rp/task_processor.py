@@ -182,7 +182,7 @@ def resolve_tags(tag, parent_pipeline_name, placeholders):
 #
 def get_input_list_from_task(task, placeholders):
     """
-    Purpose: Parse Task object to extract the files to be staged as the output.
+    Purpose: Parse Task object to extract the files to be staged as input.
 
     Details: The extracted data is then converted into the appropriate RP
              directive depending on whether the data is to be copied/downloaded.
@@ -191,7 +191,7 @@ def get_input_list_from_task(task, placeholders):
         :task:         EnTK Task object
         :placeholders: dictionary holding the values for placeholders
 
-    :return: list of RP directives for the files that need to be staged out
+    :return: list of RP directives for the files that need to be staged in
     """
 
     try:
