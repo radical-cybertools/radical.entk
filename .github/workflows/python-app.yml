@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python application
+name: Build
 
 on:
   push:
@@ -10,16 +10,24 @@ on:
     branches: [ devel ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
-
+    
+    services:
+      rabbitmq:
+        image: rabbitmq
+        ports:
+        # will assign a random free host port
+        - 5672/tcp
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+      with:
+        fetch-depth: 2
+    - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.6
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -27,43 +35,83 @@ jobs:
         pip install psutil
         pip install hypothesis
         pip install coverage
+        pip install codecov
+        pip install coveralls
+        pip install pytest
+        pip install pytest-xdist
+        pip install pytest-timeout
+        pip install timeout-decorator
+    - name: Test with pytest
+      env:
+        RMQ_HOSTNAME: localhost
+        RMQ_PORT: ${{ job.services.rabbitmq.ports[5672] }} # get randomly assigned published port
+        RMQ_USERNAME: guest
+        RMQ_PASSWORD: guest
+        LOC: /opt/hostedtoolcache/Python/3.6.13/x64/lib/python3.6/site-packages
+      run: |
+        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/ tests/test_integration        
+    - name: Codecov
+      env: 
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: |
+        coverage combine; \
+        coverage xml; \
+        coverage report; \
+        curl -s https://codecov.io/bash | bash
+
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install . --upgrade
         pip install flake8
         pip install flake8-per-file-ignores
-        pip install pylint
+    - name: Lint with flake8
+      run: |
+        LOG=`git log -n 1 | grep Merge`
+        NEW=`echo $LOG | cut -d ' ' -f2`
+        OLD=`echo $LOG | cut -d ' ' -f3`
+        DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
+        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
+        test -z "$DIFF" && echo 'nothing to flake8' || flake8 $DIFF
+
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install . --upgrade
+        pip install psutil
+        pip install hypothesis
+        pip install coverage
         pip install codecov
         pip install pytest
         pip install pytest-xdist
         pip install pytest-timeout
         pip install timeout_decorator
-    #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+        pip install pylint
+    - name: Lint with pylint
       run: |
-        LOC=/opt/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages
-        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/
-    - name: Codecov
-      uses: codecov/codecov-action@v1.0.15
-
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    LOG=`git log -n 1 | grep Merge`
-    #    OLD=`echo $LOG | cut -d ' ' -f2`
-    #    NEW=`echo $LOG | cut -d ' ' -f3`
-    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    #    test -z \"$DIFF\" && echo 'nothing to flake8' || flake8 $DIFF
-    #- name: Lint with pylint
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    LOG=`git log -n 1 | grep Merge`
-    #    OLD=`echo $LOG | cut -d ' ' -f2`
-    #    NEW=`echo $LOG | cut -d ' ' -f3`
-    #    DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
-    #    DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    #    test -z \"$DIFF\" && echo 'nothing to pylint' || pylint $DIFF
+        LOG=`git log -n 1 | grep Merge`
+        NEW=`echo $LOG | cut -d ' ' -f2`
+        OLD=`echo $LOG | cut -d ' ' -f3`
+        DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
+        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
+        test -z "$DIFF" && echo 'nothing to pylint' || pylint $DIFF

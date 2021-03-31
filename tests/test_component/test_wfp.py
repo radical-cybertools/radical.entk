@@ -463,7 +463,7 @@ class TestBase(TestCase):
         wfp._enqueue = mock.MagicMock(side_effect=_enqueue_side_effect)
 
         wfp.start_processor()
-
+        time.sleep(1)
         try:
             self.assertIsInstance(wfp._enqueue_thread_terminate, mt.Event)
             self.assertIsInstance(wfp._dequeue_thread_terminate, mt.Event)

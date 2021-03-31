@@ -136,7 +136,7 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _sync_with_master(self, obj, obj_type, channel, queue):
+    def _sync_with_master(self, obj, obj_type, channel, conn_params, queue):
 
         corr_id = str(uuid.uuid4())
         body    = json.dumps({'object': obj.to_dict(),
@@ -148,9 +148,16 @@ class Base_TaskManager(object):
 
         self._prof.prof('pub_sync', state=obj.state, uid=obj.uid, msg=msg)
         self._log.debug('%s (%s) to sync with amgr', obj.uid, obj.state)
-
-        channel.basic_publish(exchange='', routing_key=queue, body=body,
+        try:
+            channel.basic_publish(exchange='', routing_key=queue, body=body,
                         properties=pika.BasicProperties(correlation_id=corr_id))
+        except (pika.exceptions.ConnectionClosed,
+                pika.exceptions.ChannelClosed):
+            connection = pika.BlockingConnection(conn_params)
+            channel = connection.channel()
+            channel.basic_publish(exchange='', routing_key=queue, body=body,
+                        properties=pika.BasicProperties(correlation_id=corr_id))
+
 
         # all queue name parts up to the last three are used as sid, the last
         # three parts are channel specifiers which need to be inversed to obtain
@@ -190,7 +197,7 @@ class Base_TaskManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _advance(self, obj, obj_type, new_state, channel, queue):
+    def _advance(self, obj, obj_type, new_state, channel, conn_params, queue):
 
         try:
             old_state = obj.state
@@ -203,15 +210,15 @@ class Base_TaskManager(object):
             self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
             self._log.info('Transition %s to %s', obj.uid, new_state)
 
-            self._sync_with_master(obj, obj_type, channel, queue)
+            self._sync_with_master(obj, obj_type, channel, conn_params, queue)
 
 
         except Exception as ex:
             self._log.exception('Transition %s to state %s failed, error: %s',
                                 obj.uid, new_state, ex)
             obj.state = old_state
-            self._sync_with_master(obj, obj_type, channel, queue)
-            raise
+            self._sync_with_master(obj, obj_type, channel, conn_params, queue)
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -240,14 +247,25 @@ class Base_TaskManager(object):
             while not self._hb_terminate.is_set():
 
                 corr_id  = str(uuid.uuid4())
+                try:
+                    # Heartbeat request signal sent to task manager via rpc-queue
+                    props = pika.BasicProperties(reply_to=self._hb_response_q,
+                                                 correlation_id=corr_id)
+                    mq_channel.basic_publish(exchange='',
+                                             routing_key=self._hb_request_q,
+                                             properties=props,
+                                             body='request')
+                except (pika.exceptions.ConnectionClosed,
+                        pika.exceptions.ChannelClosed):
+                    mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+                    mq_channel = mq_connection.channel()
+                    props = pika.BasicProperties(reply_to=self._hb_response_q,
+                                                 correlation_id=corr_id)
+                    mq_channel.basic_publish(exchange='',
+                                             routing_key=self._hb_request_q,
+                                             properties=props,
+                                             body='request')
 
-                # Heartbeat request signal sent to task manager via rpc-queue
-                props = pika.BasicProperties(reply_to=self._hb_response_q,
-                                             correlation_id=corr_id)
-                mq_channel.basic_publish(exchange='',
-                                         routing_key=self._hb_request_q,
-                                         properties=props,
-                                         body='request')
                 self._log.info('Sent heartbeat request')
 
                 # Sleep for hb_interval and then check if tmgr responded
@@ -257,11 +275,13 @@ class Base_TaskManager(object):
                                                       queue=self._hb_response_q)
                 if not body:
                     # no usable response
+                    self._log.error('Heartbeat response no body')
                     return
                     # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
+                    self._log.error('Heartbeat response wrong correlation')
                     return
                     # raise EnTKError('heartbeat timeout')
 
@@ -271,25 +291,25 @@ class Base_TaskManager(object):
                 # Appease pika cos it thinks the connection is dead
                 # mq_connection.close()
 
-        except EnTKError as e:
+        except EnTKError as ex:
             # make sure that timeouts did not race with termination
-            if 'heartbeat timeout' not in str(e):
-                raise
+            if 'heartbeat timeout' not in str(ex):
+                raise EnTKError(ex) from ex
 
             if not self._hb_terminate.is_set():
-                raise
+                raise EnTKError(ex) from ex
 
             # we did indeed race with termination - exit gracefully
             return
 
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
-            raise KeyboardInterrupt from e
+            raise KeyboardInterrupt from ex
 
-        except Exception as e:
-            self._log.exception('Heartbeat failed with error: %s', e)
-            raise
+        except Exception as ex:
+            self._log.exception('Heartbeat failed with error: %s', ex)
+            raise EnTKError(ex) from ex
 
         finally:
             try:
@@ -326,11 +346,11 @@ class Base_TaskManager(object):
 
             return True
 
-        except Exception as e:
+        except Exception as ex:
 
-            self._log.exception('Heartbeat not started, error: %s', e)
+            self._log.exception('Heartbeat not started, error: %s', ex)
             self.terminate_heartbeat()
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -359,9 +379,9 @@ class Base_TaskManager(object):
                 self._prof.prof('hbeat_term', uid=self._uid)
 
 
-        except Exception:
+        except Exception as ex:
             self._log.exception('Could not terminate heartbeat thread')
-            raise
+            raise EnTKError(ex) from ex
 
 
         finally:
@@ -415,9 +435,9 @@ class Base_TaskManager(object):
                 self._log.info('Task manager process closed')
                 self._prof.prof('tmgr_term', uid=self._uid)
 
-        except Exception:
+        except Exception as ex:
             self._log.exception('Could not terminate task manager process')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------

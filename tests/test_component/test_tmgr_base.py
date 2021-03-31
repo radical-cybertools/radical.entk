@@ -107,9 +107,9 @@ class TestBase(TestCase):
 
         global_syncs = []
 
-        def _sync_side_effect(log_entry, uid, state, msg):
+        def _sync_side_effect(obj, obj_type, channel, conn_params, queue):
             nonlocal global_syncs
-            global_syncs.append([log_entry, uid, state, msg])
+            global_syncs.append([obj, obj_type, channel, conn_params, queue])
 
         tmgr._log = mocked_Logger
         tmgr._prof = mocked_Profiler
@@ -120,12 +120,13 @@ class TestBase(TestCase):
         obj.parent_pipeline = {'uid': 'test_pipe'}
         obj.uid = 'test_object'
         obj.state = 'test_state'
-        tmgr._advance(obj, 'Task', None, 'channel','queue')
-        self.assertEqual(global_syncs[0],[obj, 'Task', 'channel','queue'])
+        tmgr._advance(obj, 'Task', None, 'channel','params','queue')
+        self.assertEqual(global_syncs[0],[obj, 'Task', 'channel', 'params', 'queue'])
         self.assertIsNone(obj.state)
         global_syncs = []
-        tmgr._advance(obj, 'Stage', 'new_state', 'channel','queue')
-        self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel','queue'])
+        tmgr._advance(obj, 'Stage', 'new_state', 'channel', 'params', 'queue')
+        self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel', 'params', 
+                                          'queue'])
         self.assertEqual(obj.state, 'new_state')
 
     # ------------------------------------------------------------------------------
@@ -179,7 +180,7 @@ class TestBase(TestCase):
             time.sleep(amount)
 
         tmgr._tmgr_process = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr', args=(1))
+                                       name='test_tmgr', args=(1,))
         tmgr._tmgr_process.start()
 
         self.assertTrue(tmgr.check_manager())

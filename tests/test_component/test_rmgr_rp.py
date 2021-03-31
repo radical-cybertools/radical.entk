@@ -1,17 +1,25 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
 
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import radical.entk.exceptions as ree
 
 from radical.entk.execman.rp   import ResourceManager as RPRmgr
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
 
+stage_ins = []
+
+
+def _pilot_stage_in(sds):
+    stage_ins.append(sds)
+
+
+def _submit_pilot_side_effect(*args):
+    mocked_Pilot = mock.MagicMock()
+    mocked_Pilot.wait = mock.MagicMock(return_value='hello_from_pilot')
+    mocked_Pilot.stage_in = _pilot_stage_in
+    return mocked_Pilot
 
 
 class TestBase(TestCase):
@@ -36,14 +44,13 @@ class TestBase(TestCase):
         self.assertFalse(rmgr._download_rp_profile)
 
         with self.assertRaises(ree.ValueError):
-            rmgr = RPRmgr(resource_desc={'resource': 'localhost'},
-                      sid='test.0000',
-                      rts_config={"sandbox_cleanup": 'test_sandbox'})
+            RPRmgr(resource_desc={'resource': 'localhost'},
+                   sid='test.0000',
+                   rts_config={"sandbox_cleanup": 'test_sandbox'})
 
         with self.assertRaises(ree.ValueError):
-            rmgr = RPRmgr(resource_desc={'resource': 'localhost'},
-                          sid='test.0000',
-                          rts_config={"db_cleanup": False})
+            RPRmgr(resource_desc={'resource': 'localhost'},
+                   sid='test.0000', rts_config={"db_cleanup": False})
 
     # --------------------------------------------------------------------------
     #
@@ -122,24 +129,15 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.pilot.Session', return_value='test_session')
-    @mock.patch('radical.pilot.PilotManager')
-    @mock.patch('radical.pilot.ComputePilot')
+    @mock.patch('radical.pilot.PilotDescription', return_value='pilot_desc')
+    @mock.patch('radical.pilot.PilotManager', return_value=mock.MagicMock(wait=mock.MagicMock(return_value=True),
+                                                                          submit_pilots=_submit_pilot_side_effect,
+                                                                          register_callback=mock.MagicMock(return_value=True)))
     def test_submit_resource_request(self, mocked_init, mocked_Logger,
                                      mocked_Profiler, mocked_Session,
-                                     mocked_PilotManager,
-                                     mocked_ComputePilot):
+                                     mocked_PilotDescription,
+                                     mocked_PilotManager):
 
-        global_pilots = []
-
-        def _pdesc_side_effect(pdesc):
-            nonlocal global_pilots
-            global_pilots.append(pdesc)
-            return pdesc
-
-        def _submit_pilots_side_effect(pdesc):
-            return mocked_ComputePilot
-
-        mocked_ComputePilot.wait = mock.MagicMock()
         rmgr = RPRmgr()
         rmgr._logger = mocked_Logger
         rmgr._prof = mocked_Profiler
@@ -156,7 +154,14 @@ class TestBase(TestCase):
         rmgr._shared_data = 'test_data'
         rmgr._outputs = 'test_outputs'
         rmgr._job_name = None
-        rmgr._pmgr = mock.MagicMock()
+        rmgr._shared_data = ['test/file1.txt > file1.txt', 'file2.txt']
 
         rmgr._submit_resource_request()
         self.assertEqual(rmgr._session, 'test_session')
+        self.assertEqual(stage_ins[0], [{'action': 'Transfer',
+                                         'source': 'test/file1.txt',
+                                         'target': 'file1.txt'},
+                                        {'action': 'Transfer',
+                                         'source': 'file2.txt',
+                                         'target': 'file2.txt'}
+                                        ])

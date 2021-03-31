@@ -7,7 +7,7 @@ import os
 
 import radical.pilot as rp
 
-from ...                     import exceptions as ree
+from ...exceptions           import EnTKError, ValueError
 from ..base.resource_manager import Base_ResourceManager
 
 
@@ -48,11 +48,10 @@ class ResourceManager(Base_ResourceManager):
         if "sandbox_cleanup" not in self._rts_config or \
            "db_cleanup"      not in self._rts_config:
 
-            raise ree.ValueError(obj=self._uid,
-                                 attribute='config',
-                                 expected_value={"sandbox_cleanup": False,
-                                                 "db_cleanup"     : False},
-                                 actual_value=self._rts_config)
+            raise ValueError(obj=self._uid, attribute='config',
+                             expected_value={"sandbox_cleanup": False,
+                                             "db_cleanup"     : False},
+                             actual_value=self._rts_config)
 
         self._logger.info('Created resource manager object: %s' % self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
@@ -158,17 +157,28 @@ class ResourceManager(Base_ResourceManager):
                        'access_schema' : self._access_schema,
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
-                       'input_staging' : self._shared_data,
-                       'output_staging': self._outputs,
                        'job_name'      : self._job_name
                        }
 
-            # Create Compute Pilot with validated resource description
-            pdesc = rp.ComputePilotDescription(pd_init)
+            # Create Pilot with validated resource description
+            pdesc = rp.PilotDescription(pd_init)
             self._prof.prof('rreq created', uid=self._uid)
 
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
+            if self._shared_data:
+                shared_data = []
+                for data in self._shared_data:
+                    data = data.split('>')
+                    if len(data) > 1:
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[1].strip(),
+                                            'action': rp.TRANSFER})
+                    else:
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[0].split('/')[-1].strip(),
+                                            'action': rp.TRANSFER})
+                self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
@@ -190,9 +200,9 @@ class ResourceManager(Base_ResourceManager):
                                    'exit callback thread gracefully...')
             raise
 
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Resource request submission failed')
-            raise
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -213,7 +223,7 @@ class ResourceManager(Base_ResourceManager):
 
                 # once the workflow is completed, fetch output data
                 if self._outputs:
-                    self._pilot.stage_out()
+                    self._pilot.stage_out(self._outputs)
 
                 # make this a config option?
                 if 'RADICAL_PILOT_PROFILE' in os.environ or \
@@ -231,16 +241,15 @@ class ResourceManager(Base_ResourceManager):
 
                 self._prof.prof('rreq_canceled', uid=self._uid)
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as ex:
 
             self._logger.exception('Execution interrupted (probably by Ctrl+C) '
                                    'exit callback thread gracefully...')
-            raise
+            raise KeyboardInterrupt from ex
 
-
-        except Exception:
+        except Exception as ex:
             self._logger.exception('Could not cancel resource request')
-            raise
+            raise EnTKError(ex) from ex
 
 
 # ------------------------------------------------------------------------------
