@@ -449,11 +449,13 @@ def create_td_from_task(task, placeholders, prof=None):
                                          task.parent_stage['name'],
                                          task.parent_pipeline['uid'],
                                          task.parent_pipeline['name'])
-        td.pre_exec   = task.pre_exec
-        td.executable = task.executable
-        td.arguments  = resolve_arguments(task.arguments, placeholders)
-        td.sandbox    = task.sandbox
-        td.post_exec  = task.post_exec
+
+        td.pre_exec       = task.pre_exec
+        td.executable     = task.executable
+        td.arguments      = resolve_arguments(task.arguments, placeholders)
+        td.sandbox        = task.sandbox
+        td.post_exec      = task.post_exec
+        td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
             td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
