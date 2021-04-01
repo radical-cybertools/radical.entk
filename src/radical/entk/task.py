@@ -8,7 +8,7 @@ import radical.utils as ru
 from . import exceptions as ree
 from . import states     as res
 
-warnings.simplefilter('always')
+
 # ------------------------------------------------------------------------------
 #
 class CpuReqs(ru.Munch):
@@ -24,58 +24,6 @@ class GpuReqs(ru.Munch):
                'gpu_process_type': str, 
                'gpu_threads': int, 
                'gpu_thread_type': str}
-    @property
-    def processes(self):
-        return self.gpu_processes
-
-    @property
-    def threads_per_process(self):
-        return self.gpu_threads
-
-    @property
-    def process_type(self):
-        return self.gpu_process_type
-
-    @property
-    def thread_type(self):
-        return self.gpu_thread_type
-
-
-    @processes.setter
-    def processes(self, value):
-        # Deprecated keys will issue a deprecation message and change them to
-        # the expected.
-        #warnings.simplefilter("once")
-        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
-                           "as a prefix for all keys.",DeprecationWarning)
-        self.gpu_processes = value
-
-    @threads_per_process.setter
-    def threads_per_process(self, value):
-        # Deprecated keys will issue a deprecation message and change them to
-        # the expected.
-        #warnings.simplefilter("once")
-        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
-                           "as a prefix for all keys.",DeprecationWarning)
-        self.gpu_threads = value
-
-    @process_type.setter
-    def process_type(self, value):
-        # Deprecated keys will issue a deprecation message and change them to
-        # the expected.
-        #warnings.simplefilter("once")
-        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
-                           "as a prefix for all keys.",DeprecationWarning)
-        self.gpu_process_type = value
-
-    @thread_type.setter
-    def thread_type(self, value):
-        # Deprecated keys will issue a deprecation message and change them to
-        # the expected.
-        #warnings.simplefilter("once")
-        warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
-                           "as a prefix for all keys.",DeprecationWarning)
-        self.gpu_thread_type = value
 
 # ------------------------------------------------------------------------------
 #
@@ -131,14 +79,14 @@ class Task(ru.Munch):
                  'arguments'            : list(),
                  'sandbox'              : '',
                  'post_exec'            : list(),
-                 'cpu_reqs'             : {'cpu_processes'           : 1,
-                                           'cpu_process_type'        : None,
-                                           'cpu_threads' : 1,
-                                           'cpu_thread_type'         : None},
-                 'gpu_reqs'             : {'gpu_processes': 0, 
-                                           'gpu_process_type': None, 
-                                           'gpu_threads': 0, 
-                                           'gpu_thread_type': None},
+                 'cpu_reqs'             : {'cpu_processes'    : 1,
+                                           'cpu_process_type' : None,
+                                           'cpu_threads'      : 1,
+                                           'cpu_thread_type'  : None},
+                 'gpu_reqs'             : {'gpu_processes'    : 0,
+                                           'gpu_process_type' : None,
+                                           'gpu_threads'      : 0,
+                                           'gpu_thread_type'  : None},
                  'lfs_per_process'      : 0,
                  'upload_input_data'    : list(),
                  'copy_input_data'      : list(),
@@ -253,8 +201,8 @@ class Task(ru.Munch):
                                  actual_value=value.get('gpu_thread_type'),
                                  obj='gpu_reqs',
                                  attribute='gpu_thread_type')
-
-        self._gpu_reqs.processes           = value.get('gpu_processes', 1)
-        self._gpu_reqs.process_type        = value.get('gpu_process_type')
-        self._gpu_reqs.threads_per_process = value.get('gpu_threads', 1)
-        self._gpu_reqs.thread_type         = value.get('gpu_thread_type')
+        self.gpu_reqs = GpuReqs(value)
+        # self._gpu_reqs.processes           = value.get('gpu_processes', 1)
+        # self._gpu_reqs.process_type        = value.get('gpu_process_type')
+        # self._gpu_reqs.threads_per_process = value.get('gpu_threads', 1)
+        # self._gpu_reqs.thread_type         = value.get('gpu_thread_type')
