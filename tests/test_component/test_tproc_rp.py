@@ -351,23 +351,38 @@ class TestBase(TestCase):
         with self.assertRaises(ree.TypeError):
             get_input_list_from_task(task, '')
 
-        task = mock.MagicMock(spec=radical.entk.Task)
-        task.link_input_data = ['test_file > $SHARED/test_file']
-        task.upload_input_data = ['test_file > $SHARED/test_file']
-        task.copy_input_data = ['test_file > $SHARED/test_file']
-        task.move_input_data = ['test_file > $SHARED/test_file']
-        test = get_input_list_from_task(task, {})
+        pipeline_name = 'p1'
+        stage_name    = 's1'
+        t1_name       = 't1'
 
-        input_list = [{'source': 'test_file', 
-                       'target': 'pilot:///test_file',
+        placeholders = {
+            pipeline_name: {
+                stage_name: {
+                    t1_name: {
+                        'path'   : '/home/vivek/t1',
+                        'rts_uid': 'unit.0002'
+                    }
+                }
+            }
+        }
+
+        task = mock.MagicMock(spec=radical.entk.Task)
+        task.link_input_data = ['$SHARED/test_folder/test_file > test_folder/test_file']
+        task.upload_input_data = ['$SHARED/test_folder/test_file > test_file']
+        task.copy_input_data = ['$Pipeline_p1_Stage_s1_Task_t1/test_file > $SHARED/test_file']
+        task.move_input_data = ['test_file > test_file']
+        test = get_input_list_from_task(task, placeholders)
+
+        input_list = [{'source': 'pilot:///test_folder/test_file',
+                       'target': 'test_folder/test_file',
                        'action': 'Link'}, 
-                      {'source': 'test_file',
-                       'target': 'pilot:///test_file'}, 
-                      {'source': 'test_file',
+                      {'source': 'pilot:///test_folder/test_file',
+                       'target': 'test_file'},
+                      {'source': '/home/vivek/t1/test_file',
                        'target': 'pilot:///test_file', 
                        'action': 'Copy'}, 
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
+                       'target': 'test_file',
                        'action': 'Move'}]
 
         self.assertEqual(test[0], input_list[0])
