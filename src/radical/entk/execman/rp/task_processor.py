@@ -1,5 +1,6 @@
 
 import os
+import pickle
 
 import radical.pilot as rp
 import radical.utils as ru
@@ -424,7 +425,8 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_td_from_task(task, placeholders, prof=None):
+def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
+                        prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -438,12 +440,25 @@ def create_td_from_task(task, placeholders, prof=None):
     try:
 
         logger.debug('Creating Task from Task %s: %s' % (task.uid, task.sandbox))
+        logger.debug('Hash table state: %s' % task_hash_table)
 
         if prof:
             prof.prof('td_create', uid=task.uid)
 
         td = rp.TaskDescription()
-        td.uid  = task.uid
+
+        task_pre_uid = task_hash_table.get(task.uid, None)
+        if task_pre_uid is None:
+            td.uid = task.uid
+        else:
+            tmp_uid = ru.generate_id(prefix=task.uid, ns=sid)
+            td.uid = tmp_uid
+        task_hash_table[task.uid] = td.uid
+        with open(pkl_path, 'wb') as pickle_file:
+            pickle.dump(task_hash_table, pickle_file, pickle.HIGHEST_PROTOCOL)
+
+        logger.debug('Hash table state: %s' % task_hash_table)
+
         td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                          task.parent_stage['uid'],
                                          task.parent_stage['name'],
@@ -458,8 +473,9 @@ def create_td_from_task(task, placeholders, prof=None):
         td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
-            td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
-                                   placeholders=placeholders)
+            td.tag = resolve_tags(task=task,
+                                  parent_pipeline_name=task.parent_pipeline['uid'],
+                                  placeholders=placeholders)
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
@@ -510,7 +526,7 @@ def create_task_from_rp(rp_task, prof=None):
     """
 
     try:
-        logger.debug('Create Task from Task %s' % rp_task.name)
+        logger.debug('Create Task from RP Task %s' % rp_task.name)
 
         if prof:
             prof.prof('task_create', uid=rp_task.name.split(',')[0].strip())
@@ -533,7 +549,7 @@ def create_task_from_rp(rp_task, prof=None):
         if prof:
             prof.prof('task_created', uid=task.uid)
 
-        logger.debug('Task %s created from Task %s' % (task.uid, rp_task.name))
+        logger.debug('Task %s created from RP Task %s' % (task.uid, rp_task.name))
 
         return task
 

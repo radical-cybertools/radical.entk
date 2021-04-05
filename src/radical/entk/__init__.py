@@ -7,7 +7,7 @@ from .task     import Task
 from .         import states
 
 from .appman.appmanager import AppManager
-
+from . import execman
 
 # ------------------------------------------------------------------------------
 #

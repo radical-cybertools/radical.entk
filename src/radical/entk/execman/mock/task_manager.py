@@ -12,6 +12,8 @@ import queue
 import threading       as mt
 import multiprocessing as mp
 
+import radical.utils as ru
+
 from ...exceptions       import EnTKError
 from ...                 import states, Task
 from ..base.task_manager import Base_TaskManager
@@ -157,6 +159,9 @@ class TaskManager(Base_TaskManager):
                                 delivery_tag=method_frame.delivery_tag)
 
                     heartbeat_response(mq_channel)
+
+                    # Raise an exception while running tests
+                    ru.raise_on(tag='tmgr_fail')
 
                 except Exception as e:
                     self._log.exception('Error in task execution: %s', e)

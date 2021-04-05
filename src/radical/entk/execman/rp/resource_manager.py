@@ -96,6 +96,17 @@ class ResourceManager(Base_ResourceManager):
         return self._pilot
 
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        return self._pilot.as_dict()
+
+
     # --------------------------------------------------------------------------
     #
     def get_resource_allocation_state(self):
@@ -121,7 +132,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
@@ -184,11 +195,11 @@ class ResourceManager(Base_ResourceManager):
             self._logger.info('Resource request submission successful, waiting'
                               'for pilot to become Active')
 
-            # Wait for pilot to go active
+            # Wait for pilot to go active or final state
             self._pilot.wait([rp.PMGR_ACTIVE, rp.DONE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
-            self._logger.info('Pilot is now active [%s]', self._pilot.state)
+            self._logger.info('Pilot is now at state [%s]', self._pilot.state)
 
         except KeyboardInterrupt:
 

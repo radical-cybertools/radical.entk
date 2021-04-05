@@ -55,7 +55,14 @@ class TestBase(TestCase):
     @mock.patch.object(RPTmgr, '__init__', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
-    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
+    @mock.patch('pika.BlockingConnection')
+    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler,
+                           mocked_BlockingConnection):
+
+        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
+        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
+        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
         rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=RPRmgr)
         tmgr = RPTmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
@@ -68,6 +75,8 @@ class TestBase(TestCase):
         tmgr._rmq_conn_params = rmq_params
         tmgr._pending_queue = ['pending_queues']
         tmgr._completed_queue = ['completed_queues']
+        tmgr._hb_response_q = 'hb_response_q'
+        tmgr._hb_request_q = 'hb_request_q'
         tmgr._tmgr = _tmgr_side_effect
 
         tmgr._tmgr_terminate = None
