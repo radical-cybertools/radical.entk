@@ -26,10 +26,10 @@ class TestTask(TestCase):
 
         # --------------------------------------------------------------------------
         #
-        def component_execution(inputs, method, channel, queue):
+        def component_execution(inputs, method, channel, conn_params, queue):
 
             for obj_type, obj, in inputs:
-                method(obj, obj_type, channel, queue)
+                method(obj, obj_type, channel, conn_params, queue)
             return True
 
 
@@ -56,7 +56,7 @@ class TestTask(TestCase):
         master_thread = mt.Thread(target=component_execution,
                                   name='tmgr_sync', 
                                   args=(packets, tmgr._sync_with_master,
-                                  mq_channel, 'master'))
+                                  mq_channel, rmq_conn_params, 'master'))
         master_thread.start()
         time.sleep(0.1)
         try:
@@ -129,11 +129,6 @@ class TestTask(TestCase):
                     self.assertTrue(master_thread.is_alive())
                 time.sleep(0.5)
         except Exception as ex:
-            master_thread.join()
-            mq_channel.queue_delete(queue='heartbeat_rq')
-            mq_channel.queue_delete(queue='heartbeat_res')
-            mq_channel.close()
-            mq_connection.close()
             raise ex
         finally:
             tmgr._hb_terminate.set()
@@ -143,7 +138,8 @@ class TestTask(TestCase):
             mq_channel.queue_delete(queue='heartbeat_res')
             mq_channel.close()
             mq_connection.close()
-            
+    
+
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(BaseTmgr, '__init__',   return_value=None)
@@ -169,7 +165,6 @@ class TestTask(TestCase):
         tmgr._hb_response_q = 'heartbeat_res'
         tmgr._hb_interval = 2
         tmgr._hb_terminate = mt.Event()
-        tmgr._heartbeat_error = mt.Event()
         tmgr._log = ru.Logger(name='radical.entk.taskmanager', ns='radical.entk')
         tmgr._prof = mocked_Profiler
         
@@ -183,7 +178,6 @@ class TestTask(TestCase):
         
         time.sleep(3)
         self.assertFalse(master_thread.is_alive())
-        self.assertTrue(tmgr._heartbeat_error.is_set())
         master_thread.join()
 
         master_thread = mt.Thread(target=tmgr._heartbeat,
@@ -200,7 +194,6 @@ class TestTask(TestCase):
         
         time.sleep(3)
         self.assertFalse(master_thread.is_alive())
-        self.assertTrue(tmgr._heartbeat_error.is_set())
         master_thread.join()
         mq_channel.queue_delete(queue='heartbeat_rq')
         mq_channel.queue_delete(queue='heartbeat_res')

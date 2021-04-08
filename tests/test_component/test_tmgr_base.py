@@ -237,7 +237,7 @@ class TestBase(TestCase):
             time.sleep(amount)
 
         tmgr._hb_thread = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr', args=(1))
+                                       name='test_tmgr', args=(1,))
         tmgr._hb_thread.start()
 
         self.assertTrue(tmgr.check_heartbeat())
