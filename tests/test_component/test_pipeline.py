@@ -3,7 +3,7 @@
 
 from unittest import TestCase
 from random import shuffle
-import string
+# import string
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
@@ -53,21 +53,24 @@ class TestBase(TestCase):
 
     # --------------------------------------------------------------------------
     #
+    # @given(t=st.text(alphabet=string.ascii_letters +
+    #                           string.punctuation.replace('.', ''),
+    #                  min_size=10).filter(
+    #     lambda x: any(symbol in x for symbol in string.punctuation)),
     @mock.patch('radical.utils.generate_id', return_value='pipeline.0000')
     @mock.patch('threading.Lock', return_value='test_lock')
     @mock.patch('threading.Event', return_value='test_event')
-    @given(t=st.text(alphabet=string.ascii_letters + ',', min_size=10).filter(lambda x: ',' in x),
-        l=st.lists(st.text()),
+    @given(l=st.lists(st.text()),
         i=st.integers().filter(lambda x: type(x) == int),
         b=st.booleans(),
         se=st.sets(st.text()))
     def test_pipeline_assignment_exceptions(self, mocked_generate_id,
-                                            mocked_Lock, mocked_Event, t, l, i,
+                                            mocked_Lock, mocked_Event, l, i,
                                             b, se):
 
         p = Pipeline()
 
-        data_type = [t, l, i, b, se]
+        data_type = [l, i, b, se]
         print(data_type)
 
         for data in data_type:

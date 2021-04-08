@@ -12,7 +12,7 @@ import threading     as mt
 
 import radical.utils as ru
 
-from ..exceptions import EnTKError, TypeError, MissingError
+from ..           import exceptions as ree
 from ..           import states
 
 from ..pipeline   import Pipeline
@@ -288,7 +288,7 @@ class AppManager(object):
     def name(self, value):
 
         if not isinstance(value, str):
-            raise TypeError(expected_type=str, actual_type=type(value))
+            raise ree.TypeError(expected_type=str, actual_type=type(value))
 
         self._name = value
 
@@ -311,7 +311,7 @@ class AppManager(object):
 
         if not self._rmgr._validate_resource_desc():
             self._logger.error('Could not validate resource description')
-            raise EnTKError('Could not validate resource description')
+            raise ree.EnTKError('Could not validate resource description')
 
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
@@ -331,8 +331,9 @@ class AppManager(object):
 
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise TypeError(expected_type=['Pipeline', 'set of Pipelines'],
-                                actual_type=type(p))
+                raise ree.TypeError(expected_type=['Pipeline',
+                                                   'set of Pipelines'],
+                                    actual_type=type(p))
             p._validate()
 
         # keep history
@@ -353,7 +354,8 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise TypeError(expected_type=str, actual_type=type(value))
+                raise ree.TypeError(expected_type=str,
+                                    actual_type=type(value))
 
         self._shared_data = data
 
@@ -372,7 +374,8 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise TypeError(expected_type=str, actual_type=type(value))
+                raise ree.TypeError(expected_type=str,
+                                    actual_type=type(value))
 
         if self._rmgr:
             self._rmgr.outputs = data
@@ -404,13 +407,15 @@ class AppManager(object):
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please \
                                     check your script')
-                raise MissingError(obj=self._uid, missing_attribute='workflow')
+                raise ree.MissingError(obj=self._uid,
+                                       missing_attribute='workflow')
 
             if not self._rmgr:
                 self._logger.error('No resource manager assigned currently, \
                                     please create and add a valid resource \
                                     manager')
-                raise MissingError(obj=self._uid, missing_attribute='resource_manager')
+                raise ree.MissingError(obj=self._uid,
+                                   missing_attribute='resource_manager')
             self._prof.prof('amgr run started', uid=self._uid)
 
             # ensure rabbitmq setup
@@ -425,12 +430,12 @@ class AppManager(object):
                 self._logger.info('Starting resource request submission')
                 self._prof.prof('rreq_init', uid=self._uid)
 
-                self._rmgr._submit_resource_request()
+                self._rmgr.submit_resource_request()
 
                 res_alloc_state = self._rmgr.get_resource_allocation_state()
                 if res_alloc_state in self._rmgr.get_completed_states():
-                    raise EnTKError(msg='Cannot proceed. Resource ended in ' +
-                                    'state %s' % res_alloc_state)
+                    raise ree.EnTKError(msg='Cannot proceed. Resource '
+                                        'ended in state %s' % res_alloc_state)
 
 
             # Start all components and subcomponents
@@ -446,17 +451,17 @@ class AppManager(object):
 
         except KeyboardInterrupt as ex:
 
-            self._logger.exception('Execution interrupted by user (you ' +
-                                   'probably hit Ctrl+C), trying to cancel ' +
+            self._logger.exception('Execution interrupted by user (you '
+                                   'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise KeyboardInterrupt from ex
+            raise ree.EnTKError(ex) from ex
 
         except Exception as ex:
 
             self._logger.exception('Error in AppManager')
             self.terminate()
-            raise EnTKError(ex) from ex
+            raise ree.EnTKError(ex) from ex
 
         # return list of fetched output data, or None.
         outputs = self.outputs
@@ -567,12 +572,9 @@ class AppManager(object):
                 self._completed_queue.append(queue_name)
                 qs.append(queue_name)
 
-          # f = open('.%s.txt' % self._sid, 'w')
             for q in qs:
                 # Durable Qs will not be lost if rabbitmq server crashes
                 mq_channel.queue_declare(queue=q)
-          #     f.write(q + '\n')
-          # f.close()
 
             self._mqs_setup = True
 
@@ -582,7 +584,7 @@ class AppManager(object):
         except Exception as ex:
 
             self._logger.exception('Error setting RabbitMQ system: %s' % ex)
-            raise EnTKError(ex) from ex
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -614,7 +616,7 @@ class AppManager(object):
 
         except Exception as ex:
             self._logger.exception('Message queues not deleted, error')
-            raise EnTKError(ex) from ex
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -678,9 +680,35 @@ class AppManager(object):
 
             self._task_manager.start_manager()
             self._task_manager.start_heartbeat()
-
+            self._submit_rts_tmgr(self._rmgr.get_rts_info())
             self._prof.prof('tmgr_create_stop', uid=self._uid)
 
+
+    # --------------------------------------------------------------------------
+    #
+    def _submit_rts_tmgr(self, rts_info):
+        '''
+        **Purpose**: Update the runtime system information in the task manager
+        '''
+        rts_msg = {'type': 'rts',
+                   'body': rts_info}
+        rts_msg = json.dumps(rts_msg)
+
+        # Acquire a connection+channel to the rmq server
+        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+        mq_channel = mq_connection.channel()
+
+        # Send the workload to the pending queue
+        mq_channel.basic_publish(exchange='',
+                                 routing_key=self._pending_queue[0],
+                                 body=rts_msg
+                                 # TODO: Make durability parameters
+                                 # as a config parameter and then
+                                 # enable the following accordingly
+                                 # properties=pika.BasicProperties(
+                                 # make message persistent
+                                 # delivery_mode = 2)
+                                )
 
     # --------------------------------------------------------------------------
     #
@@ -691,23 +719,17 @@ class AppManager(object):
 
         # We wait till all pipelines of the workflow are marked
         # complete
-        state      = self._rmgr.get_resource_allocation_state()
-        final      = self._rmgr.get_completed_states()
-        incomplete = self._wfp.workflow_incomplete()
+        # incomplete = self._wfp.workflow_incomplete()
+        rts_final_states = self._rmgr.get_completed_states()
 
-        while active_pipe_count and \
-              incomplete        and \
-              state not in final and \
-              self._cur_attempt <= self._reattempts:
-
-            state = self._rmgr.get_resource_allocation_state()
+        while active_pipe_count and self._cur_attempt <= self._reattempts:
 
             for pipe in self._workflow:
 
                 with pipe.lock:
 
                     if pipe.completed and \
-                        pipe.uid not in finished_pipe_uids:
+                       pipe.uid not in finished_pipe_uids:
 
                         finished_pipe_uids.append(pipe.uid)
                         active_pipe_count -= 1
@@ -715,37 +737,41 @@ class AppManager(object):
                         self._logger.info('Pipe %s completed' % pipe.uid)
                         self._logger.info('Active pipes %s' % active_pipe_count)
 
-
             if not self._sync_thread.is_alive():
+                self._logger.info('Synchronizer thread is not alive.')
 
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
                 self._sync_thread.start()
                 self._cur_attempt += 1
+                self._wfp.reset_workflow()
 
                 self._prof.prof('sync_thread_restart', uid=self._uid)
-                self._logger.info('Restarting synchronizer thread')
-
+                self._logger.info('Restarted synchronizer thread.')
 
             if not self._wfp.check_processor():
+                self._logger.info('WFP is not alive.')
 
                 # If WFP dies, both child threads are also cleaned out.
                 # We simply recreate the wfp object with a copy of the
                 # workflow in the appmanager and start the processor.
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
-                self._wfp = WFprocessor(sid=self._sid,
-                                        workflow=self._workflow,
-                                        pending_queue=self._pending_queue,
-                                        completed_queue=self._completed_queue,
-                                        resubmit_failed=self._resubmit_failed,
-                                        rmq_conn_params=self._rmq_conn_params)
+                self._wfp.terminate_processor()
+                # I am not sure this is needed. The object exists with the
+                # AppManager process.
+                # self._wfp = WFprocessor(sid=self._sid,
+                #                        workflow=self._workflow,
+                #                        pending_queue=self._pending_queue,
+                #                        completed_queue=self._completed_queue,
+                #                        resubmit_failed=self._resubmit_failed,
+                #                        rmq_conn_params=self._rmq_conn_params)
 
-                self._logger.info('Restarting WFProcessor')
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
-
+                self._wfp.reset_workflow()
+                self._logger.info('Restarted WFProcessor.')
 
             if not self._task_manager.check_heartbeat():
 
@@ -766,11 +792,22 @@ class AppManager(object):
                 self._task_manager.start_manager()
                 self._logger.info('Restarting heartbeat thread')
                 self._task_manager.start_heartbeat()
+                self._wfp.reset_workflow()
 
                 self._cur_attempt += 1
 
+            state = self._rmgr.get_resource_allocation_state()
+            if state in rts_final_states:
+                self._logger.debug('Workflow not done. Resubmitting RTS.')
+                self._rmgr.submit_resource_request()
+                rts_info = self._rmgr.get_rts_info()
+                self._submit_rts_tmgr(rts_info=rts_info)
+                self._wfp.reset_workflow()
+                self._cur_attempt += 1
+                self._logger.debug('RTS resubmitted')
+
         if self._cur_attempt > self._reattempts:
-            raise EnTKError('Too many failures in synchronizer, wfp or task manager')
+            raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')
 
     # --------------------------------------------------------------------------
     #
@@ -931,16 +968,16 @@ class AppManager(object):
         try:
             self._synchronizer_work()
 
-        except KeyboardInterrupt as ex:
+        except KeyboardInterrupt:
             self._logger.exception('Execution interrupted by user (you \
                                     probably hit Ctrl+C), trying to terminate \
                                     synchronizer thread gracefully...')
-            raise KeyboardInterrupt from ex
+            raise
 
         except Exception as ex:
-            self._logger.exception('Unknown error in synchronizer.\
+            self._logger.exception('Unknown error in synchronizer: %s. \
                                     Terminating thread')
-            raise EnTKError(ex) from ex
+            raise ree.EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------
@@ -973,6 +1010,9 @@ class AppManager(object):
             # wrapper to call `_update_task()`
             self._get_message_to_sync(mq_channel, qname_t2s)
             self._get_message_to_sync(mq_channel, qname_c2s)
+
+            # Raise an exception while running tests
+            ru.raise_on(tag='sync_fail')
 
             # Appease pika cos it thinks the connection is dead
             now = time.time()

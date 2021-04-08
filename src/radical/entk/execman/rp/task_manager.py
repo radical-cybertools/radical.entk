@@ -4,10 +4,11 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __license__   = "MIT"
 
 
-import os
 import json
 import pika
 import queue
+import os
+import pickle
 
 import threading       as mt
 import multiprocessing as mp
@@ -17,7 +18,7 @@ import radical.pilot   as rp
 from ...exceptions     import EnTKError
 from ...               import states, Task
 from ..base            import Base_TaskManager
-from .task_processor   import create_cud_from_task, create_task_from_cu
+from .task_processor   import create_td_from_task, create_task_from_rp
 
 
 # ------------------------------------------------------------------------------
@@ -56,11 +57,10 @@ class TaskManager(Base_TaskManager):
                                           rmgr, rmq_conn_params,
                                           rts='radical.pilot')
         self._rts_runner = None
-
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
-
+        self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
+        self._rp_tmgr = None
 
 
     # --------------------------------------------------------------------------
@@ -83,7 +83,7 @@ class TaskManager(Base_TaskManager):
 
                      The new thread is responsible for pushing completed tasks
                      (returned by the RTS) to the dequeueing queue. It also
-                     converts Tasks into CUDs and CUs into (partially described)
+                     converts Tasks into TDs and CUs into (partially described)
                      Tasks. This conversion is necessary since the current RTS
                      is RADICAL Pilot. Once Tasks are recovered from a CU, they
                      are then pushed to the completed_queue. At all state
@@ -104,30 +104,40 @@ class TaskManager(Base_TaskManager):
         try:
 
             # ------------------------------------------------------------------
-            def heartbeat_response(mq_channel):
+            def heartbeat_response(mq_channel, conn_params):
 
+                channel = mq_channel
                 try:
 
                     # Get request from heartbeat-req for heartbeat response
                     method_frame, props, body = \
-                                  mq_channel.basic_get(queue=self._hb_request_q)
+                                  channel.basic_get(queue=self._hb_request_q)
 
                     if not body:
                         return
 
                     self._log.info('Received heartbeat request')
-
-                    nprops = pika.BasicProperties(
+                    try:
+                        nprops = pika.BasicProperties(
                                             correlation_id=props.correlation_id)
-                    mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=self._hb_response_q,
-                                properties=nprops,
-                                body='response')
+                        channel.basic_publish(exchange='',
+                                              routing_key=self._hb_response_q,
+                                              properties=nprops,
+                                              body='response')
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
+                        connection = pika.BlockingConnection(conn_params)
+                        channel = connection.channel()
+                        nprops = pika.BasicProperties(
+                                            correlation_id=props.correlation_id)
+                        channel.basic_publish(exchange='',
+                                              routing_key=self._hb_response_q,
+                                              properties=nprops,
+                                              body='response')
 
                     self._log.info('Sent heartbeat response')
 
-                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+                    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 except Exception as ex:
                     self._log.exception('Failed to respond to heartbeat, ' +
@@ -149,6 +159,13 @@ class TaskManager(Base_TaskManager):
             # Queue for communication between threads of this process
             task_queue = queue.Queue()
 
+            # Pickle file for task id history.
+            # TODO: How do you take care the first execution.
+            pkl_path = self._path + '/.task_submitted.pkl'
+            if os.path.exists(pkl_path):
+                with open(pkl_path, 'rb') as f:
+                    self._submitted_tasks = pickle.load(f)
+
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
                                          args=(task_queue, rmgr,
@@ -157,7 +174,10 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
 
-            while not self._tmgr_terminate.is_set():
+            # While we are supposed to run and the thread that does the work is
+            # alive go.
+            while not self._tmgr_terminate.is_set() and \
+                      self._rts_runner.is_alive():
 
                 try:
 
@@ -168,12 +188,18 @@ class TaskManager(Base_TaskManager):
                     if body:
 
                         body = json.loads(body)
-                        task_queue.put(body)
+
+                        if body['type'] == 'workload':
+                            task_queue.put(body['body'])
+                        elif body['type'] == 'rts':
+                            self._update_resource(body['body'])
+                        else:
+                            self._log.error('TMGR receiver wrong message type')
 
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
 
-                    heartbeat_response(mq_channel)
+                    heartbeat_response(mq_channel, rmq_conn_params)
 
                 except Exception as ex:
                     self._log.exception('Error in task execution: %s', ex)
@@ -209,6 +235,26 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
+    def _update_resource(self, pilot):
+        '''
+        Update used pilot.
+        '''
+
+        # Busy wait unit RP TMGR exists. Does some other way make sense?
+        self._log.debug('Adding pilot.')
+        while self._rp_tmgr is None:
+            pass
+
+        curr_pilot = self._rp_tmgr.list_pilots()
+        self._log.debug('Got old pilots')
+        if curr_pilot:
+            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
+        self._rp_tmgr.add_pilots(pilot)
+        self._log.debug('Added new pilot')
+
+
+    # --------------------------------------------------------------------------
+    #
     def _process_tasks(self, task_queue, rmgr, rmq_conn_params):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
@@ -217,47 +263,57 @@ class TaskManager(Base_TaskManager):
         '''
 
         placeholders = dict()
+        placeholder_lock = mt.Lock()
 
         # ----------------------------------------------------------------------
-        def load_placeholder(task, rts_uid):
+        def load_placeholder(task):
+            with placeholder_lock:
+                parent_pipeline = str(task.parent_pipeline['uid'])
+                parent_stage = str(task.parent_stage['uid'])
 
-            parent_pipeline = str(task.parent_pipeline['name'])
-            parent_stage    = str(task.parent_stage['name'])
+                if parent_pipeline not in placeholders:
+                    placeholders[parent_pipeline] = dict()
 
-            if parent_pipeline not in placeholders:
-                placeholders[parent_pipeline] = dict()
+                if parent_stage not in placeholders[parent_pipeline]:
+                    placeholders[parent_pipeline][parent_stage] = dict()
 
-            if parent_stage not in placeholders[parent_pipeline]:
-                placeholders[parent_pipeline][parent_stage] = dict()
-
-            if None not in [parent_pipeline, parent_stage, task.name]:
-                placeholders[parent_pipeline][parent_stage][task.name] = \
-                                                          {'path'   : task.path,
-                                                           'rts_uid': rts_uid}
+                if None not in [parent_pipeline, parent_stage, task.uid]:
+                    placeholders[parent_pipeline][parent_stage][task.uid] = \
+                                                            {'path': task.path,
+                                                             'uid': task.uid}
 
         # ----------------------------------------------------------------------
-        def unit_state_cb(unit, state):
+        def task_state_cb(rp_task, state, cb_data):
 
             try:
 
-                self._log.debug('Unit %s in state %s' % (unit.uid, unit.state))
+                channel = cb_data['channel']
+                conn_params = cb_data['params']
+                self._log.debug('Task %s in state %s' % (rp_task.uid,
+                                                         rp_task.state))
 
-                if unit.state in rp.FINAL:
+                if rp_task.state in rp.FINAL:
 
-                    task = None
-                    task = create_task_from_cu(unit, self._prof)
+                    task = create_task_from_rp(rp_task, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
-                                  mq_channel, '%s-cb-to-sync' % self._sid)
+                                  channel, conn_params,
+                                  '%s-cb-to-sync' % self._sid)
 
-                    load_placeholder(task, unit.uid)
+                    load_placeholder(task)
 
                     task_as_dict = json.dumps(task.to_dict())
-
-                    mq_channel.basic_publish(
-                            exchange='',
-                            routing_key='%s-completedq-1' % self._sid,
-                            body=task_as_dict)
+                    try:
+                        channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                    except (pika.exceptions.ConnectionClosed,
+                            pika.exceptions.ChannelClosed):
+                        connection = pika.BlockingConnection(conn_params)
+                        channel = connection.channel()
+                        channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
 
                     self._log.info('Pushed task %s with state %s to completed '
                                    'queue %s-completedq-1',
@@ -266,7 +322,7 @@ class TaskManager(Base_TaskManager):
             except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
                                     ' exit callback thread gracefully...')
-                raise KeyboardInterrupt from ex
+                raise KeyboardInterrupt(ex) from ex
 
             except Exception as ex:
                 self._log.exception('Error in RP callback thread: %s', ex)
@@ -277,11 +333,13 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        umgr = rp.UnitManager(session=rmgr._session)
-        umgr.add_pilots(rmgr.pilot)
-        umgr.register_callback(unit_state_cb)
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr.register_callback(task_state_cb,
+                                  cb_data={'channel': mq_channel,
+                                           'params' : rmq_conn_params})
 
         try:
+            pkl_path = self._path + '/.task_submitted.pkl'
 
             while not self._tmgr_terminate.is_set():
 
@@ -299,21 +357,24 @@ class TaskManager(Base_TaskManager):
 
                 task_queue.task_done()
 
-                bulk_tasks = list()
-                bulk_cuds  = list()
+                bulk_tds   = list()
 
                 for msg in body:
 
                     task = Task()
                     task.from_dict(msg)
-                    bulk_tasks.append(task)
-                    bulk_cuds.append(create_cud_from_task(
-                                            task, placeholders, self._prof))
+
+                    load_placeholder(task)
+                    bulk_tds.append(create_td_from_task(
+                                            task, placeholders,
+                                            self._submitted_tasks, pkl_path,
+                                            self._sid, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, '%s-tmgr-to-sync' % self._sid)
+                                  mq_channel, rmq_conn_params,
+                                  '%s-tmgr-to-sync' % self._sid)
 
-                umgr.submit_units(bulk_cuds)
+                self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
@@ -325,7 +386,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(ex) from ex
 
         finally:
-            umgr.close()
+            self._rp_tmgr.close()
 
 
     # --------------------------------------------------------------------------
@@ -341,8 +402,16 @@ class TaskManager(Base_TaskManager):
             self._log.warn('tmgr process already running!')
             return
 
-
         try:
+            # Redeclare the heartbeat queues in case they got deleted because
+            # of the task manager failure.
+            # If the queues exist this has no effect.
+
+            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+            mq_channel = mq_connection.channel()
+
+            mq_channel.queue_declare(queue=self._hb_response_q)
+            mq_channel.queue_declare(queue=self._hb_request_q)
 
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
@@ -360,6 +429,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
+            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
 
             return True
 
@@ -368,7 +438,6 @@ class TaskManager(Base_TaskManager):
             self._log.exception('Task manager not started, error: %s', ex)
             self.terminate_manager()
             raise EnTKError(ex) from ex
-        # pylint: enable=attribute-defined-outside-init, access-member-before-definition
 
 # ------------------------------------------------------------------------------
-
+# pylint: enable=attribute-defined-outside-init, access-member-before-definition

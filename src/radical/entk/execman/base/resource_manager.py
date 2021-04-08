@@ -194,6 +194,17 @@ class Base_ResourceManager(object):
 
     # --------------------------------------------------------------------------
     #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        raise NotImplementedError('get_rts_info() method not implemented '
+                                  'in ResourceManager for %s' % self._rts)
+
+
+    # --------------------------------------------------------------------------
+    #
     def _validate_resource_desc(self):
         """
         **Purpose**: Validate the provided resource description
@@ -284,12 +295,12 @@ class Base_ResourceManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**:  Submit resource request per provided description
         """
 
-        raise NotImplementedError('_submit_resource_request() method not '
+        raise NotImplementedError('submit_resource_request() method not '
                             'implemented in ResourceManager for %s' % self._rts)
 
 

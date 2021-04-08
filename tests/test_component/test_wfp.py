@@ -298,6 +298,60 @@ class TestBase(TestCase):
         self.assertEqual(global_advs[0], [task, 'Task', 'SCHEDULED'])
         self.assertEqual(global_advs[1], [stage, 'Stage', 'SCHEDULED'])
 
+    # ------------------------------------------------------------------------------
+    #
+    @mock.patch.object(WFprocessor, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    def test_reset_workload(self, mocked_init, mocked_Logger):
+
+        global_advs = []
+
+        def _advance_side_effect(obj, obj_type, state):
+            nonlocal global_advs
+            global_advs.append([obj, obj_type, state])
+
+        wfp = WFprocessor(sid='test_sid', workflow='workflow',
+                          pending_queue='pending_queue',
+                          completed_queue='completed_queue',
+                          rmq_conn_params='test_rmq_params',
+                          resubmit_failed=False)
+        wfp._logger = mocked_Logger
+        wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
+
+        pipe = mock.Mock()
+        pipe.lock = mt.Lock()
+        pipe.state = states.SCHEDULING
+        pipe.completed = False
+        pipe.current_stage = 1
+
+        stage = mock.Mock()
+        stage.uid = 'stage.0000'
+        stage.state = states.SCHEDULED
+
+        task = mock.Mock()
+        task.uid = 'task.0000'
+        task.state = states.SCHEDULED
+
+        stage.tasks = [task]
+        pipe.stages = [stage]
+
+        pipe2 = mock.Mock()
+        pipe2.lock = mt.Lock()
+        pipe2.state = states.DONE
+        pipe2.uid = 'pipe.0001'
+        pipe2.completed = True
+
+        pipe3 = mock.Mock()
+        pipe3.lock = mt.Lock()
+        pipe3.state = states.SUSPENDED
+        pipe3.uid = 'pipe.0002'
+        pipe3.completed = False
+
+        wfp._workflow = set([pipe, pipe2, pipe3])
+
+        wfp.reset_workflow()
+        self.assertEqual(global_advs[0], [task, 'Task', 'DESCRIBED'])
+        self.assertEqual(global_advs[1], [stage, 'Stage', 'SCHEDULING'])
 
     # ------------------------------------------------------------------------------
     #

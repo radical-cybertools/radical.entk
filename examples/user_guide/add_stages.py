@@ -26,13 +26,13 @@ if __name__ == '__main__':
 
     # Create a Stage object
     s1 = Stage()
-    s1.name = 'Stage 1'
+    s1.name = 'Stage.1'
 
     for cnt in range(10):
 
         # Create a Task object
         t = Task()
-        t.name = 'my-task'        # Assign a name to the task (optional)
+        t.name = 'my.task'        # Assign a name to the task (optional)
         t.executable = '/bin/echo'   # Assign executable to the task
         t.arguments = ['I am task %s in %s' % (cnt, s1.name)]  # Assign arguments for the task executable
 
@@ -45,13 +45,13 @@ if __name__ == '__main__':
 
     # Create another Stage object
     s2 = Stage()
-    s2.name = 'Stage 2'
+    s2.name = 'Stage.2'
 
     for cnt in range(5):
 
         # Create a Task object
         t = Task()
-        t.name = 'my-task'        # Assign a name to the task (optional, do not use ',' or '_')
+        t.name = 'my.task'        # Assign a name to the task (optional, do not use ',' or '_')
         t.executable = '/bin/echo'   # Assign executable to the task
         t.arguments = ['I am task %s in %s' % (cnt, s2.name)]  # Assign arguments for the task executable
 
