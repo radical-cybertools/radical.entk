@@ -293,7 +293,9 @@ class Base_TaskManager(object):
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
             raise KeyboardInterrupt from ex
-
+        except Exception as ex:
+            self._log.exception('Heartbeat failed with error: %s', ex)
+            raise EnTKError(ex) from ex
         finally:
             try:
                 mq_connection.close()
