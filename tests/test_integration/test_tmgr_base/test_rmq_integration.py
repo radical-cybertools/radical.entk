@@ -109,7 +109,7 @@ class TestTask(TestCase):
         tmgr._heartbeat_error = mt.Event()
         tmgr._log = ru.Logger(name='radical.entk.taskmanager', ns='radical.entk')
         tmgr._prof = mocked_Profiler
-        
+
         master_thread = mt.Thread(target=tmgr._heartbeat,
                                 name='tmgr_heartbeat')
         master_thread.start()
@@ -138,7 +138,7 @@ class TestTask(TestCase):
             mq_channel.queue_delete(queue='heartbeat_res')
             mq_channel.close()
             mq_connection.close()
-    
+
 
     # --------------------------------------------------------------------------
     #
@@ -167,15 +167,15 @@ class TestTask(TestCase):
         tmgr._hb_terminate = mt.Event()
         tmgr._log = ru.Logger(name='radical.entk.taskmanager', ns='radical.entk')
         tmgr._prof = mocked_Profiler
-        
+
         master_thread = mt.Thread(target=tmgr._heartbeat,
                                 name='tmgr_heartbeat')
         master_thread.start()
-        i = 0
+
         body = None
         while not body:
-            method_frame, props, body = mq_channel.basic_get(queue='heartbeat_rq')
-        
+            method_frame, _, body = mq_channel.basic_get(queue='heartbeat_rq')
+
         time.sleep(3)
         self.assertFalse(master_thread.is_alive())
         master_thread.join()
@@ -185,13 +185,13 @@ class TestTask(TestCase):
         master_thread.start()
         body = None
         while not body:
-            method_frame, props, body = mq_channel.basic_get(queue='heartbeat_rq')
-        
+            method_frame, _, body = mq_channel.basic_get(queue='heartbeat_rq')
+
         nprops = pika.BasicProperties(correlation_id='wrong_id')
         mq_channel.basic_publish(exchange='', routing_key='heartbeat_res',
                                  properties=nprops, body='response')
         mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-        
+
         time.sleep(3)
         self.assertFalse(master_thread.is_alive())
         master_thread.join()
