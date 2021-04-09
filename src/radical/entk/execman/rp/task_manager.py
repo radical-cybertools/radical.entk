@@ -290,7 +290,7 @@ class TaskManager(Base_TaskManager):
         def check_resource_reqs(task):
 
             cpu_reqs = task.cpu_reqs['cpu_processes'] * task.cpu_reqs['cpu_threads']
-            gpu_reqs = task.gpu_reqs['gpu_processes'] * task.gpu_reqs['gpu_threads']
+            gpu_reqs = task.cpu_reqs['cpu_processes'] * task.gpu_reqs['gpu_processes']
 
             if cpu_reqs > self._total_res['cores'] or \
                gpu_reqs > self._total_res['gpus']:
