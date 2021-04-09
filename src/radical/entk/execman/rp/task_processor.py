@@ -473,9 +473,9 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
-            td.tag = resolve_tags(task=task,
+            td.tags = {'colocate': resolve_tags(task=task,
                                   parent_pipeline_name=task.parent_pipeline['uid'],
-                                  placeholders=placeholders)
+                                  placeholders=placeholders)}
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
