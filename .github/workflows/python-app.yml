@@ -48,8 +48,11 @@ jobs:
         RMQ_USERNAME: guest
         RMQ_PASSWORD: guest
         LOC: testenv/lib/python3.6/site-packages
+        PYTHONPATH: ~/testenv/lib/python3.6/site-packages
       run: |
+        . testenv/bin/activate
         coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/ tests/test_integration
+        coverage report
     - name: Codecov
       uses: codecov/codecov-action@v1.2.2
 
