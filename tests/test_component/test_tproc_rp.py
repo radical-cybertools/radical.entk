@@ -214,7 +214,6 @@ class TestBase(TestCase):
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
         self.assertEqual(test_td.output_staging, 'outputs')
-        self.assertEqual(test_td.tags, 'test_tag')
         self.assertEqual(test_td.uid, 'task.0000')
         self.assertEqual(hash_table, {'task.0000':'task.0000'})
 
@@ -241,7 +240,6 @@ class TestBase(TestCase):
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
         self.assertEqual(test_td.output_staging, 'outputs')
-        self.assertEqual(test_td.tags, 'test_tag')
         self.assertEqual(test_td.uid, 'task.0000.0000')
         self.assertEqual(hash_table, {'task.0000':'task.0000.0000'})
 
