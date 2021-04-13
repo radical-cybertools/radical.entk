@@ -122,14 +122,15 @@ class TestBase(TestCase):
         }
 
 
-
-        self.assertEqual(resolve_tags(task=task,
+        tags = resolve_tags(task=task,
                             parent_pipeline_name=pipeline_name,
-                            placeholders=placeholders),
-                            'unit.0002')
+                            placeholders=placeholders)
+        print(tags)
+        self.assertEqual(tags,
+                         {'colocate': 'unit.0002'})
 
         self.assertEqual(resolve_tags(task=task2, parent_pipeline_name=pipeline_name,
-                         placeholders=placeholders), 'task.0001')
+                         placeholders=placeholders), {'colocate':'task.0001'})
 
     # ------------------------------------------------------------------------------
     #
@@ -216,10 +217,9 @@ class TestBase(TestCase):
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
         self.assertEqual(test_td.output_staging, 'outputs')
-        self.assertEqual(test_td.tags, {'colocate': 'test_tag'})
+        self.assertEqual(test_td.tags, 'test_tag')
         self.assertEqual(test_td.uid, 'task.0000')
         self.assertEqual(hash_table, {'task.0000':'task.0000'})
-
 
         test_td = create_td_from_task(task=task, placeholders=None,
                                       task_hash_table=hash_table,
@@ -244,7 +244,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
         self.assertEqual(test_td.output_staging, 'outputs')
-        self.assertEqual(test_td.tags, {'colocate': 'test_tag'})
+        self.assertEqual(test_td.tags, 'test_tag')
         self.assertEqual(test_td.uid, 'task.0000.0000')
         self.assertEqual(hash_table, {'task.0000':'task.0000.0000'})
 
