@@ -78,12 +78,13 @@ be printed.
 Installing Ensemble Toolkit using Anaconda/Conda
 ------------------------------------------------
 
-To install the Ensemble Toolkit, we need to create a conda environment. 
+Conda users can obtain Ensemble Toolkit from `conda-forge` channel.
+To install the Ensemble Toolkit, we need to create a conda environment.
 Open a terminal and run (assuming you have PATH to point to ``conda``):
 
 .. code-block:: bash
 
-        conda create -n conda-entk python=3.7 -y
+        conda create -n conda-entk python=3.7 -c conda-forge -y
         conda activate conda-entk
 
 
@@ -92,7 +93,7 @@ by executing the following command in your conda env:
 
 .. code-block:: bash
 
-        conda install radical.entk
+        conda install radical.entk -c conda-forge
 
 
 You can check the version of Ensemble Toolkit with the
@@ -103,15 +104,14 @@ be printed.
 
         radical-stack
 
-          python               : 3.6.9
+          python               : <path>/rct/bin/python3
           pythonpath           :
-          virtualenv           : /home/hrlee/venv3/entk.py36
-
-          radical.entk         : 1.0.0
-          radical.pilot        : 1.0.0
-          radical.saga         : 1.0.0
-          radical.utils        : 1.0.0
-
+          version              : 3.9.2
+          virtualenv           : rct
+          radical.entk         : 1.6.0
+          radical.pilot        : 1.6.3
+          radical.saga         : 1.6.1
+          radical.utils        : 1.6.2
 
 
 .. comments
