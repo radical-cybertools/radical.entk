@@ -252,8 +252,9 @@ class TaskManager(Base_TaskManager):
         if curr_pilot:
             self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
         self._rp_tmgr.add_pilots(pilot)
-        self._total_res = {'cores': pilot['cores'],
-                           'gpus' : pilot['gpus']}
+        print(pilot)
+        self._total_res = {'cores': pilot['description']['cores'],
+                           'gpus' : pilot['description']['gpus']}
         self._log.debug('Added new pilot')
 
 
@@ -393,8 +394,8 @@ class TaskManager(Base_TaskManager):
                         self._advance(task, 'Task', states.FAILED,
                                       mq_channel, rmq_conn_params,
                                       '%s-tmgr-to-sync' % self._sid)
-
-                self._rp_tmgr.submit_tasks(bulk_tds)
+                if bulk_tds:
+                    self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
