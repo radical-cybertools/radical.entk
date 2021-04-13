@@ -252,7 +252,7 @@ class TaskManager(Base_TaskManager):
         if curr_pilot:
             self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
         self._rp_tmgr.add_pilots(pilot)
-        print(pilot)
+
         self._total_res = {'cores': pilot['description']['cores'],
                            'gpus' : pilot['description']['gpus']}
         self._log.debug('Added new pilot')
@@ -393,7 +393,21 @@ class TaskManager(Base_TaskManager):
                     else:
                         self._advance(task, 'Task', states.FAILED,
                                       mq_channel, rmq_conn_params,
-                                      '%s-tmgr-to-sync' % self._sid)
+                                      '%s-cb-to-sync' % self._sid)
+                        load_placeholder(task)
+
+                        task_as_dict = json.dumps(task.to_dict())
+                        try:
+                            mq_channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                        except (pika.exceptions.ConnectionClosed,
+                                pika.exceptions.ChannelClosed):
+                            connection = pika.BlockingConnection(conn_params)
+                            channel = connection.channel()
+                            channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
                 if bulk_tds:
                     self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
