@@ -403,9 +403,9 @@ class TaskManager(Base_TaskManager):
                                               body=task_as_dict)
                         except (pika.exceptions.ConnectionClosed,
                                 pika.exceptions.ChannelClosed):
-                            connection = pika.BlockingConnection(conn_params)
-                            channel = connection.channel()
-                            channel.basic_publish(exchange='',
+                            mq_connection = pika.BlockingConnection(rmq_conn_params)
+                            mq_channel = mq_connection.channel()
+                            mq_channel.basic_publish(exchange='',
                                               routing_key='%s-completedq-1' % self._sid,
                                               body=task_as_dict)
                 if bulk_tds:
