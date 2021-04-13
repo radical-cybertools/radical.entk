@@ -121,12 +121,9 @@ class TestBase(TestCase):
             }
         }
 
-
-        tags = resolve_tags(task=task,
+        self.assertEqual(resolve_tags(task=task,
                             parent_pipeline_name=pipeline_name,
-                            placeholders=placeholders)
-        print(tags)
-        self.assertEqual(tags,
+                            placeholders=placeholders),
                          {'colocate': 'unit.0002'})
 
         self.assertEqual(resolve_tags(task=task2, parent_pipeline_name=pipeline_name,
