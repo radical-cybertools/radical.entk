@@ -179,12 +179,12 @@ class TestBase(TestCase):
         task.post_exec = ''
         task.cpu_reqs = {'cpu_processes': 5,
                          'cpu_threads': 6,
-                         'cpu_process_type': 'POSIX',
-                         'cpu_thread_type': None}
+                         'cpu_process_type': 'MPI',
+                         'cpu_thread_type': 'MPI'}
         task.gpu_reqs = {'gpu_processes': 5,
                          'gpu_threads': 6,
-                         'gpu_process_type': 'POSIX',
-                         'gpu_thread_type': None}
+                         'gpu_process_type': 'MPI',
+                         'gpu_thread_type': 'MPI'}
         task.tags = None
 
         task.lfs_per_process = 235
@@ -203,12 +203,12 @@ class TestBase(TestCase):
         self.assertEqual(test_td.post_exec, '')
         self.assertEqual(test_td.cpu_processes, 5)
         self.assertEqual(test_td.cpu_threads, 6)
-        self.assertEqual(test_td.cpu_process_type, 'POSIX')
-        self.assertIsNone(test_td.cpu_thread_type)
+        self.assertEqual(test_td.cpu_process_type, 'MPI')
+        self.assertEqual(test_td.cpu_thread_type, 'MPI')
         self.assertEqual(test_td.gpu_processes, 5)
         self.assertEqual(test_td.gpu_threads, 6)
-        self.assertEqual(test_td.gpu_process_type, 'POSIX')
-        self.assertIsNone(test_td.gpu_thread_type)
+        self.assertEqual(test_td.gpu_process_type, 'MPI')
+        self.assertEqual(test_td.gpu_thread_type, 'MPI')
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.stdout, 'stdout')
         self.assertEqual(test_td.stderr, 'stderr')
@@ -216,6 +216,15 @@ class TestBase(TestCase):
         self.assertEqual(test_td.output_staging, 'outputs')
         self.assertEqual(test_td.uid, 'task.0000')
         self.assertEqual(hash_table, {'task.0000':'task.0000'})
+
+        task.cpu_reqs = {'cpu_processes': 5,
+                         'cpu_threads': 6,
+                         'cpu_process_type': None,
+                         'cpu_thread_type': None}
+        task.gpu_reqs = {'gpu_processes': 5,
+                         'gpu_threads': 6,
+                         'gpu_process_type': None,
+                         'gpu_thread_type': None}
 
         test_td = create_td_from_task(task=task, placeholders=None,
                                       task_hash_table=hash_table,
@@ -230,11 +239,11 @@ class TestBase(TestCase):
         self.assertEqual(test_td.cpu_processes, 5)
         self.assertEqual(test_td.cpu_threads, 6)
         self.assertEqual(test_td.cpu_process_type, 'POSIX')
-        self.assertIsNone(test_td.cpu_thread_type)
+        self.assertEqual(test_td.cpu_thread_type, 'OpenMP')
         self.assertEqual(test_td.gpu_processes, 5)
         self.assertEqual(test_td.gpu_threads, 6)
         self.assertEqual(test_td.gpu_process_type, 'POSIX')
-        self.assertIsNone(test_td.gpu_thread_type)
+        self.assertEqual(test_td.gpu_thread_type, 'GPU_OpenMP')
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.stdout, 'stdout')
         self.assertEqual(test_td.stderr, 'stderr')
@@ -546,11 +555,11 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.cpu_processes, 5)
         self.assertEqual(test_cud.cpu_threads, 6)
         self.assertEqual(test_cud.cpu_process_type, 'POSIX')
-        self.assertIsNone(test_cud.cpu_thread_type)
+        self.assertEqual(test_cud.cpu_thread_type, 'OpenMP')
         self.assertEqual(test_cud.gpu_processes, 5)
         self.assertEqual(test_cud.gpu_threads, 6)
         self.assertEqual(test_cud.gpu_process_type, 'POSIX')
-        self.assertIsNone(test_cud.gpu_thread_type)
+        self.assertEqual(test_cud.gpu_thread_type, 'GPU_OpenMP')
         self.assertEqual(test_cud.lfs_per_process, 235)
         self.assertEqual(test_cud.stdout, 'stdout')
         self.assertEqual(test_cud.stderr, 'stderr')

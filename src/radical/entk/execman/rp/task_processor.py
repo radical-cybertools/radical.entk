@@ -479,12 +479,27 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
-        td.cpu_process_type = task.cpu_reqs['cpu_process_type']
-        td.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
+        if task.cpu_reqs['cpu_process_type']:
+            td.cpu_process_type = task.cpu_reqs['cpu_process_type']
+        else:
+            td.cpu_process_type = rp.POSIX
+
+        if task.cpu_reqs['cpu_thread_type']:
+            td.cpu_thread_type = task.cpu_reqs['cpu_thread_type']
+        else:
+            td.cpu_thread_type = rp.OpenMP
+
         td.gpu_processes    = task.gpu_reqs['gpu_processes']
         td.gpu_threads      = task.gpu_reqs['gpu_threads']
-        td.gpu_process_type = task.gpu_reqs['gpu_process_type']
-        td.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
+
+        if task.gpu_reqs['gpu_process_type']:
+            td.gpu_process_type = task.gpu_reqs['gpu_process_type']
+        else:
+            td.gpu_process_type = rp.POSIX
+        if task.gpu_reqs['gpu_thread_type']:
+            td.gpu_thread_type = task.gpu_reqs['gpu_thread_type']
+        else:
+            td.gpu_thread_type = rp.GPU_OpenMP
 
         if task.lfs_per_process:
             td.lfs_per_process = task.lfs_per_process
