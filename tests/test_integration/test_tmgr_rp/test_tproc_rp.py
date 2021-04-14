@@ -9,6 +9,7 @@ from radical.entk                           import Task
 import pickle
 import radical.pilot as rp
 
+
 class TestBase(TestCase):
 
     # ------------------------------------------------------------------------------
