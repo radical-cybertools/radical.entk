@@ -61,6 +61,8 @@ class TaskManager(Base_TaskManager):
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
         self._rp_tmgr = None
+        self._total_res = {'cores': 0,
+                           'gpus': 0}
 
 
     # --------------------------------------------------------------------------
@@ -250,6 +252,9 @@ class TaskManager(Base_TaskManager):
         if curr_pilot:
             self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
         self._rp_tmgr.add_pilots(pilot)
+
+        self._total_res = {'cores': pilot['description']['cores'],
+                           'gpus' : pilot['description']['gpus']}
         self._log.debug('Added new pilot')
 
 
@@ -281,6 +286,17 @@ class TaskManager(Base_TaskManager):
                     placeholders[parent_pipeline][parent_stage][task.uid] = \
                                                             {'path': task.path,
                                                              'uid': task.uid}
+
+        # ----------------------------------------------------------------------
+        def check_resource_reqs(task):
+
+            cpu_reqs = task.cpu_reqs['cpu_processes'] * task.cpu_reqs['cpu_threads']
+            gpu_reqs = task.cpu_reqs['cpu_processes'] * task.gpu_reqs['gpu_processes']
+
+            if cpu_reqs > self._total_res['cores'] or \
+               gpu_reqs > self._total_res['gpus']:
+                return False
+            return True
 
         # ----------------------------------------------------------------------
         def task_state_cb(rp_task, state, cb_data):
@@ -363,18 +379,37 @@ class TaskManager(Base_TaskManager):
 
                     task = Task()
                     task.from_dict(msg)
-
-                    load_placeholder(task)
-                    bulk_tds.append(create_td_from_task(
+                    task_fits_res = check_resource_reqs(task)
+                    if task_fits_res:
+                        load_placeholder(task)
+                        bulk_tds.append(create_td_from_task(
                                             task, placeholders,
                                             self._submitted_tasks, pkl_path,
                                             self._sid, self._prof))
 
-                    self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, rmq_conn_params,
-                                  '%s-tmgr-to-sync' % self._sid)
+                        self._advance(task, 'Task', states.SUBMITTING,
+                                      mq_channel, rmq_conn_params,
+                                      '%s-tmgr-to-sync' % self._sid)
+                    else:
+                        self._advance(task, 'Task', states.FAILED,
+                                      mq_channel, rmq_conn_params,
+                                      '%s-cb-to-sync' % self._sid)
+                        load_placeholder(task)
 
-                self._rp_tmgr.submit_tasks(bulk_tds)
+                        task_as_dict = json.dumps(task.to_dict())
+                        try:
+                            mq_channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                        except (pika.exceptions.ConnectionClosed,
+                                pika.exceptions.ChannelClosed):
+                            mq_connection = pika.BlockingConnection(rmq_conn_params)
+                            mq_channel = mq_connection.channel()
+                            mq_channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                if bulk_tds:
+                    self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
