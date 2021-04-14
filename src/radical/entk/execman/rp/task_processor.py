@@ -175,7 +175,7 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
         if colo_tag in placeholders[parent_pipeline_name][sname]:
-            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
+            return {'colocate': placeholders[parent_pipeline_name][sname][colo_tag]['uid']}
 
     for pname in placeholders:
 
@@ -185,9 +185,9 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
 
         for sname in placeholders[pname]:
             if colo_tag in placeholders[pname][sname]:
-                return placeholders[pname][sname][colo_tag]['uid']
+                return {'colocate': placeholders[pname][sname][colo_tag]['uid']}
 
-    return task.uid
+    return {'colocate': task.uid}
 
 
 # ------------------------------------------------------------------------------
@@ -473,7 +473,7 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
-            td.tag = resolve_tags(task=task,
+            td.tags = resolve_tags(task=task,
                                   parent_pipeline_name=task.parent_pipeline['uid'],
                                   placeholders=placeholders)
 

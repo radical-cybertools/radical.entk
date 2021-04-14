@@ -81,13 +81,13 @@ class TestBase(TestCase):
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, [])
         self.assertEqual(test_td.output_staging, [])
-        self.assertEqual(test_td.tag, 'task.0000')
+        self.assertEqual(test_td.tags, {'colocate':'task.0000'})
         self.assertEqual(test_td.uid,'task.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000'})
         task.tags = {'colocate': 'task.0001'}
         test_td = create_td_from_task(task, placeholders, hash_table,
                                       '.test.pkl', 'test_sid')
-        self.assertEqual(test_td.tag, 'task.0003')
+        self.assertEqual(test_td.tags, {'colocate':'task.0003'})
         self.assertEqual(test_td.uid, 'task.0000.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000.0000'})
         with open('.test.pkl', 'rb') as f:
