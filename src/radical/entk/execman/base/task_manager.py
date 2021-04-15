@@ -277,13 +277,11 @@ class Base_TaskManager(object):
                     # no usable response
                     self._log.error('Heartbeat response no body')
                     return
-                    # raise EnTKError('heartbeat timeout')
 
                 if corr_id != props.correlation_id:
                     # incorrect response
                     self._log.error('Heartbeat response wrong correlation')
                     return
-                    # raise EnTKError('heartbeat timeout')
 
                 self._log.info('Received heartbeat response')
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
@@ -291,26 +289,13 @@ class Base_TaskManager(object):
                 # Appease pika cos it thinks the connection is dead
                 # mq_connection.close()
 
-        except EnTKError as ex:
-            # make sure that timeouts did not race with termination
-            if 'heartbeat timeout' not in str(ex):
-                raise EnTKError(ex) from ex
-
-            if not self._hb_terminate.is_set():
-                raise EnTKError(ex) from ex
-
-            # we did indeed race with termination - exit gracefully
-            return
-
         except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted by user (probably '
                                    ' hit Ctrl+C), cancel tmgr gracefully...')
             raise KeyboardInterrupt from ex
-
         except Exception as ex:
             self._log.exception('Heartbeat failed with error: %s', ex)
             raise EnTKError(ex) from ex
-
         finally:
             try:
                 mq_connection.close()

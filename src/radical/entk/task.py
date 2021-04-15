@@ -52,6 +52,7 @@ class Task(object):
         self._arguments  = list()
         self._sandbox    = ""
         self._post_exec  = list()
+        self._stage_on_error = False
 
         self._lfs_per_process = 0
         self._cpu_reqs        = {'processes'           : 1,
@@ -588,6 +589,16 @@ class Task(object):
         return self._rts_uid
 
 
+    @property
+    def stage_on_error(self):
+        '''
+        Allow to stage out data if task failed
+
+        :getter: Returns the value
+        :type: Boolean
+        '''
+
+        return self._stage_on_error
     # --------------------------------------------------------------------------
     #
     @uid.setter
@@ -997,6 +1008,13 @@ class Task(object):
         self._p_pipeline = value
 
 
+    @stage_on_error.setter
+    def stage_on_error(self, value):
+
+        if not isinstance(value, bool):
+            raise ree.TypeError(expected_type=bool, actual_type=type(value))
+
+        self._stage_on_error = value
     # --------------------------------------------------------------------------
     #
     def to_dict(self):
@@ -1032,6 +1050,7 @@ class Task(object):
 
             'stdout'               : self._stdout,
             'stderr'               : self._stderr,
+            'stage_on_error'       : self._stage_on_error,
 
             'exit_code'            : self._exit_code,
             'path'                 : self._path,

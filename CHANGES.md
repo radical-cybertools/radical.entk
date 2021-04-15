@@ -6,6 +6,19 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.6.5  Release                                                        2021-04-15
+--------------------------------------------------------------------------------
+#572 Trying to revert to codecov action after resetting the token 
+#571 RP task processor adds default values to RP task cpu and gpu reqs 
+#568 Using RPs tags instead of tag 
+#567 Verifying a task can fit a resource 
+#566 Fix/integration tests 
+#569 Fixing conda installation instructions 
+#538 EnTK components failure resilience 
+#563 Adding stage_on_error. Issue #562 
+#557 Fix issue 477 
+#560 Feature/pilot failure
+
 1.5.8  Release                                                        2020-12-15
 --------------------------------------------------------------------------------
 

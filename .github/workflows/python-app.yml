@@ -11,7 +11,6 @@ on:
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
     
     services:
@@ -27,37 +26,30 @@ jobs:
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.6.13
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install . --upgrade
-        pip install psutil
-        pip install hypothesis
-        pip install coverage
-        pip install codecov
-        pip install coveralls
-        pip install pytest
-        pip install pytest-xdist
-        pip install pytest-timeout
-        pip install timeout-decorator
+        python -m pip install --upgrade pip setuptools
+        python -m pip install --upgrade .
+        python -m pip install psutil
+        python -m pip install hypothesis
+        python -m pip install coverage
+        python -m pip install codecov
+        python -m pip install pytest
+        python -m pip install pytest-xdist
+        python -m pip install pytest-timeout
+        python -m pip install timeout-decorator
     - name: Test with pytest
       env:
         RMQ_HOSTNAME: localhost
         RMQ_PORT: ${{ job.services.rabbitmq.ports[5672] }} # get randomly assigned published port
         RMQ_USERNAME: guest
         RMQ_PASSWORD: guest
-        LOC: /opt/hostedtoolcache/Python/3.6.12/x64/lib/python3.6/site-packages
+        LOC: /opt/hostedtoolcache/Python/3.6.13/x64/lib/python3.6/site-packages
       run: |
-        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/ tests/test_integration        
+        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/ tests/test_integration
     - name: Codecov
-      env: 
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      run: |
-        coverage combine; \
-        coverage xml; \
-        coverage report; \
-        curl -s https://codecov.io/bash | bash
+      uses: codecov/codecov-action@v1
 
   flake8:
     runs-on: ubuntu-latest
@@ -68,7 +60,7 @@ jobs:
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.6.13
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -93,7 +85,7 @@ jobs:
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.6.13
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip

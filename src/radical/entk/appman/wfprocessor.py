@@ -133,9 +133,8 @@ class WFprocessor(object):
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
                 if pipe.state in states.FINAL or  \
-                    pipe.completed or \
-                    pipe.state == states.SUSPENDED:
-
+                   pipe.completed or \
+                   pipe.state == states.SUSPENDED:
                     continue
 
                 if pipe.state == states.INITIAL:
@@ -183,6 +182,7 @@ class WFprocessor(object):
                         # stage is already in the correct state
                         if exec_task.state == states.FAILED:
                             continue
+
                         if exec_stage not in scheduled_stages:
                             scheduled_stages.append(exec_stage)
 
@@ -191,29 +191,53 @@ class WFprocessor(object):
 
     # --------------------------------------------------------------------------
     #
+    def reset_workflow(self):
+        '''
+        When a component is restarted we reset all the tasks that did not finish
+        to the first state. Then they are scheduled again for execution.
+        '''
+
+        self._logger.debug('Reseting workflow execution')
+        for pipe in self._workflow:
+
+            with pipe.lock:
+                if pipe.state in states.FINAL or  \
+                   pipe.completed or \
+                   pipe.state == states.SUSPENDED:
+                    continue
+
+                curr_stage = pipe.stages[pipe.current_stage - 1]
+                for task in curr_stage.tasks:
+                    if task.state not in states.FINAL:
+                        self._advance(task, 'Task', states.INITIAL)
+                self._advance(curr_stage, 'Stage', states.SCHEDULING)
+
+    # --------------------------------------------------------------------------
+    #
     def _execute_workload(self, workload, scheduled_stages):
 
         # Tasks of the workload need to be converted into a dict
         # as pika can send and receive only json/dict data
-        wl_json = json.dumps([task.to_dict() for task in workload])
+        wl_json = {'type': 'workload',
+                   'body': [task.to_dict() for task in workload]}
+
+        wl_json = json.dumps(wl_json)
 
         # Acquire a connection+channel to the rmq server
         mq_connection = pika.BlockingConnection(self._rmq_conn_params)
         mq_channel = mq_connection.channel()
 
         # Send the workload to the pending queue
-        mq_channel.basic_publish(exchange = '',
-                                    routing_key=self._pending_queue[0],
-                                    body=wl_json
-
-                                    # TODO: Make durability parameters
-                                    # as a config parameter and then
-                                    # enable the following accordingly
-                                    # properties=pika.BasicProperties(
-                                    # make message persistent
-                                    # delivery_mode = 2)
-
-                                    )
+        mq_channel.basic_publish(exchange='',
+                                 routing_key=self._pending_queue[0],
+                                 body=wl_json
+                                 # TODO: Make durability parameters
+                                 # as a config parameter and then
+                                 # enable the following accordingly
+                                 # properties=pika.BasicProperties(
+                                 # make message persistent
+                                 # delivery_mode = 2)
+                                )
         self._logger.debug('Workload submitted to Task Manager')
 
         # Update the state of the tasks in the workload
@@ -246,8 +270,10 @@ class WFprocessor(object):
 
             while not self._enqueue_thread_terminate.is_set():
 
-                time.sleep(3)
+                # Raise an exception while running tests
+                ru.raise_on(tag='enqueue_fail')
 
+                time.sleep(3)
                 workload, scheduled_stages = self._create_workload()
 
                 # If there are tasks to be executed
@@ -438,6 +464,9 @@ class WFprocessor(object):
 
             last = time.time()
             while not self._dequeue_thread_terminate.is_set():
+
+                # Raise an exception while running tests
+                ru.raise_on(tag='dequeue_fail')
 
                 method_frame, _ , body = mq_channel.basic_get(
                     queue=self._completed_queue[0])

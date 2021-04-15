@@ -7,6 +7,8 @@ __license__   = "MIT"
 import json
 import pika
 import queue
+import os
+import pickle
 
 import threading       as mt
 import multiprocessing as mp
@@ -55,9 +57,12 @@ class TaskManager(Base_TaskManager):
                                           rmgr, rmq_conn_params,
                                           rts='radical.pilot')
         self._rts_runner = None
-
+        self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
+        self._rp_tmgr = None
+        self._total_res = {'cores': 0,
+                           'gpus': 0}
 
 
     # --------------------------------------------------------------------------
@@ -156,6 +161,13 @@ class TaskManager(Base_TaskManager):
             # Queue for communication between threads of this process
             task_queue = queue.Queue()
 
+            # Pickle file for task id history.
+            # TODO: How do you take care the first execution.
+            pkl_path = self._path + '/.task_submitted.pkl'
+            if os.path.exists(pkl_path):
+                with open(pkl_path, 'rb') as f:
+                    self._submitted_tasks = pickle.load(f)
+
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
                                          args=(task_queue, rmgr,
@@ -164,7 +176,10 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
 
-            while not self._tmgr_terminate.is_set():
+            # While we are supposed to run and the thread that does the work is
+            # alive go.
+            while not self._tmgr_terminate.is_set() and \
+                      self._rts_runner.is_alive():
 
                 try:
 
@@ -175,7 +190,13 @@ class TaskManager(Base_TaskManager):
                     if body:
 
                         body = json.loads(body)
-                        task_queue.put(body)
+
+                        if body['type'] == 'workload':
+                            task_queue.put(body['body'])
+                        elif body['type'] == 'rts':
+                            self._update_resource(body['body'])
+                        else:
+                            self._log.error('TMGR receiver wrong message type')
 
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
@@ -216,6 +237,29 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
+    def _update_resource(self, pilot):
+        '''
+        Update used pilot.
+        '''
+
+        # Busy wait unit RP TMGR exists. Does some other way make sense?
+        self._log.debug('Adding pilot.')
+        while self._rp_tmgr is None:
+            pass
+
+        curr_pilot = self._rp_tmgr.list_pilots()
+        self._log.debug('Got old pilots')
+        if curr_pilot:
+            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
+        self._rp_tmgr.add_pilots(pilot)
+
+        self._total_res = {'cores': pilot['description']['cores'],
+                           'gpus' : pilot['description']['gpus']}
+        self._log.debug('Added new pilot')
+
+
+    # --------------------------------------------------------------------------
+    #
     def _process_tasks(self, task_queue, rmgr, rmq_conn_params):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
@@ -242,6 +286,17 @@ class TaskManager(Base_TaskManager):
                     placeholders[parent_pipeline][parent_stage][task.uid] = \
                                                             {'path': task.path,
                                                              'uid': task.uid}
+
+        # ----------------------------------------------------------------------
+        def check_resource_reqs(task):
+
+            cpu_reqs = task.cpu_reqs['cpu_processes'] * task.cpu_reqs['cpu_threads']
+            gpu_reqs = task.cpu_reqs['cpu_processes'] * task.gpu_reqs['gpu_processes']
+
+            if cpu_reqs > self._total_res['cores'] or \
+               gpu_reqs > self._total_res['gpus']:
+                return False
+            return True
 
         # ----------------------------------------------------------------------
         def task_state_cb(rp_task, state, cb_data):
@@ -294,13 +349,13 @@ class TaskManager(Base_TaskManager):
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
 
-        rp_tmgr = rp.TaskManager(session=rmgr._session)
-        rp_tmgr.add_pilots(rmgr.pilot)
-        rp_tmgr.register_callback(task_state_cb,
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr.register_callback(task_state_cb,
                                   cb_data={'channel': mq_channel,
                                            'params' : rmq_conn_params})
 
         try:
+            pkl_path = self._path + '/.task_submitted.pkl'
 
             while not self._tmgr_terminate.is_set():
 
@@ -324,16 +379,37 @@ class TaskManager(Base_TaskManager):
 
                     task = Task()
                     task.from_dict(msg)
+                    task_fits_res = check_resource_reqs(task)
+                    if task_fits_res:
+                        load_placeholder(task)
+                        bulk_tds.append(create_td_from_task(
+                                            task, placeholders,
+                                            self._submitted_tasks, pkl_path,
+                                            self._sid, self._prof))
 
-                    load_placeholder(task)
-                    bulk_tds.append(create_td_from_task(
-                                            task, placeholders, self._prof))
+                        self._advance(task, 'Task', states.SUBMITTING,
+                                      mq_channel, rmq_conn_params,
+                                      '%s-tmgr-to-sync' % self._sid)
+                    else:
+                        self._advance(task, 'Task', states.FAILED,
+                                      mq_channel, rmq_conn_params,
+                                      '%s-cb-to-sync' % self._sid)
+                        load_placeholder(task)
 
-                    self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, rmq_conn_params,
-                                  '%s-tmgr-to-sync' % self._sid)
-
-                rp_tmgr.submit_tasks(bulk_tds)
+                        task_as_dict = json.dumps(task.to_dict())
+                        try:
+                            mq_channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                        except (pika.exceptions.ConnectionClosed,
+                                pika.exceptions.ChannelClosed):
+                            mq_connection = pika.BlockingConnection(rmq_conn_params)
+                            mq_channel = mq_connection.channel()
+                            mq_channel.basic_publish(exchange='',
+                                              routing_key='%s-completedq-1' % self._sid,
+                                              body=task_as_dict)
+                if bulk_tds:
+                    self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
@@ -345,7 +421,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(ex) from ex
 
         finally:
-            rp_tmgr.close()
+            self._rp_tmgr.close()
 
 
     # --------------------------------------------------------------------------
@@ -362,6 +438,15 @@ class TaskManager(Base_TaskManager):
             return
 
         try:
+            # Redeclare the heartbeat queues in case they got deleted because
+            # of the task manager failure.
+            # If the queues exist this has no effect.
+
+            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+            mq_channel = mq_connection.channel()
+
+            mq_channel.queue_declare(queue=self._hb_response_q)
+            mq_channel.queue_declare(queue=self._hb_request_q)
 
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
@@ -379,6 +464,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
+            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
 
             return True
 
@@ -387,7 +473,6 @@ class TaskManager(Base_TaskManager):
             self._log.exception('Task manager not started, error: %s', ex)
             self.terminate_manager()
             raise EnTKError(ex) from ex
-        # pylint: enable=attribute-defined-outside-init, access-member-before-definition
 
 # ------------------------------------------------------------------------------
-
+# pylint: enable=attribute-defined-outside-init, access-member-before-definition
