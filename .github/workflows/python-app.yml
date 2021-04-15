@@ -29,8 +29,8 @@ jobs:
         python-version: 3.6.13
     - name: Install dependencies
       run: |
-        python -m venv testenv
-        . testenv/bin/activate
+#        python -m venv testenv
+#        . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
         python -m pip install --upgrade .
         python -m pip install psutil
@@ -49,12 +49,10 @@ jobs:
         RMQ_PASSWORD: guest
         LOC: ./testenv/lib/python3.6/site-packages
       run: |
-        source ./testenv/bin/activate
+#        source ./testenv/bin/activate
         coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component tests/test_utils/ tests/test_integration
     - name: Codecov
       uses: codecov/codecov-action@v1
-      with:
-          env_vars: PYTHON
 #      run: |
 #        source ./testenv/bin/activate
 #        coverage combine
