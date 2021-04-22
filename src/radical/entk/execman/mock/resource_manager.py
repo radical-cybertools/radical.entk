@@ -1,10 +1,12 @@
-
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
 __license__   = 'MIT'
 
 
+# pylint: disable=unused-argument
+
 from ..base.resource_manager import Base_ResourceManager
+import radical.utils as ru
 
 
 # ------------------------------------------------------------------------------
@@ -44,7 +46,11 @@ class ResourceManager(Base_ResourceManager):
         **Purpose**: get the state of the resource allocation
 
         '''
-        return None
+        try:
+            ru.raise_on(tag='resource_fail')
+            return 'Running'
+        except:
+            return 'Final'
 
 
     # --------------------------------------------------------------------------
@@ -52,9 +58,9 @@ class ResourceManager(Base_ResourceManager):
     def get_completed_states(self):
         '''
         **Purpose**: test if a resource allocation was submitted
-
         '''
-        return list()
+
+        return ['Final']
 
 
     # --------------------------------------------------------------------------
@@ -79,13 +85,19 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self, *args):
         '''
         **Purpose**: Create a resourceas per provided resource description
         '''
 
         return None
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+
+        return None
 
     # --------------------------------------------------------------------------
     #

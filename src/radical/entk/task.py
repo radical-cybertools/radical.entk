@@ -108,47 +108,6 @@ class Task(ru.Munch):
     # FIXME: this should be converted into an RU/RS Attribute object, almost all
     #        of the code is redundant with the attribute class...
 
-    def __init__(self):
-
-        super(Task, self).__init__()
-
-
-    @property
-    def gpu_reqs(self):
-        '''
-        **Purpose:** The GPU requirements of the current Task.
-        The requirements are described in terms of the number of processes and
-        threads to be run in this Task. The expected format is:
-        .. highlight:: python
-        .. code-block:: python
-            task.gpu_reqs = {'gpu_processes'    : X,
-                             'gpu_process_type' : None/MPI,
-                             'gpu_threads'      : Y,
-                             'gpu_thread_type'  : None/OpenMP/CUDA}
-        This description means that the Task is going to spawn X processes and
-        Y threads per each of these processes to run on GPUs. Hence, the total
-        number of gpus required by the Task is X*Y for all the processes and
-        threads to execute concurrently. The same assumption is made in
-        implementation and X*Y gpus are requested for this Task.
-        The default value is:
-        .. highlight:: python
-        .. code-block:: python
-            task.gpu_reqs = {'gpu_processes'    : 0,
-                             'gpu_process_type' : None,
-                             'gpu_threads'      : 0,
-                             'gpu_thread_type'  : None}
-        This description requests 0 gpus as not all machines have GPUs.
-        :getter: return the gpu requirement of the current Task
-        :setter: assign the gpu requirement of the current Task
-        :arguments: dict
-        '''
-        tmp_val = dict()
-        tmp_val['gpu_processes'] = self._gpu_reqs.processes
-        tmp_val['gpu_process_type'] = self._gpu_reqs.process_type
-        tmp_val['gpu_threads'] = self._gpu_reqs.threads_per_process
-        tmp_val['gpu_thread_type'] = self._gpu_reqs.thread_type
-
-        return tmp_val
 
     @gpu_reqs.setter
     def gpu_reqs(self, value):

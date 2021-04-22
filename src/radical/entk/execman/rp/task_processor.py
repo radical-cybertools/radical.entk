@@ -1,5 +1,6 @@
 
 import os
+import pickle
 
 import radical.pilot as rp
 import radical.utils as ru
@@ -174,7 +175,7 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
     # Check self pipeline first
     for sname in placeholders[parent_pipeline_name]:
         if colo_tag in placeholders[parent_pipeline_name][sname]:
-            return placeholders[parent_pipeline_name][sname][colo_tag]['uid']
+            return {'colocate': placeholders[parent_pipeline_name][sname][colo_tag]['uid']}
 
     for pname in placeholders:
 
@@ -184,9 +185,9 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
 
         for sname in placeholders[pname]:
             if colo_tag in placeholders[pname][sname]:
-                return placeholders[pname][sname][colo_tag]['uid']
+                return {'colocate': placeholders[pname][sname][colo_tag]['uid']}
 
-    return task.uid
+    return {'colocate': task.uid}
 
 
 # ------------------------------------------------------------------------------
@@ -424,7 +425,8 @@ def get_output_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def create_td_from_task(task, placeholders, prof=None):
+def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
+                        prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -438,35 +440,66 @@ def create_td_from_task(task, placeholders, prof=None):
     try:
 
         logger.debug('Creating Task from Task %s: %s' % (task.uid, task.sandbox))
+        logger.debug('Hash table state: %s' % task_hash_table)
 
         if prof:
             prof.prof('td_create', uid=task.uid)
 
         td = rp.TaskDescription()
-        td.uid  = task.uid
+
+        task_pre_uid = task_hash_table.get(task.uid, None)
+        if task_pre_uid is None:
+            td.uid = task.uid
+        else:
+            tmp_uid = ru.generate_id(prefix=task.uid, ns=sid)
+            td.uid = tmp_uid
+        task_hash_table[task.uid] = td.uid
+        with open(pkl_path, 'wb') as pickle_file:
+            pickle.dump(task_hash_table, pickle_file, pickle.HIGHEST_PROTOCOL)
+
+        logger.debug('Hash table state: %s' % task_hash_table)
+
         td.name = '%s,%s,%s,%s,%s,%s' % (task.uid, task.name,
                                          task.parent_stage['uid'],
                                          task.parent_stage['name'],
                                          task.parent_pipeline['uid'],
                                          task.parent_pipeline['name'])
-        td.pre_exec   = task.pre_exec
-        td.executable = task.executable
-        td.arguments  = resolve_arguments(task.arguments, placeholders)
-        td.sandbox    = task.sandbox
-        td.post_exec  = task.post_exec
+
+        td.pre_exec       = task.pre_exec
+        td.executable     = task.executable
+        td.arguments      = resolve_arguments(task.arguments, placeholders)
+        td.sandbox        = task.sandbox
+        td.post_exec      = task.post_exec
+        td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
-            td.tag = resolve_tags(task=task, parent_pipeline_name=task.parent_pipeline['uid'],
-                                   placeholders=placeholders)
+            td.tags = resolve_tags(task=task,
+                                  parent_pipeline_name=task.parent_pipeline['uid'],
+                                  placeholders=placeholders)
 
         td.cpu_processes    = task.cpu_reqs['cpu_processes']
         td.cpu_threads      = task.cpu_reqs['cpu_threads']
-        td.cpu_process_type = task.cpu_reqs['cpu_process_type']
-        td.cpu_thread_type  = task.cpu_reqs['cpu_thread_type']
+        if task.cpu_reqs['cpu_process_type']:
+            td.cpu_process_type = task.cpu_reqs['cpu_process_type']
+        else:
+            td.cpu_process_type = rp.POSIX
+
+        if task.cpu_reqs['cpu_thread_type']:
+            td.cpu_thread_type = task.cpu_reqs['cpu_thread_type']
+        else:
+            td.cpu_thread_type = rp.OpenMP
+
         td.gpu_processes    = task.gpu_reqs['gpu_processes']
         td.gpu_threads      = task.gpu_reqs['gpu_threads']
-        td.gpu_process_type = task.gpu_reqs['gpu_process_type']
-        td.gpu_thread_type  = task.gpu_reqs['gpu_thread_type']
+
+        if task.gpu_reqs['gpu_process_type']:
+            td.gpu_process_type = task.gpu_reqs['gpu_process_type']
+        else:
+            td.gpu_process_type = rp.POSIX
+        if task.gpu_reqs['gpu_thread_type']:
+            td.gpu_thread_type = task.gpu_reqs['gpu_thread_type']
+        else:
+            td.gpu_thread_type = rp.GPU_OpenMP
 
         if task.lfs_per_process:
             td.lfs_per_process = task.lfs_per_process
@@ -508,7 +541,7 @@ def create_task_from_rp(rp_task, prof=None):
     """
 
     try:
-        logger.debug('Create Task from Task %s' % rp_task.name)
+        logger.debug('Create Task from RP Task %s' % rp_task.name)
 
         if prof:
             prof.prof('task_create', uid=rp_task.name.split(',')[0].strip())
@@ -531,7 +564,7 @@ def create_task_from_rp(rp_task, prof=None):
         if prof:
             prof.prof('task_created', uid=task.uid)
 
-        logger.debug('Task %s created from Task %s' % (task.uid, rp_task.name))
+        logger.debug('Task %s created from RP Task %s' % (task.uid, rp_task.name))
 
         return task
 

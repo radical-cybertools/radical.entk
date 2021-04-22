@@ -320,6 +320,7 @@ class TestTask(TestCase):
         t._download_output_data = list()
         t._stdout = 'Hello World'
         t._stderr = 'Hello World'
+        t._stage_on_error = False
         t._exit_code = 0
         t._tag = None
         t._path = 'some_path'
@@ -358,6 +359,7 @@ class TestTask(TestCase):
                          'download_output_data': [],
                          'stdout': 'Hello World',
                          'stderr': 'Hello World',
+                         'stage_on_error': False,
                          'exit_code': 0,
                          'path': 'some_path',
                          'tag': None,
