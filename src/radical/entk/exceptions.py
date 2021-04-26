@@ -37,27 +37,23 @@ class ValueError(ValueError):
 
     """
     ValueError is raised if a value that is unacceptable is passed to a
-    function or assigned as an attribute of an object"""
+    function or assigned as an attribute of an object
+    """
 
     def __init__(self, obj, attribute, expected_value, actual_value):
         if type(expected_value) != list:
-            msg = "Value for attribute %s of object %s incorrect. Expected value %s, but got %s." % (
-                str(obj),
-                str(attribute),
-                str(expected_value),
-                str(actual_value)
-            )
+            msg = 'Value for attribute %s of object %s incorrect. ' \
+                  'Expected value %s, but got %s.' % (str(attribute),
+                                                      str(obj),
+                                                      str(expected_value),
+                                                      str(actual_value))
         else:
-            text = ''
-            for item in expected_value:
-                text += str(item)
-
-            msg = "Value for attribute %s of object %s incorrect. Expected values %s, but got %s." % (
-                str(obj),
-                str(attribute),
-                str(text),
-                str(actual_value)
-            )
+            text = ','.join([str(s) for s in expected_value])
+            msg = 'Value for attribute %s of object %s incorrect. ' \
+                  'Expected values %s, but got %s.' % (str(attribute),
+                                                       str(obj),
+                                                       str(text),
+                                                       str(actual_value))
 
         super(ValueError, self).__init__(msg)
 

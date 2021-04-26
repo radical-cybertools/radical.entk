@@ -138,8 +138,8 @@ def get_version(_mod_root):
 
 
 # ------------------------------------------------------------------------------
-# check python version. we need >= 3.6
-if  sys.hexversion <= 0x03050000:
+# check python version, should be >= 3.6
+if sys.hexversion <= 0x03060000:
     raise RuntimeError('%s requires Python 3.6 or higher' % name)
 
 
@@ -219,8 +219,8 @@ setup_args = {
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
                                  'VERSION', 'CHANGES.md', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
-    'install_requires'   : ['radical.utils',
-                            'radical.pilot',
+    'install_requires'   : ['radical.utils>=1.6.5',
+                            'radical.pilot>=1.6.5',
                             'pika==0.13.0',
                             'sphinx'
                            ],

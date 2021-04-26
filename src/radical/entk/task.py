@@ -1,10 +1,11 @@
-
-__copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
+__copyright__ = 'Copyright 2014-2021, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
-import warnings
+from string import punctuation
+
 import radical.utils as ru
 
+from .constants import NAME_MESSAGE
 from . import exceptions as ree
 from . import states     as res
 
@@ -12,23 +13,45 @@ from . import states     as res
 # ------------------------------------------------------------------------------
 #
 class CpuReqs(ru.Munch):
-    _schema = {'cpu_processes': int, 
-               'cpu_process_type': str, 
-               'cpu_threads': int, 
-               'cpu_thread_type': str}
+
+    _schema = {
+        'cpu_processes'   : int,
+        'cpu_process_type': str,
+        'cpu_threads'     : int,
+        'cpu_thread_type' : str
+    }
+
+    _defaults = {
+        'cpu_processes'   : 1,
+        'cpu_process_type': None,
+        'cpu_threads'     : 1,
+        'cpu_thread_type' : None
+    }
+
 
 # ------------------------------------------------------------------------------
 #
 class GpuReqs(ru.Munch):
-    _schema = {'gpu_processes': int, 
-               'gpu_process_type': str, 
-               'gpu_threads': int, 
-               'gpu_thread_type': str}
+
+    _schema = {
+        'gpu_processes'   : int,
+        'gpu_process_type': str,
+        'gpu_threads'     : int,
+        'gpu_thread_type' : str
+    }
+
+    _defaults = {
+        'gpu_processes'   : 0,
+        'gpu_process_type': None,
+        'gpu_threads'     : 1,
+        'gpu_thread_type' : None
+    }
+
 
 # ------------------------------------------------------------------------------
 #
 class Task(ru.Munch):
-    '''
+    """
     A Task is an abstraction of a computational unit. In this case, a Task
     consists of its executable along with its required software environment,
     files to be staged as input and output.
@@ -38,130 +61,199 @@ class Task(ru.Munch):
     function. This is to avoid creating Tasks with new `uid` as tasks with new
     `uid` offset the uid count file in radical.utils and can potentially affect
     the profiling if not taken care.
-    '''
+    """
 
-    _schema = {'uid'                  : str,
-               'name'                 : str,
-               'state'                : str,
-               'state_history'        : [str],
-               'pre_exec'             : [str],
-               'executable'           : str,
-               'arguments'            : [str],
-               'sandbox'              : str,
-               'post_exec'            : [str],
-               'cpu_reqs'            : CpuReqs,
-               'gpu_reqs'            : GpuReqs,
-               'lfs_per_process'      : int,
-               'upload_input_data'    : [str],
-               'copy_input_data'      : [str],
-               'link_input_data'      : [str],
-               'move_input_data'      : [str],
-               'copy_output_data'     : [str],
-               'link_output_data'     : [str],
-               'move_output_data'     : [str],
-               'download_output_data' : [str],
-               'stdout'               : str,
-               'stderr'               : str,
-               'exit_code'            : int,
-               'path'                 : str,
-               'tag'                  : None,
-               'rts_uid'              : str,
-               'parent_stage'         : {str: None, str: None},
-               'parent_pipeline'      : {str: None, str: None}
-            }
+    _check = True
+    _uids  = list()
 
-    _defaults = {'uid'                  : ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM),
-                 'name'                 : '',
-                 'state'                : res.INITIAL,
-                 'state_history'        : [res.INITIAL],
-                 'pre_exec'             : list(),
-                 'executable'           : '',
-                 'arguments'            : list(),
-                 'sandbox'              : '',
-                 'post_exec'            : list(),
-                 'cpu_reqs'             : {'cpu_processes'    : 1,
-                                           'cpu_process_type' : None,
-                                           'cpu_threads'      : 1,
-                                           'cpu_thread_type'  : None},
-                 'gpu_reqs'             : {'gpu_processes'    : 0,
-                                           'gpu_process_type' : None,
-                                           'gpu_threads'      : 0,
-                                           'gpu_thread_type'  : None},
-                 'lfs_per_process'      : 0,
-                 'upload_input_data'    : list(),
-                 'copy_input_data'      : list(),
-                 'link_input_data'      : list(),
-                 'move_input_data'      : list(),
-                 'copy_output_data'     : list(),
-                 'link_output_data'     : list(),
-                 'move_output_data'     : list(),
-                 'download_output_data' : list(),
-                 'stdout'               : '',
-                 'stderr'               : '',
-                 'path'                 : '',
-                 'tag'                  : None,
-                 'rts_uid'              : None,
-                 'parent_stage'         : {'uid': None, 'name': None},
-                 'parent_pipeline'      : {'uid': None, 'name': None}
-                }
+    _schema = {
+        'uid'                  : str,
+        'name'                 : str,
+        'state'                : str,
+        'state_history'        : [str],
+        'executable'           : str,
+        'arguments'            : [str],
+        'sandbox'              : str,
+        'pre_exec'             : [str],
+        'post_exec'            : [str],
+        'cpu_reqs'             : CpuReqs,
+        'gpu_reqs'             : GpuReqs,
+        'lfs_per_process'      : int,
+        'upload_input_data'    : [str],
+        'copy_input_data'      : [str],
+        'link_input_data'      : [str],
+        'move_input_data'      : [str],
+        'copy_output_data'     : [str],
+        'link_output_data'     : [str],
+        'move_output_data'     : [str],
+        'download_output_data' : [str],
+        'stdout'               : str,
+        'stderr'               : str,
+        'stage_on_error'       : bool,
+        'exit_code'            : int,
+        'path'                 : str,
+        'tags'                 : {str: str},
+        'rts_uid'              : str,
+        'parent_stage'         : {str: None},
+        'parent_pipeline'      : {str: None}
+    }
 
-    # FIXME: this should be converted into an RU/RS Attribute object, almost all
-    #        of the code is redundant with the attribute class...
+    _defaults = {
+        'uid'                  : '',
+        'name'                 : '',
+        'state'                : res.INITIAL,
+        'executable'           : '',
+        'arguments'            : list(),
+        'sandbox'              : '',
+        'pre_exec'             : list(),
+        'post_exec'            : list(),
+        'cpu_reqs'             : CpuReqs._defaults,
+        'gpu_reqs'             : GpuReqs._defaults,
+        'lfs_per_process'      : 0,
+        'upload_input_data'    : list(),
+        'copy_input_data'      : list(),
+        'link_input_data'      : list(),
+        'move_input_data'      : list(),
+        'copy_output_data'     : list(),
+        'link_output_data'     : list(),
+        'move_output_data'     : list(),
+        'download_output_data' : list(),
+        'stdout'               : '',
+        'stderr'               : '',
+        'stage_on_error'       : False,
+        'exit_code'            : None,
+        'path'                 : '',
+        'tags'                 : None,
+        'rts_uid'              : None,
+        'parent_stage'         : {'uid': None, 'name': None},
+        'parent_pipeline'      : {'uid': None, 'name': None}
+    }
 
+    # --------------------------------------------------------------------------
+    #
+    def __init__(self, from_dict=None):
 
-    @gpu_reqs.setter
-    def gpu_reqs(self, value):
-
-        if not isinstance(value, dict):
-            raise ree.TypeError(expected_type=dict, actual_type=type(value))
-
-        # Deprecated keys will issue a deprecation message and change them to
-        # the expected.
-        depr_expected_keys = set(['processes', 'threads_per_process',
-                             'process_type', 'thread_type'])
-
-        expected_keys = set(['gpu_processes', 'gpu_threads',
-                             'gpu_process_type', 'gpu_thread_type'])
-
-        if set(value.keys()).issubset(depr_expected_keys):
-            import warnings
-            #warnings.simplefilter("once")
-            warnings.warn("GPU requirements keys are renamed using 'gpu_'" +
-                           "as a prefix for all keys.",DeprecationWarning)
-
-            value['gpu_processes'] = value.pop('processes')
-            value['gpu_process_type'] = value.pop('process_type')
-            value['gpu_threads'] = value.pop('threads_per_process')
-            value['gpu_thread_type'] = value.pop('thread_type')
-
-        missing = expected_keys - set(value.keys())
-
-        if missing:
-            raise ree.MissingError(obj='gpu_reqs', missing_attribute=missing)
-
-        if not isinstance(value.get('gpu_processes'), (type(None), int)):
+        if from_dict and not isinstance(from_dict, dict):
             raise ree.TypeError(expected_type=dict,
-                                actual_type=type(value.get('gpu_processes')),
-                                entity='gpu_processes')
+                                actual_type=type(from_dict))
 
-        if value.get('gpu_process_type') not in [None, 'MPI', '']:
-            raise ree.ValueError(expected_value='None or MPI',
-                                 actual_value=value.get('gpu_process_type'),
-                                 obj='gpu_reqs',
-                                 attribute='gpu_process_type')
+        super().__init__(from_dict=from_dict)
 
-        if not isinstance(value.get('gpu_threads'), (type(None), int)):
-            raise ree.TypeError(expected_type=int,
-                             actual_type=type(value.get('gpu_threads')),
-                             entity='gpu_threads')
+        if not self.uid:
+            self.uid = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
 
-        if value.get('gpu_thread_type') not in [None, 'OpenMP', 'CUDA','']:
-            raise ree.ValueError(expected_value='None or OpenMP or CUDA',
-                                 actual_value=value.get('gpu_thread_type'),
-                                 obj='gpu_reqs',
-                                 attribute='gpu_thread_type')
-        self.gpu_reqs = GpuReqs(value)
-        # self._gpu_reqs.processes           = value.get('gpu_processes', 1)
-        # self._gpu_reqs.process_type        = value.get('gpu_process_type')
-        # self._gpu_reqs.threads_per_process = value.get('gpu_threads', 1)
-        # self._gpu_reqs.thread_type         = value.get('gpu_thread_type')
+    # --------------------------------------------------------------------------
+    #
+    def _post_setter(self, k, v):
+
+        if not v:
+            return
+
+        if k in ['uid', 'name']:
+            invalid_symbols = punctuation.replace('.', '')
+            if any(symbol in v for symbol in invalid_symbols):
+                raise ree.EnTKError(
+                    'Incorrect symbol for attribute "%s" of object %s. %s' %
+                    (k, self.uid, NAME_MESSAGE))
+
+        elif k == 'state':
+            if v not in res._task_state_values:
+                raise ree.ValueError(
+                    obj=self.uid,
+                    attribute=k,
+                    expected_value=list(res._task_state_values),
+                    actual_value=v)
+            if 'state_history' not in self:
+                self['state_history'] = []
+            self['state_history'].append(v)
+
+        elif k == 'state_history':
+            for _v in v:
+                if _v not in res._task_state_values:
+                    raise ree.ValueError(
+                        obj=self.uid,
+                        attribute='state_history element',
+                        expected_value=list(res._task_state_values),
+                        actual_value=_v)
+
+        elif k == 'tags':
+            if list(v) != ['colocate']:
+                raise ree.EnTKError(
+                    'Incorrect structure for attribute "%s" of object %s' %
+                    (k, self.uid))
+
+    # --------------------------------------------------------------------------
+    #
+    def __setitem__(self, k, v):
+        super().__setitem__(k, v)
+        self._post_setter(k, v)
+
+    # --------------------------------------------------------------------------
+    #
+    def __setattr__(self, k, v):
+        super().__setattr__(k, v)
+        self._post_setter(k, v)
+
+    # --------------------------------------------------------------------------
+    #
+    @property
+    def luid(self):
+        """
+        Unique ID of the current task (fully qualified).
+        example:
+            > task.luid
+            pipe.0001.stage.0004.task.0234
+        :luid: Returns the fully qualified uid of the current task
+        :type: String
+        """
+
+        # TODO: cache
+
+        p_elem = self.parent_pipeline.get('name')
+        s_elem = self.parent_stage.get('name')
+        t_elem = self.name
+
+        if not p_elem: p_elem = self.parent_pipeline['uid']
+        if not s_elem: s_elem = self.parent_stage['uid']
+        if not t_elem: t_elem = self.uid
+
+        return '%s.%s.%s' % (p_elem, s_elem, t_elem)
+
+    # --------------------------------------------------------------------------
+    #
+    def to_dict(self):
+        return self.as_dict()
+
+    # --------------------------------------------------------------------------
+    #
+    def from_dict(self, d):
+
+        self.update(d)
+        if 'state' in d:
+            # avoid adding state to state history
+            del self.state_history[-1]
+
+    # --------------------------------------------------------------------------
+    #
+    def _validate(self):
+        """
+        Purpose: Validate that the state of the task is 'DESCRIBED' and that an
+        executable has been specified for the task.
+        """
+
+        if self.uid in Task._uids:
+            raise ree.EnTKError(msg='Task ID %s already exists' % self.uid)
+        else:
+            Task._uids.append(self.uid)
+
+        if self.state is not res.INITIAL:
+            raise ree.ValueError(obj=self.uid,
+                                 attribute='state',
+                                 expected_value=res.INITIAL,
+                                 actual_value=self.state)
+
+        if not self.executable:
+            raise ree.MissingError(obj=self.uid,
+                                   missing_attribute='executable')
+
+# ------------------------------------------------------------------------------
