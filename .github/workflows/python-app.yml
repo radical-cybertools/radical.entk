@@ -50,7 +50,7 @@ jobs:
         LOC: testenv/lib/python3.6/site-packages
       run: |
         . testenv/bin/activate
-        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/test_component/ tests/test_utils/ tests/test_integration/
+        coverage run --include=$LOC/radical/entk/* -m pytest -ra --timeout=600 -vvv --showlocals tests/
         coverage combine
         coverage xml
     - name: Codecov
@@ -74,8 +74,7 @@ jobs:
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
         python -m pip install --upgrade .
-        python -m pip install flake8
-        python -m pip install flake8-per-file-ignores
+        python -m pip install flake8 flake8-per-file-ignores
     - name: Lint with flake8
       run: |
         LOG=`git log -n 1 | grep Merge`
