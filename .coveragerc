@@ -2,4 +2,3 @@
 [run]
 concurrency = multiprocessing
 parallel = True
-include = $LOC/radical/entk/*
