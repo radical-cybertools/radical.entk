@@ -134,7 +134,7 @@ def get_version(_mod_root):
         return _version_base, _version_detail, _sdist_name
 
     except Exception as e:
-        raise RuntimeError('Could not extract/set version: %s' % e)
+        raise RuntimeError('Could not extract/set version: %s' % e) from e
 
 
 # ------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ class RunTwine(Command):
     def initialize_options(self): pass
     def finalize_options(self):   pass
     def run(self):
-        out,  err, ret = sh_callout('python3 setup.py sdist upload -r pypi')
+        _, _, ret = sh_callout('python3 setup.py sdist upload -r pypi')
         raise SystemExit(ret)
 
 
