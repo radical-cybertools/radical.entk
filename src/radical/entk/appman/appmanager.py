@@ -164,8 +164,11 @@ class AppManager(object):
         credentials = pika.PlainCredentials(self._username, self._password)
         self._rmq_conn_params = pika.connection.ConnectionParameters(
                                         host=self._hostname,
+                                        virtual_host=os.environ.get('RMQ_VHOST','/'),
                                         port=self._port,
-                                        credentials=credentials)
+                                        credentials=credentials,
+                                        ssl=bool(os.environ.get('RMQ_SSL',
+                                            False)))
 
         # TODO: Pass these values also as parameters
         self._num_pending_qs   = config['pending_qs']
