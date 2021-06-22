@@ -16,6 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = os.environ.get('RMQ_PORT', 5672)
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 
 def generate_pipeline():
@@ -45,7 +47,8 @@ def generate_pipeline():
     t2.executable = '/bin/bash'
     t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
     # Copy data from the task in the first stage to the current task's location
-    t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
+    t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/output.txt' % (p.uid,
+        s1.uid, t1.uid)]
 
     # Add the Task to the Stage
     s2.add_tasks(t2)
@@ -61,7 +64,8 @@ def generate_pipeline():
     t3.executable = '/bin/bash'
     t3.arguments = ['-l', '-c', 'sha1sum ccount.txt > chksum.txt']
     # Copy data from the task in the first stage to the current task's location
-    t3.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/ccount.txt' % (p.name, s2.name, t2.name)]
+    t3.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/ccount.txt' % (p.uid,
+        s2.uid, t2.uid)]
     # Download the output of the current task to the current location
     t3.download_output_data = ['chksum.txt > chksum_%s.txt' % cnt]
 
@@ -82,7 +86,8 @@ if __name__ == '__main__':
         pipelines.append(generate_pipeline())
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus

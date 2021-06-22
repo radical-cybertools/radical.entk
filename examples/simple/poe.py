@@ -16,7 +16,8 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
 # this script.
 hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
 port = int(os.environ.get('RMQ_PORT', 5672))
-
+username = os.environ.get('RMQ_USERNAME')
+password = os.environ.get('RMQ_PASSWORD')
 
 def generate_pipeline():
 
@@ -53,11 +54,12 @@ def generate_pipeline():
         t2.executable = '/bin/bash'
         t2.arguments = ['-l', '-c', 'grep -o . output.txt | sort | uniq -c > ccount.txt']
         # Copy data from the task in the first stage to the current task's location
-        t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' % (p.name, s1.name, t1.name)]
+        t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' %
+                (p.uid, s1.uid, t1.uid)]
 
         # Add the Task to the Stage
         s2.add_tasks(t2)
-        s2_task_uids.append(t2.name)
+        s2_task_uids.append(t2.uid)
 
     # Add Stage to the Pipeline
     p.add_stages(s2)
@@ -74,7 +76,8 @@ def generate_pipeline():
         t3.executable = '/bin/bash'
         t3.arguments = ['-l', '-c', 'sha1sum ccount.txt > chksum.txt']
         # Copy data from the task in the first stage to the current task's location
-        t3.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/ccount.txt' % (p.name, s2.name, s2_task_uids[cnt])]
+        t3.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/ccount.txt' %
+                (p.uid, s2.uid, s2_task_uids[cnt])]
         # Download the output of the current task to the current location
         t3.download_output_data = ['chksum.txt > chksum_%s.txt' % cnt]
 
@@ -86,20 +89,20 @@ def generate_pipeline():
 
     return p
 
-
 if __name__ == '__main__':
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port)
+    appman = AppManager(hostname=hostname, port=port, username=username,
+            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus
     # resource is 'local.localhost' to execute locally
     res_dict = {
-                'resource': 'local.localhost',
-                'walltime': 10,
-                'cpus':2
-                 }
+            'resource': 'local.localhost',
+            'walltime': 10,
+            'cpus':2
+    }
 
     # Assign resource request description to the Application Manager
     appman.resource_desc = res_dict
