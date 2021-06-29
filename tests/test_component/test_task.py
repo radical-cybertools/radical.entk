@@ -28,7 +28,7 @@ class TestTask(TestCase):
     @mock.patch('radical.utils.generate_id', return_value='test.0000')
     def test_task_initialization(self, mocked_generate_id):
         '''
-        **Purpose**: Test if the task attributes have, thus expect, the correct 
+        **Purpose**: Test if the task attributes have, thus expect, the correct
         data types
         '''
 
@@ -53,25 +53,25 @@ class TestTask(TestCase):
         self.assertEqual(t._gpu_reqs['threads_per_process'], 0)
         self.assertIsNone(t._gpu_reqs['thread_type'])
 
-        self.assertEqual(t.lfs_per_process, 0)
-        self.assertEqual(t.sandbox, '')
-        self.assertIsInstance(t.upload_input_data, list)
-        self.assertIsInstance(t.copy_input_data, list)
-        self.assertIsInstance(t.link_input_data, list)
-        self.assertIsInstance(t.move_input_data, list)
-        self.assertIsInstance(t.copy_output_data, list)
-        self.assertIsInstance(t.link_output_data, list)
-        self.assertIsInstance(t.move_output_data, list)
-        self.assertIsInstance(t.download_output_data, list)
-        self.assertEqual(t.stdout, '')
-        self.assertEqual(t.stderr, '')
-        self.assertIsNone(t.exit_code)
-        self.assertIsNone(t.tag)
-        self.assertIsNone(t.path)
-        self.assertIsNone(t.parent_pipeline['uid'])
-        self.assertIsNone(t.parent_pipeline['name'])
-        self.assertIsNone(t.parent_stage['name'])
-        self.assertIsNone(t.parent_stage['uid'])
+        self.assertEqual(t._lfs_per_process, 0)
+        self.assertEqual(t._sandbox, '')
+        self.assertIsInstance(t._upload_input_data, list)
+        self.assertIsInstance(t._copy_input_data, list)
+        self.assertIsInstance(t._link_input_data, list)
+        self.assertIsInstance(t._move_input_data, list)
+        self.assertIsInstance(t._copy_output_data, list)
+        self.assertIsInstance(t._link_output_data, list)
+        self.assertIsInstance(t._move_output_data, list)
+        self.assertIsInstance(t._download_output_data, list)
+        self.assertEqual(t._stdout, '')
+        self.assertEqual(t._stderr, '')
+        self.assertIsNone(t._exit_code)
+        self.assertIsNone(t._tags)
+        self.assertIsNone(t._path)
+        self.assertIsNone(t._p_pipeline['uid'])
+        self.assertIsNone(t._p_pipeline['name'])
+        self.assertIsNone(t._p_stage['name'])
+        self.assertIsNone(t._p_stage['uid'])
 
 
     # --------------------------------------------------------------------------
@@ -84,35 +84,35 @@ class TestTask(TestCase):
                           'process_type'        : None,
                           'threads_per_process' : 1,
                           'thread_type'         : None}
-        cpu_reqs = {'processes' : 2, 
-                    'process_type' : None, 
-                    'threads_per_process' : 1, 
+        cpu_reqs = {'processes' : 2,
+                    'process_type' : None,
+                    'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.cpu_reqs = {'processes' : 2, 
-                         'process_type' : None, 
-                         'threads_per_process' : 1, 
-                         'thread_type' : 'OpenMP'}
+        task.cpu_reqs = {'cpu_processes' : 2,
+                         'cpu_process_type' : None,
+                         'cpu_threads' : 1,
+                         'cpu_thread_type' : 'OpenMP'}
 
         self.assertEqual(task._cpu_reqs, cpu_reqs)
-        self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2, 
-                                         'cpu_process_type' : None, 
-                                         'cpu_threads' : 1, 
+        self.assertEqual(task.cpu_reqs, {'cpu_processes' : 2,
+                                         'cpu_process_type' : None,
+                                         'cpu_threads' : 1,
                                          'cpu_thread_type' : 'OpenMP'})
 
         with self.assertRaises(ree.MissingError):
-            task.cpu_reqs = {'cpu_processes' : 2, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 2,
+                             'cpu_process_type' : None,
                              'cpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.cpu_reqs = {'cpu_processes' : 'a', 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 'a',
+                             'cpu_process_type' : None,
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : None,
                              'cpu_threads' : 'a',
                              'cpu_thread_type' : 'OpenMP'}
 
@@ -120,14 +120,14 @@ class TestTask(TestCase):
             task.cpu_reqs = list()
 
         with self.assertRaises(ree.ValueError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : None, 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : None,
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'MPI'}
 
         with self.assertRaises(ree.ValueError):
-            task.cpu_reqs = {'cpu_processes' : 1, 
-                             'cpu_process_type' : 'test', 
+            task.cpu_reqs = {'cpu_processes' : 1,
+                             'cpu_process_type' : 'test',
                              'cpu_threads' : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
@@ -142,50 +142,50 @@ class TestTask(TestCase):
                           'process_type'        : None,
                           'threads_per_process' : 1,
                           'thread_type'         : None}
-        gpu_reqs = {'processes' : 2, 
-                    'process_type' : None, 
-                    'threads_per_process' : 1, 
+        gpu_reqs = {'processes' : 2,
+                    'process_type' : None,
+                    'threads_per_process' : 1,
                     'thread_type' : 'OpenMP'}
-        task.gpu_reqs = {'processes' : 2, 
-                         'process_type' : None, 
-                         'threads_per_process' : 1, 
-                         'thread_type' : 'OpenMP'}
+        task.gpu_reqs = {'gpu_processes' : 2,
+                         'gpu_process_type' : None,
+                         'gpu_threads' : 1,
+                         'gpu_thread_type' : 'OpenMP'}
 
         self.assertEqual(task._gpu_reqs, gpu_reqs)
-        self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2, 
-                                         'gpu_process_type' : None, 
-                                         'gpu_threads' : 1, 
+        self.assertEqual(task.gpu_reqs, {'gpu_processes' : 2,
+                                         'gpu_process_type' : None,
+                                         'gpu_threads' : 1,
                                          'gpu_thread_type' : 'OpenMP'})
 
         with self.assertRaises(ree.TypeError):
             task.gpu_reqs = list()
 
         with self.assertRaises(ree.MissingError):
-            task.gpu_reqs = {'gpu_processes' : 2, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 2,
+                             'gpu_process_type' : None,
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.gpu_reqs = {'gpu_processes' : 'a', 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 'a',
+                             'gpu_process_type' : None,
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.TypeError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : None,
                              'gpu_threads' : 'a',
                              'gpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(ree.ValueError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : None, 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : None,
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'MPI'}
 
         with self.assertRaises(ree.ValueError):
-            task.gpu_reqs = {'gpu_processes' : 1, 
-                             'gpu_process_type' : 'test', 
+            task.gpu_reqs = {'gpu_processes' : 1,
+                             'gpu_process_type' : 'test',
                              'gpu_threads' : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
@@ -231,14 +231,14 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'cpu_reqs'  : {'processes'          : 1,
-                            'process_type'       : None,
-                            'threads_per_process': 1,
-                            'thread_type'        : None},
-            'gpu_reqs'  : {'processes'          : 0,
-                            'process_type'       : None,
-                            'threads_per_process': 0,
-                            'thread_type'        : None}}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None},
+            'gpu_reqs'  : {'gpu_processes'   : 0,
+                           'gpu_process_type': None,
+                           'gpu_threads'     : 0,
+                           'gpu_thread_type' : None}}
         t = Task(from_dict=d)
 
         for k,v in d.items():
@@ -249,14 +249,14 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'cpu_reqs'  : {'processes'          : 1,
-                            'process_type'       : None,
-                            'threads_per_process': 1,
-                            'thread_type'        : None},
-            'gpu_reqs'  : {'processes'          : 0,
-                            'process_type'       : None,
-                            'threads_per_process': 0,
-                            'thread_type'        : None}}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None},
+            'gpu_reqs'  : {'gpu_processes'   : 0,
+                           'gpu_process_type': None,
+                           'gpu_threads'     : 0,
+                           'gpu_thread_type' : None}}
         t = Task()
         t.from_dict(d)
 
@@ -281,6 +281,138 @@ class TestTask(TestCase):
         task = Task()
         with self.assertRaises(ree.TypeError):
             task.executable = ['test_exec']
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_name(self, mocked_init):
+
+        task = Task()
+        task._uid = 'test'
+        task._name = 'test_name'
+        self.assertEqual(task.name, 'test_name')
+
+        task.name = 'task.0000'
+        self.assertEqual(task._name, 'task.0000')
+
+        with self.assertRaises(ree.TypeError):
+            task.name = 0
+
+        with self.assertRaises(ree.ValueError):
+            task.name = 'task,0000'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_state_history(self, mocked_init):
+
+        task = Task()
+        task._uid = 'test'
+        task._state_history = [states.INITIAL]
+        self.assertEqual(task.state_history, [states.INITIAL])
+
+        task.state_history = [states.SCHEDULED]
+        self.assertEqual(task._state_history, [states.SCHEDULED])
+
+        with self.assertRaises(ree.TypeError):
+            task.state_history = states.SCHEDULING
+
+        with self.assertRaises(ree.ValueError):
+            task.state_history = ['EXECUTING']
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_pre_exec(self, mocked_init):
+
+        task = Task()
+        task._pre_exec = ['module load mymodule']
+        self.assertEqual(task.pre_exec, ['module load mymodule'])
+
+        task.pre_exec = ['module load mymodule2']
+        self.assertEqual(task._pre_exec, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.pre_exec = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_arguments(self, mocked_init):
+
+        task = Task()
+        task._arguments = ['module load mymodule']
+        self.assertEqual(task.arguments, ['module load mymodule'])
+
+        task.arguments = ['module load mymodule2']
+        self.assertEqual(task._arguments, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.arguments = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_sandbox(self, mocked_init):
+
+        task = Task()
+        task._sandbox = '/path/to/a/sandbox'
+        self.assertEqual(task.sandbox, '/path/to/a/sandbox')
+
+        task.sandbox = '/path_to_a_sandbox'
+        self.assertEqual(task._sandbox, '/path_to_a_sandbox')
+        with self.assertRaises(ree.TypeError):
+            task.sandbox = []
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_post_exec(self, mocked_init):
+
+        task = Task()
+        task._post_exec = ['module load mymodule']
+        self.assertEqual(task.post_exec, ['module load mymodule'])
+
+        task.post_exec = ['module load mymodule2']
+        self.assertEqual(task._post_exec, ['module load mymodule2'])
+        with self.assertRaises(ree.TypeError):
+            task.post_exec = 'module load mymodule'
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_tag(self, mocked_init):
+
+        task = Task()
+        task._tags = {'colocate':'tasks'}
+        self.assertEqual(task.tag, {'colocate':'tasks'})
+
+        task.tag = 'task.tag'
+        self.assertEqual(task._tags, {'colocate': 'task.tag'})
+
+        with self.assertRaises(ree.TypeError):
+            task.tag = {'colocate':'tasks'}
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Task, '__init__',   return_value=None)
+    def test_tags(self, mocked_init):
+
+        task = Task()
+        task._tags = {'colocate':'tasks'}
+        self.assertEqual(task.tags, {'colocate':'tasks'})
+
+        task.tags = {'colocate':'task'}
+        self.assertEqual(task._tags, {'colocate':'task'})
+
+        with self.assertRaises(ree.TypeError):
+            task.tags = 'task'
+
+        with self.assertRaises(ree.TypeError):
+            task.tags = {'key':'task'}
 
     # --------------------------------------------------------------------------
     #
@@ -320,8 +452,9 @@ class TestTask(TestCase):
         t._download_output_data = list()
         t._stdout = 'Hello World'
         t._stderr = 'Hello World'
+        t._stage_on_error = False
         t._exit_code = 0
-        t._tag = None
+        t._tags = None
         t._path = 'some_path'
         t._p_pipeline = dict()
         t._p_pipeline['uid'] = 'pipe.0000'
@@ -358,9 +491,10 @@ class TestTask(TestCase):
                          'download_output_data': [],
                          'stdout': 'Hello World',
                          'stderr': 'Hello World',
+                         'stage_on_error': False,
                          'exit_code': 0,
                          'path': 'some_path',
-                         'tag': None,
+                         'tags': None,
                          'rts_uid': 'unit.0000',
                          'parent_stage': {'name': 'stage.0000',
                                           'uid': 'stage.0000'},

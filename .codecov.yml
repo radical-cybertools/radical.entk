@@ -7,3 +7,6 @@ coverage:
         paths: 
           - "src"
     patch: off
+
+github_checks:
+  annotations: false

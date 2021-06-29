@@ -96,6 +96,17 @@ class ResourceManager(Base_ResourceManager):
         return self._pilot
 
 
+
+    # --------------------------------------------------------------------------
+    #
+    def get_rts_info(self):
+        """
+        **Purpose**: Return the RTS information as a dict.
+        """
+
+        return self._pilot.as_dict()
+
+
     # --------------------------------------------------------------------------
     #
     def get_resource_allocation_state(self):
@@ -121,7 +132,7 @@ class ResourceManager(Base_ResourceManager):
 
     # --------------------------------------------------------------------------
     #
-    def _submit_resource_request(self):
+    def submit_resource_request(self):
         """
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
@@ -157,27 +168,38 @@ class ResourceManager(Base_ResourceManager):
                        'access_schema' : self._access_schema,
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
-                       'input_staging' : self._shared_data,
-                       'output_staging': self._outputs,
                        'job_name'      : self._job_name
                        }
 
-            # Create Compute Pilot with validated resource description
-            pdesc = rp.ComputePilotDescription(pd_init)
+            # Create Pilot with validated resource description
+            pdesc = rp.PilotDescription(pd_init)
             self._prof.prof('rreq created', uid=self._uid)
 
             # Launch the pilot
             self._pilot = self._pmgr.submit_pilots(pdesc)
+            if self._shared_data:
+                shared_data = []
+                for data in self._shared_data:
+                    data = data.split('>')
+                    if len(data) > 1:
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[1].strip(),
+                                            'action': rp.TRANSFER})
+                    else:
+                        shared_data.append({'source': data[0].strip(),
+                                            'target': data[0].split('/')[-1].strip(),
+                                            'action': rp.TRANSFER})
+                self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
             self._logger.info('Resource request submission successful, waiting'
                               'for pilot to become Active')
 
-            # Wait for pilot to go active
+            # Wait for pilot to go active or final state
             self._pilot.wait([rp.PMGR_ACTIVE, rp.DONE, rp.FAILED, rp.CANCELED])
 
             self._prof.prof('resource active', uid=self._uid)
-            self._logger.info('Pilot is now active [%s]', self._pilot.state)
+            self._logger.info('Pilot is now at state [%s]', self._pilot.state)
 
         except KeyboardInterrupt:
 
@@ -212,7 +234,7 @@ class ResourceManager(Base_ResourceManager):
 
                 # once the workflow is completed, fetch output data
                 if self._outputs:
-                    self._pilot.stage_out()
+                    self._pilot.stage_out(self._outputs)
 
                 # make this a config option?
                 if 'RADICAL_PILOT_PROFILE' in os.environ or \

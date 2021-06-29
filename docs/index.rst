@@ -36,13 +36,13 @@ More details about the science enabled by EnTK can be found in the following pub
 
 **Badges**
 
-.. image:: https://github.com/radical-cybertools/radical.entk/workflows/Build/badge.svg
-                 :target: https://github.com/radical-cybertools/radical.entk/workflows/Build
-                 :alt: Build Status
+.. image:: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml/badge.svg
+               :target: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml
+               :alt: Build Status
 
 .. image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/devel/graph/badge.svg?token=dHn74ChzmX
-                :target: https://codecov.io/gh/radical-cybertools/radical.entk
-                :alt: Test Coverage
+               :target: https://codecov.io/gh/radical-cybertools/radical.entk
+               :alt: Test Coverage
 
 .. image:: https://badge.fury.io/py/radical.entk.svg
                :target: https://badge.fury.io/py/radical.entk
