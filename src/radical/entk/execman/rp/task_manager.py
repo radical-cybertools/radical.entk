@@ -268,6 +268,8 @@ class TaskManager(Base_TaskManager):
         '''
 
         placeholders = dict()
+        placeholders["__by_name__"] = dict()
+        placeholders_by_name = placeholders["__by_name__"]
         placeholder_lock = mt.Lock()
 
         # ----------------------------------------------------------------------
@@ -287,6 +289,19 @@ class TaskManager(Base_TaskManager):
                                                             {'path': task.path,
                                                              'uid': task.uid}
 
+                parent_pipeline_n = str(task.parent_pipeline['name'])
+                parent_stage_n = str(task.parent_stage['name'])
+
+                if parent_pipeline_n not in placeholders_by_name:
+                    placeholders_by_name[parent_pipeline_n] = dict()
+
+                if parent_stage_n not in placeholders_by_name[parent_pipeline_n]:
+                    placeholders_by_name[parent_pipeline_n][parent_stage_n] = dict()
+
+                if None not in [parent_pipeline_n, parent_stage_n, task.name]:
+                    placeholders_by_name[parent_pipeline_n][parent_stage_n][task.name] = \
+                                                            {'path': task.path,
+                                                             'uid': task.uid}
         # ----------------------------------------------------------------------
         def check_resource_reqs(task):
 
