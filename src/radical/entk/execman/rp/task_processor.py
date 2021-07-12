@@ -71,12 +71,14 @@ def resolve_placeholders(path, placeholders):
             pname    = elems[1]
             sname    = elems[3]
             tname    = elems[5]
+            is_resolved_by_uid = False
 
             if pname in placeholders:
                 if sname in placeholders[pname]:
                     if tname in placeholders[pname][sname]:
                         resolved = resolved.replace(placeholder,
                                    placeholders[pname][sname][tname]['path'])
+                        is_resolved_by_uid = True
                     else:
                         logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
                                        (tname, sname, pname))
@@ -85,6 +87,23 @@ def resolve_placeholders(path, placeholders):
                         sname, pname))
             else:
                 logger.warning('%s not assigned to any Pipeline' % (pname))
+
+            if is_resolved_by_uid is False:
+                placeholders_by_name = placeholders["__by_name__"]
+                if pname in placeholders_by_name:
+                    if sname in placeholders_by_name[pname]:
+                        if tname in placeholders_by_name[pname][sname]:
+                            resolved = resolved.replace(placeholder,
+                                       placeholders_by_name[pname][sname][tname]['path'])
+                        else:
+                            logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
+                                           (tname, sname, pname))
+                    else:
+                        logger.warning('%s not assigned to any Stage in Pipeline %s' % (
+                            sname, pname))
+                else:
+                    logger.warning('%s not assigned to any Pipeline' % (pname))
+
 
             if not resolved:
                 logger.warning('No placeholder could be found for task name %s \
