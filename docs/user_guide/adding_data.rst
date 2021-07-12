@@ -5,14 +5,13 @@
 Adding Data
 ***********
 
-Data movement is one of the important elements of any application. In this section, we will take a look at how we can 
-move data between different tasks.
+Data management is one of the important elements of any application. In this section, we will take a look at how we can 
+manage data between tasks.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through 
             the :ref:`introduction` of Ensemble Toolkit.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
-
 
 You can download the complete code discussed in this section :download:`here <../../examples/user_guide/add_data.py>` or
 find it in your virtualenv under ``share/radical.entk/user_guide/scripts``.
@@ -28,20 +27,17 @@ statements that perform these operations.
 
 .. literalinclude:: ../../examples/user_guide/add_data.py
     :language: python
-    :lines: 46-49
+    :lines: 46-53
     :dedent: 4
 
-
-.. code-block:: bash
-
-    python add_data.py
+Intermediate data are accessible through a unique identification formed by
+`$Pipeline_%s_Stage_%s_Task_%s/{filename}` where `%s` is replaced by entity
+name of pipeline, stage and task. If name is not given, `.uid` is availble to
+use to locate files across tasks. :ref:`task_api` has more information about the use of API.
 
 
 Let's take a look at the complete code in the example. You can generate a more verbose output by setting the environment
-variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
-
-
-A look at the complete code in this section:
+variable ``RADICAL_LOG_LVL=DEBUG``.
 
 .. literalinclude:: ../../examples/user_guide/add_data.py
 

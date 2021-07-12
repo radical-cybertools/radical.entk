@@ -356,7 +356,9 @@ class Task(object):
         Copies data (filenames in a list) from another task to a current task
         (or data staging area) before it starts.
 
-        The following is an example
+        The following is an example of how to locate the file with a certain
+        format, $Pipeline_%s_Stage_%s_Taask_%s, where %s is replaced entity name
+        or uid:
 
         .. highlight:: python
 
