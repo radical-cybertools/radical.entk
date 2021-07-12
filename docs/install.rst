@@ -194,6 +194,18 @@ are mandatory.
 .. note:: {} sections need to be replaced with actual values, and EnTK
         administrators are able to provide these information.
 
+If RabbitMQ is enabled via virtual hosts, there is an option to specify the
+vhost information through additional environment variables :
+
+.. code-block:: bash
+
+        export RMQ_SSL=True
+        export RMQ_VHOST=/vhost_name
+
+You may replace `/vhost_name` with an actual name of a virtual host. The other
+information (i.e., username and password) to connect to RabbitMQ stays same but
+uses this specific vhost name to authenticate.
+
 RMQ Account
 -----------
 
