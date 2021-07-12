@@ -32,8 +32,9 @@ statements that perform these operations.
 
 Intermediate data are accessible through a unique identification formed by
 `$Pipeline_%s_Stage_%s_Task_%s/{filename}` where `%s` is replaced by entity
-name of pipeline, stage and task. If name is not given, `.uid` is availble to
-use to locate files across tasks. :ref:`task_api` has more information about the use of API.
+name of pipeline, stage and task. If name is not given, `.uid` is available to
+locate files across tasks. :ref:`task_api` has more information about the use
+of API.
 
 
 Let's take a look at the complete code in the example. You can generate a more verbose output by setting the environment
