@@ -3,6 +3,7 @@
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 
+
 # ------------------------------------------------------------------------------
 # Set default verbosity
 if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
@@ -19,6 +20,9 @@ port = int(os.environ.get('RMQ_PORT', 5672))
 username = os.environ.get('RMQ_USERNAME')
 password = os.environ.get('RMQ_PASSWORD')
 
+
+# ------------------------------------------------------------------------------
+#
 def generate_pipeline():
 
     # Create a Pipeline object
@@ -89,6 +93,9 @@ def generate_pipeline():
 
     return p
 
+
+# ------------------------------------------------------------------------------
+#
 if __name__ == '__main__':
 
     # Create Application Manager
@@ -113,3 +120,7 @@ if __name__ == '__main__':
 
     # Run the Application Manager
     appman.run()
+
+
+# ------------------------------------------------------------------------------
+

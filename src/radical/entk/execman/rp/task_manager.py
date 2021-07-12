@@ -302,6 +302,7 @@ class TaskManager(Base_TaskManager):
                     placeholders_by_name[parent_pipeline_n][parent_stage_n][task.name] = \
                                                             {'path': task.path,
                                                              'uid': task.uid}
+
         # ----------------------------------------------------------------------
         def check_resource_reqs(task):
 
