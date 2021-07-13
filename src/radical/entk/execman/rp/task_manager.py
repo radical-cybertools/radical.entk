@@ -268,6 +268,8 @@ class TaskManager(Base_TaskManager):
         '''
 
         placeholders = dict()
+        placeholders["__by_name__"] = dict()
+        placeholders_by_name = placeholders["__by_name__"]
         placeholder_lock = mt.Lock()
 
         # ----------------------------------------------------------------------
@@ -284,6 +286,20 @@ class TaskManager(Base_TaskManager):
 
                 if None not in [parent_pipeline, parent_stage, task.uid]:
                     placeholders[parent_pipeline][parent_stage][task.uid] = \
+                                                            {'path': task.path,
+                                                             'uid': task.uid}
+
+                parent_pipeline_n = str(task.parent_pipeline['name'])
+                parent_stage_n = str(task.parent_stage['name'])
+
+                if parent_pipeline_n not in placeholders_by_name:
+                    placeholders_by_name[parent_pipeline_n] = dict()
+
+                if parent_stage_n not in placeholders_by_name[parent_pipeline_n]:
+                    placeholders_by_name[parent_pipeline_n][parent_stage_n] = dict()
+
+                if None not in [parent_pipeline_n, parent_stage_n, task.name]:
+                    placeholders_by_name[parent_pipeline_n][parent_stage_n][task.name] = \
                                                             {'path': task.path,
                                                              'uid': task.uid}
 
@@ -310,7 +326,7 @@ class TaskManager(Base_TaskManager):
 
                 if rp_task.state in rp.FINAL:
 
-                    task = create_task_from_rp(rp_task, self._prof)
+                    task = create_task_from_rp(rp_task, self._log, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
                                   channel, conn_params,
@@ -385,7 +401,7 @@ class TaskManager(Base_TaskManager):
                         bulk_tds.append(create_td_from_task(
                                             task, placeholders,
                                             self._submitted_tasks, pkl_path,
-                                            self._sid, self._prof))
+                                            self._sid, self._log, self._prof))
 
                         self._advance(task, 'Task', states.SUBMITTING,
                                       mq_channel, rmq_conn_params,

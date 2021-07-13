@@ -9,13 +9,9 @@ from radical.entk import Task
 from radical.entk import exceptions as ree
 
 
-# FIXME: this ignores the log output location used in other entk loggers
-logger = ru.Logger('radical.entk.task_processor')
-
-
 # ------------------------------------------------------------------------------
 #
-def resolve_placeholders(path, placeholders):
+def resolve_placeholders(path, placeholders, logger):
     """
     **Purpose**: Substitute placeholders in staging attributes of a Task with
                  actual paths to the corresponding tasks.
@@ -71,12 +67,14 @@ def resolve_placeholders(path, placeholders):
             pname    = elems[1]
             sname    = elems[3]
             tname    = elems[5]
+            is_resolved_by_uid = False
 
             if pname in placeholders:
                 if sname in placeholders[pname]:
                     if tname in placeholders[pname][sname]:
                         resolved = resolved.replace(placeholder,
                                    placeholders[pname][sname][tname]['path'])
+                        is_resolved_by_uid = True
                     else:
                         logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
                                        (tname, sname, pname))
@@ -85,6 +83,23 @@ def resolve_placeholders(path, placeholders):
                         sname, pname))
             else:
                 logger.warning('%s not assigned to any Pipeline' % (pname))
+
+            if is_resolved_by_uid is False:
+                placeholders_by_name = placeholders["__by_name__"]
+                if pname in placeholders_by_name:
+                    if sname in placeholders_by_name[pname]:
+                        if tname in placeholders_by_name[pname][sname]:
+                            resolved = resolved.replace(placeholder,
+                                       placeholders_by_name[pname][sname][tname]['path'])
+                        else:
+                            logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
+                                           (tname, sname, pname))
+                    else:
+                        logger.warning('%s not assigned to any Stage in Pipeline %s' % (
+                            sname, pname))
+                else:
+                    logger.warning('%s not assigned to any Pipeline' % (pname))
+
 
             if not resolved:
                 logger.warning('No placeholder could be found for task name %s \
@@ -108,7 +123,7 @@ def resolve_placeholders(path, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def resolve_arguments(args, placeholders):
+def resolve_arguments(args, placeholders, logger):
 
     resolved_args = list()
 
@@ -192,7 +207,7 @@ def resolve_tags(task, parent_pipeline_name, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def get_input_list_from_task(task, placeholders):
+def get_input_list_from_task(task, placeholders, logger):
     """
     Purpose: Parse Task object to extract the files to be staged as the output.
 
@@ -217,7 +232,7 @@ def get_input_list_from_task(task, placeholders):
 
             for path in task.link_input_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
                     temp = {
@@ -239,7 +254,7 @@ def get_input_list_from_task(task, placeholders):
 
             for path in task.upload_input_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
 
@@ -259,7 +274,7 @@ def get_input_list_from_task(task, placeholders):
 
             for path in task.copy_input_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
 
@@ -281,7 +296,7 @@ def get_input_list_from_task(task, placeholders):
 
             for path in task.move_input_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
 
@@ -310,7 +325,7 @@ def get_input_list_from_task(task, placeholders):
 
 # ------------------------------------------------------------------------------
 #
-def get_output_list_from_task(task, placeholders):
+def get_output_list_from_task(task, placeholders, logger):
     """
     Purpose: Parse Task object to extract the files to be staged as the output.
 
@@ -337,7 +352,7 @@ def get_output_list_from_task(task, placeholders):
 
             for path in task.link_output_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
                     temp = {
@@ -357,7 +372,7 @@ def get_output_list_from_task(task, placeholders):
 
             for path in task.download_output_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
 
@@ -376,7 +391,7 @@ def get_output_list_from_task(task, placeholders):
 
             for path in task.copy_output_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
                     temp = {
@@ -397,7 +412,7 @@ def get_output_list_from_task(task, placeholders):
 
             for path in task.move_output_data:
 
-                path = resolve_placeholders(path, placeholders)
+                path = resolve_placeholders(path, placeholders, logger)
 
                 if len(path.split('>')) > 1:
 
@@ -426,7 +441,7 @@ def get_output_list_from_task(task, placeholders):
 # ------------------------------------------------------------------------------
 #
 def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
-                        prof=None):
+                        logger, prof=None):
     """
     Purpose: Create an RP Task description based on the defined Task.
 
@@ -467,7 +482,7 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
 
         td.pre_exec       = task.pre_exec
         td.executable     = task.executable
-        td.arguments      = resolve_arguments(task.arguments, placeholders)
+        td.arguments      = resolve_arguments(task.arguments, placeholders, logger)
         td.sandbox        = task.sandbox
         td.post_exec      = task.post_exec
         td.stage_on_error = task.stage_on_error
@@ -507,8 +522,8 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         if task.stdout: td.stdout = task.stdout
         if task.stderr: td.stderr = task.stderr
 
-        td.input_staging  = get_input_list_from_task(task, placeholders)
-        td.output_staging = get_output_list_from_task(task, placeholders)
+        td.input_staging  = get_input_list_from_task(task, placeholders, logger)
+        td.output_staging = get_output_list_from_task(task, placeholders, logger)
 
         if prof:
             prof.prof('td from task - done', uid=task.uid)
@@ -524,7 +539,7 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
 
 # ------------------------------------------------------------------------------
 #
-def create_task_from_rp(rp_task, prof=None):
+def create_task_from_rp(rp_task, logger, prof=None):
     """
     Purpose: Create a Task based on the RP Task.
 

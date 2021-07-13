@@ -15,7 +15,7 @@ well as comments made in the python scripts.
    ./user_guide/adding_tasks
    ./user_guide/adding_stages
    ./user_guide/adding_pipelines
-   ./user_guide/adding_data
    ./user_guide/adding_shared_data
+   ./user_guide/adding_data
    ./user_guide/change_target
    ./user_guide/profiling
