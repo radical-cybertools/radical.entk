@@ -310,7 +310,7 @@ class TaskManager(Base_TaskManager):
 
                 if rp_task.state in rp.FINAL:
 
-                    task = create_task_from_rp(rp_task, self._prof)
+                    task = create_task_from_rp(rp_task, self._log, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
                                   channel, conn_params,
@@ -385,7 +385,7 @@ class TaskManager(Base_TaskManager):
                         bulk_tds.append(create_td_from_task(
                                             task, placeholders,
                                             self._submitted_tasks, pkl_path,
-                                            self._sid, self._prof))
+                                            self._sid, self._log, self._prof))
 
                         self._advance(task, 'Task', states.SUBMITTING,
                                       mq_channel, rmq_conn_params,
