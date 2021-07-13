@@ -48,12 +48,12 @@ class TestBase(TestCase):
                  'test_file > $Pipeline_%s_Stage_%s_Task_%s/test_file' % (pipeline_name, stage_name, t1_name),
                  'test_file > $NODE_LFS_PATH/test.txt']
 
-        self.assertEqual(resolve_placeholders(paths[0], placeholders),
-                    'test_file > pilot:///test_file')
-        self.assertEqual(resolve_placeholders(paths[1], placeholders),
-                    'test_file > /home/vivek/t1/test_file')
+        self.assertEqual(resolve_placeholders(paths[0], placeholders,
+            mock.Mock()), 'test_file > pilot:///test_file')
+        self.assertEqual(resolve_placeholders(paths[1], placeholders,
+            mock.Mock()), 'test_file > /home/vivek/t1/test_file')
         with self.assertRaises(ree.ValueError):
-            self.assertEqual(resolve_placeholders(paths[2], placeholders))
+            resolve_placeholders(paths[2], placeholders, mock.Mock())
 
 
     # ------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ class TestBase(TestCase):
                     '$Pipeline_%s_Stage_%s_Task_%s' % (pipeline_name, stage_name, t2_name),
                     '$NODE_LFS_PATH/test.txt']
 
-        self.assertEqual(resolve_arguments(arguments, placeholders),
+        self.assertEqual(resolve_arguments(arguments, placeholders, mock.Mock()),
                     ['$RP_PILOT_STAGING', '/home/vivek/t1',
                     '/home/vivek/t2',    '$NODE_LFS_PATH/test.txt'])
 
@@ -133,10 +133,14 @@ class TestBase(TestCase):
     #
     @mock.patch('radical.pilot.TaskDescription')
     @mock.patch('radical.utils.Logger')
-    @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_output_list_from_task', return_value='outputs')
-    @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_arguments', return_value='test_args')
-    @mock.patch.object(radical.entk.execman.rp.task_processor, 'resolve_tags', return_value='test_tag')
-    @mock.patch.object(radical.entk.execman.rp.task_processor, 'get_input_list_from_task', return_value='inputs')
+    @mock.patch.object(radical.entk.execman.rp.task_processor,
+            'get_output_list_from_task', return_value='outputs')
+    @mock.patch.object(radical.entk.execman.rp.task_processor,
+            'resolve_arguments', return_value='test_args')
+    @mock.patch.object(radical.entk.execman.rp.task_processor,
+            'resolve_tags', return_value='test_tag')
+    @mock.patch.object(radical.entk.execman.rp.task_processor,
+            'get_input_list_from_task', return_value='inputs')
     @mock.patch('radical.utils.generate_id', return_value='task.0000.0000')
     def test_create_td_from_task(self, mocked_TaskDescription,
                                   mocked_Logger, mocked_get_input_list_from_task,
@@ -166,7 +170,7 @@ class TestBase(TestCase):
         mocked_TaskDescription.output_staging   = None
 
         task = mock.Mock()
-        task.uid = 'task.0000' 
+        task.uid = 'task.0000'
         task.name = 'task.name'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}
@@ -194,7 +198,7 @@ class TestBase(TestCase):
         test_td = create_td_from_task(task=task, placeholders=None,
                                       task_hash_table=hash_table,
                                       pkl_path='.test.pkl',
-                                      sid='test.sid')
+                                      sid='test.sid', logger=mock.Mock())
         self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
@@ -229,7 +233,7 @@ class TestBase(TestCase):
         test_td = create_td_from_task(task=task, placeholders=None,
                                       task_hash_table=hash_table,
                                       pkl_path='.test.pkl',
-                                      sid='test.sid')
+                                      sid='test.sid', logger=mock.Mock())
         self.assertEqual(test_td.name, 'task.0000,task.name,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, 'post_exec')
         self.assertEqual(test_td.executable, '/bin/date')
@@ -288,7 +292,7 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_rp(test_cud, None)
+        task = create_task_from_rp(test_cud, mock.Mock())
         self.assertEqual(task.uid, 'task.0000')
         self.assertEqual(task.name, 'task.0000')
         self.assertEqual(task.parent_stage, {'uid': 'stage.0000', 'name': 'stage.0000'})
@@ -333,15 +337,15 @@ class TestBase(TestCase):
         mocked_Task.path            = None
         mocked_Task.rts_uid         = None
 
-        task = create_task_from_rp(test_cud, None)
+        task = create_task_from_rp(test_cud, mock.Mock())
         self.assertEqual(task.exit_code, 0)
 
         test_cud.state = 'FAILED'
-        task = create_task_from_rp(test_cud, None)
+        task = create_task_from_rp(test_cud, mock.Mock())
         self.assertEqual(task.exit_code, 1)
 
         test_cud.state = 'EXECUTING'
-        task = create_task_from_rp(test_cud, None)
+        task = create_task_from_rp(test_cud, mock.Mock())
         self.assertIsNone(task.exit_code)
 
     # ------------------------------------------------------------------------------
@@ -353,7 +357,7 @@ class TestBase(TestCase):
         task = mock.Mock()
 
         with self.assertRaises(ree.TypeError):
-            get_input_list_from_task(task, '')
+            get_input_list_from_task(task, '', mock.Mock())
 
         pipeline_name = 'p1'
         stage_name    = 's1'
@@ -375,16 +379,16 @@ class TestBase(TestCase):
         task.upload_input_data = ['$SHARED/test_folder/test_file > test_file']
         task.copy_input_data = ['$Pipeline_p1_Stage_s1_Task_t1/test_file > $SHARED/test_file']
         task.move_input_data = ['test_file > test_file']
-        test = get_input_list_from_task(task, placeholders)
+        test = get_input_list_from_task(task, placeholders, mock.Mock())
 
         input_list = [{'source': 'pilot:///test_folder/test_file',
                        'target': 'test_folder/test_file',
-                       'action': 'Link'}, 
+                       'action': 'Link'},
                       {'source': 'pilot:///test_folder/test_file',
                        'target': 'test_file'},
                       {'source': '/home/vivek/t1/test_file',
-                       'target': 'pilot:///test_file', 
-                       'action': 'Copy'}, 
+                       'target': 'pilot:///test_file',
+                       'action': 'Copy'},
                       {'source': 'test_file',
                        'target': 'test_file',
                        'action': 'Move'}]
@@ -403,25 +407,25 @@ class TestBase(TestCase):
         task = mock.Mock()
 
         with self.assertRaises(ree.TypeError):
-            get_output_list_from_task(task, '')
+            get_output_list_from_task(task, '', mock.Mock())
 
         task = mock.MagicMock(spec=radical.entk.Task)
         task.link_output_data = ['test_file > $SHARED/test_file']
         task.download_output_data = ['test_file > $SHARED/test_file']
         task.copy_output_data = ['test_file > $SHARED/test_file']
         task.move_output_data = ['test_file > $SHARED/test_file']
-        test = get_output_list_from_task(task, {})
+        test = get_output_list_from_task(task, {}, mock.Mock())
 
-        output_list = [{'source': 'test_file', 
+        output_list = [{'source': 'test_file',
                        'target': 'pilot:///test_file',
-                       'action': 'Link'}, 
+                       'action': 'Link'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file'}, 
+                       'target': 'pilot:///test_file'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
-                       'action': 'Copy'}, 
+                       'target': 'pilot:///test_file',
+                       'action': 'Copy'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
+                       'target': 'pilot:///test_file',
                        'action': 'Move'}]
 
         self.assertEqual(test[0], output_list[0])
@@ -478,7 +482,7 @@ class TestBase(TestCase):
         }
 
         task = mock.MagicMock(spec=radical.entk.Task)
-        task.uid = 'task.0000' 
+        task.uid = 'task.0000'
         task.name = 'task.0000'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}
@@ -509,31 +513,31 @@ class TestBase(TestCase):
         task.lfs_per_process = 235
         task.stderr = 'stderr'
         task.stdout = 'stdout'
-        input_list = [{'source': 'test_file', 
+        input_list = [{'source': 'test_file',
                        'target': 'pilot:///test_file',
-                       'action': 'Link'}, 
+                       'action': 'Link'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file'}, 
+                       'target': 'pilot:///test_file'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
-                       'action': 'Copy'}, 
+                       'target': 'pilot:///test_file',
+                       'action': 'Copy'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
+                       'target': 'pilot:///test_file',
                        'action': 'Move'}]
         task.link_input_data = ['test_file > $SHARED/test_file']
         task.upload_input_data = ['test_file > $SHARED/test_file']
         task.copy_input_data = ['test_file > $SHARED/test_file']
         task.move_input_data = ['test_file > $SHARED/test_file']
-        output_list = [{'source': 'test_file', 
+        output_list = [{'source': 'test_file',
                        'target': 'pilot:///test_file',
-                       'action': 'Link'}, 
+                       'action': 'Link'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file'}, 
+                       'target': 'pilot:///test_file'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
-                       'action': 'Copy'}, 
+                       'target': 'pilot:///test_file',
+                       'action': 'Copy'},
                       {'source': 'test_file',
-                       'target': 'pilot:///test_file', 
+                       'target': 'pilot:///test_file',
                        'action': 'Move'}]
         task.link_output_data = ['test_file > $SHARED/test_file']
         task.download_output_data = ['test_file > $SHARED/test_file']
@@ -542,7 +546,7 @@ class TestBase(TestCase):
         hash_table = {}
         test_cud = create_td_from_task(task, placeholders, hash_table,
                                       pkl_path='.test.pkl',
-                                      sid='test.sid')
+                                      sid='test.sid', logger=mock.Mock())
         self.assertEqual(test_cud.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_cud.pre_exec, 'post_exec')
         self.assertEqual(test_cud.executable, '/bin/date')
