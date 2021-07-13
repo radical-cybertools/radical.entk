@@ -6,6 +6,11 @@ from unittest import TestCase
 from radical.entk.execman.rp.task_processor import create_td_from_task
 from radical.entk                           import Task
 
+try:
+    import mock
+except ImportError:
+    from unittest import mock
+
 import pickle
 import radical.pilot as rp
 
@@ -37,7 +42,7 @@ class TestBase(TestCase):
         }
 
         task = Task()
-        task.uid = 'task.0000' 
+        task.uid = 'task.0000'
         task.name = 'task.0000'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}
@@ -62,7 +67,7 @@ class TestBase(TestCase):
         task.stdout = 'stdout'
         hash_table = {}
         test_td = create_td_from_task(task, placeholders, hash_table,
-                                      '.test.pkl', 'test_sid')
+                                      '.test.pkl', 'test_sid', mock.Mock())
         self.assertIsInstance(test_td, rp.TaskDescription)
         self.assertEqual(test_td.name, 'task.0000,task.0000,stage.0000,stage.0000,pipe.0000,pipe.0000')
         self.assertEqual(test_td.pre_exec, ['post_exec'])
@@ -88,7 +93,7 @@ class TestBase(TestCase):
         self.assertEqual(hash_table, {'task.0000': 'task.0000'})
         task.tags = {'colocate': 'task.0001'}
         test_td = create_td_from_task(task, placeholders, hash_table,
-                                      '.test.pkl', 'test_sid')
+                                      '.test.pkl', 'test_sid', mock.Mock())
         self.assertEqual(test_td.tags, {'colocate':'task.0003'})
         self.assertEqual(test_td.uid, 'task.0000.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000.0000'})

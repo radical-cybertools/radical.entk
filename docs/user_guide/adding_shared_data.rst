@@ -5,9 +5,9 @@
 Adding Shared Data
 ******************
 
-Data movement is one of the important elements of any application. In many applications, there exist an initial set of 
+Data management is one of the important elements of any application. In many applications, there exist an initial set of 
 files, common to multiple tasks, that need to be transfered, once, to the remote machine.  In this section, we will take
-a look at how we can move data shared between multiple tasks to the remote machine by a one-time transfer.
+a look at how we can manage data shared between multiple tasks to the remote machine by a one-time transfer.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through 
             the :ref:`introduction` of Ensemble Toolkit.
@@ -27,7 +27,7 @@ Users can specify such shared data using the ``shared_data`` attribute of the Ap
 
 .. literalinclude:: ../../examples/user_guide/add_shared_data.py
     :language: python
-    :lines: 61-66
+    :lines: 69-71
     :dedent: 4
 
 
@@ -36,7 +36,7 @@ file movement description of the task.
 
 .. literalinclude:: ../../examples/user_guide/add_shared_data.py
     :language: python
-    :lines: 25-30
+    :lines: 30-35
     :dedent: 4
 
 In the example provided, the two files contain the words 'Hello' and 'World', respectively, and the output files

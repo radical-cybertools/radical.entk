@@ -162,10 +162,15 @@ class AppManager(object):
         self._rts              = _if(rts,             config['rts'])
 
         credentials = pika.PlainCredentials(self._username, self._password)
+        # To enable VHOST, two env variables are introduced:
+        # export RMQ_SSL=True
+        # export RMQ_VHOST=/vhost_name
         self._rmq_conn_params = pika.connection.ConnectionParameters(
                                         host=self._hostname,
+                                        virtual_host=os.environ.get('RMQ_VHOST','/'),
                                         port=self._port,
-                                        credentials=credentials)
+                                        credentials=credentials,
+                                        ssl=bool(os.environ.get('RMQ_SSL', False)))
 
         # TODO: Pass these values also as parameters
         self._num_pending_qs   = config['pending_qs']
