@@ -6,18 +6,27 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.6.7  Release                                                        2021-07-15
+--------------------------------------------------------------------------------
+
+  - support for RabbitMQ virtual host
+  - update the license
+  - x.name is replaced by x.uid to locate files
+
+
 1.6.5  Release                                                        2021-04-15
 --------------------------------------------------------------------------------
-#572 Trying to revert to codecov action after resetting the token 
-#571 RP task processor adds default values to RP task cpu and gpu reqs 
-#568 Using RPs tags instead of tag 
-#567 Verifying a task can fit a resource 
-#566 Fix/integration tests 
-#569 Fixing conda installation instructions 
-#538 EnTK components failure resilience 
-#563 Adding stage_on_error. Issue #562 
-#557 Fix issue 477 
-#560 Feature/pilot failure
+
+  - #572 Trying to revert to codecov action after resetting the token
+  - #571 RP task processor adds default values to RP task cpu and gpu reqs
+  - #568 Using RPs tags instead of tag
+  - #567 Verifying a task can fit a resource
+  - #566 Fix/integration tests
+  - #569 Fixing conda installation instructions
+  - #538 EnTK components failure resilience
+  - #563 Adding stage_on_error. Issue #562
+  - #557 Fix issue 477
+  - #560 Feature/pilot failure
 
 1.5.8  Release                                                        2020-12-15
 --------------------------------------------------------------------------------
@@ -25,10 +34,10 @@
   - PR #525, Moving warning filter to the whole file
   - PR #522, Fix/integration tests
   - PR #519, Small refactoring changes
-  - PR #518, AppManager raises error when there are multiple reattempts 
+  - PR #518, AppManager raises error when there are multiple reattempts
   - PR #511, Documentation update
-  - PR #510, move to relative imports, simplify code hierarchy 
-  - PR #508, Unit tests for methods that use threads and processes 
+  - PR #510, move to relative imports, simplify code hierarchy
+  - PR #508, Unit tests for methods that use threads and processes
   - PR #507, Feature/id mapping
 
 1.5.7  Release                                                        2020-11-17
@@ -37,12 +46,12 @@
   - PR #503, Deleting unnecessary files
   - PR #502, Feature/job name
   - PR #499, Additional unit tests
-  - PR #498, Linting and fixing task path in appmanager 
-  - PR #497, Fix warning regarding ABC import from collections 
-  - PR #496, Fix/unittests 
-  - PR #494, Silence Integration and Issues tests 
-  - PR #492, Aligning thread/processes definitions between EnTK and RP 
-  - PR #491, Doc string for a method 
+  - PR #498, Linting and fixing task path in appmanager
+  - PR #497, Fix warning regarding ABC import from collections
+  - PR #496, Fix/unittests
+  - PR #494, Silence Integration and Issues tests
+  - PR #492, Aligning thread/processes definitions between EnTK and RP
+  - PR #491, Doc string for a method
 
 
 1.5.5  Release                                                        2020-10-13
@@ -53,23 +62,23 @@
 
 1.5.1  Release                                                        2020-09-01
 --------------------------------------------------------------------------------
- 
+
   - Pylint, flake updated, PR #475
- 
+
 
 1.5.0  Release                                                        2020-08-24
 --------------------------------------------------------------------------------
- 
+
   - CI tests updated, PR #471
   - Task sync enhancement, PR #466
- 
+
 
 1.4.1  Release                                                        2020-07-17
 --------------------------------------------------------------------------------
 
   - Documentation updated, PR #453, #451, #450, #446
   - Shared data fix #449
- 
+
 
 1.4.0  Release                                                        2020-05-18
 --------------------------------------------------------------------------------
@@ -86,7 +95,7 @@
     - Fix of API reference pages
   - Travis CI updated, removing unnecessary tests, updating flake8/pylint
   - Workaround for EnTK deadlock on non-trivial pipeline counts. #410
- 
+
 
 1.0.0  Release                                                        2019-12-26
 --------------------------------------------------------------------------------
@@ -296,3 +305,4 @@
 
 * ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
   changed to ```parent_pipeline``` and ```parent_stage```.
+
