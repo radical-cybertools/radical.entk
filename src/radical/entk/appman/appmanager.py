@@ -154,7 +154,7 @@ class AppManager(object):
             if val1 is not None: return val1
             else               : return val2
 
-        self._path             = config.get('base_path', os.getcwd())
+        self._path             = str(config.get('base_path', os.getcwd()))
         self._hostname         = _if(hostname,        config['hostname'])
         self._port             = _if(port,            config['port'])
         self._username         = _if(username,        config['username'])
