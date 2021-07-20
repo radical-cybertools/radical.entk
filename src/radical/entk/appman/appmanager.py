@@ -76,7 +76,7 @@ class AppManager(object):
                  rmq_cleanup=None,
                  rts_config=None,
                  name=None,
-                 config={}):
+                 config=None):
 
         # Create a session for each EnTK script execution
         if name:
@@ -85,6 +85,9 @@ class AppManager(object):
         else:
             self._name = str()
             self._sid  = ru.generate_id('re.session', ru.ID_PRIVATE)
+
+        if config is None:
+            config = dict()
 
         self._read_config(config_path, hostname, port, username, password,
                           reattempts, resubmit_failed, autoterminate,
@@ -147,8 +150,8 @@ class AppManager(object):
 
         config = ru.read_json(os.path.join(config_path, 'config.json'))
 
-        # config_params (2nd dictionary) overwrites values if duplicated
-        config = { **config, **config_params }
+        # config_params overwrites values if duplicated
+        config.update(config_params)
 
         def _if(val1, val2):
             if val1 is not None: return val1
