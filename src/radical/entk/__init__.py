@@ -30,9 +30,13 @@ version_short, version_detail, version_base, version_branch, \
 
 version = version_short
 
-r = req.get("https://pypi.org/pypi/radical.entk/json")
-versions = r.json()["releases"].keys()
-last_version = list(versions)[-1]
-if parse_version(version) < parse_version(last_version):
-    warnings.warn("WARNING: You are using radical.entk version %s, however version %s is available." % (version, last_version), UserWarning)
+try:
+    r = req.get("https://pypi.org/pypi/radical.entk/json")
+    versions = r.json()["releases"].keys()
+    last_version = list(versions)[-1]
+    if parse_version(version) < parse_version(last_version):
+        warnings.warn("WARNING: You are using radical.entk version %s, however version %s is available." % (version, last_version), UserWarning)
+except ConnectionError as e:
+    warnings.warn("WARNING: You are offline. radical.entk latest version check is disabled.", UserWarning)
+    pass
 # ------------------------------------------------------------------------------
