@@ -75,7 +75,8 @@ class AppManager(object):
                  rts=None,
                  rmq_cleanup=None,
                  rts_config=None,
-                 name=None):
+                 name=None,
+                 config={}):
 
         # Create a session for each EnTK script execution
         if name:
@@ -87,14 +88,15 @@ class AppManager(object):
 
         self._read_config(config_path, hostname, port, username, password,
                           reattempts, resubmit_failed, autoterminate,
-                          write_workflow, rts, rmq_cleanup, rts_config)
+                          write_workflow, rts, rmq_cleanup, rts_config,
+                          config)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
 
         self._uid = ru.generate_id('appmanager.%(counter)04d', ru.ID_CUSTOM)
 
-        path = os.getcwd() + '/' + self._sid
+        path = self._path + '/' + self._sid
         name = 'radical.entk.%s' % self._uid
 
         self._logger = ru.Logger(name=name, path=path)
@@ -138,17 +140,21 @@ class AppManager(object):
     #
     def _read_config(self, config_path, hostname, port, username, password,
                      reattempts, resubmit_failed, autoterminate,
-                     write_workflow, rts, rmq_cleanup, rts_config):
+                     write_workflow, rts, rmq_cleanup, rts_config, config_params):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
 
         config = ru.read_json(os.path.join(config_path, 'config.json'))
 
+        # config_params (2nd dictionary) overwrites values if duplicated
+        config = { **config, **config_params }
+
         def _if(val1, val2):
             if val1 is not None: return val1
             else               : return val2
 
+        self._path             = config.get('base_path', os.getcwd())
         self._hostname         = _if(hostname,        config['hostname'])
         self._port             = _if(port,            config['port'])
         self._username         = _if(username,        config['username'])
