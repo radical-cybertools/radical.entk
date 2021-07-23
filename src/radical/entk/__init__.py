@@ -35,7 +35,10 @@ try:
     versions = r.json()["releases"].keys()
     last_version = list(versions)[-1]
     if parse_version(version) < parse_version(last_version):
-        warnings.warn("WARNING: You are using radical.entk version %s, however version %s is available." % (version, last_version), UserWarning)
+        warnings.warn("WARNING: You are using radical.entk version %s, however"
+                " version %s is available." % (version, last_version),
+                UserWarning)
+
 except ConnectionError:
     pass
 # ------------------------------------------------------------------------------
