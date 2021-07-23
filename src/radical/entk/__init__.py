@@ -37,6 +37,5 @@ try:
     if parse_version(version) < parse_version(last_version):
         warnings.warn("WARNING: You are using radical.entk version %s, however version %s is available." % (version, last_version), UserWarning)
 except ConnectionError as e:
-    warnings.warn("WARNING: You are offline. radical.entk latest version check is disabled.", UserWarning)
     pass
 # ------------------------------------------------------------------------------
