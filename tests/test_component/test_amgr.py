@@ -62,7 +62,8 @@ class TestBase(TestCase):
                           write_workflow=None,
                           rts=None,
                           rmq_cleanup=None,
-                          rts_config=None)
+                          rts_config=None,
+                          base_path=None)
 
         self.assertEqual(amgr._hostname ,d['hostname'])
         self.assertEqual(amgr._port ,d['port'])
@@ -91,7 +92,8 @@ class TestBase(TestCase):
                               write_workflow=None,
                               rts=None,
                               rmq_cleanup=None,
-                              rts_config=None)
+                              rts_config=None,
+                              base_path=None)
 
 
     # ------------------------------------------------------------------------------
@@ -129,7 +131,8 @@ class TestBase(TestCase):
                           rmq_cleanup=d2['rmq_cleanup'],
                           rts="mock",
                           rts_config={"sandbox_cleanup": True,
-                                      "db_cleanup"     : True})
+                                      "db_cleanup"     : True},
+                          base_path=None)
 
         self.assertEqual(amgr._hostname, d2['hostname'])
         self.assertEqual(amgr._port, d2['port'])
