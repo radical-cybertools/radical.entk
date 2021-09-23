@@ -58,6 +58,8 @@ class AppManager(object):
                           True/False} when RTS is RP
         :name:            Name of the Application. It should be unique between
                           executions. (default is randomly assigned)
+        :base_path:       base path of logger and profiler with a session id,
+                          None (default) will use a current working directory
     '''
 
     # --------------------------------------------------------------------------
@@ -75,7 +77,8 @@ class AppManager(object):
                  rts=None,
                  rmq_cleanup=None,
                  rts_config=None,
-                 name=None):
+                 name=None,
+                 base_path=None):
 
         # Create a session for each EnTK script execution
         if name:
@@ -87,14 +90,15 @@ class AppManager(object):
 
         self._read_config(config_path, hostname, port, username, password,
                           reattempts, resubmit_failed, autoterminate,
-                          write_workflow, rts, rmq_cleanup, rts_config)
+                          write_workflow, rts, rmq_cleanup, rts_config,
+                          base_path)
 
         # Create an uid + logger + profiles for AppManager, under the sid
         # namespace
 
         self._uid = ru.generate_id('appmanager.%(counter)04d', ru.ID_CUSTOM)
 
-        path = os.getcwd() + '/' + self._sid
+        path = str(self._base_path) + '/' + self._sid
         name = 'radical.entk.%s' % self._uid
 
         self._logger = ru.Logger(name=name, path=path)
@@ -138,7 +142,7 @@ class AppManager(object):
     #
     def _read_config(self, config_path, hostname, port, username, password,
                      reattempts, resubmit_failed, autoterminate,
-                     write_workflow, rts, rmq_cleanup, rts_config):
+                     write_workflow, rts, rmq_cleanup, rts_config, base_path):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -149,6 +153,7 @@ class AppManager(object):
             if val1 is not None: return val1
             else               : return val2
 
+        self._base_path        = _if(base_path,       os.getcwd())
         self._hostname         = _if(hostname,        config['hostname'])
         self._port             = _if(port,            config['port'])
         self._username         = _if(username,        config['username'])
