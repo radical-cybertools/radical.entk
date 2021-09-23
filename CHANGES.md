@@ -6,6 +6,14 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.8.0  Release                                                        2021-09-23
+--------------------------------------------------------------------------------
+
+  - 'config' param introduced in AppManager to take 'base_path' etc.
+  - eliminating warning message for being offline
+  - type conversion to str for PosixPath
+
+
 1.6.7  Release                                                        2021-07-15
 --------------------------------------------------------------------------------
 
@@ -305,4 +313,6 @@
 
 * ```_parent_pipeline``` and ```_parent_stage``` on Stage and Task objects
   changed to ```parent_pipeline``` and ```parent_stage```.
+
+# ------------------------------------------------------------------------------
 
