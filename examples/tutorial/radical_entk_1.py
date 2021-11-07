@@ -2,22 +2,38 @@
 
 import radical.entk as re
 
+#
+# This example demonstrates the execution of a simple ensemble of simulations.
+# Each ensemble member is in itself a pipeline of three different stages:
+#
+#     1) generate a random seed as input data
+#     2) evolve a model based on that input data via a set of ensembles
+#     3) derive a common metric across the model results
+#
+#   Similar patterns are frequently found in MD simulation workflows.  For the
+#   purpose of this tutorial, the stages are:
+#
+#   - random seed  : create a random number)
+#   - evolve model : N tasks computing n'th power of the input)
+#   - common metric: sum over all 'model' outputs
+#
+# The final results are then staged back and printed on STDOUT.
+#
+# Exercises:
+#
+#   - change the number of ensemble members (number of pipelines)
+#   - change the number of simulation tasks in the second pipeline stage
+#   - add a fourth stage which computes the square root of the sum
+#     `echo "sqrt($sum)" | bc`
+#
+
 
 # ------------------------------------------------------------------------------
 #
 def generate_pipeline(uid):
     '''
-    Generate a (fake) simulation pipeline.  We assume a simple pipeline
-    structure consisting of three steps:
-
-      1) generate a random seed as input data
-      2) evolve a model based on that input data via a set of ensembles
-      3) derive a common metric across the model results
-
-    Similar patterns are frequently found in MD simulation workflows.  For the
-    purpose of this tutorial, the `random seed` is a random  integer between
-    0 and 255, the model is to compute the n'th power of that integer, and the
-    common metric is the sum of those powers.
+    Generate a single simulation pipeline, i.e., a new ensemble member.
+    The pipeline structure consisting of three steps as described above.
     '''
 
     # all tasks in this pipeline share the same sandbox
@@ -56,7 +72,7 @@ def generate_pipeline(uid):
     s3 = re.Stage()
     s3.add_tasks(t3)
 
-    # assemble the three stages into a pipeline
+    # assemble the three stages into a pipeline and return it
     p = re.Pipeline()
     p.add_stages(s1)
     p.add_stages(s2)
