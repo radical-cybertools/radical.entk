@@ -4,20 +4,59 @@ import functools
 
 import radical.entk as re
 
+#
+# Similar to the first tutorial exercise, we will implement an ensemble of
+# simulation pipelines where each pipeline prepares data, runs a set of
+# simulation on the data, and then accumulates results.  Other than before
+# though we will add dynamicity to the application:
+#
+#   - after each simulation stage, evaluate intermediate data
+#   - if data diverge (sum is larger than `LIMIT`)
+#     - re-seed the pipeline with new data
+#   - else
+#     - run another simulation steps
+#   - finish simulation after at most `MAX_ITER` steps and then collect results
+#
+# This exercise will thus show how the workflow can be adapted at runtime, by
+# inserting new pipeline stages or stopping the execution of individual
+# pipelines.
+#
+#
+# Exercises:
+#
+#   - the iteration counter is reset for each stage 1 (data seeding), so
+#     pipelines which always seed with large random values may never converge.
+#     Change so that the iteration counter is attached to the *pipeline*, not to
+#     the stage.
+#   - calculating intermediate results is costly: all data need to be staged
+#     back and analyzed.  Instead, insert a `stage 2b` which analyzes data on
+#     the target resource and only then stages back the result and decides about
+#     pipeline continuation.
+#     HINT: `stage 2b` would be very similar to `stage 3`.
+#
 
-N_ENSEMBLES   =    5
-ENSEMBLE_SIZE =    5
-MAX_ITER      =   10
-LIMIT         =  100 * 1000 * 1000
+ENSEMBLE_SIZE   =    5                 # number of simulation pipeline
+SIMULATION_SIZE =    5                 # number of simulations per pipeline
+MAX_ITER        =   10                 # max number of simulation steps
+LIMIT           =  100 * 1000 * 1000   # max intermediate result
+
 
 # we want to change pipelines on the fly, thus want to keep track
-# of all pipelines
+# of all pipelines.  We identify pipelines by an application specified
+# name `pname`
 ensemble = dict()
 
 
 # ------------------------------------------------------------------------------
 #
 def get_stage_1(sandbox, pname):
+    '''
+    Create a stage which seeds (or re-seeds) a simulation pipeline with a random
+    integer as input data.
+
+    The returned stage will include a `post_exec` callback which outputs the new
+    data seed after completion of the stage
+    '''
 
     t1 = re.Task()
     t1.executable = '/bin/sh'
@@ -43,14 +82,28 @@ def get_stage_1(sandbox, pname):
 # ------------------------------------------------------------------------------
 #
 def get_stage_2(sandbox, pname, iteration=0):
+    '''
+    The second pipeline stage is again the simulation stage: it consists of
+    `SIMULATION_SIZE` tasks which compute the n'th power of the input data (last
+    line of `random.txt`).  Another `post_exec` callback will, after all tasks
+    are done, evaluate the intermediate data and decide how to continue:
+
+        - if result    > LIMIT   : new seed  (add stages 1 and 2)
+        - if iteration > MAX_ITER: abort     (add stage 3)
+        - else                   : continue  (add stage 2 again)
+
+    For simplicity we keep track of iterations within the stage instances
+    (`stage.iteration`).
+    '''
 
     # this is the pseudo model we iterate on the second stage
-    model = 'echo "($(tail -n 1 random.txt) + %(iteration)d) ^ %(ensemble_id)d" | bc'
+    model = 'echo "($(tail -1 random.txt) + %(iteration)d) ^ %(ensemble_id)d"' \
+            '| bc'
 
-    # second stage: create ENSEMBLE_SIZE tasks to compute the n'th power
+    # second stage: create SIMULATION_SIZE tasks to compute the n'th power
     s2 = re.Stage()
     s2.iteration = iteration
-    for i in range(ENSEMBLE_SIZE):
+    for i in range(SIMULATION_SIZE):
         t2 = re.Task()
         t2.executable = '/bin/sh'
         t2.arguments  = ['-c', model % {'iteration'  : iteration,
@@ -61,35 +114,32 @@ def get_stage_2(sandbox, pname, iteration=0):
         s2.add_tasks(t2)
 
     # --------------------------------------------------------------------------
-    # use a callback after that stage completed which checks the
-    # intermediate value:
-    #  - if value     > LIMIT   : new seed  (add stage 1)
-    #  - if iteration > MAX_ITER: abort     (add stage 3)
-    #  - else                   : continue  (add stage 2 again)
+    # add a callback after that stage's completed which checks the
+    # intermediate results:
     def post_exec(stage, pname):
 
         pipeline = ensemble[pname]
 
         # continue to iterate - check intermediate data
-        total = 0
+        result = 0
         for task in stage.tasks:
-            data   = open('%s.%s' % (pname, task.stdout)).read()
-            total += int(data.split()[-1])
+            data    = open('%s.%s' % (pname, task.stdout)).read()
+            result += int(data.split()[-1])
 
-        if total > LIMIT:
-            # re-seed the pipeline (inject a new stage 1)
-            print(pipeline.name, 'seed  %3d - %10d' % (stage.iteration, total))
+        if result > LIMIT:
+            # re-seed the pipeline (inject a new stages 1 and 2)
+            print(pipeline.name, 'seed  %3d - %10d' % (stage.iteration, result))
             pipeline.add_stages(get_stage_1(sandbox, pname))
             pipeline.add_stages(get_stage_2(sandbox, pname))
 
         elif stage.iteration > MAX_ITER:
             # iteration limit reached, discontinue pipeline (add final stage 3)
-            print(pipeline.name, 'break %3d - %10d' % (stage.iteration, total))
+            print(pipeline.name, 'break %3d - %10d' % (stage.iteration, result))
             pipeline.add_stages(get_stage_3(sandbox, pname))
 
         else:
             # continue to iterate (increase the iteration counter)
-            print(pipeline.name, 'iter  %3d - %10d' % (stage.iteration, total))
+            print(pipeline.name, 'iter  %3d - %10d' % (stage.iteration, result))
             pipeline.add_stages(get_stage_2(sandbox, pname, stage.iteration + 1))
 
     # --------------------------------------------------------------------------
@@ -101,6 +151,12 @@ def get_stage_2(sandbox, pname, iteration=0):
 # ------------------------------------------------------------------------------
 #
 def get_stage_3(sandbox, pname):
+    '''
+    This pipeline has reached its iteration limit without exceeding the
+    simulation results diverging beyond `LIMIT`.  This final stage will collect
+    the simulation results and report the final data, again via an `post-exec`
+    hook.
+    '''
 
     # third stage: compute sum over all powers
     t3 = re.Task()
@@ -119,8 +175,8 @@ def get_stage_3(sandbox, pname):
     # --------------------------------------------------------------------------
     # use a callback after that stage completed for output of the final result
     def post_exec(stage, pname):
-        total = int(open('%s.sum.txt' % pname).read())
-        print(pname, 'final %3d - %10d' % (MAX_ITER, total))
+        result = int(open('%s.sum.txt' % pname).read())
+        print(pname, 'final %3d - %10d' % (MAX_ITER, result))
     # --------------------------------------------------------------------------
     s3.post_exec = functools.partial(post_exec, s3, pname)
 
@@ -151,7 +207,7 @@ def generate_pipeline(pname):
     # first stage: create 1 task to generate a random seed number
     s1 = get_stage_1(sandbox, pname)
 
-    # second stage: create ENSEMBLE_SIZE tasks to compute the n'th power
+    # second stage: create SIMULATION_SIZE tasks to compute the n'th power
     # of that number (this stage runs at least once)
     s2 = get_stage_2(sandbox, pname)
 
@@ -181,7 +237,7 @@ if __name__ == '__main__':
     }
 
     # create an ensemble of n simulation pipelines
-    for cnt in range(N_ENSEMBLES):
+    for cnt in range(ENSEMBLE_SIZE):
         pname = 'pipe.%03d' % cnt
         ensemble[pname] = generate_pipeline(pname)
 
@@ -191,7 +247,7 @@ if __name__ == '__main__':
     appman.run()
 
     # check results which were staged back
-    for cnt in range(N_ENSEMBLES):
+    for cnt in range(ENSEMBLE_SIZE):
         result = int(open('pipe.%03d.sum.txt' % cnt).read())
         print('%18d - %10d' % (cnt, result))
 
