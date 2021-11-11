@@ -19,13 +19,6 @@ import radical.entk as re
 #
 # The final results are then staged back and printed on STDOUT.
 #
-# Exercises:
-#
-#   - change the number of ensemble members (number of pipelines)
-#   - change the number of simulation tasks in the second pipeline stage
-#   - add a fourth stage which computes the square root of the sum
-#     `echo "sqrt($sum)" | bc`
-#
 
 
 # ------------------------------------------------------------------------------
@@ -51,7 +44,8 @@ def generate_pipeline(uid):
 
     # second stage: create 10 tasks to compute the n'th power of that number
     s2 = re.Stage()
-    for i in range(10):
+    n_simulations = 10
+    for i in range(n_simulations):
         t2 = re.Task()
         t2.executable = '/bin/sh'
         t2.arguments  = ['-c', 'echo "$(cat random.txt) ^ %d" | bc' % i]
@@ -66,17 +60,28 @@ def generate_pipeline(uid):
     t3.stdout     = 'sum.txt'
     t3.sandbox    = sandbox
 
-    # download the result while renaming to get unique files per pipeline
-    t3.download_output_data = ['sum.txt > %s.sum.txt' % uid]
-
     s3 = re.Stage()
     s3.add_tasks(t3)
+
+    # fourth stage: compute square root of previous sum
+    t4 = re.Task()
+    t4.executable = '/bin/sh'
+    t4.arguments  = ['-c', 'echo "sqrt($(cat sum.txt))" | bc']
+    t4.stdout     = 'sqrt.txt'
+    t4.sandbox    = sandbox
+
+    # download the result while renaming to get unique files per pipeline
+    t4.download_output_data = ['sqrt.txt > %s.sqrt.txt' % uid]
+
+    s4 = re.Stage()
+    s4.add_tasks(t4)
 
     # assemble the three stages into a pipeline and return it
     p = re.Pipeline()
     p.add_stages(s1)
     p.add_stages(s2)
     p.add_stages(s3)
+    p.add_stages(s4)
 
     return p
 
@@ -91,15 +96,16 @@ if __name__ == '__main__':
     # assign resource request description to the application manager using
     # three mandatory keys: target resource, walltime, and number of cpus
     appman.resource_desc = {
-        'resource': 'local.localhost_flux',
+        'resource': 'local.localhost',
+      # 'resource': 'local.localhost_flux',
         'walltime': 10,
         'cpus'    : 1
     }
 
     # create an ensemble of n simulation pipelines
-    n_ensembles = 10
+    n_pipelines = 10
     ensemble = set()
-    for cnt in range(n_ensembles):
+    for cnt in range(n_pipelines):
         ensemble.add(generate_pipeline(uid='pipe.%03d' % cnt))
 
     # assign the workflow to the application manager, then
@@ -108,14 +114,10 @@ if __name__ == '__main__':
     appman.run()
 
     # check results which were staged back
-    for cnt in range(n_ensembles):
-        data = open('pipe.%03d.sum.txt' % cnt).read()
-        try:
-            result = int(data)
-        except:
-            print('==%s==' % str(data))
-            raise
-        print('%3d -- %25d' % (cnt, result))
+    for cnt in range(n_pipelines):
+        data   = open('pipe.%03d.sqrt.txt' % cnt).read()
+        result = float(data)
+        print('%3d -- %25.2f' % (cnt, result))
 
 
 # ------------------------------------------------------------------------------

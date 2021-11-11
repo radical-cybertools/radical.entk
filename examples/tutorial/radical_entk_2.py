@@ -21,24 +21,11 @@ import radical.entk as re
 # inserting new pipeline stages or stopping the execution of individual
 # pipelines.
 #
-#
-# Exercises:
-#
-#   - the iteration counter is reset for each stage 1 (data seeding), so
-#     pipelines which always seed with large random values may never converge.
-#     Change so that the iteration counter is attached to the *pipeline*, not to
-#     the stage.
-#   - calculating intermediate results is costly: all data need to be staged
-#     back and analyzed.  Instead, insert a `stage 2b` which analyzes data on
-#     the target resource and only then stages back the result and decides about
-#     pipeline continuation.
-#     HINT: `stage 2b` would be very similar to `stage 3`.
-#
 
-ENSEMBLE_SIZE   =    5                 # number of simulation pipeline
-SIMULATION_SIZE =    5                 # number of simulations per pipeline
-MAX_ITER        =   10                 # max number of simulation steps
-LIMIT           =  100 * 1000 * 1000   # max intermediate result
+N_PIPELINES   =    5                 # number of simulation pipeline
+N_SIMULATIONS =    5                 # number of simulations per pipeline
+MAX_ITER      =   10                 # max number of simulation steps
+LIMIT         =  100 * 1000 * 1000   # max intermediate result
 
 
 # we want to change pipelines on the fly, thus want to keep track
@@ -84,7 +71,7 @@ def get_stage_1(sandbox, pname):
 def get_stage_2(sandbox, pname, iteration=0):
     '''
     The second pipeline stage is again the simulation stage: it consists of
-    `SIMULATION_SIZE` tasks which compute the n'th power of the input data (last
+    `N_SIMULATIONS` tasks which compute the n'th power of the input data (last
     line of `random.txt`).  Another `post_exec` callback will, after all tasks
     are done, evaluate the intermediate data and decide how to continue:
 
@@ -92,22 +79,25 @@ def get_stage_2(sandbox, pname, iteration=0):
         - if iteration > MAX_ITER: abort     (add stage 3)
         - else                   : continue  (add stage 2 again)
 
-    For simplicity we keep track of iterations within the stage instances
-    (`stage.iteration`).
+    For simplicity we keep track of iterations within the pipeline instances
+    (`pipeline.iteration`).  A 'proper' implementation may want to create
+    a subclass from `re.Pipeline` which hosts that counter as `self._iteration`.
     '''
 
-    # this is the pseudo model we iterate on the second stage
-    model = 'echo "($(tail -1 random.txt) + %(iteration)d) ^ %(ensemble_id)d"' \
-            '| bc'
+    pipeline = ensemble[pname]
 
-    # second stage: create SIMULATION_SIZE tasks to compute the n'th power
+    # this is the pseudo simulation we iterate on the second stage
+    sim = 'echo "($(tail -qn 1 random.txt) + %(iteration)d) ^ %(ensemble_id)d"'\
+          '| bc'
+
+    # second stage: create N_SIMULATIONS tasks to compute the n'th power
     s2 = re.Stage()
-    s2.iteration = iteration
-    for i in range(SIMULATION_SIZE):
+    pipeline.iteration = iteration                                # type: ignore
+    for i in range(N_SIMULATIONS):
         t2 = re.Task()
         t2.executable = '/bin/sh'
-        t2.arguments  = ['-c', model % {'iteration'  : iteration,
-                                        'ensemble_id': i}]
+        t2.arguments  = ['-c', sim % {'iteration'  : iteration,
+                                      'ensemble_id': i}]
         t2.stdout     = 'power.%03d.txt' % i
         t2.sandbox    = sandbox
         t2.download_output_data = ['%s > %s.%s' % (t2.stdout, pname, t2.stdout)]
@@ -119,6 +109,7 @@ def get_stage_2(sandbox, pname, iteration=0):
     def post_exec(stage, pname):
 
         pipeline = ensemble[pname]
+        iteration = pipeline.iteration
 
         # continue to iterate - check intermediate data
         result = 0
@@ -127,20 +118,20 @@ def get_stage_2(sandbox, pname, iteration=0):
             result += int(data.split()[-1])
 
         if result > LIMIT:
-            # re-seed the pipeline (inject a new stages 1 and 2)
-            print(pipeline.name, 'seed  %3d - %10d' % (stage.iteration, result))
+            # simulation diverged = reseed the pipeline (add new stages 1 and 2)
+            print(pipeline.name, 'seed  %3d - %10d' % (iteration, result))
             pipeline.add_stages(get_stage_1(sandbox, pname))
             pipeline.add_stages(get_stage_2(sandbox, pname))
 
-        elif stage.iteration > MAX_ITER:
+        elif iteration > MAX_ITER:
             # iteration limit reached, discontinue pipeline (add final stage 3)
-            print(pipeline.name, 'break %3d - %10d' % (stage.iteration, result))
+            print(pipeline.name, 'break %3d - %10d' % (iteration, result))
             pipeline.add_stages(get_stage_3(sandbox, pname))
 
         else:
             # continue to iterate (increase the iteration counter)
-            print(pipeline.name, 'iter  %3d - %10d' % (stage.iteration, result))
-            pipeline.add_stages(get_stage_2(sandbox, pname, stage.iteration + 1))
+            print(pipeline.name, 'iter  %3d - %10d' % (iteration, result))
+            pipeline.add_stages(get_stage_2(sandbox, pname, iteration + 1))
 
     # --------------------------------------------------------------------------
     s2.post_exec = functools.partial(post_exec, s2, pname)
@@ -161,7 +152,7 @@ def get_stage_3(sandbox, pname):
     # third stage: compute sum over all powers
     t3 = re.Task()
     t3.executable = '/bin/sh'
-    t3.arguments  = ['-c', 'cat power.*.txt | paste -sd+ | bc']
+    t3.arguments  = ['-c', 'tail -qn 1 power.*.txt | paste -sd+ | bc']
     t3.stdout     = 'sum.txt'
     t3.sandbox    = sandbox
     t3.download_output_data = ['%s > %s.%s' % (t3.stdout, pname, t3.stdout)]
@@ -201,20 +192,23 @@ def generate_pipeline(pname):
     of iterations and expect the result to be biased toward smaller seeds.
     '''
 
+    # create and register pipeline
+    p = re.Pipeline()
+    p.name = pname
+    ensemble[pname] = p
+
     # all tasks in this pipeline share the same sandbox
     sandbox = pname
 
     # first stage: create 1 task to generate a random seed number
     s1 = get_stage_1(sandbox, pname)
 
-    # second stage: create SIMULATION_SIZE tasks to compute the n'th power
+    # second stage: create N_SIMULATIONS tasks to compute the n'th power
     # of that number (this stage runs at least once)
     s2 = get_stage_2(sandbox, pname)
 
     # the third stage is added dynamically after convergence, so we return
     # the pipeline with the initial two stages
-    p = re.Pipeline()
-    p.name = pname
     p.add_stages(s1)
     p.add_stages(s2)
 
@@ -237,9 +231,9 @@ if __name__ == '__main__':
     }
 
     # create an ensemble of n simulation pipelines
-    for cnt in range(ENSEMBLE_SIZE):
+    for cnt in range(N_PIPELINES):
         pname = 'pipe.%03d' % cnt
-        ensemble[pname] = generate_pipeline(pname)
+        generate_pipeline(pname)
 
     # assign the workflow to the application manager, then
     # run the ensemble and wait for completion
@@ -247,7 +241,7 @@ if __name__ == '__main__':
     appman.run()
 
     # check results which were staged back
-    for cnt in range(ENSEMBLE_SIZE):
+    for cnt in range(N_PIPELINES):
         result = int(open('pipe.%03d.sum.txt' % cnt).read())
         print('%18d - %10d' % (cnt, result))
 
