@@ -64,7 +64,7 @@ class Task(object):
                                  'process_type'        : None,
                                  'threads_per_process' : 0,
                                  'thread_type'         : None}
-        
+
 
 
         # Data staging attributes
@@ -336,7 +336,7 @@ class Task(object):
         '''
 
         return self._lfs_per_process
-    
+
 
     @property
     def mem_per_process(self):
@@ -859,7 +859,7 @@ class Task(object):
             raise ree.TypeError(expected_type=int, actual_type=type(value))
 
         self._lfs_per_process = value
-    
+
 
     @mem_per_process.setter
     def mem_per_process(self, value):
@@ -868,7 +868,7 @@ class Task(object):
             raise ree.TypeError(expected_type=int, actual_type=type(value))
 
         self._mem_per_process = value
-        
+
 
     @upload_input_data.setter
     def upload_input_data(self, value):
