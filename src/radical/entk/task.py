@@ -55,6 +55,7 @@ class Task(object):
         self._stage_on_error = False
 
         self._lfs_per_process = 0
+        self._mem_per_process = 0
         self._cpu_reqs        = {'processes'           : 1,
                                  'process_type'        : None,
                                  'threads_per_process' : 1,
@@ -63,6 +64,8 @@ class Task(object):
                                  'process_type'        : None,
                                  'threads_per_process' : 0,
                                  'thread_type'         : None}
+        
+
 
         # Data staging attributes
         self._upload_input_data    = list()
@@ -333,6 +336,15 @@ class Task(object):
         '''
 
         return self._lfs_per_process
+    
+
+    @property
+    def mem_per_process(self):
+        '''
+        Set the amount of memory space required by the task
+        '''
+
+        return self._mem_per_process
 
 
     @property
@@ -847,7 +859,16 @@ class Task(object):
             raise ree.TypeError(expected_type=int, actual_type=type(value))
 
         self._lfs_per_process = value
+    
 
+    @mem_per_process.setter
+    def mem_per_process(self, value):
+
+        if not isinstance(value, int):
+            raise ree.TypeError(expected_type=int, actual_type=type(value))
+
+        self._mem_per_process = value
+        
 
     @upload_input_data.setter
     def upload_input_data(self, value):
@@ -1040,6 +1061,8 @@ class Task(object):
             'cpu_reqs'             : self.cpu_reqs,
             'gpu_reqs'             : self.gpu_reqs,
             'lfs_per_process'      : self._lfs_per_process,
+            'mem_per_process'      : self._mem_per_process,
+
 
             'upload_input_data'    : self._upload_input_data,
             'copy_input_data'      : self._copy_input_data,
