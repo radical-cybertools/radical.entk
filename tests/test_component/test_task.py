@@ -54,6 +54,7 @@ class TestTask(TestCase):
         self.assertIsNone(t._gpu_reqs['thread_type'])
 
         self.assertEqual(t._lfs_per_process, 0)
+        self.assertEqual(t._mem_per_process, 0)
         self.assertEqual(t._sandbox, '')
         self.assertIsInstance(t._upload_input_data, list)
         self.assertIsInstance(t._copy_input_data, list)
@@ -441,6 +442,7 @@ class TestTask(TestCase):
         t._gpu_reqs['threads_per_process'] = 0
         t._gpu_reqs['thread_type'] = 'POSIX'
         t._lfs_per_process = 0
+        t._mem_per_process = 0
         t._sandbox = ''
         t._upload_input_data = list()
         t._copy_input_data = list()
@@ -481,6 +483,7 @@ class TestTask(TestCase):
                                       'gpu_threads': 0,
                                       'gpu_thread_type': 'POSIX'},
                          'lfs_per_process': 0,
+                         'mem_per_process': 0,
                          'upload_input_data': [],
                          'copy_input_data': [],
                          'link_input_data': [],
