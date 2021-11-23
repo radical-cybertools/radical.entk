@@ -184,11 +184,14 @@ class ResourceManager(Base_ResourceManager):
                     if len(data) > 1:
                         shared_data.append({'source': data[0].strip(),
                                             'target': data[1].strip(),
-                                            'action': rp.TRANSFER})
+                                            'action': rp.TRANSFER,
+                                            'flags' : rp.RECURSIVE})
                     else:
+                        data[0] = data[0].rstrip('/')
                         shared_data.append({'source': data[0].strip(),
-                                            'target': data[0].split('/')[-1].strip(),
-                                            'action': rp.TRANSFER})
+                                            'target': os.path.basename(data[0]),
+                                            'action': rp.TRANSFER,
+                                            'flags' : rp.RECURSIVE})
                 self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
