@@ -8,7 +8,7 @@ import os
 import json
 import pika
 import time
-import threading
+import threading     as mt
 
 import radical.utils as ru
 
@@ -513,6 +513,7 @@ class WFprocessor(object):
             except Exception as ex:
                 self._logger.warning('mq_connection close failed, %s' % ex)
             self._logger.debug('closed mq_connection')
+            self.terminate_processor()
 
 
     # --------------------------------------------------------------------------
@@ -531,19 +532,19 @@ class WFprocessor(object):
             self._logger.info('Starting WFprocessor')
             self._prof.prof('wfp_start', uid=self._uid)
 
-            self._enqueue_thread_terminate = threading.Event()
-            self._dequeue_thread_terminate = threading.Event()
+            self._enqueue_thread_terminate = mt.Event()
+            self._dequeue_thread_terminate = mt.Event()
 
             # Start dequeue thread
-            self._dequeue_thread = threading.Thread(target=self._dequeue,
-                                                    name='dequeue-thread')
+            self._dequeue_thread = mt.Thread(target=self._dequeue,
+                                             name='dequeue-thread')
             self._logger.info('Starting dequeue-thread')
             self._prof.prof('starting dequeue-thread', uid=self._uid)
             self._dequeue_thread.start()
 
             # Start enqueue thread
-            self._enqueue_thread = threading.Thread(target=self._enqueue,
-                                                    name='enqueue-thread')
+            self._enqueue_thread = mt.Thread(target=self._enqueue,
+                                             name='enqueue-thread')
             self._logger.info('Starting enqueue-thread')
             self._prof.prof('starting enqueue-thread', uid=self._uid)
             self._enqueue_thread.start()
@@ -568,12 +569,15 @@ class WFprocessor(object):
 
         try:
 
+            tid = mt.current_thread().ident
+
             if self._enqueue_thread:
 
                 if not self._enqueue_thread_terminate.is_set():
                     self._logger.info('Terminating enqueue-thread')
                     self._enqueue_thread_terminate.set()
-                    self._enqueue_thread.join()
+                    if tid != self._enqueue_thread.ident:
+                        self._enqueue_thread.join()
                     self._enqueue_thread = None
 
             if self._dequeue_thread:
@@ -581,7 +585,8 @@ class WFprocessor(object):
                 if not self._dequeue_thread_terminate.is_set():
                     self._logger.info('Terminating dequeue-thread')
                     self._dequeue_thread_terminate.set()
-                    self._dequeue_thread.join()
+                    if tid != self._dequeue_thread.ident:
+                      self._dequeue_thread.join()
                     self._dequeue_thread = None
 
             self._logger.info('WFprocessor terminated')

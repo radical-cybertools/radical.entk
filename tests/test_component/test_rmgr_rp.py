@@ -160,10 +160,12 @@ class TestBase(TestCase):
         self.assertEqual(rmgr._session, 'test_session')
         self.assertEqual(stage_ins[0], [{'action': 'Transfer',
                                          'source': 'test/file1.txt',
-                                         'target': 'file1.txt'},
+                                         'target': 'file1.txt',
+                                         'flags' : 2},
                                         {'action': 'Transfer',
                                          'source': 'file2.txt',
-                                         'target': 'file2.txt'}
+                                         'target': 'file2.txt',
+                                         'flags' : 2}
                                         ])
 
 

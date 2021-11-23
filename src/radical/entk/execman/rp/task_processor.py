@@ -519,6 +519,9 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         if task.lfs_per_process:
             td.lfs_per_process = task.lfs_per_process
 
+        if task.mem_per_process:
+            td.mem_per_process = task.mem_per_process
+
         if task.stdout: td.stdout = task.stdout
         if task.stderr: td.stderr = task.stderr
 

@@ -16,7 +16,8 @@ import shutil
 
 import subprocess as sp
 
-from setuptools import setup, Command, find_packages
+
+from setuptools import setup, Command, find_namespace_packages
 
 
 # ------------------------------------------------------------------------------
@@ -90,7 +91,7 @@ def get_version(_mod_root):
         _version_detail = re.sub('[/ ]+', '-', _version_detail)
         _version_detail = re.sub('[^a-zA-Z0-9_+@.-]+', '', _version_detail)
 
-        if  ret            !=  0  or \
+        if ret              !=  0  or \
             _version_detail == '@' or \
             'git-error'      in _version_detail or \
             'not-a-git-repo' in _version_detail or \
@@ -103,49 +104,50 @@ def get_version(_mod_root):
             _version = _version_base
 
         # make sure the version files exist for the runtime version inspection
-        path = '%s/%s' % (src_root, _mod_root)
-        with open(path + '/VERSION', 'w') as f:
-            f.write(_version + '\n')
+        _path = '%s/%s' % (src_root, _mod_root)
+        with open(_path + '/VERSION', 'w') as f:
+            f.write(_version_base + '\n')
+            f.write(_version      + '\n')
 
-        _sdist_name = '%s-%s.tar.gz' % (name, _version)
-        _sdist_name = _sdist_name.replace('/', '-')
-        _sdist_name = _sdist_name.replace('@', '-')
-        _sdist_name = _sdist_name.replace('#', '-')
-        _sdist_name = _sdist_name.replace('_', '-')
+        _sdist_name = '%s-%s.tar.gz' % (name, _version_base)
+      # _sdist_name = _sdist_name.replace('/', '-')
+      # _sdist_name = _sdist_name.replace('@', '-')
+      # _sdist_name = _sdist_name.replace('#', '-')
+      # _sdist_name = _sdist_name.replace('_', '-')
 
         if '--record'    in sys.argv or \
            'bdist_egg'   in sys.argv or \
            'bdist_wheel' in sys.argv    :
-          # pip install stage 2 or easy_install stage 1
-          #
-          # pip install will untar the sdist in a tmp tree.  In that tmp
-          # tree, we won't be able to derive git version tags -- so we pack the
-          # formerly derived version as ./VERSION
-            shutil.move('VERSION', 'VERSION.bak')            # backup version
-            shutil.copy('%s/VERSION' % path, 'VERSION')      # use full version
-            os.system  ('python3 setup.py sdist')             # build sdist
+            # pip install stage 2 or easy_install stage 1
+            #
+            # pip install will untar the sdist in a tmp tree.  In that tmp
+            # tree, we won't be able to derive git version tags -- so we pack
+            # the formerly derived version as ./VERSION
+            shutil.move("VERSION", "VERSION.bak")              # backup
+            shutil.copy("%s/VERSION" % _path, "VERSION")       # version to use
+            os.system  ("python3 setup.py sdist")               # build sdist
             shutil.copy('dist/%s' % _sdist_name,
                         '%s/%s'   % (_mod_root, _sdist_name))  # copy into tree
-            shutil.move('VERSION.bak', 'VERSION')            # restore version
+            shutil.move('VERSION.bak', 'VERSION')              # restore version
 
-        with open(path + '/SDIST', 'w') as f:
+        with open(_path + '/SDIST', 'w') as f:
             f.write(_sdist_name + '\n')
 
-        return _version_base, _version_detail, _sdist_name
+        return _version_base, _version_detail, _sdist_name, _path
 
     except Exception as e:
         raise RuntimeError('Could not extract/set version: %s' % e) from e
 
 
 # ------------------------------------------------------------------------------
-# check python version. we need >= 3.6
-if  sys.hexversion <= 0x03050000:
-    raise RuntimeError('%s requires Python 3.6 or higher' % name)
+# check python version, should be >= 3.6
+if sys.hexversion < 0x03060000:
+    raise RuntimeError('ERROR: %s requires Python 3.6 or newer' % name)
 
 
 # ------------------------------------------------------------------------------
 # get version info -- this will create VERSION and srcroot/VERSION
-version, version_detail, sdist_name = get_version(mod_root)
+version, version_detail, sdist_name, path = get_version(mod_root)
 
 
 # ------------------------------------------------------------------------------
@@ -170,17 +172,12 @@ class RunTwine(Command):
 
 # ------------------------------------------------------------------------------
 #
-if  sys.hexversion <= 0x03050000:
-    raise RuntimeError('SETUP ERROR: %s requires Python 3.6 or higher' % name)
-
-
-# ------------------------------------------------------------------------------
-#
-df = list()
-df.append(('share/%s/examples/user_guide/' % name, glob.glob('examples/user_guide/*')))
-df.append(('share/%s/examples/simple/'     % name, glob.glob('examples/simple/*')))
-df.append(('share/%s/examples/advanced/'   % name, glob.glob('examples/advanced/*')))
-df.append(('share/%s/examples/analytics/'  % name, glob.glob('examples/analytics/*')))
+base = 'share/%s' % name
+df = [('%s/examples/user_guide/' % base, glob.glob('examples/user_guide/*')),
+      ('%s/examples/simple/'     % base, glob.glob('examples/simple/*')),
+      ('%s/examples/advanced/'   % base, glob.glob('examples/advanced/*')),
+      ('%s/examples/analytics/'  % base, glob.glob('examples/analytics/*'))
+]
 
 
 # ------------------------------------------------------------------------------
@@ -198,6 +195,7 @@ setup_args = {
     'url'                : 'https://www.github.com/radical-cybertools/radical.entk/',
     'license'            : 'MIT',
     'keywords'           : "ensemble workflow execution",
+    'python_requires'    : '>=3.6',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -213,11 +211,11 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'           : find_packages('src'),
+    'packages'           : find_namespace_packages('src', include=['radical.*']),
     'package_dir'        : {'': 'src'},
     'scripts'            : ['bin/radical-entk-version'],
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
-                                 'VERSION', 'CHANGES.md', 'SDIST', sdist_name]},
+                                 '*.md', 'VERSION', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
     'install_requires'   : ['radical.utils',
                             'radical.pilot',
@@ -233,6 +231,17 @@ setup_args = {
                            ],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
+  # 'build_sphinx'       : {
+  #     'source-dir'     : 'docs/',
+  #     'build-dir'      : 'docs/build',
+  #     'all_files'      : 1,
+  # },
+  # 'upload_sphinx'      : {
+  #     'upload-dir'     : 'docs/build/html',
+  # },
+    # This copies the contents of the examples/ dir under
+    # sys.prefix/share/$name
+    # It needs the MANIFEST.in entries to work.
     'data_files'         : df,
     'cmdclass'           : {'upload': RunTwine},
 }
@@ -243,6 +252,9 @@ setup_args = {
 setup(**setup_args)
 
 os.system('rm -rf src/%s.egg-info' % name)
+# os.system('rm -rf %s/VERSION'      % path)
+# os.system('rm -rf %s/VERSION.git'  % path)
+# os.system('rm -rf %s/SDIST'        % path)
 
 
 # ------------------------------------------------------------------------------
