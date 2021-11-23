@@ -8,9 +8,10 @@ import json
 import pika
 import time
 
-import threading     as mt
+import threading       as mt
+import multiprocessing as mp
 
-import radical.utils as ru
+import radical.utils   as ru
 
 from ..           import exceptions as ree
 from ..           import states
@@ -127,6 +128,7 @@ class AppManager(object):
         self._terminate_sync  = mt.Event()
         self._resubmit_failed = False
         self._port            = int(self._port)
+        self._term            = mp.Event()
 
         # Setup rabbitmq queues
         self._setup_mqs()
@@ -486,6 +488,8 @@ class AppManager(object):
 
         self._prof.prof('term_start', uid=self._uid)
 
+        self._term.set()
+
         # Terminate threads in following order: wfp, helper, synchronizer
         if self._wfp:
             self._logger.info('Terminating WFprocessor')
@@ -733,6 +737,9 @@ class AppManager(object):
         rts_final_states = self._rmgr.get_completed_states()
 
         while active_pipe_count and self._cur_attempt <= self._reattempts:
+
+            if self._term.is_set():
+                break
 
             for pipe in self._workflow:
 

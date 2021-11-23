@@ -269,4 +269,6 @@ class TestTask(TestCase):
         with self.assertRaises(ree.ValueError):
             task.state_history = ['WRONG_STATE_NAME']
 
+
 # ------------------------------------------------------------------------------
+

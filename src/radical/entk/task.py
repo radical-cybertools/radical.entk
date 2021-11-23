@@ -225,6 +225,7 @@ class Task(ru.Munch):
     def to_dict(self):
         return self.as_dict()
 
+
     # --------------------------------------------------------------------------
     #
     def from_dict(self, d):

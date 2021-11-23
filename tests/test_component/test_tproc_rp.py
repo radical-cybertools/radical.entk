@@ -164,6 +164,7 @@ class TestBase(TestCase):
         mocked_TaskDescription.gpu_process_type = None
         mocked_TaskDescription.gpu_thread_type  = None
         mocked_TaskDescription.lfs_per_process  = None
+        mocked_TaskDescription.mem_per_process  = None
         mocked_TaskDescription.stdout           = None
         mocked_TaskDescription.stderr           = None
         mocked_TaskDescription.input_staging    = None
@@ -192,6 +193,7 @@ class TestBase(TestCase):
         task.tags = None
 
         task.lfs_per_process = 235
+        task.mem_per_process = 128
         task.stderr = 'stderr'
         task.stdout = 'stdout'
         hash_table = {}
@@ -214,6 +216,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.gpu_process_type, 'MPI')
         self.assertEqual(test_td.gpu_thread_type, 'MPI')
         self.assertEqual(test_td.lfs_per_process, 235)
+        self.assertEqual(test_td.mem_per_process, 128)
         self.assertEqual(test_td.stdout, 'stdout')
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
@@ -249,6 +252,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.gpu_process_type, 'POSIX')
         self.assertEqual(test_td.gpu_thread_type, 'GPU_OpenMP')
         self.assertEqual(test_td.lfs_per_process, 235)
+        self.assertEqual(test_td.mem_per_process, 128)
         self.assertEqual(test_td.stdout, 'stdout')
         self.assertEqual(test_td.stderr, 'stderr')
         self.assertEqual(test_td.input_staging, 'inputs')
@@ -277,6 +281,7 @@ class TestBase(TestCase):
         test_cud.gpu_process_type = 'POSIX'
         test_cud.gpu_thread_type  = None
         test_cud.lfs_per_process  = 235
+        test_cud.mem_per_process  = 128
         test_cud.stdout           = 'stdout'
         test_cud.stderr           = 'stderr'
         test_cud.input_staging    = 'inputs'
@@ -322,6 +327,7 @@ class TestBase(TestCase):
         test_cud.gpu_process_type = 'POSIX'
         test_cud.gpu_thread_type  = None
         test_cud.lfs_per_process  = 235
+        test_cud.mem_per_process  = 128
         test_cud.stdout           = 'stdout'
         test_cud.stderr           = 'stderr'
         test_cud.input_staging    = 'inputs'
@@ -456,6 +462,7 @@ class TestBase(TestCase):
         mocked_TaskDescription.gpu_process_type = None
         mocked_TaskDescription.gpu_thread_type  = None
         mocked_TaskDescription.lfs_per_process  = None
+        mocked_TaskDescription.mem_per_process  = None
         mocked_TaskDescription.stdout           = None
         mocked_TaskDescription.stderr           = None
         mocked_TaskDescription.input_staging    = None
@@ -511,6 +518,7 @@ class TestBase(TestCase):
         task.tags = None
 
         task.lfs_per_process = 235
+        task.mem_per_process = 128
         task.stderr = 'stderr'
         task.stdout = 'stdout'
         input_list = [{'source': 'test_file',
@@ -565,6 +573,7 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.gpu_process_type, 'POSIX')
         self.assertEqual(test_cud.gpu_thread_type, 'GPU_OpenMP')
         self.assertEqual(test_cud.lfs_per_process, 235)
+        self.assertEqual(test_cud.mem_per_process, 128)
         self.assertEqual(test_cud.stdout, 'stdout')
         self.assertEqual(test_cud.stderr, 'stderr')
         self.assertEqual(test_cud.input_staging, input_list)
