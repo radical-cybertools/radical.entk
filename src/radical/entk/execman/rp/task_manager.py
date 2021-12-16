@@ -395,35 +395,15 @@ class TaskManager(Base_TaskManager):
 
                     task = Task()
                     task.from_dict(msg)
-                    task_fits_res = check_resource_reqs(task)
-                    if task_fits_res:
-                        load_placeholder(task)
-                        bulk_tds.append(create_td_from_task(
-                                            task, placeholders,
-                                            self._submitted_tasks, pkl_path,
-                                            self._sid, self._log, self._prof))
+                    load_placeholder(task)
+                    bulk_tds.append(create_td_from_task(
+                                        task, placeholders,
+                                        self._submitted_tasks, pkl_path,
+                                        self._sid, self._log, self._prof))
 
-                        self._advance(task, 'Task', states.SUBMITTING,
-                                      mq_channel, rmq_conn_params,
-                                      '%s-tmgr-to-sync' % self._sid)
-                    else:
-                        self._advance(task, 'Task', states.FAILED,
-                                      mq_channel, rmq_conn_params,
-                                      '%s-cb-to-sync' % self._sid)
-                        load_placeholder(task)
-
-                        task_as_dict = json.dumps(task.to_dict())
-                        try:
-                            mq_channel.basic_publish(exchange='',
-                                              routing_key='%s-completedq-1' % self._sid,
-                                              body=task_as_dict)
-                        except (pika.exceptions.ConnectionClosed,
-                                pika.exceptions.ChannelClosed):
-                            mq_connection = pika.BlockingConnection(rmq_conn_params)
-                            mq_channel = mq_connection.channel()
-                            mq_channel.basic_publish(exchange='',
-                                              routing_key='%s-completedq-1' % self._sid,
-                                              body=task_as_dict)
+                    self._advance(task, 'Task', states.SUBMITTING,
+                                  mq_channel, rmq_conn_params,
+                                  '%s-tmgr-to-sync' % self._sid)
                 if bulk_tds:
                     self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
