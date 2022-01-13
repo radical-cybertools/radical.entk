@@ -44,6 +44,7 @@ class TestTask(TestCase):
         self.assertIsNone(t.gpu_reqs['gpu_thread_type'])
 
         self.assertEqual(t.lfs_per_process, 0)
+        self.assertEqual(t.mem_per_process, 0)
         self.assertEqual(t.sandbox, '')
         self.assertIsInstance(t.upload_input_data, list)
         self.assertIsInstance(t.copy_input_data, list)
@@ -209,10 +210,10 @@ class TestTask(TestCase):
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
             'state'     : res.SUBMITTING,
-            'cpu_reqs'  : {'cpu_processes'    : 1,
-                            'cpu_process_type': None,
-                            'cpu_threads'     : 1,
-                            'cpu_thread_type' : None}}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None}}
         task = Task()
         task.from_dict(input_dict)
 
@@ -258,6 +259,7 @@ class TestTask(TestCase):
                                      'gpu_threads'     : 0,
                                      'gpu_thread_type' : 'POSIX'},
             'lfs_per_process'     : 0,
+            'mem_per_process'     : 0,
             'upload_input_data'   : [],
             'copy_input_data'     : [],
             'link_input_data'     : [],
