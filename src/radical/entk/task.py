@@ -1,5 +1,9 @@
-__copyright__ = 'Copyright 2014-2021, The RADICAL-Cybertools Team'
+# pylint: disable=protected-access
+
+__copyright__ = 'Copyright 2014-2022, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
+
+import warnings
 
 from string import punctuation
 
@@ -12,7 +16,36 @@ from . import states     as res
 
 # ------------------------------------------------------------------------------
 #
-class CpuReqs(ru.Munch):
+class ReqsMixin:
+
+    # --------------------------------------------------------------------------
+    #
+    def _correct_deprecated_key(self, k):
+        if k in self._deprecated_keys:
+            warnings.warn('Key "%s" is obsolete, new key ' % k +
+                          '"%s" will be used' % self._deprecated_keys[k],
+                          DeprecationWarning, stacklevel=2)
+            k = self._deprecated_keys[k]
+        return k
+
+    # --------------------------------------------------------------------------
+    #
+    def __setitem__(self, k, v):
+        k = self._correct_deprecated_key(k)
+        super().__setitem__(k, v)
+
+    # --------------------------------------------------------------------------
+    #
+    def __setattr__(self, k, v):
+        k = self._correct_deprecated_key(k)
+        super().__setattr__(k, v)
+
+
+# ------------------------------------------------------------------------------
+#
+class CpuReqs(ReqsMixin, ru.Munch):
+
+    _check = True
 
     _schema = {
         'cpu_processes'   : int,
@@ -28,10 +61,21 @@ class CpuReqs(ru.Munch):
         'cpu_thread_type' : None
     }
 
+    # deprecated keys will cause a deprecation warning (ReqsMixin), and
+    # correct keys, according to CpuReqs schema, will be provided
+    _deprecated_keys = {
+        'processes'          : 'cpu_processes',
+        'process_type'       : 'cpu_process_type',
+        'threads_per_process': 'cpu_threads',
+        'thread_type'        : 'cpu_thread_type'
+    }
+
 
 # ------------------------------------------------------------------------------
 #
-class GpuReqs(ru.Munch):
+class GpuReqs(ReqsMixin, ru.Munch):
+
+    _check = True
 
     _schema = {
         'gpu_processes'   : int,
@@ -45,6 +89,15 @@ class GpuReqs(ru.Munch):
         'gpu_process_type': None,
         'gpu_threads'     : 1,
         'gpu_thread_type' : None
+    }
+
+    # deprecated keys will cause a deprecation warning (ReqsMixin), and
+    # correct keys, according to GpuReqs schema, will be provided
+    _deprecated_keys = {
+        'processes'          : 'gpu_processes',
+        'process_type'       : 'gpu_process_type',
+        'threads_per_process': 'gpu_threads',
+        'thread_type'        : 'gpu_thread_type'
     }
 
 
@@ -64,7 +117,7 @@ class Task(ru.Munch):
     """
 
     _check = True
-    _uids  = list()
+    _uids  = []
 
     _schema = {
         'uid'                  : str,
@@ -98,26 +151,28 @@ class Task(ru.Munch):
         'parent_pipeline'      : {str: None}
     }
 
+    # guaranteed attributes with default non-initialized values
     _defaults = {
         'uid'                  : '',
         'name'                 : '',
-        'state'                : res.INITIAL,
+        'state'                : '',
+        'state_history'        : [],
         'executable'           : '',
-        'arguments'            : list(),
+        'arguments'            : [],
         'sandbox'              : '',
-        'pre_exec'             : list(),
-        'post_exec'            : list(),
-        'cpu_reqs'             : CpuReqs._defaults,
-        'gpu_reqs'             : GpuReqs._defaults,
+        'pre_exec'             : [],
+        'post_exec'            : [],
+        'cpu_reqs'             : CpuReqs(),
+        'gpu_reqs'             : GpuReqs(),
         'lfs_per_process'      : 0,
-        'upload_input_data'    : list(),
-        'copy_input_data'      : list(),
-        'link_input_data'      : list(),
-        'move_input_data'      : list(),
-        'copy_output_data'     : list(),
-        'link_output_data'     : list(),
-        'move_output_data'     : list(),
-        'download_output_data' : list(),
+        'upload_input_data'    : [],
+        'copy_input_data'      : [],
+        'link_input_data'      : [],
+        'move_input_data'      : [],
+        'copy_output_data'     : [],
+        'link_output_data'     : [],
+        'move_output_data'     : [],
+        'download_output_data' : [],
         'stdout'               : '',
         'stderr'               : '',
         'stage_on_error'       : False,
@@ -133,18 +188,22 @@ class Task(ru.Munch):
     #
     def __init__(self, from_dict=None):
 
-        if from_dict and not isinstance(from_dict, dict):
+        from_dict = from_dict or {}
+        if not isinstance(from_dict, dict):
             raise ree.TypeError(expected_type=dict,
                                 actual_type=type(from_dict))
 
-        super().__init__(from_dict=from_dict)
+        super().__init__()
 
-        if not self.uid:
-            self.uid = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+        if not from_dict.get('uid'):
+            self['uid'] = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+        self['state'] = res.INITIAL
+
+        self.update(from_dict)
 
     # --------------------------------------------------------------------------
     #
-    def _post_setter(self, k, v):
+    def _post_verifier(self, k, v):
 
         if not v:
             return
@@ -153,25 +212,23 @@ class Task(ru.Munch):
             invalid_symbols = punctuation.replace('.', '')
             if any(symbol in v for symbol in invalid_symbols):
                 raise ree.EnTKError(
-                    'Incorrect symbol for attribute "%s" of object %s. %s' %
-                    (k, self.uid, NAME_MESSAGE))
+                    'Incorrect symbol for attribute "%s" (%s). %s' %
+                    (k, v, NAME_MESSAGE))
 
         elif k == 'state':
             if v not in res._task_state_values:
                 raise ree.ValueError(
-                    obj=self.uid,
+                    obj=self['uid'],
                     attribute=k,
                     expected_value=list(res._task_state_values),
                     actual_value=v)
-            if 'state_history' not in self:
-                self['state_history'] = []
             self['state_history'].append(v)
 
         elif k == 'state_history':
             for _v in v:
                 if _v not in res._task_state_values:
                     raise ree.ValueError(
-                        obj=self.uid,
+                        obj=self['uid'],
                         attribute='state_history element',
                         expected_value=list(res._task_state_values),
                         actual_value=_v)
@@ -180,19 +237,20 @@ class Task(ru.Munch):
             if list(v) != ['colocate']:
                 raise ree.EnTKError(
                     'Incorrect structure for attribute "%s" of object %s' %
-                    (k, self.uid))
+                    (k, self['uid']))
 
     # --------------------------------------------------------------------------
     #
-    def __setitem__(self, k, v):
-        super().__setitem__(k, v)
-        self._post_setter(k, v)
+    def _verify_setter(self, k, v):
+        v = super()._verify_setter(k, v)
+        self._post_verifier(k, v)
+        return v
 
     # --------------------------------------------------------------------------
     #
-    def __setattr__(self, k, v):
-        super().__setattr__(k, v)
-        self._post_setter(k, v)
+    def _verify(self):
+        for k, v in self.items():
+            self._post_verifier(k, v)
 
     # --------------------------------------------------------------------------
     #
@@ -209,22 +267,20 @@ class Task(ru.Munch):
 
         # TODO: cache
 
-        p_elem = self.parent_pipeline.get('name')
-        s_elem = self.parent_stage.get('name')
-        t_elem = self.name
+        p_elem = self['parent_pipeline'].get('name')
+        s_elem = self['parent_stage'].get('name')
+        t_elem = self['name']
 
-        if not p_elem: p_elem = self.parent_pipeline['uid']
-        if not s_elem: s_elem = self.parent_stage['uid']
-        if not t_elem: t_elem = self.uid
+        if not p_elem: p_elem = self['parent_pipeline']['uid']
+        if not s_elem: s_elem = self['parent_stage']['uid']
+        if not t_elem: t_elem = self['uid']
 
         return '%s.%s.%s' % (p_elem, s_elem, t_elem)
-
 
     # --------------------------------------------------------------------------
     #
     def to_dict(self):
         return self.as_dict()
-
 
     # --------------------------------------------------------------------------
     #
@@ -233,7 +289,7 @@ class Task(ru.Munch):
         self.update(d)
         if 'state' in d:
             # avoid adding state to state history
-            del self.state_history[-1]
+            del self['state_history'][-1]
 
     # --------------------------------------------------------------------------
     #
@@ -243,19 +299,19 @@ class Task(ru.Munch):
         executable has been specified for the task.
         """
 
-        if self.uid in Task._uids:
-            raise ree.EnTKError(msg='Task ID %s already exists' % self.uid)
+        if self['uid'] in Task._uids:
+            raise ree.EnTKError(msg='Task ID %s already exists' % self['uid'])
         else:
-            Task._uids.append(self.uid)
+            Task._uids.append(self['uid'])
 
-        if self.state is not res.INITIAL:
-            raise ree.ValueError(obj=self.uid,
+        if self['state'] is not res.INITIAL:
+            raise ree.ValueError(obj=self['uid'],
                                  attribute='state',
                                  expected_value=res.INITIAL,
-                                 actual_value=self.state)
+                                 actual_value=self['state'])
 
-        if not self.executable:
-            raise ree.MissingError(obj=self.uid,
+        if not self['executable']:
+            raise ree.MissingError(obj=self['uid'],
                                    missing_attribute='executable')
 
 # ------------------------------------------------------------------------------

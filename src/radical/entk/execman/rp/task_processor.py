@@ -178,7 +178,7 @@ def resolve_arguments(args, placeholders, logger):
 def resolve_tags(task, parent_pipeline_name, placeholders):
 
     # entk only handles co_location tags.  If tags are given as strings, they
-    # get translated into `{'colocation': '<tag>'}`.  Tags passed as dictionaies
+    # get translated into `{'colocate': '<tag>'}`.  Tags passed as dictionaries
     # are checked to conform with above form.
     #
     # In both cases, the tag string is expanded with the given placeholders.

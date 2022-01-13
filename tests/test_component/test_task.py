@@ -1,10 +1,12 @@
 # pylint: disable=protected-access,unused-argument,no-value-for-parameter
 
-__copyright__ = 'Copyright 2020-2021, The RADICAL-Cybertools Team'
+__copyright__ = 'Copyright 2020-2022, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
+import radical.entk.exceptions as ree
+import radical.entk.states     as res
+
 from radical.entk.task import Task
-from radical.entk import states, exceptions as ree
 
 from unittest import mock, TestCase
 
@@ -22,13 +24,16 @@ class TestTask(TestCase):
         self.assertTrue(t.uid.startswith('task.'))
         self.assertEqual(t.name, '')
         self.assertIsNone(t.rts_uid)
-        self.assertEqual(t.state, states.INITIAL)
-        self.assertEqual(t.state_history, [states.INITIAL])
+        self.assertEqual(t.state, res.INITIAL)
+        self.assertEqual(t.state_history, [res.INITIAL])
         self.assertEqual(t.executable, '')
         self.assertIsInstance(t.arguments, list)
         self.assertIsInstance(t.pre_exec, list)
         self.assertIsInstance(t.post_exec, list)
 
+        # instance's attribute(s) access(es)
+        self.assertEqual(t.cpu_reqs.cpu_processes, 1)
+        # instance's attribute and item accesses
         self.assertEqual(t.cpu_reqs['cpu_processes'], 1)
         self.assertIsNone(t.cpu_reqs['cpu_process_type'])
         self.assertEqual(t.cpu_reqs['cpu_threads'], 1)
@@ -69,19 +74,34 @@ class TestTask(TestCase):
                     'cpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'cpu_reqs': cpu_reqs})
-
         self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
 
+        # obsolete names for `cpu_reqs` keys
+        cpu_reqs_obsolete_keys = {'processes'          : 2,
+                                  'process_type'       : None,
+                                  'threads_per_process': 1,
+                                  'thread_type'        : 'OpenMP'}
+
+        task = Task(from_dict={'cpu_reqs': cpu_reqs_obsolete_keys})
+        self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
+
+        threads_per_process = 64
+        task.cpu_reqs.threads_per_process = threads_per_process
+        self.assertEqual(task.cpu_reqs.cpu_threads, threads_per_process)
+
         with self.assertRaises(TypeError):
+            # incorrect type for `cpu_reqs` attribute
             task.cpu_reqs = list()
 
         with self.assertRaises(TypeError):
+            # incorrect type of `cpu_reqs.cpu_processes` attribute
             task.cpu_reqs = {'cpu_processes'   : 'a',
                              'cpu_process_type': None,
                              'cpu_threads'     : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
         with self.assertRaises(TypeError):
+            # incorrect type of `cpu_reqs.cpu_threads` attribute
             task.cpu_reqs = {'cpu_processes'   : 1,
                              'cpu_process_type': None,
                              'cpu_threads'     : 'a',
@@ -97,8 +117,20 @@ class TestTask(TestCase):
                     'gpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'gpu_reqs': gpu_reqs})
-
         self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+
+        # obsolete names for `gpu_reqs` keys
+        gpu_reqs_obsolete_keys = {'processes'          : 2,
+                                  'process_type'       : None,
+                                  'threads_per_process': 1,
+                                  'thread_type'        : 'OpenMP'}
+
+        task = Task(from_dict={'gpu_reqs': gpu_reqs_obsolete_keys})
+        self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+
+        threads_per_process = 64
+        task.gpu_reqs.threads_per_process = threads_per_process
+        self.assertEqual(task.gpu_reqs.gpu_threads, threads_per_process)
 
         with self.assertRaises(TypeError):
             task.gpu_reqs = list()
@@ -130,9 +162,6 @@ class TestTask(TestCase):
         task.uid = 'test.0001'
         self.assertEqual(task.uid, 'test.0001')
 
-        with self.assertRaises(TypeError):
-            task.uid = 1
-
         with self.assertRaises(ree.EnTKError):
             task.uid = 'test:0000'
 
@@ -161,14 +190,14 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'cpu_reqs'  : {'cpu_processes'          : 1,
-                           'cpu_process_type'       : None,
-                           'cpu_threads': 1,
-                           'cpu_thread_type'        : None},
-            'gpu_reqs'  : {'gpu_processes'          : 0,
-                           'gpu_process_type'       : None,
-                           'gpu_threads': 0,
-                           'gpu_thread_type'        : None}
+            'cpu_reqs'  : {'cpu_processes'   : 1,
+                           'cpu_process_type': None,
+                           'cpu_threads'     : 1,
+                           'cpu_thread_type' : None},
+            'gpu_reqs'  : {'gpu_processes'   : 0,
+                           'gpu_process_type': None,
+                           'gpu_threads'     : 0,
+                           'gpu_thread_type' : None}
         }
         task = Task(from_dict=input_dict)
         for k, v in input_dict.items():
@@ -179,11 +208,11 @@ class TestTask(TestCase):
             'pre_exec'  : ['bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
-            'state'     : states.SUBMITTING,
-            'cpu_reqs'  : {'cpu_processes'          : 1,
-                            'cpu_process_type'       : None,
-                            'cpu_threads': 1,
-                            'cpu_thread_type'        : None}}
+            'state'     : res.SUBMITTING,
+            'cpu_reqs'  : {'cpu_processes'    : 1,
+                            'cpu_process_type': None,
+                            'cpu_threads'     : 1,
+                            'cpu_thread_type' : None}}
         task = Task()
         task.from_dict(input_dict)
 
@@ -258,13 +287,13 @@ class TestTask(TestCase):
 
         task = Task()
 
-        self.assertEqual(task.state_history, [states.INITIAL])
+        self.assertEqual(task.state_history, [res.INITIAL])
 
-        task.state = states.SCHEDULED
-        self.assertEqual(task.state_history, [states.INITIAL, states.SCHEDULED])
+        task.state = res.SCHEDULED
+        self.assertEqual(task.state_history, [res.INITIAL, res.SCHEDULED])
 
-        task.state_history = [states.DONE]
-        self.assertEqual(task.state_history, [states.DONE])
+        task.state_history = [res.DONE]
+        self.assertEqual(task.state_history, [res.DONE])
 
         with self.assertRaises(ree.ValueError):
             task.state_history = ['WRONG_STATE_NAME']

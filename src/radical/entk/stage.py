@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'
@@ -391,7 +392,7 @@ class Stage(object):
                                missing_attribute='tasks')
 
         for task in self._tasks:
-            task.verify()
+            task._validate()
 
 
 # ------------------------------------------------------------------------------
