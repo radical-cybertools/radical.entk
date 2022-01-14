@@ -3,9 +3,10 @@
 
 from unittest   import TestCase
 from hypothesis import given, settings
-import threading as mt
-import timeout_decorator
 
+import timeout_decorator
+import threading       as mt
+import multiprocessing as mp
 
 import hypothesis.strategies as st
 
@@ -182,6 +183,7 @@ class TestBase(TestCase):
         appman._uid = 'appman.0000'
         appman._logger = mocked_Logger
         appman._prof = mocked_Profiler
+        appman._term = mp.Event()
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
         pipe.completed = False
