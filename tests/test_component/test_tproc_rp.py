@@ -465,6 +465,7 @@ class TestBase(TestCase):
         mocked_TaskDescription.mem_per_process  = None
         mocked_TaskDescription.stdout           = None
         mocked_TaskDescription.stderr           = None
+        mocked_TaskDescription.stage_on_error   = None
         mocked_TaskDescription.input_staging    = None
         mocked_TaskDescription.output_staging   = None
 
@@ -519,8 +520,9 @@ class TestBase(TestCase):
 
         task.lfs_per_process = 235
         task.mem_per_process = 128
-        task.stderr = 'stderr'
-        task.stdout = 'stdout'
+        task.stderr          = 'stderr'
+        task.stdout          = 'stdout'
+        task.stage_on_error  = True
         input_list = [{'source': 'test_file',
                        'target': 'pilot:///test_file',
                        'action': 'Link'},
@@ -578,3 +580,5 @@ class TestBase(TestCase):
         self.assertEqual(test_cud.stderr, 'stderr')
         self.assertEqual(test_cud.input_staging, input_list)
         self.assertEqual(test_cud.output_staging, output_list)
+
+        self.assertTrue(test_cud.stage_on_error)
