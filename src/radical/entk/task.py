@@ -215,6 +215,12 @@ class Task(ru.Munch):
 
     # --------------------------------------------------------------------------
     #
+    def __ne__(self, other):
+
+        return not self == other
+
+    # --------------------------------------------------------------------------
+    #
     def __hash__(self):
 
         # FIXME: review having attribute "name" here
