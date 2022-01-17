@@ -205,6 +205,23 @@ class Task(ru.Munch):
 
     # --------------------------------------------------------------------------
     #
+    def __eq__(self, other):
+
+        if not isinstance(other, Task):
+            return False
+
+        # FIXME: review having attribute "name" here
+        return self['uid'] == other['uid'] and self['name'] == other['name']
+
+    # --------------------------------------------------------------------------
+    #
+    def __hash__(self):
+
+        # FIXME: review having attribute "name" here
+        return hash((self['uid'], self['name']))
+
+    # --------------------------------------------------------------------------
+    #
     def _post_verifier(self, k, v):
 
         if not v:
