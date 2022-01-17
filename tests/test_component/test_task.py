@@ -300,6 +300,29 @@ class TestTask(TestCase):
         with self.assertRaises(ree.ValueError):
             task.state_history = ['WRONG_STATE_NAME']
 
+    # --------------------------------------------------------------------------
+    #
+    def test_eq_hash(self):
+
+        t1 = Task()
+        t2 = Task()
+
+        self.assertNotEqual(t1, t2)
+        self.assertNotEqual(hash(t1), hash(t2))
+
+        tasks_set = {t1, t2}
+        self.assertIsInstance(tasks_set, set)
+        self.assertEqual(len(tasks_set), 2)
+
+        t1['uid'] = t2['uid'] = 'default.uid'
+        # attribute "name" is not set by default
+        self.assertEqual(t1, t2)
+        self.assertEqual(hash(t1), hash(t2))
+
+        t1['name'] = 'unique.name.1'
+        t2['name'] = 'unique.name.2'
+        self.assertNotEqual(t1, t2)
+
 
 # ------------------------------------------------------------------------------
 
