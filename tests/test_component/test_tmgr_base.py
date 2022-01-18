@@ -3,6 +3,8 @@
 
 from unittest import TestCase
 
+from radical.entk import Task
+
 from radical.entk.execman.base   import Base_TaskManager as Tmgr
 from radical.entk.execman.base   import Base_ResourceManager
 
@@ -115,7 +117,7 @@ class TestBase(TestCase):
         tmgr._prof = mocked_Profiler
         tmgr._sync_with_master = mock.MagicMock(side_effect=_sync_side_effect)
         tmgr._uid = 'tmgr.0000'
-        obj = mock.Mock()
+        obj = mock.MagicMock(spec=Task())
         obj.parent_stage = {'uid': 'test_stage'}
         obj.parent_pipeline = {'uid': 'test_pipe'}
         obj.uid = 'test_object'
