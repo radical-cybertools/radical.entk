@@ -5,6 +5,8 @@ from unittest import TestCase
 
 from radical.entk import Task
 
+from radical.entk.execman.base.task_manager import EnTKError
+
 from radical.entk.execman.base   import Base_TaskManager as Tmgr
 from radical.entk.execman.base   import Base_ResourceManager
 
@@ -69,6 +71,14 @@ class TestBase(TestCase):
         self.assertIsNone(tmgr._hb_terminate)
         self.assertEqual(tmgr._hb_interval, 30)
 
+        with self.assertRaises(NotImplementedError):
+            # method should be overloaded
+            tmgr._tmgr(None, None, None, None, None)
+
+        with self.assertRaises(NotImplementedError):
+            # method should be overloaded
+            tmgr.start_manager()
+
         with self.assertRaises(TypeError):
             tmgr = Tmgr(25, ['pending_queues'], ['completed_queues'], 
                         rmgr, rmq_params, 'test_rts')
@@ -122,14 +132,27 @@ class TestBase(TestCase):
         obj.parent_pipeline = {'uid': 'test_pipe'}
         obj.uid = 'test_object'
         obj.state = 'test_state'
-        tmgr._advance(obj, 'Task', None, 'channel','params','queue')
-        self.assertEqual(global_syncs[0],[obj, 'Task', 'channel', 'params', 'queue'])
+
+        tmgr._advance(obj, 'Task', None, 'channel', 'params', 'queue')
+        self.assertEqual(global_syncs[0],
+                         [obj, 'Task', 'channel', 'params', 'queue'])
         self.assertIsNone(obj.state)
+
+        # no `obj` type - will not change the processing flow
+        tmgr._advance(obj, 'unknown_type', None, 'channel', 'params', 'queue')
+        self.assertIsNone(obj.state)
+
         global_syncs = []
         tmgr._advance(obj, 'Stage', 'new_state', 'channel', 'params', 'queue')
         self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel', 'params', 
                                           'queue'])
         self.assertEqual(obj.state, 'new_state')
+
+        # mimic exception
+        tmgr._prof.prof = mock.MagicMock(side_effect=Exception('error'))
+        with self.assertRaises(EnTKError):
+            # whenever Exception is raised `EnTKError` is used
+            tmgr._advance(obj, None, None, None, None, None)
 
     # ------------------------------------------------------------------------------
     #
@@ -154,8 +177,13 @@ class TestBase(TestCase):
         tmgr._heartbeat = mock.MagicMock(side_effect=_heartbeat_side_effect)
         tmgr._uid = 'tmgr.0000'
         tmgr._hb_terminate = None
-        tmgr._hb_thread = None
 
+        # if `tmgr._hb_thread` exists, then nothing else will be created
+        tmgr._hb_thread = mock.Mock()
+        tmgr.start_heartbeat()
+        self.assertFalse(global_boolean)
+
+        tmgr._hb_thread = None
         tmgr.start_heartbeat()
 
         try:
@@ -165,6 +193,15 @@ class TestBase(TestCase):
         finally:
             if tmgr._hb_thread.is_alive():
                 tmgr._hb_thread.join()
+
+        # mimic exception
+        tmgr._prof.prof = mock.MagicMock(side_effect=Exception('error'))
+        tmgr._hb_thread = None
+        tmgr.terminate_heartbeat = mock.Mock()
+        with self.assertRaises(EnTKError):
+            # whenever Exception is raised `EnTKError` is used
+            tmgr.start_heartbeat()
+        self.assertTrue(tmgr.terminate_heartbeat.called)
 
     # --------------------------------------------------------------------------
     #
@@ -288,3 +325,10 @@ class TestBase(TestCase):
         tmgr.terminate_heartbeat()
 
         self.assertIsNone(tmgr._hb_thread)
+
+        tmgr._hb_thread = tmgr._hb_terminate = mock.Mock()
+        # mimic exception
+        tmgr._hb_terminate.set = mock.MagicMock(side_effect=Exception('error'))
+        with self.assertRaises(EnTKError):
+            # whenever Exception is raised `EnTKError` is used
+            tmgr.terminate_heartbeat()
