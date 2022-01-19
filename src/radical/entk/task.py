@@ -210,8 +210,7 @@ class Task(ru.Munch):
         if not isinstance(other, Task):
             return False
 
-        # FIXME: review having attribute "name" here
-        return self['uid'] == other['uid'] and self['name'] == other['name']
+        return self['uid'] == other['uid']
 
     # --------------------------------------------------------------------------
     #
@@ -223,8 +222,7 @@ class Task(ru.Munch):
     #
     def __hash__(self):
 
-        # FIXME: review having attribute "name" here
-        return hash((self['uid'], self['name']))
+        return hash(self['uid'])
 
     # --------------------------------------------------------------------------
     #

@@ -315,13 +315,16 @@ class TestTask(TestCase):
         self.assertEqual(len(tasks_set), 2)
 
         t1['uid'] = t2['uid'] = 'default.uid'
-        # attribute "name" is not set by default
         self.assertEqual(t1, t2)
         self.assertEqual(hash(t1), hash(t2))
 
         t1['name'] = 'unique.name.1'
         t2['name'] = 'unique.name.2'
-        self.assertNotEqual(t1, t2)
+        tasks_set = {t1, t2}
+        self.assertIsInstance(tasks_set, set)
+        self.assertEqual(len(tasks_set), 1)
+        # 2nd task wasn't added since it has "uid" as the task in the set
+        self.assertEqual(list(tasks_set)[0]['name'], 'unique.name.1')
 
 
 # ------------------------------------------------------------------------------
