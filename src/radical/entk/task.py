@@ -114,6 +114,234 @@ class Task(ru.Munch):
     function. This is to avoid creating Tasks with new `uid` as tasks with new
     `uid` offset the uid count file in radical.utils and can potentially affect
     the profiling if not taken care.
+
+    .. data:: uid
+
+        [type: `str` | default: `""`] A unique ID for the task. This attribute
+        is optional, a unique ID will be assigned by RE if the field is not set,
+        and cannot be re-assigned (immutable attribute).
+
+    .. data:: name
+
+        [type: `str` | default: `""`] A descriptive name for the task. This
+        attribute can be used to map individual tasks back to application level
+        workloads. Such characters as ',' or '_' are not allowed in a name.
+
+    .. data:: state
+
+        [type: `str` | default: `"DESCRIBED"`] Current state of the task, its
+        initial value `re.states.INITIAL` is set during the task initialization,
+        and this value is also appended into `state_history` attribute.
+
+    .. data:: state_history
+
+        [type: `list` | default: `["DESCRIBED"]`] List of the states obtained
+        in temporal order. Every time new state is set, it is appended to
+        `state_history` automatically.
+
+    .. data:: executable
+
+        [type: `str` | default: `""`] The executable to launch. The executable
+        is expected to be either available via `$PATH` on the target resource,
+        or to be an absolute path.
+
+    .. data:: arguments
+
+        [type: `list` | default: `[]`] List of arguments to be supplied to the
+        `executable`.
+
+    .. data:: sandbox
+
+        [type: `str` | default: `""`] This specifies the working directory of
+        the task. By default, the task's uid is used as a sandbox for the task.
+
+    .. data:: pre_exec
+
+        [type: `list` | default: `[]`] List of actions (shell commands) to
+        perform before the task starts.
+
+        Note that the set of shell commands given here are expected to load
+        environments, check for work directories and data, etc. They are not
+        expected to consume any significant amount of resources! Deviating from
+        that rule will likely result in reduced overall throughput.
+
+    .. data:: post_exec
+
+        [type: `list` | default: `[]`] List of actions (shell commands) to
+        perform after the task finishes.
+
+        The same remarks as on `pre_exec` apply
+
+    .. data:: cpu_reqs
+
+        [type: `CpuReqs` | default: `CpuReqs()`] The CPU requirements for the
+        current Task. The requirements are described in terms of the number of
+        processes and threads to be run in this Task.
+
+        The expected format is dict-like:
+
+            task.cpu_reqs = {'cpu_processes'    : X,
+                             'cpu_process_type' : None/'MPI',
+                             'cpu_threads'      : Y,
+                             'cpu_thread_type'  : None/'OpenMP'}
+
+        This description means that the Task is going to spawn X processes and
+        Y threads per each of these processes to run on CPUs. Hence, the total
+        number of cpus required by the Task is `X * Y` for all the processes
+        and threads to execute concurrently.
+
+        By default, 1 CPU process and 1 CPU thread per process are requested.
+
+    .. data:: gpu_reqs
+
+        [type: `GpuReqs` | default: `GpuReqs()`] The GPU requirements for the
+        current Task. The requirements are described in terms of the number of
+        processes and threads to be run in this Task.
+
+        The expected format is dict-like:
+
+            task.gpu_reqs = {'gpu_processes'    : X,
+                             'gpu_process_type' : None/'MPI',
+                             'gpu_threads'      : Y,
+                             'gpu_thread_type'  : None/'OpenMP'/'CUDA'}
+
+        This description means that the Task is going to spawn X processes and
+        Y threads per each of these processes to run on GPUs. Hence, the total
+        number of gpus required by the Task is `X * Y` for all the processes
+        and threads to execute concurrently.
+
+        By default, 0 GPU processes are requested.
+
+    .. data:: lfs_per_process
+
+        [type: `int` | default: `0`] Local File Storage per process - amount of
+        space (MB) required on the local file system of the node by the task.
+
+    .. data:: mem_per_process
+
+        [type: `int` | default: `0`] Amount of memory required by the task.
+
+    .. data:: upload_input_data
+
+        [type: `list` | default: `[]`] List of file names required to be
+        transferred from a local client storage to the location of the task or
+        data staging area before task starts.
+
+    .. data:: copy_input_data
+
+        [type: `list` | default: `[]`] List of file names required to be copied
+        from another task-/pilot-sandbox to a current task (or data staging
+        area) before task starts.
+
+        Example of a file location format:
+
+            $Pipeline_%s_Stage_%s_Task_%s, where %s is replaced entity name/uid
+
+            # output.txt is copied from a t1 task to a current task sandbox
+            t2.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/output.txt' %
+                                  (p.name, s1.name, t1.name)]
+
+    .. data:: link_input_data
+
+        [type: `list` | default: `[]`] List of file names required to be
+        symlinked from another task-/pilot-sandbox to a current task (or data
+        staging area) before task starts.
+
+    .. data:: move_input_data
+
+        [type: `list` | default: `[]`] List of file names required to be moved
+        from another task-/pilot-sandbox to a current task (or data staging
+        area) before task starts.
+
+    .. data:: copy_output_data
+
+        [type: `list` | default: `[]`] List of file names required to be copied
+        from a current task to another task-/pilot-sandbox (or data staging
+        area) when a task is finished.
+
+        Example of defining data to be copied:
+
+            # results.txt will be copied to a data staging area `$SHARED`
+            t.copy_output_data = ['results.txt > $SHARED/results.txt']
+
+    .. data:: link_output_data
+
+        [type: `list` | default: `[]`] List of file names required to be
+        symlinked from a current task to another task-/pilot-sandbox (or data
+        staging area) when a task is finished.
+
+    .. data:: move_output_data
+
+        [type: `list` | default: `[]`] List of file names required to be moved
+        from a current task to another task-/pilot-sandbox (or data staging
+        area) when a task is finished.
+
+    .. data:: download_output_data
+
+        [type: `list` | default: `[]`] List of file names required to be
+        downloaded from a current task to a local client storage space when a
+        task is finished.
+
+        Example of defining data to be downloaded:
+
+            # results.txt is transferred to a local client storage space
+            t.download_output_data = ['results.txt']
+
+    .. data:: stdout
+
+        [type: `str` | default: `""`] The name of the file to store stdout. If
+        not set then the name of the following format will be used: `<uid>.out`.
+
+    .. data:: stderr
+
+        [type: `str` | default: `""`] The name of the file to store stderr. If
+        not set then the name of the following format will be used: `<uid>.err`.
+
+    .. data:: stage_on_error
+
+        [type: `bool` | default: `False`] Flag to allow staging out data if
+        task got failed (output staging is normally skipped on `FAILED` or
+        `CANCELED` tasks).
+
+    .. data:: exit_code
+
+        [type: `int` | default: `None`] Get the exit code for finished tasks:
+        0 - for successful tasks; 1 - for failed tasks.
+
+    .. data:: path
+
+        [type: `str` | default: `""`] Get the path of the task on the remote
+        machine. Useful to reference files generated in the current task.
+
+    .. data:: tags
+
+        [type: `dict` | default: `None`] The tags for the task that can be
+        used while scheduling by the RTS (configuration specific tags, which
+        influence task scheduling and execution, e.g., tasks co-location).
+
+    .. data:: rts_uid
+
+        [type: `str` | default: `None`] Unique RTS ID of the current task.
+
+    .. data:: parent_stage
+
+        [type: `dict` | default: `{'uid': None, 'name': None}`] Identification
+        of the stage, which contains the current task.
+
+    .. data:: parent_pipeline
+
+        [type: `dict` | default: `{'uid': None, 'name': None}`] Identification
+        of the pipeline, which contains the current task.
+
+    Read-only attributes
+    --------------------
+
+    .. property:: luid
+
+        [type: `str`] Unique ID of the current task (fully qualified).
+
+            > task.luid
+            pipe.0001.stage.0004.task.0234
     """
 
     _check = True
