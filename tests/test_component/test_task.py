@@ -17,7 +17,7 @@ class TestTask(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    def test_task_initialization(self):
+    def test_init(self):
 
         t = Task()
 
@@ -64,6 +64,33 @@ class TestTask(TestCase):
         self.assertIsNone(t.parent_pipeline['name'])
         self.assertIsNone(t.parent_stage['name'])
         self.assertIsNone(t.parent_stage['uid'])
+
+        input_data = {'state'        : res.SCHEDULED,
+                      'state_history': [res.INITIAL,
+                                        res.SCHEDULING,
+                                        res.SCHEDULED]}
+        task = Task(from_dict=input_data)
+        self.assertEqual(task.state, input_data['state'])
+        self.assertEqual(task.state_history, input_data['state_history'])
+
+        with self.assertRaises(ree.TypeError):
+            # incorrect type of input data
+            Task(from_dict='input_str')
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch('radical.utils.generate_id', return_value='initial.uid.0000')
+    def test_uid(self, mocked_generate_id):
+
+        task = Task()
+
+        self.assertEqual(task.uid, 'initial.uid.0000')
+
+        task = Task(from_dict={'uid': 'test.0000'})
+        self.assertEqual(task.uid, 'test.0000')
+
+        with self.assertRaises(ree.EnTKError):
+            Task(from_dict={'uid': 'test:0000'})
 
     # --------------------------------------------------------------------------
     #
@@ -150,24 +177,6 @@ class TestTask(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    @mock.patch('radical.utils.generate_id', return_value='initial.uid.0000')
-    def test_uid(self, mocked_generate_id):
-
-        task = Task()
-
-        self.assertEqual(task.uid, 'initial.uid.0000')
-
-        task.uid = 'test.0000'
-        self.assertEqual(task.uid, 'test.0000')
-
-        task.uid = 'test.0001'
-        self.assertEqual(task.uid, 'test.0001')
-
-        with self.assertRaises(ree.EnTKError):
-            task.uid = 'test:0000'
-
-    # --------------------------------------------------------------------------
-    #
     def test_luid(self):
 
         task = Task()
@@ -176,15 +185,34 @@ class TestTask(TestCase):
         task.parent_stage    = {'name': 's0'}
         self.assertEqual(task.luid, 'p0.s0.test.0000')
 
-        task = Task()
-        task.uid             = 'test.0001'
+        task = Task({'uid': 'test.0001'})
         task.parent_pipeline = {'uid': 'p1'}
         task.parent_stage    = {'uid': 's1'}
         self.assertEqual(task.luid, 'p1.s1.test.0001')
 
     # --------------------------------------------------------------------------
     #
-    def test_dict_to_task(self):
+    def test_from_dict(self):
+
+        task = Task()
+
+        # check that default attributes are set
+        task_uid_saved = task.uid
+        self.assertTrue(task_uid_saved)
+        self.assertEqual(task.name, '')
+
+        task.from_dict({'name': 'test.name'})
+        # task was re-initialized with new "uid", which was auto-generated
+        self.assertNotEqual(task.uid, task_uid_saved)
+        self.assertEqual(task.name, 'test.name')
+
+        task.from_dict({'uid': 'user.uid.00'})
+        # task was re-initialized with provided "uid"
+        self.assertEqual(task.uid, 'user.uid.00')
+
+    # --------------------------------------------------------------------------
+    #
+    def test_from_dict_extended(self):
 
         input_dict = {
             'name'      : 'foo',
@@ -220,12 +248,9 @@ class TestTask(TestCase):
         for k, v in input_dict.items():
             self.assertEqual(Task.demunch(task[k]), v)
 
-        with self.assertRaises(ree.TypeError):
-            Task(from_dict='input_str')
-
     # --------------------------------------------------------------------------
     #
-    def test_executable(self):
+    def test_verify(self):
 
         task = Task()
         task.executable = 'test_exec'
@@ -235,6 +260,56 @@ class TestTask(TestCase):
         task._cast = False  # if True, then `executable` will be "['test_exec']"
         with self.assertRaises(TypeError):
             task.executable = ['test_exec']
+
+        task = Task()
+        with self.assertRaises(ree.EnTKError):
+            # not allowed to re-assign "uid" attribute
+            task.uid = 'new.uid'
+
+        with self.assertRaises(ree.EnTKError):
+            # not correct name format (only [a-zA-Z\.] are allowed in name)
+            task.name = 'new_name'
+
+        with self.assertRaises(ree.ValueError):
+            # unknown state
+            task.state = 'UNKNOWN_STATE'
+
+        with self.assertRaises(ree.ValueError):
+            # state history with unknown state
+            task.state_history = ['UNKNOWN_STATE']
+
+        with self.assertRaises(ree.EnTKError):
+            # tags of a wrong format, only one key "colocate" is allowed
+            task.tags = {'colocate': 'tag01', 'unknown_key': 'tag02'}
+
+        # since all attributes are checked during setting process method
+        # `verify` is not needed, but could be called to ensure data correctness
+        task.verify()
+
+    # --------------------------------------------------------------------------
+    #
+    def test_validate(self):
+
+        task1 = Task({'executable': 'exec.sh'})
+        task1._validate()
+
+        task2 = Task({'uid': task1.uid})
+        with self.assertRaises(ree.EnTKError):
+            # task with the same "uid" was already created
+            task2._validate()
+
+        self.assertIn(task1.uid, Task._uids)
+        self.assertEqual(len(Task._uids), 1)
+
+        task3 = Task({'state': res.SCHEDULED})
+        with self.assertRaises(ree.ValueError):
+            # validation should be called when the task is in the initial state
+            task3._validate()
+
+        task4 = Task()
+        with self.assertRaises(ree.MissingError):
+            # attribute "executable" is not set
+            task4._validate()
 
     # --------------------------------------------------------------------------
     #
@@ -310,11 +385,16 @@ class TestTask(TestCase):
         self.assertNotEqual(t1, t2)
         self.assertNotEqual(hash(t1), hash(t2))
 
+        self.assertNotEqual(t1, t1.as_dict())
+        self.assertNotEqual(t2, t2.as_dict())
+
         tasks_set = {t1, t2}
         self.assertIsInstance(tasks_set, set)
         self.assertEqual(len(tasks_set), 2)
 
-        t1['uid'] = t2['uid'] = 'default.uid'
+        uid = 'non.unique.uid'
+        t1.from_dict({'uid': uid})
+        t2.from_dict({'uid': uid})
         self.assertEqual(t1, t2)
         self.assertEqual(hash(t1), hash(t2))
 

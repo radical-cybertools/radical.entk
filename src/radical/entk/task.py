@@ -425,11 +425,30 @@ class Task(ru.Munch):
 
         super().__init__()
 
+        attrs = list(from_dict.keys())
+        # `uid` is allowed to be set during initialization only
         if not from_dict.get('uid'):
-            self['uid'] = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
-        self['state'] = res.INITIAL
+            uid = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+        else:
+            attrs.remove('uid')
+            uid = super()._verify_setter('uid', from_dict['uid'])
+            if any(s in uid for s in punctuation.replace('.', '')):
+                raise ree.EnTKError(
+                    'Incorrect symbol for attribute "uid" (%s). %s' %
+                    (uid, NAME_MESSAGE))
 
-        self.update(from_dict)
+        self._data['uid'] = uid
+
+        # ensure that "state" and "state_history" are handled correctly
+        self['state'] = from_dict.get('state') or res.INITIAL
+        if 'state' in from_dict:
+            attrs.remove('state')
+        if 'state_history' in from_dict:
+            self['state_history'] = from_dict['state_history']
+            attrs.remove('state_history')
+
+        for attr in attrs:
+            self[attr] = from_dict[attr]
 
     # --------------------------------------------------------------------------
     #
@@ -459,9 +478,11 @@ class Task(ru.Munch):
         if not v:
             return
 
-        if k in ['uid', 'name']:
-            invalid_symbols = punctuation.replace('.', '')
-            if any(symbol in v for symbol in invalid_symbols):
+        if k == 'uid':
+            raise ree.EnTKError('Task.uid is not allowed to be re-assigned')
+
+        elif k == 'name':
+            if any(symbol in v for symbol in punctuation.replace('.', '')):
                 raise ree.EnTKError(
                     'Incorrect symbol for attribute "%s" (%s). %s' %
                     (k, v, NAME_MESSAGE))
@@ -500,8 +521,11 @@ class Task(ru.Munch):
     # --------------------------------------------------------------------------
     #
     def _verify(self):
-        for k, v in self.items():
-            self._post_verifier(k, v)
+        verify_attrs = list(self.keys())
+        verify_attrs.remove('uid')
+
+        for k in verify_attrs:
+            self._post_verifier(k, self[k])
 
     # --------------------------------------------------------------------------
     #
@@ -509,11 +533,13 @@ class Task(ru.Munch):
     def luid(self):
         """
         Unique ID of the current task (fully qualified).
-        example:
+
+        Example:
             > task.luid
             pipe.0001.stage.0004.task.0234
+
         :luid: Returns the fully qualified uid of the current task
-        :type: String
+        :type: str
         """
 
         # TODO: cache
@@ -536,11 +562,8 @@ class Task(ru.Munch):
     # --------------------------------------------------------------------------
     #
     def from_dict(self, d):
-
-        self.update(d)
-        if 'state' in d:
-            # avoid adding state to state history
-            del self['state_history'][-1]
+        """Re-initialization, resets all attributes with provided input data."""
+        self.__init__(from_dict=d)
 
     # --------------------------------------------------------------------------
     #

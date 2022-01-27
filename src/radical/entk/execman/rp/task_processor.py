@@ -564,15 +564,16 @@ def create_task_from_rp(rp_task, logger, prof=None):
         if prof:
             prof.prof('task_create', uid=rp_task.name.split(',')[0].strip())
 
-        task = Task()
-
-        task.uid                     = rp_task.name.split(',')[0].strip()
-        task.name                    = rp_task.name.split(',')[1].strip()
-        task.parent_stage['uid']     = rp_task.name.split(',')[2].strip()
-        task.parent_stage['name']    = rp_task.name.split(',')[3].strip()
-        task.parent_pipeline['uid']  = rp_task.name.split(',')[4].strip()
-        task.parent_pipeline['name'] = rp_task.name.split(',')[5].strip()
-        task.rts_uid                 = rp_task.uid
+        task_info_tuple = rp_task.name.split(',')
+        task = Task({
+            'uid'                     : task_info_tuple[0].strip(),
+            'name'                    : task_info_tuple[1].strip(),
+            'parent_stage'   : {'uid' : task_info_tuple[2].strip(),
+                                'name': task_info_tuple[3].strip()},
+            'parent_pipeline': {'uid' : task_info_tuple[4].strip(),
+                                'name': task_info_tuple[5].strip()},
+            'rts_uid'                 : rp_task.uid
+        })
 
         if   rp_task.state == rp.DONE                  : task.exit_code = 0
         elif rp_task.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
