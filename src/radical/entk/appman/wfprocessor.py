@@ -585,7 +585,7 @@ class WFprocessor(object):
                     self._logger.info('Terminating dequeue-thread')
                     self._dequeue_thread_terminate.set()
                     if tid != self._dequeue_thread.ident:
-                      self._dequeue_thread.join()
+                        self._dequeue_thread.join()
                     self._dequeue_thread = None
 
             self._logger.info('WFprocessor terminated')
