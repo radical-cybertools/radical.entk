@@ -93,7 +93,7 @@ class Base_ResourceManager(object):
         :getter: Return user specified number of cpus
         """
         return self._cpus
-    
+
 
     @property
     def memory(self):
@@ -243,6 +243,10 @@ class Base_ResourceManager(object):
         if not isinstance(self._resource_desc['cpus'], int):
             raise TypeError(expected_type=int,
                             actual_type=type(self._resource_desc['cpus']))
+
+        if not isinstance(self._resource_desc['memory'], int):
+            raise TypeError(expected_type=int,
+                            actual_type=type(self._resource_desc['memory']))
 
         if 'gpus' in self._resource_desc:
             if not isinstance(self._resource_desc['gpus'], int):

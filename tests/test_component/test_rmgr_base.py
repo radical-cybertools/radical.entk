@@ -36,6 +36,7 @@ class TestBase(TestCase):
         self.assertIsNone(rmgr._resource)
         self.assertIsNone(rmgr._walltime)
         self.assertEqual(rmgr._cpus, 1)
+        self.assertEqual(rmgr._memory, 0)
         self.assertEqual(rmgr._gpus, 0)
         self.assertIsNone(rmgr._project)
         self.assertIsNone(rmgr._access_schema)
@@ -60,6 +61,7 @@ class TestBase(TestCase):
                                             'walltime': st.integers(),
                                             'cpus': st.integers(),
                                             'gpus': st.integers(),
+                                            'memory':st.integers(),
                                             'project': st.text(),
                                             'access_schema': st.text(),
                                             'queue': st.text(),
@@ -99,6 +101,7 @@ class TestBase(TestCase):
                                             'walltime': st.integers(),
                                             'cpus': st.integers(),
                                             'gpus': st.integers(),
+                                            'memory':st.integers(),
                                             'project': st.text(),
                                             'access_schema': st.text(),
                                             'queue': st.text()}))
@@ -126,6 +129,7 @@ class TestBase(TestCase):
         self.assertEqual(rmgr._walltime, res_descr['walltime'])
         self.assertEqual(rmgr._cpus, res_descr['cpus'])
         self.assertEqual(rmgr._gpus, res_descr['gpus'])
+        self.assertEqual(rmgr._gpus, res_descr['memory'])
         self.assertEqual(rmgr._project, res_descr['project'])
         self.assertEqual(rmgr._access_schema, res_descr['access_schema'])
         self.assertEqual(rmgr._queue, res_descr['queue'])
