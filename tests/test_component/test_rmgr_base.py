@@ -84,6 +84,7 @@ class TestBase(TestCase):
                                'walltime' : 30,
                                'cpus' : 1,
                                'gpus' : 1,
+                               'memory': 1,
                                'project' : 'some_project',
                                'access_schema' : 'access',
                                'queue' : 'queue'}
@@ -129,7 +130,7 @@ class TestBase(TestCase):
         self.assertEqual(rmgr._walltime, res_descr['walltime'])
         self.assertEqual(rmgr._cpus, res_descr['cpus'])
         self.assertEqual(rmgr._gpus, res_descr['gpus'])
-        self.assertEqual(rmgr._gpus, res_descr['memory'])
+        self.assertEqual(rmgr._memory, res_descr['memory'])
         self.assertEqual(rmgr._project, res_descr['project'])
         self.assertEqual(rmgr._access_schema, res_descr['access_schema'])
         self.assertEqual(rmgr._queue, res_descr['queue'])
