@@ -163,6 +163,7 @@ class ResourceManager(Base_ResourceManager):
             pd_init = {'resource'      : self._resource,
                        'runtime'       : self._walltime,
                        'cores'         : self._cpus,
+                       'memory'        : self._memory,
                        'project'       : self._project,
                        'gpus'          : self._gpus,
                        'access_schema' : self._access_schema,

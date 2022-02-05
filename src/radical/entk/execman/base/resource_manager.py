@@ -26,6 +26,7 @@ class Base_ResourceManager(object):
                                     |  'cpus'          : 64,
                                     |  'gpus'          : 0,          # optional
                                     |  'project'       : 'TG-abcxyz',
+                                    |  'memory'        : '16000'     # optional
                                     |  'queue'         : 'abc',      # optional
                                     |  'access_schema' : 'ssh'       # optional
                                     |  'job_name'      : 'test_job'  # optional}
@@ -48,6 +49,7 @@ class Base_ResourceManager(object):
         self._walltime      = None
         self._cpus          = 1
         self._gpus          = 0
+        self._memory        = 0
         self._project       = None
         self._access_schema = None
         self._queue         = None
@@ -91,6 +93,14 @@ class Base_ResourceManager(object):
         :getter: Return user specified number of cpus
         """
         return self._cpus
+    
+
+    @property
+    def memory(self):
+        """
+        :getter: Return user specified amount of memory
+        """
+        return self._memory
 
 
     @property
@@ -283,6 +293,7 @@ class Base_ResourceManager(object):
         self._resource      = self._resource_desc['resource']
         self._walltime      = self._resource_desc['walltime']
         self._cpus          = self._resource_desc['cpus']
+        self._memory        = self._resource_desc.get('memory',        0)
         self._gpus          = self._resource_desc.get('gpus',          0)
         self._project       = self._resource_desc.get('project',       None)
         self._access_schema = self._resource_desc.get('access_schema', None)
