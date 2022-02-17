@@ -244,19 +244,20 @@ class Base_ResourceManager(object):
             raise TypeError(expected_type=int,
                             actual_type=type(self._resource_desc['cpus']))
 
-        if not isinstance(self._resource_desc['memory'], int):
-            raise TypeError(expected_type=int,
-                            actual_type=type(self._resource_desc['memory']))
+        if 'memory' in self._resource_desc:
+            if not isinstance(self._resource_desc['memory'], int):
+                raise TypeError(expected_type=int,
+                                actual_type=type(self._resource_desc['memory']))
 
         if 'gpus' in self._resource_desc:
             if not isinstance(self._resource_desc['gpus'], int):
                 raise TypeError(expected_type=int,
-                               actual_type=type(self._resource_desc['gpus']))
+                                actual_type=type(self._resource_desc['gpus']))
 
         if 'project' in self._resource_desc:
-            if  not isinstance(self._resource_desc['project'], str):
+            if not isinstance(self._resource_desc['project'], str):
                 raise TypeError(expected_type=str,
-                              actual_type=type(self._resource_desc['project']))
+                               actual_type=type(self._resource_desc['project']))
 
         if 'access_schema' in self._resource_desc:
             if not isinstance(self._resource_desc['access_schema'], str):
