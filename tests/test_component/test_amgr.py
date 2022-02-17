@@ -4,8 +4,8 @@
 from unittest   import TestCase
 from hypothesis import given, settings
 
+import threading as mt
 import timeout_decorator
-import threading       as mt
 import multiprocessing as mp
 
 import hypothesis.strategies as st
