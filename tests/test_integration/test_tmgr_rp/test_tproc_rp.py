@@ -41,8 +41,7 @@ class TestBase(TestCase):
             }
         }
 
-        task = Task()
-        task.uid = 'task.0000'
+        task = Task({'uid': 'task.0000'})
         task.name = 'task.0000'
         task.parent_stage = {'uid' : 'stage.0000',
                              'name' : 'stage.0000'}

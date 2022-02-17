@@ -869,8 +869,7 @@ class AppManager(object):
     def _update_task(self, msg, reply_to, corr_id, mq_channel, method_frame):
         # pylint: disable=W0612,W0613
 
-        completed_task = Task()
-        completed_task.from_dict(msg['object'])
+        completed_task = Task(from_dict=msg['object'])
 
         self._logger.info('Received %s with state %s'
                          % (completed_task.uid, completed_task.state))

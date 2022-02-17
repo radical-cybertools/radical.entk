@@ -1,5 +1,6 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter, import-error
+
 from unittest import TestCase
 from random import shuffle
 
@@ -100,11 +101,11 @@ class TestBase(TestCase):
             with self.assertRaises(TypeError):
                 s._validate_entities(data)
 
-        t = mock.MagicMock(spec=Task)
+        t = mock.MagicMock(spec=Task())
         self.assertIsInstance(s._validate_entities(t), set)
 
-        t1 = mock.MagicMock(spec=Task)
-        t2 = mock.MagicMock(spec=Task)
+        t1 = mock.MagicMock(spec=Task())
+        t2 = mock.MagicMock(spec=Task())
         self.assertEqual(set([t1, t2]), s._validate_entities([t1, t2]))
 
 
@@ -127,7 +128,7 @@ class TestBase(TestCase):
 
         s = Stage()
         s._validate_entities = mock.MagicMock(side_effect=_validate_entities_side_effect)
-        t = mock.MagicMock(spec=Task)
+        t = mock.MagicMock(spec=Task())
         s.tasks = t
 
         self.assertIsInstance(s.tasks, set)
@@ -233,8 +234,8 @@ class TestBase(TestCase):
         s._uid = 'stage.0000'
         s._name = None
         s._tasks = set()
-        t1 = mock.MagicMock(spec=Task)
-        t2 = mock.MagicMock(spec=Task)
+        t1 = mock.MagicMock(spec=Task())
+        t2 = mock.MagicMock(spec=Task())
         s.add_tasks(set([t1, t2]))
 
         self.assertIsInstance(s.tasks, set)
@@ -247,8 +248,8 @@ class TestBase(TestCase):
         s._name = None
         s._p_pipeline = {'uid': None, 'name': None}
         s._tasks = set()
-        t1 = mock.MagicMock(spec=Task)
-        t2 = mock.MagicMock(spec=Task)
+        t1 = mock.MagicMock(spec=Task())
+        t2 = mock.MagicMock(spec=Task())
         s.add_tasks([t1, t2])
 
         self.assertIsInstance(s.tasks, set)
@@ -312,8 +313,8 @@ class TestBase(TestCase):
 
         s = Stage()
         s._uid = 'stage.0000'
-        t1 = mock.MagicMock(spec=Task)
-        t2 = mock.MagicMock(spec=Task)
+        t1 = mock.MagicMock(spec=Task())
+        t2 = mock.MagicMock(spec=Task())
         s._tasks = set([t1, t2])
 
         with self.assertRaises(ValueError):
@@ -331,8 +332,8 @@ class TestBase(TestCase):
 
         s = Stage()
         s._uid = 'stage.0000'
-        t1 = mock.MagicMock(spec=Task)
-        t2 = mock.MagicMock(spec=Task)
+        t1 = mock.MagicMock(spec=Task())
+        t2 = mock.MagicMock(spec=Task())
         s._tasks = set([t1, t2])
 
         self.assertFalse(s._check_stage_complete())

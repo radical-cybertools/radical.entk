@@ -3,6 +3,7 @@
 
 from unittest   import TestCase
 from hypothesis import given, settings
+
 import threading as mt
 import timeout_decorator
 import multiprocessing as mp
@@ -197,3 +198,50 @@ class TestBase(TestCase):
             appman._run_workflow()
 
         self.assertEqual(appman._cur_attempt, 4)
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Amgr, '__init__', return_value=None)
+    def test_update_task(self, mocked_init):
+
+        task             = mock.Mock()
+        task.uid         = 'task.0000'
+        task.luid        = 't0.s0.p0'
+        task.state       = re.states.SUBMITTING
+
+        stage            = mock.Mock()
+        stage.uid        = 'stage.0000'
+        stage.tasks      = {task}
+
+        pipe             = mock.Mock()
+        pipe.uid         = 'pipe.0000'
+        pipe.lock        = mt.Lock()
+        pipe.completed   = False
+        pipe.stages      = [stage]
+
+        appman           = Amgr()
+        appman._uid      = 'appman.0000'
+        appman._workflow = [pipe]
+        appman._logger = appman._prof = appman._report = mock.Mock()
+
+        mq_channel           = mock.Mock()
+        mq_channel.basic_ack = mock.Mock()
+        method_frame         = mock.Mock()
+
+        msg = {
+            'object': {
+                'uid'            : task.uid,
+                'state'          : re.states.COMPLETED,
+                'parent_stage'   : {'uid': stage.uid},
+                'parent_pipeline': {'uid': pipe.uid}
+            }
+        }
+
+        # confirm that `task` has different state than `msg` contains
+        self.assertNotEqual(task.state, msg['object']['state'])
+
+        # task will be "found" and method below will be called
+        # `mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)`
+        appman._update_task(msg, None, None, mq_channel, method_frame)
+        self.assertTrue(mq_channel.basic_ack.called)
+
