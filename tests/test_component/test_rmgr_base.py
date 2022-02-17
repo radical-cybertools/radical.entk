@@ -1,10 +1,10 @@
 # pylint: disable=protected-access, unused-argument
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter, import-error
 
 from unittest import TestCase
 
 from radical.entk.execman.base   import Base_ResourceManager as Rmgr
-from radical.entk.exceptions import EnTKError
+from radical.entk.exceptions import EnTKError, MissingError
 
 from hypothesis import given
 
@@ -36,6 +36,7 @@ class TestBase(TestCase):
         self.assertIsNone(rmgr._resource)
         self.assertIsNone(rmgr._walltime)
         self.assertEqual(rmgr._cpus, 1)
+        self.assertEqual(rmgr._memory, 0)
         self.assertEqual(rmgr._gpus, 0)
         self.assertIsNone(rmgr._project)
         self.assertIsNone(rmgr._access_schema)
@@ -60,6 +61,7 @@ class TestBase(TestCase):
                                             'walltime': st.integers(),
                                             'cpus': st.integers(),
                                             'gpus': st.integers(),
+                                            'memory':st.integers(),
                                             'project': st.text(),
                                             'access_schema': st.text(),
                                             'queue': st.text(),
@@ -67,7 +69,7 @@ class TestBase(TestCase):
     def test_validate(self, mocked_init, mocked_Logger, mocked_Profiler,
                       res_descr):
 
-        rmgr = Rmgr({'resource':'localhost'}, 'test_rmgr', 'rp', 'test_config')
+        rmgr = Rmgr({'resource': 'localhost'}, 'test_rmgr', 'rp', 'test_config')
 
         rmgr._resource_desc = res_descr
         rmgr._rts_config = {'rts': 'some_rts'}
@@ -78,16 +80,67 @@ class TestBase(TestCase):
         self.assertTrue(rmgr._validate_resource_desc())
         self.assertTrue(rmgr._validated)
 
-        rmgr._resource_desc = {'resource' : 'localhost',
-                               'walltime' : 30,
-                               'cpus' : 1,
-                               'gpus' : 1,
-                               'project' : 'some_project',
-                               'access_schema' : 'access',
-                               'queue' : 'queue'}
         rmgr._rts_config = None
-
         with self.assertRaises(TypeError):
+            # `_rts_config` should be of `dict` type
+            rmgr._validate_resource_desc()
+        rmgr._rts_config = {}
+
+        rmgr._resource_desc['queue'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['queue']` should be of `str` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['queue'] = 'queue_name'
+
+        rmgr._resource_desc['access_schema'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['access_schema']` should be of `str` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['access_schema'] = 'local'
+
+        rmgr._resource_desc['project'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['project']` should be of `str` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['project'] = 'project_name'
+
+        rmgr._resource_desc['memory'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['memory']` should be of `int` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['memory'] = 0
+        del rmgr._resource_desc['memory']
+        self.assertTrue(rmgr._validate_resource_desc())
+
+        rmgr._resource_desc['gpus'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['gpus']` should be of `int` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['gpus'] = 0
+        del rmgr._resource_desc['gpus']
+        self.assertTrue(rmgr._validate_resource_desc())
+
+        rmgr._resource_desc['cpus'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['cpus']` should be of `int` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['cpus'] = 10
+
+        rmgr._resource_desc['walltime'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['walltime']` should be of `int` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['walltime'] = 15
+
+        rmgr._resource_desc['resource'] = None
+        with self.assertRaises(TypeError):
+            # `_resource_desc['resource']` should be of `str` type
+            rmgr._validate_resource_desc()
+        rmgr._resource_desc['resource'] = 'resource_local'
+
+        del rmgr._resource_desc['resource']
+        with self.assertRaises(MissingError):
+            # `_resource_desc['resource']` is required
             rmgr._validate_resource_desc()
 
 # ------------------------------------------------------------------------------
@@ -99,6 +152,7 @@ class TestBase(TestCase):
                                             'walltime': st.integers(),
                                             'cpus': st.integers(),
                                             'gpus': st.integers(),
+                                            'memory':st.integers(),
                                             'project': st.text(),
                                             'access_schema': st.text(),
                                             'queue': st.text()}))
@@ -122,10 +176,11 @@ class TestBase(TestCase):
         rmgr._uid = 'rmgr.0000'
 
         rmgr._populate()
-        self.assertEqual(rmgr._resource, res_descr['resource'])
-        self.assertEqual(rmgr._walltime, res_descr['walltime'])
-        self.assertEqual(rmgr._cpus, res_descr['cpus'])
-        self.assertEqual(rmgr._gpus, res_descr['gpus'])
-        self.assertEqual(rmgr._project, res_descr['project'])
-        self.assertEqual(rmgr._access_schema, res_descr['access_schema'])
-        self.assertEqual(rmgr._queue, res_descr['queue'])
+        self.assertEqual(rmgr.resource, res_descr['resource'])
+        self.assertEqual(rmgr.walltime, res_descr['walltime'])
+        self.assertEqual(rmgr.cpus, res_descr['cpus'])
+        self.assertEqual(rmgr.gpus, res_descr['gpus'])
+        self.assertEqual(rmgr.memory, res_descr['memory'])
+        self.assertEqual(rmgr.project, res_descr['project'])
+        self.assertEqual(rmgr.access_schema, res_descr['access_schema'])
+        self.assertEqual(rmgr.queue, res_descr['queue'])
