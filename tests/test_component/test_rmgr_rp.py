@@ -1,5 +1,5 @@
 # pylint: disable=protected-access, unused-argument
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter, import-error
 
 from unittest import TestCase, mock
 
