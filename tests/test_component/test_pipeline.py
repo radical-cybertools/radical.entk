@@ -179,7 +179,7 @@ class TestBase(TestCase):
         p._completed_flag = mock.Mock()
         p._completed_flag.is_set = mock.MagicMock(return_value=False)
 
-        d = p.to_dict()
+        d = p.as_dict()
         self.assertEqual(d, {'uid': 'pipeline.0000',
                              'name': 'test_pipeline',
                              'state': states.INITIAL,

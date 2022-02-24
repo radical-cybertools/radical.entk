@@ -117,18 +117,18 @@ class TestTask(TestCase):
         task.cpu_reqs.threads_per_process = threads_per_process
         self.assertEqual(task.cpu_reqs.cpu_threads, threads_per_process)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             # incorrect type for `cpu_reqs` attribute
             task.cpu_reqs = list()
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             # incorrect type of `cpu_reqs.cpu_processes` attribute
             task.cpu_reqs = {'cpu_processes'   : 'a',
                              'cpu_process_type': None,
                              'cpu_threads'     : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             # incorrect type of `cpu_reqs.cpu_threads` attribute
             task.cpu_reqs = {'cpu_processes'   : 1,
                              'cpu_process_type': None,
@@ -160,16 +160,16 @@ class TestTask(TestCase):
         task.gpu_reqs.threads_per_process = threads_per_process
         self.assertEqual(task.gpu_reqs.gpu_threads, threads_per_process)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             task.gpu_reqs = list()
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             task.gpu_reqs = {'gpu_processes'   : 'a',
                              'gpu_process_type': None,
                              'gpu_threads'     : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             task.gpu_reqs = {'gpu_processes'   : 1,
                              'gpu_process_type': None,
                              'gpu_threads'     : 'a',
@@ -257,8 +257,8 @@ class TestTask(TestCase):
         self.assertEqual(task.executable, 'test_exec')
 
         task = Task()
-        task._cast = False  # if True, then `executable` will be "['test_exec']"
-        with self.assertRaises(TypeError):
+        Task._cast = False  # if True, then `executable` will be "['test_exec']"
+        with self.assertRaises(AttributeError):
             task.executable = ['test_exec']
 
         task = Task()
@@ -356,7 +356,7 @@ class TestTask(TestCase):
                                      'name': 'pipe.0000'}}
 
         task = Task(from_dict=expected_dict)
-        self.assertEqual(task.to_dict(), expected_dict)
+        self.assertEqual(task.as_dict(), expected_dict)
 
     # --------------------------------------------------------------------------
     #

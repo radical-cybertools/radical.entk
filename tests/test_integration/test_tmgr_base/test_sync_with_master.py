@@ -65,7 +65,7 @@ class TestTask(TestCase):
                 packet = packets.pop(0)
                 _, _, body = mq_channel.basic_get(queue='master')
                 msg = json.loads(body)
-                self.assertEqual(msg['object'], packet[1].to_dict())
+                self.assertEqual(msg['object'], packet[1].as_dict())
                 self.assertEqual(msg['type'], packet[0])
         except Exception as ex:
             print(ex)

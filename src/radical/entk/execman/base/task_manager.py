@@ -139,7 +139,7 @@ class Base_TaskManager(object):
     def _sync_with_master(self, obj, obj_type, channel, conn_params, queue):
 
         corr_id = str(uuid.uuid4())
-        body    = json.dumps({'object': obj.to_dict(),
+        body    = json.dumps({'object': obj.as_dict(),
                               'type'  : obj_type})
 
         if   obj_type == 'Task' : msg = obj.parent_stage['uid']

@@ -556,11 +556,6 @@ class Task(ru.Munch):
 
     # --------------------------------------------------------------------------
     #
-    def to_dict(self):
-        return self.as_dict()
-
-    # --------------------------------------------------------------------------
-    #
     def from_dict(self, d):
         """Re-initialization, resets all attributes with provided input data."""
         self.__init__(from_dict=d)

@@ -243,7 +243,7 @@ class Stage(object):
             task.parent_pipeline['name'] = self.parent_pipeline['name']
 
 
-    def to_dict(self):
+    def as_dict(self):
         """
         Convert current Stage into a dictionary
 
