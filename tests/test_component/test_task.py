@@ -117,18 +117,18 @@ class TestTask(TestCase):
         task.cpu_reqs.threads_per_process = threads_per_process
         self.assertEqual(task.cpu_reqs.cpu_threads, threads_per_process)
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             # incorrect type for `cpu_reqs` attribute
             task.cpu_reqs = list()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             # incorrect type of `cpu_reqs.cpu_processes` attribute
             task.cpu_reqs = {'cpu_processes'   : 'a',
                              'cpu_process_type': None,
                              'cpu_threads'     : 1,
                              'cpu_thread_type' : 'OpenMP'}
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             # incorrect type of `cpu_reqs.cpu_threads` attribute
             task.cpu_reqs = {'cpu_processes'   : 1,
                              'cpu_process_type': None,
@@ -160,16 +160,16 @@ class TestTask(TestCase):
         task.gpu_reqs.threads_per_process = threads_per_process
         self.assertEqual(task.gpu_reqs.gpu_threads, threads_per_process)
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             task.gpu_reqs = list()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             task.gpu_reqs = {'gpu_processes'   : 'a',
                              'gpu_process_type': None,
                              'gpu_threads'     : 1,
                              'gpu_thread_type' : 'OpenMP'}
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             task.gpu_reqs = {'gpu_processes'   : 1,
                              'gpu_process_type': None,
                              'gpu_threads'     : 'a',
@@ -258,7 +258,7 @@ class TestTask(TestCase):
 
         task = Task()
         Task._cast = False  # if True, then `executable` will be "['test_exec']"
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             task.executable = ['test_exec']
 
         task = Task()
