@@ -479,8 +479,7 @@ class WFprocessor(object):
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
                 # Create a  task from the received msg
-                deq_task = Task()
-                deq_task.from_dict(json.loads(body))
+                deq_task = Task(from_dict=json.loads(body))
                 self._logger.info('Got finished task %s from queue'
                                   % (deq_task.uid))
                 self._update_dequeued_task(deq_task)
@@ -586,7 +585,7 @@ class WFprocessor(object):
                     self._logger.info('Terminating dequeue-thread')
                     self._dequeue_thread_terminate.set()
                     if tid != self._dequeue_thread.ident:
-                      self._dequeue_thread.join()
+                        self._dequeue_thread.join()
                     self._dequeue_thread = None
 
             self._logger.info('WFprocessor terminated')

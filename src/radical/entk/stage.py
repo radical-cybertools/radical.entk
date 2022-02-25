@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2014-2020, http://radical.rutgers.edu'
 __license__   = 'MIT'

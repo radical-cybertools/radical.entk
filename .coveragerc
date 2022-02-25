@@ -2,3 +2,4 @@
 [run]
 concurrency = multiprocessing
 parallel = True
+omit = tests/*

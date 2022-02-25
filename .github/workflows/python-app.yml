@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  test:
+  tests:
     runs-on: ubuntu-latest
     services:
       rabbitmq:
@@ -26,20 +26,20 @@ jobs:
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6.13
+        python-version: 3.6
     - name: Install dependencies
       run: |
         python -m venv testenv
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
+        python -m pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
+        python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
+        python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
         python -m pip install psutil
         python -m pip install hypothesis
-        python -m pip install coverage
-        python -m pip install codecov
-        python -m pip install pytest
-        python -m pip install pytest-xdist
-        python -m pip install pytest-timeout
+        python -m pip install coverage codecov
+        python -m pip install pytest pytest-timeout pytest-xdist
         python -m pip install timeout-decorator
     - name: Test with pytest
       env:
@@ -58,7 +58,7 @@ jobs:
       with:
         file: ./coverage.xml
 
-  flake8:
+  linting:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -67,15 +67,19 @@ jobs:
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6.13
+        python-version: 3.6
     - name: Install dependencies
       run: |
         python -m venv testenv
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
+        python -m pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
+        python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
+        python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
         python -m pip install flake8 flake8-per-file-ignores
-    - name: Lint with flake8
+        python -m pip install pytest pylint
+    - name: Lint with flake8 and pylint
       run: |
         . testenv/bin/activate
         LOG=`git log -n 1 | grep Merge`
@@ -84,30 +88,4 @@ jobs:
         DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
         DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
         test -z "$DIFF" && echo 'nothing to flake8' || flake8 $DIFF
-
-  pylint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 2
-    - name: Set up Python 3.6
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.6.13
-    - name: Install dependencies
-      run: |
-        python -m venv testenv
-        . testenv/bin/activate
-        python -m pip install --upgrade pip setuptools
-        python -m pip install --upgrade .
-        python -m pip install pylint
-    - name: Lint with pylint
-      run: |
-        . testenv/bin/activate
-        LOG=`git log -n 1 | grep Merge`
-        NEW=`echo $LOG | cut -d ' ' -f2`
-        OLD=`echo $LOG | cut -d ' ' -f3`
-        DIFF=`git diff  --name-only --diff-filter=db $NEW..$OLD`
-        DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b' | sed "s|^|$PWD/|")
         test -z "$DIFF" && echo 'nothing to pylint' || pylint $DIFF

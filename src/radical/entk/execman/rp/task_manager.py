@@ -393,8 +393,7 @@ class TaskManager(Base_TaskManager):
 
                 for msg in body:
 
-                    task = Task()
-                    task.from_dict(msg)
+                    task = Task(from_dict=msg)
                     load_placeholder(task)
                     bulk_tds.append(create_td_from_task(
                                         task, placeholders,
@@ -404,6 +403,7 @@ class TaskManager(Base_TaskManager):
                     self._advance(task, 'Task', states.SUBMITTING,
                                   mq_channel, rmq_conn_params,
                                   '%s-tmgr-to-sync' % self._sid)
+
                 if bulk_tds:
                     self._rp_tmgr.submit_tasks(bulk_tds)
             mq_connection.close()
