@@ -261,9 +261,9 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(Stage, '__init__', return_value=None)
-    def test_stage_to_dict(self, mocked_init):
+    def test_stage_as_dict(self, mocked_init):
 
-        s = Stage()        
+        s = Stage()
         s._uid = 'stage.0000'
         s._name = 'test_stage'
         s._state = states.INITIAL
@@ -274,7 +274,7 @@ class TestBase(TestCase):
                                       'name': 'test_stage',
                                       'state': states.INITIAL,
                                       'state_history': [states.INITIAL],
-                                      'parent_pipeline': {'uid': 'pipeline.0000', 
+                                      'parent_pipeline': {'uid': 'pipeline.0000',
                                                           'name': 'parent'}})
 
 

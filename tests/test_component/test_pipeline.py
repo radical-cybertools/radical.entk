@@ -166,7 +166,7 @@ class TestBase(TestCase):
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
-    def test_pipeline_to_dict(self, mocked_init):
+    def test_pipeline_as_dict(self, mocked_init):
 
         p = Pipeline()
         p._uid  = 'pipeline.0000'
