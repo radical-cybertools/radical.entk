@@ -7,7 +7,7 @@ import os
 
 from unittest import TestCase
 
-import radical.utils
+import radical.utils       as ru
 import radical.entk.states as states
 
 from radical.entk.utils              import get_session_description
@@ -34,12 +34,13 @@ class TestBase(TestCase):
             nonlocal global_jsons
             global_jsons.append([desc, path])
 
-        curr_path = os.path.dirname(__file__)
-        with open(curr_path + '/sample_data/expected_desc_write_session.dict') as session:
+        desc_file = (os.path.dirname(__file__) +
+                     '/sample_data/expected_desc_write_session.dict')
+        with ru.ru_open(desc_file) as session:
             data = session.readlines()
 
         expected_session = eval(''.join([x for x in data]))
-        radical.utils.write_json = mock.MagicMock(side_effect=_write_json_side_effect)
+        ru.write_json = mock.MagicMock(side_effect=_write_json_side_effect)
         amgr = mock.Mock()
         amgr.resource_desc = {'resource' : 'xsede.stampede',
                               'walltime' : 59,
@@ -89,7 +90,7 @@ class TestBase(TestCase):
         src  = '%s/sample_data/profiler' % pwd
         desc = get_session_description(sid=sid, src=src)
 
-        self.assertEqual(desc, radical.utils.read_json('%s/expected_desc_get_session.json' % src))
+        self.assertEqual(desc, ru.read_json('%s/expected_desc_get_session.json' % src))
 
 
     # ------------------------------------------------------------------------------
@@ -102,7 +103,7 @@ class TestBase(TestCase):
                  'radical.pilot': '1.5.5',
                  'radical.entk': '1.5.5',
                  'radical.gtod': '1.5.0'}}
-        radical.utils.stack = mock.MagicMock(return_value=stack)
+        ru.stack = mock.MagicMock(return_value=stack)
 
         pipe = mock.Mock()
         pipe.uid = 'pipe.0000'
