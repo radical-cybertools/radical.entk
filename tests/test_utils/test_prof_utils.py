@@ -136,8 +136,9 @@ class TestBase(TestCase):
         workflow = [[pipe]]
 
         workflow = write_workflows(workflow, 'test', fwrite=False)
-        curr_path = os.path.dirname(__file__)
-        with open(curr_path + '/sample_data/expected_workflow.dict') as session:
+        desc_file = (os.path.dirname(__file__) +
+                     '/sample_data/expected_workflow.dict')
+        with ru.ru_open(desc_file) as session:
             data = session.readlines()
 
         expected_workflow = eval(''.join([x for x in data]))
