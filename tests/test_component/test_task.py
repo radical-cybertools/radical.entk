@@ -102,7 +102,7 @@ class TestTask(TestCase):
                     'cpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'cpu_reqs': cpu_reqs})
-        self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
+        self.assertEqual(Task.to_dict(task.cpu_reqs), cpu_reqs)
 
         # obsolete names for `cpu_reqs` keys
         cpu_reqs_obsolete_keys = {'processes'          : 2,
@@ -111,7 +111,7 @@ class TestTask(TestCase):
                                   'thread_type'        : 'OpenMP'}
 
         task = Task(from_dict={'cpu_reqs': cpu_reqs_obsolete_keys})
-        self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
+        self.assertEqual(Task.to_dict(task.cpu_reqs), cpu_reqs)
 
         threads_per_process = 64
         task.cpu_reqs.threads_per_process = threads_per_process
@@ -145,7 +145,7 @@ class TestTask(TestCase):
                     'gpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'gpu_reqs': gpu_reqs})
-        self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+        self.assertEqual(Task.to_dict(task.gpu_reqs), gpu_reqs)
 
         # obsolete names for `gpu_reqs` keys
         gpu_reqs_obsolete_keys = {'processes'          : 2,
@@ -154,7 +154,7 @@ class TestTask(TestCase):
                                   'thread_type'        : 'OpenMP'}
 
         task = Task(from_dict={'gpu_reqs': gpu_reqs_obsolete_keys})
-        self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+        self.assertEqual(Task.to_dict(task.gpu_reqs), gpu_reqs)
 
         threads_per_process = 64
         task.gpu_reqs.threads_per_process = threads_per_process
@@ -230,7 +230,7 @@ class TestTask(TestCase):
         }
         task = Task(from_dict=input_dict)
         for k, v in input_dict.items():
-            self.assertEqual(Task.demunch(task[k]), v)
+            self.assertEqual(Task.to_dict(task[k]), v)
 
         input_dict = {
             'name'      : 'foo',
@@ -246,7 +246,7 @@ class TestTask(TestCase):
         task.from_dict(input_dict)
 
         for k, v in input_dict.items():
-            self.assertEqual(Task.demunch(task[k]), v)
+            self.assertEqual(Task.to_dict(task[k]), v)
 
     # --------------------------------------------------------------------------
     #

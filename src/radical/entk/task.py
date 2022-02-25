@@ -43,7 +43,7 @@ class ReqsMixin:
 
 # ------------------------------------------------------------------------------
 #
-class CpuReqs(ReqsMixin, ru.Munch):
+class CpuReqs(ReqsMixin, ru.TypedDict):
 
     _check = True
 
@@ -73,7 +73,7 @@ class CpuReqs(ReqsMixin, ru.Munch):
 
 # ------------------------------------------------------------------------------
 #
-class GpuReqs(ReqsMixin, ru.Munch):
+class GpuReqs(ReqsMixin, ru.TypedDict):
 
     _check = True
 
@@ -103,7 +103,7 @@ class GpuReqs(ReqsMixin, ru.Munch):
 
 # ------------------------------------------------------------------------------
 #
-class Task(ru.Munch):
+class Task(ru.TypedDict):
     """
     A Task is an abstraction of a computational unit. In this case, a Task
     consists of its executable along with its required software environment,

@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 # pylint: disable=protected-access, unused-argument, eval-used
 # pylint: disable=no-value-for-parameter
+
 import os
 
 from unittest import TestCase
@@ -120,7 +123,7 @@ class TestBase(TestCase):
         task.name = 'task.0000'
         task.state = states.INITIAL
         task.state_history = [states.INITIAL]
-        task.to_dict = mock.MagicMock(return_value={'uid'           : 'task.0000',
+        task.as_dict = mock.MagicMock(return_value={'uid'           : 'task.0000',
                                                     'name'          : 'task.0000',
                                                     'state'         : states.INITIAL,
                                                     'state_history' : [states.INITIAL],
@@ -139,5 +142,18 @@ class TestBase(TestCase):
         expected_workflow = eval(''.join([x for x in data]))
 
         self.assertEqual(workflow, expected_workflow)
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    tb = TestBase()
+    tb.maxDiff = None
+    tb.test_write_session_description()
+    tb.test_get_session_description()
+    tb.test_write_workflows()
+
 # ------------------------------------------------------------------------------
 # pylint: enable=protected-access
+

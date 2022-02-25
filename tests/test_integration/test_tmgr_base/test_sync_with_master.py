@@ -55,7 +55,7 @@ class TestTask(TestCase):
         mq_channel = mq_connection.channel()
         mq_channel.queue_declare(queue='master')
         master_thread = mt.Thread(target=component_execution,
-                                  name='tmgr_sync', 
+                                  name='tmgr_sync',
                                   args=(packets, rmq_conn_params, 'master'))
         master_thread.start()
 
