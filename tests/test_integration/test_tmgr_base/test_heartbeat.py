@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
+
 import os
 import pika
 import time
@@ -97,3 +100,14 @@ class TestTask(TestCase):
             mq_channel.queue_delete(queue='tmgr-hb-response')
             mq_channel.close()
             mq_connection.close()
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    tt = TestTask()
+    tt.test_heartbeat()
+
+
+# ------------------------------------------------------------------------------
+
