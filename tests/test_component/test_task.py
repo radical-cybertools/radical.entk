@@ -260,6 +260,7 @@ class TestTask(TestCase):
         Task._cast = False  # if True, then `executable` will be "['test_exec']"
         with self.assertRaises(TypeError):
             task.executable = ['test_exec']
+        Task._cast = True   # class attribute shouldn't be changed
 
         task = Task()
         with self.assertRaises(ree.EnTKError):
