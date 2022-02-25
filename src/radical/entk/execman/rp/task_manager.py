@@ -393,8 +393,7 @@ class TaskManager(Base_TaskManager):
 
                 for msg in body:
 
-                    task = Task()
-                    task.from_dict(msg)
+                    task = Task(from_dict=msg)
                     task_fits_res = check_resource_reqs(task)
                     if task_fits_res:
                         load_placeholder(task)

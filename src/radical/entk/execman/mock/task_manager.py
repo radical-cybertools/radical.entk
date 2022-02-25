@@ -244,8 +244,7 @@ class TaskManager(Base_TaskManager):
 
                 for msg in body:
 
-                    task = Task()
-                    task.from_dict(msg)
+                    task = Task(from_dict=msg)
                     bulk_tasks.append(task)
 
                     self._advance(task, 'Task', states.SUBMITTING,
