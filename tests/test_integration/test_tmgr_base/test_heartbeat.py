@@ -101,6 +101,7 @@ class TestTask(TestCase):
             mq_channel.close()
             mq_connection.close()
 
+
 # ------------------------------------------------------------------------------
 #
 if __name__ == '__main__':
