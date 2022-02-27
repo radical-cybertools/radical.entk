@@ -219,7 +219,7 @@ class WFprocessor(object):
         # Tasks of the workload need to be converted into a dict
         # as pika can send and receive only json/dict data
         wl_json = {'type': 'workload',
-                   'body': [task.to_dict() for task in workload]}
+                   'body': [task.as_dict() for task in workload]}
 
         wl_json = json.dumps(wl_json)
 

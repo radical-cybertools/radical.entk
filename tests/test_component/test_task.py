@@ -3,6 +3,8 @@
 __copyright__ = 'Copyright 2020-2022, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
+import radical.utils           as ru
+
 import radical.entk.exceptions as ree
 import radical.entk.states     as res
 
@@ -102,7 +104,8 @@ class TestTask(TestCase):
                     'cpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'cpu_reqs': cpu_reqs})
-        self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
+        self.assertEqual(ru.as_dict(task.cpu_reqs), cpu_reqs)
+        self.assertEqual(task.cpu_reqs.as_dict(),   cpu_reqs)
 
         # obsolete names for `cpu_reqs` keys
         cpu_reqs_obsolete_keys = {'processes'          : 2,
@@ -111,7 +114,7 @@ class TestTask(TestCase):
                                   'thread_type'        : 'OpenMP'}
 
         task = Task(from_dict={'cpu_reqs': cpu_reqs_obsolete_keys})
-        self.assertEqual(Task.demunch(task.cpu_reqs), cpu_reqs)
+        self.assertEqual(ru.as_dict(task.cpu_reqs), cpu_reqs)
 
         threads_per_process = 64
         task.cpu_reqs.threads_per_process = threads_per_process
@@ -145,7 +148,8 @@ class TestTask(TestCase):
                     'gpu_thread_type' : 'OpenMP'}
 
         task = Task(from_dict={'gpu_reqs': gpu_reqs})
-        self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+        self.assertEqual(ru.as_dict(task.gpu_reqs), gpu_reqs)
+        self.assertEqual(task.gpu_reqs.as_dict(),   gpu_reqs)
 
         # obsolete names for `gpu_reqs` keys
         gpu_reqs_obsolete_keys = {'processes'          : 2,
@@ -154,7 +158,7 @@ class TestTask(TestCase):
                                   'thread_type'        : 'OpenMP'}
 
         task = Task(from_dict={'gpu_reqs': gpu_reqs_obsolete_keys})
-        self.assertEqual(Task.demunch(task.gpu_reqs), gpu_reqs)
+        self.assertEqual(ru.as_dict(task.gpu_reqs), gpu_reqs)
 
         threads_per_process = 64
         task.gpu_reqs.threads_per_process = threads_per_process
@@ -230,7 +234,7 @@ class TestTask(TestCase):
         }
         task = Task(from_dict=input_dict)
         for k, v in input_dict.items():
-            self.assertEqual(Task.demunch(task[k]), v)
+            self.assertEqual(ru.as_dict(task[k]), v)
 
         input_dict = {
             'name'      : 'foo',
@@ -246,7 +250,7 @@ class TestTask(TestCase):
         task.from_dict(input_dict)
 
         for k, v in input_dict.items():
-            self.assertEqual(Task.demunch(task[k]), v)
+            self.assertEqual(ru.as_dict(task[k]), v)
 
     # --------------------------------------------------------------------------
     #
@@ -257,9 +261,10 @@ class TestTask(TestCase):
         self.assertEqual(task.executable, 'test_exec')
 
         task = Task()
-        task._cast = False  # if True, then `executable` will be "['test_exec']"
+        Task._cast = False  # if True, then `executable` will be "['test_exec']"
         with self.assertRaises(TypeError):
             task.executable = ['test_exec']
+        Task._cast = True   # class attribute shouldn't be changed
 
         task = Task()
         with self.assertRaises(ree.EnTKError):
@@ -313,7 +318,7 @@ class TestTask(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    def test_task_to_dict(self):
+    def test_task_as_dict(self):
 
         expected_dict = {
             'uid'                 : 'test.0000',
@@ -356,7 +361,7 @@ class TestTask(TestCase):
                                      'name': 'pipe.0000'}}
 
         task = Task(from_dict=expected_dict)
-        self.assertEqual(task.to_dict(), expected_dict)
+        self.assertEqual(task.as_dict(), expected_dict)
 
     # --------------------------------------------------------------------------
     #

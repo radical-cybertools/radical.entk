@@ -101,12 +101,12 @@ class TestBase(TestCase):
             with self.assertRaises(TypeError):
                 s._validate_entities(data)
 
-        t = mock.MagicMock(spec=Task())
+        t = Task()
         self.assertIsInstance(s._validate_entities(t), set)
 
-        t1 = mock.MagicMock(spec=Task())
-        t2 = mock.MagicMock(spec=Task())
-        self.assertEqual(set([t1, t2]), s._validate_entities([t1, t2]))
+        t1 = Task()
+        t2 = Task()
+        self.assertEqual({t1, t2}, s._validate_entities([t1, t2]))
 
 
     # ------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ class TestBase(TestCase):
 
         s = Stage()
         s._validate_entities = mock.MagicMock(side_effect=_validate_entities_side_effect)
-        t = mock.MagicMock(spec=Task())
+        t = Task()
         s.tasks = t
 
         self.assertIsInstance(s.tasks, set)
@@ -234,9 +234,9 @@ class TestBase(TestCase):
         s._uid = 'stage.0000'
         s._name = None
         s._tasks = set()
-        t1 = mock.MagicMock(spec=Task())
-        t2 = mock.MagicMock(spec=Task())
-        s.add_tasks(set([t1, t2]))
+        t1 = Task()
+        t2 = Task()
+        s.add_tasks({t1, t2})
 
         self.assertIsInstance(s.tasks, set)
         self.assertEqual(s._task_count, 2)
@@ -248,8 +248,8 @@ class TestBase(TestCase):
         s._name = None
         s._p_pipeline = {'uid': None, 'name': None}
         s._tasks = set()
-        t1 = mock.MagicMock(spec=Task())
-        t2 = mock.MagicMock(spec=Task())
+        t1 = Task()
+        t2 = Task()
         s.add_tasks([t1, t2])
 
         self.assertIsInstance(s.tasks, set)
@@ -261,20 +261,20 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(Stage, '__init__', return_value=None)
-    def test_stage_to_dict(self, mocked_init):
+    def test_stage_as_dict(self, mocked_init):
 
-        s = Stage()        
+        s = Stage()
         s._uid = 'stage.0000'
         s._name = 'test_stage'
         s._state = states.INITIAL
         s._state_history = [states.INITIAL]
         s._p_pipeline = {'uid': 'pipeline.0000', 'name': 'parent'}
 
-        self.assertEqual(s.to_dict(),{'uid': 'stage.0000',
+        self.assertEqual(s.as_dict(),{'uid': 'stage.0000',
                                       'name': 'test_stage',
                                       'state': states.INITIAL,
                                       'state_history': [states.INITIAL],
-                                      'parent_pipeline': {'uid': 'pipeline.0000', 
+                                      'parent_pipeline': {'uid': 'pipeline.0000',
                                                           'name': 'parent'}})
 
 
@@ -313,9 +313,9 @@ class TestBase(TestCase):
 
         s = Stage()
         s._uid = 'stage.0000'
-        t1 = mock.MagicMock(spec=Task())
-        t2 = mock.MagicMock(spec=Task())
-        s._tasks = set([t1, t2])
+        t1 = Task()
+        t2 = Task()
+        s._tasks = {t1, t2}
 
         with self.assertRaises(ValueError):
             s._set_tasks_state(2)
@@ -332,9 +332,9 @@ class TestBase(TestCase):
 
         s = Stage()
         s._uid = 'stage.0000'
-        t1 = mock.MagicMock(spec=Task())
-        t2 = mock.MagicMock(spec=Task())
-        s._tasks = set([t1, t2])
+        t1 = Task()
+        t2 = Task()
+        s._tasks = {t1, t2}
 
         self.assertFalse(s._check_stage_complete())
         for t in s._tasks:
@@ -364,7 +364,7 @@ class TestBase(TestCase):
         s._uid = 'stage.0000'
         t = mock.MagicMock(spec=Stage)
         t._validate = mock.MagicMock(return_value=True)
-        s._tasks = set([t])
+        s._tasks = {t}
         s._state = states.INITIAL
         s._validate()
 

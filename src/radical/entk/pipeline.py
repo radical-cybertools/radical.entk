@@ -223,7 +223,7 @@ class Pipeline(object):
                 task.parent_pipeline['name'] = self._name
 
 
-    def to_dict(self):
+    def as_dict(self):
         """
         Convert current Pipeline (i.e. its attributes) into a dictionary
 
