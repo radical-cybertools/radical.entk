@@ -304,17 +304,6 @@ class TaskManager(Base_TaskManager):
                                                              'uid': task.uid}
 
         # ----------------------------------------------------------------------
-        def check_resource_reqs(task):
-
-            cpu_reqs = task.cpu_reqs['cpu_processes'] * task.cpu_reqs['cpu_threads']
-            gpu_reqs = task.cpu_reqs['cpu_processes'] * task.gpu_reqs['gpu_processes']
-
-            if cpu_reqs > self._total_res['cores'] or \
-               gpu_reqs > self._total_res['gpus']:
-                return False
-            return True
-
-        # ----------------------------------------------------------------------
         def task_state_cb(rp_task, state, cb_data):
 
             try:
