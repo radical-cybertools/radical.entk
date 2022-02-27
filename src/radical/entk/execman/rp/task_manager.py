@@ -334,7 +334,7 @@ class TaskManager(Base_TaskManager):
 
                     load_placeholder(task)
 
-                    task_as_dict = json.dumps(task.to_dict())
+                    task_as_dict = json.dumps(task.as_dict())
                     try:
                         channel.basic_publish(exchange='',
                                               routing_key='%s-completedq-1' % self._sid,

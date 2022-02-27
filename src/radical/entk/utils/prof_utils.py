@@ -271,7 +271,7 @@ def write_workflows(workflows, uid, fname=None, fwrite=True):
                 s['tasks']         = list()
 
                 for task in stage.tasks:
-                    s['tasks'].append(task.to_dict())
+                    s['tasks'].append(task.as_dict())
 
                 p['stages'].append(s)
 

@@ -258,7 +258,7 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, rmq_conn_params,
                                   '%s-cb-to-sync' % self._sid)
 
-                    task_as_dict = json.dumps(task.to_dict())
+                    task_as_dict = json.dumps(task.as_dict())
                     mq_channel.basic_publish(
                             exchange='',
                             routing_key='%s-completedq-1' % self._sid,
