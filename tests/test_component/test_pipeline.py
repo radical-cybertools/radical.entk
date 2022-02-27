@@ -166,7 +166,7 @@ class TestBase(TestCase):
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
-    def test_pipeline_to_dict(self, mocked_init):
+    def test_pipeline_as_dict(self, mocked_init):
 
         p = Pipeline()
         p._uid  = 'pipeline.0000'
@@ -179,7 +179,7 @@ class TestBase(TestCase):
         p._completed_flag = mock.Mock()
         p._completed_flag.is_set = mock.MagicMock(return_value=False)
 
-        d = p.to_dict()
+        d = p.as_dict()
         self.assertEqual(d, {'uid': 'pipeline.0000',
                              'name': 'test_pipeline',
                              'state': states.INITIAL,

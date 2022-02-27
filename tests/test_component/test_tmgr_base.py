@@ -127,26 +127,24 @@ class TestBase(TestCase):
         tmgr._prof = mocked_Profiler
         tmgr._sync_with_master = mock.MagicMock(side_effect=_sync_side_effect)
         tmgr._uid = 'tmgr.0000'
-        obj = mock.MagicMock(spec=Task())
+        obj = Task({'uid': 'test.object.00'})
         obj.parent_stage = {'uid': 'test_stage'}
         obj.parent_pipeline = {'uid': 'test_pipe'}
-        obj.uid = 'test_object'
-        obj.state = 'test_state'
 
-        tmgr._advance(obj, 'Task', None, 'channel', 'params', 'queue')
+        tmgr._advance(obj, 'Task', 'SCHEDULING', 'channel', 'params', 'queue')
         self.assertEqual(global_syncs[0],
                          [obj, 'Task', 'channel', 'params', 'queue'])
-        self.assertIsNone(obj.state)
+        self.assertEqual(obj.state, 'SCHEDULING')
 
         # no `obj` type - will not change the processing flow
         tmgr._advance(obj, 'unknown_type', None, 'channel', 'params', 'queue')
         self.assertIsNone(obj.state)
 
         global_syncs = []
-        tmgr._advance(obj, 'Stage', 'new_state', 'channel', 'params', 'queue')
-        self.assertEqual(global_syncs[0],[obj, 'Stage', 'channel', 'params', 
-                                          'queue'])
-        self.assertEqual(obj.state, 'new_state')
+        tmgr._advance(obj, 'Stage', 'DONE', 'channel', 'params', 'queue')
+        self.assertEqual(global_syncs[0],
+                         [obj, 'Stage', 'channel', 'params', 'queue'])
+        self.assertEqual(obj.state, 'DONE')
 
         # mimic exception
         tmgr._prof.prof = mock.MagicMock(side_effect=Exception('error'))

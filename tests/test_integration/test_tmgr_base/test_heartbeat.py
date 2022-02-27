@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
+
 import os
 import pika
 import time
@@ -22,26 +25,33 @@ class TestTask(TestCase):
     @mock.patch('radical.utils.Profiler')
     def test_heartbeat(self, mocked_init, mocked_Profiler):
 
-        hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-        port = int(os.environ.get('RMQ_PORT', '5672'))
-        username = os.environ.get('RMQ_USERNAME','guest')
-        password = os.environ.get('RMQ_PASSWORD','guest')
-        credentials = pika.PlainCredentials(username, password)
-        rmq_conn_params = pika.ConnectionParameters(host=hostname, port=port,
+        hostname    = os.environ.get('RMQ_HOSTNAME', 'localhost')
+        port        = os.environ.get('RMQ_PORT', '5672')
+        username    = os.environ.get('RMQ_USERNAME','guest')
+        password    = os.environ.get('RMQ_PASSWORD','guest')
+
+        credentials     = pika.PlainCredentials(username, password)
+        rmq_conn_params = pika.ConnectionParameters(host=hostname,
+                                                    port=int(port),
                                                     credentials=credentials)
-        tmgr = BaseTmgr(None, None, None, None, None, None)
-        tmgr._uid = 'tmgr.0000'
-        tmgr._log = ru.Logger('radical.entk.manager.base', level='DEBUG')
+
+        tmgr       = BaseTmgr(None, None, None, None, None, None)
+        tmgr._uid  = 'tmgr.0000'
+        tmgr._log  = ru.Logger('radical.entk.manager.base', level = 'DEBUG')
         tmgr._prof = mocked_Profiler
-        tmgr._hb_interval = 0.1
-        tmgr._hb_terminate = mt.Event()
-        tmgr._hb_request_q = 'tmgr-hb-request'
-        tmgr._hb_response_q = 'tmgr-hb-response'
+
+        tmgr._hb_interval     = 0.1
+        tmgr._hb_terminate    = mt.Event()
+        tmgr._hb_request_q    = 'tmgr-hb-request'
+        tmgr._hb_response_q   = 'tmgr-hb-response'
         tmgr._rmq_conn_params = rmq_conn_params
+
         mq_connection = pika.BlockingConnection(rmq_conn_params)
-        mq_channel = mq_connection.channel()
+        mq_channel    = mq_connection.channel()
+
         mq_channel.queue_declare(queue='tmgr-hb-request')
         mq_channel.queue_declare(queue='tmgr-hb-response')
+
         tmgr._log.info('Starting test')
         master_thread = mt.Thread(target=tmgr._heartbeat,
                                   name='tmgr_heartbeat')
@@ -82,18 +92,22 @@ class TestTask(TestCase):
             time.sleep(0.2)
             self.assertFalse(master_thread.is_alive())
 
-        except Exception as ex:
+        finally:
             tmgr._hb_terminate.set()
             master_thread.join()
             mq_channel.queue_delete(queue='tmgr-hb-request')
             mq_channel.queue_delete(queue='tmgr-hb-response')
             mq_channel.close()
             mq_connection.close()
-            raise ex
-        else:
-            tmgr._hb_terminate.set()
-            master_thread.join()
-            mq_channel.queue_delete(queue='tmgr-hb-request')
-            mq_channel.queue_delete(queue='tmgr-hb-response')
-            mq_channel.close()
-            mq_connection.close()
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    tt = TestTask()
+    tt.test_heartbeat()
+
+
+# ------------------------------------------------------------------------------
+
