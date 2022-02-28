@@ -6,6 +6,16 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.12.0  Release                                                       2022-02-28
+--------------------------------------------------------------------------------
+
+  - make `Task` instances hashable
+  - enforced that `uid` is set during initialization only
+  - support `descr.memory`
+  - fixed and updated class Task (Munch-based)
+  - use ru.TypedDict for Munch, fix tests
+  
+
 1.11.0  Release                                                       2022-01-19
 --------------------------------------------------------------------------------
 
@@ -328,6 +338,3 @@
 
 # ------------------------------------------------------------------------------
 
-
-
--->   origin/master
