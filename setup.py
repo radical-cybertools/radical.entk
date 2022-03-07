@@ -16,7 +16,6 @@ import shutil
 
 import subprocess as sp
 
-
 from setuptools import setup, Command, find_namespace_packages
 
 
@@ -24,6 +23,8 @@ from setuptools import setup, Command, find_namespace_packages
 name     = 'radical.entk'
 mod_root = 'src/radical/entk/'
 
+sdist_level = int(os.environ.get('SDIST_LEVEL', 0))
+os.environ['SDIST_LEVEL'] = str(sdist_level + 1)
 
 # ------------------------------------------------------------------------------
 #
@@ -125,7 +126,7 @@ def get_version(_mod_root):
             # the formerly derived version as ./VERSION
             shutil.move("VERSION", "VERSION.bak")              # backup
             shutil.copy("%s/VERSION" % _path, "VERSION")       # version to use
-            os.system  ("python3 setup.py sdist")               # build sdist
+            os.system  ("python3 setup.py sdist")              # build sdist
             shutil.copy('dist/%s' % _sdist_name,
                         '%s/%s'   % (_mod_root, _sdist_name))  # copy into tree
             shutil.move('VERSION.bak', 'VERSION')              # restore version
@@ -140,14 +141,14 @@ def get_version(_mod_root):
 
 
 # ------------------------------------------------------------------------------
-# check python version, should be >= 3.6
-if sys.hexversion < 0x03060000:
-    raise RuntimeError('ERROR: %s requires Python 3.6 or newer' % name)
+# get version info -- this will create VERSION and srcroot/VERSION
+version, version_detail, sdist_name, path = get_version(mod_root)
 
 
 # ------------------------------------------------------------------------------
-# get version info -- this will create VERSION and srcroot/VERSION
-version, version_detail, sdist_name, path = get_version(mod_root)
+# check python version, should be >= 3.6
+if sys.hexversion < 0x03060000:
+    raise RuntimeError('ERROR: %s requires Python 3.6 or newer' % name)
 
 
 # ------------------------------------------------------------------------------
@@ -254,10 +255,13 @@ setup(**setup_args)
 
 # ------------------------------------------------------------------------------
 # clean temporary files from source tree
-os.system('rm -vrf src/%s.egg-info' % name)
-os.system('rm -vf  %s/%s'           % (path, sdist_name))
-os.system('rm -vf  %s/VERSION'      % path)
-os.system('rm -vf  %s/SDIST'        % path)
+if sdist_level == 0:
+    os.system('cat     %s/SDIST'        % path)
+    os.system('cat     %s/VERSION'      % path)
+    os.system('rm -vrf src/%s.egg-info' % name)
+    os.system('rm -vf  %s/%s'           % (path, sdist_name))
+    os.system('rm -vf  %s/VERSION'      % path)
+    os.system('rm -vf  %s/SDIST'        % path)
 
 
 # ------------------------------------------------------------------------------
