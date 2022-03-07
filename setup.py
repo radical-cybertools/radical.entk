@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-__author__    = 'RADICAL Team'
-__email__     = 'radical@rutgers.edu'
-__copyright__ = 'Copyright 2013-19, RADICAL Research, Rutgers University'
+__author__    = 'RADICAL-Cybertools Team'
+__email__     = 'info@radical-cybertools.org'
+__copyright__ = 'Copyright 2013-20, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
 
@@ -173,6 +173,8 @@ class RunTwine(Command):
 
 # ------------------------------------------------------------------------------
 #
+# This copies the contents like examples/ dir under sys.prefix/share/$name
+# It needs the MANIFEST.in entries to work.
 base = 'share/%s' % name
 df = [('%s/examples/user_guide/' % base, glob.glob('examples/user_guide/*')),
       ('%s/examples/simple/'     % base, glob.glob('examples/simple/*')),
@@ -256,8 +258,6 @@ setup(**setup_args)
 # ------------------------------------------------------------------------------
 # clean temporary files from source tree
 if sdist_level == 0:
-    os.system('cat     %s/SDIST'        % path)
-    os.system('cat     %s/VERSION'      % path)
     os.system('rm -vrf src/%s.egg-info' % name)
     os.system('rm -vf  %s/%s'           % (path, sdist_name))
     os.system('rm -vf  %s/VERSION'      % path)
