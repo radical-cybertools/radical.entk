@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.13.0  Release                                                       2022-03-21
+--------------------------------------------------------------------------------
+
+  - clean temporary setup files
+
+
 1.12.0  Release                                                       2022-02-28
 --------------------------------------------------------------------------------
 
