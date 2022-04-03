@@ -235,7 +235,8 @@ setup_args = {
     'install_requires'   : ['radical.utils>=1.12',
                             'radical.pilot>=1.12',
                             'pika==0.13.0',
-                            'sphinx'
+                            'packaging',
+                            'requests'
                            ],
     'tests_require'      : ['pytest',
                             'pylint',
