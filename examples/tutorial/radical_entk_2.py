@@ -235,8 +235,7 @@ if __name__ == '__main__':
 
     # create an ensemble of n simulation pipelines
     for cnt in range(N_PIPELINES):
-        pipe_name = 'pipe.%03d' % cnt
-        generate_pipeline(pipe_name)
+        generate_pipeline(pname='pipe.%03d' % cnt)
 
     # assign the workflow to the application manager, then
     # run the ensemble and wait for completion
@@ -245,8 +244,8 @@ if __name__ == '__main__':
 
     # check results which were staged back
     for cnt in range(N_PIPELINES):
-        fname = 'pipe.%03d.sum.txt' % cnt
-        pipe_result = int(open(fname, encoding='utf-8').read())
+        pipe_fname  = 'pipe.%03d.sum.txt' % cnt
+        pipe_result = int(open(pipe_fname, encoding='utf-8').read())
         print('%18d - %10d' % (cnt, pipe_result))
 
 

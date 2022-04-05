@@ -23,14 +23,14 @@ import radical.entk as re
 
 # ------------------------------------------------------------------------------
 #
-def generate_pipeline(uid):
+def generate_pipeline(pname):
     '''
     Generate a single simulation pipeline, i.e., a new ensemble member.
     The pipeline structure consisting of three steps as described above.
     '''
 
     # all tasks in this pipeline share the same sandbox
-    sandbox = uid
+    sandbox = pname
 
     # first stage: create 1 task to generate a random seed number
     t1 = re.Task()
@@ -71,7 +71,7 @@ def generate_pipeline(uid):
     t4.sandbox    = sandbox
 
     # download the result while renaming to get unique files per pipeline
-    t4.download_output_data = ['sqrt.txt > %s.sqrt.txt' % uid]
+    t4.download_output_data = ['sqrt.txt > %s.sqrt.txt' % pname]
 
     s4 = re.Stage()
     s4.add_tasks(t4)
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     n_pipelines = 10
     ensemble = set()
     for cnt in range(n_pipelines):
-        ensemble.add(generate_pipeline(uid='pipe.%03d' % cnt))
+        ensemble.add(generate_pipeline(pname='pipe.%03d' % cnt))
 
     # assign the workflow to the application manager, then
     # run the ensemble and wait for completion
@@ -115,9 +115,9 @@ if __name__ == '__main__':
 
     # check results which were staged back
     for cnt in range(n_pipelines):
-        data   = open('pipe.%03d.sqrt.txt' % cnt, encoding='utf-8').read()
-        result = float(data)
-        print('%3d -- %25.2f' % (cnt, result))
+        pipe_fname  = 'pipe.%03d.sqrt.txt' % cnt
+        pipe_result = float(open(pipe_fname, encoding='utf-8').read())
+        print('%3d -- %25.2f' % (cnt, pipe_result))
 
 
 # ------------------------------------------------------------------------------
