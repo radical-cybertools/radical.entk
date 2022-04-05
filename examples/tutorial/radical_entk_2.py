@@ -57,9 +57,10 @@ def get_stage_1(sandbox, pname):
 
     # --------------------------------------------------------------------------
     # use a callback after that stage completed for output of the seed value
-    def post_exec(stage, pname):
-        seed = int(open('%s.random.txt' % pname).read().split()[-1])
-        print(pname, 'rand  --- - %10d' % seed)
+    def post_exec(_stage, _pname):
+        fname = '%s.random.txt' % _pname
+        seed  = int(open(fname, encoding='utf-8').read().split()[-1])
+        print(_pname, 'rand  --- - %10d' % seed)
     # --------------------------------------------------------------------------
     s1.post_exec = functools.partial(post_exec, s1, pname)
 
@@ -165,7 +166,7 @@ def get_stage_3(sandbox, pname):
 
     # --------------------------------------------------------------------------
     # use a callback after that stage completed for output of the final result
-    def post_exec(stage, pname):
+    def post_exec(_, pname):
         result = int(open('%s.sum.txt' % pname).read())
         print(pname, 'final %3d - %10d' % (MAX_ITER, result))
     # --------------------------------------------------------------------------
@@ -232,8 +233,8 @@ if __name__ == '__main__':
 
     # create an ensemble of n simulation pipelines
     for cnt in range(N_PIPELINES):
-        pname = 'pipe.%03d' % cnt
-        generate_pipeline(pname)
+        pipeline_name = 'pipe.%03d' % cnt
+        generate_pipeline(pipeline_name)
 
     # assign the workflow to the application manager, then
     # run the ensemble and wait for completion
@@ -242,8 +243,8 @@ if __name__ == '__main__':
 
     # check results which were staged back
     for cnt in range(N_PIPELINES):
-        result = int(open('pipe.%03d.sum.txt' % cnt).read())
-        print('%18d - %10d' % (cnt, result))
+        pipeline_result = int(open('pipe.%03d.sum.txt' % cnt).read())
+        print('%18d - %10d' % (cnt, pipeline_result))
 
 
 # ------------------------------------------------------------------------------

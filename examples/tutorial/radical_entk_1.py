@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     # check results which were staged back
     for cnt in range(n_pipelines):
-        data   = open('pipe.%03d.sqrt.txt' % cnt).read()
+        data   = open('pipe.%03d.sqrt.txt' % cnt, encoding='utf-8').read()
         result = float(data)
         print('%3d -- %25.2f' % (cnt, result))
 
