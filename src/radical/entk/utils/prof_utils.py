@@ -131,47 +131,52 @@ def write_session_description(amgr):
         'event_model': dict(),
     }
 
-    # Adding amgr to the tree
     tree = dict()
-    tree[amgr._uid] = {'uid': amgr._uid,
-                       'etype': 'appmanager',
-                       'cfg': {},
-                       'has': ['pipeline',
-                               'wfprocessor',
-                               'resource_manager',
-                               'task_manager'],
-                       'children': list()
-                      }
+
+    # Adding amgr to the tree
+    if amgr:
+        tree[amgr._uid] = {'uid': amgr._uid,
+                           'etype': 'appmanager',
+                           'cfg': {},
+                           'has': ['pipeline',
+                                   'wfprocessor',
+                                   'resource_manager',
+                                   'task_manager'],
+                           'children': list()
+                          }
 
     # Adding wfp to the tree
     wfp = amgr._wfp
-    tree[amgr._uid]['children'].append(wfp._uid)
-    tree[wfp._uid] = {'uid': wfp._uid,
-                      'etype': 'wfprocessor',
-                      'cfg': {},
-                      'has': [],
-                      'children': list()
-                     }
+    if wfp:
+        tree[amgr._uid]['children'].append(wfp._uid)
+        tree[wfp._uid] = {'uid': wfp._uid,
+                          'etype': 'wfprocessor',
+                          'cfg': {},
+                          'has': [],
+                          'children': list()
+                         }
 
     # Adding rmgr to the tree
     rmgr = amgr._rmgr
-    tree[amgr._uid]['children'].append(rmgr._uid)
-    tree[rmgr._uid] = {'uid': rmgr._uid,
-                       'etype': 'resource_manager',
-                       'cfg': {},
-                       'has': [],
-                       'children': list()
-                      }
+    if rmgr:
+        tree[amgr._uid]['children'].append(rmgr._uid)
+        tree[rmgr._uid] = {'uid': rmgr._uid,
+                           'etype': 'resource_manager',
+                           'cfg': {},
+                           'has': [],
+                           'children': list()
+                          }
 
     # Adding tmgr to the tree
     tmgr = amgr._task_manager
-    tree[amgr._uid]['children'].append(tmgr._uid)
-    tree[tmgr._uid] = {'uid': tmgr._uid,
-                       'etype': 'task_manager',
-                       'cfg': {},
-                       'has': [],
-                       'children': list()
-                      }
+    if tmgr:
+        tree[amgr._uid]['children'].append(tmgr._uid)
+        tree[tmgr._uid] = {'uid': tmgr._uid,
+                           'etype': 'task_manager',
+                           'cfg': {},
+                           'has': [],
+                           'children': list()
+                          }
 
     # Adding pipelines to the tree
     for wf in amgr._workflows:
