@@ -115,7 +115,8 @@ def get_stage_2(sandbox, pname, iteration=0):
         # continue to iterate - check intermediate data
         result = 0
         for task in stage.tasks:
-            data    = open('%s.%s' % (pname, task.stdout)).read()
+            fname   = '%s.%s' % (pname, task.stdout)
+            data    = open(fname, encoding='utf-8').read()
             result += int(data.split()[-1])
 
         if result > LIMIT:
@@ -167,7 +168,8 @@ def get_stage_3(sandbox, pname):
     # --------------------------------------------------------------------------
     # use a callback after that stage completed for output of the final result
     def post_exec(_, pname):
-        result = int(open('%s.sum.txt' % pname).read())
+        fname  = '%s.sum.txt' % pname
+        result = int(open(fname, encoding='utf-8').read())
         print(pname, 'final %3d - %10d' % (MAX_ITER, result))
     # --------------------------------------------------------------------------
     s3.post_exec = functools.partial(post_exec, s3, pname)
@@ -233,8 +235,8 @@ if __name__ == '__main__':
 
     # create an ensemble of n simulation pipelines
     for cnt in range(N_PIPELINES):
-        pipeline_name = 'pipe.%03d' % cnt
-        generate_pipeline(pipeline_name)
+        pipe_name = 'pipe.%03d' % cnt
+        generate_pipeline(pipe_name)
 
     # assign the workflow to the application manager, then
     # run the ensemble and wait for completion
@@ -243,8 +245,9 @@ if __name__ == '__main__':
 
     # check results which were staged back
     for cnt in range(N_PIPELINES):
-        pipeline_result = int(open('pipe.%03d.sum.txt' % cnt).read())
-        print('%18d - %10d' % (cnt, pipeline_result))
+        fname = 'pipe.%03d.sum.txt' % cnt
+        pipe_result = int(open(fname, encoding='utf-8').read())
+        print('%18d - %10d' % (cnt, pipe_result))
 
 
 # ------------------------------------------------------------------------------
