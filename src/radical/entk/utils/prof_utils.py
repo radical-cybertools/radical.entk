@@ -104,6 +104,9 @@ def get_session_profile(sid, src=None):
 
 def write_session_description(amgr):
 
+    if not amgr:
+        return
+
     desc = dict()
 
     desc['entities'] = dict()
@@ -134,16 +137,15 @@ def write_session_description(amgr):
     tree = dict()
 
     # Adding amgr to the tree
-    if amgr:
-        tree[amgr._uid] = {'uid': amgr._uid,
-                           'etype': 'appmanager',
-                           'cfg': {},
-                           'has': ['pipeline',
-                                   'wfprocessor',
-                                   'resource_manager',
-                                   'task_manager'],
-                           'children': list()
-                          }
+    tree[amgr._uid] = {'uid': amgr._uid,
+                       'etype': 'appmanager',
+                       'cfg': {},
+                       'has': ['pipeline',
+                               'wfprocessor',
+                               'resource_manager',
+                               'task_manager'],
+                       'children': list()
+                      }
 
     # Adding wfp to the tree
     wfp = amgr._wfp
