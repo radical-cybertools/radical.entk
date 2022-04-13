@@ -6,6 +6,14 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.14.0  Release                                                       2022-04-13
+--------------------------------------------------------------------------------
+
+  - fix lingering uid error
+  - update AppManager instance check in `prof_utils`
+  - updated setup requirements
+
+
 1.13.0  Release                                                       2022-03-21
 --------------------------------------------------------------------------------
 
