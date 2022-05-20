@@ -232,9 +232,6 @@ class ResourceManager(Base_ResourceManager):
             if self._pilot:
 
                 self._prof.prof('rreq_cancel', uid=self._uid)
-                self._logger.debug('Terminating pilot')
-                self._pilot.cancel()
-                self._logger.debug('Pilot terminated')
 
                 # once the workflow is completed, fetch output data
                 if self._outputs:
@@ -251,8 +248,12 @@ class ResourceManager(Base_ResourceManager):
                 cleanup = self._rts_config.get('db_cleanup', False)
 
                 if self._session:
-                    self._session.close(cleanup=cleanup, download=get_profiles)
+                    self._session.close(cleanup=cleanup,
+                                        download=get_profiles,
+                                        terminate=True)
                     self._session = None
+                elif self._pmgr:
+                    self._pmgr.cancel_pilots(self.pilot.uid, _timeout=20)
 
                 self._prof.prof('rreq_canceled', uid=self._uid)
 
