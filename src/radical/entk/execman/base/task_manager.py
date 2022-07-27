@@ -7,6 +7,7 @@ __license__   = "MIT"
 import os
 import json
 import pika
+import pika.exceptions
 import uuid
 
 import threading     as mt
@@ -15,6 +16,51 @@ import radical.utils as ru
 from ...exceptions import EnTKError, TypeError
 
 from .resource_manager import Base_ResourceManager
+
+
+# ------------------------------------------------------------------------------
+#
+def heartbeat_response(mq_channel, request_queue, response_queue,
+                       conn_params=None, log=None):
+    '''
+    Get a request from the heartbeat and send back a response.
+    '''
+
+    channel = mq_channel
+    try:
+
+        method_frame, header_frame, body = channel.basic_get(request_queue)
+        if not body:
+            return
+
+        if log:
+            log.info('Received heartbeat request')
+
+        publish_kwargs = {'exchange'   : '',
+                          'routing_key': response_queue,
+                          'properties' : pika.BasicProperties(
+                              correlation_id=header_frame.correlation_id),
+                          'body'       : 'response'}
+
+        try:
+            channel.basic_publish(**publish_kwargs)
+        except (pika.exceptions.ConnectionClosed,
+                pika.exceptions.ChannelClosed):
+            if conn_params:
+                # re-connect
+                connection = pika.BlockingConnection(conn_params)
+                channel    = connection.channel()
+                channel.basic_publish(**publish_kwargs)
+
+        if log:
+            log.info('Sent heartbeat response')
+
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+
+    except Exception as e:
+        if log:
+            log.exception('Failed to respond to heartbeat, error: %s', e)
+        raise EnTKError(e) from e
 
 
 # ------------------------------------------------------------------------------
@@ -199,8 +245,10 @@ class Base_TaskManager(object):
     #
     def _advance(self, obj, obj_type, new_state, channel, conn_params, queue):
 
+        old_state = obj.state
+
         try:
-            old_state = obj.state
+
             obj.state = new_state
 
             if   obj_type == 'Task' : msg = obj.parent_stage['uid']
@@ -211,7 +259,6 @@ class Base_TaskManager(object):
             self._log.info('Transition %s to %s', obj.uid, new_state)
 
             self._sync_with_master(obj, obj_type, channel, conn_params, queue)
-
 
         except Exception as ex:
             self._log.exception('Transition %s to state %s failed, error: %s',
