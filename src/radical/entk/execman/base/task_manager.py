@@ -323,12 +323,12 @@ class Base_TaskManager(object):
                 if not body:
                     # no usable response
                     self._log.error('Heartbeat response no body')
-                    return
+                    break
 
                 if corr_id != props.correlation_id:
                     # incorrect response
                     self._log.error('Heartbeat response wrong correlation')
-                    return
+                    break
 
                 self._log.info('Received heartbeat response')
                 mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
