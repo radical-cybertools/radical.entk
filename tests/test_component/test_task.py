@@ -29,9 +29,11 @@ class TestTask(TestCase):
         self.assertEqual(t.state, res.INITIAL)
         self.assertEqual(t.state_history, [res.INITIAL])
         self.assertEqual(t.executable, '')
-        self.assertIsInstance(t.arguments, list)
-        self.assertIsInstance(t.pre_exec, list)
-        self.assertIsInstance(t.post_exec, list)
+        self.assertIsInstance(t.arguments,   list)
+        self.assertIsInstance(t.pre_launch,  list)
+        self.assertIsInstance(t.post_launch, list)
+        self.assertIsInstance(t.pre_exec,    list)
+        self.assertIsInstance(t.post_exec,   list)
 
         # instance's attribute(s) access(es)
         self.assertEqual(t.cpu_reqs.cpu_processes, 1)
@@ -220,7 +222,8 @@ class TestTask(TestCase):
 
         input_dict = {
             'name'      : 'foo',
-            'pre_exec'  : ['bar'],
+            'pre_launch': ['pre_launch_bar'],
+            'pre_exec'  : ['pre_exec_bar'],
             'executable': 'buz',
             'arguments' : ['baz', 'fiz'],
             'cpu_reqs'  : {'cpu_processes'   : 1,
@@ -237,15 +240,16 @@ class TestTask(TestCase):
             self.assertEqual(ru.as_dict(task[k]), v)
 
         input_dict = {
-            'name'      : 'foo',
-            'pre_exec'  : ['bar'],
-            'executable': 'buz',
-            'arguments' : ['baz', 'fiz'],
-            'state'     : res.SUBMITTING,
-            'cpu_reqs'  : {'cpu_processes'   : 1,
-                           'cpu_process_type': None,
-                           'cpu_threads'     : 1,
-                           'cpu_thread_type' : None}}
+            'name'       : 'foo',
+            'post_exec'  : ['post_exec_bar'],
+            'post_launch': ['post_launch_bar'],
+            'executable' : 'buz',
+            'arguments'  : ['baz', 'fiz'],
+            'state'      : res.SUBMITTING,
+            'cpu_reqs'   : {'cpu_processes'   : 1,
+                            'cpu_process_type': None,
+                            'cpu_threads'     : 1,
+                            'cpu_thread_type' : None}}
         task = Task()
         task.from_dict(input_dict)
 
@@ -325,11 +329,13 @@ class TestTask(TestCase):
             'name'                : '',
             'state'               : 'DESCRIBED',
             'state_history'       : ['DESCRIBED'],
+            'pre_launch'          : [],
             'pre_exec'            : [],
             'executable'          : '',
             'arguments'           : [],
             'sandbox'             : '',
             'post_exec'           : [],
+            'post_launch'         : [],
             'cpu_reqs'            : {'cpu_processes'   : 1,
                                      'cpu_process_type': 'POSIX',
                                      'cpu_threads'     : 1,

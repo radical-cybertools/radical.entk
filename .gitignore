@@ -55,8 +55,6 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-.idea/
-
 # Specifics
 .pypirc
 
@@ -66,29 +64,9 @@ docs/_build/
 # Throughput files
 .txt
 
-# pytest files
-src/radical/entk/tests/__pycache__
-tests/__pycache__
-tests/test_api/__pycache__
-tests/test_functionality/__pycache__
-tests/test_integration/__pycache__
-tests/test_issues/__pycache__
-
-
-# hypothesis files
-src/radical/entk/tests/.hypothesis
-tests/.hypothesis
-tests/test_api/.hypothesis
-tests/test_functionality/.hypothesis
-tests/test_integration/.hypothesis
-tests/test_issues/.hypothesis
-
 # misc files
-./.pytest_cache
+.pytest_cache
 ./.cache
-./.travis.yml
-./tests/__pycache__
-./tests/.hypothesis
 
 # pypi files
 ./src/radical.entk.egg-info
@@ -98,5 +76,5 @@ src/radical/entk/SDIST
 # local RE files
 .re.*
 .hypothesis
-.pytest_cache
+.test.pkl
 .sftp-config.json
