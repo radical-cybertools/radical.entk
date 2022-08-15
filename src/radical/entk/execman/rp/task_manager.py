@@ -17,7 +17,7 @@ import radical.pilot   as rp
 
 from ...exceptions     import EnTKError
 from ...               import states, Task
-from ..base            import Base_TaskManager
+from ..base            import Base_TaskManager, heartbeat_response
 from .task_processor   import create_td_from_task, create_task_from_rp
 
 
@@ -105,48 +105,6 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            # ------------------------------------------------------------------
-            def heartbeat_response(mq_channel, conn_params):
-
-                channel = mq_channel
-                try:
-
-                    # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = \
-                                  channel.basic_get(queue=self._hb_request_q)
-
-                    if not body:
-                        return
-
-                    self._log.info('Received heartbeat request')
-                    try:
-                        nprops = pika.BasicProperties(
-                                            correlation_id=props.correlation_id)
-                        channel.basic_publish(exchange='',
-                                              routing_key=self._hb_response_q,
-                                              properties=nprops,
-                                              body='response')
-                    except (pika.exceptions.ConnectionClosed,
-                            pika.exceptions.ChannelClosed):
-                        connection = pika.BlockingConnection(conn_params)
-                        channel = connection.channel()
-                        nprops = pika.BasicProperties(
-                                            correlation_id=props.correlation_id)
-                        channel.basic_publish(exchange='',
-                                              routing_key=self._hb_response_q,
-                                              properties=nprops,
-                                              body='response')
-
-                    self._log.info('Sent heartbeat response')
-
-                    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                except Exception as ex:
-                    self._log.exception('Failed to respond to heartbeat, ' +
-                                        'error: %s', ex)
-                    raise EnTKError(ex) from ex
-            # ------------------------------------------------------------------
-
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
@@ -184,7 +142,7 @@ class TaskManager(Base_TaskManager):
                 try:
 
                     # Get tasks from the pending queue
-                    method_frame, _ , body = \
+                    method_frame, _, body = \
                                     mq_channel.basic_get(queue=pending_queue[0])
 
                     if body:
@@ -201,7 +159,11 @@ class TaskManager(Base_TaskManager):
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
 
-                    heartbeat_response(mq_channel, rmq_conn_params)
+                    heartbeat_response(mq_channel,
+                                       self._hb_request_q,
+                                       self._hb_response_q,
+                                       conn_params=rmq_conn_params,
+                                       log=self._log)
 
                 except Exception as ex:
                     self._log.exception('Error in task execution: %s', ex)

@@ -142,7 +142,7 @@ def resolve_arguments(args, placeholders, logger):
         placeholder = entry.split('/')[0]
 
         if placeholder == "$SHARED":
-            entry = entry.replace(placeholder, '$RP_PILOT_STAGING')
+            entry = entry.replace(placeholder, '$RP_PILOT_SANDBOX')
 
         elif placeholder.startswith('$Pipeline'):
             elems = placeholder.split('_')
@@ -480,12 +480,14 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
                                          task.parent_pipeline['uid'],
                                          task.parent_pipeline['name'])
 
+        td.pre_launch     = task.pre_launch
         td.pre_exec       = task.pre_exec
         td.executable     = task.executable
         td.arguments      = resolve_arguments(task.arguments, placeholders, logger)
         td.sandbox        = task.sandbox
         td.post_exec      = task.post_exec
         td.environment    = task.environment
+        td.post_launch    = task.post_launch
         td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:

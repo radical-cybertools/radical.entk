@@ -160,22 +160,36 @@ class Task(ru.TypedDict):
         [type: `str` | default: `""`] This specifies the working directory of
         the task. By default, the task's uid is used as a sandbox for the task.
 
-    .. data:: pre_exec
+    .. data:: pre_launch
 
         [type: `list` | default: `[]`] List of actions (shell commands) to
-        perform before the task starts.
+        perform before the task is launched.
 
         Note that the set of shell commands given here are expected to load
         environments, check for work directories and data, etc. They are not
         expected to consume any significant amount of resources! Deviating from
         that rule will likely result in reduced overall throughput.
 
-    .. data:: post_exec
+    .. data:: post_launch
 
         [type: `list` | default: `[]`] List of actions (shell commands) to
         perform after the task finishes.
 
-        The same remarks as on `pre_exec` apply
+        The same remarks as on `pre_launch` apply
+
+    .. data:: pre_exec
+
+        [type: `list` | default: `[]`] List of actions (shell commands) to
+        perform after task is launched, but before rank(s) starts execution.
+
+        The same remarks as on `pre_launch` apply
+
+    .. data:: post_exec
+
+        [type: `list` | default: `[]`] List of actions (shell commands) to
+        perform right after rank(s) finishes.
+
+        The same remarks as on `pre_launch` apply
 
     .. data:: cpu_reqs
 
@@ -361,6 +375,8 @@ class Task(ru.TypedDict):
         'arguments'            : [str],
         'environment'          : {str: str},
         'sandbox'              : str,
+        'pre_launch'           : [str],
+        'post_launch'          : [str],
         'pre_exec'             : [str],
         'post_exec'            : [str],
         'cpu_reqs'             : CpuReqs,
@@ -396,6 +412,8 @@ class Task(ru.TypedDict):
         'arguments'            : [],
         'environment'          : {},
         'sandbox'              : '',
+        'pre_launch'           : [],
+        'post_launch'          : [],
         'pre_exec'             : [],
         'post_exec'            : [],
         'cpu_reqs'             : CpuReqs(),

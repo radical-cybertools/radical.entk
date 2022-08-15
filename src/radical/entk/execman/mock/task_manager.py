@@ -16,7 +16,7 @@ import radical.utils as ru
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
-from ..base.task_manager import Base_TaskManager
+from ..base.task_manager import Base_TaskManager, heartbeat_response
 
 
 # pylint: disable=unused-argument
@@ -87,39 +87,6 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            # ------------------------------------------------------------------
-            def heartbeat_response(mq_channel):
-
-                try:
-
-                    # Get request from heartbeat-req for heartbeat response
-                    method_frame, props, body = \
-                                  mq_channel.basic_get(queue=self._hb_request_q)
-
-                    if not body:
-                        return
-
-                    self._log.info('Received heartbeat request')
-
-                    nprops = pika.BasicProperties(
-                                            correlation_id=props.correlation_id)
-                    mq_channel.basic_publish(
-                                exchange='',
-                                routing_key=self._hb_response_q,
-                                properties=nprops,
-                                body='response')
-
-                    self._log.info('Sent heartbeat response')
-
-                    mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-
-                except Exception as e:
-                    self._log.exception('Failed to respond to heartbeat, '
-                                        'error: %s', e)
-                    raise
-            # ------------------------------------------------------------------
-
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
@@ -158,7 +125,10 @@ class TaskManager(Base_TaskManager):
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
 
-                    heartbeat_response(mq_channel)
+                    heartbeat_response(mq_channel,
+                                       self._hb_request_q,
+                                       self._hb_response_q,
+                                       log=self._log)
 
                     # Raise an exception while running tests
                     ru.raise_on(tag='tmgr_fail')
