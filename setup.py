@@ -236,7 +236,7 @@ setup_args = {
                             'radical.pilot>=1.12',
                             'pika==0.13.0',
                             'packaging',
-                            'requests'
+                            'requests>=2.4.0'
                            ],
     'tests_require'      : ['pytest',
                             'pylint',
