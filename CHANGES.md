@@ -6,6 +6,26 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.17.0 Release                                                        2022-09-20
+--------------------------------------------------------------------------------
+
+  - added timeout for online version check
+
+
+1.16.0 Release                                                        2022-08-15
+--------------------------------------------------------------------------------
+
+  - add tutorial examples
+  - cleanup gitignore
+  - deleted test related to ticket #255 - are already tested
+  - deleted test related to ticket #270 - `heartbeat` test updated accordingly
+  - introduced Task attributes `pre/post_launch`
+  - move tutorial code to notebooks
+  - removed leftovers in `test_issues` - all covered with other tests
+  - set pilot cancellation through session close
+  - updated `heartbeat_response` for TMGR
+
+
 1.14.0  Release                                                       2022-04-13
 --------------------------------------------------------------------------------
 
