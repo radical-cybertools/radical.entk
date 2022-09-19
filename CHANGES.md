@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.17.0 Release                                                        2022-09-20
+--------------------------------------------------------------------------------
+
+  - added timeout for online version check
+
+
 1.16.0 Release                                                        2022-08-15
 --------------------------------------------------------------------------------
 
