@@ -14,7 +14,7 @@ from . import execman
 import warnings
 import os                           as _os
 import radical.utils                as _ru
-import requests                     as req
+import requests                     as _req
 from packaging.version import parse as parse_version
 
 
@@ -31,14 +31,13 @@ version_short, version_detail, version_base, version_branch, \
 version = version_short
 
 try:
-    r = req.get("https://pypi.org/pypi/radical.entk/json")
-    versions = r.json()["releases"].keys()
-    last_version = list(versions)[-1]
+    r = _req.get('https://pypi.org/pypi/radical.entk/json', timeout=5)
+    last_version = list(r.json()['releases'].keys())[-1]
     if parse_version(version) < parse_version(last_version):
-        warnings.warn("WARNING: You are using radical.entk version %s, however"
-                " version %s is available." % (version, last_version),
-                UserWarning)
-
+        warnings.warn('WARNING: You are using radical.entk version %s, however '
+                      'version %s is available.' % (version, last_version),
+                      UserWarning)
 except ConnectionError:
     pass
+
 # ------------------------------------------------------------------------------
