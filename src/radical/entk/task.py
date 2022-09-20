@@ -220,16 +220,12 @@ class Task(ru.TypedDict):
         The expected format is dict-like:
 
             task.gpu_reqs = {'gpu_processes'    : X,
-                             'gpu_process_type' : None/'MPI',
+                             'gpu_process_type' : None/'CUDA'/'ROCm',
                              'gpu_threads'      : Y,
-                             'gpu_thread_type'  : None/'OpenMP'/'CUDA'}
+                             'gpu_thread_type'  : None}
 
-        This description means that the Task is going to spawn X processes and
-        Y threads per each of these processes to run on GPUs. Hence, the total
-        number of gpus required by the Task is `X * Y` for all the processes
-        and threads to execute concurrently.
-
-        By default, 0 GPU processes are requested.
+        This description means that each rank of the task is going to use X GPUs
+        with Y GPU-threads.  By default, 0 GPUs are requested.
 
     .. data:: lfs_per_process
 
