@@ -486,6 +486,7 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.arguments      = resolve_arguments(task.arguments, placeholders, logger)
         td.sandbox        = task.sandbox
         td.post_exec      = task.post_exec
+        td.environment    = task.environment
         td.post_launch    = task.post_launch
         td.stage_on_error = task.stage_on_error
 

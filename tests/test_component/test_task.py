@@ -34,6 +34,7 @@ class TestTask(TestCase):
         self.assertIsInstance(t.post_launch, list)
         self.assertIsInstance(t.pre_exec,    list)
         self.assertIsInstance(t.post_exec,   list)
+        self.assertIsInstance(t.environment, dict)
 
         # instance's attribute(s) access(es)
         self.assertEqual(t.cpu_reqs.cpu_processes, 1)
@@ -336,6 +337,7 @@ class TestTask(TestCase):
             'sandbox'             : '',
             'post_exec'           : [],
             'post_launch'         : [],
+            'environment'         : {},
             'cpu_reqs'            : {'cpu_processes'   : 1,
                                      'cpu_process_type': 'POSIX',
                                      'cpu_threads'     : 1,

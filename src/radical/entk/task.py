@@ -150,6 +150,11 @@ class Task(ru.TypedDict):
         [type: `list` | default: `[]`] List of arguments to be supplied to the
         `executable`.
 
+    .. data:: environment
+
+        [type: `dict` | default: `{}`] Environment variables to set in the
+       environment before the execution process.
+
     .. data:: sandbox
 
         [type: `str` | default: `""`] This specifies the working directory of
@@ -215,16 +220,12 @@ class Task(ru.TypedDict):
         The expected format is dict-like:
 
             task.gpu_reqs = {'gpu_processes'    : X,
-                             'gpu_process_type' : None/'MPI',
+                             'gpu_process_type' : None/'CUDA'/'ROCm',
                              'gpu_threads'      : Y,
-                             'gpu_thread_type'  : None/'OpenMP'/'CUDA'}
+                             'gpu_thread_type'  : None}
 
-        This description means that the Task is going to spawn X processes and
-        Y threads per each of these processes to run on GPUs. Hence, the total
-        number of gpus required by the Task is `X * Y` for all the processes
-        and threads to execute concurrently.
-
-        By default, 0 GPU processes are requested.
+        This description means that each rank of the task is going to use X GPUs
+        with Y GPU-threads.  By default, 0 GPUs are requested.
 
     .. data:: lfs_per_process
 
@@ -368,6 +369,7 @@ class Task(ru.TypedDict):
         'state_history'        : [str],
         'executable'           : str,
         'arguments'            : [str],
+        'environment'          : {str: str},
         'sandbox'              : str,
         'pre_launch'           : [str],
         'post_launch'          : [str],
@@ -404,6 +406,7 @@ class Task(ru.TypedDict):
         'state_history'        : [],
         'executable'           : '',
         'arguments'            : [],
+        'environment'          : {},
         'sandbox'              : '',
         'pre_launch'           : [],
         'post_launch'          : [],

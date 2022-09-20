@@ -167,6 +167,7 @@ class TestBase(TestCase):
         task.sandbox         = 'unit.0000'
         task.post_exec       = ['']
         task.post_launch     = []
+        task.environment     = {}
         task.cpu_reqs        = {'cpu_processes'   : 5,
                                 'cpu_threads'     : 6,
                                 'cpu_process_type': 'MPI',
@@ -198,6 +199,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.sandbox, 'unit.0000')
         self.assertEqual(test_td.post_exec, [''])
         self.assertEqual(test_td.post_launch, [])
+        self.assertEqual(test_td.environment, {})
         self.assertEqual(test_td.cpu_processes, 5)
         self.assertEqual(test_td.cpu_threads, 6)
         self.assertEqual(test_td.cpu_process_type, 'MPI')
