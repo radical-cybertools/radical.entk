@@ -150,6 +150,11 @@ class Task(ru.TypedDict):
         [type: `list` | default: `[]`] List of arguments to be supplied to the
         `executable`.
 
+    .. data:: environment
+
+        [type: `dict` | default: `{}`] Environment variables to set in the
+       environment before the execution process.
+
     .. data:: sandbox
 
         [type: `str` | default: `""`] This specifies the working directory of
@@ -364,6 +369,7 @@ class Task(ru.TypedDict):
         'state_history'        : [str],
         'executable'           : str,
         'arguments'            : [str],
+        'environment'          : {str: str},
         'sandbox'              : str,
         'pre_launch'           : [str],
         'post_launch'          : [str],
@@ -400,6 +406,7 @@ class Task(ru.TypedDict):
         'state_history'        : [],
         'executable'           : '',
         'arguments'            : [],
+        'environment'          : {},
         'sandbox'              : '',
         'pre_launch'           : [],
         'post_launch'          : [],
