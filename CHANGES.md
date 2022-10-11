@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.18.0 Release                                                        2022-10-11
+--------------------------------------------------------------------------------
+
+  - added task attribute `environment`
+
+
 1.17.0 Release                                                        2022-09-20
 --------------------------------------------------------------------------------
 
