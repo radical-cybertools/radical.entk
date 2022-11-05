@@ -856,6 +856,10 @@ class AppManager(object):
             uid   = msg['object']['uid']
             state = msg['object']['state']
 
+          # obj = msg['object']
+          # self._logger.debug('=== 1 %s: %s - %s [%s]', obj['uid'],
+          #         obj['state'], obj['exception'], return_queue_name)
+
             self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
             self._logger.debug('recv %s in state %s (sync)' % (uid, state))
 
@@ -914,7 +918,10 @@ class AppManager(object):
                             self._logger.debug(('No change on task state %s '
                                 'in state %s') % (task.uid, task.state))
                             break
-                        task.state = str(completed_task.state)
+                        task.state            = completed_task.state
+                        task.exception        = completed_task.exception
+                        task.exception_detail = completed_task.exception_detail
+                      # self._logger.debug('=== 2 %s: %s - %s', task.uid, task.state, task.exception)
                         self._logger.debug('Found task %s in state %s'
                                           % (task.uid, task.state))
 

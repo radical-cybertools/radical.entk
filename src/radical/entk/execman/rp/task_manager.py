@@ -285,6 +285,9 @@ class TaskManager(Base_TaskManager):
 
                     load_placeholder(task)
 
+                    self._log.debug('=== task: %s: %s - %s', rp_task.uid,
+                            rp_task.state, rp_task.exception)
+
                     task_as_dict = json.dumps(task.as_dict())
                     try:
                         channel.basic_publish(exchange='',

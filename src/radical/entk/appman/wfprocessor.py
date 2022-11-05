@@ -95,9 +95,14 @@ class WFprocessor(object):
         obj.state = new_state
 
         self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
+        self._logger.info('Transition %s to state %s' % (obj.uid, new_state))
+
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
-        self._logger.info('Transition %s to state %s' % (obj.uid, new_state))
+
+        if obj_type == 'Task' and obj.state == states.FAILED:
+            self._report.error('task %s failed: %s\n%s\n'
+                              % (obj.uid, obj.exception, obj.exception_detail))
 
 
     # --------------------------------------------------------------------------
