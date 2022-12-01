@@ -10,14 +10,14 @@ Installing Ensemble Toolkit
 Installing Ensemble Toolkit using virtualenv
 ----------------------------------------------
 
-To install the Ensemble Toolkit, we need to create a virtual environment. 
+To install the Ensemble Toolkit, we need to create a virtual environment.
 Open a terminal and run:
 
 .. code-block:: bash
 
         virtualenv $HOME/ve-entk -p python3.7
 
-- ``-p`` params indicates which python version you use, python3.6+ is required
+- ``-p`` params indicates which python version you use, python3.7+ is required
 - A legacy python2 installation is available with the ``0.72.1`` version. Hot fixes will be provided until Jul 2020. Read more at
   the troubleshooting_
 
@@ -119,7 +119,7 @@ be printed.
         Installing Ensemble Toolkit using Docker
         ----------------------------------------
 
-        You can install Docker from their 
+        You can install Docker from their
         `official documentation <https://hub.docker.com/search/?type=edition&offering=community>`_.
         Once you have installed Docker, you can use the following Dockerfile to build
         a container:
