@@ -233,7 +233,7 @@ setup_args = {
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
     'install_requires'   : ['radical.utils>=1.12',
-                            'radical.pilot>=1.12',
+                            'radical.pilot>=1.18',
                             'pika==0.13.0',
                             'packaging',
                             'requests>=2.4.0'

@@ -1,5 +1,7 @@
 # pylint: disable=protected-access,unused-argument,no-value-for-parameter
 
+import radical.pilot as rp
+
 from unittest import mock, TestCase
 
 import radical.entk            as re
@@ -170,12 +172,9 @@ class TestBase(TestCase):
         task.environment     = {}
         task.cpu_reqs        = {'cpu_processes'   : 5,
                                 'cpu_threads'     : 6,
-                                'cpu_process_type': 'MPI',
-                                'cpu_thread_type' : 'MPI'}
-        task.gpu_reqs        = {'gpu_processes'   : 5,
-                                'gpu_threads'     : 6,
-                                'gpu_process_type': 'MPI',
-                                'gpu_thread_type' : 'MPI'}
+                                'cpu_thread_type' : ''}
+        task.gpu_reqs        = {'gpu_processes'   : 1,
+                                'gpu_process_type': ''}
         task.tags            = None
         task.lfs_per_process = 235
         task.mem_per_process = 128
@@ -200,14 +199,11 @@ class TestBase(TestCase):
         self.assertEqual(test_td.post_exec, [''])
         self.assertEqual(test_td.post_launch, [])
         self.assertEqual(test_td.environment, {})
-        self.assertEqual(test_td.cpu_processes, 5)
-        self.assertEqual(test_td.cpu_threads, 6)
-        self.assertEqual(test_td.cpu_process_type, 'MPI')
-        self.assertEqual(test_td.cpu_thread_type, 'MPI')
-        self.assertEqual(test_td.gpu_processes, 5)
-        self.assertEqual(test_td.gpu_threads, 6)
-        self.assertEqual(test_td.gpu_process_type, 'MPI')
-        self.assertEqual(test_td.gpu_thread_type, 'MPI')
+        self.assertEqual(test_td.ranks,          5)
+        self.assertEqual(test_td.cores_per_rank, 6)
+        self.assertEqual(test_td.threading_type, rp.POSIX)
+        self.assertEqual(test_td.gpus_per_rank,  1)
+        self.assertEqual(test_td.gpu_type,       '')
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.mem_per_process, 128)
         self.assertEqual(test_td.stdout, 'stdout')
@@ -220,12 +216,9 @@ class TestBase(TestCase):
 
         task.cpu_reqs = {'cpu_processes'   : 1,
                          'cpu_threads'     : 2,
-                         'cpu_process_type': None,
                          'cpu_thread_type' : None}
         task.gpu_reqs = {'gpu_processes'   : 3,
-                         'gpu_threads'     : 4,
-                         'gpu_process_type': None,
-                         'gpu_thread_type' : None}
+                         'gpu_process_type': None}
 
         test_td = create_td_from_task(task=task,
                                       placeholders=None,
@@ -234,14 +227,11 @@ class TestBase(TestCase):
                                       sid='test.sid',
                                       logger=mocked_logger)
 
-        self.assertEqual(test_td.cpu_processes, 1)
-        self.assertEqual(test_td.cpu_threads, 2)
-        self.assertEqual(test_td.cpu_process_type, 'POSIX')
-        self.assertEqual(test_td.cpu_thread_type, 'OpenMP')
-        self.assertEqual(test_td.gpu_processes, 3)
-        self.assertEqual(test_td.gpu_threads, 4)
-        self.assertEqual(test_td.gpu_process_type, 'POSIX')
-        self.assertEqual(test_td.gpu_thread_type, 'GPU_OpenMP')
+        self.assertEqual(test_td.ranks,          1)
+        self.assertEqual(test_td.cores_per_rank, 2)
+        self.assertEqual(test_td.threading_type, rp.POSIX)
+        self.assertEqual(test_td.gpus_per_rank,  3)
+        self.assertEqual(test_td.gpu_type,       '')
 
     # --------------------------------------------------------------------------
     #

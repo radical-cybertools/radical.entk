@@ -53,12 +53,9 @@ class TestBase(TestCase):
         task.environment     = {}
         task.cpu_reqs        = {'cpu_processes'   : 5,
                                 'cpu_threads'     : 6,
-                                'cpu_process_type': 'MPI',
-                                'cpu_thread_type' : None}
-        task.gpu_reqs        = {'gpu_processes'   : 5,
-                                'gpu_threads'     : 6,
-                                'gpu_process_type': None,
-                                'gpu_thread_type' : None}
+                                'cpu_thread_type' : rp.OpenMP}
+        task.gpu_reqs        = {'gpu_processes'   : 1,
+                                'gpu_process_type': rp.CUDA}
 
         task.lfs_per_process = 235
         task.stderr          = 'stderr'
@@ -77,14 +74,11 @@ class TestBase(TestCase):
         self.assertEqual(test_td.post_exec, [''])
         self.assertEqual(test_td.post_launch, [])
         self.assertEqual(test_td.environment, {})
-        self.assertEqual(test_td.cpu_processes, 5)
-        self.assertEqual(test_td.cpu_threads, 6)
-        self.assertEqual(test_td.cpu_process_type, rp.MPI)
-        self.assertEqual(test_td.cpu_thread_type, rp.OpenMP)
-        self.assertEqual(test_td.gpu_processes, 5)
-        self.assertEqual(test_td.gpu_threads, 6)
-        self.assertEqual(test_td.gpu_process_type, rp.POSIX)
-        self.assertEqual(test_td.gpu_thread_type, rp.GPU_OpenMP)
+        self.assertEqual(test_td.ranks,          5)
+        self.assertEqual(test_td.cores_per_rank, 6)
+        self.assertEqual(test_td.threading_type, rp.OpenMP)
+        self.assertEqual(test_td.gpus_per_rank,  1)
+        self.assertEqual(test_td.gpu_type,       rp.CUDA)
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.stdout, 'stdout')
         self.assertEqual(test_td.stderr, 'stderr')
