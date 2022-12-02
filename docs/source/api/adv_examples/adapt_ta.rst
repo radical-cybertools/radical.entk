@@ -13,7 +13,7 @@ next page and compare it with the above pattern.
 
 
 You can download the complete code discussed in this section :download:`here
-<../../examples/advanced/adapt_ta.py>` or find it in your virtualenv under
+<../../../../examples/advanced/adapt_ta.py>` or find it in your virtualenv under
 ``share/radical.entk/advanced/scripts``.
 
 For any adaptive capability within a Pipeline, we need to use the post
@@ -66,4 +66,4 @@ a more verbose output by setting the environment variable
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/advanced/adapt_ta.py
+.. literalinclude:: ../../../../examples/advanced/adapt_ta.py

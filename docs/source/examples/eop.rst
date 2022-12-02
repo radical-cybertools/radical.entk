@@ -29,7 +29,7 @@ In the following example, we create 10 Pipelines, each with three Stages. The Ta
 Task in the second Stage performs a character count on that file. The Task in the third Stage performs
 a checksum on the output of the Task from the second stage.
 
-You can download the complete code discussed in this section :download:`here <../../examples/simple/eop.py>` or find it in
+You can download the complete code discussed in this section :download:`here <../../../examples/simple/eop.py>` or find it in
 your virtualenv under ``share/radical.entk/simple/scripts``.
 
 
@@ -42,4 +42,4 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/simple/eop.py
+.. literalinclude:: ../../../examples/simple/eop.py
