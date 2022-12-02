@@ -2,7 +2,7 @@
 
 __author__    = 'RADICAL-Cybertools Team'
 __email__     = 'info@radical-cybertools.org'
-__copyright__ = 'Copyright 2013-22, The RADICAL-Cybertools Team'
+__copyright__ = 'Copyright 2013-23, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
 
@@ -235,9 +235,7 @@ setup_args = {
     'scripts'            : ['bin/radical-entk-version'],
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},
-  # 'setup_requires'     : ['pytest-runner'],
     'install_requires'   : requirements,
-    'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
     'data_files'         : df,
     'cmdclass'           : {'upload': RunTwine},
