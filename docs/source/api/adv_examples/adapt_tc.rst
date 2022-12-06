@@ -12,7 +12,7 @@ pattern.
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
 
-You can download the complete code discussed in this section :download:`here <../../examples/advanced/adapt_tc.py>` or
+You can download the complete code discussed in this section :download:`here <../../../../examples/advanced/adapt_tc.py>` or
 find it in your virtualenv under ``share/radical.entk/advanced/scripts``.
 
 For any adaptive capability within a Pipeline, we need to use the post
@@ -54,5 +54,5 @@ verbose output by setting the environment variable
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/advanced/adapt_tc.py
+.. literalinclude:: ../../../../examples/advanced/adapt_tc.py
 

@@ -12,7 +12,7 @@ Another common execution pattern consists of same-session sequential workflows w
 
 In the following example, we create 2 sequential workflows, each with 2 Pipelines and 3 Stages per Pipeline. For demonstration purposes, each Task does nothing but "sleep" for 3 seconds. The example suggests starting AppManager with autoterminate=False and using appman.terminate() once all pipelines are finished. This allows you to use the same application manager for the second workflow.
 
-You can download the complete code discussed in this section :download:`here <../../examples/simple/sow.py>` or find it in
+You can download the complete code discussed in this section :download:`here <../../../examples/simple/sow.py>` or find it in
 your virtualenv under ``share/radical.entk/simple/scripts``.
 
 .. code-block:: bash
@@ -24,4 +24,4 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/simple/sow.py
+.. literalinclude:: ../../../examples/simple/sow.py

@@ -12,16 +12,16 @@ We will develop an example application consisting of a simple bag of Tasks.
 
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
-You can download the complete code discussed in this section :download:`here <../../examples/user_guide/get_started.py>` or find it in 
+You can download the complete code discussed in this section :download:`here <../../../examples/user_guide/get_started.py>` or find it in
 your virtualenv under ``share/radical.entk/user_guide/scripts``.
 
 
 Importing components from the Ensemble Toolkit Module
 ===========================================================
 
-To create any application using Ensemble Toolkit, you need to import five modules: Pipeline, Stage, Task, AppManager, ResourceManager. We have already discussed these components in the earlier sections. 
+To create any application using Ensemble Toolkit, you need to import five modules: Pipeline, Stage, Task, AppManager, ResourceManager. We have already discussed these components in the earlier sections.
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
     :language: python
     :lines: 3
     :linenos:
@@ -32,11 +32,11 @@ Creating the workflow
 
 
 We first create a Pipeline, Stage and Task object. Then we assign the 'executable' and 'arguments' for the Task. For
-this example, we will create one Pipeline consisting of one Stage that contains one Task. 
+this example, we will create one Pipeline consisting of one Stage that contains one Task.
 
 In the below snippet, we first create a Pipeline then a Stage.
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
     :language: python
     :lines: 22-28
     :linenos:
@@ -44,7 +44,7 @@ In the below snippet, we first create a Pipeline then a Stage.
 
 Next, we create a Task and assign its name, executable and arguments of the executable.
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
     :language: python
     :lines: 30-34
     :linenos:
@@ -54,22 +54,22 @@ Next, we create a Task and assign its name, executable and arguments of the exec
 Now, that we have a fully described Task, a Stage and a Pipeline. We create our workflow by adding the Task to the
 Stage and adding the Stage to the Pipeline.
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
     :language: python
     :lines: 37-41
     :linenos:
     :lineno-start: 37
 
 
-Creating the AppManager 
+Creating the AppManager
 =======================
 
-Now that our workflow has been created, we need to specify where it is to be executed. For this example, we will 
-simply execute the workflow locally. We create an AppManager object, describe a resource request for 1 core for 10 
+Now that our workflow has been created, we need to specify where it is to be executed. For this example, we will
+simply execute the workflow locally. We create an AppManager object, describe a resource request for 1 core for 10
 minutes on localhost, i.e. your local machine. We assign the resource request description and the workflow to the
 AppManager and ``run`` our application.
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
     :language: python
     :lines: 42-64
     :linenos:
@@ -77,8 +77,8 @@ AppManager and ``run`` our application.
 
 
 .. warning:: If the python version your system has by default is Anaconda python,
-          please change line 51 in the above code block to 
-          
+          please change line 51 in the above code block to
+
           .. code-block:: python
 
                 'resource': 'local.localhost_anaconda',
@@ -112,4 +112,4 @@ file should have a `Hello World` message.
 
 Let's look at the complete code for this example:
 
-.. literalinclude:: ../../examples/user_guide/get_started.py
+.. literalinclude:: ../../../examples/user_guide/get_started.py
