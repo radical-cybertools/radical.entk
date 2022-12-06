@@ -29,7 +29,7 @@ In the following example, we create one Pipeline with three Stages. The Task in 
 are 10 Tasks in the second Stage that perform a character count on that file. The 10 Tasks in the third Stage perform
 a checksum on the output of each Task from the second stage.
 
-You can download the complete code discussed in this section :download:`here <../../examples/simple/poe.py>` or find it in
+You can download the complete code discussed in this section :download:`here <../../../examples/simple/poe.py>` or find it in
 your virtualenv under ``share/radical.entk/simple/scripts``.
 
 
@@ -42,4 +42,4 @@ variable ``RADICAL_ENTK_VERBOSE=DEBUG``.
 
 A look at the complete code in this section:
 
-.. literalinclude:: ../../examples/simple/poe.py
+.. literalinclude:: ../../../examples/simple/poe.py

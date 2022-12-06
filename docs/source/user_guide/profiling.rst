@@ -15,9 +15,9 @@ examples that extract durations and timestamps.
 The scripts and the data can be found in your virtualenv under ``share/radical.entk/analytics/scripts``
 or can be downloaded via the following links:
 
-* Data: :download:`Link <../../examples/analytics/re.session.two.vivek.017759.0012.tar>`
-* Durations: :download:`Link <../../examples/analytics/get_durations.py>`
-* Timestamps: :download:`Link <../../examples/analytics/get_timestamps.py>`
+* Data: :download:`Link <../../../examples/analytics/re.session.two.vivek.017759.0012.tar>`
+* Durations: :download:`Link <../../../examples/analytics/get_durations.py>`
+* Timestamps: :download:`Link <../../../examples/analytics/get_timestamps.py>`
 
 Untar the data and run either of the scripts. We recommend following the inline
 comments and output messages to get an understanding of RADICAL Analytics' usage
@@ -34,7 +34,7 @@ More details on the capabilities of RADICAL Analytics can be found in its
 Extracting durations
 ====================
 
-.. literalinclude:: ../../examples/analytics/get_durations.py
+.. literalinclude:: ../../../examples/analytics/get_durations.py
     :language: python
     :linenos:
 
@@ -42,6 +42,6 @@ Extracting durations
 Extracting timestamps
 =====================
 
-.. literalinclude:: ../../examples/analytics/get_timestamps.py
+.. literalinclude:: ../../../examples/analytics/get_timestamps.py
     :language: python
     :linenos:
