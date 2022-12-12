@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-
-import os
-import sys
 import time
 
 import radical.entk as re
@@ -10,9 +7,6 @@ import radical.entk as re
 
 # ------------------------------------------------------------------------------
 #
-hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
-port     = int(os.environ.get('RMQ_PORT',      5672))
-
 pipes    = list()
 cnt      = 0
 
@@ -80,7 +74,7 @@ if __name__ == '__main__':
     }
 
     # Create Application Manager
-    appman = re.AppManager(hostname=hostname, port=port)
+    appman = re.AppManager()
     appman.resource_desc = res_dict
 
     pipes.append(generate_pipeline(True))

@@ -10,9 +10,6 @@ from radical.entk.execman.base.task_manager import EnTKError
 from radical.entk.execman.base   import Base_TaskManager as Tmgr
 from radical.entk.execman.base   import Base_ResourceManager
 
-from pika.connection import ConnectionParameters
-
-import pika
 import time
 import psutil
 import threading as mt
@@ -42,62 +39,44 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.DebugHelper')
-    @mock.patch('pika.BlockingConnection')
     def test_init(self, mocked_generate_id, mocked_getcwd, mocked_Logger,
                   mocked_Profiler, mocked_DebugHelper, mocked_BlockingConnection):
 
-        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
+        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'],
+                     rmgr, 'test_rts')
 
         self.assertEqual(tmgr._sid, 'test_tmgr')
-        self.assertEqual(tmgr._pending_queue, ['pending_queues'])
-        self.assertEqual(tmgr._completed_queue, ['completed_queues'])
         self.assertEqual(tmgr._rmgr, rmgr)
         self.assertEqual(tmgr._rts, 'test_rts')
-        self.assertEqual(tmgr._rmq_conn_params, rmq_params)
         self.assertEqual(tmgr._uid, 'tmgr.0000')
         self.assertEqual(tmgr._path, 'test_folder/test_tmgr')
-        self.assertEqual(tmgr._hb_request_q, 'test_tmgr-hb-request')
-        self.assertEqual(tmgr._hb_response_q, 'test_tmgr-hb-response')
         self.assertIsNone(tmgr._tmgr_process)
         self.assertIsNone(tmgr._tmgr_terminate)
-        self.assertIsNone(tmgr._hb_thread)
-        self.assertIsNone(tmgr._hb_terminate)
-        self.assertEqual(tmgr._hb_interval, 30)
 
         with self.assertRaises(NotImplementedError):
             # method should be overloaded
-            tmgr._tmgr(None, None, None, None, None)
+            tmgr._tmgr(None, None, None)
 
         with self.assertRaises(NotImplementedError):
             # method should be overloaded
             tmgr.start_manager()
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr(25, ['pending_queues'], ['completed_queues'], 
-                        rmgr, rmq_params, 'test_rts')
+            tmgr = Tmgr(25, rmgr, 'test_rts', {})
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', 'pending_queues', ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
+            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', ['pending_queues'], 'completed_queues', 
-                     rmgr, rmq_params, 'test_rts')
+            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     'test_rmq', rmq_params, 'test_rts')
+            tmgr = Tmgr('test_tmgr', 'test_rmq', 'test_rts', {})
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, 'test_params', 'test_rts')
+            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
+
 
     # ------------------------------------------------------------------------------
     #
@@ -108,14 +87,8 @@ class TestBase(TestCase):
     def test_advance(self, mocked_init, mocked_Logger, mocked_Profiler,
                      mocked_BlockingConnection):
 
-        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
+        tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         global_syncs = []
 
@@ -131,75 +104,27 @@ class TestBase(TestCase):
         obj.parent_stage = {'uid': 'test_stage'}
         obj.parent_pipeline = {'uid': 'test_pipe'}
 
-        tmgr._advance(obj, 'Task', 'SCHEDULING', 'channel', 'params', 'queue')
+        tmgr._advance(obj, 'Task', 'SCHEDULING', 'channel')
         self.assertEqual(global_syncs[0],
                          [obj, 'Task', 'channel', 'params', 'queue'])
         self.assertEqual(obj.state, 'SCHEDULING')
 
         # no `obj` type - will not change the processing flow
-        tmgr._advance(obj, 'unknown_type', None, 'channel', 'params', 'queue')
+        tmgr._advance(obj, 'unknown_type', None, 'channel')
         self.assertIsNone(obj.state)
 
         global_syncs = []
-        tmgr._advance(obj, 'Stage', 'DONE', 'channel', 'params', 'queue')
+        tmgr._advance(obj, 'Stage', 'DONE', 'channel')
         self.assertEqual(global_syncs[0],
-                         [obj, 'Stage', 'channel', 'params', 'queue'])
+                         [obj, 'Stage', 'channel'])
         self.assertEqual(obj.state, 'DONE')
 
         # mimic exception
         tmgr._prof.prof = mock.MagicMock(side_effect=Exception('error'))
         with self.assertRaises(EnTKError):
             # whenever Exception is raised `EnTKError` is used
-            tmgr._advance(obj, None, None, None, None, None)
+            tmgr._advance(obj, None, None, None)
 
-    # ------------------------------------------------------------------------------
-    #
-    @mock.patch.object(Tmgr, '__init__', return_value=None)
-    @mock.patch('radical.utils.Logger')
-    @mock.patch('radical.utils.Profiler')
-    def test_start_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler):
-
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
-        rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
-
-        global_boolean = False
-
-        def _heartbeat_side_effect():
-            nonlocal global_boolean
-            global_boolean = True
-
-        tmgr._log = mocked_Logger
-        tmgr._prof = mocked_Profiler
-        tmgr._heartbeat = mock.MagicMock(side_effect=_heartbeat_side_effect)
-        tmgr._uid = 'tmgr.0000'
-        tmgr._hb_terminate = None
-
-        # if `tmgr._hb_thread` exists, then nothing else will be created
-        tmgr._hb_thread = mock.Mock()
-        tmgr.start_heartbeat()
-        self.assertFalse(global_boolean)
-
-        tmgr._hb_thread = None
-        tmgr.start_heartbeat()
-
-        try:
-            self.assertTrue(global_boolean)
-            self.assertIsInstance(tmgr._hb_terminate, mt.Event)
-            self.assertIsInstance(tmgr._hb_thread, mt.Thread)
-        finally:
-            if tmgr._hb_thread.is_alive():
-                tmgr._hb_thread.join()
-
-        # mimic exception
-        tmgr._prof.prof = mock.MagicMock(side_effect=Exception('error'))
-        tmgr._hb_thread = None
-        tmgr.terminate_heartbeat = mock.Mock()
-        with self.assertRaises(EnTKError):
-            # whenever Exception is raised `EnTKError` is used
-            tmgr.start_heartbeat()
-        self.assertTrue(tmgr.terminate_heartbeat.called)
 
     # --------------------------------------------------------------------------
     #
@@ -208,10 +133,8 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Profiler')
     def test_check_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
 
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
+        tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         def _tmgr_side_effect(amount):
             time.sleep(amount)
@@ -234,10 +157,8 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Profiler')
     def test_terminate_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
 
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
+        tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         tmgr._log = mocked_Logger
         tmgr._prof = mocked_Profiler
@@ -258,75 +179,3 @@ class TestBase(TestCase):
 
         self.assertFalse(psutil.pid_exists(pid))
 
-    # --------------------------------------------------------------------------
-    #
-    @mock.patch.object(Tmgr, '__init__', return_value=None)
-    @mock.patch('radical.utils.Logger')
-    @mock.patch('radical.utils.Profiler')
-    def test_check_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler):
-
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
-        rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
-
-        def _tmgr_side_effect(amount):
-            time.sleep(amount)
-
-        tmgr._hb_thread = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr', args=(1,))
-        tmgr._hb_thread.start()
-
-        self.assertTrue(tmgr.check_heartbeat())
-        tmgr._hb_thread.join()
-        self.assertFalse(tmgr.check_heartbeat())
-
-        tmgr._hb_thread = None
-        self.assertFalse(tmgr.check_heartbeat())
-
-    # ------------------------------------------------------------------------------
-    #
-    @mock.patch.object(Tmgr, '__init__', return_value=None)
-    @mock.patch('radical.utils.Logger')
-    @mock.patch('radical.utils.Profiler')
-    @mock.patch('pika.BlockingConnection')
-    def test_terminate_heartbeat(self, mocked_init, mocked_Logger, mocked_Profiler,
-                     mocked_BlockingConnection):
-
-        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
-        rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params, 'test_rts')
-
-        tmgr._rmq_conn_params = rmq_params
-        tmgr._hb_request_q = 'test_tmgr-hb-request'
-        tmgr._hb_response_q = 'test_tmgr-hb-response'
-
-        tmgr._log = mocked_Logger
-        tmgr._prof = mocked_Profiler
-        tmgr._uid = 'tmgr.0000'
-        tmgr.check_heartbeat = mock.MagicMock(return_value=True)
-        tmgr.check_manager = mock.MagicMock(return_value=True)
-
-        tmgr._hb_terminate = mt.Event()
-
-        tmgr._hb_thread = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr',
-                                       args=(tmgr._hb_terminate,))
-        tmgr._hb_thread.start()
-
-        tmgr.terminate_heartbeat()
-
-        self.assertIsNone(tmgr._hb_thread)
-
-        tmgr._hb_thread = tmgr._hb_terminate = mock.Mock()
-        # mimic exception
-        tmgr._hb_terminate.set = mock.MagicMock(side_effect=Exception('error'))
-        with self.assertRaises(EnTKError):
-            # whenever Exception is raised `EnTKError` is used
-            tmgr.terminate_heartbeat()

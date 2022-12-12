@@ -5,7 +5,6 @@ __license__   = 'MIT'
 
 import os
 import json
-import pika
 import time
 
 import threading       as mt
@@ -39,10 +38,6 @@ class AppManager(object):
 
     :Arguments:
         :config_path:     Url to config path to be read for AppManager
-        :hostname:        host rabbitmq server is running
-        :port:            port at which rabbitmq can be accessed
-        :username:        username to log in to RabbitMQ
-        :password:        password to log in to RabbitMQ
         :reattempts:      number of attempts to re-invoke any failed EnTK
                           components
         :resubmit_failed: resubmit failed tasks (True/False)
@@ -52,8 +47,6 @@ class AppManager(object):
                           (post-termination)
         :rts:             Specify RTS to use. Current options: 'mock',
                           'radical.pilot' (default if unspecified)
-        :rmq_cleanup:     Cleanup all queues created in RabbitMQ server for
-                          current execution (default is True)
         :rts_config:      Configuration for the RTS, accepts
                           {'sandbox_cleanup': True/False,'db_cleanup':
                           True/False} when RTS is RP
@@ -67,16 +60,11 @@ class AppManager(object):
     #
     def __init__(self,
                  config_path=None,
-                 hostname=None,
-                 port=None,
-                 username=None,
-                 password=None,
                  reattempts=None,
                  resubmit_failed=None,
                  autoterminate=None,
                  write_workflow=None,
                  rts=None,
-                 rmq_cleanup=None,
                  rts_config=None,
                  name=None,
                  base_path=None):
@@ -89,9 +77,8 @@ class AppManager(object):
             self._name = str()
             self._sid  = ru.generate_id('re.session', ru.ID_PRIVATE)
 
-        self._read_config(config_path, hostname, port, username, password,
-                          reattempts, resubmit_failed, autoterminate,
-                          write_workflow, rts, rmq_cleanup, rts_config,
+        self._read_config(config_path, reattempts, resubmit_failed,
+                          autoterminate, write_workflow, rts, rts_config,
                           base_path)
 
         # Create an uid + logger + profiles for AppManager, under the sid
@@ -111,7 +98,6 @@ class AppManager(object):
         self._prof.prof('amgr_creat', uid=self._uid)
 
         self._rmgr            = None
-        self._pending_queue   = list()
         self._completed_queue = list()
 
         # Global parameters to have default values
@@ -127,13 +113,14 @@ class AppManager(object):
         self._sync_thread     = None
         self._terminate_sync  = mt.Event()
         self._resubmit_failed = False
-        self._port            = int(self._port)
         self._term            = mp.Event()
 
-        # Setup rabbitmq queues
-        self._setup_mqs()
-
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', "10"))
+        # Setup zmq queues
+        self._zmq_setup       = False
+        self._zmq_info        = dict()
+        self._zmq_queue       = None
+        self._zmq_bridge      = None
+        self._setup_zmq()
 
         self._logger.info('Application Manager initialized')
         self._prof.prof('amgr_created', uid=self._uid)
@@ -142,9 +129,9 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _read_config(self, config_path, hostname, port, username, password,
-                     reattempts, resubmit_failed, autoterminate,
-                     write_workflow, rts, rmq_cleanup, rts_config, base_path):
+    def _read_config(self, config_path, reattempts, resubmit_failed,
+                           autoterminate, write_workflow, rts, rts_config,
+                           base_path):
 
         if not config_path:
             config_path = os.path.dirname(os.path.abspath(__file__))
@@ -156,32 +143,12 @@ class AppManager(object):
             else               : return val2
 
         self._base_path        = _if(base_path,       os.getcwd())
-        self._hostname         = _if(hostname,        config['hostname'])
-        self._port             = _if(port,            config['port'])
-        self._username         = _if(username,        config['username'])
-        self._password         = _if(password,        config['password'])
         self._reattempts       = _if(reattempts,      config['reattempts'])
         self._resubmit_failed  = _if(resubmit_failed, config['resubmit_failed'])
         self._autoterminate    = _if(autoterminate,   config['autoterminate'])
         self._write_workflow   = _if(write_workflow,  config['write_workflow'])
-        self._rmq_cleanup      = _if(rmq_cleanup,     config['rmq_cleanup'])
         self._rts_config       = _if(rts_config,      config['rts_config'])
         self._rts              = _if(rts,             config['rts'])
-
-        credentials = pika.PlainCredentials(self._username, self._password)
-        # To enable VHOST, two env variables are introduced:
-        # export RMQ_SSL=True
-        # export RMQ_VHOST=/vhost_name
-        self._rmq_conn_params = pika.connection.ConnectionParameters(
-                                        host=self._hostname,
-                                        virtual_host=os.environ.get('RMQ_VHOST','/'),
-                                        port=self._port,
-                                        credentials=credentials,
-                                        ssl=bool(os.environ.get('RMQ_SSL', False)))
-
-        # TODO: Pass these values also as parameters
-        self._num_pending_qs   = config['pending_qs']
-        self._num_completed_qs = config['completed_qs']
 
         if self._rts not in ['radical.pilot', 'mock']:
             raise ValueError('invalid RTS %s' % self._rts)
@@ -430,8 +397,8 @@ class AppManager(object):
                                    missing_attribute='resource_manager')
             self._prof.prof('amgr run started', uid=self._uid)
 
-            # ensure rabbitmq setup
-            self._setup_mqs()
+            # ensure zmq setup
+            self._setup_zmq()
 
             # Submit resource request if no resource allocation done till now or
             # resubmit a new one if the old one has completed
@@ -498,7 +465,6 @@ class AppManager(object):
         if self._task_manager:
             self._logger.info('Terminating task manager process')
             self._task_manager.terminate_manager()
-            self._task_manager.terminate_heartbeat()
 
         if self._sync_thread:
             self._logger.info('Terminating synchronizer thread')
@@ -514,9 +480,6 @@ class AppManager(object):
 
         if os.environ.get('RADICAL_ENTK_PROFILE'):
             write_session_description(self)
-
-        if self._rmq_cleanup:
-            self._cleanup_mqs()
 
         self._report.info('All components terminated\n')
         self._prof.prof('termination done', uid=self._uid)
@@ -535,9 +498,9 @@ class AppManager(object):
     #
     # Private methods
     #
-    def _setup_mqs(self):
+    def _setup_zmq(self):
         '''
-        **Purpose**: Setup RabbitMQ system on the client side. We instantiate
+        **Purpose**: Setup ZMQ system on the client side. We instantiate
         queue(s) 'pendingq-*' for communication between the enqueuer thread and
         the task manager process. We instantiate queue(s) 'completedq-*' for
         communication between the task manager and dequeuer thread. We
@@ -545,92 +508,45 @@ class AppManager(object):
         enqueuer/dequeuer/task_manager to the synchronizer thread. We
         instantiate queue 'sync-ack' for communication from synchronizer thread
         to enqueuer/dequeuer/task_manager.
-
-        Details: All queues are durable: Even if the RabbitMQ server goes down,
-        the queues are saved to disk and can be retrieved. This also means that
-        after an erroneous run the queues might still have unacknowledged
-        messages and will contain messages from that run. Hence, in every new
-        run, we first delete the queue and create a new one.
         '''
 
         try:
-            self._report.info('Setting up RabbitMQ system')
-            if self._mqs_setup:
+            self._report.info('Setting up ZMQ queues')
+
+            if self._zmq_setup:
                 self._report.ok('>>n/a\n')
                 return
 
             self._report.ok('>>ok\n')
 
-            self._prof.prof('mqs_setup_start', uid=self._uid)
-            self._logger.debug('Setting up mq connection and channel')
+            self._prof.prof('zmq_setup_start', uid=self._uid)
+            self._logger.debug('Setting up zmq queues')
 
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+            cfg = ru.Config(cfg={'channel'   : self.sid,
+                                 'uid'       : self.sid,
+                                 'path'      : self.sid,
+                                 'type'      : 'queue',
+                                 'log_lvl'   : 'DEBUG',
+                                 'stall_hwm' : 0,
+                                 'bulk_size' : 1})
 
-            mq_channel = mq_connection.channel()
+            self._zmq_bridge = ru.zmq.Queue(cfg)
+            self._zmq_bridge.start()
+            time.sleep(1)
 
-            self._logger.debug('Connection and channel setup successful')
-            self._logger.debug('Setting up all exchanges and queues')
+            self._zmq_info = {
+                    'put': str(self._zmq_bridge.addr_put),
+                    'get': str(self._zmq_bridge.addr_get)}
 
-            qs = ['%s-tmgr-to-sync' % self._sid,
-                  '%s-cb-to-sync'   % self._sid,
-                  '%s-sync-to-tmgr' % self._sid,
-                  '%s-sync-to-cb'   % self._sid]
-
-            for i in range(1, self._num_pending_qs + 1):
-                queue_name = '%s-pendingq-%s' % (self._sid, i)
-                self._pending_queue.append(queue_name)
-                qs.append(queue_name)
-
-            for i in range(1, self._num_completed_qs + 1):
-                queue_name = '%s-completedq-%s' % (self._sid, i)
-                self._completed_queue.append(queue_name)
-                qs.append(queue_name)
-
-            for q in qs:
-                # Durable Qs will not be lost if rabbitmq server crashes
-                mq_channel.queue_declare(queue=q)
-
-            self._mqs_setup = True
-
-            self._logger.debug('All exchanges and queues are setup')
-            self._prof.prof('mqs_setup_stop', uid=self._uid)
-
-        except Exception as ex:
-
-            self._logger.exception('Error setting RabbitMQ system: %s' % ex)
-            raise ree.EnTKError(ex) from ex
+            self._zmq_queue = {
+                    'put' : ru.zmq.Putter(self._sid, url=self._zmq_info['put']),
+                    'get' : ru.zmq.Getter(self._sid, url=self._zmq_info['get'])}
 
 
-    # --------------------------------------------------------------------------
-    #
-    def _cleanup_mqs(self):
+        except Exception as e:
 
-        try:
-            self._prof.prof('mqs_cleanup_start', uid=self._uid)
-
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            mq_channel.queue_delete(queue='%s-tmgr-to-sync' % self._sid)
-            mq_channel.queue_delete(queue='%s-cb-to-sync' % self._sid)
-            mq_channel.queue_delete(queue='%s-sync-to-tmgr' % self._sid)
-            mq_channel.queue_delete(queue='%s-sync-to-cb' % self._sid)
-
-            for i in range(1, self._num_pending_qs + 1):
-                queue_name = '%s-pendingq-%s' % (self._sid, i)
-                mq_channel.queue_delete(queue=queue_name)
-
-            for i in range(1, self._num_completed_qs + 1):
-                queue_name = '%s-completedq-%s' % (self._sid, i)
-                mq_channel.queue_delete(queue=queue_name)
-
-            self._prof.prof('mqs_cleanup_stop', uid=self._uid)
-
-            self._mqs_setup = False
-
-        except Exception as ex:
-            self._logger.exception('Message queues not deleted, error')
-            raise ree.EnTKError(ex) from ex
+            self._logger.exception('Error setting ZMQ queues')
+            raise ree.EnTKError(e) from e
 
 
     # --------------------------------------------------------------------------
@@ -654,10 +570,8 @@ class AppManager(object):
         self._prof.prof('wfp_create_start', uid=self._uid)
         self._wfp = WFprocessor(sid=self._sid,
                                 workflow=self._workflow,
-                                pending_queue=self._pending_queue,
-                                completed_queue=self._completed_queue,
                                 resubmit_failed=self._resubmit_failed,
-                                rmq_conn_params=self._rmq_conn_params)
+                                zmq_info=self._zmq_info)
         self._prof.prof('wfp_create_stop', uid=self._uid)
 
         # Start synchronizer thread AM OK
@@ -687,13 +601,10 @@ class AppManager(object):
 
             self._task_manager = TaskManager(
                     sid=self._sid,
-                    pending_queue=self._pending_queue,
-                    completed_queue=self._completed_queue,
                     rmgr=self._rmgr,
-                    rmq_conn_params=self._rmq_conn_params)
+                    zmq_info=self._zmq_info)
 
             self._task_manager.start_manager()
-            self._task_manager.start_heartbeat()
             self._submit_rts_tmgr(self._rmgr.get_rts_info())
             self._prof.prof('tmgr_create_stop', uid=self._uid)
 
@@ -706,23 +617,9 @@ class AppManager(object):
         '''
         rts_msg = {'type': 'rts',
                    'body': rts_info}
-        rts_msg = json.dumps(rts_msg)
 
-        # Acquire a connection+channel to the rmq server
-        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-        mq_channel = mq_connection.channel()
+        self._zmq_queue['put'].put(qname='pending', msgs=rts_msg)
 
-        # Send the workload to the pending queue
-        mq_channel.basic_publish(exchange='',
-                                 routing_key=self._pending_queue[0],
-                                 body=rts_msg
-                                 # TODO: Make durability parameters
-                                 # as a config parameter and then
-                                 # enable the following accordingly
-                                 # properties=pika.BasicProperties(
-                                 # make message persistent
-                                 # delivery_mode = 2)
-                                )
 
     # --------------------------------------------------------------------------
     #
@@ -775,43 +672,12 @@ class AppManager(object):
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
                 self._wfp.terminate_processor()
-                # I am not sure this is needed. The object exists with the
-                # AppManager process.
-                # self._wfp = WFprocessor(sid=self._sid,
-                #                        workflow=self._workflow,
-                #                        pending_queue=self._pending_queue,
-                #                        completed_queue=self._completed_queue,
-                #                        resubmit_failed=self._resubmit_failed,
-                #                        rmq_conn_params=self._rmq_conn_params)
 
                 self._wfp.start_processor()
 
                 self._cur_attempt += 1
                 self._wfp.reset_workflow()
                 self._logger.info('Restarted WFProcessor.')
-
-            if not self._task_manager.check_heartbeat():
-
-                # If the tmgr process or heartbeat dies, we simply start a
-                # new process using the start_manager method. We do not
-                # need to create a new instance of the TaskManager object
-                # itself. We stop and start a new instance of the
-                # heartbeat thread as well.
-
-                self._prof.prof('restart_tmgr', uid=self._uid)
-
-                self._logger.info('Terminating heartbeat thread')
-                self._task_manager.terminate_heartbeat()
-                self._logger.info('Terminating tmgr process')
-                self._task_manager.terminate_manager()
-
-                self._logger.info('Restarting task manager process')
-                self._task_manager.start_manager()
-                self._logger.info('Restarting heartbeat thread')
-                self._task_manager.start_heartbeat()
-                self._wfp.reset_workflow()
-
-                self._cur_attempt += 1
 
             state = self._rmgr.get_resource_allocation_state()
             if state in rts_final_states:
@@ -828,7 +694,7 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _get_message_to_sync(self, mq_channel, qname):
+    def _get_message_to_sync(self, qname):
         '''
         Reads a message from the queue, and exchange the message to where it
         was published by `update_task`
@@ -837,22 +703,19 @@ class AppManager(object):
         # --------------------------------------------------------------
         # Messages between tmgr Main thread and synchronizer -- only
         # Task objects
-        method_frame, props, body = mq_channel.basic_get(queue=qname)
-        tmp = qname.split("-")
-        q_sid = ''.join(tmp[:-3])
-        q_from = tmp[-3]
-        q_to = tmp[-1]
-        return_queue_name = f"{q_sid}-{q_to}-to-{q_from}"
+        msgs = self._zmq_queue['get'].get_nowait(timeout=1000.0, qname=qname)
 
-        # The message received is a JSON object with the following
+        if not msgs:
+            return
+
+        # The message received has the following
         # structure:
         # msg = {
         #         'type': 'Pipeline'/'Stage'/'Task',
         #         'object': json/dict
         #         }
-        if body:
+        for msg in msgs:
 
-            msg   = json.loads(body)
             uid   = msg['object']['uid']
             state = msg['object']['state']
 
@@ -860,13 +723,13 @@ class AppManager(object):
             self._logger.debug('recv %s in state %s (sync)' % (uid, state))
 
             if msg['type'] == 'Task':
-                self._update_task(msg, return_queue_name, props.correlation_id,
-                        mq_channel, method_frame)
+                self._update_task(msg)
 
 
     # --------------------------------------------------------------------------
     #
-    def _update_task(self, msg, reply_to, corr_id, mq_channel, method_frame):
+    def _update_task(self, msg, reply_to=None, corr_id=None, mq_channel=None,
+                           method_frame=None):
         # pylint: disable=W0612,W0613
 
         completed_task = Task(from_dict=msg['object'])
@@ -918,19 +781,13 @@ class AppManager(object):
                         self._logger.debug('Found task %s in state %s'
                                           % (task.uid, task.state))
 
-                        # mq_channel.basic_publish(
-                        #        exchange='',
-                        #        routing_key=reply_to,
-                        #        properties=pika.BasicProperties(
-                        #            correlation_id=corr_id),
-                        #        body='%s-ack' % task.uid)
-
                         state = msg['object']['state']
                         self._prof.prof('pub_ack_state_%s' % state,
                                         uid=msg['object']['uid'])
 
-                        mq_channel.basic_ack(
-                                delivery_tag=method_frame.delivery_tag)
+                        if mq_channel:
+                            mq_channel.basic_ack(
+                                    delivery_tag=method_frame.delivery_tag)
 
                         self._report.ok('Update: ')
                         self._report.info('%s state: %s\n'
@@ -938,43 +795,6 @@ class AppManager(object):
 
                       # found_task = True
                         break
-
-                # if not found_task:
-                #
-                #     # If there was a Stage update, but the Stage was
-                #     # not found in any of the Pipelines. This
-                #     # means that this was a Stage that was added
-                #     # during runtime and the AppManager does not
-                #     # know about it. The current solution is going
-                #     # to be: add it to the workflow object in the
-                #     # AppManager via the synchronizer.
-                #
-                #     self._logger.info('Adding new task %s to \
-                #                         parent stage: %s'
-                #                         % (completed_task.uid,
-                #                         stage.uid))
-                #
-                #     self._prof.prof('adap_add_task_start',
-                #                     uid=completed_task.uid)
-                #     stage.add_tasks(completed_task)
-                #     self._prof.prof('adap_add_task_stop',
-                #                     uid=completed_task.uid)
-                #
-                #     mq_channel.basic_publish(exchange='',
-                #                 routing_key=reply_to,
-                #                 properties=pika.BasicProperties(
-                #                     correlation_id=corr_id),
-                #                 body='%s-ack' % completed_task.uid)
-                #
-                #     self._prof.prof('pub_ack_state_%s' %
-                #                 msg['object']['state'],
-                #                 uid=msg['object']['uid'])
-                #
-                #     mq_channel.basic_ack(
-                #         delivery_tag=method_frame.delivery_tag)
-                #     self._report.ok('Update: ')
-                #     self._report.info('%s state: %s\n' %
-                #     (completed_task.luid, completed_task.state))
 
 
     # --------------------------------------------------------------------------
@@ -1014,27 +834,14 @@ class AppManager(object):
         self._prof.prof('sync_thread_start', uid=self._uid)
         self._logger.info('synchronizer thread started')
 
-        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-        mq_channel = mq_connection.channel()
-
-        last  = time.time()
-        qname_t2s = '%s-tmgr-to-sync' % self._sid
-        qname_c2s = '%s-cb-to-sync'   % self._sid
-
         while not self._terminate_sync.is_set():
 
             # wrapper to call `_update_task()`
-            self._get_message_to_sync(mq_channel, qname_t2s)
-            self._get_message_to_sync(mq_channel, qname_c2s)
+            self._get_message_to_sync('tmgr-to-sync')
+            self._get_message_to_sync('cb-to-sync'  )
 
             # Raise an exception while running tests
             ru.raise_on(tag='sync_fail')
-
-            # Appease pika cos it thinks the connection is dead
-            now = time.time()
-            if now - last >= self._rmq_ping_interval:
-                mq_connection.process_data_events()
-                last = now
 
         self._prof.prof('sync_thread_stop', uid=self._uid)
 

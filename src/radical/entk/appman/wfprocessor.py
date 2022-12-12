@@ -6,7 +6,6 @@ __license__   = "MIT"
 
 import os
 import json
-import pika
 import time
 import threading     as mt
 
@@ -28,13 +27,10 @@ class WFprocessor(object):
     PST accordingly.
 
     :Arguments:
-        :sid:             (str) session id used by the profiler and loggers
-        :workflow:        (set) REFERENCE of the AppManager's workflow
-        :pending_queue:   (list) queues to hold pending tasks
-        :completed_queue: (list) queues to hold completed tasks
+        :sid:             (str)  session id used by the profiler and loggers
+        :workflow:        (set)  REFERENCE of the AppManager's workflow
         :resubmit_failed: (bool) True if failed tasks should be resubmitted
-        :rmq_conn_params: (pika.connection.ConnectionParameters) object of
-                          parameters necessary to connect to RabbitMQ
+        :zmq_info:        (dict) zmq queue addresses
     """
 
     # --------------------------------------------------------------------------
@@ -42,17 +38,12 @@ class WFprocessor(object):
     def __init__(self,
                  sid,
                  workflow,
-                 pending_queue,
-                 completed_queue,
                  resubmit_failed,
-                 rmq_conn_params):
+                 zmq_info):
 
         # Mandatory arguments
         self._sid             = sid
-        self._pending_queue   = pending_queue
-        self._completed_queue = completed_queue
         self._resubmit_failed = resubmit_failed
-        self._rmq_conn_params = rmq_conn_params
 
         # Assign validated workflow
         self._workflow = workflow
@@ -72,10 +63,13 @@ class WFprocessor(object):
         self._dequeue_thread    = None
         self._enqueue_thread_terminate = None
         self._dequeue_thread_terminate = None
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
+
+        self._zmq_queue = {
+                'put' : ru.zmq.Putter(self._sid, url=zmq_info['put']),
+                'get' : ru.zmq.Getter(self._sid, url=zmq_info['get'])}
 
 
     # --------------------------------------------------------------------------
@@ -216,28 +210,12 @@ class WFprocessor(object):
     #
     def _execute_workload(self, workload, scheduled_stages):
 
-        # Tasks of the workload need to be converted into a dict
-        # as pika can send and receive only json/dict data
-        wl_json = {'type': 'workload',
-                   'body': [task.as_dict() for task in workload]}
-
-        wl_json = json.dumps(wl_json)
-
-        # Acquire a connection+channel to the rmq server
-        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-        mq_channel = mq_connection.channel()
+        msg = {'type': 'workload',
+               'body': [task.as_dict() for task in workload]}
 
         # Send the workload to the pending queue
-        mq_channel.basic_publish(exchange='',
-                                 routing_key=self._pending_queue[0],
-                                 body=wl_json
-                                 # TODO: Make durability parameters
-                                 # as a config parameter and then
-                                 # enable the following accordingly
-                                 # properties=pika.BasicProperties(
-                                 # make message persistent
-                                 # delivery_mode = 2)
-                                )
+        self._zmq_queue['put'].put(qname='pending', msgs=[msg])
+
         self._logger.debug('Workload submitted to Task Manager')
 
         # Update the state of the tasks in the workload
@@ -458,37 +436,18 @@ class WFprocessor(object):
             self._prof.prof('deq_start', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
-            # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            last = time.time()
             while not self._dequeue_thread_terminate.is_set():
 
-                # Raise an exception while running tests
-                ru.raise_on(tag='dequeue_fail')
+                msgs = self._zmq_queue['get'].get_nowait(qname='completed',
+                                                         timeout=100)
 
-                method_frame, _ , body = mq_channel.basic_get(
-                    queue=self._completed_queue[0])
+                if msgs:
+                    for msg in msgs:
+                        deq_task = Task(from_dict=msg)
+                        self._logger.info('Got finished task %s from queue'
+                                          % (deq_task.uid))
+                        self._update_dequeued_task(deq_task)
 
-                # When there is no msg received, body is None
-                if not body:
-                    continue
-
-                # Acknowledge the received message
-                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                # Create a  task from the received msg
-                deq_task = Task(from_dict=json.loads(body))
-                self._logger.info('Got finished task %s from queue'
-                                  % (deq_task.uid))
-                self._update_dequeued_task(deq_task)
-
-                # Appease pika cos it thinks the connection is dead
-                now = time.time()
-                if now - last >= self._rmq_ping_interval:
-                    mq_connection.process_data_events()
-                    last = now
 
             self._logger.info('Terminated dequeue thread')
             self._prof.prof('deq_stop', uid=self._uid)
@@ -507,11 +466,6 @@ class WFprocessor(object):
 
 
         finally:
-            try:
-                mq_connection.close()
-            except Exception as ex:
-                self._logger.warning('mq_connection close failed, %s' % ex)
-            self._logger.debug('closed mq_connection')
             self.terminate_processor()
 
 

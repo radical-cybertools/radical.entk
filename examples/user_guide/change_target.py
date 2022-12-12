@@ -9,16 +9,6 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
 
-# Description of how the RabbitMQ process is accessible
-# No need to change/set any variables if you installed RabbitMQ has a system
-# process. If you are running RabbitMQ under a docker container or another
-# VM, set "RMQ_HOSTNAME" and "RMQ_PORT" in the session where you are running
-# this script.
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT', 5672)
-username = os.environ.get('RMQ_USERNAME')
-password = os.environ.get('RMQ_PASSWORD')
-
 if __name__ == '__main__':
 
     # Create a Pipeline object
@@ -59,8 +49,7 @@ if __name__ == '__main__':
     p.add_stages(s2)
 
    # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port, username=username,
-            password=password)
+    appman = AppManager()
 
     # Assign the workflow as a set or list of Pipelines to the Application Manager
     appman.workflow = set([p])

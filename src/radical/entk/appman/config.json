@@ -1,9 +1,5 @@
 
 {
-    "hostname"        : "localhost",
-    "port"            : 5672,
-    "username"        : "guest",
-    "password"        : "guest",
     "reattempts"      : 3,
     "resubmit_failed" : false,
     "autoterminate"   : true,
@@ -12,7 +8,6 @@
     "rts_config"      : {"sandbox_cleanup" : false,
                          "db_cleanup"      : false },
     "pending_qs"      : 1,
-    "completed_qs"    : 1,
-    "rmq_cleanup"     : true
+    "completed_qs"    : 1
 }
 

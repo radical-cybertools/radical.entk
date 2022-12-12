@@ -261,7 +261,6 @@ class TestBase(TestCase):
     @mock.patch('json.dumps', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Reporter')
-    @mock.patch('pika.BlockingConnection')
     def test_execute_workload(self, mocked_init, mocked_dumps,
                               mocked_Logger, mocked_Reporter,
                               mocked_BlockingConnection):
@@ -273,12 +272,7 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
-        wfp._rmq_conn_params = 'test_rmq_params'
-        wfp._pending_queue = ['test_queue']
+                resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
 
@@ -311,10 +305,7 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                          resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
 
@@ -368,10 +359,7 @@ class TestBase(TestCase):
             global_advs.add((obj, obj_type, state))
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
         wfp._prof = mocked_Profiler
@@ -427,10 +415,7 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
@@ -501,10 +486,7 @@ class TestBase(TestCase):
             global_boolean['enqueue'] = True
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
@@ -554,10 +536,7 @@ class TestBase(TestCase):
             global_boolean['enqueue'] = True
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
