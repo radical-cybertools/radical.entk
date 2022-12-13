@@ -67,17 +67,17 @@ class WFprocessor(object):
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
 
-        self._zmq_queue = dict()
-        self._setup_zmq()
+        self._setup_zmq(zmq_info)
 
 
     # --------------------------------------------------------------------------
     #
-    def _setup_zmq(self):
+    def _setup_zmq(self, zmq_info):
 
+        sid = self._sid
         self._zmq_queue = {
-                'put' : ru.zmq.Putter(self._sid, url=zmq_info['put']),
-                'get' : ru.zmq.Getter(self._sid, url=zmq_info['get'])}
+                'put' : ru.zmq.Putter(sid, url=zmq_info['put'], path=sid),
+                'get' : ru.zmq.Getter(sid, url=zmq_info['get'], path=sid)}
 
 
     # --------------------------------------------------------------------------

@@ -511,6 +511,7 @@ class AppManager(object):
         '''
 
         try:
+            sid = self._sid
             self._report.info('Setting up ZMQ queues')
 
             if self._zmq_setup:
@@ -522,9 +523,9 @@ class AppManager(object):
             self._prof.prof('zmq_setup_start', uid=self._uid)
             self._logger.debug('Setting up zmq queues')
 
-            cfg = ru.Config(cfg={'channel'   : self.sid,
-                                 'uid'       : self.sid,
-                                 'path'      : self.sid,
+            cfg = ru.Config(cfg={'channel'   : sid,
+                                 'uid'       : sid,
+                                 'path'      : sid,
                                  'type'      : 'queue',
                                  'log_lvl'   : 'DEBUG',
                                  'stall_hwm' : 0,
@@ -534,13 +535,15 @@ class AppManager(object):
             self._zmq_bridge.start()
             time.sleep(1)
 
-            self._zmq_info = {
+            zmq_info = {
                     'put': str(self._zmq_bridge.addr_put),
                     'get': str(self._zmq_bridge.addr_get)}
 
             self._zmq_queue = {
-                    'put' : ru.zmq.Putter(self._sid, url=self._zmq_info['put']),
-                    'get' : ru.zmq.Getter(self._sid, url=self._zmq_info['get'])}
+                    'put' : ru.zmq.Putter(sid, url=zmq_info['put'], path=sid),
+                    'get' : ru.zmq.Getter(sid, url=zmq_info['get'], path=sid)}
+
+            self._zmq_info = zmq_info
 
 
         except Exception as e:

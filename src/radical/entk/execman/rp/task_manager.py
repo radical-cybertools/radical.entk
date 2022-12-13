@@ -53,6 +53,7 @@ class TaskManager(Base_TaskManager):
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
         self._rp_tmgr = None
+        self._zmq_info = zmq_info
         self._total_res = {'cores': 0,
                            'gpus': 0}
 
@@ -83,7 +84,7 @@ class TaskManager(Base_TaskManager):
 
         try:
 
-            self._setup_zmq()
+            self._setup_zmq(zmq_info)
 
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')

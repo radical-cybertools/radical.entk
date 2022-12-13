@@ -53,11 +53,9 @@ class Base_TaskManager(object):
             raise TypeError(expected_type=dict,
                             actual_type=type(zmq_info))
 
-        self._sid             = sid
-        self._rmgr            = rmgr
-        self._rts             = rts
-        self._zmq_info        = zmq_info
-        self._zmq_queue       = None
+        self._sid  = sid
+        self._rmgr = rmgr
+        self._rts  = rts
 
         # Utility parameters
         self._uid  = ru.generate_id('task_manager.%(counter)04d', ru.ID_CUSTOM)
@@ -71,18 +69,20 @@ class Base_TaskManager(object):
         self._tmgr_process = None
         self._tmgr_terminate = None
 
-        self._setup_zmq()
+        self._zmq_queue = None
+        self._setup_zmq(zmq_info)
 
 
     # --------------------------------------------------------------------------
     #
-    def _setup_zmq(self):
+    def _setup_zmq(self, zmq_info):
 
         self._prof.prof('zmq_setup_start', uid=self._uid)
 
+        sid = self._sid
         self._zmq_queue = {
-                'put' : ru.zmq.Putter(self._sid, url=self._zmq_info['put']),
-                'get' : ru.zmq.Getter(self._sid, url=self._zmq_info['get'])}
+                'put' : ru.zmq.Putter(sid, url=zmq_info['put'], path=sid),
+                'get' : ru.zmq.Getter(sid, url=zmq_info['get'], path=sid)}
 
         self._prof.prof('zmq_setup_stop', uid=self._uid)
 
