@@ -36,7 +36,7 @@ suggestion-mode=yes
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
-unsafe-load-any-extension=no
+unsafe-load-any-extension=yes
 
 
 [MESSAGES CONTROL]
@@ -54,7 +54,8 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=raising-format-tuple,
+disable=not-context-manager,
+        raising-format-tuple,
         print-statement,
         parameter-unpacking,
         unpacking-in-except,
@@ -63,7 +64,6 @@ disable=raising-format-tuple,
         long-suffix,
         old-ne-operator,
         old-octal-literal,
-        import-star-module-level,
         non-ascii-bytes-literal,
         invalid-unicode-literal,
         raw-checker-failed,
@@ -72,8 +72,6 @@ disable=raising-format-tuple,
         locally-enabled,
         file-ignored,
         suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
         apply-builtin,
         basestring-builtin,
         buffer-builtin,
@@ -96,7 +94,6 @@ disable=raising-format-tuple,
         dict-iter-method,
         dict-view-method,
         next-method-called,
-        metaclass-assignment,
         indexing-exception,
         raising-string,
         reload-builtin,
@@ -104,7 +101,6 @@ disable=raising-format-tuple,
         hex-method,
         nonzero-method,
         cmp-method,
-        input-builtin,
         round-builtin,
         intern-builtin,
         unichr-builtin,
@@ -113,6 +109,7 @@ disable=raising-format-tuple,
         range-builtin-not-iterating,
         filter-builtin-not-iterating,
         using-cmp-argument,
+        unused-argument,
         eq-without-hash,
         div-method,
         idiv-method,
@@ -121,10 +118,6 @@ disable=raising-format-tuple,
         invalid-str-codec,
         sys-max-int,
         bad-python3-import,
-        deprecated-string-function,
-        deprecated-str-translate-call,
-        deprecated-itertools-function,
-        deprecated-types-field,
         next-method-defined,
         dict-items-not-iterating,
         dict-keys-not-iterating,
@@ -139,15 +132,23 @@ disable=raising-format-tuple,
         R,
         relative-import,
         bare-except,
-        W0212,
-        W0622,
-        undefined-loop-variable
+        unnecessary-pass,
+        c-extension-no-member,
+        unbalanced-tuple-unpacking,               # FIXME
+        super-init-not-called,                    # FIXME
+        no-member,                                # FIXME
+        global-statement,
+        try-except-raise,
+        attribute-defined-outside-init,
+        unspecified-encoding
+
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=c-extension-no-member
+enable=
 
 
 [REPORTS]
@@ -203,14 +204,6 @@ attr-naming-style=snake_case
 # style
 #attr-rgx=
 
-# Bad variable names which should always be refused, separated by a comma
-# bad-names=foo,
-#           bar,
-#           baz,
-#           toto,
-#           tutu,
-#           tata
-
 # Naming style matching correct class attribute names
 class-attribute-naming-style=any
 
@@ -243,7 +236,7 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i, j, k, x, y, z, e, ex, _
+good-names=i, j, k, l, x, y, z, e, t, _
 
 # Include a hint for the correct naming format with invalid-name
 include-naming-hint=no
@@ -319,11 +312,11 @@ no-space-check=trailing-comma,
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.
-single-line-class-stmt=no
+single-line-class-stmt=yes
 
 # Allow the body of an if to be on the same line as the test if there is no
 # else.
-single-line-if-stmt=no
+single-line-if-stmt=yes
 
 
 [LOGGING]
@@ -396,7 +389,7 @@ ignore-mixin-members=yes
 # some branches might not be evaluated, which results in partial inference. In
 # that case, it might be useful to still emit no-member and other checks for
 # the rest of the inferred objects.
-ignore-on-opaque-inference=yes
+ignore-on-opaque-inference=no
 
 # List of class names for which member attributes should not be checked (useful
 # for classes with dynamically set attributes). This supports the use of
