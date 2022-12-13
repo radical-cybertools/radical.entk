@@ -49,7 +49,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, rmgr, completed_queue, zmq_info):
+    def _tmgr(self, uid, rmgr, zmq_info):
         """
         **Purpose**: Method to be run by the tmgr process. This method receives
                      a Task from the 'pending' and submits it to the RTS.
@@ -187,8 +187,8 @@ class TaskManager(Base_TaskManager):
 
                     self._advance(task, 'Task', states.COMPLETED, 'cb-to-sync')
 
-                    self._log.info('Pushed task %s with state %s to completed'
-                                   % (task.uid, task.state))
+                    self._log.info('Pushed task %s with state %s to completed',
+                                   task.uid, task.state)
 
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '

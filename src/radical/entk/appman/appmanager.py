@@ -266,7 +266,7 @@ class AppManager(object):
     def name(self, value):
 
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise ree.EnTKTypeError(expected_type=str, actual_type=type(value))
 
         self._name = value
 
@@ -312,7 +312,7 @@ class AppManager(object):
 
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise ree.TypeError(expected_type=['Pipeline',
+                raise ree.EnTKTypeError(expected_type=['Pipeline',
                                                    'set of Pipelines'],
                                     actual_type=type(p))
             p._validate()
@@ -335,7 +335,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str,
+                raise ree.EnTKTypeError(expected_type=str,
                                     actual_type=type(value))
 
         self._shared_data = data
@@ -355,7 +355,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.TypeError(expected_type=str,
+                raise ree.EnTKTypeError(expected_type=str,
                                     actual_type=type(value))
 
         if self._rmgr:
@@ -427,7 +427,7 @@ class AppManager(object):
             self._run_workflow()
             self._logger.info('Workflow execution finished.')
             if self._autoterminate:
-                self._logger.debug('Autoterminate set to %s.' % self._autoterminate)
+                self._logger.debug('Autoterminate set to %s.', self._autoterminate)
                 self.terminate()
 
         except KeyboardInterrupt as ex:
@@ -656,8 +656,8 @@ class AppManager(object):
                         finished_pipe_uids.append(pipe.uid)
                         active_pipe_count -= 1
 
-                        self._logger.info('Pipe %s completed' % pipe.uid)
-                        self._logger.info('Active pipes %s' % active_pipe_count)
+                        self._logger.info('Pipe %s completed', pipe.uid)
+                        self._logger.info('Active pipes %s', active_pipe_count)
 
             if not self._sync_thread.is_alive():
                 self._logger.info('Synchronizer thread is not alive.')
@@ -730,7 +730,7 @@ class AppManager(object):
             state = msg['object']['state']
 
             self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
-            self._logger.debug('recv %s in state %s (sync)' % (uid, state))
+            self._logger.debug('recv %s in state %s (sync)', uid, state)
 
             if msg['type'] == 'Task':
                 self._update_task(msg)
@@ -744,8 +744,8 @@ class AppManager(object):
 
         completed_task = Task(from_dict=msg['object'])
 
-        self._logger.info('Received %s with state %s'
-                         % (completed_task.uid, completed_task.state))
+        self._logger.info('Received %s with state %s', completed_task.uid,
+                completed_task.state)
 
       # found_task = False
 
@@ -769,27 +769,27 @@ class AppManager(object):
                             completed_task.state == task.state:
                             continue
 
-                        self._logger.debug(('Found task %s in state (%s)'
-                            ' changing to %s ==') %
-                                (task.uid, task.state, completed_task.state))
+                        self._logger.debug('Found task %s in state (%s) \
+                                           changing to %s ==', task.uid,
+                                           task.state, completed_task.state)
 
                         if completed_task.path:
                             task.path = str(completed_task.path)
-                            self._logger.debug('Task %s path set to %s' %
-                                               (task.uid, task.path))
+                            self._logger.debug('Task %s path set to %s',
+                                               task.uid, task.path)
 
                         if completed_task.rts_uid:
                             task.rts_uid = str(completed_task.rts_uid)
-                            self._logger.debug('Task %s rts_uid set to %s' %
-                                               (task.uid, task.rts_uid))
+                            self._logger.debug('Task %s rts_uid set to %s',
+                                               task.uid, task.rts_uid)
 
                         if task.state in [states.DONE, states.FAILED]:
-                            self._logger.debug(('No change on task state %s '
-                                'in state %s') % (task.uid, task.state))
+                            self._logger.debug('No change on task state %s \
+                                             in state %s', task.uid, task.state)
                             break
                         task.state = str(completed_task.state)
-                        self._logger.debug('Found task %s in state %s'
-                                          % (task.uid, task.state))
+                        self._logger.debug('Found task %s in state %s',
+                                          task.uid, task.state)
 
                         state = msg['object']['state']
                         self._prof.prof('pub_ack_state_%s' % state,

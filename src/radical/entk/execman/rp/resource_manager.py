@@ -7,7 +7,7 @@ import os
 
 import radical.pilot as rp
 
-from ...exceptions           import EnTKError, ValueError
+from ...exceptions           import EnTKError, EnTKValueError
 from ..base.resource_manager import Base_ResourceManager
 
 
@@ -48,12 +48,12 @@ class ResourceManager(Base_ResourceManager):
         if "sandbox_cleanup" not in self._rts_config or \
            "db_cleanup"      not in self._rts_config:
 
-            raise ValueError(obj=self._uid, attribute='config',
+            raise EnTKValueError(obj=self._uid, attribute='config',
                              expected_value={"sandbox_cleanup": False,
                                              "db_cleanup"     : False},
                              actual_value=self._rts_config)
 
-        self._logger.info('Created resource manager object: %s' % self._uid)
+        self._logger.info('Created resource manager object: %s', self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
 
 
@@ -145,7 +145,7 @@ class ResourceManager(Base_ResourceManager):
             # ------------------------------------------------------------------
             def _pilot_state_cb(pilot, state):
 
-                self._logger.info('Pilot %s state: %s' % (pilot.uid, state))
+                self._logger.info('Pilot %s state: %s', pilot.uid, state)
 
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')

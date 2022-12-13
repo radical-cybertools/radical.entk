@@ -161,11 +161,11 @@ class Pipeline(object):
 
         invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str,
+            raise ree.EnTKTypeError(expected_type=str,
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            raise ree.ValueError(obj=self._uid,
+            raise ree.EnTKValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
                                  expected_value=NAME_MESSAGE)
@@ -184,19 +184,19 @@ class Pipeline(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in list(states._pipeline_state_values.keys()):
+            if value in list(states._pipeline_state_values.keys()):  # pylint: disable=W0212
                 self._state = value
 
                 # We add SUSPENDED to state history in suspend()
                 if self._state != states.SUSPENDED:
                     self._state_history.append(value)
             else:
-                raise ree.ValueError(obj=self._uid,
+                raise ree.EnTKValueError(obj=self._uid,
                                  attribute='state',
-                                 expected_value=list(states._pipeline_state_values.keys()),
+                                 expected_value=list(states._pipeline_state_values.keys()),  # pylint: disable=W0212
                                  actual_value=value)
         else:
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise ree.EnTKTypeError(expected_type=str, actual_type=type(value))
 
 
     # --------------------------------------------------------------------------
@@ -257,11 +257,11 @@ class Pipeline(object):
             if d['name']:
                 invalid_symbols = punctuation.replace('.','')
                 if not isinstance(d['name'], str):
-                    raise ree.TypeError(expected_type=str,
+                    raise ree.EnTKTypeError(expected_type=str,
                                         actual_type=type(d['name']))
 
                 if any(symbol in d['name'] for symbol in invalid_symbols):
-                    raise ree.ValueError(obj=self._uid,
+                    raise ree.EnTKValueError(obj=self._uid,
                                         attribute='name',
                                         actual_value=d['name'],
                                         expected_value=NAME_MESSAGE)
@@ -270,15 +270,15 @@ class Pipeline(object):
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], str):
-                if d['state'] in list(states._pipeline_state_values.keys()):
+                if d['state'] in list(states._pipeline_state_values.keys()):  # pylint: disable=W0212
                     self._state = d['state']
                 else:
-                    raise ree.ValueError(obj=self._uid,
+                    raise ree.EnTKValueError(obj=self._uid,
                                      attribute='state',
-                                     expected_value=list(states._pipeline_state_values.keys()),
+                                     expected_value=list(states._pipeline_state_values.keys()),  # pylint: disable=W0212
                                      actual_value=d['state'])
             else:
-                raise ree.TypeError(entity='state', expected_type=str,
+                raise ree.EnTKTypeError(entity='state', expected_type=str,
                                 actual_type=type(d['state']))
 
         else:
@@ -288,7 +288,7 @@ class Pipeline(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(
+                raise ree.EnTKTypeError(entity='state_history', expected_type=list, actual_type=type(
                     d['state_history']))
 
         if 'completed' in d:
@@ -296,7 +296,7 @@ class Pipeline(object):
                 if d['completed']:
                     self._completed_flag.set()
             else:
-                raise ree.TypeError(entity='completed', expected_type=bool,
+                raise ree.EnTKTypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
     # --------------------------------------------------------------------------
@@ -379,14 +379,14 @@ class Pipeline(object):
         :argument: list of Stage objects
         """
         if not stages:
-            raise ree.TypeError(expected_type=Stage, actual_type=type(stages))
+            raise ree.EnTKTypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]
 
         for value in stages:
             if not isinstance(value, Stage):
-                raise ree.TypeError(expected_type=Stage, actual_type=type(value))
+                raise ree.EnTKTypeError(expected_type=Stage, actual_type=type(value))
 
         return stages
 
@@ -398,7 +398,7 @@ class Pipeline(object):
 
         if self._state is not states.INITIAL:
 
-            raise ree.ValueError(obj=self._uid,
+            raise ree.EnTKValueError(obj=self._uid,
                              attribute='state',
                              expected_value=states.INITIAL,
                              actual_value=self._state)
@@ -409,7 +409,7 @@ class Pipeline(object):
                                missing_attribute='stages')
 
         for stage in self._stages:
-            stage._validate()
+            stage._validate()  # pylint: disable=W0212
 
 
 # ------------------------------------------------------------------------------

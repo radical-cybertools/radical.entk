@@ -63,7 +63,7 @@ class WFprocessor(object):
         self._enqueue_thread_terminate = None
         self._dequeue_thread_terminate = None
 
-        self._logger.info('Created WFProcessor object: %s' % self._uid)
+        self._logger.info('Created WFProcessor object: %s', self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
 
         self._setup_zmq(zmq_info)
@@ -98,7 +98,7 @@ class WFprocessor(object):
         self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
-        self._logger.info('Transition %s to state %s' % (obj.uid, new_state))
+        self._logger.info('Transition %s to state %s', obj.uid, new_state)
 
 
     # --------------------------------------------------------------------------
@@ -307,13 +307,13 @@ class WFprocessor(object):
                 if pipe.uid != deq_task.parent_pipeline['uid']:
                     continue
 
-                self._logger.debug('Found parent pipeline: %s' %
-                                    pipe.uid)
+                self._logger.debug('Found parent pipeline: %s', pipe.uid)
 
                 # Next search across all stages of a matching
                 # pipelines
                 assert pipe.stages
 
+                stage = None
                 for stage in pipe.stages:
 
                     # Skip stages that don't match the UID
@@ -321,8 +321,7 @@ class WFprocessor(object):
                     if stage.uid != deq_task.parent_stage['uid']:
                         continue
 
-                    self._logger.debug('Found parent stage: %s' %
-                                        stage.uid)
+                    self._logger.debug('Found parent stage: %s', stage.uid)
 
                     # Search across all tasks of matching stage
                     for task in stage.tasks:
@@ -362,7 +361,7 @@ class WFprocessor(object):
                 # be executed and (ii) check if it is the last
                 # stage of the pipeline -- update pipeline
                 # state if yes.
-                if stage._check_stage_complete():
+                if stage._check_stage_complete():        # pylint: disable=W0212
                     self._advance(stage, 'Stage', states.DONE)
 
                     # Check if the current stage has a post-exec
@@ -376,7 +375,7 @@ class WFprocessor(object):
 
                     else:
                         # otherwise perform normal stage progression
-                        pipe._increment_stage()
+                        pipe._increment_stage()          # pylint: disable=W0212
 
                     # If pipeline has completed, advance state to DONE
                     if pipe.completed:
@@ -396,15 +395,15 @@ class WFprocessor(object):
         pipeline.
         """
         try:
-            self._logger.info('Executing post-exec for stage %s' % stage.uid)
+            self._logger.info('Executing post-exec for stage %s', stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
             resumed_pipe_uids = stage.post_exec()
-            self._logger.info('Post-exec executed for stage %s' % stage.uid)
+            self._logger.info('Post-exec executed for stage %s', stage.uid)
             self._prof.prof('post_exec_stop', uid=self._uid)
 
 
         except Exception as ex:
-            self._logger.exception('post_exec of stage %s failed' % stage.uid)
+            self._logger.exception('post_exec of stage %s failed', stage.uid)
             self._prof.prof('post_exec_fail', uid=self._uid)
             raise EnTKError(ex) from ex
 
@@ -420,7 +419,7 @@ class WFprocessor(object):
 
                         # Resumed pipelines already have the correct state,
                         # they just need to be synced with the AppMgr.
-                        r_pipe._increment_stage()
+                        r_pipe._increment_stage()        # pylint: disable=W0212
 
                         if r_pipe.completed:
                             self._advance(r_pipe, 'Pipeline', states.DONE)
@@ -452,8 +451,8 @@ class WFprocessor(object):
                 if msgs:
                     for msg in msgs:
                         deq_task = Task(from_dict=msg)
-                        self._logger.info('Got finished task %s from queue'
-                                          % (deq_task.uid))
+                        self._logger.info('Got finished task %s from queue',
+                                          deq_task.uid)
                         self._update_dequeued_task(deq_task)
 
 

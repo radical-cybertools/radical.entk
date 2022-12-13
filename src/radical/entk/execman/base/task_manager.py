@@ -8,7 +8,7 @@ import os
 
 import radical.utils as ru
 
-from ...exceptions import EnTKError, TypeError
+from ...exceptions import EnTKError, EnTKTypeError
 
 from .resource_manager import Base_ResourceManager
 
@@ -39,15 +39,15 @@ class Base_TaskManager(object):
     def __init__(self, sid, rmgr, rts, zmq_info):
 
         if not isinstance(sid, str):
-            raise TypeError(expected_type=str,
+            raise EnTKTypeError(expected_type=str,
                             actual_type=type(sid))
 
         if not isinstance(rmgr, Base_ResourceManager):
-            raise TypeError(expected_type=Base_ResourceManager,
+            raise EnTKTypeError(expected_type=Base_ResourceManager,
                             actual_type=type(rmgr))
 
         if not isinstance(zmq_info, dict):
-            raise TypeError(expected_type=dict,
+            raise EnTKTypeError(expected_type=dict,
                             actual_type=type(zmq_info))
 
         self._sid  = sid
@@ -174,8 +174,8 @@ class Base_TaskManager(object):
                 if self._tmgr_terminate is not None:
                     if not self._tmgr_terminate.is_set():
                         self._tmgr_terminate.set()
-                    self._log.debug('TMGR terminate is set %s'
-                                    % self._tmgr_terminate.is_set())
+                    self._log.debug('TMGR terminate is set %s',
+                                    self._tmgr_terminate.is_set())
                 if self.check_manager():
                     self._log.debug('TMGR process is alive')
                     self._tmgr_process.join(30)

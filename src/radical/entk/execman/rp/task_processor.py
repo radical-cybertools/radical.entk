@@ -28,7 +28,7 @@ def resolve_placeholders(path, placeholders, logger):
             path = str(path)
 
         if not isinstance(path, str):
-            raise ree.TypeError(expected_type=str,
+            raise ree.EnTKTypeError(expected_type=str,
                                 actual_type=type(path))
 
         if '$' not in path:
@@ -61,7 +61,7 @@ def resolve_placeholders(path, placeholders, logger):
                 expected = '$Pipeline_(pipeline_name)_' \
                            'Stage_(stage_name)_' \
                            'Task_(task_name) or $SHARED',
-                raise ree.ValueError(obj='placeholder', attribute='task',
+                raise ree.EnTKValueError(obj='placeholder', attribute='task',
                                      expected_value=expected, actual_value=elems)
 
             pname    = elems[1]
@@ -109,7 +109,7 @@ def resolve_placeholders(path, placeholders, logger):
                 expected = '$Pipeline_(pipeline_name)_' \
                            'Stage_(stage_name)_' \
                            'Task_(task_name) or $SHARED'
-                raise ree.ValueError(obj='placeholder', attribute='task',
+                raise ree.EnTKValueError(obj='placeholder', attribute='task',
                                      expected_value=expected, actual_value=elems)
 
         return resolved
@@ -152,7 +152,7 @@ def resolve_arguments(args, placeholders, logger):
                 expected = '$Pipeline_{pipeline.uid}_' \
                            'Stage_{stage.uid}_' \
                            'Task_{task.uid} or $SHARED'
-                raise ree.ValueError(obj='placeholder', attribute='length',
+                raise ree.EnTKValueError(obj='placeholder', attribute='length',
                                     expected_value=expected, actual_value=elems)
 
             pname = elems[1]
@@ -224,7 +224,7 @@ def get_input_list_from_task(task, placeholders, logger):
     try:
 
         if not isinstance(task, Task):
-            raise ree.TypeError(expected_type=Task, actual_type=type(task))
+            raise ree.EnTKTypeError(expected_type=Task, actual_type=type(task))
 
         input_data = list()
 
@@ -343,7 +343,7 @@ def get_output_list_from_task(task, placeholders, logger):
     try:
 
         if not isinstance(task, Task):
-            raise ree.TypeError(expected_type=Task, actual_type=type(task))
+            raise ree.EnTKTypeError(expected_type=Task, actual_type=type(task))
 
 
         output_data = list()

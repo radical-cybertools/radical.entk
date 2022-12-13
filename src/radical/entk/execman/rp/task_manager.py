@@ -232,8 +232,8 @@ class TaskManager(Base_TaskManager):
 
             try:
 
-                self._log.debug('Task %s in state %s' % (rp_task.uid,
-                                                         rp_task.state))
+                self._log.debug('Task %s in state %s', rp_task.uid,
+                                                       rp_task.state)
 
                 if rp_task.state in rp.FINAL:
 
@@ -247,8 +247,8 @@ class TaskManager(Base_TaskManager):
                     self._zmq_queue['put'].put(qname='completed',
                                                msgs=[task.as_dict()])
 
-                    self._log.info('Pushed task %s with state %s to completed'
-                                   % (task.uid, task.state))
+                    self._log.info('Pushed task %s with state %s to completed',
+                                   task.uid, task.state)
 
             except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
@@ -261,7 +261,7 @@ class TaskManager(Base_TaskManager):
         # ----------------------------------------------------------------------
 
 
-        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)  # pylint: disable=W0212
         self._rp_tmgr.register_callback(task_state_cb)
 
         try:
@@ -341,7 +341,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
-            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
+            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
 
             return True
 
