@@ -34,7 +34,7 @@ class TestBase(TestCase):
     def test_wfp_initialization(self, mocked_generate_id, mocked_getcwd,
                                 mocked_Logger, mocked_Profiler, mocked_Reporter):
 
-        wfp = WFprocessor._setup_zmq = lambda x: True
+        wfp = WFprocessor._setup_zmq = lambda x, y: True
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
                 resubmit_failed=False, zmq_info={})
 

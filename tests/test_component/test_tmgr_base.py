@@ -43,7 +43,7 @@ class TestBase(TestCase):
                   mocked_Profiler, mocked_DebugHelper):
 
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        Tmgr._setup_zmq = lambda x: True
+        Tmgr._setup_zmq = lambda x, y: True
         tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         self.assertEqual(tmgr._sid, 'test_tmgr')

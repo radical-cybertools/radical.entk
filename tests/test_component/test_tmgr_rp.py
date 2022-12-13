@@ -40,7 +40,7 @@ class TestBase(TestCase):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
 
-        RPTmgr._setup_zmq = lambda x: True
+        RPTmgr._setup_zmq = lambda x, y: True
         tmgr = RPTmgr('test_tmgr', rmgr, {})
         self.assertIsNone(tmgr._rts_runner)
 
@@ -53,7 +53,7 @@ class TestBase(TestCase):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
 
-        RPTmgr._setup_zmq = lambda x: True
+        RPTmgr._setup_zmq = lambda x, y: True
         tmgr = RPTmgr('test_tmgr', rmgr, {})
 
         tmgr._log = mocked_Logger

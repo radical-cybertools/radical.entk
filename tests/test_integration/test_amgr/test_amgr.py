@@ -40,7 +40,7 @@ class TestBase(TestCase):
         appman._wfp = re.appman.wfprocessor.WFprocessor()
         appman._rmgr = re.execman.mock.ResourceManager(resource_desc={},
                                                 sid='test_rmgr',rts_config=None)
-        re.execman.mock.TaskManager._setup_zmq = lambda x: True
+        re.execman.mock.TaskManager._setup_zmq = lambda x, y: True
         appman._task_manager = re.execman.mock.TaskManager(sid='test_tmgr',
                                                  rmgr=appman._rmgr, zmq_info={})
         appman._uid = 'appman.0000'
