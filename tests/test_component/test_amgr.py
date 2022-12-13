@@ -34,8 +34,7 @@ class TestBase(TestCase):
                                     'pending_qs' : st.integers(),
                                     'completed_qs' : st.integers()}))
     @settings(max_examples=10)
-    def test_amgr_read_config(self, mocked_init, mocked_PlainCredentials,
-                              mocked_ConnectionParameters, d):
+    def test_amgr_read_config(self, mocked_init, d):
 
         amgr = Amgr()
 
@@ -84,8 +83,7 @@ class TestBase(TestCase):
                                      'pending_qs' : st.integers(),
                                      'completed_qs' : st.integers()}))
     @settings(max_examples=10)
-    def test_amgr_read_config2(self, mocked_init, mocked_PlainCredentials,
-                               mocked_ConnectionParameters, d2):
+    def test_amgr_read_config2(self, mocked_init, d2):
 
         amgr = Amgr()
 
@@ -120,16 +118,13 @@ class TestBase(TestCase):
                                             ))
     @mock.patch('radical.entk.appman.wfprocessor.WFprocessor',
                 return_value=mock.MagicMock(workflow_incomplete=mock.MagicMock(return_value=True),
-                                            check_processor=mock.MagicMock(side_effect=[True, True, False, True, True, True]),
+                                            check_processor=mock.MagicMock(side_effect=[True, False, False, False, False, True]),
                                             terminate_processor=mock.MagicMock(return_value=True),
                                             start_processor=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.entk.execman.mock.TaskManager',
-                return_value=mock.MagicMock(check_heartbeat=mock.MagicMock(side_effect=[False, True, True, True, True, True]),
-                                            terminate_heartbeat=mock.MagicMock(return_value=True),
-                                            terminate_manager=mock.MagicMock(return_value=True),
-                                            start_manager=mock.MagicMock(return_value=True),
-                                            start_heartbeat=mock.MagicMock(return_value=True)
+                return_value=mock.MagicMock(terminate_manager=mock.MagicMock(return_value=True),
+                                            start_manager=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.Logger')

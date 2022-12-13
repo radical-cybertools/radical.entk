@@ -40,11 +40,11 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.DebugHelper')
     def test_init(self, mocked_generate_id, mocked_getcwd, mocked_Logger,
-                  mocked_Profiler, mocked_DebugHelper, mocked_BlockingConnection):
+                  mocked_Profiler, mocked_DebugHelper):
 
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
-        tmgr = Tmgr('test_tmgr', ['pending_queues'], ['completed_queues'],
-                     rmgr, 'test_rts')
+        Tmgr._setup_zmq = lambda x: True
+        tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         self.assertEqual(tmgr._sid, 'test_tmgr')
         self.assertEqual(tmgr._rmgr, rmgr)
@@ -66,16 +66,7 @@ class TestBase(TestCase):
             tmgr = Tmgr(25, rmgr, 'test_rts', {})
 
         with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
-
-        with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
-
-        with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', 'test_rmq', 'test_rts', {})
-
-        with self.assertRaises(TypeError):
-            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
+            tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', [])
 
 
     # ------------------------------------------------------------------------------
@@ -83,18 +74,16 @@ class TestBase(TestCase):
     @mock.patch.object(Tmgr, '__init__', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
-    @mock.patch('pika.BlockingConnection')
-    def test_advance(self, mocked_init, mocked_Logger, mocked_Profiler,
-                     mocked_BlockingConnection):
+    def test_advance(self, mocked_init, mocked_Logger, mocked_Profiler):
 
         rmgr = mock.MagicMock(spec=Base_ResourceManager)
         tmgr = Tmgr('test_tmgr', rmgr, 'test_rts', {})
 
         global_syncs = []
 
-        def _sync_side_effect(obj, obj_type, channel, conn_params, queue):
+        def _sync_side_effect(obj, obj_type, channel):
             nonlocal global_syncs
-            global_syncs.append([obj, obj_type, channel, conn_params, queue])
+            global_syncs.append([obj, obj_type, channel])
 
         tmgr._log = mocked_Logger
         tmgr._prof = mocked_Profiler
@@ -106,7 +95,7 @@ class TestBase(TestCase):
 
         tmgr._advance(obj, 'Task', 'SCHEDULING', 'channel')
         self.assertEqual(global_syncs[0],
-                         [obj, 'Task', 'channel', 'params', 'queue'])
+                         [obj, 'Task', 'channel'])
         self.assertEqual(obj.state, 'SCHEDULING')
 
         # no `obj` type - will not change the processing flow

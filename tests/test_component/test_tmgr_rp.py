@@ -3,8 +3,9 @@
 
 from unittest import TestCase
 
-from radical.entk.execman.rp   import TaskManager as RPTmgr
-from radical.entk.execman.rp   import ResourceManager as RPRmgr
+from radical.entk.execman.base import Base_TaskManager as Tmgr
+from radical.entk.execman.rp   import TaskManager      as RPTmgr
+from radical.entk.execman.rp   import ResourceManager  as RPRmgr
 
 import time
 import psutil
@@ -35,10 +36,12 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.DebugHelper')
     def test_init(self, mocked_generate_id, mocked_getcwd, mocked_Logger,
-                  mocked_Profiler, mocked_DebugHelper, mocked_BlockingConnection):
+                  mocked_Profiler, mocked_DebugHelper):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
-        tmgr = RPTmgr('test_tmgr', rmgr, rmq_params, {})
+
+        RPTmgr._setup_zmq = lambda x: True
+        tmgr = RPTmgr('test_tmgr', rmgr, {})
         self.assertIsNone(tmgr._rts_runner)
 
     # --------------------------------------------------------------------------
@@ -46,10 +49,11 @@ class TestBase(TestCase):
     @mock.patch.object(RPTmgr, '__init__', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
-    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler,
-                           mocked_BlockingConnection):
+    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
+
+        RPTmgr._setup_zmq = lambda x: True
         tmgr = RPTmgr('test_tmgr', rmgr, {})
 
         tmgr._log = mocked_Logger
@@ -57,6 +61,7 @@ class TestBase(TestCase):
         tmgr._uid = 'tmgr.0000'
         tmgr._rmgr = 'test_rmgr'
         tmgr._tmgr = _tmgr_side_effect
+        tmgr._zmq_info = {}
 
         tmgr._tmgr_terminate = None
         tmgr._tmgr_process = None

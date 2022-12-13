@@ -49,6 +49,10 @@ class Base_TaskManager(object):
             raise TypeError(expected_type=Base_ResourceManager,
                             actual_type=type(rmgr))
 
+        if not isinstance(zmq_info, dict):
+            raise TypeError(expected_type=dict,
+                            actual_type=type(zmq_info))
+
         self._sid             = sid
         self._rmgr            = rmgr
         self._rts             = rts

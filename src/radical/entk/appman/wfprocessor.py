@@ -67,6 +67,14 @@ class WFprocessor(object):
         self._logger.info('Created WFProcessor object: %s' % self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
 
+        self._zmq_queue = dict()
+        self._setup_zmq()
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _setup_zmq(self):
+
         self._zmq_queue = {
                 'put' : ru.zmq.Putter(self._sid, url=zmq_info['put']),
                 'get' : ru.zmq.Getter(self._sid, url=zmq_info['get'])}
@@ -578,14 +586,13 @@ class WFprocessor(object):
     #
     def check_processor(self):
 
-        if self._enqueue_thread is None or self._dequeue_thread is None:
-            return False
+        if self._enqueue_thread and \
+           self._dequeue_thread and \
+           self._enqueue_thread.is_alive() and \
+           self._dequeue_thread.is_alive():
+            return True
 
-        if not self._enqueue_thread.is_alive() or \
-                not self._dequeue_thread.is_alive():
-            return False
-
-        return True
+        return False
 
 
 # ------------------------------------------------------------------------------

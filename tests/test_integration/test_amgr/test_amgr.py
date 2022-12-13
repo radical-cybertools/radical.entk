@@ -36,19 +36,13 @@ class TestBase(TestCase):
         os.environ['RU_RAISE_ON_SYNC_FAIL'] = '3'
         os.environ['RU_RAISE_ON_RESOURCE_FAIL'] = '15'
         os.environ['RU_RAISE_ON_TMGR_FAIL'] = '10'
-        hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-        port = int(os.environ.get('RMQ_PORT', '5672'))
-        username = os.environ.get('RMQ_USERNAME')
-        password = os.environ.get('RMQ_PASSWORD')
-        appman = Amgr(hostname=hostname, port=port, username=username,
-            password=password, rts='mock')
+        appman = Amgr(rts='mock')
         appman._wfp = re.appman.wfprocessor.WFprocessor()
-        appman._rmgr = re.execman.mock.ResourceManager(resource_desc={}, sid='test_rmgr',rts_config=None)
+        appman._rmgr = re.execman.mock.ResourceManager(resource_desc={},
+                                                sid='test_rmgr',rts_config=None)
+        re.execman.mock.TaskManager._setup_zmq = lambda x: True
         appman._task_manager = re.execman.mock.TaskManager(sid='test_tmgr',
-                                                           pending_queue=appman._pending_queue,
-                                                           completed_queue=appman._completed_queue,
-                                                           rmgr=appman._rmgr,
-                                                           rmq_conn_params=appman._rmq_conn_params)
+                                                 rmgr=appman._rmgr, zmq_info={})
         appman._uid = 'appman.0000'
         appman._logger = mocked_Logger
         appman._prof = mocked_Profiler
