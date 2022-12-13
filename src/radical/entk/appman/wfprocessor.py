@@ -312,7 +312,7 @@ class WFprocessor(object):
 
                 # Next search across all stages of a matching
                 # pipelines
-                assert(pipe.stages)
+                assert pipe.stages
 
                 for stage in pipe.stages:
 
@@ -355,7 +355,8 @@ class WFprocessor(object):
                     # iterations needed for the current task
                     break
 
-                assert(stage)
+                assert stage
+
                 # Check if current stage has completed
                 # If yes, we need to (i) check for post execs to
                 # be executed and (ii) check if it is the last
