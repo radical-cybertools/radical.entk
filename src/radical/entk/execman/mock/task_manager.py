@@ -3,14 +3,10 @@ __copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
 __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __license__   = "MIT"
 
-
-import os
 import queue
 
 import threading       as mt
 import multiprocessing as mp
-
-import radical.utils as ru
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
@@ -183,14 +179,13 @@ class TaskManager(Base_TaskManager):
                     task = Task(from_dict=msg)
                     bulk_tasks.append(task)
 
-                    self._advance_zmq(task, 'Task', states.SUBMITTING,
-                                      'tmgr-to-sync')
+                    self._advance(task, 'Task', states.SUBMITTING,
+                                 'tmgr-to-sync')
 
                 # this mock RTS immmedialtely completes all tasks
                 for task in bulk_tasks:
 
-                    self._advance_zmq(task, 'Task', states.COMPLETED,
-                                  'cb-to-sync')
+                    self._advance(task, 'Task', states.COMPLETED, 'cb-to-sync')
 
                     self._log.info('Pushed task %s with state %s to completed'
                                    % (task.uid, task.state))

@@ -33,7 +33,6 @@ if __name__ == '__main__':
 
     # Create Application Manager
     appman = AppManager()
-            password=password)
 
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, and cpus

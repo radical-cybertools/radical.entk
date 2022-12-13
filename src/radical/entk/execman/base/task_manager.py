@@ -5,10 +5,7 @@ __license__   = "MIT"
 
 
 import os
-import json
-import uuid
 
-import threading     as mt
 import radical.utils as ru
 
 from ...exceptions import EnTKError, TypeError

@@ -5,7 +5,6 @@ __license__   = "MIT"
 
 
 import os
-import json
 import time
 import threading     as mt
 

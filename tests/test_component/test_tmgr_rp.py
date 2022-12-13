@@ -3,7 +3,6 @@
 
 from unittest import TestCase
 
-from radical.entk.execman.base import Base_TaskManager as Tmgr
 from radical.entk.execman.rp   import TaskManager      as RPTmgr
 from radical.entk.execman.rp   import ResourceManager  as RPRmgr
 
@@ -40,7 +39,7 @@ class TestBase(TestCase):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
 
-        RPTmgr._setup_zmq = lambda x, y: True
+        RPTmgr._setup_zmq = lambda x, y: None
         tmgr = RPTmgr('test_tmgr', rmgr, {})
         self.assertIsNone(tmgr._rts_runner)
 
@@ -53,7 +52,7 @@ class TestBase(TestCase):
 
         rmgr = mock.MagicMock(spec=RPRmgr)
 
-        RPTmgr._setup_zmq = lambda x, y: True
+        RPTmgr._setup_zmq = lambda x, y: None
         tmgr = RPTmgr('test_tmgr', rmgr, {})
 
         tmgr._log = mocked_Logger
@@ -74,3 +73,4 @@ class TestBase(TestCase):
         finally:
             if tmgr._tmgr_process.is_alive():
                 tmgr._tmgr_process.join()
+

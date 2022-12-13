@@ -4,7 +4,6 @@ __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
 __license__   = 'MIT'
 
 import os
-import json
 import time
 
 import threading       as mt
@@ -282,6 +281,9 @@ class AppManager(object):
 
         elif self._rts == 'mock':
             from ..execman.mock import ResourceManager
+
+        else:
+            raise ValueError('unknown RTS %s' % self._rts)
 
         self._rmgr = ResourceManager(resource_desc=value, sid=self._sid,
                                      rts_config=self._rts_config)
@@ -597,6 +599,9 @@ class AppManager(object):
         elif self._rts == 'mock':
             from ..execman.mock import TaskManager
 
+        else:
+            raise ValueError('unknown RTS %s' % self._rts)
+
         if not self._task_manager:
 
             self._logger.info('Starting task manager')
@@ -628,7 +633,7 @@ class AppManager(object):
     #
     def _run_workflow(self):
 
-        active_pipe_count  = len(self._workflow)
+        active_pipe_count  = len(self._workflow or [])
         finished_pipe_uids = list()
 
         # We wait till all pipelines of the workflow are marked
@@ -693,7 +698,9 @@ class AppManager(object):
                 self._logger.debug('RTS resubmitted')
 
         if self._cur_attempt > self._reattempts:
-            raise ree.EnTKError('Too many failures in synchronizer, wfp or task manager')
+            raise ree.EnTKError('Too many failures in synchronizer, wfp or '
+                                'task manager')
+
 
     # --------------------------------------------------------------------------
     #
