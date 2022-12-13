@@ -4,6 +4,7 @@
 pytest
 pylint
 flake8
+psutil
 coverage
 mock==2.0.0.
 pudb
