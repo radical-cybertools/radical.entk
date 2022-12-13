@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 
 from radical.entk import Pipeline, Stage
 from radical.entk import states
-from radical.entk.exceptions import TypeError, ValueError, MissingError, EnTKError
+from radical.entk.exceptions import EnTKTypeError, EnTKValueError, MissingError, EnTKError
 
 try:
     import mock
@@ -75,17 +75,17 @@ class TestBase(TestCase):
 
         for data in data_type:
             if not isinstance(data, str):
-                with self.assertRaises(TypeError):
+                with self.assertRaises(EnTKTypeError):
                     p.name = data
 
             if isinstance(data,str):
-                with self.assertRaises(ValueError):
+                with self.assertRaises(EnTKValueError):
                     p.name = data
 
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 p.stages = data
 
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 p.add_stages(data)
 
     # --------------------------------------------------------------------------
@@ -123,11 +123,11 @@ class TestBase(TestCase):
         data_type = [l, i, b]
 
         for data in data_type:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 p.state = data
 
         if isinstance(t,str):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(EnTKValueError):
                 p.state = t
 
         state_history = list()
@@ -274,7 +274,7 @@ class TestBase(TestCase):
         data_type = [t, l, i, b, se]
 
         for data in data_type:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 p._validate_entities(data)
 
         s = mock.MagicMock(spec=Stage)
@@ -293,7 +293,7 @@ class TestBase(TestCase):
         p = Pipeline()
         p._uid = 'pipeline.0000'
         p._state = 'test'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EnTKValueError):
             p._validate()
 
         p = Pipeline()
