@@ -36,7 +36,7 @@ jobs:
         python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
-        python -m pip install -r requirements-test.txt
+        python -m pip install -r requirements-tests.txt
     - name: Test with pytest
       env:
         RMQ_HOSTNAME: localhost
@@ -73,7 +73,7 @@ jobs:
         python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
-        python -m pip install -r requirements-test.txt
+        python -m pip install -r requirements-tests.txt
     - name: Lint with flake8 and pylint
       run: |
         . testenv/bin/activate
