@@ -4,8 +4,6 @@ __author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
 __license__   = "MIT"
 
 
-import json
-import pika
 import queue
 import os
 import pickle
@@ -17,7 +15,7 @@ import radical.pilot   as rp
 
 from ...exceptions     import EnTKError
 from ...               import states, Task
-from ..base            import Base_TaskManager, heartbeat_response
+from ..base            import Base_TaskManager
 from .task_processor   import create_td_from_task, create_task_from_rp
 
 
@@ -33,14 +31,10 @@ class TaskManager(Base_TaskManager):
 
 
     :arguments:
-        :pending_queue:     (list) List of queue(s) with tasks ready to be
-                            executed. Currently, only one queue.
         :completed_queue:   (list) List of queue(s) with tasks that have
                             finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
-        :rmq_conn_params:   (pika.connection.ConnectionParameters) object of
-                            parameters necessary to connect to RabbitMQ
 
     Currently, EnTK is configured to work with one pending queue and one
     completed queue. In the future, the number of queues can be varied for
@@ -50,38 +44,27 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, sid, pending_queue, completed_queue, rmgr,
-                       rmq_conn_params):
+    def __init__(self, sid, rmgr, zmq_info):
 
-        super(TaskManager, self).__init__(sid, pending_queue, completed_queue,
-                                          rmgr, rmq_conn_params,
-                                          rts='radical.pilot')
+        super(TaskManager, self).__init__(sid, rmgr, rts='radical.pilot',
+                                          zmq_info=zmq_info)
         self._rts_runner = None
         self._submitted_tasks = dict()
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
         self._rp_tmgr = None
+        self._zmq_info = zmq_info
         self._total_res = {'cores': 0,
                            'gpus': 0}
 
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, rmgr, pending_queue, completed_queue,
-                    rmq_conn_params):
+    def _tmgr(self, uid, rmgr, zmq_info):
         """
-        **Purpose**: This method has 3 purposes: Respond to a heartbeat thread
-                     indicating the live-ness of the RTS, receive tasks from the
-                     pending_queue, start a new thread that processes these
+        **Purpose**: This method has 2 purposes: receive tasks from the
+                     'pending' queue, start a new thread that processes these
                      tasks and submits to the RTS.
-
-                     It is important to separate the reception of the tasks from
-                     their processing due to RMQ/AMQP design. The channel (i.e.,
-                     the thread that holds the channel) that is receiving msgs
-                     from the RMQ server needs to be non-blocking as it can
-                     interfere with the heartbeat intervals of RMQ.  Processing
-                     a large number of tasks can considerable time and can block
-                     the communication channel. Hence, the two are separated.
 
                      The new thread is responsible for pushing completed tasks
                      (returned by the RTS) to the dequeueing queue. It also
@@ -92,10 +75,6 @@ class TaskManager(Base_TaskManager):
                      transititons, they are synced (blocking) with the
                      AppManager in the master process.
 
-                     In addition the tmgr also receives heartbeat 'request' msgs
-                     from the heartbeat-request queue. It responds with
-                     a 'response' message to the heartbeart-response queue.
-
         **Details**: The AppManager can re-invoke the tmgr process with this
                      function if the execution of the workflow is still
                      incomplete. There is also population of a dictionary,
@@ -105,18 +84,11 @@ class TaskManager(Base_TaskManager):
 
         try:
 
+            self._setup_zmq(zmq_info)
+
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
-            # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            # Make sure the heartbeat response queue is empty
-            mq_channel.queue_delete(queue=self._hb_response_q)
-            mq_channel.queue_declare(queue=self._hb_response_q)
-
-            # Queue for communication between threads of this process
             task_queue = queue.Queue()
 
             # Pickle file for task id history.
@@ -128,8 +100,8 @@ class TaskManager(Base_TaskManager):
 
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
-                                         args=(task_queue, rmgr,
-                                               rmq_conn_params))
+                                         args=(task_queue, rmgr))
+            self._rts_runner.daemon = True
             self._rts_runner.start()
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
@@ -141,29 +113,21 @@ class TaskManager(Base_TaskManager):
 
                 try:
 
-                    # Get tasks from the pending queue
-                    method_frame, _, body = \
-                                    mq_channel.basic_get(queue=pending_queue[0])
+                    msgs = self._zmq_queue['get'].get_nowait(
+                            qname='pending', timeout=100)
 
-                    if body:
+                    if msgs:
 
-                        body = json.loads(body)
+                        for msg in msgs:
 
-                        if body['type'] == 'workload':
-                            task_queue.put(body['body'])
-                        elif body['type'] == 'rts':
-                            self._update_resource(body['body'])
-                        else:
-                            self._log.error('TMGR receiver wrong message type')
+                            if msg['type'] == 'workload':
+                                task_queue.put(msg['body'])
 
-                        mq_channel.basic_ack(
-                                delivery_tag=method_frame.delivery_tag)
+                            elif msg['type'] == 'rts':
+                                self._update_resource(msg['body'])
 
-                    heartbeat_response(mq_channel,
-                                       self._hb_request_q,
-                                       self._hb_response_q,
-                                       conn_params=rmq_conn_params,
-                                       log=self._log)
+                            else:
+                                self._log.error('TMGR receiver wrong message type')
 
                 except Exception as ex:
                     self._log.exception('Error in task execution: %s', ex)
@@ -191,8 +155,6 @@ class TaskManager(Base_TaskManager):
 
             self._log.debug('TMGR RTS Runner joined')
 
-            mq_connection.close()
-            self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
             self._log.debug('TMGR profile closed')
 
@@ -222,7 +184,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _process_tasks(self, task_queue, rmgr, rmq_conn_params):
+    def _process_tasks(self, task_queue, rmgr):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
                      invokes this function. This function receives tasks from
@@ -266,44 +228,31 @@ class TaskManager(Base_TaskManager):
                                                              'uid': task.uid}
 
         # ----------------------------------------------------------------------
-        def task_state_cb(rp_task, state, cb_data):
+        def task_state_cb(rp_task, state):
 
             try:
 
-                channel = cb_data['channel']
-                conn_params = cb_data['params']
-                self._log.debug('Task %s in state %s' % (rp_task.uid,
-                                                         rp_task.state))
+                self._log.debug('Task %s in state %s', rp_task.uid,
+                                                       rp_task.state)
 
                 if rp_task.state in rp.FINAL:
 
                     task = create_task_from_rp(rp_task, self._log, self._prof)
 
                     self._advance(task, 'Task', states.COMPLETED,
-                                  channel, conn_params,
-                                  '%s-cb-to-sync' % self._sid)
+                                  'cb-to-sync')
 
                     load_placeholder(task)
+
 
                     self._log.debug('=== task: %s: %s - %s', rp_task.uid,
                             rp_task.state, rp_task.exception)
 
-                    task_as_dict = json.dumps(task.as_dict())
-                    try:
-                        channel.basic_publish(exchange='',
-                                              routing_key='%s-completedq-1' % self._sid,
-                                              body=task_as_dict)
-                    except (pika.exceptions.ConnectionClosed,
-                            pika.exceptions.ChannelClosed):
-                        connection = pika.BlockingConnection(conn_params)
-                        channel = connection.channel()
-                        channel.basic_publish(exchange='',
-                                              routing_key='%s-completedq-1' % self._sid,
-                                              body=task_as_dict)
+                    self._zmq_queue['put'].put(qname='completed',
+                                               msgs=[task.as_dict()])
 
-                    self._log.info('Pushed task %s with state %s to completed '
-                                   'queue %s-completedq-1',
-                                   task.uid, task.state, self._sid)
+                    self._log.info('Pushed task %s with state %s to completed',
+                                   task.uid, task.state)
 
             except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
@@ -316,13 +265,8 @@ class TaskManager(Base_TaskManager):
         # ----------------------------------------------------------------------
 
 
-        mq_connection = pika.BlockingConnection(rmq_conn_params)
-        mq_channel = mq_connection.channel()
-
-        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
-        self._rp_tmgr.register_callback(task_state_cb,
-                                  cb_data={'channel': mq_channel,
-                                           'params' : rmq_conn_params})
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)  # pylint: disable=W0212
+        self._rp_tmgr.register_callback(task_state_cb)
 
         try:
             pkl_path = self._path + '/.task_submitted.pkl'
@@ -355,12 +299,11 @@ class TaskManager(Base_TaskManager):
                                         self._sid, self._log, self._prof))
 
                     self._advance(task, 'Task', states.SUBMITTING,
-                                  mq_channel, rmq_conn_params,
-                                  '%s-tmgr-to-sync' % self._sid)
+                                      'tmgr-to-sync')
 
                 if bulk_tds:
                     self._rp_tmgr.submit_tasks(bulk_tds)
-            mq_connection.close()
+
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt as ex:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
@@ -388,16 +331,6 @@ class TaskManager(Base_TaskManager):
             return
 
         try:
-            # Redeclare the heartbeat queues in case they got deleted because
-            # of the task manager failure.
-            # If the queues exist this has no effect.
-
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            mq_channel.queue_declare(queue=self._hb_response_q)
-            mq_channel.queue_declare(queue=self._hb_request_q)
-
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
 
@@ -405,16 +338,14 @@ class TaskManager(Base_TaskManager):
                                             name='task-manager',
                                             args=(self._uid,
                                                   self._rmgr,
-                                                  self._pending_queue,
-                                                  self._completed_queue,
-                                                  self._rmq_conn_params)
+                                                  self._zmq_info)
                                             )
 
             self._log.info('Starting task manager process')
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
-            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
+            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
 
             return True
 

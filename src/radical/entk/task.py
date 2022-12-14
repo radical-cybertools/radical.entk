@@ -455,7 +455,7 @@ class Task(ru.TypedDict):
 
         from_dict = from_dict or {}
         if not isinstance(from_dict, dict):
-            raise ree.TypeError(expected_type=dict,
+            raise ree.EnTKTypeError(expected_type=dict,
                                 actual_type=type(from_dict))
 
         super().__init__()
@@ -524,7 +524,7 @@ class Task(ru.TypedDict):
 
         elif k == 'state':
             if v not in res._task_state_values:
-                raise ree.ValueError(
+                raise ree.EnTKValueError(
                     obj=self['uid'],
                     attribute=k,
                     expected_value=list(res._task_state_values),
@@ -534,7 +534,7 @@ class Task(ru.TypedDict):
         elif k == 'state_history':
             for _v in v:
                 if _v not in res._task_state_values:
-                    raise ree.ValueError(
+                    raise ree.EnTKValueError(
                         obj=self['uid'],
                         attribute='state_history element',
                         expected_value=list(res._task_state_values),
@@ -609,7 +609,7 @@ class Task(ru.TypedDict):
             Task._uids.append(self['uid'])
 
         if self['state'] is not res.INITIAL:
-            raise ree.ValueError(obj=self['uid'],
+            raise ree.EnTKValueError(obj=self['uid'],
                                  attribute='state',
                                  expected_value=res.INITIAL,
                                  actual_value=self['state'])

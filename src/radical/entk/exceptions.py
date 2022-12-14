@@ -6,14 +6,14 @@ __license__ = "MIT"
 
 class EnTKError(Exception):
     """EnTKError is the generic exception type used by EnTK -- exception arg
-    messages are usually 
+    messages are usually
     """
     # pylint: disable=useless-super-delegation
     def __init__(self, msg):
         super(EnTKError, self).__init__(msg)
 
 
-class TypeError(TypeError):
+class EnTKTypeError(TypeError):
     """TypeError is raised if value of a wrong type is passed to a function or
     assigned as an attribute of an object"""
 
@@ -30,10 +30,10 @@ class TypeError(TypeError):
                 str(expected_type),
                 str(actual_type)
             )
-        super(TypeError, self).__init__(msg)
+        super(EnTKTypeError, self).__init__(msg)
 
 
-class ValueError(ValueError):
+class EnTKValueError(ValueError):
 
     """
     ValueError is raised if a value that is unacceptable is passed to a
@@ -55,7 +55,7 @@ class ValueError(ValueError):
                                                        str(text),
                                                        str(actual_value))
 
-        super(ValueError, self).__init__(msg)
+        super(EnTKValueError, self).__init__(msg)
 
 
 class MissingError(AttributeError):

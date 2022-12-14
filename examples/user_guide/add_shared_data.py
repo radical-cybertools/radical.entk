@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 
-from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 from glob import glob
+
+import radical.utils as ru
+
+from radical.entk import Pipeline, Stage, Task, AppManager
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
 if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
-
-hostname = os.environ.get('RMQ_HOSTNAME','localhost')
-port = int(os.environ.get('RMQ_PORT',5672))
-username = os.environ.get('RMQ_USERNAME')
-password = os.environ.get('RMQ_PASSWORD')
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,8 +61,7 @@ if __name__ == '__main__':
     }
 
     # Create Application Manager
-    appman = AppManager(hostname=hostname, port=port, username=username,
-            password=password)
+    appman = AppManager()
 
     # Assign resource manager to the Application Manager
     appman.resource_desc = res_dict
@@ -79,10 +76,11 @@ if __name__ == '__main__':
     appman.run()
 
     for x in range(10):
-        with open('%s/output_%s.txt' % (cur_dir,x + 1), 'r') as fp:
+        with ru.ru_open('%s/output_%s.txt' % (cur_dir,x + 1), 'r') as fp:
             print('Output %s: ' % (x + 1), fp.readlines())
         os.remove('%s/output_%s.txt' % (cur_dir,x + 1))
 
 
     os.remove('%s/file1.txt' % cur_dir)
     os.remove('%s/file2.txt' % cur_dir)
+

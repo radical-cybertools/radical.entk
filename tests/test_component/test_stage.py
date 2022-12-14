@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 
 from radical.entk import Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import TypeError, ValueError, MissingError
+from radical.entk.exceptions import EnTKTypeError, EnTKValueError, MissingError
 
 try:
     import mock
@@ -70,17 +70,17 @@ class TestBase(TestCase):
         for data in data_type:
 
             if not isinstance(data, str):
-                with self.assertRaises(TypeError):
+                with self.assertRaises(EnTKTypeError):
                     s.name = data
 
             # if isinstance(data,str):
-            #     with self.assertRaises(ValueError):
+            #     with self.assertRaises(EnTKValueError):
             #         s.name = data
 
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 s.tasks = data
 
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 s.add_tasks(data)
 
     # ------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ class TestBase(TestCase):
         data_type = [t, l, i, b, se]
 
         for data in data_type:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 s._validate_entities(data)
 
         t = Task()
@@ -147,7 +147,7 @@ class TestBase(TestCase):
         s = Stage()
         data_type = [l, i, b]
         for data in data_type:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 s.parent_pipeline = data
 
         s = Stage()
@@ -170,11 +170,11 @@ class TestBase(TestCase):
         data_type = [l, i, b]
 
         for data in data_type:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(EnTKTypeError):
                 s.state = data
 
         if isinstance(t, str):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(EnTKValueError):
                 s.state = t
 
         s = Stage()
@@ -204,10 +204,10 @@ class TestBase(TestCase):
         def func():
             return True
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             s.post_exec = l
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             s.post_exec = d
 
 
@@ -317,7 +317,7 @@ class TestBase(TestCase):
         t2 = Task()
         s._tasks = {t1, t2}
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EnTKValueError):
             s._set_tasks_state(2)
 
         s._set_tasks_state(states.DONE)
@@ -350,7 +350,7 @@ class TestBase(TestCase):
         s = Stage()
         s._uid = 'stage.0000'
         s._state = 'test'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EnTKValueError):
             s._validate()
 
         s = Stage()

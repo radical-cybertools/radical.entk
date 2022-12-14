@@ -2,9 +2,15 @@
 -r requirements.txt
 
 pytest
+pytest-timeout
+pytest-xdist
 pylint
 flake8
-coverage
+flake8-per-file-ignores
+psutil
 mock==2.0.0.
-pudb
+hypothesis
+coverage
+codecov
+timeout-decorator
 

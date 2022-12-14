@@ -171,11 +171,11 @@ class Stage(object):
     def name(self, value):
         invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str,
+            raise ree.EnTKTypeError(expected_type=str,
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            raise ree.ValueError(obj=self._uid,
+            raise ree.EnTKValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
                                  expected_value=NAME_MESSAGE)
@@ -191,7 +191,7 @@ class Stage(object):
         if isinstance(value, dict):
             self._p_pipeline = value
         else:
-            raise ree.TypeError(expected_type=dict, actual_type=type(value))
+            raise ree.EnTKTypeError(expected_type=dict, actual_type=type(value))
 
     @state.setter
     def state(self, value):
@@ -200,19 +200,19 @@ class Stage(object):
                 self._state = value
                 self._state_history.append(value)
             else:
-                raise ree.ValueError(obj=self._uid,
+                raise ree.EnTKValueError(obj=self._uid,
                                  attribute='state',
                                  expected_value=list(states._stage_state_values.keys()),
                                  actual_value=value)
         else:
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise ree.EnTKTypeError(expected_type=str, actual_type=type(value))
 
     @post_exec.setter
     def post_exec(self, value):
 
         if not callable(value):
 
-            raise ree.TypeError(entity='stage %s branch' % self._uid,
+            raise ree.EnTKTypeError(entity='stage %s branch' % self._uid,
                             expected_type='callable',
                             actual_type=type(value)
                             )
@@ -277,11 +277,11 @@ class Stage(object):
             if d['name']:
                 invalid_symbols = punctuation.replace('.','')
                 if not isinstance(d['name'], str):
-                    raise ree.TypeError(expected_type=str,
+                    raise ree.EnTKTypeError(expected_type=str,
                                         actual_type=type(d['name']))
 
                 if any(symbol in d['name'] for symbol in invalid_symbols):
-                    raise ree.ValueError(obj=self._uid,
+                    raise ree.EnTKValueError(obj=self._uid,
                                         attribute='name',
                                         actual_value=d['name'],
                                         expected_value=NAME_MESSAGE)
@@ -293,12 +293,12 @@ class Stage(object):
                     self._state = d['state']
                 else:
                     value = d['state']
-                    raise ree.ValueError(obj=self._uid,
+                    raise ree.EnTKValueError(obj=self._uid,
                                      attribute='state',
                                      expected_value=list(states._stage_state_values.keys()),
                                      actual_value=value)
             else:
-                raise ree.TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+                raise ree.EnTKTypeError(entity='state', expected_type=str, actual_type=type(d['state']))
 
         else:
             self._state = states.INITIAL
@@ -307,13 +307,13 @@ class Stage(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+                raise ree.EnTKTypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
 
         if 'parent_pipeline' in d:
             if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise ree.TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
+                raise ree.EnTKTypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -326,7 +326,7 @@ class Stage(object):
         :arguments: String
         """
         if value not in list(states.state_numbers.keys()):
-            raise ree.ValueError(obj=self._uid,
+            raise ree.EnTKValueError(obj=self._uid,
                              attribute='set_tasks_state',
                              expected_value=list(states.state_numbers.keys()),
                              actual_value=value)
@@ -357,7 +357,7 @@ class Stage(object):
         """
 
         if not tasks:
-            raise ree.TypeError(expected_type=Task, actual_type=type(tasks))
+            raise ree.EnTKTypeError(expected_type=Task, actual_type=type(tasks))
 
         if not isinstance(tasks, set):
 
@@ -369,7 +369,7 @@ class Stage(object):
         for t in tasks:
 
             if not isinstance(t, Task):
-                raise ree.TypeError(expected_type=Task, actual_type=type(t))
+                raise ree.EnTKTypeError(expected_type=Task, actual_type=type(t))
 
         return tasks
 
@@ -381,7 +381,7 @@ class Stage(object):
 
         if self._state is not states.INITIAL:
 
-            raise ree.ValueError(obj=self._uid,
+            raise ree.EnTKValueError(obj=self._uid,
                              attribute='state',
                              expected_value=states.INITIAL,
                              actual_value=self._state)

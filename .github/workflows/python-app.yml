@@ -36,11 +36,7 @@ jobs:
         python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
-        python -m pip install psutil
-        python -m pip install hypothesis
-        python -m pip install coverage codecov
-        python -m pip install pytest pytest-timeout pytest-xdist
-        python -m pip install timeout-decorator
+        python -m pip install -r requirements-tests.txt
     - name: Test with pytest
       env:
         RMQ_HOSTNAME: localhost
@@ -77,8 +73,7 @@ jobs:
         python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
-        python -m pip install flake8 flake8-per-file-ignores
-        python -m pip install pytest pylint
+        python -m pip install -r requirements-tests.txt
     - name: Lint with flake8 and pylint
       run: |
         . testenv/bin/activate
