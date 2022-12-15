@@ -358,6 +358,8 @@ class TestTask(TestCase):
             'download_output_data': [],
             'stdout'              : 'Hello World',
             'stderr'              : 'Hello World',
+            'exception'           : '',
+            'exception_detail'    : '',
             'stage_on_error'      : False,
             'exit_code'           : 0,
             'path'                : 'some_path',

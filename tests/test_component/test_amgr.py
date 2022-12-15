@@ -184,17 +184,14 @@ class TestBase(TestCase):
         mq_channel.basic_ack = mock.Mock()
         method_frame         = mock.Mock()
 
-        msg = {
-            'object': {
-                'uid'            : task.uid,
-                'state'          : re.states.COMPLETED,
-                'parent_stage'   : {'uid': stage.uid},
-                'parent_pipeline': {'uid': pipe.uid}
-            }
+        msg = {'uid'            : task.uid,
+               'state'          : re.states.COMPLETED,
+               'parent_stage'   : {'uid': stage.uid},
+               'parent_pipeline': {'uid': pipe.uid}
         }
 
         # confirm that `task` has different state than `msg` contains
-        self.assertNotEqual(task.state, msg['object']['state'])
+        self.assertNotEqual(task.state, msg['state'])
 
         # task will be "found" and method below will be called
         # `mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)`
