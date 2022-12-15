@@ -348,6 +348,9 @@ class WFprocessor(object):
                         else:
                             task_state = deq_task.state
 
+                        task.exception        = deq_task.exception
+                        task.exception_detail = deq_task.exception_detail
+
                         if task.state == states.FAILED and \
                             self._resubmit_failed:
                             task_state = states.INITIAL
@@ -454,10 +457,15 @@ class WFprocessor(object):
 
                 msgs = self._zmq_queue['get'].get_nowait(qname='completed',
                                                          timeout=100)
-
                 if msgs:
                     for msg in msgs:
+                      # self._logger.debug('=== 2 %s: %s - %s',
+                      #         msg['uid'], msg['state'], msg['exception'])
+
                         deq_task = Task(from_dict=msg)
+
+                      # self._logger.debug('=== 3 %s: %s - %s', deq_task.uid,
+                      #         deq_task.state, deq_task.exception)
                         self._logger.info('Got finished task %s from queue',
                                           deq_task.uid)
                         self._update_dequeued_task(deq_task)

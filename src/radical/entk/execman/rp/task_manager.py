@@ -239,14 +239,18 @@ class TaskManager(Base_TaskManager):
 
                     task = create_task_from_rp(rp_task, self._log, self._prof)
 
-                    self._advance(task, 'Task', states.COMPLETED,
-                                  'cb-to-sync')
+                    self._advance(task, 'Task', states.COMPLETED, 'cb-to-sync')
 
                     load_placeholder(task)
 
 
-                    self._log.debug('=== task: %s: %s - %s', rp_task.uid,
-                            rp_task.state, rp_task.exception)
+                  # self._log.debug('=== 0 %s: %s - %s', rp_task.uid,
+                  #         rp_task.state, rp_task.exception)
+
+                    tdict = task.as_dict()
+
+                  # self._log.debug('=== 1 %s: %s - %s', tdict['uid'],
+                  #         tdict['state'], tdict['exception'])
 
                     self._zmq_queue['put'].put(qname='completed',
                                                msgs=[task.as_dict()])

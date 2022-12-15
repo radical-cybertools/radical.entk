@@ -729,27 +729,31 @@ class AppManager(object):
             uid   = msg['object']['uid']
             state = msg['object']['state']
 
-          # obj = msg['object']
-          # self._logger.debug('=== 1 %s: %s - %s [%s]', obj['uid'],
-          #         obj['state'], obj['exception'], return_queue_name)
+            obj = msg['object']
+          # self._logger.debug('=== 4 %s: %s - %s [%s]', obj['uid'],
+          #         obj['state'], obj['exception'], qname)
 
             self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
             self._logger.debug('recv %s in state %s (sync)', uid, state)
 
             if msg['type'] == 'Task':
-                self._update_task(msg)
+                self._update_task(obj)
 
 
     # --------------------------------------------------------------------------
     #
-    def _update_task(self, msg, reply_to=None, corr_id=None, mq_channel=None,
+    def _update_task(self, tdict, reply_to=None, corr_id=None, mq_channel=None,
                            method_frame=None):
         # pylint: disable=W0612,W0613
 
-        completed_task = Task(from_dict=msg['object'])
+        completed_task = Task(from_dict=tdict)
 
         self._logger.info('Received %s with state %s', completed_task.uid,
                 completed_task.state)
+      # self._logger.debug('===')
+      # self._logger.info('=== %s / %s / %s', completed_task.uid,
+      #         completed_task.parent_pipeline['uid'],
+      #         completed_task.parent_stage['uid'])
 
       # found_task = False
 
@@ -758,21 +762,35 @@ class AppManager(object):
 
             with pipe.lock:
 
-                if pipe.completed or \
-                    pipe.uid != completed_task.parent_pipeline['uid']:
+                if pipe.completed:
+                  # self._logger.debug('=== c p %s != %s', pipe.uid, completed_task.parent_pipeline['uid'])
                     continue
 
+                if pipe.uid != completed_task.parent_pipeline['uid']:
+                  # self._logger.debug('=== ! p %s != %s', pipe.uid, completed_task.parent_pipeline['uid'])
+                    continue
+
+              # self._logger.debug('=== = p %s', pipe.uid)
                 for stage in pipe.stages:
 
                     if stage.uid != completed_task.parent_stage['uid']:
+                      # self._logger.debug('=== ! s %s', stage.uid)
                         continue
 
+                  # self._logger.debug('=== = s %s', stage.uid)
                     for task in stage.tasks:
 
-                        if completed_task.uid != task.uid or \
-                            completed_task.state == task.state:
+                        if completed_task.uid != task.uid:
+                          # self._logger.debug('=== ! t %s', task.uid)
                             continue
 
+                        if completed_task.state == task.state:
+                          # self._logger.debug('=== ! T %s', task.uid)
+                            continue
+
+                      # found_task = True
+
+                      # self._logger.debug('=== = t %s', task.uid)
                         self._logger.debug('Found task %s in state (%s) \
                                            changing to %s ==', task.uid,
                                            task.state, completed_task.state)
@@ -790,20 +808,21 @@ class AppManager(object):
                         if task.state in [states.DONE, states.FAILED]:
                             self._logger.debug('No change on task state %s \
                                              in state %s', task.uid, task.state)
+                          # self._logger.debug('=== ! f %s', task.uid)
                             break
 
                         task.state            = completed_task.state
                         task.exception        = completed_task.exception
                         task.exception_detail = completed_task.exception_detail
 
-                      # self._logger.debug('=== 2 %s: %s - %s',
-                      #                    task.uid, task.state, task.exception)
+                      # self._logger.debug('=== 5 %s: %s - %s', task.uid,
+                      #         task.state, task.exception)
                         self._logger.debug('Found task %s in state %s',
                                            task.uid, task.state)
 
-                        state = msg['object']['state']
+                        state = tdict['state']
                         self._prof.prof('pub_ack_state_%s' % state,
-                                        uid=msg['object']['uid'])
+                                        uid=tdict['uid'])
 
                         if mq_channel:
                             mq_channel.basic_ack(
@@ -813,8 +832,10 @@ class AppManager(object):
                         self._report.info('%s state: %s\n'
                                          % (task.luid, task.state))
 
-                      # found_task = True
                         break
+
+          # if not found_task:
+          #     self._logger.error('=== 6 %s: not found', completed_task.uid)
 
 
     # --------------------------------------------------------------------------
