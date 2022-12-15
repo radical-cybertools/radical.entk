@@ -231,7 +231,6 @@ class TaskManager(Base_TaskManager):
         def task_state_cb(rp_task, state):
 
             try:
-
                 self._log.debug('Task %s in state %s', rp_task.uid,
                                                        rp_task.state)
 
@@ -252,9 +251,7 @@ class TaskManager(Base_TaskManager):
                   # self._log.debug('=== 1 %s: %s - %s', tdict['uid'],
                   #         tdict['state'], tdict['exception'])
 
-                    self._zmq_queue['put'].put(qname='completed',
-                                               msgs=[task.as_dict()])
-
+                    self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
                     self._log.info('Pushed task %s with state %s to completed',
                                    task.uid, task.state)
 
