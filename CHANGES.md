@@ -6,7 +6,7 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
-1.19.0 Release                                                        2022-12-16
+1.20.0 Release                                                        2022-12-16
 --------------------------------------------------------------------------------
 
   - bump python test env to 3.7
