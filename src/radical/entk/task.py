@@ -323,6 +323,16 @@ class Task(ru.TypedDict):
         [type: `int` | default: `None`] Get the exit code for finished tasks:
         0 - for successful tasks; 1 - for failed tasks.
 
+    .. data:: exception
+
+        [type: `str` | default: `None`] Get the representation of the exception
+        which caused the task to fail.
+
+    .. data:: exception_detail
+
+        [type: `str` | default: `None`] Get additional details (traceback or
+        error messages) to the exception which caused this task to fail.
+
     .. data:: path
 
         [type: `str` | default: `""`] Get the path of the task on the remote
@@ -391,6 +401,8 @@ class Task(ru.TypedDict):
         'stderr'               : str,
         'stage_on_error'       : bool,
         'exit_code'            : int,
+        'exception'            : str,
+        'exception_detail'     : str,
         'path'                 : str,
         'tags'                 : {str: str},
         'rts_uid'              : str,
@@ -428,6 +440,8 @@ class Task(ru.TypedDict):
         'stderr'               : '',
         'stage_on_error'       : False,
         'exit_code'            : None,
+        'exception'            : None,
+        'exception_detail'     : None,
         'path'                 : '',
         'tags'                 : None,
         'rts_uid'              : None,

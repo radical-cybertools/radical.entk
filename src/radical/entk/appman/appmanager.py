@@ -729,33 +729,35 @@ class AppManager(object):
             uid   = msg['object']['uid']
             state = msg['object']['state']
 
+            obj = msg['object']
+
             self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
             self._logger.debug('recv %s in state %s (sync)', uid, state)
 
             if msg['type'] == 'Task':
-                self._update_task(msg)
+                self._update_task(obj)
 
 
     # --------------------------------------------------------------------------
     #
-    def _update_task(self, msg, reply_to=None, corr_id=None, mq_channel=None,
+    def _update_task(self, tdict, reply_to=None, corr_id=None, mq_channel=None,
                            method_frame=None):
         # pylint: disable=W0612,W0613
 
-        completed_task = Task(from_dict=msg['object'])
+        completed_task = Task(from_dict=tdict)
 
         self._logger.info('Received %s with state %s', completed_task.uid,
                 completed_task.state)
-
-      # found_task = False
 
         # Traverse the entire workflow to find the correct task
         for pipe in self._workflow:
 
             with pipe.lock:
 
-                if pipe.completed or \
-                    pipe.uid != completed_task.parent_pipeline['uid']:
+                if pipe.completed:
+                    continue
+
+                if pipe.uid != completed_task.parent_pipeline['uid']:
                     continue
 
                 for stage in pipe.stages:
@@ -765,8 +767,10 @@ class AppManager(object):
 
                     for task in stage.tasks:
 
-                        if completed_task.uid != task.uid or \
-                            completed_task.state == task.state:
+                        if completed_task.uid != task.uid:
+                            continue
+
+                        if completed_task.state == task.state:
                             continue
 
                         self._logger.debug('Found task %s in state (%s) \
@@ -787,13 +791,17 @@ class AppManager(object):
                             self._logger.debug('No change on task state %s \
                                              in state %s', task.uid, task.state)
                             break
-                        task.state = str(completed_task.state)
-                        self._logger.debug('Found task %s in state %s',
-                                          task.uid, task.state)
 
-                        state = msg['object']['state']
+                        task.state            = completed_task.state
+                        task.exception        = completed_task.exception
+                        task.exception_detail = completed_task.exception_detail
+
+                        self._logger.debug('Found task %s in state %s',
+                                           task.uid, task.state)
+
+                        state = tdict['state']
                         self._prof.prof('pub_ack_state_%s' % state,
-                                        uid=msg['object']['uid'])
+                                        uid=tdict['uid'])
 
                         if mq_channel:
                             mq_channel.basic_ack(
@@ -803,7 +811,6 @@ class AppManager(object):
                         self._report.info('%s state: %s\n'
                                          % (task.luid, task.state))
 
-                      # found_task = True
                         break
 
 

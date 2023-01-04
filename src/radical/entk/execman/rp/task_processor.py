@@ -571,6 +571,10 @@ def create_task_from_rp(rp_task, logger, prof=None):
         if   rp_task.state == rp.DONE                  : task.exit_code = 0
         elif rp_task.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
 
+        if rp_task.state == rp.FAILED:
+            task.exception        = rp_task.exception
+            task.exception_detail = rp_task.exception_detail
+
         task.path = ru.Url(rp_task.sandbox).path
 
         if prof:

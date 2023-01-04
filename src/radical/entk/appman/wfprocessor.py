@@ -96,8 +96,15 @@ class WFprocessor(object):
         obj.state = new_state
 
         self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
+        self._logger.info('Transition %s to state %s', obj.uid, new_state)
+
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
+
+        if obj_type == 'Task' and obj.state == states.FAILED:
+            self._report.error('task %s failed: %s\n%s\n'
+                              % (obj.uid, obj.exception, obj.exception_detail))
+
         self._logger.info('Transition %s to state %s', obj.uid, new_state)
 
 
@@ -341,6 +348,9 @@ class WFprocessor(object):
                         else:
                             task_state = deq_task.state
 
+                        task.exception        = deq_task.exception
+                        task.exception_detail = deq_task.exception_detail
+
                         if task.state == states.FAILED and \
                             self._resubmit_failed:
                             task_state = states.INITIAL
@@ -447,10 +457,11 @@ class WFprocessor(object):
 
                 msgs = self._zmq_queue['get'].get_nowait(qname='completed',
                                                          timeout=100)
-
                 if msgs:
                     for msg in msgs:
+
                         deq_task = Task(from_dict=msg)
+
                         self._logger.info('Got finished task %s from queue',
                                           deq_task.uid)
                         self._update_dequeued_task(deq_task)
