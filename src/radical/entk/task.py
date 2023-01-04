@@ -13,7 +13,7 @@ from .constants import NAME_MESSAGE
 from . import exceptions as ree
 from . import states     as res
 
-VALID_TAG_KEYS = ['colocate', 'exclusive']
+VALID_TAGS = ['colocate', 'exclusive']
 
 
 # ------------------------------------------------------------------------------
@@ -529,7 +529,7 @@ class Task(ru.TypedDict):
                         actual_value=_v)
 
         elif k == 'tags':
-            if any(tag_k not in VALID_TAG_KEYS for tag_k in v):
+            if any(tag not in VALID_TAGS for tag in v):
                 raise ree.EnTKError(
                     'Incorrect structure for attribute "%s" of object %s' %
                     (k, self['uid']))
