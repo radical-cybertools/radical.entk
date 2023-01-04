@@ -101,7 +101,7 @@ class TestBase(TestCase):
 
         task = mock.Mock()
         task.uid  = 'task.0000'
-        task.tags = {'colocate': task.uid}
+        task.tags = {'colocate': task.uid, 'exclusive': False}
 
         task2 = mock.Mock()
         task2.uid  = 'task.0001'
@@ -126,7 +126,7 @@ class TestBase(TestCase):
         self.assertEqual(resolve_tags(task=task,
                                       parent_pipeline_name=pipeline_name,
                                       placeholders=placeholders),
-                         {'colocate': 'unit.0002'})
+                         {'colocate': 'unit.0002', 'exclusive': False})
 
         self.assertEqual(resolve_tags(task=task2,
                                       parent_pipeline_name=pipeline_name,
