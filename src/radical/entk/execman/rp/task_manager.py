@@ -242,14 +242,7 @@ class TaskManager(Base_TaskManager):
 
                     load_placeholder(task)
 
-
-                  # self._log.debug('=== 0 %s: %s - %s', rp_task.uid,
-                  #         rp_task.state, rp_task.exception)
-
                     tdict = task.as_dict()
-
-                  # self._log.debug('=== 1 %s: %s - %s', tdict['uid'],
-                  #         tdict['state'], tdict['exception'])
 
                     self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
                     self._log.info('Pushed task %s with state %s to completed',

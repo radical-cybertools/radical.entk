@@ -730,8 +730,6 @@ class AppManager(object):
             state = msg['object']['state']
 
             obj = msg['object']
-          # self._logger.debug('=== 4 %s: %s - %s [%s]', obj['uid'],
-          #         obj['state'], obj['exception'], qname)
 
             self._prof.prof('sync_recv_obj_state_%s' % state, uid=uid)
             self._logger.debug('recv %s in state %s (sync)', uid, state)
@@ -750,12 +748,6 @@ class AppManager(object):
 
         self._logger.info('Received %s with state %s', completed_task.uid,
                 completed_task.state)
-      # self._logger.debug('===')
-      # self._logger.info('=== %s / %s / %s', completed_task.uid,
-      #         completed_task.parent_pipeline['uid'],
-      #         completed_task.parent_stage['uid'])
-
-      # found_task = False
 
         # Traverse the entire workflow to find the correct task
         for pipe in self._workflow:
@@ -763,34 +755,24 @@ class AppManager(object):
             with pipe.lock:
 
                 if pipe.completed:
-                  # self._logger.debug('=== c p %s != %s', pipe.uid, completed_task.parent_pipeline['uid'])
                     continue
 
                 if pipe.uid != completed_task.parent_pipeline['uid']:
-                  # self._logger.debug('=== ! p %s != %s', pipe.uid, completed_task.parent_pipeline['uid'])
                     continue
 
-              # self._logger.debug('=== = p %s', pipe.uid)
                 for stage in pipe.stages:
 
                     if stage.uid != completed_task.parent_stage['uid']:
-                      # self._logger.debug('=== ! s %s', stage.uid)
                         continue
 
-                  # self._logger.debug('=== = s %s', stage.uid)
                     for task in stage.tasks:
 
                         if completed_task.uid != task.uid:
-                          # self._logger.debug('=== ! t %s', task.uid)
                             continue
 
                         if completed_task.state == task.state:
-                          # self._logger.debug('=== ! T %s', task.uid)
                             continue
 
-                      # found_task = True
-
-                      # self._logger.debug('=== = t %s', task.uid)
                         self._logger.debug('Found task %s in state (%s) \
                                            changing to %s ==', task.uid,
                                            task.state, completed_task.state)
@@ -808,15 +790,12 @@ class AppManager(object):
                         if task.state in [states.DONE, states.FAILED]:
                             self._logger.debug('No change on task state %s \
                                              in state %s', task.uid, task.state)
-                          # self._logger.debug('=== ! f %s', task.uid)
                             break
 
                         task.state            = completed_task.state
                         task.exception        = completed_task.exception
                         task.exception_detail = completed_task.exception_detail
 
-                      # self._logger.debug('=== 5 %s: %s - %s', task.uid,
-                      #         task.state, task.exception)
                         self._logger.debug('Found task %s in state %s',
                                            task.uid, task.state)
 
@@ -833,9 +812,6 @@ class AppManager(object):
                                          % (task.luid, task.state))
 
                         break
-
-          # if not found_task:
-          #     self._logger.error('=== 6 %s: not found', completed_task.uid)
 
 
     # --------------------------------------------------------------------------
