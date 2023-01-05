@@ -177,32 +177,19 @@ def resolve_arguments(args, placeholders, logger):
 #
 def resolve_tags(task, parent_pipeline_name, placeholders):
 
-    # entk only handles co_location tags.  If tags are given as strings, they
-    # get translated into `{'colocate': '<tag>'}`.  Tags passed as dictionaries
-    # are checked to conform with above form.
-    #
-    # In both cases, the tag string is expanded with the given placeholders.
+    tags = dict(task.tags or {'colocate': task.uid})
 
-    tags = task.tags if task.tags else {'colocate': task.uid}
+    pnames = list(placeholders)
+    pnames.remove(parent_pipeline_name)
 
     colo_tag = tags['colocate']
-
-    # Check self pipeline first
-    for sname in placeholders[parent_pipeline_name]:
-        if colo_tag in placeholders[parent_pipeline_name][sname]:
-            return {'colocate': placeholders[parent_pipeline_name][sname][colo_tag]['uid']}
-
-    for pname in placeholders:
-
-        # skip self pipeline this time
-        if pname == parent_pipeline_name:
-            continue
-
+    for pname in [parent_pipeline_name] + pnames:
         for sname in placeholders[pname]:
             if colo_tag in placeholders[pname][sname]:
-                return {'colocate': placeholders[pname][sname][colo_tag]['uid']}
+                tags['colocate'] = placeholders[pname][sname][colo_tag]['uid']
+                return tags
 
-    return {'colocate': task.uid}
+    return tags
 
 
 # ------------------------------------------------------------------------------
@@ -491,9 +478,10 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.stage_on_error = task.stage_on_error
 
         if task.parent_pipeline['uid']:
-            td.tags = resolve_tags(task=task,
-                                  parent_pipeline_name=task.parent_pipeline['uid'],
-                                  placeholders=placeholders)
+            td.tags = resolve_tags(
+                task=task,
+                parent_pipeline_name=task.parent_pipeline['uid'],
+                placeholders=placeholders)
 
         td.ranks          = task.cpu_reqs['cpu_processes']
         td.cores_per_rank = task.cpu_reqs['cpu_threads']
