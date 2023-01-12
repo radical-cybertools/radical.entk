@@ -21,11 +21,9 @@ class TaskManager(Base_TaskManager):
     A Task Manager takes the responsibility of dispatching tasks it receives
     from a 'pending' queue for execution on to the available resources using a
     runtime system. Once the tasks have completed execution, they are pushed
-    on to the completed_queue for other components of EnTK to process.
+    on to the completed queue for other components of EnTK to process.
 
     :arguments:
-        :completed_queue:   (list) List of queue(s) with tasks that have
-                            finished execution. Currently, only one queue.
         :rmgr:              (ResourceManager) Object to be used to access the
                             Pilot where the tasks can be submitted
 
@@ -57,7 +55,7 @@ class TaskManager(Base_TaskManager):
                      (partially described) Tasks.  This conversion is necessary
                      since the current RTS is RADICAL Pilot.  Once Tasks are
                      recovered from a CU, they are then pushed to the
-                     completed_queue. At all state transititons, they are synced
+                     completed queue. At all state transititons, they are synced
                      (blocking) with the AppManager in the master process.
 
         **Details**: The AppManager can re-invoke the tmgr process with this

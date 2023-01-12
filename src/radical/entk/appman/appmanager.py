@@ -97,10 +97,8 @@ class AppManager(object):
         self._prof.prof('amgr_creat', uid=self._uid)
 
         self._rmgr            = None
-        self._completed_queue = list()
 
         # Global parameters to have default values
-        self._mqs_setup       = False
         self._resource_desc   = None
         self._task_manager    = None
         self._workflow        = None
@@ -115,7 +113,6 @@ class AppManager(object):
         self._term            = mp.Event()
 
         # Setup zmq queues
-        self._zmq_setup       = False
         self._zmq_info        = dict()
         self._zmq_queue       = None
         self._zmq_bridge      = None
@@ -516,7 +513,7 @@ class AppManager(object):
             sid = self._sid
             self._report.info('Setting up ZMQ queues')
 
-            if self._zmq_setup:
+            if self._zmq_info:
                 self._report.ok('>>n/a\n')
                 return
 
@@ -740,8 +737,7 @@ class AppManager(object):
 
     # --------------------------------------------------------------------------
     #
-    def _update_task(self, tdict, reply_to=None, corr_id=None, mq_channel=None,
-                           method_frame=None):
+    def _update_task(self, tdict):
         # pylint: disable=W0612,W0613
 
         completed_task = Task(from_dict=tdict)
@@ -802,10 +798,6 @@ class AppManager(object):
                         state = tdict['state']
                         self._prof.prof('pub_ack_state_%s' % state,
                                         uid=tdict['uid'])
-
-                        if mq_channel:
-                            mq_channel.basic_ack(
-                                    delivery_tag=method_frame.delivery_tag)
 
                         self._report.ok('Update: ')
                         self._report.info('%s state: %s\n'

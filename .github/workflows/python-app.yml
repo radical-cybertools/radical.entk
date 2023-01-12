@@ -13,12 +13,6 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
-    services:
-      rabbitmq:
-        image: rabbitmq
-        ports:
-        # will assign a random free host port
-        - 5672/tcp
     steps:
     - uses: actions/checkout@v2
       with:
@@ -39,10 +33,6 @@ jobs:
         python -m pip install -r requirements-tests.txt
     - name: Test with pytest
       env:
-        RMQ_HOSTNAME: localhost
-        RMQ_PORT: ${{ job.services.rabbitmq.ports[5672] }} # get randomly assigned published port
-        RMQ_USERNAME: guest
-        RMQ_PASSWORD: guest
         LOC: testenv/lib/python3.7/site-packages
       run: |
         . testenv/bin/activate
