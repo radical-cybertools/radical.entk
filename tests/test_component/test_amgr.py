@@ -180,10 +180,6 @@ class TestBase(TestCase):
         appman._workflow = [pipe]
         appman._logger = appman._prof = appman._report = mock.Mock()
 
-        mq_channel           = mock.Mock()
-        mq_channel.basic_ack = mock.Mock()
-        method_frame         = mock.Mock()
-
         msg = {'uid'            : task.uid,
                'state'          : re.states.COMPLETED,
                'parent_stage'   : {'uid': stage.uid},
@@ -195,6 +191,5 @@ class TestBase(TestCase):
 
         # task will be "found" and method below will be called
         # `mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)`
-        appman._update_task(msg, None, None, mq_channel, method_frame)
-        self.assertTrue(mq_channel.basic_ack.called)
+        appman._update_task(msg)
 
