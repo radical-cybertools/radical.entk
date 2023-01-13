@@ -1,12 +1,13 @@
+
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
 __license__   = 'MIT'
 
-
 # pylint: disable=unused-argument
 
-from ..base.resource_manager import Base_ResourceManager
 import radical.utils as ru
+
+from ..base.resource_manager import Base_ResourceManager
 
 
 # ------------------------------------------------------------------------------
@@ -98,6 +99,7 @@ class ResourceManager(Base_ResourceManager):
     def get_rts_info(self):
 
         return None
+
 
     # --------------------------------------------------------------------------
     #

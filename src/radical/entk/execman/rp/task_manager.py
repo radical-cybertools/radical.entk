@@ -1,7 +1,7 @@
 
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
-__license__   = "MIT"
+__copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
+__author__    = 'Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>'
+__license__   = 'MIT'
 
 
 import queue
@@ -22,7 +22,7 @@ from .task_processor   import create_td_from_task, create_task_from_rp
 # ------------------------------------------------------------------------------
 #
 class TaskManager(Base_TaskManager):
-    """
+    '''
     A Task Manager takes the responsibility of dispatching tasks it receives
     from a queue for execution on to the available resources using a runtime
     system. In this case, the runtime system being used RADICAL Pilot. Once
@@ -38,7 +38,7 @@ class TaskManager(Base_TaskManager):
     completed queue. In the future, the number of queues can be varied for
     different throughput requirements at the cost of additional Memory and CPU
     consumption.
-    """
+    '''
 
     # --------------------------------------------------------------------------
     #
@@ -59,7 +59,7 @@ class TaskManager(Base_TaskManager):
     # --------------------------------------------------------------------------
     #
     def _tmgr(self, uid, rmgr, zmq_info):
-        """
+        '''
         **Purpose**: This method has 2 purposes: receive tasks from the
                      'pending' queue, start a new thread that processes these
                      tasks and submits to the RTS.
@@ -78,7 +78,7 @@ class TaskManager(Base_TaskManager):
                      incomplete. There is also population of a dictionary,
                      `placeholders`, which stores the path of each of the
                      tasks on the remote machine.
-        """
+        '''
 
         try:
 
@@ -127,22 +127,23 @@ class TaskManager(Base_TaskManager):
                             else:
                                 self._log.error('TMGR receiver wrong message type')
 
-                except Exception as ex:
-                    self._log.exception('Error in task execution: %s', ex)
-                    raise EnTKError(ex) from ex
+                except Exception as e:
+                    self._log.exception('Error in task execution')
+                    raise EnTKError(e) from e
+
             self._log.debug('Exited TMGR main loop')
 
-        except KeyboardInterrupt as ex:
+        except KeyboardInterrupt:
 
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel tmgr process gracefully...')
-            raise KeyboardInterrupt from ex
+            raise
 
 
-        except Exception as ex:
+        except Exception as e:
 
-            self._log.exception('%s failed with %s', self._uid, ex)
-            raise EnTKError(ex) from ex
+            self._log.exception('task %s failed')
+            raise EnTKError(e) from e
 
         finally:
 
@@ -190,8 +191,8 @@ class TaskManager(Base_TaskManager):
         '''
 
         placeholders = dict()
-        placeholders["__by_name__"] = dict()
-        placeholders_by_name = placeholders["__by_name__"]
+        placeholders['__by_name__'] = dict()
+        placeholders_by_name = placeholders['__by_name__']
         placeholder_lock = mt.Lock()
 
         # ----------------------------------------------------------------------
@@ -279,13 +280,13 @@ class TaskManager(Base_TaskManager):
 
                 task_queue.task_done()
 
-                bulk_tds   = list()
+                bulk_tasks = list()
 
                 for msg in body:
 
                     task = Task(from_dict=msg)
                     load_placeholder(task)
-                    bulk_tds.append(create_td_from_task(
+                    bulk_tasks.append(create_td_from_task(
                                         task, placeholders,
                                         self._submitted_tasks, pkl_path,
                                         self._sid, self._log, self._prof))
@@ -293,17 +294,18 @@ class TaskManager(Base_TaskManager):
                     self._advance(task, 'Task', states.SUBMITTING,
                                       'tmgr-to-sync')
 
-                if bulk_tds:
-                    self._rp_tmgr.submit_tasks(bulk_tds)
+                if bulk_tasks:
+                    self._rp_tmgr.submit_tasks(bulk_tasks)
 
             self._log.debug('Exited RTS main loop. TMGR terminating')
-        except KeyboardInterrupt as ex:
+        except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
-            raise KeyboardInterrupt from ex
-        except Exception as ex:
-            self._log.exception('%s failed with %s', self._uid, ex)
-            raise EnTKError(ex) from ex
+            raise
+
+        except Exception as e:
+            self._log.exception('%s failed', self._uid)
+            raise EnTKError(e) from e
 
         finally:
             self._rp_tmgr.close()
@@ -312,11 +314,11 @@ class TaskManager(Base_TaskManager):
     # --------------------------------------------------------------------------
     #
     def start_manager(self):
-        """
+        '''
         **Purpose**: Method to start the tmgr process. The tmgr function
                      is not to be accessed directly. The function is started
                      in a separate thread using this method.
-        """
+        '''
         # pylint: disable=attribute-defined-outside-init, access-member-before-definition
         if self._tmgr_process:
             self._log.warn('tmgr process already running!')
@@ -341,11 +343,12 @@ class TaskManager(Base_TaskManager):
 
             return True
 
-        except Exception as ex:
+        except Exception as e:
 
-            self._log.exception('Task manager not started, error: %s', ex)
+            self._log.exception('Task manager not started')
             self.terminate_manager()
-            raise EnTKError(ex) from ex
+            raise EnTKError(e) from e
+
 
 # ------------------------------------------------------------------------------
 # pylint: enable=attribute-defined-outside-init, access-member-before-definition
