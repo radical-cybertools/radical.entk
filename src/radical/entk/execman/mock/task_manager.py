@@ -1,7 +1,7 @@
 
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__    = "Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>"
-__license__   = "MIT"
+__copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
+__author__    = 'Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>'
+__license__   = 'MIT'
 
 
 import os
@@ -12,8 +12,6 @@ import queue
 import threading       as mt
 import multiprocessing as mp
 
-import radical.utils as ru
-
 from ...exceptions       import EnTKError
 from ...                 import states, Task
 from ..base.task_manager import Base_TaskManager, heartbeat_response
@@ -23,7 +21,7 @@ from ..base.task_manager import Base_TaskManager, heartbeat_response
 # ------------------------------------------------------------------------------
 #
 class TaskManager(Base_TaskManager):
-    """
+    '''
     A Task Manager takes the responsibility of dispatching tasks it receives
     from a pending_queue for execution on to the available resources using a
     runtime system. Once the tasks have completed execution, they are pushed
@@ -43,7 +41,7 @@ class TaskManager(Base_TaskManager):
     completed queue. In the future, the number of queues can be varied for
     different throughput requirements at the cost of additional Memory and CPU
     consumption.
-    """
+    '''
 
     # --------------------------------------------------------------------------
     #
@@ -51,7 +49,8 @@ class TaskManager(Base_TaskManager):
                        rmq_conn_params):
 
         super(TaskManager, self).__init__(sid, pending_queue, completed_queue,
-                                          rmgr, rmq_conn_params, rts='mock')
+                                          rmgr, rmq_conn_params,
+                                          rts='mock')
         self._rts_runner = None
 
         self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
@@ -64,7 +63,7 @@ class TaskManager(Base_TaskManager):
     #
     def _tmgr(self, uid, rmgr, pending_queue, completed_queue,
                     rmq_conn_params):
-        """
+        '''
         **Purpose**: Method to be run by the tmgr process. This method receives
                      a Task from the pending_queue and submits it to the RTS.
                      Currently, it also converts Tasks into CUDs and CUs into
@@ -83,7 +82,7 @@ class TaskManager(Base_TaskManager):
                     incomplete. There is also population of a dictionary,
                     `placeholders`, which stores the path of each of the tasks
                     on the remote machine.
-        """
+        '''
 
         try:
 
@@ -109,6 +108,8 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
 
+            # While we are supposed to run and the thread that does the work is
+            # alive go.
             while not self._tmgr_terminate.is_set():
 
                 try:
@@ -120,7 +121,13 @@ class TaskManager(Base_TaskManager):
                     if body:
 
                         body = json.loads(body)
-                        task_queue.put(body)
+
+                        if body['type'] == 'workload':
+                            task_queue.put(body['body'])
+                        elif body['type'] == 'rts':
+                            pass
+                        else:
+                            self._log.error('TMGR receiver wrong message type')
 
                         mq_channel.basic_ack(
                                 delivery_tag=method_frame.delivery_tag)
@@ -128,15 +135,14 @@ class TaskManager(Base_TaskManager):
                     heartbeat_response(mq_channel,
                                        self._hb_request_q,
                                        self._hb_response_q,
+                                       conn_params=rmq_conn_params,
                                        log=self._log)
 
-                    # Raise an exception while running tests
-                    ru.raise_on(tag='tmgr_fail')
-
                 except Exception as e:
-                    self._log.exception('Error in task execution: %s', e)
-                    raise
+                    self._log.exception('Error in task execution')
+                    raise EnTKError(e) from e
 
+            self._log.debug('Exited TMGR main loop')
 
         except KeyboardInterrupt:
 
@@ -147,7 +153,7 @@ class TaskManager(Base_TaskManager):
 
         except Exception as e:
 
-            self._log.exception('%s failed with %s', self._uid, e)
+            self._log.exception('task %s failed')
             raise EnTKError(e) from e
 
         finally:
@@ -157,8 +163,12 @@ class TaskManager(Base_TaskManager):
             if self._rts_runner:
                 self._rts_runner.join()
 
+            self._log.debug('TMGR RTS Runner joined')
+
             mq_connection.close()
+            self._log.debug('TMGR RMQ connection closed')
             self._prof.close()
+            self._log.debug('TMGR profile closed')
 
 
     # --------------------------------------------------------------------------
@@ -170,24 +180,6 @@ class TaskManager(Base_TaskManager):
                      'task_queue' and submits them to the RADICAL Pilot RTS.
         '''
 
-        # placeholders = dict()
-
-        # # --------------------------------------------------------------------
-        # def load_placeholder(task):
-        # 
-        #     parent_pipeline = str(task.parent_pipeline['name'])
-        #     parent_stage = str(task.parent_stage['name'])
-        # 
-        #     if parent_pipeline not in placeholders:
-        #         placeholders[parent_pipeline] = dict()
-        # 
-        #     if parent_stage not in placeholders[parent_pipeline]:
-        #         placeholders[parent_pipeline][parent_stage] = dict()
-        # 
-        #     if None not in [parent_pipeline, parent_stage, task.name]:
-        #         placeholders[parent_pipeline][parent_stage][str(
-        #             task.name)] = str(task.path)
-        # # --------------------------------------------------------------------
 
         mq_connection = pika.BlockingConnection(rmq_conn_params)
         mq_channel = mq_connection.channel()
@@ -221,47 +213,58 @@ class TaskManager(Base_TaskManager):
                                   mq_channel, rmq_conn_params,
                                   '%s-tmgr-to-sync' % self._sid)
 
+
                 # this mock RTS immmedialtely completes all tasks
                 for task in bulk_tasks:
+
+                    task.exit_code = 0
+                    task_as_dict = json.dumps(task.as_dict())
 
                     self._advance(task, 'Task', states.COMPLETED,
                                   mq_channel, rmq_conn_params,
                                   '%s-cb-to-sync' % self._sid)
 
-                    task_as_dict = json.dumps(task.as_dict())
-                    mq_channel.basic_publish(
-                            exchange='',
-                            routing_key='%s-completedq-1' % self._sid,
-                            body=task_as_dict)
+                    mq_channel.basic_publish(exchange='',
+                                          routing_key='%s-completedq-1' % self._sid,
+                                          body=task_as_dict)
 
-                    self._log.info('Pushed task %s with state %s to '
-                                   'completed queue %s-completedq-1',
+                    self._log.info('Pushed task %s with state %s to completed '
+                                   'queue %s-completedq-1',
                                    task.uid, task.state, self._sid)
 
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
                                 'cancel task processor gracefully...')
+            raise
 
         except Exception as e:
-            self._log.exception('%s failed with %s', self._uid, e)
+            self._log.exception('%s failed', self._uid)
             raise EnTKError(e) from e
 
 
     # --------------------------------------------------------------------------
     #
     def start_manager(self):
-        """
+        '''
         **Purpose**: Method to start the tmgr process. The tmgr function
                      is not to be accessed directly. The function is started
                      in a separate thread using this method.
-        """
-
+        '''
+        # pylint: disable=attribute-defined-outside-init, access-member-before-definition
         if self._tmgr_process:
             self._log.warn('tmgr process already running!')
             return
 
-
         try:
+            # Redeclare the heartbeat queues in case they got deleted because
+            # of the task manager failure.
+            # If the queues exist this has no effect.
+
+            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
+            mq_channel = mq_connection.channel()
+
+            mq_channel.queue_declare(queue=self._hb_response_q)
+            mq_channel.queue_declare(queue=self._hb_request_q)
 
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
@@ -279,15 +282,16 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
+            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
 
             return True
 
         except Exception as e:
 
-            self._log.exception('Task manager not started, error: %s', e)
+            self._log.exception('Task manager not started')
             self.terminate_manager()
-            raise
+            raise EnTKError(e) from e
 
 
 # ------------------------------------------------------------------------------
-
+# pylint: enable=attribute-defined-outside-init, access-member-before-definition
