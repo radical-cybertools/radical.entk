@@ -39,7 +39,8 @@ class TaskManager(Base_TaskManager):
 
         super(TaskManager, self).__init__(sid, rmgr, rts='mock',
                                           zmq_info=zmq_info)
-        self._rts_runner = None
+        self._rts_runner      = None
+        self._zmq_info        = zmq_info
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -67,6 +68,8 @@ class TaskManager(Base_TaskManager):
 
         try:
 
+            self._setup_zmq(zmq_info)
+
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
@@ -75,7 +78,8 @@ class TaskManager(Base_TaskManager):
 
             # Start second thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
-                                         args=(task_queue, rmgr, zmq_info))
+                                         args=(task_queue, rmgr))
+            self._rts_runner.daemon = True
             self._rts_runner.start()
 
             self._prof.prof('tmgr infrastructure setup done', uid=uid)
@@ -87,14 +91,18 @@ class TaskManager(Base_TaskManager):
                 try:
 
                     msgs = self._zmq_queue['get'].get_nowait(
-                            qname='pending', timeout=1000)
+                            qname='pending', timeout=100)
+
                     if msgs:
+
                         for msg in msgs:
 
                             if msg['type'] == 'workload':
                                 task_queue.put(msg['body'])
+
                             elif msg['type'] == 'rts':
                                 pass
+
                             else:
                                 self._log.error('TMGR receiver wrong message type')
 
@@ -130,7 +138,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _process_tasks(self, task_queue, rmgr, zmq_info):
+    def _process_tasks(self, task_queue, rmgr):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
                      invokes this function. This function receives tasks from
@@ -145,6 +153,7 @@ class TaskManager(Base_TaskManager):
 
                 try:
                     body = task_queue.get(block=True, timeout=10)
+                    print('working on workload')
 
                 except queue.Empty:
                     # Ignore, we don't always have new tasks to run
@@ -163,7 +172,7 @@ class TaskManager(Base_TaskManager):
                     bulk_tasks.append(task)
 
                     self._advance(task, 'Task', states.SUBMITTING,
-                                 'tmgr-to-sync')
+                                      'tmgr-to-sync')
 
 
                 # this mock RTS immmedialtely completes all tasks
@@ -174,6 +183,10 @@ class TaskManager(Base_TaskManager):
 
                     self._log.info('Pushed task %s with state %s to completed',
                                    task.uid, task.state)
+
+                    tdict = task.as_dict()
+
+                    self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
 
         except KeyboardInterrupt:
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
@@ -199,16 +212,6 @@ class TaskManager(Base_TaskManager):
             return
 
         try:
-            # Redeclare the heartbeat queues in case they got deleted because
-            # of the task manager failure.
-            # If the queues exist this has no effect.
-
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            mq_channel.queue_declare(queue=self._hb_response_q)
-            mq_channel.queue_declare(queue=self._hb_request_q)
-
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
 
@@ -223,7 +226,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('starting tmgr process', uid=self._uid)
 
             self._tmgr_process.start()
-            self._log.debug('tmgr pid %s' % self._tmgr_process.pid)
+            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
 
             return True
 

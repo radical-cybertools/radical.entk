@@ -13,10 +13,10 @@ import multiprocessing as mp
 
 import radical.pilot   as rp
 
-from ...exceptions     import EnTKError
-from ...               import states, Task
-from ..base            import Base_TaskManager
-from .task_processor   import create_td_from_task, create_task_from_rp
+from ...exceptions       import EnTKError
+from ...                 import states, Task
+from ..base              import Base_TaskManager
+from .task_processor     import create_td_from_task, create_task_from_rp
 
 
 # ------------------------------------------------------------------------------
@@ -46,14 +46,14 @@ class TaskManager(Base_TaskManager):
 
         super(TaskManager, self).__init__(sid, rmgr, rts='radical.pilot',
                                           zmq_info=zmq_info)
-        self._rts_runner = None
+        self._rts_runner      = None
+        self._zmq_info        = zmq_info
         self._submitted_tasks = dict()
+        self._rp_tmgr         = None
+        self._total_res       = {'cores': 0, 'gpus': 0}
+
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
-        self._rp_tmgr = None
-        self._zmq_info = zmq_info
-        self._total_res = {'cores': 0,
-                           'gpus': 0}
 
 
     # --------------------------------------------------------------------------
@@ -87,6 +87,7 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
+            # Queue for communication between threads of this process
             task_queue = queue.Queue()
 
             # Pickle file for task id history.

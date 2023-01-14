@@ -1,6 +1,0 @@
-
--r requirements.txt
-
-sphinx>=5.1
-sphinxcontrib-napoleon
-
