@@ -153,7 +153,6 @@ class TaskManager(Base_TaskManager):
 
                 try:
                     body = task_queue.get_nowait()
-                    print('working on workload')
 
                 except queue.Empty:
                     # Ignore, we don't always have new tasks to run
