@@ -152,7 +152,7 @@ class TaskManager(Base_TaskManager):
                 body = None
 
                 try:
-                    body = task_queue.get(block=True, timeout=10)
+                    body = task_queue.get_nowait()
                     print('working on workload')
 
                 except queue.Empty:
