@@ -112,52 +112,6 @@ be printed.
           radical.utils        : 1.6.2
 
 
-.. comments
-
-        Installing Ensemble Toolkit using Docker
-        ----------------------------------------
-
-        You can install Docker from their
-        `official documentation <https://hub.docker.com/search/?type=edition&offering=community>`_.
-        Once you have installed Docker, you can use the following Dockerfile to build
-        a container:
-
-        .. code-block:: bash
-
-                FROM ubuntu:16.04
-
-                ENV RMQ_HOSTNAME=two.radical-project.org
-                ENV RMQ_PORT=33247
-                ENV RADICAL_PILOT_DBURL="mongodb://user:user@ds247688.mlab.com:47688/entk-docs"
-
-                RUN apt-get update \
-                && apt-get install wget curl python python-dev python-pip python-virtualenv bzip2 -y \
-                && virtualenv ~/ve-entk \
-                && . ~/ve-entk/bin/activate \
-                && pip install radical.entk
-
-        You can also download the Dockerfile :download:`here <./misc/Dockerfile>`.
-
-        You can build and execute the container by running:
-
-        .. code-block:: bash
-
-                docker build -f ./Dockerfile -t entk .
-                docker run -t -i entk
-
-        Once you execute the container, the default path will be /root (of the container).
-        The EnTK virtualenv exists at ~/ve-entk (inside the container). This is useful
-        to know as the examples exist inside the virtualenv.
-
-        You can check the version of Ensemble Toolkit with the
-        ```radical-entk-version``` command-line tool. The current version should be
-        printed.
-
-        .. code-block:: bash
-
-                radical-entk-version
-                0.70.0
-
 
 Preparing the Environment
 =========================
@@ -166,53 +120,6 @@ Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as
 the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH but
 it requires: (1) a MongoDB server; and (2) a properly set-up passwordless SSH
 environment.
-
-
-.. comments
-
-        MongoDB Server
-        --------------
-
-        .. figure:: figures/hosts_and_ports.png
-             :width: 360pt
-             :align: center
-             :alt: MongoDB and SSH ports.
-
-        The MongoDB server is used to store and retrieve operational data during the
-        execution of an application using RADICAL-Pilot. The MongoDB server must
-        be reachable on **port 27017** from **both**, the host that runs the
-        Ensemble Toolkit application and the host that executes the MD tasks, i.e.,
-        the HPC cluster (see blue arrows in the figure above). In our experience,
-        a small VM instance (e.g., Amazon AWS) works exceptionally well for this.
-
-        .. warning:: If you want to run your application on your laptop or private
-                    workstation, but run your MD tasks on a remote HPC cluster,
-                    installing MongoDB on your laptop or workstation won't work.
-                    Your laptop or workstation usually does not have a public IP
-                    address and is hidden behind a masked and firewalled home or office
-                    network. This means that the components running on the HPC cluster
-                    will not be able to access the MongoDB server.
-
-        A MongoDB server can support more than one user. In an environment where
-        multiple users use Ensemble Toolkit, a single MongoDB server
-        for all users / hosts is usually sufficient.
-
-        **Install your own MongoDB**
-
-        Once you have identified a host that can serve as the new home for MongoDB,
-        installation is straight forward. You can either install the MongoDB
-        server package that is provided by most Linux distributions, or
-        follow the installation instructions on the MongoDB website:
-
-        http://docs.mongodb.org/manual/installation/
-
-        **MongoDB-as-a-Service**
-
-        There are multiple commercial providers of hosted MongoDB services, some of them
-        offer free usage tiers. We have had some good experience with the following:
-
-        * https://mongolab.com/
-
 
 .. _ssh_gsissh_setup:
 
