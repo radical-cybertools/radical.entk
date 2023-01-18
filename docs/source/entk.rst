@@ -43,7 +43,7 @@ In our PST model, we have the following objects:
 
 * **Task**: an abstraction of a computational task that contains information regarding an executable, its software environment and its data dependences.
 * **Stage**: a set of tasks without mutual dependences and that can be executed concurrently.
-* **Pipeline**: a list of stages where any stage 'i' can be executed only after stage 'i−1' has been executed.
+* **Pipeline**: a list of stages where any stage 'i' can be executed only after stage 'i--1' has been executed.
 
 When assigned to the Application Manager, the entire application can be
 expressed as a set of Pipelines. A graphical representation of an application is provided
@@ -57,7 +57,7 @@ create any application that can be expressed as a DAG.
 Architecture
 ------------
 
-EnTK sits between the user and the CI, abstracting resource management
+EnTK sits between the user and an HPC platform, abstracting resource management
 and execution management from the user.
 
 .. figure:: figures/entk_exec_model.png
@@ -71,19 +71,20 @@ and execution management from the user.
 Figure 2 shows the components (purple) and subcomponents (green) of EnTK,
 organized in three layers: API, Workflow Management, and Workload Management.
 The API layer enables users to codify PST descriptions. The Workflow Management
-layer retrieves information from the user about available CIs, initializes EnTK,
-and holds the global state of the application during execution. The Workload
-Management layer acquires resources via the RTS. The Workflow Management layer
-has two components: AppManager and WFProcessor. AppManager uses the Synchronizer
-subcomponent to update the state of the application at runtime. WFProcessor uses
-the Enqueue and Dequeue subcomponents to queue and dequeue tasks from the Task
-Management layer. The Workload Management layer uses ExecManager and its Rmgr,
-Emgr, RTS Callback, and Heartbeat subcomponents to acquire resources from CIs
-and execute the application.
+layer retrieves information from the user about available HPC platforms,
+initializes EnTK, and holds the global state of the application during
+execution. The Workload Management layer acquires resources via the RTS. The
+Workflow Management layer has two components: AppManager and WFProcessor.
+AppManager uses the Synchronizer subcomponent to update the state of the
+application at runtime. WFProcessor uses the Enqueue and Dequeue subcomponents
+to queue and dequeue tasks from the Task Management layer. The Workload
+Management layer uses ExecManager and its Rmgr, Emgr, RTS Callback, and
+Heartbeat subcomponents to acquire resources from HPC platforms and execute the
+application.
 
 This architecture is the isolation of the RTS into a stand-alone subsystem. This
 enables composability of EnTK with diverse RTS and, depending on capabilities,
-multiple types of CIs.
+multiple types of HPC platforms.
 
 
 Execution Model
@@ -107,14 +108,15 @@ state change, making it the only stateful component of EnTK.
 Failure Model
 -------------
 
-We consider four main sources of failure: EnTK components, RTS, CI, and task
-executables. All state updates in EnTK are transactional, hence any EnTK
-component that fails can be restarted at runtime without losing information
-about ongoing execution. Both the RTS and the CI are considered black boxes.
-Partial failures of their subcomponents at runtime are assumed to be handled
-locally. CI-level failures are reported to EnTK indirectly, either as failed
-pilots or failed tasks. Both pilots and tasks can be restarted. Failures are
-logged and reported to the user at runtime for live or postmortem analysis
+We consider four main sources of failure: EnTK components, RTS, HPC platform,
+and task executables. All state updates in EnTK are transactional, hence any
+EnTK component that fails can be restarted at runtime without losing information
+about ongoing execution. Both the RTS and the HPC platform are considered black
+boxes. Partial failures of their subcomponents at runtime are assumed to be
+handled locally. Platform-level failures are reported to EnTK indirectly, either
+as failed pilots or failed tasks. Both pilots and tasks can be restarted.
+Failures are logged and reported to the user at runtime for live or postmortem
+analysis
 
 
 Implementation
