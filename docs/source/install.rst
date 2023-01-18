@@ -18,8 +18,6 @@ Open a terminal and run:
         virtualenv $HOME/ve-entk -p python3.7
 
 - ``-p`` params indicates which python version you use, python3.7+ is required
-- A legacy python2 installation is available with the ``0.72.1`` version. Hot fixes will be provided until Jul 2020. Read more at
-  the troubleshooting_
 
 Activate virtualenv by:
 
@@ -161,130 +159,13 @@ be printed.
                 0.70.0
 
 
-
-RabbitMQ
-========
-
-Ensemble Toolkit relies on RabbitMQ for message transfers. Users have three
-choices: (1) self-deploying and using a local RabbiMQ server; (2) self-deploying
-and using a remote RabbitMQ server that is accessible from the target HPC
-machine; (3) use a local or remote RabbitMQ server provided by the HPC
-organization or by an external partner. Note that most HPC infrastructures
-forbid executing servers on their login nodes. If you have no other option,
-please open an issue on the `EnTK GitHub repository
-<https://github.com/radical-cybertools/radical.entk/issues>`_ and we will provide
-you with a testing account on our RabbitMQ server.
-
-In case, installation instructions can be found at
-<https://www.rabbitmq.com/download.html>. At the end of the installation, do not
-forget to run ```rabbitmq-server``` to start the server.
-
-The following configuration defines a default server and port number to
-communicate. Note that remote RabbitMQ servers may require username and
-password. If you are using one of the RADICAL servers, username and password
-are mandatory.
-
-.. code-block:: bash
-
-        export RMQ_HOSTNAME={IP ADDRESS};
-        export RMQ_PORT={PORT NUMBER};
-        export RMQ_USERNAME={USERNAME};
-        export RMQ_PASSWORD={PASSWORD};
-
-.. note:: {} sections need to be replaced with actual values, and EnTK
-        administrators are able to provide these information.
-
-If RabbitMQ is enabled via virtual hosts, there is an option to specify the
-vhost information through additional environment variables :
-
-.. code-block:: bash
-
-        export RMQ_SSL=True
-        export RMQ_VHOST=/vhost_name
-
-You may replace `/vhost_name` with an actual name of a virtual host. The other
-information (i.e., username and password) to connect to RabbitMQ stays same but
-uses this specific vhost name to authenticate.
-
-RMQ Account
------------
-
-Open a new ticket asking a new RMQ account:
-https://github.com/radical-cybertools/radical.entk/issues
-
-.. comments
-
-        Installing rabbitmq
-        ===================
-
-        Installing rabbitmq as a system process (sudo privileges required)
-        ------------------------------------------------------------------
-
-        Ensemble Toolkit relies on RabbitMQ for message transfers. Installation
-        instructions can be found at <https://www.rabbitmq.com/download.html>. At
-        the end of the installation run ```rabbitmq-server``` to start the server.
-        RabbitMQ needs to be installed on the same machine as EnTK is installed.
-
-        In some cases, you might have to explicitly start the rabbitmq-server after
-        installation. You can check if the rabbitmq-server process is alive. If not,
-        please run the following:
-
-        .. code-block:: bash
-
-                rabbitmq-server -detached
-
-
-        Installing rabbitmq using docker
-        --------------------------------
-
-        If installing rabbitmq directly seems to be cumbersome, you can also install a
-        docker instance of rabbitmq. Assuming you have docker installed, you can
-        download and run the rabbitmq instance using the following command:
-
-        .. code-block:: bash
-
-                docker run -d --name <name of instance> -P rabbitmq:3
-
-
-        The '-P' argument auto maps new ports from localhost to the ports expected by
-        rabbitmq. This is useful if you want to have multiple EnTK scripts running as
-        you would require multiple rabbitmq instances.
-
-        You can see the mapping of the ports running ```docker ps```.
-
-        .. code-block:: bash
-
-                vivek@two:~$ docker run -d --name rabbit-1 -P rabbitmq:3
-                fb8ee8bfd822656a6338b7c19fa6a9641944f8bf5de5c1414fb78d049fdffc42
-                vivek@two:~$ docker ps
-                CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                                                                 NAMES
-                fb8ee8bfd822        rabbitmq:3          "docker-entrypoint..."   9 seconds ago       Up 7 seconds        0.0.0.0:32777->4369/tcp, 0.0.0.0:32776->5671/tcp, 0.0.0.0:32775->5672/tcp, 0.0.0.0:32774->25672/tcp   rabbit-1
-
-
-        Interactions between RabbitMQ and EnTK are done through port 5672 by default.
-        For the above docker instance, we need to use port 32775. In your EnTK scripts,
-        while creating the AppManager, you need to specify port=32775.
-
-        .. note::
-           If you are using Docker to install both EnTK and RabbitMQ, they should run
-           as two different containers. You can set the RMQ_PORT in the EnTK container
-           accordingly.
-
-        Installation Video
-        ==================
-
-        .. raw:: html
-
-                <video controls width="800" src="_static/entk_installation_get_started.mp4"></video>
-
-
 Preparing the Environment
 =========================
 
 Ensemble Toolkit uses `RADICAL Pilot <http://radicalpilot.readthedocs.org>`_ as
-the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH and
-GSISSH, but it requires (a) a MongoDB server and (b) a properly set-up
-passwordless SSH/GSISSH environment.
+the runtime system. RADICAL Pilot can access HPC clusters remotely via SSH but
+it requires: (1) a MongoDB server; and (2) a properly set-up passwordless SSH
+environment.
 
 
 .. comments
@@ -335,17 +216,20 @@ passwordless SSH/GSISSH environment.
 
 .. _ssh_gsissh_setup:
 
-Setup passwordless SSH Access to HPC resources
+Setup passwordless SSH Access to HPC platforms
 ----------------------------------------------
 
-In order to create a passwordless access to another machine, you need to create a RSA key on your local machine
-and paste the public key into the `authorizes_users` list on the remote machine.
+In order to create a passwordless access to another machine, you need to create
+a key-pair on your local machine and paste the public key into the
+`authorizes_users` list on the remote machine.
 
-`This <http://linuxproblem.org/art_9.html>`_ is a recommended tutorial to create password ssh access.
+`This <http://linuxproblem.org/art_9.html>`_ is a recommended tutorial to create
+password ssh access.
 
-An easy way to setup SSH access to multiple remote machines is to create a file ``~/.ssh/config``.
-Suppose the url used to access a specific machine is ``foo@machine.example.com``. You can create an entry in this
-config file as follows:
+An easy way to setup SSH access to multiple remote machines is to create a file
+``~/.ssh/config``. Suppose the URL used to access a specific machine is
+``foo@machine.example.com``. You can create an entry in this config file as
+follows:
 
 .. code-block:: bash
 
@@ -358,19 +242,6 @@ Now you can login to the machine by ``ssh machine1``.
 
 
 Source: http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
-
-
-Setup GSISSH Access to HPC resources
-------------------------------------
-
-Setting up GSISSH access to a machine is a bit more complicated. We have documented the steps to setup GSISSH on
-`Ubuntu <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_stampede_ubuntu_xenial.sh>`_ (tested for
-trusty and xenial) and `Mac <https://github.com/vivek-bala/docs/blob/master/misc/gsissh_setup_mac>`_. Simply execute
-all the commands, see comments for details.
-
-The above links document the overall procedure and how to get certificates to access XSEDE machines. Depending on the machine
-you want to access, you will have to get the certificates from the corresponding locations. In most cases, this
-information is available in their user guide.
 
 
 .. _troubleshooting:
@@ -391,31 +262,3 @@ If virtualenv **is not** installed on your system, you can try the following.
 
         python virtualenv-16.7.9/virtualenv.py $HOME/ve-entk -p python3.7
         source $HOME/ve-entk/bin/activate
-
-**Python 2 legacy installation**
-
-As of January 1, 2020, Python 2 support is terminated by the Python Software
-Foundation but the previous release of EnTK i.e. ``0.72.1`` allows to use Python 2.7.
-PyPI installation with virtualenv is:
-
-.. code-block:: bash
-
-        virtualenv $HOME/ve-entk-py2 -p python2.7
-        source $HOME/ve-entk-py2/bin/activate
-        pip install radical.entk==0.72.1
-
-```radical-stack``` confirms the versions of the radical cybertools:
-
-.. code-block:: bash
-
-        $ radical-stack
-
-          python               : 2.7.17
-          pythonpath           :
-          virtualenv           : /home/username/ve-entk-py2
-
-          radical.entk         : 0.72.1
-          radical.pilot        : 0.73.1
-          radical.saga         : 0.72.1
-          radical.utils        : 0.72.0
-
