@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 
 from radical.entk import Pipeline, Stage
 from radical.entk import states
-from radical.entk.exceptions import EnTKTypeError, EnTKValueError, MissingError, EnTKError
+from radical.entk.exceptions import EnTKTypeError, EnTKValueError, EnTKMissingError, EnTKError
 
 try:
     import mock
@@ -300,7 +300,7 @@ class TestBase(TestCase):
         p._uid = 'pipeline.0000'
         p._stages = list()
         p._state = states.INITIAL
-        with self.assertRaises(MissingError):
+        with self.assertRaises(EnTKMissingError):
             p._validate()
 
         p = Pipeline()
