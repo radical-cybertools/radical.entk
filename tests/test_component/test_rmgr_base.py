@@ -4,7 +4,7 @@
 from unittest import TestCase
 
 from radical.entk.execman.base   import Base_ResourceManager as Rmgr
-from radical.entk.exceptions import EnTKError, EnTKTypeError, MissingError
+from radical.entk.exceptions import EnTKError, EnTKTypeError, EnTKMissingError
 
 from hypothesis import given
 
@@ -139,7 +139,7 @@ class TestBase(TestCase):
         rmgr._resource_desc['resource'] = 'resource_local'
 
         del rmgr._resource_desc['resource']
-        with self.assertRaises(MissingError):
+        with self.assertRaises(EnTKMissingError):
             # `_resource_desc['resource']` is required
             rmgr._validate_resource_desc()
 
