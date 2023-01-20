@@ -6,11 +6,13 @@ __license__   = 'MIT'
 
 import radical.utils as ru
 
-from string    import punctuation
-from .         import exceptions as ree
-from .constants import NAME_MESSAGE
-from .task     import Task
-from .         import states
+from string      import punctuation
+from .exceptions import EnTKValueError, EnTKTypeError
+from .exceptions import EnTKMissingError, EnTKError
+from .constants  import NAME_MESSAGE
+from .task       import Task
+from .states     import INITIAL, DONE, FAILED
+from .states     import _stage_state_values, state_numbers
 
 
 class Stage(object):
@@ -26,10 +28,10 @@ class Stage(object):
         self._name = None
 
         self._tasks = set()
-        self._state = states.INITIAL
+        self._state = INITIAL
 
-        # Keep track of states attained
-        self._state_history = [states.INITIAL]
+        # Keep track of attained
+        self._state_history = [INITIAL]
 
         # To change states
         self._task_count = len(self._tasks)
@@ -39,9 +41,9 @@ class Stage(object):
 
         self._post_exec = None
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getter functions
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @property
     def name(self):
@@ -171,14 +173,11 @@ class Stage(object):
     def name(self, value):
         invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str,
-                                actual_type=type(value))
+            raise EnTKTypeError(expected_type=str, actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            raise ree.ValueError(obj=self._uid,
-                                 attribute='name',
-                                 actual_value=value,
-                                 expected_value=NAME_MESSAGE)
+            raise EnTKValueError(obj=self._uid, attribute='name',
+                                actual_value=value, expected_value=NAME_MESSAGE)
         self._name = value
 
     @tasks.setter
@@ -191,31 +190,29 @@ class Stage(object):
         if isinstance(value, dict):
             self._p_pipeline = value
         else:
-            raise ree.TypeError(expected_type=dict, actual_type=type(value))
+            raise EnTKTypeError(expected_type=dict, actual_type=type(value))
 
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in list(states._stage_state_values.keys()):
+            if value in list(_stage_state_values.keys()):
                 self._state = value
                 self._state_history.append(value)
             else:
-                raise ree.ValueError(obj=self._uid,
-                                 attribute='state',
-                                 expected_value=list(states._stage_state_values.keys()),
-                                 actual_value=value)
+                raise EnTKValueError(obj=self._uid, attribute='state',
+                          expected_value=list(_stage_state_values.keys()),
+                          actual_value=value)
         else:
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise EnTKTypeError(expected_type=str, actual_type=type(value))
 
     @post_exec.setter
     def post_exec(self, value):
 
         if not callable(value):
 
-            raise ree.TypeError(entity='stage %s branch' % self._uid,
-                            expected_type='callable',
-                            actual_type=type(value)
-                            )
+            raise EnTKTypeError(entity='stage %s branch' % self._uid,
+                                expected_type='callable',
+                                actual_type=type(value))
 
         self._post_exec = value
 
@@ -277,47 +274,50 @@ class Stage(object):
             if d['name']:
                 invalid_symbols = punctuation.replace('.','')
                 if not isinstance(d['name'], str):
-                    raise ree.TypeError(expected_type=str,
+                    raise EnTKTypeError(expected_type=str,
                                         actual_type=type(d['name']))
 
                 if any(symbol in d['name'] for symbol in invalid_symbols):
-                    raise ree.ValueError(obj=self._uid,
-                                        attribute='name',
-                                        actual_value=d['name'],
-                                        expected_value=NAME_MESSAGE)
+                    raise EnTKValueError(obj=self._uid, attribute='name',
+                                         actual_value=d['name'],
+                                         expected_value=NAME_MESSAGE)
                 self._name = d['name']
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], str):
-                if d['state'] in list(states._stage_state_values.keys()):
+                if d['state'] in list(_stage_state_values.keys()):
                     self._state = d['state']
                 else:
                     value = d['state']
-                    raise ree.ValueError(obj=self._uid,
-                                     attribute='state',
-                                     expected_value=list(states._stage_state_values.keys()),
-                                     actual_value=value)
+                    raise EnTKValueError(obj=self._uid, attribute='state',
+                         expected_value=list(_stage_state_values.keys()),
+                         actual_value=value)
             else:
-                raise ree.TypeError(entity='state', expected_type=str, actual_type=type(d['state']))
+                raise EnTKTypeError(entity='state', expected_type=str,
+                                    actual_type=type(d['state']))
 
         else:
-            self._state = states.INITIAL
+            self._state = INITIAL
 
         if 'state_history' in d:
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(d['state_history']))
+                raise EnTKTypeError(entity='state_history', expected_type=list,
+                                    actual_type=type(d['state_history']))
 
         if 'parent_pipeline' in d:
             if isinstance(d['parent_pipeline'], dict):
                 self._p_pipeline = d['parent_pipeline']
             else:
-                raise ree.TypeError(entity='parent_pipeline', expected_type=dict, actual_type=type(d['parent_pipeline']))
+                raise EnTKTypeError(entity='parent_pipeline',
+                                    expected_type=dict,
+                                    actual_type=type(d['parent_pipeline']))
 
-    # ------------------------------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     # Private methods
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def _set_tasks_state(self, value):
         """
@@ -325,39 +325,42 @@ class Stage(object):
 
         :arguments: String
         """
-        if value not in list(states.state_numbers.keys()):
-            raise ree.ValueError(obj=self._uid,
-                             attribute='set_tasks_state',
-                             expected_value=list(states.state_numbers.keys()),
-                             actual_value=value)
+        if value not in list(state_numbers.keys()):
+            raise EnTKValueError(obj=self._uid, attribute='set_tasks_state',
+                                 expected_value=list(state_numbers.keys()),
+                                 actual_value=value)
 
         for task in self._tasks:
             task.state = value
 
+
     def _check_stage_complete(self):
         """
-        Purpose: Check if all tasks of the current stage have completed, i.e., are in either DONE or FAILED state.
+        Purpose: Check if all tasks of the current stage have completed, i.e.,
+                 are in either DONE or FAILED state.
         """
 
         try:
 
             for task in self._tasks:
-                if task.state not in [states.DONE, states.FAILED]:
+                if task.state not in [DONE, FAILED]:
                     return False
 
             return True
 
         except Exception as ex:
-            raise ree.EnTKError(msg=ex) from ex
+            raise EnTKError(ex) from ex
+
 
     @classmethod
-    def _validate_entities(self, tasks):
+    def _validate_entities(cls, tasks):
         """
-        Purpose: Validate whether the 'tasks' is of type set. Validate the description of each Task.
+        Purpose: Validate whether the 'tasks' is of type set. Validate the
+                 description of each Task.
         """
 
         if not tasks:
-            raise ree.TypeError(expected_type=Task, actual_type=type(tasks))
+            raise EnTKTypeError(expected_type=Task, actual_type=type(tasks))
 
         if not isinstance(tasks, set):
 
@@ -369,27 +372,26 @@ class Stage(object):
         for t in tasks:
 
             if not isinstance(t, Task):
-                raise ree.TypeError(expected_type=Task, actual_type=type(t))
+                raise EnTKTypeError(expected_type=Task, actual_type=type(t))
 
         return tasks
 
+
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Stage is 'DESCRIBED' (user has not meddled with it). Also
-        validate that the current Stage contains Tasks
+        Purpose: Validate that the state of the current Stage is 'DESCRIBED'
+                 (user has not meddled with it). Also validate that the current
+                 Stage contains Tasks
         """
 
-        if self._state is not states.INITIAL:
+        if self._state is not INITIAL:
 
-            raise ree.ValueError(obj=self._uid,
-                             attribute='state',
-                             expected_value=states.INITIAL,
-                             actual_value=self._state)
+            raise EnTKValueError(obj=self._uid, attribute='state',
+                               expected_value=INITIAL, actual_value=self._state)
 
         if not self._tasks:
 
-            raise ree.MissingError(obj=self._uid,
-                               missing_attribute='tasks')
+            raise EnTKMissingError(obj=self._uid, missing_attribute='tasks')
 
         for task in self._tasks:
             task._validate()
