@@ -5,6 +5,7 @@ __license__   = 'MIT'
 
 import os
 import time
+import warnings
 
 import threading       as mt
 import multiprocessing as mp
@@ -66,7 +67,13 @@ class AppManager(object):
                  rts=None,
                  rts_config=None,
                  name=None,
-                 base_path=None):
+                 base_path=None,
+                 **kwargs):
+
+        for arg in ['hostname', 'port', 'username', 'password']:
+            if arg in kwargs:
+                warnings.warn('arg argument is not required anymore',
+                              DeprecationWarning, stacklevel=2)
 
         # Create a session for each EnTK script execution
         if name:
@@ -93,7 +100,7 @@ class AppManager(object):
         self._report = ru.Reporter(name=name)
 
         self._report.info('EnTK session: %s\n' % self._sid)
-        self._report.info('Creating AppManager')
+        self._report.info('Creating AppManager\n')
         self._prof.prof('amgr_creat', uid=self._uid)
 
         self._rmgr            = None
