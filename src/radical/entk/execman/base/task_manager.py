@@ -65,6 +65,7 @@ class Base_TaskManager(object):
         self._tmgr_terminate = None
 
         self._zmq_queue = None
+        self._zmq_info  = zmq_info
         self._setup_zmq(zmq_info)
 
 
