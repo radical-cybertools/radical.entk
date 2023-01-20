@@ -10,7 +10,9 @@ import threading     as mt
 
 import radical.utils as ru
 
-from ..           import states, Task
+from ..states     import INITIAL, FINAL
+from ..states     import SUSPENDED, SCHEDULED, SCHEDULING, DONE, FAILED
+from ..task       import Task
 from ..exceptions import EnTKError
 
 
@@ -101,7 +103,7 @@ class WFprocessor(object):
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
 
-        if obj_type == 'Task' and obj.state == states.FAILED:
+        if obj_type == 'Task' and obj.state == FAILED:
             self._report.error('task %s failed: %s\n%s\n'
                               % (obj.uid, obj.exception, obj.exception_detail))
 
@@ -140,15 +142,15 @@ class WFprocessor(object):
 
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
-                if pipe.state in states.FINAL or  \
+                if pipe.state in FINAL or  \
                    pipe.completed or \
-                   pipe.state == states.SUSPENDED:
+                   pipe.state == SUSPENDED:
                     continue
 
-                if pipe.state == states.INITIAL:
+                if pipe.state == INITIAL:
 
                     # Set state of pipeline to SCHEDULING if it is in INITIAL
-                    self._advance(pipe, 'Pipeline', states.SCHEDULING)
+                    self._advance(pipe, 'Pipeline', SCHEDULING)
 
                 # Get the next stage of this pipeline to process
                 exec_stage = pipe.stages[pipe.current_stage - 1]
@@ -159,24 +161,24 @@ class WFprocessor(object):
                     exec_stage.parent_pipeline['name'] = pipe.name
 
                 # If its a new stage, update its state
-                if exec_stage.state == states.INITIAL:
+                if exec_stage.state == INITIAL:
 
-                    self._advance(exec_stage, 'Stage', states.SCHEDULING)
+                    self._advance(exec_stage, 'Stage', SCHEDULING)
 
                 # Get all tasks of a stage in SCHEDULED state
                 exec_tasks = list()
-                if exec_stage.state == states.SCHEDULING:
+                if exec_stage.state == SCHEDULING:
                     exec_tasks = exec_stage.tasks
 
                 for exec_task in exec_tasks:
 
                     state = exec_task.state
-                    if   state == states.INITIAL or \
-                        (state == states.FAILED and self._resubmit_failed):
+                    if   state == INITIAL or \
+                        (state == FAILED and self._resubmit_failed):
 
                         # Set state of Tasks in current Stage
                         # to SCHEDULING
-                        self._advance(exec_task, 'Task', states.SCHEDULING)
+                        self._advance(exec_task, 'Task', SCHEDULING)
 
                         # Store the tasks from different pipelines
                         # into our workload list. All tasks will
@@ -188,7 +190,7 @@ class WFprocessor(object):
                         # above tasks belong to also need to be
                         # updated. If its a task that failed, the
                         # stage is already in the correct state
-                        if exec_task.state == states.FAILED:
+                        if exec_task.state == FAILED:
                             continue
 
                         if exec_stage not in scheduled_stages:
@@ -209,16 +211,16 @@ class WFprocessor(object):
         for pipe in self._workflow:
 
             with pipe.lock:
-                if pipe.state in states.FINAL or  \
+                if pipe.state in FINAL or  \
                    pipe.completed or \
-                   pipe.state == states.SUSPENDED:
+                   pipe.state == SUSPENDED:
                     continue
 
                 curr_stage = pipe.stages[pipe.current_stage - 1]
                 for task in curr_stage.tasks:
-                    if task.state not in states.FINAL:
-                        self._advance(task, 'Task', states.INITIAL)
-                self._advance(curr_stage, 'Stage', states.SCHEDULING)
+                    if task.state not in FINAL:
+                        self._advance(task, 'Task', INITIAL)
+                self._advance(curr_stage, 'Stage', SCHEDULING)
 
     # --------------------------------------------------------------------------
     #
@@ -236,13 +238,13 @@ class WFprocessor(object):
         for task in workload:
 
             # Set state of Tasks in current Stage to SCHEDULED
-            self._advance(task, 'Task', states.SCHEDULED)
+            self._advance(task, 'Task', SCHEDULED)
 
         # Update the state of the stages from which tasks have
         # been scheduled
         if scheduled_stages:
             for executable_stage in scheduled_stages:
-                self._advance(executable_stage, 'Stage', states.SCHEDULED)
+                self._advance(executable_stage, 'Stage', SCHEDULED)
 
 
     # --------------------------------------------------------------------------
@@ -306,7 +308,7 @@ class WFprocessor(object):
 
                 # Skip pipelines that have completed or are
                 # currently suspended
-                if pipe.completed or pipe.state == states.SUSPENDED:
+                if pipe.completed or pipe.state == SUSPENDED:
                     continue
 
                 # Skip pipelines that don't match the UID
@@ -342,18 +344,17 @@ class WFprocessor(object):
                         # We are only concerned about state of task and not
                         # deq_task
                         if deq_task.exit_code == 0:
-                            task_state = states.DONE
+                            task_state = DONE
                         elif deq_task.exit_code == 1:
-                            task_state = states.FAILED
+                            task_state = FAILED
                         else:
                             task_state = deq_task.state
 
                         task.exception        = deq_task.exception
                         task.exception_detail = deq_task.exception_detail
 
-                        if task.state == states.FAILED and \
-                            self._resubmit_failed:
-                            task_state = states.INITIAL
+                        if task.state == FAILED and self._resubmit_failed:
+                            task_state = INITIAL
                         self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
@@ -372,7 +373,7 @@ class WFprocessor(object):
                 # stage of the pipeline -- update pipeline
                 # state if yes.
                 if stage._check_stage_complete():        # pylint: disable=W0212
-                    self._advance(stage, 'Stage', states.DONE)
+                    self._advance(stage, 'Stage', DONE)
 
                     # Check if the current stage has a post-exec
                     # that needs to be executed
@@ -380,8 +381,8 @@ class WFprocessor(object):
                         self._execute_post_exec(pipe, stage)
 
                     # if pipeline got suspended, advance state accordingly
-                    if pipe.state == states.SUSPENDED:
-                        self._advance(pipe, 'Pipeline', states.SUSPENDED)
+                    if pipe.state == SUSPENDED:
+                        self._advance(pipe, 'Pipeline', SUSPENDED)
 
                     else:
                         # otherwise perform normal stage progression
@@ -389,7 +390,7 @@ class WFprocessor(object):
 
                     # If pipeline has completed, advance state to DONE
                     if pipe.completed:
-                        self._advance(pipe, 'Pipeline', states.DONE)
+                        self._advance(pipe, 'Pipeline', DONE)
 
 
                 # Found the pipeline and processed it -- no more
@@ -432,7 +433,7 @@ class WFprocessor(object):
                         r_pipe._increment_stage()        # pylint: disable=W0212
 
                         if r_pipe.completed:
-                            self._advance(r_pipe, 'Pipeline', states.DONE)
+                            self._advance(r_pipe, 'Pipeline', DONE)
 
                         else:
                             self._advance(r_pipe, 'Pipeline', r_pipe.state)
