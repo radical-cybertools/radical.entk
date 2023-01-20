@@ -12,8 +12,8 @@ import multiprocessing as mp
 
 import radical.utils   as ru
 
-from ..           import exceptions as ree
-from ..           import states
+from ..exceptions import EnTKError, EnTKTypeError, EnTKMissingError
+from ..states     import DONE, FAILED
 
 from ..pipeline   import Pipeline
 from ..task       import Task
@@ -270,7 +270,7 @@ class AppManager(object):
     def name(self, value):
 
         if not isinstance(value, str):
-            raise ree.EnTKTypeError(expected_type=str, actual_type=type(value))
+            raise EnTKTypeError(expected_type=str, actual_type=type(value))
 
         self._name = value
 
@@ -296,7 +296,7 @@ class AppManager(object):
 
         if not self._rmgr._validate_resource_desc():
             self._logger.error('Could not validate resource description')
-            raise ree.EnTKError('Could not validate resource description')
+            raise EnTKError('Could not validate resource description')
 
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
@@ -316,7 +316,7 @@ class AppManager(object):
 
             if not isinstance(p, Pipeline):
                 self._logger.info('workflow type incorrect')
-                raise ree.EnTKTypeError(expected_type=['Pipeline',
+                raise EnTKTypeError(expected_type=['Pipeline',
                                                    'set of Pipelines'],
                                     actual_type=type(p))
             p._validate()
@@ -339,7 +339,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.EnTKTypeError(expected_type=str,
+                raise EnTKTypeError(expected_type=str,
                                     actual_type=type(value))
 
         self._shared_data = data
@@ -359,7 +359,7 @@ class AppManager(object):
 
         for value in data:
             if not isinstance(value, str):
-                raise ree.EnTKTypeError(expected_type=str,
+                raise EnTKTypeError(expected_type=str,
                                     actual_type=type(value))
 
         if self._rmgr:
@@ -392,15 +392,15 @@ class AppManager(object):
             if not self._workflow:
                 self._logger.error('No workflow assigned currently, please \
                                     check your script')
-                raise ree.MissingError(obj=self._uid,
+                raise EnTKMissingError(obj=self._uid,
                                        missing_attribute='workflow')
 
             if not self._rmgr:
                 self._logger.error('No resource manager assigned currently, \
                                     please create and add a valid resource \
                                     manager')
-                raise ree.MissingError(obj=self._uid,
-                                   missing_attribute='resource_manager')
+                raise EnTKMissingError(obj=self._uid,
+                                       missing_attribute='resource_manager')
             self._prof.prof('amgr run started', uid=self._uid)
 
             # ensure zmq setup
@@ -419,8 +419,8 @@ class AppManager(object):
 
                 res_alloc_state = self._rmgr.get_resource_allocation_state()
                 if res_alloc_state in self._rmgr.get_completed_states():
-                    raise ree.EnTKError(msg='Cannot proceed. Resource '
-                                        'ended in state %s' % res_alloc_state)
+                    raise EnTKError('Cannot proceed. Resource ended in state %s'
+                                    % res_alloc_state)
 
 
             # Start all components and subcomponents
@@ -431,7 +431,8 @@ class AppManager(object):
             self._run_workflow()
             self._logger.info('Workflow execution finished.')
             if self._autoterminate:
-                self._logger.debug('Autoterminate set to %s.', self._autoterminate)
+                self._logger.debug('Autoterminate set to %s',
+                                   self._autoterminate)
                 self.terminate()
 
         except KeyboardInterrupt as ex:
@@ -440,13 +441,13 @@ class AppManager(object):
                                    'probably hit Ctrl+C), trying to cancel '
                                    'enqueuer thread gracefully...')
             self.terminate()
-            raise ree.EnTKError(ex) from ex
+            raise EnTKError(ex) from ex
 
         except Exception as ex:
 
             self._logger.exception('Error in AppManager')
             self.terminate()
-            raise ree.EnTKError(ex) from ex
+            raise EnTKError(ex) from ex
 
         # return list of fetched output data, or None.
         outputs = self.outputs
@@ -555,7 +556,7 @@ class AppManager(object):
         except Exception as e:
 
             self._logger.exception('Error setting ZMQ queues')
-            raise ree.EnTKError(e) from e
+            raise EnTKError(e) from e
 
 
     # --------------------------------------------------------------------------
@@ -702,8 +703,8 @@ class AppManager(object):
                 self._logger.debug('RTS resubmitted')
 
         if self._cur_attempt > self._reattempts:
-            raise ree.EnTKError('Too many failures in synchronizer, wfp or '
-                                'task manager')
+            raise EnTKError('Too many failures in synchronizer, wfp or '
+                            'task manager')
 
 
     # --------------------------------------------------------------------------
@@ -790,7 +791,7 @@ class AppManager(object):
                             self._logger.debug('Task %s rts_uid set to %s',
                                                task.uid, task.rts_uid)
 
-                        if task.state in [states.DONE, states.FAILED]:
+                        if task.state in [DONE, FAILED]:
                             self._logger.debug('No change on task state %s \
                                              in state %s', task.uid, task.state)
                             break
@@ -829,7 +830,7 @@ class AppManager(object):
         except Exception as ex:
             self._logger.exception('Unknown error in synchronizer: %s. \
                                     Terminating thread')
-            raise ree.EnTKError(ex) from ex
+            raise EnTKError(ex) from ex
 
 
     # --------------------------------------------------------------------------

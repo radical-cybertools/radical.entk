@@ -9,9 +9,10 @@ from string import punctuation
 
 import radical.utils as ru
 
-from .constants import NAME_MESSAGE
-from . import exceptions as ree
-from . import states     as res
+from .constants  import NAME_MESSAGE
+from .exceptions import EnTKError, EnTKMissingError
+from .exceptions import EnTKTypeError, EnTKValueError
+from .states     import INITIAL, _task_state_values
 
 VALID_TAGS = ['colocate', 'exclusive']
 
@@ -457,8 +458,7 @@ class Task(ru.TypedDict):
 
         from_dict = from_dict or {}
         if not isinstance(from_dict, dict):
-            raise ree.EnTKTypeError(expected_type=dict,
-                                actual_type=type(from_dict))
+            raise EnTKTypeError(expected_type=dict, actual_type=type(from_dict))
 
         super().__init__()
 
@@ -470,14 +470,13 @@ class Task(ru.TypedDict):
             attrs.remove('uid')
             uid = super()._verify_setter('uid', from_dict['uid'])
             if any(s in uid for s in punctuation.replace('.', '')):
-                raise ree.EnTKError(
-                    'Incorrect symbol for attribute "uid" (%s). %s' %
-                    (uid, NAME_MESSAGE))
+                raise EnTKError('Incorrect symbol for attribute "uid" (%s). %s'
+                                % (uid, NAME_MESSAGE))
 
         self._data['uid'] = uid
 
         # ensure that "state" and "state_history" are handled correctly
-        self['state'] = from_dict.get('state') or res.INITIAL
+        self['state'] = from_dict.get('state') or INITIAL
         if 'state' in from_dict:
             attrs.remove('state')
         if 'state_history' in from_dict:
@@ -516,35 +515,31 @@ class Task(ru.TypedDict):
             return
 
         if k == 'uid':
-            raise ree.EnTKError('Task.uid is not allowed to be re-assigned')
+            raise EnTKError('Task.uid is not allowed to be re-assigned')
 
         elif k == 'name':
             if any(symbol in v for symbol in punctuation.replace('.', '')):
-                raise ree.EnTKError(
-                    'Incorrect symbol for attribute "%s" (%s). %s' %
-                    (k, v, NAME_MESSAGE))
+                raise EnTKError('Incorrect symbol for attribute "%s" (%s). %s'
+                                % (k, v, NAME_MESSAGE))
 
         elif k == 'state':
-            if v not in res._task_state_values:
-                raise ree.EnTKValueError(
-                    obj=self['uid'],
-                    attribute=k,
-                    expected_value=list(res._task_state_values),
-                    actual_value=v)
+            if v not in _task_state_values:
+                raise EnTKValueError(obj=self['uid'], attribute=k,
+                                    expected_value=list(_task_state_values),
+                                    actual_value=v)
             self['state_history'].append(v)
 
         elif k == 'state_history':
             for _v in v:
-                if _v not in res._task_state_values:
-                    raise ree.EnTKValueError(
-                        obj=self['uid'],
-                        attribute='state_history element',
-                        expected_value=list(res._task_state_values),
-                        actual_value=_v)
+                if _v not in _task_state_values:
+                    raise EnTKValueError(obj=self['uid'],
+                                    attribute='state_history element',
+                                    expected_value=list(_task_state_values),
+                                    actual_value=_v)
 
         elif k == 'tags':
             if any(tag not in VALID_TAGS for tag in v):
-                raise ree.EnTKError(
+                raise EnTKError(
                     'Incorrect structure for attribute "%s" of object %s' %
                     (k, self['uid']))
 
@@ -606,18 +601,18 @@ class Task(ru.TypedDict):
         """
 
         if self['uid'] in Task._uids:
-            raise ree.EnTKError(msg='Task ID %s already exists' % self['uid'])
+            raise EnTKError('Task ID %s already exists' % self['uid'])
         else:
             Task._uids.append(self['uid'])
 
-        if self['state'] is not res.INITIAL:
-            raise ree.EnTKValueError(obj=self['uid'],
-                                 attribute='state',
-                                 expected_value=res.INITIAL,
+        if self['state'] is not INITIAL:
+            raise EnTKValueError(obj=self['uid'], attribute='state',
+                                 expected_value=INITIAL,
                                  actual_value=self['state'])
 
         if not self['executable']:
-            raise ree.MissingError(obj=self['uid'],
+            raise EnTKMissingError(obj=self['uid'],
                                    missing_attribute='executable')
 
 # ------------------------------------------------------------------------------
+

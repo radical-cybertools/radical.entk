@@ -5,8 +5,8 @@ import pickle
 import radical.pilot as rp
 import radical.utils as ru
 
-from radical.entk import Task
-from radical.entk import exceptions as ree
+from ...task       import Task
+from ...exceptions import EnTKTypeError, EnTKValueError
 
 
 # ------------------------------------------------------------------------------
@@ -28,24 +28,26 @@ def resolve_placeholders(path, placeholders, logger):
             path = str(path)
 
         if not isinstance(path, str):
-            raise ree.EnTKTypeError(expected_type=str,
-                                actual_type=type(path))
+            raise EnTKTypeError(expected_type=str, actual_type=type(path))
 
         if '$' not in path:
             return path
 
-        path_placeholders = []
         # Extract placeholder from path
+        path_placeholders = list()
         if len(path.split('>')) == 1:
             path_placeholders.append(path.split('/')[0])
+
         else:
             if path.split('>')[0].strip().startswith('$'):
-                path_placeholders.append(path.split('>')[0].strip().split('/')[0])
+                path_placeholders.append(
+                        path.split('>')[0].strip().split('/')[0])
+
             if path.split('>')[1].strip().startswith('$'):
-                path_placeholders.append(path.split('>')[1].strip().split('/')[0])
+                path_placeholders.append(
+                        path.split('>')[1].strip().split('/')[0])
 
         resolved = path
-
         for placeholder in path_placeholders:
 
             # SHARED
@@ -61,8 +63,8 @@ def resolve_placeholders(path, placeholders, logger):
                 expected = '$Pipeline_(pipeline_name)_' \
                            'Stage_(stage_name)_' \
                            'Task_(task_name) or $SHARED',
-                raise ree.EnTKValueError(obj='placeholder', attribute='task',
-                                     expected_value=expected, actual_value=elems)
+                raise EnTKValueError(obj='placeholder', attribute='task',
+                                    expected_value=expected, actual_value=elems)
 
             pname    = elems[1]
             sname    = elems[3]
@@ -76,11 +78,11 @@ def resolve_placeholders(path, placeholders, logger):
                                    placeholders[pname][sname][tname]['path'])
                         is_resolved_by_uid = True
                     else:
-                        logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
-                                       (tname, sname, pname))
+                        logger.warning('%s not assigned to any task in '
+                                'Stage %s Pipeline %s' % (tname, sname, pname))
                 else:
-                    logger.warning('%s not assigned to any Stage in Pipeline %s' % (
-                        sname, pname))
+                    logger.warning('%s not assigned to any Stage in Pipeline %s'
+                                  % (sname, pname))
             else:
                 logger.warning('%s not assigned to any Pipeline' % (pname))
 
@@ -90,27 +92,28 @@ def resolve_placeholders(path, placeholders, logger):
                     if sname in placeholders_by_name[pname]:
                         if tname in placeholders_by_name[pname][sname]:
                             resolved = resolved.replace(placeholder,
-                                       placeholders_by_name[pname][sname][tname]['path'])
+                              placeholders_by_name[pname][sname][tname]['path'])
                         else:
-                            logger.warning('%s not assigned to any task in Stage %s Pipeline %s' %
-                                           (tname, sname, pname))
+                            logger.warning('%s not assigned to any task in '
+                                 'Stage %s Pipeline %s' % (tname, sname, pname))
                     else:
-                        logger.warning('%s not assigned to any Stage in Pipeline %s' % (
-                            sname, pname))
+                        logger.warning('%s not assigned to any Stage in '
+                                       'Pipeline %s' % (sname, pname))
                 else:
                     logger.warning('%s not assigned to any Pipeline' % (pname))
 
 
             if not resolved:
                 logger.warning('No placeholder could be found for task name %s \
-                            stage name %s and pipeline name %s. Please be sure to \
-                            use object names and not uids in your references,i.e, \
-                            $Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name)')
+                            stage name %s and pipeline name %s. Please be sure \
+                            to use object names and not uids in your \
+                            references,i.e, \
+                 $Pipeline_(pipeline_name)_Stage_(stage_name)_Task_(task_name)')
                 expected = '$Pipeline_(pipeline_name)_' \
                            'Stage_(stage_name)_' \
                            'Task_(task_name) or $SHARED'
-                raise ree.EnTKValueError(obj='placeholder', attribute='task',
-                                     expected_value=expected, actual_value=elems)
+                raise EnTKValueError(obj='placeholder', attribute='task',
+                                    expected_value=expected, actual_value=elems)
 
         return resolved
 
@@ -152,7 +155,7 @@ def resolve_arguments(args, placeholders, logger):
                 expected = '$Pipeline_{pipeline.uid}_' \
                            'Stage_{stage.uid}_' \
                            'Task_{task.uid} or $SHARED'
-                raise ree.EnTKValueError(obj='placeholder', attribute='length',
+                raise EnTKValueError(obj='placeholder', attribute='length',
                                     expected_value=expected, actual_value=elems)
 
             pname = elems[1]
@@ -211,7 +214,7 @@ def get_input_list_from_task(task, placeholders, logger):
     try:
 
         if not isinstance(task, Task):
-            raise ree.EnTKTypeError(expected_type=Task, actual_type=type(task))
+            raise EnTKTypeError(expected_type=Task, actual_type=type(task))
 
         input_data = list()
 
@@ -330,7 +333,7 @@ def get_output_list_from_task(task, placeholders, logger):
     try:
 
         if not isinstance(task, Task):
-            raise ree.EnTKTypeError(expected_type=Task, actual_type=type(task))
+            raise EnTKTypeError(expected_type=Task, actual_type=type(task))
 
 
         output_data = list()
