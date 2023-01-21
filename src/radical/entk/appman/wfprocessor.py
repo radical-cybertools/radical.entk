@@ -5,7 +5,6 @@ __license__   = "MIT"
 
 
 import os
-import time
 import threading     as mt
 
 import radical.utils as ru
