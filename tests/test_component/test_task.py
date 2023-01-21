@@ -317,7 +317,7 @@ class TestTask(TestCase):
             task3._validate()
 
         task4 = Task()
-        with self.assertRaises(ree.MissingError):
+        with self.assertRaises(ree.EnTKMissingError):
             # attribute "executable" is not set
             task4._validate()
 

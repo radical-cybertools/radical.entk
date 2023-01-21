@@ -37,10 +37,10 @@ class TaskManager(Base_TaskManager):
     #
     def __init__(self, sid, rmgr, zmq_info):
 
-        super(TaskManager, self).__init__(sid, rmgr, rts='mock',
-                                          zmq_info=zmq_info)
-        self._rts_runner      = None
-        self._zmq_info        = zmq_info
+        super().__init__(sid, rmgr, rts='mock', zmq_info=zmq_info)
+
+        self._rts_runner = None
+        self._zmq_info   = zmq_info
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -184,7 +184,6 @@ class TaskManager(Base_TaskManager):
                                    task.uid, task.state)
 
                     tdict = task.as_dict()
-
                     self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
 
         except KeyboardInterrupt:

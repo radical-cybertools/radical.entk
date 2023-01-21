@@ -1,6 +1,4 @@
 
 radical.utils>=1.12
 radical.pilot>=1.18
-packaging
-requests>=2.4.0
 

@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 
 from radical.entk import Stage, Task
 from radical.entk import states
-from radical.entk.exceptions import EnTKTypeError, EnTKValueError, MissingError
+from radical.entk.exceptions import EnTKTypeError, EnTKValueError, EnTKMissingError
 
 try:
     import mock
@@ -357,7 +357,7 @@ class TestBase(TestCase):
         s._uid = 'stage.0000'
         s._state = states.INITIAL
         s._tasks = None
-        with self.assertRaises(MissingError):
+        with self.assertRaises(EnTKMissingError):
             s._validate()
 
         s = Stage()

@@ -7,7 +7,7 @@ import os
 
 import radical.utils as ru
 
-from ...exceptions import MissingError, EnTKTypeError, EnTKError
+from ...exceptions import EnTKMissingError, EnTKTypeError, EnTKError
 
 
 # ------------------------------------------------------------------------------
@@ -229,8 +229,8 @@ class Base_ResourceManager(object):
 
         for key in expected_keys:
             if key not in self._resource_desc:
-                raise MissingError(obj='resource description',
-                                   missing_attribute=key)
+                raise EnTKMissingError(obj='resource description',
+                                       missing_attribute=key)
 
         if not isinstance(self._resource_desc['resource'], str):
             raise EnTKTypeError(expected_type=str,
