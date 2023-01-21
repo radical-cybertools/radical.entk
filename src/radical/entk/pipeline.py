@@ -6,11 +6,13 @@ import threading
 
 import radical.utils as ru
 
-from string     import punctuation
-from .constants import NAME_MESSAGE
-from .          import exceptions as ree
-from .stage     import Stage
-from .          import states
+from string      import punctuation
+
+from .constants  import NAME_MESSAGE
+from .exceptions import EnTKError, EnTKMissingError
+from .exceptions import EnTKTypeError, EnTKValueError
+from .stage      import Stage
+from .           import states
 
 
 class Pipeline(object):
@@ -29,15 +31,14 @@ class Pipeline(object):
         self._name = None
 
         self._stages = list()
-
-        self._state = states.INITIAL
+        self._state  = states.INITIAL
 
         # Keep track of states attained
         self._state_history = [states.INITIAL]
 
         # To keep track of current state
         self._stage_count = len(self._stages)
-        self._cur_stage = 0
+        self._cur_stage   = 0
 
         # Lock around current stage
         self._lock = threading.Lock()
@@ -161,11 +162,11 @@ class Pipeline(object):
 
         invalid_symbols = punctuation.replace('.','')
         if not isinstance(value, str):
-            raise ree.TypeError(expected_type=str,
+            raise EnTKTypeError(expected_type=str,
                                 actual_type=type(value))
 
         if any(symbol in value for symbol in invalid_symbols):
-            raise ree.ValueError(obj=self._uid,
+            raise EnTKValueError(obj=self._uid,
                                  attribute='name',
                                  actual_value=value,
                                  expected_value=NAME_MESSAGE)
@@ -184,19 +185,18 @@ class Pipeline(object):
     @state.setter
     def state(self, value):
         if isinstance(value, str):
-            if value in list(states._pipeline_state_values.keys()):
+            if value in list(states._pipeline_state_values.keys()):  # pylint: disable=W0212
                 self._state = value
 
                 # We add SUSPENDED to state history in suspend()
                 if self._state != states.SUSPENDED:
                     self._state_history.append(value)
             else:
-                raise ree.ValueError(obj=self._uid,
-                                 attribute='state',
-                                 expected_value=list(states._pipeline_state_values.keys()),
+                raise EnTKValueError(obj=self._uid, attribute='state',
+                      expected_value=list(states._pipeline_state_values.keys()),  # pylint: disable=W0212
                                  actual_value=value)
         else:
-            raise ree.TypeError(expected_type=str, actual_type=type(value))
+            raise EnTKTypeError(expected_type=str, actual_type=type(value))
 
 
     # --------------------------------------------------------------------------
@@ -257,11 +257,11 @@ class Pipeline(object):
             if d['name']:
                 invalid_symbols = punctuation.replace('.','')
                 if not isinstance(d['name'], str):
-                    raise ree.TypeError(expected_type=str,
+                    raise EnTKTypeError(expected_type=str,
                                         actual_type=type(d['name']))
 
                 if any(symbol in d['name'] for symbol in invalid_symbols):
-                    raise ree.ValueError(obj=self._uid,
+                    raise EnTKValueError(obj=self._uid,
                                         attribute='name',
                                         actual_value=d['name'],
                                         expected_value=NAME_MESSAGE)
@@ -270,15 +270,14 @@ class Pipeline(object):
 
         if 'state' in d:
             if isinstance(d['state'], str) or isinstance(d['state'], str):
-                if d['state'] in list(states._pipeline_state_values.keys()):
+                if d['state'] in list(states._pipeline_state_values.keys()):  # pylint: disable=W0212
                     self._state = d['state']
                 else:
-                    raise ree.ValueError(obj=self._uid,
-                                     attribute='state',
-                                     expected_value=list(states._pipeline_state_values.keys()),
+                    raise EnTKValueError(obj=self._uid, attribute='state',
+                      expected_value=list(states._pipeline_state_values.keys()),  # pylint: disable=W0212
                                      actual_value=d['state'])
             else:
-                raise ree.TypeError(entity='state', expected_type=str,
+                raise EnTKTypeError(entity='state', expected_type=str,
                                 actual_type=type(d['state']))
 
         else:
@@ -288,15 +287,15 @@ class Pipeline(object):
             if isinstance(d['state_history'], list):
                 self._state_history = d['state_history']
             else:
-                raise ree.TypeError(entity='state_history', expected_type=list, actual_type=type(
-                    d['state_history']))
+                raise EnTKTypeError(entity='state_history', expected_type=list,
+                        actual_type=type(d['state_history']))
 
         if 'completed' in d:
             if isinstance(d['completed'], bool):
                 if d['completed']:
                     self._completed_flag.set()
             else:
-                raise ree.TypeError(entity='completed', expected_type=bool,
+                raise EnTKTypeError(entity='completed', expected_type=bool,
                                 actual_type=type(d['completed']))
 
     # --------------------------------------------------------------------------
@@ -312,8 +311,8 @@ class Pipeline(object):
          - The state of the pipeline will be set to `SUSPENDED`.
         '''
         if self._state == states.SUSPENDED:
-            raise ree.EnTKError(
-                'suspend() called on Pipeline %s that is already suspended' % self._uid)
+            raise EnTKError('suspend() called on suspended Pipeline %s'
+                            % self._uid)
 
         self._state = states.SUSPENDED
         self._state_history.append(self._state)
@@ -331,7 +330,7 @@ class Pipeline(object):
            had before suspension.
         '''
         if self._state != states.SUSPENDED:
-            raise ree.EnTKError('Cannot resume Pipeline %s: not suspended [%s] [%s]'
+            raise EnTKError('Cannot resume Pipeline %s: not suspended [%s] [%s]'
                     % (self._uid, self._state, self._state_history))
 
         self._state = self._state_history[-2]
@@ -355,7 +354,7 @@ class Pipeline(object):
                 self._completed_flag.set()
 
         except Exception as ex:
-            raise ree.EnTKError(msg=ex) from ex
+            raise EnTKError(ex) from ex
 
     def _decrement_stage(self):
         """
@@ -369,47 +368,46 @@ class Pipeline(object):
                 self._completed_flag = threading.Event()  # reset
 
         except Exception as ex:
-            raise ree.EnTKError(msg=ex) from ex
+            raise EnTKError(ex) from ex
 
     @classmethod
     def _validate_entities(self, stages):
         """
-        Purpose: Validate whether the argument 'stages' is of list of Stage objects
+        Purpose: Validate whether the argument 'stages' is of list of
+        Stage objects
 
         :argument: list of Stage objects
         """
         if not stages:
-            raise ree.TypeError(expected_type=Stage, actual_type=type(stages))
+            raise EnTKTypeError(expected_type=Stage, actual_type=type(stages))
 
         if not isinstance(stages, list):
             stages = [stages]
 
         for value in stages:
             if not isinstance(value, Stage):
-                raise ree.TypeError(expected_type=Stage, actual_type=type(value))
+                raise EnTKTypeError(expected_type=Stage, actual_type=type(value))
 
         return stages
 
     def _validate(self):
         """
-        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED' (user has not meddled with it). Also
-        validate that the current Pipeline contains Stages.
+        Purpose: Validate that the state of the current Pipeline is 'DESCRIBED'
+        (user has not meddled with it). Also validate that the current Pipeline
+        contains Stages.
         """
 
         if self._state is not states.INITIAL:
 
-            raise ree.ValueError(obj=self._uid,
-                             attribute='state',
-                             expected_value=states.INITIAL,
-                             actual_value=self._state)
+            raise EnTKValueError(obj=self._uid, attribute='state',
+                        expected_value=states.INITIAL, actual_value=self._state)
 
         if not self._stages:
 
-            raise ree.MissingError(obj=self._uid,
-                               missing_attribute='stages')
+            raise EnTKMissingError(obj=self._uid, missing_attribute='stages')
 
         for stage in self._stages:
-            stage._validate()
+            stage._validate()  # pylint: disable=W0212
 
 
 # ------------------------------------------------------------------------------

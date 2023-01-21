@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 from radical.entk import Pipeline, Stage, Task, AppManager
-import os
-
-host = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT',     5672)
 
 
 def generate_pipeline():
@@ -40,7 +36,7 @@ def generate_pipeline():
 
 if __name__ == '__main__':
 
-    appman   = AppManager(hostname=host, port=port, autoterminate=False)
+    appman   = AppManager()
     res_dict = {
         'resource': 'local.localhost',
         'walltime': 10,

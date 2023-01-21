@@ -27,25 +27,16 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(Amgr, '__init__', return_value=None)
-    @mock.patch('pika.PlainCredentials')
-    @mock.patch('pika.connection.ConnectionParameters')
-    @given(d=st.fixed_dictionaries({'hostname': st.text(),
-                                    'port': st.integers(),
-                                    'username': st.text(),
-                                    'password': st.text(),
-                                    'reattempts': st.integers(),
+    @given(d=st.fixed_dictionaries({'reattempts': st.integers(),
                                     'resubmit_failed': st.booleans(),
                                     'autoterminate': st.booleans(),
                                     'write_workflow': st.booleans(),
-                                    'rmq_cleanup': st.booleans(),
                                     'pending_qs' : st.integers(),
                                     'completed_qs' : st.integers()}))
     @settings(max_examples=10)
-    def test_amgr_read_config(self, mocked_init, mocked_PlainCredentials,
-                              mocked_ConnectionParameters, d):
+    def test_amgr_read_config(self, mocked_init, d):
 
-        amgr = Amgr(hostname='host', port='port',
-                    username='username', password='password')
+        amgr = Amgr()
 
         d["rts"]        = "mock"
         d["rts_config"] = {"sandbox_cleanup": True,
@@ -53,46 +44,31 @@ class TestBase(TestCase):
 
         ru.write_json(d, './config.json')
         amgr._read_config(config_path='./',
-                          hostname=None,
-                          port=None,
-                          username=None,
-                          password=None,
                           reattempts=None,
                           resubmit_failed=None,
                           autoterminate=None,
                           write_workflow=None,
                           rts=None,
-                          rmq_cleanup=None,
                           rts_config=None,
                           base_path=None)
 
-        self.assertEqual(amgr._hostname ,d['hostname'])
-        self.assertEqual(amgr._port ,d['port'])
         self.assertEqual(amgr._reattempts ,d['reattempts'])
         self.assertEqual(amgr._resubmit_failed ,d['resubmit_failed'])
         self.assertEqual(amgr._autoterminate ,d['autoterminate'])
         self.assertEqual(amgr._write_workflow ,d['write_workflow'])
         self.assertEqual(amgr._rts ,d['rts'])
         self.assertEqual(amgr._rts_config ,d['rts_config'])
-        self.assertEqual(amgr._num_pending_qs ,d['pending_qs'])
-        self.assertEqual(amgr._num_completed_qs ,d['completed_qs'])
-        self.assertEqual(amgr._rmq_cleanup ,d['rmq_cleanup'])
 
         d['rts'] = 'another'
         ru.write_json(d, './config.json')
         print(d)
         with self.assertRaises(ValueError):
             amgr._read_config(config_path='./',
-                              hostname=None,
-                              port=None,
-                              username=None,
-                              password=None,
                               reattempts=None,
                               resubmit_failed=None,
                               autoterminate=None,
                               write_workflow=None,
                               rts=None,
-                              rmq_cleanup=None,
                               rts_config=None,
                               base_path=None)
 
@@ -100,43 +76,27 @@ class TestBase(TestCase):
     # ------------------------------------------------------------------------------
     #
     @mock.patch.object(Amgr, '__init__', return_value=None)
-    @mock.patch('pika.PlainCredentials')
-    @mock.patch('pika.connection.ConnectionParameters')
-    @given(d2=st.fixed_dictionaries({'hostname': st.text(),
-                                     'port': st.integers(),
-                                     'username': st.text(),
-                                     'password': st.text(),
-                                     'reattempts': st.integers(),
+    @given(d2=st.fixed_dictionaries({'reattempts': st.integers(),
                                      'resubmit_failed': st.booleans(),
                                      'autoterminate': st.booleans(),
                                      'write_workflow': st.booleans(),
-                                     'rmq_cleanup': st.booleans(),
                                      'pending_qs' : st.integers(),
                                      'completed_qs' : st.integers()}))
     @settings(max_examples=10)
-    def test_amgr_read_config2(self, mocked_init, mocked_PlainCredentials,
-                               mocked_ConnectionParameters, d2):
+    def test_amgr_read_config2(self, mocked_init, d2):
 
-        amgr = Amgr(hostname='host', port='port',
-                    username='username', password='password')
+        amgr = Amgr()
 
         amgr._read_config(config_path='./',
-                          hostname=d2['hostname'],
-                          port=d2['port'],
-                          username=d2['username'],
-                          password=d2['password'],
                           reattempts=d2['reattempts'],
                           resubmit_failed=d2['resubmit_failed'],
                           autoterminate=d2['autoterminate'],
                           write_workflow=d2['write_workflow'],
-                          rmq_cleanup=d2['rmq_cleanup'],
                           rts="mock",
                           rts_config={"sandbox_cleanup": True,
                                       "db_cleanup"     : True},
                           base_path=None)
 
-        self.assertEqual(amgr._hostname, d2['hostname'])
-        self.assertEqual(amgr._port, d2['port'])
         self.assertEqual(amgr._reattempts, d2['reattempts'])
         self.assertEqual(amgr._resubmit_failed, d2['resubmit_failed'])
         self.assertEqual(amgr._autoterminate, d2['autoterminate'])
@@ -144,7 +104,6 @@ class TestBase(TestCase):
         self.assertEqual(amgr._rts, "mock")
         self.assertEqual(amgr._rts_config, {"sandbox_cleanup": True,
                                             "db_cleanup"     : True})
-        self.assertEqual(amgr._rmq_cleanup, d2['rmq_cleanup'])
 
 
     # --------------------------------------------------------------------------
@@ -159,16 +118,13 @@ class TestBase(TestCase):
                                             ))
     @mock.patch('radical.entk.appman.wfprocessor.WFprocessor',
                 return_value=mock.MagicMock(workflow_incomplete=mock.MagicMock(return_value=True),
-                                            check_processor=mock.MagicMock(side_effect=[True, True, False, True, True, True]),
+                                            check_processor=mock.MagicMock(side_effect=[True, False, False, False, False, True]),
                                             terminate_processor=mock.MagicMock(return_value=True),
                                             start_processor=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.entk.execman.mock.TaskManager',
-                return_value=mock.MagicMock(check_heartbeat=mock.MagicMock(side_effect=[False, True, True, True, True, True]),
-                                            terminate_heartbeat=mock.MagicMock(return_value=True),
-                                            terminate_manager=mock.MagicMock(return_value=True),
-                                            start_manager=mock.MagicMock(return_value=True),
-                                            start_heartbeat=mock.MagicMock(return_value=True)
+                return_value=mock.MagicMock(terminate_manager=mock.MagicMock(return_value=True),
+                                            start_manager=mock.MagicMock(return_value=True)
                                             ))
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.Logger')
@@ -224,24 +180,16 @@ class TestBase(TestCase):
         appman._workflow = [pipe]
         appman._logger = appman._prof = appman._report = mock.Mock()
 
-        mq_channel           = mock.Mock()
-        mq_channel.basic_ack = mock.Mock()
-        method_frame         = mock.Mock()
-
-        msg = {
-            'object': {
-                'uid'            : task.uid,
-                'state'          : re.states.COMPLETED,
-                'parent_stage'   : {'uid': stage.uid},
-                'parent_pipeline': {'uid': pipe.uid}
-            }
+        msg = {'uid'            : task.uid,
+               'state'          : re.states.COMPLETED,
+               'parent_stage'   : {'uid': stage.uid},
+               'parent_pipeline': {'uid': pipe.uid}
         }
 
         # confirm that `task` has different state than `msg` contains
-        self.assertNotEqual(task.state, msg['object']['state'])
+        self.assertNotEqual(task.state, msg['state'])
 
         # task will be "found" and method below will be called
         # `mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)`
-        appman._update_task(msg, None, None, mq_channel, method_frame)
-        self.assertTrue(mq_channel.basic_ack.called)
+        appman._update_task(msg)
 

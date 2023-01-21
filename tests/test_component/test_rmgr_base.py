@@ -4,7 +4,7 @@
 from unittest import TestCase
 
 from radical.entk.execman.base   import Base_ResourceManager as Rmgr
-from radical.entk.exceptions import EnTKError, MissingError
+from radical.entk.exceptions import EnTKError, EnTKTypeError, EnTKMissingError
 
 from hypothesis import given
 
@@ -48,7 +48,7 @@ class TestBase(TestCase):
         self.assertIsNone(rmgr._job_name)
         self.assertIsNone(rmgr._outputs)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             rmgr = Rmgr('localhost', 'test_rmgr', 'rp', 'test_config')
 
 
@@ -81,31 +81,31 @@ class TestBase(TestCase):
         self.assertTrue(rmgr._validated)
 
         rmgr._rts_config = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_rts_config` should be of `dict` type
             rmgr._validate_resource_desc()
         rmgr._rts_config = {}
 
         rmgr._resource_desc['queue'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['queue']` should be of `str` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['queue'] = 'queue_name'
 
         rmgr._resource_desc['access_schema'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['access_schema']` should be of `str` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['access_schema'] = 'local'
 
         rmgr._resource_desc['project'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['project']` should be of `str` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['project'] = 'project_name'
 
         rmgr._resource_desc['memory'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['memory']` should be of `int` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['memory'] = 0
@@ -113,7 +113,7 @@ class TestBase(TestCase):
         self.assertTrue(rmgr._validate_resource_desc())
 
         rmgr._resource_desc['gpus'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['gpus']` should be of `int` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['gpus'] = 0
@@ -121,25 +121,25 @@ class TestBase(TestCase):
         self.assertTrue(rmgr._validate_resource_desc())
 
         rmgr._resource_desc['cpus'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['cpus']` should be of `int` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['cpus'] = 10
 
         rmgr._resource_desc['walltime'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['walltime']` should be of `int` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['walltime'] = 15
 
         rmgr._resource_desc['resource'] = None
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EnTKTypeError):
             # `_resource_desc['resource']` should be of `str` type
             rmgr._validate_resource_desc()
         rmgr._resource_desc['resource'] = 'resource_local'
 
         del rmgr._resource_desc['resource']
-        with self.assertRaises(MissingError):
+        with self.assertRaises(EnTKMissingError):
             # `_resource_desc['resource']` is required
             rmgr._validate_resource_desc()
 

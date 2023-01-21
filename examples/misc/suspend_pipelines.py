@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-
-import os
-import sys
 import time
 
 import radical.entk as re
@@ -10,9 +7,6 @@ import radical.entk as re
 
 # ------------------------------------------------------------------------------
 #
-hostname =     os.environ.get('RMQ_HOSTNAME', 'localhost')
-port     = int(os.environ.get('RMQ_PORT',      5672))
-
 pipes    = list()
 cnt      = 0
 
@@ -21,24 +15,16 @@ cnt      = 0
 #
 def generate_pipeline(master=False):
 
-    global pipes
+    def func_post_1():
+        for p in pipes[1:]:
+            p.suspend()
 
-    if master:
-        def func_post_1():
-            for p in pipes[1:]:
-                p.suspend()
+    def func_post_2():
+        for p in pipes[1:]:
+            p.resume()
+        # return list of resumed pipeline IDs
+        return [p.uid for p in pipes[1:]]
 
-        def func_post_2():
-            for p in pipes[1:]:
-                p.resume()
-            # return list of resumed pipeline IDs
-            return [p.uid for p in pipes[1:]]
-
-    else:
-        def func_post_1(): pass
-        def func_post_2(): pass
-
-    # --------------------------------------------------------------------------
 
     # create a pipeline, stage and tasks
 
@@ -49,7 +35,8 @@ def generate_pipeline(master=False):
 
     s1 = re.Stage()
     s1.add_tasks(t1)
-    s1.post_exec = func_post_1
+    if master:
+        s1.post_exec = func_post_1
 
     t2 = re.Task()
     t2.executable = '/bin/sleep'
@@ -57,7 +44,8 @@ def generate_pipeline(master=False):
 
     s2 = re.Stage()
     s2.add_tasks(t2)
-    s2.post_exec = func_post_2
+    if master:
+        s2.post_exec = func_post_2
 
     p = re. Pipeline()
     p.add_stages(s1)
@@ -80,7 +68,7 @@ if __name__ == '__main__':
     }
 
     # Create Application Manager
-    appman = re.AppManager(hostname=hostname, port=port)
+    appman = re.AppManager()
     appman.resource_desc = res_dict
 
     pipes.append(generate_pipeline(True))

@@ -6,15 +6,6 @@ import os
 if os.environ.get('RADICAL_ENTK_VERBOSE') is None:
     os.environ['RADICAL_ENTK_REPORT'] = 'True'
 
-# No need to change/set any variables if you installed RabbitMQ has a system
-# process. If you are running RabbitMQ in a Docker container or on a dedicated
-# virtual machine, set the variables "RMQ_HOSTNAME" and "RMQ_PORT" in the shell
-# environment in which you are running this script.
-hostname = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = int(os.environ.get('RMQ_PORT', '5672'))
-username = os.environ.get('RMQ_USERNAME')
-password = os.environ.get('RMQ_PASSWORD')
-
 
 # Each task of this example prints the hostname of the node on which it is
 # executed. Tagged tasks should print the same hostname.
@@ -96,7 +87,7 @@ if __name__ == '__main__':
                 'cpus'          : 2,
             }
 
-    appman = AppManager(hostname=hostname, port=port, username=username, password=password)
+    appman = AppManager()
     appman.resource_desc = res_dict
 
     # Select n to be >= to the number of available compute nodes.
