@@ -6,9 +6,6 @@ import time
 
 from radical.entk import Pipeline, Stage, Task, AppManager
 
-host = os.environ.get('RMQ_HOSTNAME', 'localhost')
-port = os.environ.get('RMQ_PORT',     5672)
-
 n_pipes  = int(sys.argv[1])
 n_stages = int(sys.argv[2])
 n_tasks  = int(sys.argv[3])
@@ -42,7 +39,7 @@ if __name__ == '__main__':
         pipelines.add(p)
 
 
-    appman = AppManager(hostname=host, port=port, autoterminate=True, rts='mock')
+    appman = AppManager(autoterminate=True, rts='mock')
     appman.resource_desc = {}
     appman.workflow      = pipelines
 
