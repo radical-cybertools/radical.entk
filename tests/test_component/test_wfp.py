@@ -1,8 +1,6 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
 
-import os
-
 from unittest import TestCase
 
 # from hypothesis import given, settings, strategies as st
