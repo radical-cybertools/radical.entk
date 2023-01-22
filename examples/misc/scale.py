@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import sys
 import time
 
@@ -40,7 +39,7 @@ def main():
 
 
     appman = AppManager(autoterminate=True, rts='mock')
-    appman.resource_desc = {'resource': 'local.localhost',
+    appman.resource_desc = {'resource': 'local.localhost_test',
                             'cpus'    :  8,
                             'walltime': 10}
     appman.workflow      = pipelines
