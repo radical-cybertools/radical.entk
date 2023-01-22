@@ -51,7 +51,6 @@ class TestBase(TestCase):
         self.assertFalse(wfp._resubmit_failed)
         self.assertEqual(wfp._uid, 'wfp.0000')
 
-        os.environ['RMQ_PING_INTERVAL'] = '20'
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
                 resubmit_failed=True, zmq_info={})
 
