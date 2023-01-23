@@ -18,7 +18,7 @@ except ImportError:
 
 # ------------------------------------------------------------------------------
 #
-def _tmgr_side_effect(uid, rmgr, pend_queue, comp_queue, rmq_params):
+def _tmgr_side_effect(uid, rmgr, zmq_info):
 
     time.sleep(0.1)
     return True

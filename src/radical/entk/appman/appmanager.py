@@ -72,7 +72,7 @@ class AppManager(object):
 
         for arg in ['hostname', 'port', 'username', 'password']:
             if arg in kwargs:
-                warnings.warn('arg argument is not required anymore',
+                warnings.warn('%s argument is not required anymore' % arg,
                               DeprecationWarning, stacklevel=2)
 
         # Create a session for each EnTK script execution
@@ -125,8 +125,8 @@ class AppManager(object):
         self._zmq_bridge      = None
         self._setup_zmq()
 
-        self._logger.info('Application Manager initialized')
         self._prof.prof('amgr_created', uid=self._uid)
+        self._report.info('AppManager initialized')
         self._report.ok('>>ok\n')
 
 
@@ -534,7 +534,6 @@ class AppManager(object):
                                  'uid'       : sid,
                                  'path'      : sid,
                                  'type'      : 'queue',
-                                 'log_lvl'   : 'DEBUG',
                                  'stall_hwm' : 0,
                                  'bulk_size' : 1})
 
