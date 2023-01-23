@@ -30,9 +30,7 @@ class TestBase(TestCase):
     @given(d=st.fixed_dictionaries({'reattempts': st.integers(),
                                     'resubmit_failed': st.booleans(),
                                     'autoterminate': st.booleans(),
-                                    'write_workflow': st.booleans(),
-                                    'pending_qs' : st.integers(),
-                                    'completed_qs' : st.integers()}))
+                                    'write_workflow': st.booleans()}))
     @settings(max_examples=10)
     def test_amgr_read_config(self, mocked_init, d):
 
@@ -79,9 +77,7 @@ class TestBase(TestCase):
     @given(d2=st.fixed_dictionaries({'reattempts': st.integers(),
                                      'resubmit_failed': st.booleans(),
                                      'autoterminate': st.booleans(),
-                                     'write_workflow': st.booleans(),
-                                     'pending_qs' : st.integers(),
-                                     'completed_qs' : st.integers()}))
+                                     'write_workflow': st.booleans()}))
     @settings(max_examples=10)
     def test_amgr_read_config2(self, mocked_init, d2):
 
