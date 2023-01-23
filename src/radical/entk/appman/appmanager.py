@@ -72,7 +72,7 @@ class AppManager(object):
 
         for arg in ['hostname', 'port', 'username', 'password']:
             if arg in kwargs:
-                warnings.warn('arg argument is not required anymore',
+                warnings.warn('%s argument is not required anymore' % arg,
                               DeprecationWarning, stacklevel=2)
 
         # Create a session for each EnTK script execution

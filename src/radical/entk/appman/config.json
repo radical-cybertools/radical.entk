@@ -6,8 +6,6 @@
     "write_workflow"  : false,
     "rts"             : "radical.pilot",
     "rts_config"      : {"sandbox_cleanup" : false,
-                         "db_cleanup"      : false },
-    "pending_qs"      : 1,
-    "completed_qs"    : 1
+                         "db_cleanup"      : false }
 }
 
