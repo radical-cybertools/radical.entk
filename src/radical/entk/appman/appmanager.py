@@ -717,10 +717,10 @@ class AppManager(object):
         # --------------------------------------------------------------
         # Messages between tmgr Main thread and synchronizer -- only
         # Task objects
-        msgs = self._zmq_queue['get'].get_nowait(timeout=1000.0, qname=qname)
+        msgs = self._zmq_queue['get'].get_nowait(qname=qname)
 
         if not msgs:
-            return
+            return 0
 
         # The message received has the following
         # structure:
@@ -740,6 +740,8 @@ class AppManager(object):
 
             if msg['type'] == 'Task':
                 self._update_task(obj)
+
+        return 1
 
 
     # --------------------------------------------------------------------------
@@ -853,8 +855,11 @@ class AppManager(object):
         while not self._terminate_sync.is_set():
 
             # wrapper to call `_update_task()`
-            self._get_message_to_sync('tmgr-to-sync')
-            self._get_message_to_sync('cb-to-sync'  )
+            action  = self._get_message_to_sync('tmgr-to-sync')
+            action += self._get_message_to_sync('cb-to-sync'  )
+
+            if not action:
+                time.sleep(0.01)
 
             # Raise an exception while running tests
             ru.raise_on(tag='sync_fail')

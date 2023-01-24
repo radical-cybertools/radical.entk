@@ -3,14 +3,12 @@
 
 pytest
 pytest-timeout
-pytest-xdist
 pylint
 flake8
-flake8-per-file-ignores
-psutil
-mock==2.0.0.
-hypothesis
+timeout-decorator
 coverage
 codecov
-timeout-decorator
+hypothesis
+mock==2.0.0.
+psutil
 

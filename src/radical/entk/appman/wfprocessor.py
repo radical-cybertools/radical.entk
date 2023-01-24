@@ -5,7 +5,6 @@ __license__   = "MIT"
 
 
 import os
-import time
 import threading     as mt
 
 import radical.utils as ru
@@ -267,7 +266,6 @@ class WFprocessor(object):
                 # Raise an exception while running tests
                 ru.raise_on(tag='enqueue_fail')
 
-                time.sleep(3)
                 workload, scheduled_stages = self._create_workload()
 
                 # If there are tasks to be executed
