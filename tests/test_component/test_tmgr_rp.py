@@ -3,14 +3,12 @@
 
 from unittest import TestCase
 
-from radical.entk.execman.rp   import TaskManager as RPTmgr
-from radical.entk.execman.rp   import ResourceManager as RPRmgr
+from radical.entk.execman.rp   import TaskManager      as RPTmgr
+from radical.entk.execman.rp   import ResourceManager  as RPRmgr
 
-import pika
 import time
 import psutil
 import multiprocessing as mp
-from pika.connection import ConnectionParameters
 
 try:
     import mock
@@ -20,7 +18,7 @@ except ImportError:
 
 # ------------------------------------------------------------------------------
 #
-def _tmgr_side_effect(uid, rmgr, pend_queue, comp_queue, rmq_params):
+def _tmgr_side_effect(uid, rmgr, zmq_info):
 
     time.sleep(0.1)
     return True
@@ -36,18 +34,13 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.DebugHelper')
-    @mock.patch('pika.BlockingConnection')
     def test_init(self, mocked_generate_id, mocked_getcwd, mocked_Logger,
-                  mocked_Profiler, mocked_DebugHelper, mocked_BlockingConnection):
+                  mocked_Profiler, mocked_DebugHelper):
 
-        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=RPRmgr)
-        tmgr = RPTmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params)
+
+        RPTmgr._setup_zmq = lambda x, y: None
+        tmgr = RPTmgr('test_tmgr', rmgr, {})
         self.assertIsNone(tmgr._rts_runner)
 
     # --------------------------------------------------------------------------
@@ -55,29 +48,19 @@ class TestBase(TestCase):
     @mock.patch.object(RPTmgr, '__init__', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Profiler')
-    @mock.patch('pika.BlockingConnection')
-    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler,
-                           mocked_BlockingConnection):
+    def test_start_manager(self, mocked_init, mocked_Logger, mocked_Profiler):
 
-        mocked_BlockingConnection.channel = mock.MagicMock(spec=pika.BlockingConnection.channel)
-        mocked_BlockingConnection.close = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_delete = mock.MagicMock(return_value=None)
-        mocked_BlockingConnection.channel.queue_declare = mock.MagicMock(return_value=None)
-        rmq_params = mock.MagicMock(spec=ConnectionParameters)
         rmgr = mock.MagicMock(spec=RPRmgr)
-        tmgr = RPTmgr('test_tmgr', ['pending_queues'], ['completed_queues'], 
-                     rmgr, rmq_params)
+
+        RPTmgr._setup_zmq = lambda x, y: None
+        tmgr = RPTmgr('test_tmgr', rmgr, {})
 
         tmgr._log = mocked_Logger
         tmgr._prof = mocked_Profiler
         tmgr._uid = 'tmgr.0000'
         tmgr._rmgr = 'test_rmgr'
-        tmgr._rmq_conn_params = rmq_params
-        tmgr._pending_queue = ['pending_queues']
-        tmgr._completed_queue = ['completed_queues']
-        tmgr._hb_response_q = 'hb_response_q'
-        tmgr._hb_request_q = 'hb_request_q'
         tmgr._tmgr = _tmgr_side_effect
+        tmgr._zmq_info = {}
 
         tmgr._tmgr_terminate = None
         tmgr._tmgr_process = None
@@ -90,3 +73,4 @@ class TestBase(TestCase):
         finally:
             if tmgr._tmgr_process.is_alive():
                 tmgr._tmgr_process.join()
+

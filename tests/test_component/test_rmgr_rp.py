@@ -43,12 +43,12 @@ class TestBase(TestCase):
         self.assertIsNone(rmgr._pilot)
         self.assertFalse(rmgr._download_rp_profile)
 
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             RPRmgr(resource_desc={'resource': 'localhost'},
                    sid='test.0000',
                    rts_config={"sandbox_cleanup": 'test_sandbox'})
 
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             RPRmgr(resource_desc={'resource': 'localhost'},
                    sid='test.0000', rts_config={"db_cleanup": False})
 

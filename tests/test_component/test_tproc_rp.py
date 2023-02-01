@@ -50,7 +50,7 @@ class TestBase(TestCase):
                          'test_file > pilot:///test_file')
         self.assertEqual(resolve_placeholders(p[1], placeholders, mock.Mock()),
                          'test_file > /home/vivek/t1/test_file')
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             resolve_placeholders(p[2], placeholders, mock.Mock())
 
     # --------------------------------------------------------------------------
@@ -302,7 +302,7 @@ class TestBase(TestCase):
 
         task = mock.Mock()
 
-        with self.assertRaises(ree.TypeError):
+        with self.assertRaises(ree.EnTKTypeError):
             get_input_list_from_task(task, '', mock.Mock())
 
         pipeline_name = 'p1'
@@ -356,7 +356,7 @@ class TestBase(TestCase):
 
         task = mock.Mock()
 
-        with self.assertRaises(ree.TypeError):
+        with self.assertRaises(ree.EnTKTypeError):
             get_output_list_from_task(task, '', mock.Mock())
 
         task = mock.MagicMock(spec=re.Task)

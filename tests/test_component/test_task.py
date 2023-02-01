@@ -78,7 +78,7 @@ class TestTask(TestCase):
         self.assertEqual(task.state, input_data['state'])
         self.assertEqual(task.state_history, input_data['state_history'])
 
-        with self.assertRaises(ree.TypeError):
+        with self.assertRaises(ree.EnTKTypeError):
             # incorrect type of input data
             Task(from_dict='input_str')
 
@@ -280,11 +280,11 @@ class TestTask(TestCase):
             # not correct name format (only [a-zA-Z\.] are allowed in name)
             task.name = 'new_name'
 
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             # unknown state
             task.state = 'UNKNOWN_STATE'
 
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             # state history with unknown state
             task.state_history = ['UNKNOWN_STATE']
 
@@ -312,12 +312,12 @@ class TestTask(TestCase):
         self.assertEqual(len(Task._uids), 1)
 
         task3 = Task({'state': res.SCHEDULED})
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             # validation should be called when the task is in the initial state
             task3._validate()
 
         task4 = Task()
-        with self.assertRaises(ree.MissingError):
+        with self.assertRaises(ree.EnTKMissingError):
             # attribute "executable" is not set
             task4._validate()
 
@@ -358,6 +358,8 @@ class TestTask(TestCase):
             'download_output_data': [],
             'stdout'              : 'Hello World',
             'stderr'              : 'Hello World',
+            'exception'           : '',
+            'exception_detail'    : '',
             'stage_on_error'      : False,
             'exit_code'           : 0,
             'path'                : 'some_path',
@@ -386,7 +388,7 @@ class TestTask(TestCase):
         task.state_history = [res.DONE]
         self.assertEqual(task.state_history, [res.DONE])
 
-        with self.assertRaises(ree.ValueError):
+        with self.assertRaises(ree.EnTKValueError):
             task.state_history = ['WRONG_STATE_NAME']
 
     # --------------------------------------------------------------------------

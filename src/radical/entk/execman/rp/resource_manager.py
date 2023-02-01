@@ -1,20 +1,20 @@
 
-__copyright__ = "Copyright 2017-2018, http://radical.rutgers.edu"
-__author__    = "Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>"
-__license__   = "MIT"
+__copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
+__author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
+__license__   = 'MIT'
 
 import os
 
 import radical.pilot as rp
 
-from ...exceptions           import EnTKError, ValueError
+from ...exceptions           import EnTKError, EnTKValueError
 from ..base.resource_manager import Base_ResourceManager
 
 
 # ------------------------------------------------------------------------------
 #
 class ResourceManager(Base_ResourceManager):
-    """
+    '''
     A resource manager takes the responsibility of placing resource requests on
     different, possibly multiple, DCIs. This ResourceManager uses the RADICAL
     Pilot as the underlying runtime system.
@@ -28,8 +28,8 @@ class ResourceManager(Base_ResourceManager):
                                     |  'cpus'          : 64,
                                     |  'project'       : 'TG-abcxyz',
                                     |  'queue'         : 'abc',    # optional
-                                    |  'access_schema' : 'ssh'  # optional}
-    """
+                                    |  'access_schema' : 'ssh'     # optional}
+    '''
 
     # --------------------------------------------------------------------------
     #
@@ -45,15 +45,15 @@ class ResourceManager(Base_ResourceManager):
         self._pilot               = None
         self._download_rp_profile = False
 
-        if "sandbox_cleanup" not in self._rts_config or \
-           "db_cleanup"      not in self._rts_config:
+        if 'sandbox_cleanup' not in self._rts_config or \
+           'db_cleanup'      not in self._rts_config:
 
-            raise ValueError(obj=self._uid, attribute='config',
-                             expected_value={"sandbox_cleanup": False,
-                                             "db_cleanup"     : False},
+            raise EnTKValueError(obj=self._uid, attribute='config',
+                             expected_value={'sandbox_cleanup': False,
+                                             'db_cleanup'     : False},
                              actual_value=self._rts_config)
 
-        self._logger.info('Created resource manager object: %s' % self._uid)
+        self._logger.info('Created resource manager object: %s', self._uid)
         self._prof.prof('rmgr obj created', uid=self._uid)
 
 
@@ -76,23 +76,23 @@ class ResourceManager(Base_ResourceManager):
     #
     @property
     def session(self):
-        """
+        '''
         :getter: Return the Radical Pilot session currently being used
-        """
+        '''
         return self._session
 
     @property
     def pmgr(self):
-        """
+        '''
         :getter: Return the Radical Pilot manager currently being used
-        """
+        '''
         return self._pmgr
 
     @property
     def pilot(self):
-        """
+        '''
         :getter: Return the submitted Pilot
-        """
+        '''
         return self._pilot
 
 
@@ -100,9 +100,9 @@ class ResourceManager(Base_ResourceManager):
     # --------------------------------------------------------------------------
     #
     def get_rts_info(self):
-        """
+        '''
         **Purpose**: Return the RTS information as a dict.
-        """
+        '''
 
         return self._pilot.as_dict()
 
@@ -110,10 +110,10 @@ class ResourceManager(Base_ResourceManager):
     # --------------------------------------------------------------------------
     #
     def get_resource_allocation_state(self):
-        """
+        '''
         **Purpose**: Get the state of the resource allocation
 
-        """
+        '''
         # TODO: add case where there is no pilot
         if self._pilot:
             return self._pilot.state
@@ -122,10 +122,10 @@ class ResourceManager(Base_ResourceManager):
     # --------------------------------------------------------------------------
     #
     def get_completed_states(self):
-        """
+        '''
         **Purpose**: return states which signal completed resource allocation
 
-        """
+        '''
 
         return rp.FINAL
 
@@ -133,10 +133,10 @@ class ResourceManager(Base_ResourceManager):
     # --------------------------------------------------------------------------
     #
     def submit_resource_request(self):
-        """
+        '''
         **Purpose**: Create and submits a RADICAL Pilot Job as per the user
                      provided resource description
-        """
+        '''
 
         try:
 
@@ -145,7 +145,7 @@ class ResourceManager(Base_ResourceManager):
             # ------------------------------------------------------------------
             def _pilot_state_cb(pilot, state):
 
-                self._logger.info('Pilot %s state: %s' % (pilot.uid, state))
+                self._logger.info('Pilot %s state: %s', pilot.uid, state)
 
                 if state == rp.FAILED:
                     self._logger.error('Pilot has failed')
@@ -223,9 +223,9 @@ class ResourceManager(Base_ResourceManager):
     # --------------------------------------------------------------------------
     #
     def _terminate_resource_request(self):
-        """
+        '''
         **Purpose**: Cancel the RADICAL Pilot Job
-        """
+        '''
 
         try:
 

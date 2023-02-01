@@ -1,8 +1,6 @@
 # pylint: disable=protected-access, unused-argument
 # pylint: disable=no-value-for-parameter
 
-import os
-
 from unittest import TestCase
 
 # from hypothesis import given, settings, strategies as st
@@ -34,47 +32,33 @@ class TestBase(TestCase):
     def test_wfp_initialization(self, mocked_generate_id, mocked_getcwd,
                                 mocked_Logger, mocked_Profiler, mocked_Reporter):
 
+        wfp = WFprocessor._setup_zmq = lambda x, y: True
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         self.assertIsNone(wfp._wfp_process)
         self.assertIsNone(wfp._enqueue_thread)
         self.assertIsNone(wfp._dequeue_thread)
         self.assertIsNone(wfp._enqueue_thread_terminate)
         self.assertIsNone(wfp._dequeue_thread_terminate)
-        self.assertEqual(wfp._rmq_ping_interval, 10)
         self.assertEqual(wfp._path, 'test_folder/test_sid')
         self.assertEqual(wfp._workflow, 'workflow')
 
 
         self.assertEqual(wfp._sid, 'test_sid')
-        self.assertEqual(wfp._pending_queue, 'pending_queue')
-        self.assertEqual(wfp._completed_queue, 'completed_queue')
         self.assertFalse(wfp._resubmit_failed)
-        self.assertEqual(wfp._rmq_conn_params, 'test_rmq_params')
         self.assertEqual(wfp._uid, 'wfp.0000')
 
-        os.environ['RMQ_PING_INTERVAL'] = '20'
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=True)
+                resubmit_failed=True, zmq_info={})
 
         self.assertIsNone(wfp._wfp_process)
         self.assertIsNone(wfp._enqueue_thread)
         self.assertIsNone(wfp._dequeue_thread)
-        self.assertEqual(wfp._rmq_ping_interval, 20)
         self.assertEqual(wfp._path, 'test_folder/test_sid')
         self.assertEqual(wfp._workflow, 'workflow')
         self.assertEqual(wfp._sid, 'test_sid')
-        self.assertEqual(wfp._pending_queue, 'pending_queue')
-        self.assertEqual(wfp._completed_queue, 'completed_queue')
         self.assertTrue(wfp._resubmit_failed)
-        self.assertEqual(wfp._rmq_conn_params, 'test_rmq_params')
         self.assertEqual(wfp._uid, 'wfp.0000')
 
     # ------------------------------------------------------------------------------
@@ -84,10 +68,7 @@ class TestBase(TestCase):
     def test_workflow(self, mocked_init, mocked_Logger):
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._workflow = 'test_workflow'
 
@@ -100,10 +81,7 @@ class TestBase(TestCase):
     def test_wfp_workflow_incomplete(self, mocked_init, mocked_Logger):
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         pipe = mock.Mock()
         pipe.lock = mt.Lock()
@@ -115,10 +93,7 @@ class TestBase(TestCase):
         self.assertFalse(wfp.workflow_incomplete())
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
         with self.assertRaises(Exception):
             wfp.workflow_incomplete()
 
@@ -128,10 +103,7 @@ class TestBase(TestCase):
     def test_check_processor(self, mocked_init):
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._enqueue_thread = None
         wfp._dequeue_thread = None
@@ -163,10 +135,7 @@ class TestBase(TestCase):
     def test_enqueue(self, mocked_init, mocked_Logger, mocked_Profiler,
                      mocked_sleep, mocked_create_workload, mocked_execute_workload):
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         wfp._prof = mocked_Profiler
         wfp._uid = 'wfp.0000'
@@ -185,10 +154,7 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Reporter')
     def test_advance(self, mocked_init, mocked_Logger, mocked_Reporter):
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         global_profs = []
 
@@ -225,10 +191,7 @@ class TestBase(TestCase):
     def test_create_workload(self, mocked_init, mocked_advance, mocked_Logger,
                              mocked_Reporter):
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._resubmit_failed = False
         pipe = mock.Mock()
@@ -261,10 +224,8 @@ class TestBase(TestCase):
     @mock.patch('json.dumps', return_value=None)
     @mock.patch('radical.utils.Logger')
     @mock.patch('radical.utils.Reporter')
-    @mock.patch('pika.BlockingConnection')
     def test_execute_workload(self, mocked_init, mocked_dumps,
-                              mocked_Logger, mocked_Reporter,
-                              mocked_BlockingConnection):
+                              mocked_Logger, mocked_Reporter):
 
         global_advs = []
 
@@ -273,14 +234,10 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
-        wfp._rmq_conn_params = 'test_rmq_params'
-        wfp._pending_queue = ['test_queue']
+                resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
+        wfp._zmq_queue = mock.MagicMock()
 
         stage = mock.Mock()
         stage.uid = 'stage.0000'
@@ -311,10 +268,7 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                          resubmit_failed=False, zmq_info={})
         wfp._logger = mocked_Logger
         wfp._advance = mock.MagicMock(side_effect=_advance_side_effect)
 
@@ -368,10 +322,7 @@ class TestBase(TestCase):
             global_advs.add((obj, obj_type, state))
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
         wfp._prof = mocked_Profiler
@@ -427,10 +378,7 @@ class TestBase(TestCase):
             global_advs.append([obj, obj_type, state])
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
@@ -501,10 +449,7 @@ class TestBase(TestCase):
             global_boolean['enqueue'] = True
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger
@@ -554,10 +499,7 @@ class TestBase(TestCase):
             global_boolean['enqueue'] = True
 
         wfp = WFprocessor(sid='test_sid', workflow='workflow',
-                          pending_queue='pending_queue',
-                          completed_queue='completed_queue',
-                          rmq_conn_params='test_rmq_params',
-                          resubmit_failed=False)
+                resubmit_failed=False, zmq_info={})
 
         wfp._uid = 'wfp.0000'
         wfp._logger = mocked_Logger

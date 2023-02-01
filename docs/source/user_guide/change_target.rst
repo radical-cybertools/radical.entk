@@ -5,13 +5,13 @@
 Changing Target Machine
 ***********************
 
-All of our examples so far have been run locally. Its time to run something on
-a HPC! One of the features of Ensemble Toolkit is that you can submit tasks on
-another machine remotely from your local machine. But this has some requirements,
-you need to have passwordless ssh or gsissh access to the target machine. If you
-don't have such access, we discuss the setup :ref:`here <ssh_gsissh_setup>`. You
-also need to confirm that RP and Ensemble Toolkit are supported on this machine.
-A list of supported machines and how to get support for new machines is
+All of our examples so far have been run locally. Its time to run something on a
+HPC! One of the features of Ensemble Toolkit is that you can submit tasks on
+another machine remotely from your local machine. But this has some
+requirements, you need to have passwordless ssh access to the target machine. If
+you don't have such access, we discuss the setup :ref:`here <ssh_gsissh_setup>`.
+You also need to confirm that RP and Ensemble Toolkit are supported on this
+machine. A list of supported machines and how to get support for new machines is
 discussed :ref:`here <entk>`.
 
 .. note:: The reader is assumed to be familiar with the :ref:`PST Model <app_model>` and to have read through
@@ -20,9 +20,11 @@ discussed :ref:`here <entk>`.
 .. note:: This chapter assumes that you have successfully installed Ensemble Toolkit, if not see :ref:`Installation`.
 
 
-Once you have passwordless access to another machine, switching from one target machine to another is quite simple.
-We simply re-describe the resource dictionary that is used to create the Resource Manager. For example, in order to
-run on the XSEDE Stampede cluster, we describe the resource dictionary as follows:
+Once you have passwordless access to another machine, switching from one target
+machine to another is quite simple. We simply re-describe the resource
+dictionary that is used to create the Resource Manager. For example, in order to
+run on the ACCESS Stampede cluster, we describe the resource dictionary as
+follows:
 
 .. literalinclude:: ../../../examples/user_guide/change_target.py
     :language: python

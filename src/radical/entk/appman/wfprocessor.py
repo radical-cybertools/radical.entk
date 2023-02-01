@@ -5,14 +5,13 @@ __license__   = "MIT"
 
 
 import os
-import json
-import pika
-import time
 import threading     as mt
 
 import radical.utils as ru
 
-from ..           import states, Task
+from ..states     import INITIAL, FINAL
+from ..states     import SUSPENDED, SCHEDULED, SCHEDULING, DONE, FAILED
+from ..task       import Task
 from ..exceptions import EnTKError
 
 
@@ -28,13 +27,10 @@ class WFprocessor(object):
     PST accordingly.
 
     :Arguments:
-        :sid:             (str) session id used by the profiler and loggers
-        :workflow:        (set) REFERENCE of the AppManager's workflow
-        :pending_queue:   (list) queues to hold pending tasks
-        :completed_queue: (list) queues to hold completed tasks
+        :sid:             (str)  session id used by the profiler and loggers
+        :workflow:        (set)  REFERENCE of the AppManager's workflow
         :resubmit_failed: (bool) True if failed tasks should be resubmitted
-        :rmq_conn_params: (pika.connection.ConnectionParameters) object of
-                          parameters necessary to connect to RabbitMQ
+        :zmq_info:        (dict) zmq queue addresses
     """
 
     # --------------------------------------------------------------------------
@@ -42,17 +38,12 @@ class WFprocessor(object):
     def __init__(self,
                  sid,
                  workflow,
-                 pending_queue,
-                 completed_queue,
                  resubmit_failed,
-                 rmq_conn_params):
+                 zmq_info):
 
         # Mandatory arguments
         self._sid             = sid
-        self._pending_queue   = pending_queue
-        self._completed_queue = completed_queue
         self._resubmit_failed = resubmit_failed
-        self._rmq_conn_params = rmq_conn_params
 
         # Assign validated workflow
         self._workflow = workflow
@@ -72,10 +63,21 @@ class WFprocessor(object):
         self._dequeue_thread    = None
         self._enqueue_thread_terminate = None
         self._dequeue_thread_terminate = None
-        self._rmq_ping_interval = int(os.getenv('RMQ_PING_INTERVAL', '10'))
 
-        self._logger.info('Created WFProcessor object: %s' % self._uid)
+        self._logger.info('Created WFProcessor object: %s', self._uid)
         self._prof.prof('create_wfp', uid=self._uid)
+
+        self._setup_zmq(zmq_info)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _setup_zmq(self, zmq_info):
+
+        sid = self._sid
+        self._zmq_queue = {
+                'put' : ru.zmq.Putter(sid, url=zmq_info['put'], path=sid),
+                'get' : ru.zmq.Getter(sid, url=zmq_info['get'], path=sid)}
 
 
     # --------------------------------------------------------------------------
@@ -95,9 +97,16 @@ class WFprocessor(object):
         obj.state = new_state
 
         self._prof.prof('advance', uid=obj.uid, state=obj.state, msg=msg)
+        self._logger.info('Transition %s to state %s', obj.uid, new_state)
+
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
-        self._logger.info('Transition %s to state %s' % (obj.uid, new_state))
+
+        if obj_type == 'Task' and obj.state == FAILED:
+            self._report.error('task %s failed: %s\n%s\n'
+                              % (obj.uid, obj.exception, obj.exception_detail))
+
+        self._logger.info('Transition %s to state %s', obj.uid, new_state)
 
 
     # --------------------------------------------------------------------------
@@ -132,15 +141,15 @@ class WFprocessor(object):
 
                 # If Pipeline is in the final state or suspended, we
                 # skip processing it.
-                if pipe.state in states.FINAL or  \
+                if pipe.state in FINAL or  \
                    pipe.completed or \
-                   pipe.state == states.SUSPENDED:
+                   pipe.state == SUSPENDED:
                     continue
 
-                if pipe.state == states.INITIAL:
+                if pipe.state == INITIAL:
 
                     # Set state of pipeline to SCHEDULING if it is in INITIAL
-                    self._advance(pipe, 'Pipeline', states.SCHEDULING)
+                    self._advance(pipe, 'Pipeline', SCHEDULING)
 
                 # Get the next stage of this pipeline to process
                 exec_stage = pipe.stages[pipe.current_stage - 1]
@@ -151,24 +160,24 @@ class WFprocessor(object):
                     exec_stage.parent_pipeline['name'] = pipe.name
 
                 # If its a new stage, update its state
-                if exec_stage.state == states.INITIAL:
+                if exec_stage.state == INITIAL:
 
-                    self._advance(exec_stage, 'Stage', states.SCHEDULING)
+                    self._advance(exec_stage, 'Stage', SCHEDULING)
 
                 # Get all tasks of a stage in SCHEDULED state
                 exec_tasks = list()
-                if exec_stage.state == states.SCHEDULING:
+                if exec_stage.state == SCHEDULING:
                     exec_tasks = exec_stage.tasks
 
                 for exec_task in exec_tasks:
 
                     state = exec_task.state
-                    if   state == states.INITIAL or \
-                        (state == states.FAILED and self._resubmit_failed):
+                    if   state == INITIAL or \
+                        (state == FAILED and self._resubmit_failed):
 
                         # Set state of Tasks in current Stage
                         # to SCHEDULING
-                        self._advance(exec_task, 'Task', states.SCHEDULING)
+                        self._advance(exec_task, 'Task', SCHEDULING)
 
                         # Store the tasks from different pipelines
                         # into our workload list. All tasks will
@@ -180,7 +189,7 @@ class WFprocessor(object):
                         # above tasks belong to also need to be
                         # updated. If its a task that failed, the
                         # stage is already in the correct state
-                        if exec_task.state == states.FAILED:
+                        if exec_task.state == FAILED:
                             continue
 
                         if exec_stage not in scheduled_stages:
@@ -201,56 +210,40 @@ class WFprocessor(object):
         for pipe in self._workflow:
 
             with pipe.lock:
-                if pipe.state in states.FINAL or  \
+                if pipe.state in FINAL or  \
                    pipe.completed or \
-                   pipe.state == states.SUSPENDED:
+                   pipe.state == SUSPENDED:
                     continue
 
                 curr_stage = pipe.stages[pipe.current_stage - 1]
                 for task in curr_stage.tasks:
-                    if task.state not in states.FINAL:
-                        self._advance(task, 'Task', states.INITIAL)
-                self._advance(curr_stage, 'Stage', states.SCHEDULING)
+                    if task.state not in FINAL:
+                        self._advance(task, 'Task', INITIAL)
+                self._advance(curr_stage, 'Stage', SCHEDULING)
 
     # --------------------------------------------------------------------------
     #
     def _execute_workload(self, workload, scheduled_stages):
 
-        # Tasks of the workload need to be converted into a dict
-        # as pika can send and receive only json/dict data
-        wl_json = {'type': 'workload',
-                   'body': [task.as_dict() for task in workload]}
-
-        wl_json = json.dumps(wl_json)
-
-        # Acquire a connection+channel to the rmq server
-        mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-        mq_channel = mq_connection.channel()
+        msg = {'type': 'workload',
+               'body': [task.as_dict() for task in workload]}
 
         # Send the workload to the pending queue
-        mq_channel.basic_publish(exchange='',
-                                 routing_key=self._pending_queue[0],
-                                 body=wl_json
-                                 # TODO: Make durability parameters
-                                 # as a config parameter and then
-                                 # enable the following accordingly
-                                 # properties=pika.BasicProperties(
-                                 # make message persistent
-                                 # delivery_mode = 2)
-                                )
+        self._zmq_queue['put'].put(qname='pending', msgs=[msg])
+
         self._logger.debug('Workload submitted to Task Manager')
 
         # Update the state of the tasks in the workload
         for task in workload:
 
             # Set state of Tasks in current Stage to SCHEDULED
-            self._advance(task, 'Task', states.SCHEDULED)
+            self._advance(task, 'Task', SCHEDULED)
 
         # Update the state of the stages from which tasks have
         # been scheduled
         if scheduled_stages:
             for executable_stage in scheduled_stages:
-                self._advance(executable_stage, 'Stage', states.SCHEDULED)
+                self._advance(executable_stage, 'Stage', SCHEDULED)
 
 
     # --------------------------------------------------------------------------
@@ -273,7 +266,6 @@ class WFprocessor(object):
                 # Raise an exception while running tests
                 ru.raise_on(tag='enqueue_fail')
 
-                time.sleep(3)
                 workload, scheduled_stages = self._create_workload()
 
                 # If there are tasks to be executed
@@ -314,7 +306,7 @@ class WFprocessor(object):
 
                 # Skip pipelines that have completed or are
                 # currently suspended
-                if pipe.completed or pipe.state == states.SUSPENDED:
+                if pipe.completed or pipe.state == SUSPENDED:
                     continue
 
                 # Skip pipelines that don't match the UID
@@ -322,13 +314,13 @@ class WFprocessor(object):
                 if pipe.uid != deq_task.parent_pipeline['uid']:
                     continue
 
-                self._logger.debug('Found parent pipeline: %s' %
-                                    pipe.uid)
+                self._logger.debug('Found parent pipeline: %s', pipe.uid)
 
                 # Next search across all stages of a matching
                 # pipelines
-                assert(pipe.stages)
+                assert pipe.stages
 
+                stage = None
                 for stage in pipe.stages:
 
                     # Skip stages that don't match the UID
@@ -336,8 +328,7 @@ class WFprocessor(object):
                     if stage.uid != deq_task.parent_stage['uid']:
                         continue
 
-                    self._logger.debug('Found parent stage: %s' %
-                                        stage.uid)
+                    self._logger.debug('Found parent stage: %s', stage.uid)
 
                     # Search across all tasks of matching stage
                     for task in stage.tasks:
@@ -351,15 +342,17 @@ class WFprocessor(object):
                         # We are only concerned about state of task and not
                         # deq_task
                         if deq_task.exit_code == 0:
-                            task_state = states.DONE
+                            task_state = DONE
                         elif deq_task.exit_code == 1:
-                            task_state = states.FAILED
+                            task_state = FAILED
                         else:
                             task_state = deq_task.state
 
-                        if task.state == states.FAILED and \
-                            self._resubmit_failed:
-                            task_state = states.INITIAL
+                        task.exception        = deq_task.exception
+                        task.exception_detail = deq_task.exception_detail
+
+                        if task.state == FAILED and self._resubmit_failed:
+                            task_state = INITIAL
                         self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
@@ -370,14 +363,15 @@ class WFprocessor(object):
                     # iterations needed for the current task
                     break
 
-                assert(stage)
+                assert stage
+
                 # Check if current stage has completed
                 # If yes, we need to (i) check for post execs to
                 # be executed and (ii) check if it is the last
                 # stage of the pipeline -- update pipeline
                 # state if yes.
-                if stage._check_stage_complete():
-                    self._advance(stage, 'Stage', states.DONE)
+                if stage._check_stage_complete():        # pylint: disable=W0212
+                    self._advance(stage, 'Stage', DONE)
 
                     # Check if the current stage has a post-exec
                     # that needs to be executed
@@ -385,16 +379,16 @@ class WFprocessor(object):
                         self._execute_post_exec(pipe, stage)
 
                     # if pipeline got suspended, advance state accordingly
-                    if pipe.state == states.SUSPENDED:
-                        self._advance(pipe, 'Pipeline', states.SUSPENDED)
+                    if pipe.state == SUSPENDED:
+                        self._advance(pipe, 'Pipeline', SUSPENDED)
 
                     else:
                         # otherwise perform normal stage progression
-                        pipe._increment_stage()
+                        pipe._increment_stage()          # pylint: disable=W0212
 
                     # If pipeline has completed, advance state to DONE
                     if pipe.completed:
-                        self._advance(pipe, 'Pipeline', states.DONE)
+                        self._advance(pipe, 'Pipeline', DONE)
 
 
                 # Found the pipeline and processed it -- no more
@@ -410,15 +404,15 @@ class WFprocessor(object):
         pipeline.
         """
         try:
-            self._logger.info('Executing post-exec for stage %s' % stage.uid)
+            self._logger.info('Executing post-exec for stage %s', stage.uid)
             self._prof.prof('post_exec_start', uid=self._uid)
             resumed_pipe_uids = stage.post_exec()
-            self._logger.info('Post-exec executed for stage %s' % stage.uid)
+            self._logger.info('Post-exec executed for stage %s', stage.uid)
             self._prof.prof('post_exec_stop', uid=self._uid)
 
 
         except Exception as ex:
-            self._logger.exception('post_exec of stage %s failed' % stage.uid)
+            self._logger.exception('post_exec of stage %s failed', stage.uid)
             self._prof.prof('post_exec_fail', uid=self._uid)
             raise EnTKError(ex) from ex
 
@@ -434,10 +428,10 @@ class WFprocessor(object):
 
                         # Resumed pipelines already have the correct state,
                         # they just need to be synced with the AppMgr.
-                        r_pipe._increment_stage()
+                        r_pipe._increment_stage()        # pylint: disable=W0212
 
                         if r_pipe.completed:
-                            self._advance(r_pipe, 'Pipeline', states.DONE)
+                            self._advance(r_pipe, 'Pipeline', DONE)
 
                         else:
                             self._advance(r_pipe, 'Pipeline', r_pipe.state)
@@ -458,37 +452,19 @@ class WFprocessor(object):
             self._prof.prof('deq_start', uid=self._uid)
             self._logger.info('Dequeue thread started')
 
-            # Acquire a connection+channel to the rmq server
-            mq_connection = pika.BlockingConnection(self._rmq_conn_params)
-            mq_channel = mq_connection.channel()
-
-            last = time.time()
             while not self._dequeue_thread_terminate.is_set():
 
-                # Raise an exception while running tests
-                ru.raise_on(tag='dequeue_fail')
+                msgs = self._zmq_queue['get'].get_nowait(qname='completed',
+                                                         timeout=100)
+                if msgs:
+                    for msg in msgs:
 
-                method_frame, _ , body = mq_channel.basic_get(
-                    queue=self._completed_queue[0])
+                        deq_task = Task(from_dict=msg)
 
-                # When there is no msg received, body is None
-                if not body:
-                    continue
+                        self._logger.info('Got finished task %s from queue',
+                                          deq_task.uid)
+                        self._update_dequeued_task(deq_task)
 
-                # Acknowledge the received message
-                mq_channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-                # Create a  task from the received msg
-                deq_task = Task(from_dict=json.loads(body))
-                self._logger.info('Got finished task %s from queue'
-                                  % (deq_task.uid))
-                self._update_dequeued_task(deq_task)
-
-                # Appease pika cos it thinks the connection is dead
-                now = time.time()
-                if now - last >= self._rmq_ping_interval:
-                    mq_connection.process_data_events()
-                    last = now
 
             self._logger.info('Terminated dequeue thread')
             self._prof.prof('deq_stop', uid=self._uid)
@@ -507,11 +483,6 @@ class WFprocessor(object):
 
 
         finally:
-            try:
-                mq_connection.close()
-            except Exception as ex:
-                self._logger.warning('mq_connection close failed, %s' % ex)
-            self._logger.debug('closed mq_connection')
             self.terminate_processor()
 
 
@@ -624,14 +595,13 @@ class WFprocessor(object):
     #
     def check_processor(self):
 
-        if self._enqueue_thread is None or self._dequeue_thread is None:
-            return False
+        if self._enqueue_thread and \
+           self._dequeue_thread and \
+           self._enqueue_thread.is_alive() and \
+           self._dequeue_thread.is_alive():
+            return True
 
-        if not self._enqueue_thread.is_alive() or \
-                not self._dequeue_thread.is_alive():
-            return False
-
-        return True
+        return False
 
 
 # ------------------------------------------------------------------------------
