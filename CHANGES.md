@@ -6,6 +6,17 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.30.0 Release                                                        2023-02-01
+--------------------------------------------------------------------------------
+  
+  - replace RMQ communication with ZMQ
+  - add attribute `exclusive` to `Task.tags` (in sync with RP tags representation)
+  - add scaling examples
+  - comment some debug logs, always set exception attribs
+  - fix Mock backend
+  - inform RE about RP level task errors
+
+
 1.20.0 Release                                                        2022-12-16
 --------------------------------------------------------------------------------
 
