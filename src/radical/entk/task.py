@@ -81,14 +81,14 @@ class GpuReqs(ReqsMixin, ru.TypedDict):
     _check = True
 
     _schema = {
-        'gpu_processes'   : int,
+        'gpu_processes'   : float,
         'gpu_process_type': str,
         'gpu_threads'     : int,
         'gpu_thread_type' : str
     }
 
     _defaults = {
-        'gpu_processes'   : 0,
+        'gpu_processes'   : 0.,
         'gpu_process_type': None,
         'gpu_threads'     : 1,
         'gpu_thread_type' : None

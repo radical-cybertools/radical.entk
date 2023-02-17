@@ -71,8 +71,6 @@ class TestBase(TestCase):
         p = Pipeline()
 
         data_type = [l, i, b, se]
-        print(data_type)
-
         for data in data_type:
             if not isinstance(data, str):
                 with self.assertRaises(EnTKTypeError):
