@@ -54,7 +54,7 @@ class TestBase(TestCase):
         task.cpu_reqs        = {'cpu_processes'   : 5,
                                 'cpu_threads'     : 6,
                                 'cpu_thread_type' : rp.OpenMP}
-        task.gpu_reqs        = {'gpu_processes'   : 1,
+        task.gpu_reqs        = {'gpu_processes'   : 1.,
                                 'gpu_process_type': rp.CUDA}
 
         task.lfs_per_process = 235
@@ -77,7 +77,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.ranks,          5)
         self.assertEqual(test_td.cores_per_rank, 6)
         self.assertEqual(test_td.threading_type, rp.OpenMP)
-        self.assertEqual(test_td.gpus_per_rank,  1)
+        self.assertEqual(test_td.gpus_per_rank,  1.)
         self.assertEqual(test_td.gpu_type,       rp.CUDA)
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.stdout, 'stdout')
