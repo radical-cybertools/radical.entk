@@ -173,7 +173,7 @@ class TestBase(TestCase):
         task.cpu_reqs        = {'cpu_processes'   : 5,
                                 'cpu_threads'     : 6,
                                 'cpu_thread_type' : ''}
-        task.gpu_reqs        = {'gpu_processes'   : 1,
+        task.gpu_reqs        = {'gpu_processes'   : 1.,
                                 'gpu_process_type': ''}
         task.tags            = None
         task.lfs_per_process = 235
@@ -202,7 +202,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.ranks,          5)
         self.assertEqual(test_td.cores_per_rank, 6)
         self.assertEqual(test_td.threading_type, rp.POSIX)
-        self.assertEqual(test_td.gpus_per_rank,  1)
+        self.assertEqual(test_td.gpus_per_rank,  1.)
         self.assertEqual(test_td.gpu_type,       '')
         self.assertEqual(test_td.lfs_per_process, 235)
         self.assertEqual(test_td.mem_per_process, 128)
@@ -217,7 +217,7 @@ class TestBase(TestCase):
         task.cpu_reqs = {'cpu_processes'   : 1,
                          'cpu_threads'     : 2,
                          'cpu_thread_type' : None}
-        task.gpu_reqs = {'gpu_processes'   : 3,
+        task.gpu_reqs = {'gpu_processes'   : 3.,
                          'gpu_process_type': None}
 
         test_td = create_td_from_task(task=task,
@@ -230,7 +230,7 @@ class TestBase(TestCase):
         self.assertEqual(test_td.ranks,          1)
         self.assertEqual(test_td.cores_per_rank, 2)
         self.assertEqual(test_td.threading_type, rp.POSIX)
-        self.assertEqual(test_td.gpus_per_rank,  3)
+        self.assertEqual(test_td.gpus_per_rank,  3.)
         self.assertEqual(test_td.gpu_type,       '')
 
     # --------------------------------------------------------------------------

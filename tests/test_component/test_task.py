@@ -43,7 +43,7 @@ class TestTask(TestCase):
         self.assertIsNone(t.cpu_reqs['cpu_process_type'])
         self.assertEqual(t.cpu_reqs['cpu_threads'], 1)
         self.assertIsNone(t.cpu_reqs['cpu_thread_type'])
-        self.assertEqual(t.gpu_reqs['gpu_processes'], 0)
+        self.assertEqual(t.gpu_reqs['gpu_processes'], 0.)
         self.assertIsNone(t.gpu_reqs['gpu_process_type'])
         self.assertEqual(t.gpu_reqs['gpu_threads'], 1)
         self.assertIsNone(t.gpu_reqs['gpu_thread_type'])
@@ -145,7 +145,7 @@ class TestTask(TestCase):
     #
     def test_gpu_reqs(self):
 
-        gpu_reqs = {'gpu_processes'   : 2,
+        gpu_reqs = {'gpu_processes'   : 2.,
                     'gpu_process_type': None,
                     'gpu_threads'     : 1,
                     'gpu_thread_type' : 'OpenMP'}
@@ -231,7 +231,7 @@ class TestTask(TestCase):
                            'cpu_process_type': None,
                            'cpu_threads'     : 1,
                            'cpu_thread_type' : None},
-            'gpu_reqs'  : {'gpu_processes'   : 0,
+            'gpu_reqs'  : {'gpu_processes'   : 0.,
                            'gpu_process_type': None,
                            'gpu_threads'     : 0,
                            'gpu_thread_type' : None}
@@ -342,7 +342,7 @@ class TestTask(TestCase):
                                      'cpu_process_type': 'POSIX',
                                      'cpu_threads'     : 1,
                                      'cpu_thread_type' : 'POSIX'},
-            'gpu_reqs'            : {'gpu_processes'   : 0,
+            'gpu_reqs'            : {'gpu_processes'   : 0.,
                                      'gpu_process_type': 'POSIX',
                                      'gpu_threads'     : 0,
                                      'gpu_thread_type' : 'POSIX'},
