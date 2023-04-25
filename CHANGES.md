@@ -6,6 +6,13 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.33.0 Release                                                        2023-04-25
+--------------------------------------------------------------------------------
+  
+  - enable GPU sharing (convert `gpu_process` from type `int` into `float`)
+  - updated requirement for RP (>=1.22)
+
+
 1.30.0 Release                                                        2023-02-01
 --------------------------------------------------------------------------------
   
