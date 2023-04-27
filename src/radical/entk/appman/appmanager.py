@@ -107,6 +107,7 @@ class AppManager(object):
 
         # Global parameters to have default values
         self._resource_desc   = None
+        self._services        = list()
         self._task_manager    = None
         self._workflow        = None
         self._workflows       = list()
@@ -190,31 +191,45 @@ class AppManager(object):
 
         return self._sid
 
+
     # --------------------------------------------------------------------------
     #
     @property
     def resource_desc(self):
         '''
-        The resource description is a dictionary that holds information about the
-        reousrce that will be used to execute a workflow.
+        The resource description is a dictionary that holds information about
+        the resource(s) that will be used to execute the workflow.
 
-        The following keys are mandatory in all resource descritpions:
-            | 'resource'      : Label of the resource that will be used.
-            | 'runtime'       : Amount of time the workflow is expected to execute.
-            | 'cores'         : Number of CPU cores.
+        The following keys are mandatory in all resource descriptions:
+            | 'resource'      : Label of the platform with resources.
+            | 'walltime'      : Amount of time the workflow is expected to run.
+            | 'cpus'          : Number of CPU cores/threads.
 
         Optional keys include:
             | 'project'       : The project that will be charged.
-            | 'gpus'          : Number of GPU devices to be used by the workflow.
+            | 'gpus'          : Number of GPUs to be used by the workflow.
             | 'access_schema' : The key of an access mechanism to use.
-            | 'queue'         : The name of the job queue RE will use to execute the workflow
-            | 'job_name'      : self._job_name
+            | 'queue'         : The name of the batch queue.
+            | 'job_name'      : The specific name of a batch job.
 
         :getter: Returns the resource description
         :setter: Assigns a resource description
         '''
 
         return self._resource_desc
+
+
+    # --------------------------------------------------------------------------
+    #
+    @property
+    def services(self):
+        '''
+        :getter: Returns the list of tasks used to start "global" services
+        :setter: Assigns a list of service tasks, which are launched before
+        any stage starts and run during the whole workflow execution
+        '''
+
+        return self._rmgr.services if self._rmgr else self._services
 
 
     # --------------------------------------------------------------------------
@@ -239,6 +254,9 @@ class AppManager(object):
 
         return self._workflows
 
+
+    # --------------------------------------------------------------------------
+    #
     @property
     def shared_data(self):
         '''
@@ -298,11 +316,34 @@ class AppManager(object):
             self._logger.error('Could not validate resource description')
             raise EnTKError('Could not validate resource description')
 
+        self._resource_desc = value
+
         self._rmgr._populate()
         self._rmgr.shared_data = self._shared_data
         self._rmgr.outputs     = self._outputs
 
+        if self._services:
+            self._rmgr.services = self._services
+
         self._report.ok('>>ok\n')
+
+
+    # --------------------------------------------------------------------------
+    #
+    @services.setter
+    def services(self, tasks):
+
+        if not isinstance(tasks, list):
+            tasks = [tasks]
+
+        for task in tasks:
+            if not isinstance(task, Task):
+                raise EnTKTypeError(expected_type=Task,
+                                    actual_type=type(task))
+
+        self._services = tasks
+        if self._rmgr:
+            self._rmgr.services = tasks
 
 
     # --------------------------------------------------------------------------
