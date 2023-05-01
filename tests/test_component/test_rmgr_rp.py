@@ -156,6 +156,7 @@ class TestBase(TestCase):
         rmgr._outputs = 'test_outputs'
         rmgr._job_name = None
         rmgr._shared_data = ['test/file1.txt > file1.txt', 'file2.txt']
+        rmgr._services = []
 
         rmgr.submit_resource_request()
         self.assertEqual(rmgr._session, 'test_session')
