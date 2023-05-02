@@ -7,13 +7,8 @@ import multiprocessing       as mp
 import threading             as mt
 import hypothesis.strategies as st
 
-from unittest   import TestCase
+from unittest   import mock, TestCase
 from hypothesis import given, settings
-
-try:
-    import mock
-except ImportError:
-    from unittest import mock
 
 import radical.utils           as ru
 import radical.entk            as re
@@ -34,9 +29,11 @@ class TestBase(TestCase):
                                     'autoterminate'  : st.booleans(),
                                     'write_workflow' : st.booleans()}))
     @settings(max_examples=10)
-    def test_amgr_read_config(self, mocked_init, d):
+    def test_amgr_read_config(self, d, mocked_init):
 
         amgr = Amgr()
+        amgr._rmgr     = None
+        amgr._services = []
 
         d['rts']        = 'mock'
         d['rts_config'] = {'sandbox_cleanup': True,
@@ -59,6 +56,8 @@ class TestBase(TestCase):
         self.assertEqual(amgr._rts,             d['rts'])
         self.assertEqual(amgr._rts_config,      d['rts_config'])
 
+        self.assertEqual(amgr.services, [])
+
         d['rts'] = 'another'
         ru.write_json(d, './config.json')
         with self.assertRaises(ValueError):
@@ -72,6 +71,22 @@ class TestBase(TestCase):
                               rts_config=None,
                               base_path=None)
 
+        # test configuring services (service tasks)
+
+        with self.assertRaises(ree.EnTKTypeError):
+            # only re.Task objects are acceptable
+            amgr.services = [None]
+
+        services = [re.Task()]
+        amgr.services = services
+        # without initialized ResourceManager
+        self.assertEqual(amgr._services, services)
+
+        amgr._rmgr = mock.Mock()
+        amgr.services = services
+        # with initialized ResourceManager
+        self.assertEqual(amgr._rmgr.services, services)
+
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Amgr, '__init__', return_value=None)
@@ -82,7 +97,11 @@ class TestBase(TestCase):
     @settings(max_examples=10)
     def test_amgr_read_config2(self, mocked_init, d2):
 
+        services_mocked = [mock.Mock()]
+
         amgr = Amgr()
+        amgr._rmgr          = mock.Mock()
+        amgr._rmgr.services = services_mocked
 
         amgr._read_config(config_path='./',
                           reattempts=d2['reattempts'],
@@ -101,6 +120,8 @@ class TestBase(TestCase):
         self.assertEqual(amgr._rts,             'mock')
         self.assertEqual(amgr._rts_config,      {'sandbox_cleanup': True,
                                                  'db_cleanup'     : True})
+
+        self.assertEqual(amgr.services, services_mocked)
 
     # --------------------------------------------------------------------------
     #
