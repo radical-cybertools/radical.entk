@@ -273,7 +273,6 @@ class TaskManager(Base_TaskManager):
                     body = task_queue.get(block=True, timeout=10)
                 except queue.Empty:
                     # Ignore, we don't always have new tasks to run
-                    self._log.debug('Task queue: NO workload received')
                     continue
 
                 task_queue.task_done()
