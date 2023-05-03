@@ -217,7 +217,7 @@ class ResourceManager(Base_ResourceManager):
                 self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
-            self._logger.info('Resource request submission successful, waiting'
+            self._logger.info('Resource request submission successful, waiting '
                               'for pilot to become Active')
 
             # Wait for pilot to go active or final state
