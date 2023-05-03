@@ -78,6 +78,7 @@ class TestBase(TestCase):
             amgr.services = [None]
 
         services = [re.Task()]
+
         amgr.services = services
         # without initialized ResourceManager
         self.assertEqual(amgr._services, services)
@@ -122,6 +123,42 @@ class TestBase(TestCase):
                                                  'db_cleanup'     : True})
 
         self.assertEqual(amgr.services, services_mocked)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(Amgr, '__init__', return_value=None)
+    @mock.patch('radical.utils.Logger')
+    @mock.patch('radical.utils.Profiler')
+    @mock.patch('radical.utils.Reporter')
+    def test_amgr_resource_desc(self, mocked_reporter, mocked_profiler,
+                                      mocked_logger, mocked_init):
+
+        amgr = Amgr()
+        amgr._sid          = 'amgr.0000'
+        amgr._rts          = 'radical.pilot'
+        amgr._rts_config   = {'sandbox_cleanup': False,
+                              'db_cleanup'     : False}
+        amgr._rmgr         = None
+        amgr._report       = mocked_reporter
+        amgr._logger       = mocked_logger
+        amgr._shared_data  = []
+        amgr._outputs      = []
+
+        resource_desc      = {'resource': 'local.localhost',
+                              'walltime': 10,
+                              'cpus'    : 640}
+
+        amgr.services      = []
+        amgr.resource_desc = resource_desc
+        self.assertEqual(amgr._rmgr.services, [])
+
+        services = [re.Task()]
+
+        amgr.services      = services
+        amgr.resource_desc = resource_desc
+        self.assertEqual(amgr._rmgr.services, services)
+
 
     # --------------------------------------------------------------------------
     #
