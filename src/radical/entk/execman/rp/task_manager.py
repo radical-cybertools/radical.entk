@@ -122,7 +122,7 @@ class TaskManager(Base_TaskManager):
                             if msg['type'] == 'workload':
                                 task_queue.put(msg['body'])
                                 self._log.debug('Task queue: put workload with '
-                                                '%s task(s)' % len(msg['body']))
+                                                '%s task(s)', len(msg['body']))
 
                             elif msg['type'] == 'rts':
                                 self._update_resource(msg['body'])
@@ -277,7 +277,7 @@ class TaskManager(Base_TaskManager):
 
                 task_queue.task_done()
                 self._log.debug('Task queue: got workload with '
-                                '%s task(s)' % len(body or []))
+                                '%s task(s)', len(body or []))
 
                 if not body:
                     continue
