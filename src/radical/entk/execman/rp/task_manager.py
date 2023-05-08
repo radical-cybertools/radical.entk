@@ -121,6 +121,8 @@ class TaskManager(Base_TaskManager):
 
                             if msg['type'] == 'workload':
                                 task_queue.put(msg['body'])
+                                self._log.debug('Task queue: put workload with '
+                                                '%s task(s)', len(msg['body']))
 
                             elif msg['type'] == 'rts':
                                 self._update_resource(msg['body'])
@@ -267,19 +269,18 @@ class TaskManager(Base_TaskManager):
 
             while not self._tmgr_terminate.is_set():
 
-                body = None
-
                 try:
                     body = task_queue.get(block=True, timeout=10)
-
                 except queue.Empty:
                     # Ignore, we don't always have new tasks to run
-                    pass
-
-                if not body:
                     continue
 
                 task_queue.task_done()
+                self._log.debug('Task queue: got workload with '
+                                '%s task(s)', len(body or []))
+
+                if not body:
+                    continue
 
                 bulk_tasks = list()
 
