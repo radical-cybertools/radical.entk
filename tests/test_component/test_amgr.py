@@ -192,36 +192,14 @@ class TestBase(TestCase):
     @timeout_decorator.timeout(5)
     @mock.patch.object(Amgr, '__init__', return_value=None)
     @mock.patch.object(Amgr, '_submit_rts_tmgr', return_value=True)
-    @mock.patch('radical.entk.execman.mock.ResourceManager',
-                return_value=mock.MagicMock(
-                    get_resource_allocation_state=mock.MagicMock(
-                        side_effect=['RUNNING', 'DONE', 'RUNNING', 'RUNNING',
-                                     'RUNNING', 'RUNNING']),
-                    get_completed_states=mock.MagicMock(return_value=['DONE']),
-                    get_rts_info=mock.MagicMock(
-                        return_value={'pilot': 'pilot.0000'})))
-    @mock.patch('radical.entk.execman.mock.TaskManager',
-                return_value=mock.MagicMock(
-                    terminate_manager=mock.MagicMock(return_value=True),
-                    start_manager=mock.MagicMock(return_value=True)))
-    @mock.patch('radical.entk.appman.wfprocessor.WFprocessor',
-                return_value=mock.MagicMock(
-                    workflow_incomplete=mock.MagicMock(return_value=True),
-                    check_processor=mock.MagicMock(
-                        side_effect=[True, False, False, False, False, True]),
-                    terminate_processor=mock.MagicMock(return_value=True),
-                    start_processor=mock.MagicMock(return_value=True)))
     @mock.patch('radical.utils.Profiler')
     @mock.patch('radical.utils.Logger')
-    def test_run_workflow(self, mocked_logger, mocked_profiler,
-                          mocked_wfprocessor, mocked_tmgr, mocked_rmgr,
-                          mocked_submit_rts_tmgr, mocked_init):
+    @mock.patch('threading.Thread')
+    def test_run_workflow(self, mocked_mt_thread, mocked_logger,
+                          mocked_profiler, mocked_submit_rts_tmgr, mocked_init):
 
         appman = Amgr()
         appman._uid          = 'appman.0000'
-        appman._wfp          = re.appman.wfprocessor.WFprocessor()
-        appman._task_manager = re.execman.mock.TaskManager(None, None, None)
-        appman._rmgr         = re.execman.mock.ResourceManager(None, None, None)
         appman._logger       = mocked_logger
         appman._prof         = mocked_profiler
         appman._term         = mp.Event()
@@ -231,14 +209,33 @@ class TestBase(TestCase):
         pipe.uid             = 'pipe.0000'
         appman._workflow     = {pipe}
         appman._cur_attempt  = 1
-        appman._reattempts   = 3
+        appman._reattempts   = 2
         appman._sync_thread  = mock.Mock()
-        appman._sync_thread.is_alive = mock.MagicMock(return_value=True)
+        appman._sync_thread.is_alive = mock.Mock(return_value=True)
+
+        appman._wfp = mock.Mock(
+            workflow_incomplete=mock.Mock(return_value=True),
+            check_processor=mock.Mock(
+                side_effect=[True, False, False, False, False, True]),
+            terminate_processor=mock.Mock(return_value=True),
+            start_processor=mock.Mock(return_value=True))
+        appman._task_manager = mock.Mock(
+            terminate_manager=mock.Mock(return_value=True),
+            start_manager=mock.Mock(return_value=True))
+        appman._rmgr = mock.Mock(
+            get_resource_allocation_state=mock.Mock(
+                side_effect=['CANCELLED', 'RUNNING', 'RUNNING', 'RUNNING',
+                             'RUNNING', 'DONE']),
+            get_completed_states=mock.Mock(return_value=['DONE', 'CANCELLED']),
+            get_rts_info=mock.Mock(return_value={'pilot': 'pilot.0000'}))
 
         with self.assertRaises(ree.EnTKError):
             appman._run_workflow()
 
-        self.assertEqual(appman._cur_attempt, 4)
+        self.assertTrue(appman._wfp.terminate_processor.called)
+        self.assertEqual(appman._rmgr.submit_resource_request.call_count, 1)
+        self.assertEqual(appman._wfp.reset_workflow.call_count, 5)
+        self.assertEqual(appman._cur_attempt, 3)
 
     # --------------------------------------------------------------------------
     #
