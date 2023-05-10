@@ -88,7 +88,8 @@ class TaskManager(Base_TaskManager):
             self._log.info('Task Manager process started')
 
             # Queue for communication between threads of this process
-            task_queue = queue.Queue()
+            task_queue     = queue.Queue()
+            tasks_per_item = 500  # sets a size of item for `Queue.put`
 
             # Pickle file for task id history.
             # TODO: How do you take care the first execution.
@@ -120,9 +121,17 @@ class TaskManager(Base_TaskManager):
                         for msg in msgs:
 
                             if msg['type'] == 'workload':
-                                task_queue.put(msg['body'])
+
+                                tasks = msg['body']
                                 self._log.debug('Task queue: put workload with '
-                                                '%s task(s)', len(msg['body']))
+                                                '%s task(s)', len(tasks))
+
+                                queue_items = [
+                                    tasks[i:i + tasks_per_item] for i in
+                                    range(0, len(tasks), tasks_per_item)]
+
+                                for item in queue_items:
+                                    task_queue.put(item)
 
                             elif msg['type'] == 'rts':
                                 self._update_resource(msg['body'])
