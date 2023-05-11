@@ -89,6 +89,14 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
 
+            # FIXME: temporary solution,
+            #        enforce DB connection within a new process
+            mdb = ru.mongodb_connect(str(rmgr._session._cfg.dburl))[:2]
+            rmgr._session._dbs._mongo = mdb[0]
+            rmgr._session._dbs._db    = mdb[1]
+            rmgr._session._dbs._c     = mdb[1][rmgr._session.uid]
+            # ^^^ to be reworked
+
             # Queue for communication between threads of this process
             task_queue     = queue.Queue()
             tasks_per_item = 1000  # sets a size of item for `Queue.put`
@@ -270,15 +278,6 @@ class TaskManager(Base_TaskManager):
                 self._log.exception('Error in RP callback thread: %s', ex)
                 raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
-
-        # FIXME: temporary solution
-
-        # enforce DB connection within a new process
-        mdb = ru.mongodb_connect(str(rmgr._session._cfg.dburl))[:2]
-        rmgr._session._dbs._mongo = mdb[0]
-        rmgr._session._dbs._db    = mdb[1]
-        rmgr._session._dbs._c     = mdb[1][rmgr._session.uid]
-        # ^^^ to be reworked
 
         self._rp_tmgr = rp.TaskManager(session=rmgr._session)
         self._rp_tmgr.register_callback(task_state_cb)
