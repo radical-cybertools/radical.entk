@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>'
@@ -279,7 +280,7 @@ class TaskManager(Base_TaskManager):
         rmgr._session._dbs._c     = mdb[1][rmgr._session.uid]
         # ^^^ to be reworked
 
-        self._rp_tmgr = rp.TaskManager(session=rmgr._session)  # pylint: disable=W0212
+        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
         self._rp_tmgr.register_callback(task_state_cb)
 
         try:
