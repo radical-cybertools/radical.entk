@@ -12,6 +12,7 @@ import threading       as mt
 import multiprocessing as mp
 
 import radical.pilot   as rp
+import radical.utils   as ru
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
@@ -89,7 +90,7 @@ class TaskManager(Base_TaskManager):
 
             # Queue for communication between threads of this process
             task_queue     = queue.Queue()
-            tasks_per_item = 500  # sets a size of item for `Queue.put`
+            tasks_per_item = 1000  # sets a size of item for `Queue.put`
 
             # Pickle file for task id history.
             # TODO: How do you take care the first execution.
@@ -123,8 +124,8 @@ class TaskManager(Base_TaskManager):
                             if msg['type'] == 'workload':
 
                                 tasks = msg['body']
-                                self._log.debug('Task queue: put workload with '
-                                                '%s task(s)', len(tasks))
+                                self._log.debug('Task queue: ready workload '
+                                                'with %s task(s)', len(tasks))
 
                                 queue_items = [
                                     tasks[i:i + tasks_per_item] for i in
@@ -269,6 +270,14 @@ class TaskManager(Base_TaskManager):
                 raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
 
+        # FIXME: temporary solution
+
+        # enforce DB connection within a new process
+        mdb = ru.mongodb_connect(str(rmgr._session._cfg.dburl))[:2]
+        rmgr._session._dbs._mongo = mdb[0]
+        rmgr._session._dbs._db    = mdb[1]
+        rmgr._session._dbs._c     = mdb[1][rmgr._session.uid]
+        # ^^^ to be reworked
 
         self._rp_tmgr = rp.TaskManager(session=rmgr._session)  # pylint: disable=W0212
         self._rp_tmgr.register_callback(task_state_cb)
