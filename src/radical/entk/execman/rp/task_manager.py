@@ -22,6 +22,21 @@ from .task_processor     import create_td_from_task, create_task_from_rp
 
 
 # ------------------------------------------------------------------------------
+# FIXME: temporary solution for `mp.Process` - close the connection before
+#        forking, and then reconnect in both parent and child processes
+#
+def mongodb_close(session):
+    session._dbs._mongo.close()
+
+
+def mongodb_start(session):
+    mdb = ru.mongodb_connect(str(session._cfg.dburl))[:2]
+    session._dbs._mongo = mdb[0]
+    session._dbs._db    = mdb[1]
+    session._dbs._c     = mdb[1][session.uid]
+
+
+# ------------------------------------------------------------------------------
 #
 class TaskManager(Base_TaskManager):
     '''
@@ -50,9 +65,6 @@ class TaskManager(Base_TaskManager):
                                           zmq_info=zmq_info)
         self._rts_runner      = None
         self._zmq_info        = zmq_info
-        self._submitted_tasks = dict()
-        self._rp_tmgr         = None
-        self._total_res       = {'cores': 0, 'gpus': 0}
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -82,20 +94,17 @@ class TaskManager(Base_TaskManager):
                      tasks on the remote machine.
         '''
 
+        self._rp_tmgr         = None
+        self._submitted_tasks = dict()
+        self._total_res       = {'cores': 0, 'gpus': 0}
+
         try:
 
             self._setup_zmq(zmq_info)
+            mongodb_start(rmgr.session)
 
             self._prof.prof('tmgr process started', uid=self._uid)
             self._log.info('Task Manager process started')
-
-            # FIXME: temporary solution,
-            #        enforce DB connection within a new process
-            mdb = ru.mongodb_connect(str(rmgr._session._cfg.dburl))[:2]
-            rmgr._session._dbs._mongo = mdb[0]
-            rmgr._session._dbs._db    = mdb[1]
-            rmgr._session._dbs._c     = mdb[1][rmgr._session.uid]
-            # ^^^ to be reworked
 
             # Queue for communication between threads of this process
             task_queue     = queue.Queue()
@@ -108,7 +117,7 @@ class TaskManager(Base_TaskManager):
                 with open(pkl_path, 'rb') as f:
                     self._submitted_tasks = pickle.load(f)
 
-            # Start second thread to receive tasks and push to RTS
+            # Start a thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
                                          args=(task_queue, rmgr))
             self._rts_runner.daemon = True
@@ -176,6 +185,7 @@ class TaskManager(Base_TaskManager):
 
             self._log.debug('TMGR RTS Runner joined')
 
+            mongodb_close(rmgr.session)
             self._prof.close()
             self._log.debug('TMGR profile closed')
 
@@ -279,7 +289,7 @@ class TaskManager(Base_TaskManager):
                 raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
 
-        self._rp_tmgr = rp.TaskManager(session=rmgr._session)
+        self._rp_tmgr = rp.TaskManager(session=rmgr.session)
         self._rp_tmgr.register_callback(task_state_cb)
 
         try:
@@ -348,12 +358,14 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
 
+            mongodb_close(self._rmgr.session)
             self._tmgr_process = mp.Process(target=self._tmgr,
                                             name='task-manager',
                                             args=(self._uid,
                                                   self._rmgr,
-                                                  self._zmq_info)
-                                            )
+                                                  self._zmq_info))
+            self._tmgr_process.daemon = True
+            mongodb_start(self._rmgr.session)
 
             self._log.info('Starting task manager process')
             self._prof.prof('starting tmgr process', uid=self._uid)
