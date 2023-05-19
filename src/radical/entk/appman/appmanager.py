@@ -704,17 +704,17 @@ class AppManager(object):
                         self._logger.info('Pipe %s completed', pipe.uid)
                         self._logger.info('Active pipes %s', active_pipe_count)
 
+            reset_workflow = False
+
             if not self._sync_thread.is_alive():
                 self._logger.info('Synchronizer thread is not alive.')
-
                 self._sync_thread = mt.Thread(target=self._synchronizer,
                                               name='synchronizer-thread')
                 self._sync_thread.start()
-                self._cur_attempt += 1
-                self._wfp.reset_workflow()
-
                 self._prof.prof('sync_thread_restart', uid=self._uid)
                 self._logger.info('Restarted synchronizer thread.')
+
+                reset_workflow = True
 
             if not self._wfp.check_processor():
                 self._logger.info('WFP is not alive.')
@@ -725,22 +725,29 @@ class AppManager(object):
 
                 self._prof.prof('wfp_recreate', uid=self._uid)
                 self._wfp.terminate_processor()
-
                 self._wfp.start_processor()
-
-                self._cur_attempt += 1
-                self._wfp.reset_workflow()
                 self._logger.info('Restarted WFProcessor.')
+
+                reset_workflow = True
 
             state = self._rmgr.get_resource_allocation_state()
             if state in rts_final_states:
+
+                self._cur_attempt += 1
+                if self._cur_attempt > self._reattempts:
+                    break
+
                 self._logger.debug('Workflow not done. Resubmitting RTS.')
+
                 self._rmgr.submit_resource_request()
                 rts_info = self._rmgr.get_rts_info()
                 self._submit_rts_tmgr(rts_info=rts_info)
-                self._wfp.reset_workflow()
-                self._cur_attempt += 1
                 self._logger.debug('RTS resubmitted')
+
+                reset_workflow = True
+
+            if reset_workflow:
+                self._wfp.reset_workflow()
 
         if self._cur_attempt > self._reattempts:
             raise EnTKError('Too many failures in synchronizer, wfp or '
