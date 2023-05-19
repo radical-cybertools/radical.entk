@@ -465,7 +465,7 @@ class Task(ru.TypedDict):
         attrs = list(from_dict.keys())
         # `uid` is allowed to be set during initialization only
         if not from_dict.get('uid'):
-            uid = ru.generate_id('task.%(counter)04d', ru.ID_CUSTOM)
+            uid = ru.generate_id('task.%(counter)06d', ru.ID_CUSTOM)
         else:
             attrs.remove('uid')
             uid = super()._verify_setter('uid', from_dict['uid'])
@@ -568,7 +568,7 @@ class Task(ru.TypedDict):
 
         Example:
             > task.luid
-            pipe.0001.stage.0004.task.0234
+            pipe.0001.stage.0004.task.123456
 
         :luid: Returns the fully qualified uid of the current task
         :type: str
