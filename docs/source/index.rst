@@ -6,11 +6,11 @@
 RADICAL-Ensemble Toolkit
 ========================
 
-The Ensemble Toolkit is a Python library for developing and executing 
-large-scale ensemble-based workflows. It is being developed by the 
-`RADICAL Research Group <http://radical.rutgers.edu/>`_ at Rutgers University. 
-Ensemble Toolkit is released under the 
-`MIT License <http://opensource.org/licenses/MIT>`_. 
+The Ensemble Toolkit is a Python library for developing and executing
+large-scale ensemble-based workflows. It is being developed by the
+`RADICAL Research Group <http://radical.rutgers.edu/>`_ at Rutgers University.
+Ensemble Toolkit is released under the
+`MIT License <http://opensource.org/licenses/MIT>`_.
 
 More details about the science enabled by EnTK can be found in the following publications:
 
@@ -21,9 +21,9 @@ More details about the science enabled by EnTK can be found in the following pub
 
 .. note:: Please use the following to reference Ensemble Toolkit
 
-   Balasubramanian, Vivekanandan, Antons Treikalis, Ole Weidner, and Shantenu 
-   Jha. "Ensemble toolkit: Scalable and flexible execution of ensembles of 
-   tasks." In Parallel Processing (ICPP), 2016 45th International Conference 
+   Balasubramanian, Vivekanandan, Antons Treikalis, Ole Weidner, and Shantenu
+   Jha. "Ensemble toolkit: Scalable and flexible execution of ensembles of
+   tasks." In Parallel Processing (ICPP), 2016 45th International Conference
    on, pp. 458-463. IEEE, 2016.
 
 
@@ -58,7 +58,6 @@ More details about the science enabled by EnTK can be found in the following pub
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
    :caption: Contents:
 
    introduction
@@ -71,9 +70,9 @@ More details about the science enabled by EnTK can be found in the following pub
    exceptions
    dev_docs
 
-Indices and tables
-==================
+.. Indices and tables
+.. ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
