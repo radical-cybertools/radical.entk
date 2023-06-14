@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
