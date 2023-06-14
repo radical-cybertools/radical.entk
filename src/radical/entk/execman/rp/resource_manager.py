@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
@@ -269,8 +270,12 @@ class ResourceManager(Base_ResourceManager):
                 cleanup = self._rts_config.get('db_cleanup', False)
 
                 if self._pmgr:
+                    # skip reporting for `wait_pilots`
+                    is_rep_enabled = self._pmgr._rep._enabled
+                    self._pmgr._rep._enabled = False
                     # send command to the RP agent to terminate
                     self._pmgr.cancel_pilots(self._pilot.uid, _timeout=20)
+                    self._pmgr._rep._enabled = is_rep_enabled
 
                 if self._session:
                     self._session.close(cleanup=cleanup,
