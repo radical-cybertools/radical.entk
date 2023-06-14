@@ -268,13 +268,15 @@ class ResourceManager(Base_ResourceManager):
 
                 cleanup = self._rts_config.get('db_cleanup', False)
 
+                if self._pmgr:
+                    # send command to the RP agent to terminate
+                    self._pmgr.cancel_pilots(self._pilot.uid, _timeout=20)
+
                 if self._session:
                     self._session.close(cleanup=cleanup,
                                         download=get_profiles,
                                         terminate=True)
                     self._session = None
-                elif self._pmgr:
-                    self._pmgr.cancel_pilots(self.pilot.uid, _timeout=20)
 
                 self._prof.prof('rreq_canceled', uid=self._uid)
 

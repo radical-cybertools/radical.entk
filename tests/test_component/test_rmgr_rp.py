@@ -156,7 +156,6 @@ class TestBase(TestCase):
         rmgr._gpus          = 1
         rmgr._access_schema = 'local'
         rmgr._queue         = 'test_queue'
-        rmgr._shared_data   = 'test_data'
         rmgr._outputs       = 'test_outputs'
         rmgr._job_name      = None
         rmgr._shared_data   = ['test/file1.txt > file1.txt', 'file2.txt']
@@ -194,3 +193,30 @@ class TestBase(TestCase):
         rmgr._pilot.as_dict = mock.MagicMock(return_value={'pilot': 'pilot.0000'})
 
         self.assertEqual(rmgr.get_rts_info(), {'pilot': 'pilot.0000'})
+
+    # --------------------------------------------------------------------------
+    #
+    @mock.patch.object(RPRmgr, '__init__', return_value=None)
+    def test_terminate_resource_request(self, mocked_init):
+
+        rmgr = RPRmgr(None, None, None)
+        rmgr._uid        = 'resource_manager.0000'
+        rmgr._outputs    = None
+        rmgr._rts_config = {'sandbox_cleanup': False}
+        rmgr._pilot      = _submit_pilot_side_effect({'resource': 'resource',
+                                                      'cpus'    : 1,
+                                                      'walltime': 10})
+        rmgr._pmgr       = mock.Mock()
+        rmgr._prof       = mock.Mock()
+
+        session          = mock.Mock()
+        rmgr._session    = session
+
+        rmgr._terminate_resource_request()
+
+        self.assertTrue(rmgr._pmgr.cancel_pilots.called)
+        self.assertTrue(session.close.called)
+        self.assertIsNone(rmgr._session)
+
+# ------------------------------------------------------------------------------
+
