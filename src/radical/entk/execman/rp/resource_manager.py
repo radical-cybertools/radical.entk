@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 
 __copyright__ = 'Copyright 2017-2018, http://radical.rutgers.edu'
 __author__    = 'Vivek Balasubramanian <vivek.balasubramaniana@rutgers.edu>'
@@ -9,6 +10,8 @@ import radical.pilot as rp
 
 from ...exceptions           import EnTKError, EnTKValueError
 from ..base.resource_manager import Base_ResourceManager
+
+from .task_processor         import create_td_from_task
 
 
 # ------------------------------------------------------------------------------
@@ -169,8 +172,27 @@ class ResourceManager(Base_ResourceManager):
                        'access_schema' : self._access_schema,
                        'queue'         : self._queue,
                        'cleanup'       : cleanup,
-                       'job_name'      : self._job_name
-                       }
+                       'job_name'      : self._job_name,
+                       'services'      : []}
+
+            placeholders = {'service_pipeline': {'service_stage': {}}}
+            ptasks = placeholders['service_pipeline']['service_stage']
+
+            for service_task in self.services:
+                service_task.parent_stage['uid']     = ''
+                service_task.parent_stage['name']    = 'service_stage'
+                service_task.parent_pipeline['uid']  = ''
+                service_task.parent_pipeline['name'] = 'service_pipeline'
+                ptasks[service_task.uid] = {'path': service_task.path,
+                                            'uid' : service_task.uid}
+                pkl_path = self._path + '/.service_task_submitted.pkl'
+                td = create_td_from_task(service_task,
+                                         placeholders=placeholders,
+                                         task_hash_table={},
+                                         pkl_path=pkl_path,
+                                         logger=self._logger,
+                                         sid=self._sid)
+                pd_init['services'].append(td)
 
             # Create Pilot with validated resource description
             pdesc = rp.PilotDescription(pd_init)
@@ -196,7 +218,7 @@ class ResourceManager(Base_ResourceManager):
                 self._pilot.stage_in(shared_data)
             self._prof.prof('rreq submitted', uid=self._uid)
 
-            self._logger.info('Resource request submission successful, waiting'
+            self._logger.info('Resource request submission successful, waiting '
                               'for pilot to become Active')
 
             # Wait for pilot to go active or final state
@@ -247,13 +269,19 @@ class ResourceManager(Base_ResourceManager):
 
                 cleanup = self._rts_config.get('db_cleanup', False)
 
+                if self._pmgr:
+                    # skip reporting for `wait_pilots`
+                    is_rep_enabled = self._pmgr._rep._enabled
+                    self._pmgr._rep._enabled = False
+                    # send command to the RP agent to terminate
+                    self._pmgr.cancel_pilots(self._pilot.uid, _timeout=20)
+                    self._pmgr._rep._enabled = is_rep_enabled
+
                 if self._session:
                     self._session.close(cleanup=cleanup,
                                         download=get_profiles,
                                         terminate=True)
                     self._session = None
-                elif self._pmgr:
-                    self._pmgr.cancel_pilots(self.pilot.uid, _timeout=20)
 
                 self._prof.prof('rreq_canceled', uid=self._uid)
 

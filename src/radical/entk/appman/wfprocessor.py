@@ -206,7 +206,7 @@ class WFprocessor(object):
         to the first state. Then they are scheduled again for execution.
         '''
 
-        self._logger.debug('Reseting workflow execution')
+        self._logger.debug('Resetting workflow execution')
         for pipe in self._workflow:
 
             with pipe.lock:

@@ -54,6 +54,7 @@ class Base_ResourceManager(object):
         self._access_schema = None
         self._queue         = None
         self._job_name      = None
+        self._services      = []
         self._validated     = False
 
         # Utility parameters
@@ -145,6 +146,16 @@ class Base_ResourceManager(object):
 
 
     @property
+    def services(self):
+        """
+        :getter: Returns the list of tasks used to start "global" services
+        :setter: Assigns a list of service tasks, which are launched before
+        any stage starts and run during the whole workflow execution
+        """
+        return self._services
+
+
+    @property
     def shared_data(self):
         """
         :getter:    list of files to be staged to remote and that are common to
@@ -178,6 +189,12 @@ class Base_ResourceManager(object):
     def outputs(self, data):
 
         self._outputs = data
+
+
+    @services.setter
+    def services(self, tasks):
+
+        self._services = tasks
 
 
     # --------------------------------------------------------------------------
