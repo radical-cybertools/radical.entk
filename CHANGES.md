@@ -6,6 +6,19 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.34.0 Release                                                        2023-04-25
+--------------------------------------------------------------------------------
+
+  - added log messages to track TaskQueue
+  - introduced service task
+  - added mongodb reconnect for a thread with `rp.TaskManager`
+  - added tests (service tasks, pilot cancelation)
+  - extend num digits for `Task.uid`
+  - fixed reattempts and sizing for `task_queue`
+  - moved MDB reconnect into TMGR mp.Process (thread safety)
+  - removed excessive log message (when queue task is empty)
+  
+  
 1.33.0 Release                                                        2023-04-25
 --------------------------------------------------------------------------------
   
