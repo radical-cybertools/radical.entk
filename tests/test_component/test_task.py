@@ -36,6 +36,8 @@ class TestTask(TestCase):
         self.assertIsInstance(t.post_exec,   list)
         self.assertIsInstance(t.environment, dict)
 
+        self.assertIsNone(t.annotations)
+
         # instance's attribute(s) access(es)
         self.assertEqual(t.cpu_reqs.cpu_processes, 1)
         # instance's attribute and item accesses
@@ -421,6 +423,37 @@ class TestTask(TestCase):
         self.assertEqual(len(tasks_set), 1)
         # 2nd task wasn't added since it has "uid" as the task in the set
         self.assertEqual(list(tasks_set)[0]['name'], 'unique.name.1')
+
+    # --------------------------------------------------------------------------
+    #
+    def test_annotate(self):
+
+        t1 = Task()
+        t2 = Task()
+
+        t1.annotate()
+        self.assertIsInstance(t1.annotations.input,      list)
+        self.assertIsInstance(t1.annotations.output,     list)
+        self.assertIsInstance(t1.annotations.depends_on, list)
+
+        t1.annotate(input=['file_1.txt', 'file_2.txt'],
+                    output=['file_t1_1.txt', 'file_t1_2.txt'])
+        self.assertIn('file_1.txt',    t1.annotations.input)
+        self.assertIn('file_t1_1.txt', t1.annotations.output)
+
+        with self.assertRaises(AssertionError):
+            # provided input as from task `t1`, which is not produced by `t1`
+            t2.annotate(input={t1: ['not_produced_by_t1']})
+
+        t2.annotate(input={t1: ['file_t1_2.txt']})
+        t2.annotate(input=['file_3.txt', {t1: ['file_t1_1.txt']}])
+        self.assertIn('file_3.txt',                t2.annotations.input)
+        self.assertIn('%s:file_t1_1.txt' % t1.uid, t2.annotations.input)
+        self.assertIn('%s:file_t1_2.txt' % t1.uid, t2.annotations.input)
+        # no output was provided
+        self.assertFalse(t2.annotations.output)
+        # confirm tasks dependency based on dataflow
+        self.assertIn(t1.uid, t2.annotations.depends_on)
 
 
 # ------------------------------------------------------------------------------

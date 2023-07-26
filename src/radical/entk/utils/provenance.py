@@ -25,12 +25,12 @@ def get_provenance_graph(pipelines: List[Pipeline],
         graph[pipeline.uid] = {}
 
         for stage in pipelines.stages:
-            graph[pipeline.uid][stage.uid] = []
+            graph[pipeline.uid][stage.uid] = {}
 
             for task in stage.tasks:
-                graph[pipeline.uid][stage.uid].append(task.uid)
-
-            graph[pipeline.uid][stage.uid].sort()
+                g_task = graph[pipeline.uid][stage.uid].setdefault(task.uid, {})
+                if task.annotations:
+                    g_task.update(task.annotations.as_dict())
 
     if output_file:
         if '/' not in output_file:
@@ -61,8 +61,9 @@ def extract_provenance_graph(session_json: str,
         task_uid, _, stage_uid, _, pipeline_uid, _ = task['name'].split(',')
         graph.\
             setdefault(pipeline_uid, {}).\
-            setdefault(stage_uid, []).\
-            append(task_uid)
+            setdefault(stage_uid, {}).\
+            setdefault(task_uid,
+                       task['description']['metadata'].get('data') or {})
 
     for pipeline_uid in graph:
         for stage_uid in graph[pipeline_uid]:
