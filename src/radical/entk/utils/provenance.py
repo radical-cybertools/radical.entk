@@ -33,8 +33,6 @@ def get_provenance_graph(pipelines: List[Pipeline],
                     g_task.update(task.annotations.as_dict())
 
     if output_file:
-        if '/' not in output_file:
-            output_file = './' + output_file
         if not output_file.endswith('.json'):
             output_file += '.json'
         ru.write_json(graph, output_file)
@@ -70,8 +68,6 @@ def extract_provenance_graph(session_json: str,
             graph[pipeline_uid][stage_uid].sort()
 
     if output_file:
-        if '/' not in output_file:
-            output_file = './' + output_file
         if not output_file.endswith('.json'):
             output_file += '.json'
         ru.write_json(graph, output_file)
