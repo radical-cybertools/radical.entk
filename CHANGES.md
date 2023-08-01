@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.36.0 Release                                                        2023-08-01
+--------------------------------------------------------------------------------
+
+  - added tool to extract the provenance graph (from Pipeline & from JSON)
+
+
 1.34.0 Release                                                        2023-04-25
 --------------------------------------------------------------------------------
 
