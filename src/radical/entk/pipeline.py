@@ -416,8 +416,8 @@ class Pipeline(object):
                 if not task.annotations:
                     continue
 
-                annotated_outputs[task.uid] = task.annotations.output
-                for t_input in task.annotations.input:
+                annotated_outputs[task.uid] = task.annotations.outputs
+                for t_input in task.annotations.inputs:
                     if ':' not in t_input:
                         continue
                     # ensure that task inputs are annotated as outputs

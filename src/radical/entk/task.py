@@ -110,14 +110,14 @@ class GpuReqs(ReqsMixin, ru.TypedDict):
 class Annotations(ru.TypedDict):
 
     _schema = {
-        'input'     : [str],
-        'output'    : [str],
+        'inputs'    : [str],
+        'outputs'   : [str],
         'depends_on': [str]
     }
 
     _defaults = {
-        'input'     : [],
-        'output'    : [],
+        'inputs'    : [],
+        'outputs'   : [],
         'depends_on': []
     }
 
@@ -612,27 +612,27 @@ class Task(ru.TypedDict):
 
     # --------------------------------------------------------------------------
     #
-    def annotate(self, input: Union[Dict, List, str, None] = None,
-                       output: Union[List, str, None] = None) -> None:
+    def annotate(self, inputs: Union[Dict, List, str, None] = None,
+                       outputs: Union[List, str, None] = None) -> None:
         """
         Adds dataflow annotations with provided input and output files,
         and defines dependencies between tasks.
 
         Attributes:
-            input (list, optional): List of input files. If file is produced by
-                previously executed task, then the corresponding input element
-                is provided as a dictionary with task instance as a key.
+            inputs (list, optional): List of input files. If file is produced
+                by previously executed task, then the corresponding input
+                element is provided as a dictionary with task instance as a key.
                 Example: input=['file1', {task0: 'file2', task1: ['file2']}]
 
-            output (list, optional): List of produced/generated files.
+            outputs (list, optional): List of produced/generated files.
         """
         ta = self.setdefault('annotations', Annotations())
 
-        if input:
-            for i in ru.as_list(input):
+        if inputs:
+            for i in ru.as_list(inputs):
 
                 if isinstance(i, str):
-                    ta.input.append(i)
+                    ta.inputs.append(i)
 
                 elif isinstance(i, dict):
                     for task, task_files in i.items():
@@ -641,12 +641,12 @@ class Task(ru.TypedDict):
                         for tf in ru.as_list(task_files):
                             # corresponding validation of dependencies
                             # is part of the Pipeline validation process
-                            ta.input.append('%s:%s' % (task.uid, tf))
+                            ta.inputs.append('%s:%s' % (task.uid, tf))
 
-        if output:
-            ta.output.extend(ru.as_list(output))
-            if len(ta.output) != len(set(ta.output)):
-                warnings.warn('Annotated output for %s ' % self['uid'] +
+        if outputs:
+            ta.outputs.extend(ru.as_list(outputs))
+            if len(ta.outputs) != len(set(ta.outputs)):
+                warnings.warn('Annotated outputs for %s ' % self['uid'] +
                               'includes duplication(s)')
 
     # --------------------------------------------------------------------------

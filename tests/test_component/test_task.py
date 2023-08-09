@@ -432,27 +432,27 @@ class TestTask(TestCase):
         t2 = Task()
 
         t1.annotate()
-        self.assertIsInstance(t1.annotations.input,      list)
-        self.assertIsInstance(t1.annotations.output,     list)
+        self.assertIsInstance(t1.annotations.inputs,     list)
+        self.assertIsInstance(t1.annotations.outputs,    list)
         self.assertIsInstance(t1.annotations.depends_on, list)
 
-        t1.annotate(input=['file_1.txt', 'file_2.txt'],
-                    output=['file_t1_1.txt', 'file_t1_2.txt'])
-        self.assertIn('file_1.txt',    t1.annotations.input)
-        self.assertIn('file_t1_1.txt', t1.annotations.output)
+        t1.annotate(inputs=['file_1.txt', 'file_2.txt'],
+                    outputs=['file_t1_1.txt', 'file_t1_2.txt'])
+        self.assertIn('file_1.txt',    t1.annotations.inputs)
+        self.assertIn('file_t1_1.txt', t1.annotations.outputs)
 
         # check output duplications
         with self.assertWarns(UserWarning) as uw:
-            t1.annotate(output=['file_t1_1.txt'])
+            t1.annotate(outputs=['file_t1_1.txt'])
         self.assertIn('includes duplication', str(uw.warnings[0].message))
 
-        t2.annotate(input={t1: ['file_t1_2.txt']})
-        t2.annotate(input=['file_3.txt', {t1: ['file_t1_1.txt']}])
-        self.assertIn('file_3.txt',                t2.annotations.input)
-        self.assertIn('%s:file_t1_1.txt' % t1.uid, t2.annotations.input)
-        self.assertIn('%s:file_t1_2.txt' % t1.uid, t2.annotations.input)
+        t2.annotate(inputs={t1: ['file_t1_2.txt']})
+        t2.annotate(inputs=['file_3.txt', {t1: ['file_t1_1.txt']}])
+        self.assertIn('file_3.txt',                t2.annotations.inputs)
+        self.assertIn('%s:file_t1_1.txt' % t1.uid, t2.annotations.inputs)
+        self.assertIn('%s:file_t1_2.txt' % t1.uid, t2.annotations.inputs)
         # no output was provided
-        self.assertFalse(t2.annotations.output)
+        self.assertFalse(t2.annotations.outputs)
         # confirm tasks dependency based on dataflow
         self.assertIn(t1.uid, t2.annotations.depends_on)
 

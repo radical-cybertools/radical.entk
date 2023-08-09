@@ -316,8 +316,8 @@ class TestBase(TestCase):
         t1 = Task()
         t2 = Task()
 
-        t1.annotate(output=['file_t1_1.txt', 'file_t1_2.txt'])
-        t2.annotate(input={t1: ['not_produced_by_t1']})
+        t1.annotate(outputs=['file_t1_1.txt', 'file_t1_2.txt'])
+        t2.annotate(inputs={t1: ['not_produced_by_t1']})
         s1.add_tasks(t1)
         s2.add_tasks(t2)
         p._stages = [s1, s2]
