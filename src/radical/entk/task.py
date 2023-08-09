@@ -622,7 +622,7 @@ class Task(ru.TypedDict):
             inputs (list, optional): List of input files. If file is produced
                 by previously executed task, then the corresponding input
                 element is provided as a dictionary with task instance as a key.
-                Example: input=['file1', {task0: 'file2', task1: ['file2']}]
+                Example: inputs=['file1', {task0: 'file2', task1: ['file2']}]
 
             outputs (list, optional): List of produced/generated files.
         """
