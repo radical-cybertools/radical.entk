@@ -441,9 +441,10 @@ class TestTask(TestCase):
         self.assertIn('file_1.txt',    t1.annotations.input)
         self.assertIn('file_t1_1.txt', t1.annotations.output)
 
-        with self.assertRaises(AssertionError):
-            # provided input as from task `t1`, which is not produced by `t1`
-            t2.annotate(input={t1: ['not_produced_by_t1']})
+        # check output duplications
+        with self.assertWarns(UserWarning) as uw:
+            t1.annotate(output=['file_t1_1.txt'])
+        self.assertIn('includes duplication', str(uw.warnings[0].message))
 
         t2.annotate(input={t1: ['file_t1_2.txt']})
         t2.annotate(input=['file_3.txt', {t1: ['file_t1_1.txt']}])

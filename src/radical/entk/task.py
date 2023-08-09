@@ -624,7 +624,7 @@ class Task(ru.TypedDict):
                 is provided as a dictionary with task instance as a key.
                 Example: input=['file1', {task0: 'file2', task1: ['file2']}]
 
-            output(list, optional): List of produced/generated files.
+            output (list, optional): List of produced/generated files.
         """
         ta = self.setdefault('annotations', Annotations())
 
@@ -639,12 +639,15 @@ class Task(ru.TypedDict):
                         if task.uid not in ta.depends_on:
                             ta.depends_on.append(task.uid)
                         for tf in ru.as_list(task_files):
-                            # ensure that provided files are task's outputs
-                            assert (tf in task.annotations.output)
+                            # corresponding validation of dependencies
+                            # is part of the Pipeline validation process
                             ta.input.append('%s:%s' % (task.uid, tf))
 
         if output:
             ta.output.extend(ru.as_list(output))
+            if len(ta.output) != len(set(ta.output)):
+                warnings.warn('Annotated output for %s ' % self['uid'] +
+                              'includes duplication(s)')
 
     # --------------------------------------------------------------------------
     #
