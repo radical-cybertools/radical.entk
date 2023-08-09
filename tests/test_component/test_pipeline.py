@@ -315,14 +315,22 @@ class TestBase(TestCase):
         s2 = Stage()
         t1 = Task()
         t2 = Task()
+        t3 = Task()
+        t4 = Task()
 
         t1.annotate(outputs=['file_t1_1.txt', 'file_t1_2.txt'])
         t2.annotate(inputs={t1: ['not_produced_by_t1']})
-        s1.add_tasks(t1)
+        t4.annotate(inputs='not_produced_by_other_tasks')
+        s1.add_tasks([t1, t3, t4])
+
+        # no errors during validation
+        p._stages = [s1]
+        p._validate()
+
         s2.add_tasks(t2)
         p._stages = [s1, s2]
+        # provided input for `t2` (as from task `t1`) is not produced by `t1`
         with self.assertRaises(EnTKError) as ee:
-            # provided input as from task `t1`, which is not produced by `t1`
             p._validate()
         self.assertIn('Annotation error', str(ee.exception))
 
