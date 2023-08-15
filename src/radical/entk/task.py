@@ -628,6 +628,11 @@ class Task(ru.TypedDict):
         """
         ta = self.setdefault('annotations', Annotations())
 
+        # TODO: have a unified file representation (file name within task
+        #       sandbox or file full path, considering files outside of the
+        #       task sandbox) - set an expand procedure. Ensure that it is
+        #       the same for inputs and outputs
+
         if inputs:
             for i in ru.as_list(inputs):
 

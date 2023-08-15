@@ -320,7 +320,8 @@ class TestBase(TestCase):
 
         t1.annotate(outputs=['file_t1_1.txt', 'file_t1_2.txt'])
         t2.annotate(inputs={t1: ['not_produced_by_t1']})
-        t4.annotate(inputs='not_produced_by_other_tasks')
+        t4.annotate(inputs=['external_file_not_produced_by_other_tasks',
+                            'pilot://file_in_shared_space'])
         s1.add_tasks([t1, t3, t4])
 
         # no errors during validation

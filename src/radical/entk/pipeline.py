@@ -418,11 +418,15 @@ class Pipeline(object):
 
                 annotated_outputs[task.uid] = task.annotations.outputs
                 for t_input in task.annotations.inputs:
-                    if ':' not in t_input:
+                    delimiter_count = t_input.count(':')
+                    if not delimiter_count:
+                        continue
+                    elif delimiter_count == 1 and '://' in t_input:
+                        # extend file representation format (future feature)
                         continue
                     # ensure that task inputs are annotated as outputs
                     # for corresponding tasks it depends on
-                    t_dep_uid, t_dep_output = t_input.split(':')
+                    t_dep_uid, t_dep_output = t_input.split(':', maxsplit=1)
                     if t_dep_output not in annotated_outputs.get(t_dep_uid, []):
                         raise EnTKError(
                             'Annotation error for %s: '      % task.uid +
