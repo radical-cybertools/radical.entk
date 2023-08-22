@@ -422,7 +422,7 @@ class Pipeline(object):
                     if not delimiter_count:
                         continue
                     elif delimiter_count == 1 and '://' in t_input:
-                        # extend file representation format (future feature)
+                        # TODO: extend file representation format
                         continue
                     # ensure that task inputs are annotated as outputs
                     # for corresponding tasks it depends on
