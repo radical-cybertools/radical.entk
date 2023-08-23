@@ -36,6 +36,8 @@ class TestTask(TestCase):
         self.assertIsInstance(t.post_exec,   list)
         self.assertIsInstance(t.environment, dict)
 
+        self.assertIsNone(t.annotations)
+
         # instance's attribute(s) access(es)
         self.assertEqual(t.cpu_reqs.cpu_processes, 1)
         # instance's attribute and item accesses
@@ -421,6 +423,38 @@ class TestTask(TestCase):
         self.assertEqual(len(tasks_set), 1)
         # 2nd task wasn't added since it has "uid" as the task in the set
         self.assertEqual(list(tasks_set)[0]['name'], 'unique.name.1')
+
+    # --------------------------------------------------------------------------
+    #
+    def test_annotate(self):
+
+        t1 = Task()
+        t2 = Task()
+
+        t1.annotate()
+        self.assertIsInstance(t1.annotations.inputs,     list)
+        self.assertIsInstance(t1.annotations.outputs,    list)
+        self.assertIsInstance(t1.annotations.depends_on, list)
+
+        t1.annotate(inputs=['file_1.txt', 'file_2.txt'],
+                    outputs=['file_t1_1.txt', 'file_t1_2.txt'])
+        self.assertIn('file_1.txt',    t1.annotations.inputs)
+        self.assertIn('file_t1_1.txt', t1.annotations.outputs)
+
+        # check output duplications
+        with self.assertWarns(UserWarning) as uw:
+            t1.annotate(outputs=['file_t1_1.txt'])
+        self.assertIn('includes duplication', str(uw.warnings[0].message))
+
+        t2.annotate(inputs={t1: ['file_t1_2.txt']})
+        t2.annotate(inputs=['file_3.txt', {t1: ['file_t1_1.txt']}])
+        self.assertIn('file_3.txt',                t2.annotations.inputs)
+        self.assertIn('%s:file_t1_1.txt' % t1.uid, t2.annotations.inputs)
+        self.assertIn('%s:file_t1_2.txt' % t1.uid, t2.annotations.inputs)
+        # no output was provided
+        self.assertFalse(t2.annotations.outputs)
+        # confirm tasks dependency based on dataflow
+        self.assertIn(t1.uid, t2.annotations.depends_on)
 
 
 # ------------------------------------------------------------------------------

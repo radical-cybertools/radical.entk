@@ -480,6 +480,9 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.post_launch    = task.post_launch
         td.stage_on_error = task.stage_on_error
 
+        if task.annotations:
+            td.metadata   = {'data': task.annotations.as_dict()}
+
         if task.parent_pipeline['uid']:
             td.tags = resolve_tags(
                 task=task,
