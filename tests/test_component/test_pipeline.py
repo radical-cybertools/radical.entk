@@ -3,12 +3,11 @@
 
 from unittest import TestCase
 from random import shuffle
-# import string
 
 from   hypothesis import given, settings
 import hypothesis.strategies as st
 
-from radical.entk import Pipeline, Stage
+from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import EnTKTypeError, EnTKValueError, EnTKMissingError, EnTKError
 
@@ -286,28 +285,55 @@ class TestBase(TestCase):
     # --------------------------------------------------------------------------
     #
     @mock.patch.object(Pipeline, '__init__', return_value=None)
-    def test_pipeline_validate(self, mocked_init):
+    @mock.patch.object(Stage, '_validate', return_value=None)
+    @mock.patch.object(Task, '_validate', return_value=None)
+    def test_pipeline_validate(self, mocked_t_validate, mocked_s_validate,
+                                     mocked_init):
 
         p = Pipeline()
-        p._uid = 'pipeline.0000'
+        p._uid   = 'pipeline.0000'
         p._state = 'test'
         with self.assertRaises(EnTKValueError):
             p._validate()
 
         p = Pipeline()
-        p._uid = 'pipeline.0000'
-        p._stages = list()
-        p._state = states.INITIAL
+        p._uid    = 'pipeline.0000'
+        p._stages = []
+        p._state  = states.INITIAL
         with self.assertRaises(EnTKMissingError):
             p._validate()
 
-        p = Pipeline()
-        p._uid = 'pipeline.0000'
         s = mock.MagicMock(spec=Stage)
-        s._validate = mock.MagicMock(return_value=True)
+        p = Pipeline()
+        p._uid    = 'pipeline.0000'
         p._stages = [s]
-        p._state = states.INITIAL
+        p._state  = states.INITIAL
         p._validate()
+
+        # test annotations
+        s1 = Stage()
+        s2 = Stage()
+        t1 = Task()
+        t2 = Task()
+        t3 = Task()
+        t4 = Task()
+
+        t1.annotate(outputs=['file_t1_1.txt', 'file_t1_2.txt'])
+        t2.annotate(inputs={t1: ['not_produced_by_t1']})
+        t4.annotate(inputs=['external_file_not_produced_by_other_tasks',
+                            'pilot://file_in_shared_space'])
+        s1.add_tasks([t1, t3, t4])
+
+        # no errors during validation
+        p._stages = [s1]
+        p._validate()
+
+        s2.add_tasks(t2)
+        p._stages = [s1, s2]
+        # provided input for `t2` (as from task `t1`) is not produced by `t1`
+        with self.assertRaises(EnTKError) as ee:
+            p._validate()
+        self.assertIn('Annotation error', str(ee.exception))
 
     # --------------------------------------------------------------------------
     #

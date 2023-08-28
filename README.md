@@ -5,4 +5,4 @@
 [![conda](https://anaconda.org/conda-forge/radical.entk/badges/version.svg)](https://anaconda.org/conda-forge/radical.entk)
 
 The documentation for Ensemble Toolkit is available at
-[http://radicalentk.readthedocs.io/en/latest/](http://radicalentk.readthedocs.io/en/latest/)
+[http://radicalentk.readthedocs.io/](http://radicalentk.readthedocs.io/)
