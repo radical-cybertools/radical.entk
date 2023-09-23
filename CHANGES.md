@@ -6,6 +6,14 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.37.0 Release                                                        2023-09-23
+--------------------------------------------------------------------------------
+
+  - add means to annotate dataflow
+  - extend coverage for Pipeline validation
+  - update file id (`[task_uid:]file_name`) parsing procedure
+
+
 1.36.0 Release                                                        2023-08-01
 --------------------------------------------------------------------------------
 
