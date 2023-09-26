@@ -13,7 +13,6 @@ import threading       as mt
 import multiprocessing as mp
 
 import radical.pilot   as rp
-import radical.utils   as ru
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
@@ -48,8 +47,8 @@ class TaskManager(Base_TaskManager):
 
         super(TaskManager, self).__init__(sid, rmgr, rts='radical.pilot',
                                           zmq_info=zmq_info)
-        self._rts_runner      = None
-        self._zmq_info        = zmq_info
+        self._rts_runner = None
+        self._zmq_info   = zmq_info
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -57,7 +56,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _tmgr(self, uid, rmgr, zmq_info):
+    def _tmgr(self, uid, tmgr, zmq_info):
         '''
         **Purpose**: This method has 2 purposes: receive tasks from the
                      'pending' queue, start a new thread that processes these
@@ -69,7 +68,7 @@ class TaskManager(Base_TaskManager):
                      Tasks. This conversion is necessary since the current RTS
                      is RADICAL Pilot. Once Tasks are recovered from a CU, they
                      are then pushed to the completed queue. At all state
-                     transititons, they are synced (blocking) with the
+                     transitions, they are synced (blocking) with the
                      AppManager in the master process.
 
         **Details**: The AppManager can re-invoke the tmgr process with this
@@ -79,7 +78,22 @@ class TaskManager(Base_TaskManager):
                      tasks on the remote machine.
         '''
 
-        self._rp_tmgr         = None
+        # reset tmgr's session
+        tmgr._session = rp.Session(uid=self._sid,
+                                   _reg_addr=tmgr.cfg.reg_addr,
+                                   _role=rp.Session._DEFAULT)
+        tmgr._reg = tmgr._session._reg
+
+        tmgr._subscribers = dict()
+        tmgr.register_subscriber(rp.STATE_PUBSUB, tmgr._state_sub_cb)
+        tmgr._publishers = dict()
+        tmgr.register_publisher(rp.STATE_PUBSUB)
+        tmgr.register_publisher(rp.CONTROL_PUBSUB)
+        tmgr.register_output(rp.TMGR_SCHEDULING_PENDING,
+                             rp.TMGR_SCHEDULING_QUEUE)
+        tmgr.register_output(rp.TMGR_STAGING_OUTPUT_PENDING,
+                             rp.TMGR_STAGING_OUTPUT_QUEUE)
+
         self._submitted_tasks = dict()
         self._total_res       = {'cores': 0, 'gpus': 0}
 
@@ -103,7 +117,7 @@ class TaskManager(Base_TaskManager):
 
             # Start a thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
-                                         args=(task_queue, rmgr))
+                                         args=(task_queue, tmgr))
             self._rts_runner.daemon = True
             self._rts_runner.start()
 
@@ -137,7 +151,7 @@ class TaskManager(Base_TaskManager):
                                     task_queue.put(item)
 
                             elif msg['type'] == 'rts':
-                                self._update_resource(msg['body'])
+                                self._update_resource(msg['body'], tmgr)
 
                             else:
                                 self._log.error('TMGR receiver wrong message type')
@@ -164,6 +178,7 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr_term', uid=uid)
 
+            tmgr.close()
             if self._rts_runner:
                 self._rts_runner.join()
 
@@ -175,21 +190,19 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _update_resource(self, pilot):
+    def _update_resource(self, pilot, tmgr):
         '''
         Update used pilot.
         '''
 
         # Busy wait unit RP TMGR exists. Does some other way make sense?
         self._log.debug('Adding pilot.')
-        while self._rp_tmgr is None:
-            pass
 
-        curr_pilot = self._rp_tmgr.list_pilots()
-        self._log.debug('Got old pilots')
+        curr_pilot = tmgr.list_pilots()
         if curr_pilot:
-            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
-        self._rp_tmgr.add_pilots(pilot)
+            self._log.debug('Got old pilots')
+            tmgr.remove_pilots(pilot_ids=curr_pilot)
+        tmgr.add_pilots(pilot)
 
         self._total_res = {'cores': pilot['description']['cores'],
                            'gpus' : pilot['description']['gpus']}
@@ -198,7 +211,7 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _process_tasks(self, task_queue, rmgr):
+    def _process_tasks(self, task_queue, tmgr):
         '''
         **Purpose**: The new thread that gets spawned by the main tmgr process
                      invokes this function. This function receives tasks from
@@ -272,8 +285,7 @@ class TaskManager(Base_TaskManager):
                 raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
 
-        self._rp_tmgr = rp.TaskManager(session=rmgr.session)
-        self._rp_tmgr.register_callback(task_state_cb)
+        tmgr.register_callback(task_state_cb)
 
         try:
             pkl_path = self._path + '/.task_submitted.pkl'
@@ -308,7 +320,7 @@ class TaskManager(Base_TaskManager):
                                       'tmgr-to-sync')
 
                 if bulk_tasks:
-                    self._rp_tmgr.submit_tasks(bulk_tasks)
+                    tmgr.submit_tasks(bulk_tasks)
 
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
@@ -321,7 +333,7 @@ class TaskManager(Base_TaskManager):
             raise EnTKError(e) from e
 
         finally:
-            self._rp_tmgr.close()
+            tmgr.close()
 
 
     # --------------------------------------------------------------------------
@@ -341,12 +353,22 @@ class TaskManager(Base_TaskManager):
             self._prof.prof('creating tmgr process', uid=self._uid)
             self._tmgr_terminate = mp.Event()
 
+            # preserve session before forking
+            session = self._rmgr.session
+
+            rp_tmgr = rp.TaskManager(session=session)
+            rp_tmgr._session    = None
+            self._rmgr._session = None
+
             self._tmgr_process = mp.Process(target=self._tmgr,
                                             name='task-manager',
                                             args=(self._uid,
-                                                  self._rmgr,
+                                                  rp_tmgr,
                                                   self._zmq_info))
             self._tmgr_process.daemon = True
+
+            rp_tmgr._session    = session
+            self._rmgr._session = session
 
             self._log.info('Starting task manager process')
             self._prof.prof('starting tmgr process', uid=self._uid)
