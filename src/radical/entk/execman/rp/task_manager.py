@@ -55,7 +55,11 @@ class TaskManager(Base_TaskManager):
 
 
     # --------------------------------------------------------------------------
+    # pylint: disable=arguments-renamed
     #
+    # FIXME: Parameter 'rmgr' has been renamed to 'tmgr' in overriding
+    #        'TaskManager._tmgr' method (override method in the base class has
+    #        different parameter names)
     def _tmgr(self, uid, tmgr, zmq_info):
         '''
         **Purpose**: This method has 2 purposes: receive tasks from the
