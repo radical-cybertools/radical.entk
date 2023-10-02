@@ -55,12 +55,8 @@ class TaskManager(Base_TaskManager):
 
 
     # --------------------------------------------------------------------------
-    # pylint: disable=arguments-renamed
     #
-    # FIXME: Parameter 'rmgr' has been renamed to 'tmgr' in overriding
-    #        'TaskManager._tmgr' method (override method in the base class has
-    #        different parameter names)
-    def _tmgr(self, uid, tmgr, zmq_info):
+    def _tmgr(self, uid, rmgr, zmq_info):
         '''
         **Purpose**: This method has 2 purposes: receive tasks from the
                      'pending' queue, start a new thread that processes these
@@ -82,21 +78,12 @@ class TaskManager(Base_TaskManager):
                      tasks on the remote machine.
         '''
 
-        # reset tmgr's session
-        tmgr._session = rp.Session(uid=self._sid,
-                                   _reg_addr=tmgr.cfg.reg_addr,
-                                   _role=rp.Session._DEFAULT)
-        tmgr._reg = tmgr._session._reg
-
-        tmgr._subscribers = dict()
-        tmgr.register_subscriber(rp.STATE_PUBSUB, tmgr._state_sub_cb)
-        tmgr._publishers = dict()
-        tmgr.register_publisher(rp.STATE_PUBSUB)
-        tmgr.register_publisher(rp.CONTROL_PUBSUB)
-        tmgr.register_output(rp.TMGR_SCHEDULING_PENDING,
-                             rp.TMGR_SCHEDULING_QUEUE)
-        tmgr.register_output(rp.TMGR_STAGING_OUTPUT_PENDING,
-                             rp.TMGR_STAGING_OUTPUT_QUEUE)
+        session = rp.Session(uid=self._sid,
+                             _reg_addr=rmgr.pmgr.cfg.reg_addr,
+                             _role=rp.Session._DEFAULT)
+        # FIXME: use a non-primary session for rp.TaskManager
+        session._role = rp.Session._PRIMARY
+        tmgr = rp.TaskManager(session=session)
 
         self._submitted_tasks = dict()
         self._total_res       = {'cores': 0, 'gpus': 0}
@@ -182,9 +169,9 @@ class TaskManager(Base_TaskManager):
 
             self._prof.prof('tmgr_term', uid=uid)
 
-            tmgr.close()
             if self._rts_runner:
                 self._rts_runner.join()
+            tmgr.close()
 
             self._log.debug('TMGR RTS Runner joined')
 
@@ -336,9 +323,6 @@ class TaskManager(Base_TaskManager):
             self._log.exception('%s failed', self._uid)
             raise EnTKError(e) from e
 
-        finally:
-            tmgr.close()
-
 
     # --------------------------------------------------------------------------
     #
@@ -359,19 +343,15 @@ class TaskManager(Base_TaskManager):
 
             # preserve session before forking
             session = self._rmgr.session
-
-            rp_tmgr = rp.TaskManager(session=session)
-            rp_tmgr._session    = None
             self._rmgr._session = None
 
             self._tmgr_process = mp.Process(target=self._tmgr,
                                             name='task-manager',
                                             args=(self._uid,
-                                                  rp_tmgr,
+                                                  self._rmgr,
                                                   self._zmq_info))
             self._tmgr_process.daemon = True
 
-            rp_tmgr._session    = session
             self._rmgr._session = session
 
             self._log.info('Starting task manager process')
