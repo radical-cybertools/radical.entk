@@ -6,6 +6,13 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.40.0 Release                                                        2023-10-17
+--------------------------------------------------------------------------------
+
+  - fix ZMQ bridge in `AppManager`
+  - fix session handling for `TaskManager`
+
+
 1.37.0 Release                                                        2023-09-23
 --------------------------------------------------------------------------------
 
