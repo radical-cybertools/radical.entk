@@ -6,9 +6,10 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
-1.40.0 Release                                                        2023-10-17
+1.41.0 Release                                                        2023-10-17
 --------------------------------------------------------------------------------
 
+  - fix RTD
   - fix ZMQ bridge in `AppManager`
   - fix session handling for `TaskManager`
 
@@ -438,3 +439,5 @@
 
 # ------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix RTD
+  - (origin/projects/facts, projects/facts) devel version bump
