@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.39.0 Release                                                        2023-10-27
+--------------------------------------------------------------------------------
+
+  - last release before MongoDB removal
+
+
 1.37.0 Release                                                        2023-09-23
 --------------------------------------------------------------------------------
 
