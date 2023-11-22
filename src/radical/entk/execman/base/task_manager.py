@@ -20,7 +20,7 @@ class Base_TaskManager(object):
     A Task Manager takes the responsibility of dispatching tasks it receives
     from a 'pending' queue for execution on to the available resources using a
     runtime system. Once the tasks have completed execution, they are pushed
-    on to the completed queue for other components of EnTK to process.
+    on to the completed queue for other components of EnTK to thread.
 
     :arguments:
         :rmgr:              (ResourceManager) Object to be used to access the
@@ -61,7 +61,7 @@ class Base_TaskManager(object):
         self._prof = ru.Profiler(name, path=self._path)
         self._dh = ru.DebugHelper(name=name)
 
-        self._tmgr_process = None
+        self._tmgr_thread = None
         self._tmgr_terminate = None
 
         self._zmq_queue = None
@@ -87,12 +87,12 @@ class Base_TaskManager(object):
     #
     def _tmgr(self, uid, rmgr, zmq_info):
         """
-        **Purpose**: Method to be run by the tmgr process. This method receives
+        **Purpose**: Method to be run by the tmgr thread. This method receives
                      a Task from the 'pending' queue and submits it to the RTS.
                      At all state transititons, they are synced (blocking) with
-                     the AppManager in the master process.
+                     the AppManager in the master thread.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this
+        **Details**: The AppManager can re-invoke the tmgr thread with this
                      function if the execution of the workflow is still
                      incomplete. There is also population of a dictionary,
                      placeholder_dict, which stores the path of each of the
@@ -150,7 +150,7 @@ class Base_TaskManager(object):
     #
     def start_manager(self):
         """
-        **Purpose**: Method to start the tmgr process. The tmgr function
+        **Purpose**: Method to start the tmgr thread. The tmgr function
         is not to be accessed directly. The function is started in a separate
         thread using this method.
         """
@@ -163,12 +163,12 @@ class Base_TaskManager(object):
     #
     def terminate_manager(self):
         """
-        **Purpose**: Method to terminate the tmgr process. This method is
-        blocking as it waits for the tmgr process to terminate (aka join).
+        **Purpose**: Method to terminate the tmgr thread. This method is
+        blocking as it waits for the tmgr thread to terminate (aka join).
         """
 
         try:
-            if self._tmgr_process:
+            if self._tmgr_thread:
                 self._log.debug('Trying to terminate task manager.')
                 if self._tmgr_terminate is not None:
                     if not self._tmgr_terminate.is_set():
@@ -176,16 +176,16 @@ class Base_TaskManager(object):
                     self._log.debug('TMGR terminate is set %s',
                                     self._tmgr_terminate.is_set())
                 if self.check_manager():
-                    self._log.debug('TMGR process is alive')
-                    self._tmgr_process.join(30)
-                self._log.debug('TMGR process joined')
-                self._tmgr_process = None
+                    self._log.debug('TMGR thread is alive')
+                    self._tmgr_thread.join(30)
+                self._log.debug('TMGR thread joined')
+                self._tmgr_thread = None
 
-                self._log.info('Task manager process closed')
+                self._log.info('Task manager thread closed')
                 self._prof.prof('tmgr_term', uid=self._uid)
 
         except Exception as ex:
-            self._log.exception('Could not terminate task manager process')
+            self._log.exception('Could not terminate task manager thread')
             raise EnTKError(ex) from ex
 
 
@@ -193,12 +193,12 @@ class Base_TaskManager(object):
     #
     def check_manager(self):
         """
-        **Purpose**: Check if the tmgr process is alive and running
+        **Purpose**: Check if the tmgr thread is alive and running
         """
 
-        # Return False if the process does not exist
-        if self._tmgr_process:
-            return self._tmgr_process.is_alive()
+        # Return False if the thread does not exist
+        if self._tmgr_thread:
+            return self._tmgr_thread.is_alive()
         else:
             return False
 

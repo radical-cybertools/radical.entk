@@ -5,12 +5,11 @@ __author__    = 'Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>'
 __license__   = 'MIT'
 
 
-import queue
+import queueBase_TaskManager
 import os
 import pickle
 
 import threading       as mt
-import multiprocessing as mp
 
 import radical.pilot   as rp
 
@@ -71,7 +70,7 @@ class TaskManager(Base_TaskManager):
                      transitions, they are synced (blocking) with the
                      AppManager in the master process.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this
+        **Details**: The AppManager can re-invoke the tmgr thread with this
                      function if the execution of the workflow is still
                      incomplete. There is also population of a dictionary,
                      `placeholders`, which stores the path of each of the
@@ -92,10 +91,10 @@ class TaskManager(Base_TaskManager):
 
             self._setup_zmq(zmq_info)
 
-            self._prof.prof('tmgr process started', uid=self._uid)
-            self._log.info('Task Manager process started')
+            self._prof.prof('tmgr thread started', uid=self._uid)
+            self._log.info('Task Manager thread started')
 
-            # Queue for communication between threads of this process
+            # Queue for communication between threads of this thread
             task_queue     = queue.Queue()
             tasks_per_item = 1000  # sets a size of item for `Queue.put`
 
@@ -156,7 +155,7 @@ class TaskManager(Base_TaskManager):
         except KeyboardInterrupt:
 
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
-                                'cancel tmgr process gracefully...')
+                                'cancel tmgr thread gracefully...')
             raise
 
 
@@ -328,37 +327,37 @@ class TaskManager(Base_TaskManager):
     #
     def start_manager(self):
         '''
-        **Purpose**: Method to start the tmgr process. The tmgr function
+        **Purpose**: Method to start the tmgr thread. The tmgr function
                      is not to be accessed directly. The function is started
                      in a separate thread using this method.
         '''
         # pylint: disable=attribute-defined-outside-init, access-member-before-definition
-        if self._tmgr_process:
-            self._log.warn('tmgr process already running!')
+        if self._tmgr_thread:
+            self._log.warn('tmgr thread already running!')
             return
 
         try:
-            self._prof.prof('creating tmgr process', uid=self._uid)
-            self._tmgr_terminate = mp.Event()
+            self._prof.prof('creating tmgr thread', uid=self._uid)
+            self._tmgr_terminate = mt.Event()
 
             # preserve session before forking
             session = self._rmgr.session
             self._rmgr._session = None
 
-            self._tmgr_process = mp.Process(target=self._tmgr,
-                                            name='task-manager',
-                                            args=(self._uid,
-                                                  self._rmgr,
-                                                  self._zmq_info))
-            self._tmgr_process.daemon = True
+            self._tmgr_thread = mt.Thread(target=self._tmgr,
+                                          name='task-manager',
+                                          args=(self._uid,
+                                                self._rmgr,
+                                                self._zmq_info))
+            self._tmgr_thread.daemon = True
 
             self._rmgr._session = session
 
-            self._log.info('Starting task manager process')
-            self._prof.prof('starting tmgr process', uid=self._uid)
+            self._log.info('Starting task manager thread')
+            self._prof.prof('starting tmgr thread', uid=self._uid)
 
-            self._tmgr_process.start()
-            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
+            self._tmgr_thread.start()
+            self._log.debug('tmgr thread "task-manager" started')
 
             return True
 
