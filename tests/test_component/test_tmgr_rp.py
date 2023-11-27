@@ -7,8 +7,7 @@ from radical.entk.execman.rp   import TaskManager      as RPTmgr
 from radical.entk.execman.rp   import ResourceManager  as RPRmgr
 
 import time
-import psutil
-import multiprocessing as mp
+import threading as mt
 
 try:
     import mock
@@ -65,14 +64,13 @@ class TestBase(TestCase):
         tmgr._zmq_info = {}
 
         tmgr._tmgr_terminate = None
-        tmgr._tmgr_process = None
+        tmgr._tmgr_thread = None
         tmgr.start_manager()
         try:
-            self.assertIsInstance(tmgr._tmgr_terminate, mp.synchronize.Event)
-            self.assertIsInstance(tmgr._tmgr_process, mp.context.Process)
-            pid = tmgr._tmgr_process.pid
-            self.assertTrue(psutil.pid_exists(pid))
+            self.assertIsInstance(tmgr._tmgr_terminate, mt.Event)
+            self.assertIsInstance(tmgr._tmgr_thread, mt.Thread)
+            self.assertTrue(tmgr._tmgr_thread.is_alive())
         finally:
-            if tmgr._tmgr_process.is_alive():
-                tmgr._tmgr_process.join()
+            if tmgr._tmgr_thread.is_alive():
+                tmgr._tmgr_thread.join()
 

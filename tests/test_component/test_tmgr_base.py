@@ -11,9 +11,7 @@ from radical.entk.execman.base   import Base_TaskManager as Tmgr
 from radical.entk.execman.base   import Base_ResourceManager
 
 import time
-import psutil
 import threading as mt
-import multiprocessing as mp
 
 try:
     import mock
@@ -51,7 +49,7 @@ class TestBase(TestCase):
         self.assertEqual(tmgr._rts, 'test_rts')
         self.assertEqual(tmgr._uid, 'tmgr.0000')
         self.assertEqual(tmgr._path, 'test_folder/test_tmgr')
-        self.assertIsNone(tmgr._tmgr_process)
+        self.assertIsNone(tmgr._tmgr_thread)
         self.assertIsNone(tmgr._tmgr_terminate)
 
         with self.assertRaises(NotImplementedError):
@@ -128,15 +126,15 @@ class TestBase(TestCase):
         def _tmgr_side_effect(amount):
             time.sleep(amount)
 
-        tmgr._tmgr_process = mt.Thread(target=_tmgr_side_effect,
-                                       name='test_tmgr', args=(1,))
-        tmgr._tmgr_process.start()
+        tmgr._tmgr_thread = mt.Thread(target=_tmgr_side_effect,
+                                      name='test_tmgr', args=(1,))
+        tmgr._tmgr_thread.start()
 
         self.assertTrue(tmgr.check_manager())
-        tmgr._tmgr_process.join()
+        tmgr._tmgr_thread.join()
         self.assertFalse(tmgr.check_manager())
 
-        tmgr._tmgr_process = None
+        tmgr._tmgr_thread = None
         self.assertFalse(tmgr.check_manager())
 
     # --------------------------------------------------------------------------
@@ -153,18 +151,17 @@ class TestBase(TestCase):
         tmgr._prof = mocked_Profiler
         tmgr._uid = 'tmgr.0000'
 
-        tmgr._tmgr_terminate = mp.Event()
+        tmgr._tmgr_terminate = mt.Event()
 
-        tmgr._tmgr_process = mp.Process(target=_tmgr_side_effect,
-                                       name='test_tmgr',
-                                       args=(tmgr._tmgr_terminate,))
-        tmgr._tmgr_process.start()
+        tmgr._tmgr_thread = mt.Thread(target=_tmgr_side_effect,
+                                      name='test_tmgr',
+                                      args=(tmgr._tmgr_terminate,))
+        tmgr._tmgr_thread.start()
 
-        pid = tmgr._tmgr_process.pid
         tmgr.check_manager = mock.MagicMock(return_value=True)
         tmgr.terminate_manager()
 
-        self.assertIsNone(tmgr._tmgr_process)
-
-        self.assertFalse(psutil.pid_exists(pid))
+        self.assertIsNone(tmgr._tmgr_thread)
+        if tmgr._tmgr_thread:
+            self.assertFalse(tmgr._tmgr_thread.is_alive())
 

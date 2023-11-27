@@ -203,7 +203,7 @@ class TaskManager(Base_TaskManager):
     #
     def _process_tasks(self, task_queue, tmgr):
         '''
-        **Purpose**: The new thread that gets spawned by the main tmgr process
+        **Purpose**: The new thread that gets spawned by the main tmgr thread
                      invokes this function. This function receives tasks from
                      'task_queue' and submits them to the RADICAL Pilot RTS.
         '''
