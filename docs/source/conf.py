@@ -48,7 +48,11 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinxcontrib.napoleon',
+    'nbsphinx',
+    'sphinx_copybutton',
+    'sphinx_rtd_theme',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.imgconverter',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -72,7 +76,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+# exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -80,7 +84,8 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "armstrong"
+# html_theme = "armstrong"
+html_theme = "sphinx_rtd_theme"
 html_theme_path = ["_themes", ]
 
 # Add any paths that contain custom static files (such as style sheets) here,

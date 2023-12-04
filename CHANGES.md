@@ -6,6 +6,14 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.42.0 Release                                                        2023-12-04
+--------------------------------------------------------------------------------
+
+  - RTD fix
+  - Consistent doc theme across RCT
+  - switch to a thread based instead of process based tmgr
+
+
 1.41.0 Release                                                        2023-10-17
 --------------------------------------------------------------------------------
 
@@ -439,5 +447,3 @@
 
 # ------------------------------------------------------------------------------
 
-  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix RTD
-  - (origin/projects/facts, projects/facts) devel version bump
