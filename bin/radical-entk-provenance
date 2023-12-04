@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+__copyright__ = 'Copyright 2023, The RADICAL-Cybertools Team'
+__license__   = 'MIT'
+
+import argparse
+import sys
+
+from radical.entk.utils.provenance import extract_provenance_graph
+
+
+# ------------------------------------------------------------------------------
+#
+def get_args():
+    """
+    Get arguments.
+    :return: Arguments namespace.
+    :rtype: _AttributeHolder
+    """
+    parser = argparse.ArgumentParser(
+        description='Extract provenance graph',
+        usage='radical-entk-provenance --sid <session ID> '
+              '[--sessions-dir <sessions dir>'
+              ' --output-file <provenance graph file>]')
+
+    parser.add_argument(
+        '--sid',
+        dest='sid',
+        type=str,
+        help='session ID',
+        required=True)
+
+    parser.add_argument(
+        '--sessions-dir',
+        dest='sessions_dir',
+        type=str,
+        help='directory with sessions',
+        required=False,
+        default='.')
+
+    parser.add_argument(
+        '--output-file',
+        dest='output_file',
+        type=str,
+        help='json file with the provenance graph',
+        required=False)
+
+    return parser.parse_args(sys.argv[1:])
+
+
+# ------------------------------------------------------------------------------
+#
+def main(args):
+
+    output_file = args.output_file or '%s.provenance.json' % args.sid
+    extract_provenance_graph(
+        session_json='%s/%s/%s.json' % (args.sessions_dir, args.sid, args.sid),
+        output_file=output_file)
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+    main(args=get_args())
+
+# ------------------------------------------------------------------------------
+

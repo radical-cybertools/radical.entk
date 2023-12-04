@@ -6,6 +6,49 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.42.0 Release                                                        2023-12-04
+--------------------------------------------------------------------------------
+
+  - RTD fix
+  - Consistent doc theme across RCT
+  - switch to a thread based instead of process based tmgr
+
+
+1.41.0 Release                                                        2023-10-17
+--------------------------------------------------------------------------------
+
+  - fix RTD
+  - fix ZMQ bridge in `AppManager`
+  - fix session handling for `TaskManager`
+
+
+1.37.0 Release                                                        2023-09-23
+--------------------------------------------------------------------------------
+
+  - add means to annotate dataflow
+  - extend coverage for Pipeline validation
+  - update file id (`[task_uid:]file_name`) parsing procedure
+
+
+1.36.0 Release                                                        2023-08-01
+--------------------------------------------------------------------------------
+
+  - added tool to extract the provenance graph (from Pipeline & from JSON)
+
+
+1.34.0 Release                                                        2023-04-25
+--------------------------------------------------------------------------------
+
+  - added log messages to track TaskQueue
+  - introduced service task
+  - added mongodb reconnect for a thread with `rp.TaskManager`
+  - added tests (service tasks, pilot cancelation)
+  - extend num digits for `Task.uid`
+  - fixed reattempts and sizing for `task_queue`
+  - moved MDB reconnect into TMGR mp.Process (thread safety)
+  - removed excessive log message (when queue task is empty)
+  
+  
 1.33.0 Release                                                        2023-04-25
 --------------------------------------------------------------------------------
   

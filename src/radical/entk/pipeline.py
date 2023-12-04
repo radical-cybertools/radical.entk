@@ -406,8 +406,32 @@ class Pipeline(object):
 
             raise EnTKMissingError(obj=self._uid, missing_attribute='stages')
 
+        annotated_outputs = {}
         for stage in self._stages:
             stage._validate()  # pylint: disable=W0212
+
+            # validate provided annotations
+            for task in stage.tasks:
+
+                if not task.annotations:
+                    continue
+
+                annotated_outputs[task.uid] = task.annotations.outputs
+                for t_input in task.annotations.inputs:
+                    delimiter_count = t_input.count(':')
+                    if not delimiter_count:
+                        continue
+                    elif delimiter_count == 1 and '://' in t_input:
+                        # TODO: extend file representation format
+                        continue
+                    # ensure that task inputs are annotated as outputs
+                    # for corresponding tasks it depends on
+                    t_dep_uid, t_dep_output = t_input.split(':', maxsplit=1)
+                    if t_dep_output not in annotated_outputs.get(t_dep_uid, []):
+                        raise EnTKError(
+                            'Annotation error for %s: '      % task.uid +
+                            'provided input "%s" '           % t_dep_output +
+                            'is not produced by assigned %s' % t_dep_uid)
 
 
 # ------------------------------------------------------------------------------

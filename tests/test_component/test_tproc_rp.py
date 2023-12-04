@@ -7,6 +7,8 @@ from unittest import mock, TestCase
 import radical.entk            as re
 import radical.entk.exceptions as ree
 
+from radical.entk.task import Annotations
+
 from radical.entk.execman.rp.task_processor import resolve_placeholders
 from radical.entk.execman.rp.task_processor import resolve_arguments
 from radical.entk.execman.rp.task_processor import resolve_tags
@@ -181,6 +183,10 @@ class TestBase(TestCase):
         task.stderr          = 'stderr'
         task.stdout          = 'stdout'
 
+        task.annotations     = Annotations({'input'     : ['task.0001:f1.txt'],
+                                            'output'    : [],
+                                            'depends_on': ['task.0001']})
+
         hash_table = {}
         test_td = create_td_from_task(task=task,
                                       placeholders=None,
@@ -213,6 +219,9 @@ class TestBase(TestCase):
         self.assertEqual(test_td.tags, {'colocate': 'test_tags_resolved'})
         self.assertEqual(test_td.uid, 'task.0000')
         self.assertEqual(hash_table, {'task.0000': 'task.0000'})
+
+        self.assertEqual(test_td.metadata['data']['output'], [])
+        self.assertEqual(test_td.metadata['data']['depends_on'], ['task.0001'])
 
         task.cpu_reqs = {'cpu_processes'   : 1,
                          'cpu_threads'     : 2,

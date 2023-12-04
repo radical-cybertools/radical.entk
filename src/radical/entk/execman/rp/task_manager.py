@@ -5,35 +5,18 @@ __author__    = 'Vivek Balasubramanian <vivek.balasubramanian@rutgers.edu>'
 __license__   = 'MIT'
 
 
-import queue
 import os
+import queue
 import pickle
 
 import threading       as mt
-import multiprocessing as mp
 
 import radical.pilot   as rp
-import radical.utils   as ru
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
 from ..base              import Base_TaskManager
 from .task_processor     import create_td_from_task, create_task_from_rp
-
-
-# ------------------------------------------------------------------------------
-# FIXME: temporary solution for `mp.Process` - close the connection before
-#        forking, and then reconnect in both parent and child processes
-#
-def mongodb_close(session):
-    session._dbs._mongo.close()
-
-
-def mongodb_start(session):
-    mdb = ru.mongodb_connect(str(session._cfg.dburl))[:2]
-    session._dbs._mongo = mdb[0]
-    session._dbs._db    = mdb[1]
-    session._dbs._c     = mdb[1][session.uid]
 
 
 # ------------------------------------------------------------------------------
@@ -63,8 +46,8 @@ class TaskManager(Base_TaskManager):
 
         super(TaskManager, self).__init__(sid, rmgr, rts='radical.pilot',
                                           zmq_info=zmq_info)
-        self._rts_runner      = None
-        self._zmq_info        = zmq_info
+        self._rts_runner = None
+        self._zmq_info   = zmq_info
 
         self._log.info('Created task manager object: %s', self._uid)
         self._prof.prof('tmgr_create', uid=self._uid)
@@ -84,29 +67,34 @@ class TaskManager(Base_TaskManager):
                      Tasks. This conversion is necessary since the current RTS
                      is RADICAL Pilot. Once Tasks are recovered from a CU, they
                      are then pushed to the completed queue. At all state
-                     transititons, they are synced (blocking) with the
+                     transitions, they are synced (blocking) with the
                      AppManager in the master process.
 
-        **Details**: The AppManager can re-invoke the tmgr process with this
+        **Details**: The AppManager can re-invoke the tmgr thread with this
                      function if the execution of the workflow is still
                      incomplete. There is also population of a dictionary,
                      `placeholders`, which stores the path of each of the
                      tasks on the remote machine.
         '''
 
-        self._rp_tmgr         = None
+        session = rp.Session(uid=self._sid,
+                             _reg_addr=rmgr.pmgr.cfg.reg_addr,
+                             _role=rp.Session._DEFAULT)
+        # FIXME: use a non-primary session for rp.TaskManager
+        session._role = rp.Session._PRIMARY
+        tmgr = rp.TaskManager(session=session)
+
         self._submitted_tasks = dict()
         self._total_res       = {'cores': 0, 'gpus': 0}
 
         try:
 
             self._setup_zmq(zmq_info)
-            mongodb_start(rmgr.session)
 
-            self._prof.prof('tmgr process started', uid=self._uid)
-            self._log.info('Task Manager process started')
+            self._prof.prof('tmgr thread started', uid=self._uid)
+            self._log.info('Task Manager thread started')
 
-            # Queue for communication between threads of this process
+            # Queue for communication between threads of this thread
             task_queue     = queue.Queue()
             tasks_per_item = 1000  # sets a size of item for `Queue.put`
 
@@ -119,7 +107,7 @@ class TaskManager(Base_TaskManager):
 
             # Start a thread to receive tasks and push to RTS
             self._rts_runner = mt.Thread(target=self._process_tasks,
-                                         args=(task_queue, rmgr))
+                                         args=(task_queue, tmgr))
             self._rts_runner.daemon = True
             self._rts_runner.start()
 
@@ -153,7 +141,7 @@ class TaskManager(Base_TaskManager):
                                     task_queue.put(item)
 
                             elif msg['type'] == 'rts':
-                                self._update_resource(msg['body'])
+                                self._update_resource(msg['body'], tmgr)
 
                             else:
                                 self._log.error('TMGR receiver wrong message type')
@@ -167,7 +155,7 @@ class TaskManager(Base_TaskManager):
         except KeyboardInterrupt:
 
             self._log.exception('Execution interrupted (probably by Ctrl+C), '
-                                'cancel tmgr process gracefully...')
+                                'cancel tmgr thread gracefully...')
             raise
 
 
@@ -182,31 +170,29 @@ class TaskManager(Base_TaskManager):
 
             if self._rts_runner:
                 self._rts_runner.join()
+            tmgr.close()
 
             self._log.debug('TMGR RTS Runner joined')
 
-            mongodb_close(rmgr.session)
             self._prof.close()
             self._log.debug('TMGR profile closed')
 
 
     # --------------------------------------------------------------------------
     #
-    def _update_resource(self, pilot):
+    def _update_resource(self, pilot, tmgr):
         '''
         Update used pilot.
         '''
 
         # Busy wait unit RP TMGR exists. Does some other way make sense?
         self._log.debug('Adding pilot.')
-        while self._rp_tmgr is None:
-            pass
 
-        curr_pilot = self._rp_tmgr.list_pilots()
-        self._log.debug('Got old pilots')
+        curr_pilot = tmgr.list_pilots()
         if curr_pilot:
-            self._rp_tmgr.remove_pilots(pilot_ids=curr_pilot)
-        self._rp_tmgr.add_pilots(pilot)
+            self._log.debug('Got old pilots')
+            tmgr.remove_pilots(pilot_ids=curr_pilot)
+        tmgr.add_pilots(pilot)
 
         self._total_res = {'cores': pilot['description']['cores'],
                            'gpus' : pilot['description']['gpus']}
@@ -215,9 +201,9 @@ class TaskManager(Base_TaskManager):
 
     # --------------------------------------------------------------------------
     #
-    def _process_tasks(self, task_queue, rmgr):
+    def _process_tasks(self, task_queue, tmgr):
         '''
-        **Purpose**: The new thread that gets spawned by the main tmgr process
+        **Purpose**: The new thread that gets spawned by the main tmgr thread
                      invokes this function. This function receives tasks from
                      'task_queue' and submits them to the RADICAL Pilot RTS.
         '''
@@ -289,8 +275,7 @@ class TaskManager(Base_TaskManager):
                 raise EnTKError(ex) from ex
         # ----------------------------------------------------------------------
 
-        self._rp_tmgr = rp.TaskManager(session=rmgr.session)
-        self._rp_tmgr.register_callback(task_state_cb)
+        tmgr.register_callback(task_state_cb)
 
         try:
             pkl_path = self._path + '/.task_submitted.pkl'
@@ -325,7 +310,7 @@ class TaskManager(Base_TaskManager):
                                       'tmgr-to-sync')
 
                 if bulk_tasks:
-                    self._rp_tmgr.submit_tasks(bulk_tasks)
+                    tmgr.submit_tasks(bulk_tasks)
 
             self._log.debug('Exited RTS main loop. TMGR terminating')
         except KeyboardInterrupt:
@@ -337,41 +322,42 @@ class TaskManager(Base_TaskManager):
             self._log.exception('%s failed', self._uid)
             raise EnTKError(e) from e
 
-        finally:
-            self._rp_tmgr.close()
-
 
     # --------------------------------------------------------------------------
     #
     def start_manager(self):
         '''
-        **Purpose**: Method to start the tmgr process. The tmgr function
+        **Purpose**: Method to start the tmgr thread. The tmgr function
                      is not to be accessed directly. The function is started
                      in a separate thread using this method.
         '''
         # pylint: disable=attribute-defined-outside-init, access-member-before-definition
-        if self._tmgr_process:
-            self._log.warn('tmgr process already running!')
+        if self._tmgr_thread:
+            self._log.warn('tmgr thread already running!')
             return
 
         try:
-            self._prof.prof('creating tmgr process', uid=self._uid)
-            self._tmgr_terminate = mp.Event()
+            self._prof.prof('creating tmgr thread', uid=self._uid)
+            self._tmgr_terminate = mt.Event()
 
-            mongodb_close(self._rmgr.session)
-            self._tmgr_process = mp.Process(target=self._tmgr,
-                                            name='task-manager',
-                                            args=(self._uid,
-                                                  self._rmgr,
-                                                  self._zmq_info))
-            self._tmgr_process.daemon = True
-            mongodb_start(self._rmgr.session)
+            # preserve session before forking
+            session = self._rmgr.session
+            self._rmgr._session = None
 
-            self._log.info('Starting task manager process')
-            self._prof.prof('starting tmgr process', uid=self._uid)
+            self._tmgr_thread = mt.Thread(target=self._tmgr,
+                                          name='task-manager',
+                                          args=(self._uid,
+                                                self._rmgr,
+                                                self._zmq_info))
+            self._tmgr_thread.daemon = True
 
-            self._tmgr_process.start()
-            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
+            self._rmgr._session = session
+
+            self._log.info('Starting task manager thread')
+            self._prof.prof('starting tmgr thread', uid=self._uid)
+
+            self._tmgr_thread.start()
+            self._log.debug('tmgr thread "task-manager" started')
 
             return True
 

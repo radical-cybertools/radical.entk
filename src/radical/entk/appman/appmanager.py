@@ -578,7 +578,7 @@ class AppManager(object):
                                  'stall_hwm' : 0,
                                  'bulk_size' : 1})
 
-            self._zmq_bridge = ru.zmq.Queue(cfg)
+            self._zmq_bridge = ru.zmq.Queue(sid, cfg)
             self._zmq_bridge.start()
             time.sleep(1)
 

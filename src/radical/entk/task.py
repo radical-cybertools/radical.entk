@@ -6,6 +6,7 @@ __license__   = 'MIT'
 import warnings
 
 from string import punctuation
+from typing import Dict, List, Union
 
 import radical.utils as ru
 
@@ -101,6 +102,23 @@ class GpuReqs(ReqsMixin, ru.TypedDict):
         'process_type'       : 'gpu_process_type',
         'threads_per_process': 'gpu_threads',
         'thread_type'        : 'gpu_thread_type'
+    }
+
+
+# ------------------------------------------------------------------------------
+#
+class Annotations(ru.TypedDict):
+
+    _schema = {
+        'inputs'    : [str],
+        'outputs'   : [str],
+        'depends_on': [str]
+    }
+
+    _defaults = {
+        'inputs'    : [],
+        'outputs'   : [],
+        'depends_on': []
     }
 
 
@@ -361,6 +379,11 @@ class Task(ru.TypedDict):
         [type: `dict` | default: `{'uid': None, 'name': None}`] Identification
         of the pipeline, which contains the current task.
 
+    .. data:: annotations
+
+        [type: `Annotations` | default: `None`] Annotations to describe task's
+        input and output files, and sets dependencies between tasks.
+
     Read-only attributes
     --------------------
 
@@ -410,7 +433,8 @@ class Task(ru.TypedDict):
         'tags'                 : {str: None},
         'rts_uid'              : str,
         'parent_stage'         : {str: None},
-        'parent_pipeline'      : {str: None}
+        'parent_pipeline'      : {str: None},
+        'annotations'          : Annotations
     }
 
     # guaranteed attributes with default non-initialized values
@@ -585,6 +609,51 @@ class Task(ru.TypedDict):
         if not t_elem: t_elem = self['uid']
 
         return '%s.%s.%s' % (p_elem, s_elem, t_elem)
+
+    # --------------------------------------------------------------------------
+    #
+    def annotate(self, inputs: Union[Dict, List, str, None] = None,
+                       outputs: Union[List, str, None] = None) -> None:
+        """
+        Adds dataflow annotations with provided input and output files,
+        and defines dependencies between tasks.
+
+        Attributes:
+            inputs (list, optional): List of input files. If a file is
+                produced by the previously executed task, then the
+                corresponding input element is provided as a dictionary with
+                the task instance as a key.
+                Example: inputs=['file1', {task0: 'file2', task1: ['file2']}]
+
+            outputs (list, optional): List of produced/generated files.
+        """
+        ta = self.setdefault('annotations', Annotations())
+
+        # TODO: have a unified file representation (file name within task
+        #       sandbox or file full path, considering files outside of the
+        #       task sandbox) - set an expand procedure. Ensure that it is
+        #       the same for inputs and outputs
+
+        if inputs:
+            for i in ru.as_list(inputs):
+
+                if isinstance(i, str):
+                    ta.inputs.append(i)
+
+                elif isinstance(i, dict):
+                    for task, task_files in i.items():
+                        if task.uid not in ta.depends_on:
+                            ta.depends_on.append(task.uid)
+                        for tf in ru.as_list(task_files):
+                            # corresponding validation of dependencies
+                            # is part of the Pipeline validation process
+                            ta.inputs.append('%s:%s' % (task.uid, tf))
+
+        if outputs:
+            ta.outputs.extend(ru.as_list(outputs))
+            if len(ta.outputs) != len(set(ta.outputs)):
+                warnings.warn('Annotated outputs for %s ' % self['uid'] +
+                              'includes duplication(s)')
 
     # --------------------------------------------------------------------------
     #
