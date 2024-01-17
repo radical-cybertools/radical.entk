@@ -1,12 +1,49 @@
 
-__copyright__ = 'Copyright 2023, The RADICAL-Cybertools Team'
+__copyright__ = 'Copyright 2024, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
 from typing import Optional, Dict, List
 
 import radical.utils as ru
 
-from .. import Pipeline
+from .. import Pipeline, Task
+
+
+# ------------------------------------------------------------------------------
+#
+def enable_darshan(pipelines: List[Pipeline],
+                   modules: Optional[str] = None) -> None:
+
+    for pipeline in pipelines:
+        for stage in pipeline.stages:
+            for task in stage.tasks:
+
+                darshan_enable = ('LD_PRELOAD="$DARSHAN_RUNTIME_ROOT'
+                                  '/lib/libdarshan.so" ')
+
+                is_mpi = True if task.cpu_reqs.cpu_processes > 1 else False
+                if not is_mpi:
+                    darshan_enable += 'DARSHAN_ENABLE_NONMPI=1 '
+
+                task.executable = darshan_enable + task.executable
+
+                task.pre_launch += ['mkdir -p $RP_TASK_SANDBOX/darshan_logs']
+
+                for module in modules or []:
+                    task.pre_exec.append('module load %s' % module)
+                task.pre_exec.append(
+                    'export DARSHAN_LOG_DIR_PATH=$RP_TASK_SANDBOX/darshan_logs')
+
+
+# ------------------------------------------------------------------------------
+#
+def set_dataflow(task: Task) -> None:
+
+    # TODO: go through Darshan logs to collect inputs and outputs
+    task.annotate(inputs=[{}], outputs=[])
+
+    task.annotations.inputs  = sorted(set(task.annotations.inputs))
+    task.annotations.outputs = sorted(set(task.annotations.outputs))
 
 
 # ------------------------------------------------------------------------------
@@ -28,6 +65,8 @@ def get_provenance_graph(pipelines: List[Pipeline],
             graph[pipeline.uid][stage.uid] = {}
 
             for task in stage.tasks:
+                set_dataflow(task)
+
                 g_task = graph[pipeline.uid][stage.uid].setdefault(task.uid, {})
                 if task.annotations:
                     g_task.update(task.annotations.as_dict())
