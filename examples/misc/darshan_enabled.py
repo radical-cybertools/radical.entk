@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 import radical.entk  as re
 import radical.pilot as rp
 
@@ -13,6 +15,9 @@ RESOURCE_DESCRIPTION = {
     'cpus'    : 32,
     'walltime': 15
 }
+
+os.environ['RADICAL_LOG_LVL'] = 'DEBUG'
+os.environ['RADICAL_REPORT']  = 'TRUE'
 
 
 def get_stages():
