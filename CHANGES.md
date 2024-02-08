@@ -6,7 +6,15 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
-1.44.0 Release                                                        2024-01-11
+1.47.0 Release                                                        2024-02-08
+--------------------------------------------------------------------------------
+
+  - added darshan log analysis to annotate tasks
+  - automate dataflow annotation
+  - mock backend to use threads for proper termination
+
+
+1.46.0 Release                                                        2024-01-11
 --------------------------------------------------------------------------------
 
   - pypi fix
@@ -459,4 +467,3 @@
 
 # ------------------------------------------------------------------------------
 
-  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
