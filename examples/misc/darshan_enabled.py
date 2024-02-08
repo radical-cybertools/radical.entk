@@ -20,6 +20,7 @@ os.environ['RADICAL_LOG_LVL'] = 'DEBUG'
 os.environ['RADICAL_REPORT']  = 'TRUE'
 
 
+# pylint: disable=anomalous-backslash-in-string
 def get_stages():
 
     # hello-RP task

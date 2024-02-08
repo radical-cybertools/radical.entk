@@ -56,7 +56,6 @@ def enable_darshan(pipelines: List[Pipeline],
 #
 def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
 
-    global _darshan_env
     data = set()
 
     grep_patterns = '-e ' + ' -e '.join(ru.as_list(target_counters))
