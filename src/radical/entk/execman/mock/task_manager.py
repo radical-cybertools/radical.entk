@@ -6,7 +6,6 @@ __license__   = 'MIT'
 import queue
 
 import threading       as mt
-import multiprocessing as mp
 
 from ...exceptions       import EnTKError
 from ...                 import states, Task
@@ -205,26 +204,26 @@ class TaskManager(Base_TaskManager):
                      in a separate thread using this method.
         '''
         # pylint: disable=attribute-defined-outside-init, access-member-before-definition
-        if self._tmgr_process:
+        if self._tmgr_thread:
             self._log.warn('tmgr process already running!')
             return
 
         try:
             self._prof.prof('creating tmgr process', uid=self._uid)
-            self._tmgr_terminate = mp.Event()
+            self._tmgr_terminate = mt.Event()
 
-            self._tmgr_process = mp.Process(target=self._tmgr,
-                                            name='task-manager',
-                                            args=(self._uid,
-                                                  self._rmgr,
-                                                  self._zmq_info)
-                                            )
+            self._tmgr_thread = mt.Thread(target=self._tmgr,
+                                          name='task-manager',
+                                          args=(self._uid,
+                                                self._rmgr,
+                                                self._zmq_info)
+                                         )
 
             self._log.info('Starting task manager process')
             self._prof.prof('starting tmgr process', uid=self._uid)
 
-            self._tmgr_process.start()
-            self._log.debug('tmgr pid %s', self._tmgr_process.pid)
+            self._tmgr_thread.start()
+            self._log.debug('tmgr thread %s', self._tmgr_thread.ident)
 
             return True
 
