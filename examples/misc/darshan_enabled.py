@@ -46,8 +46,9 @@ def get_stages():
     # R/W data and task depends on the task from the previous stage
     task_10 = re.Task({
         'executable'     : '/bin/sh',
-        'arguments'      : ['-c', f"sed -r 's/\s+//g' {output_01} | grep -o . "
-                                  '| sort | uniq -c > output_10.dat'],
+        'arguments'      : ['-c',
+                            f"sed -r 's/\s+//g' {output_01} | grep -o . "
+                            '| sort | uniq -c > output_10.dat'],    # noqa: W605
         'copy_input_data': [f'$SHARED/{output_01} > {output_01}']
     })
 
