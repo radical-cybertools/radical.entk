@@ -11,8 +11,8 @@ import radical.utils as ru
 from .. import Pipeline, Stage, Task
 
 _darshan_activation_cmds = None
-_darshan_env = None
-_darshan_runtime_root = None
+_darshan_env             = None
+_darshan_runtime_root    = None
 
 
 # ------------------------------------------------------------------------------
@@ -20,6 +20,7 @@ _darshan_runtime_root = None
 def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
                       modules: Optional[List[str]] = None,
                       env: Optional[Dict[str, str]] = None) -> None:
+
     global _darshan_runtime_root
 
     if _darshan_runtime_root is None:
@@ -56,7 +57,6 @@ def darshan(func,
                               darshan_runtime_root=darshan_runtime_root,
                               modules=modules,
                               env=env)
-
     return wrapper
 
 
@@ -67,20 +67,28 @@ def enable_darshan(pst_obj: Union[Pipeline, Stage, Task],
                    modules: Optional[List[str]] = None,
                    env: Optional[Dict[str, str]] = None
                    ) -> Union[Pipeline, Stage, Task]:
+
     if not isinstance(pst_obj, (Pipeline, Stage, Task)):
         raise TypeError('Provide PST object to enable Darshan')
 
     cache_darshan_env(darshan_runtime_root, modules, env)
 
     def _enable_darshan(src_task: Task):
+
+        if not src_task.executable:
+            return
+        elif 'libdarshan.so' in src_task.executable:
+            # Darshan is already enabled
+            return
+
         darshan_log_dir = '${RP_TASK_SANDBOX}/${RP_TASK_ID}_darshan'
-        darshan_enable = (f'LD_PRELOAD="{_darshan_runtime_root}'
-                          '/lib/libdarshan.so" ')
+        darshan_enable  = (f'LD_PRELOAD="{_darshan_runtime_root}'
+                           '/lib/libdarshan.so" ')
 
         if src_task.cpu_reqs.cpu_processes == 1:
             darshan_enable += 'DARSHAN_ENABLE_NONMPI=1 '
 
-        src_task.executable = darshan_enable + src_task.executable
+        src_task.executable  = darshan_enable + src_task.executable
         src_task.pre_launch += [f'mkdir -p {darshan_log_dir}']
         src_task.pre_exec.extend(
             _darshan_activation_cmds +
