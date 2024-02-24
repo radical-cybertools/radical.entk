@@ -8,48 +8,99 @@ from typing import Optional, Dict, List, Union
 
 import radical.utils as ru
 
-from .. import Pipeline, Task
+from .. import Pipeline, Stage, Task
 
+_darshan_activation_cmds = None
 _darshan_env = None
+_darshan_runtime_root = None
 
 
 # ------------------------------------------------------------------------------
 #
-def enable_darshan(pipelines: List[Pipeline],
-                   darshan_runtime_root: Optional[str] = None,
-                   modules: Optional[List[str]] = None) -> None:
+def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
+                      modules: Optional[List[str]] = None,
+                      env: Optional[Dict[str, str]] = None) -> None:
+    global _darshan_runtime_root
 
-    if darshan_runtime_root:
-        if not darshan_runtime_root.startswith('/'):
-            raise RuntimeError('Path for the darshan installation '
-                               'should be an absolute path '
+    if _darshan_runtime_root is None:
+        if (darshan_runtime_root
+                and not darshan_runtime_root.startswith('$')
+                and not darshan_runtime_root.startswith('/')):
+            raise RuntimeError('Darshan root directory should be set with '
+                               'either env variable or an absolute path '
                                f'(provided path: {darshan_runtime_root})')
-    else:
-        darshan_runtime_root = '$DARSHAN_RUNTIME_ROOT'
+        _darshan_runtime_root = darshan_runtime_root or '$DARSHAN_RUNTIME_ROOT'
 
+    global _darshan_activation_cmds
     global _darshan_env
 
-    darshan_activation_cmds = []
-    for module in modules or []:
-        darshan_activation_cmds.append(f'module load {module}')
-        _darshan_env = ru.env_prep(pre_exec_cached=darshan_activation_cmds)
+    if _darshan_activation_cmds is None:
 
-    for pipeline in pipelines:
-        for stage in pipeline.stages:
+        _darshan_activation_cmds = []
+        for module in modules or []:
+            _darshan_activation_cmds.append(f'module load {module}')
+        for k, v in (env or {}).items():
+            _darshan_activation_cmds.append(f'export {k.upper()}={v}')
+
+        _darshan_env = ru.env_prep(pre_exec_cached=_darshan_activation_cmds)
+
+
+# ------------------------------------------------------------------------------
+# decorator to enable darshan for function that generates Pipeline, Stage, Task
+def darshan(func,
+            darshan_runtime_root: Optional[str] = None,
+            modules: Optional[List[str]] = None,
+            env: Optional[Dict[str, str]] = None):
+    def wrapper(*args, **kwargs):
+        return enable_darshan(func(*args, **kwargs),
+                              darshan_runtime_root=darshan_runtime_root,
+                              modules=modules,
+                              env=env)
+
+    return wrapper
+
+
+# ------------------------------------------------------------------------------
+#
+def enable_darshan(pst_obj: Union[Pipeline, Stage, Task],
+                   darshan_runtime_root: Optional[str] = None,
+                   modules: Optional[List[str]] = None,
+                   env: Optional[Dict[str, str]] = None
+                   ) -> Union[Pipeline, Stage, Task]:
+    if not isinstance(pst_obj, (Pipeline, Stage, Task)):
+        raise TypeError('Provide PST object to enable Darshan')
+
+    cache_darshan_env(darshan_runtime_root, modules, env)
+
+    def _enable_darshan(src_task: Task):
+        darshan_log_dir = '${RP_TASK_SANDBOX}/${RP_TASK_ID}_darshan'
+        darshan_enable = (f'LD_PRELOAD="{_darshan_runtime_root}'
+                          '/lib/libdarshan.so" ')
+
+        if src_task.cpu_reqs.cpu_processes == 1:
+            darshan_enable += 'DARSHAN_ENABLE_NONMPI=1 '
+
+        src_task.executable = darshan_enable + src_task.executable
+        src_task.pre_launch += [f'mkdir -p {darshan_log_dir}']
+        src_task.pre_exec.extend(
+            _darshan_activation_cmds +
+            [f'export DARSHAN_LOG_DIR_PATH={darshan_log_dir}'])
+
+    if isinstance(pst_obj, Pipeline):
+        for stage in pst_obj.stages:
             for task in stage.tasks:
+                _enable_darshan(task)
+        return pst_obj
 
-                darshan_log_dir = '${RP_TASK_SANDBOX}/${RP_TASK_ID}_darshan'
-                darshan_enable  = (f'LD_PRELOAD="{darshan_runtime_root}'
-                                   '/lib/libdarshan.so" ')
+    elif isinstance(pst_obj, Stage):
+        for task in pst_obj.tasks:
+            _enable_darshan(task)
+        return pst_obj
 
-                if task.cpu_reqs.cpu_processes == 1:
-                    darshan_enable += 'DARSHAN_ENABLE_NONMPI=1 '
+    elif isinstance(pst_obj, Task):
+        _enable_darshan(pst_obj)
 
-                task.executable  = darshan_enable + task.executable
-                task.pre_launch += [f'mkdir -p {darshan_log_dir}']
-                task.pre_exec.extend(
-                    darshan_activation_cmds +
-                    [f'export DARSHAN_LOG_DIR_PATH={darshan_log_dir}'])
+    return pst_obj
 
 
 # ------------------------------------------------------------------------------
