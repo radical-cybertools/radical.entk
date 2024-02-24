@@ -10,6 +10,8 @@ import radical.utils as ru
 
 from .. import Pipeline, Stage, Task
 
+DARSHAN_LOG_DIR = '%(sandbox)s/darshan_logs'
+
 _darshan_activation_cmds = None
 _darshan_env             = None
 _darshan_runtime_root    = None
@@ -81,7 +83,7 @@ def enable_darshan(pst_obj: Union[Pipeline, Stage, Task],
             # Darshan is already enabled
             return
 
-        darshan_log_dir = '${RP_TASK_SANDBOX}/${RP_TASK_ID}_darshan'
+        darshan_log_dir = DARSHAN_LOG_DIR % {'sandbox': '${RP_TASK_SANDBOX}'}
         darshan_enable  = (f'LD_PRELOAD="{_darshan_runtime_root}'
                            '/lib/libdarshan.so" ')
 
@@ -143,78 +145,19 @@ def annotate_task_with_darshan(task: Task) -> None:
     inputs  = set()
     outputs = set()
 
-    for log in glob.glob(f'{task.path}/{task.uid}_darshan/*'):
+    for log in glob.glob((DARSHAN_LOG_DIR % {'sandbox': task.path}) + '/*'):
 
         inputs.update(get_parsed_data(log, ['POSIX_BYTES_READ', 'STDIO_OPENS']))
         outputs.update(get_parsed_data(log, 'POSIX_BYTES_WRITTEN'))
 
     arguments = ' '.join(task.arguments)
     if '>' in arguments:
-        outputs.add(arguments.split('>')[1].split(';')[0].strip())
+        output = arguments.split('>')[1].split(';')[0].strip()
+        if not output.startswith('/') and not output.startswith('$'):
+            output = task.path + '/' + output
+        outputs.add(output)
 
     task.annotate(inputs=sorted(inputs), outputs=sorted(outputs))
-
-
-# ------------------------------------------------------------------------------
-#
-def get_provenance_graph(pipelines: Union[Pipeline, List[Pipeline]],
-                         output_file: Optional[str] = None) -> Dict:
-    """
-    Using UIDs of all entities to build a workflow provenance graph.
-    """
-
-    graph = {}
-
-    for pipeline in ru.as_list(pipelines):
-        graph[pipeline.uid] = {}
-        for stage in pipeline.stages:
-            graph[pipeline.uid][stage.uid] = {}
-            for task in stage.tasks:
-                annotate_task_with_darshan(task)
-                graph[pipeline.uid][stage.uid][task.uid] = \
-                    task.annotations.as_dict()
-
-    if output_file:
-        if not output_file.endswith('.json'):
-            output_file += '.json'
-        ru.write_json(graph, output_file)
-
-    return graph
-
-
-# ------------------------------------------------------------------------------
-#
-def extract_provenance_graph(session_json: str,
-                             output_file: Optional[str] = None) -> Dict:
-    """
-    Using session JSON file to build a workflow provenance graph.
-    """
-
-    session_entities = ru.read_json(session_json)
-
-    if not session_entities.get('task'):
-        raise ValueError('No task entities in provided session')
-
-    graph = {}
-
-    for task in session_entities['task']:
-        task_uid, _, stage_uid, _, pipeline_uid, _ = task['name'].split(',')
-        graph.\
-            setdefault(pipeline_uid, {}).\
-            setdefault(stage_uid, {}).\
-            setdefault(task_uid,
-                       task['description']['metadata'].get('data') or {})
-
-    for pipeline_uid in graph:
-        for stage_uid in graph[pipeline_uid]:
-            graph[pipeline_uid][stage_uid].sort()
-
-    if output_file:
-        if not output_file.endswith('.json'):
-            output_file += '.json'
-        ru.write_json(graph, output_file)
-
-    return graph
 
 
 # ------------------------------------------------------------------------------

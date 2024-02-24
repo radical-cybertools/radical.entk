@@ -5,10 +5,10 @@ import os
 import radical.entk  as re
 import radical.pilot as rp
 
-from radical.entk.utils.provenance import (cache_darshan_env,
-                                           darshan,
-                                           enable_darshan,
-                                           get_provenance_graph)
+from radical.entk.tools import (cache_darshan_env,
+                                darshan,
+                                enable_darshan,
+                                get_provenance_graph)
 
 RESOURCE_DESCRIPTION = {
     # https://radicalpilot.readthedocs.io/en/stable/supported/polaris.html
