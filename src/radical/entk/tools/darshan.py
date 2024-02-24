@@ -64,14 +64,18 @@ def darshan(func,
 
 # ------------------------------------------------------------------------------
 #
-def enable_darshan(pst_obj: Union[Pipeline, Stage, Task],
+def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
                    darshan_runtime_root: Optional[str] = None,
                    modules: Optional[List[str]] = None,
                    env: Optional[Dict[str, str]] = None
                    ) -> Union[Pipeline, Stage, Task]:
 
-    if not isinstance(pst_obj, (Pipeline, Stage, Task)):
-        raise TypeError('Provide PST object to enable Darshan')
+    if not pst:
+        raise ValueError('PST object is not provided')
+    elif isinstance(pst, list) and not isinstance(pst[0], Pipeline):
+        raise TypeError('List of Pipelines is not provided')
+    elif not isinstance(pst, (Pipeline, Stage, Task)):
+        raise TypeError('Non PST object provided')
 
     cache_darshan_env(darshan_runtime_root, modules, env)
 
@@ -96,21 +100,25 @@ def enable_darshan(pst_obj: Union[Pipeline, Stage, Task],
             _darshan_activation_cmds +
             [f'export DARSHAN_LOG_DIR_PATH={darshan_log_dir}'])
 
-    if isinstance(pst_obj, Pipeline):
-        for stage in pst_obj.stages:
+    if isinstance(pst, list):
+        for pipeline in pst:
+            for stage in pipeline.stages:
+                for task in stage.tasks:
+                    _enable_darshan(task)
+
+    elif isinstance(pst, Pipeline):
+        for stage in pst.stages:
             for task in stage.tasks:
                 _enable_darshan(task)
-        return pst_obj
 
-    elif isinstance(pst_obj, Stage):
-        for task in pst_obj.tasks:
+    elif isinstance(pst, Stage):
+        for task in pst.tasks:
             _enable_darshan(task)
-        return pst_obj
 
-    elif isinstance(pst_obj, Task):
-        _enable_darshan(pst_obj)
+    elif isinstance(pst, Task):
+        _enable_darshan(pst)
 
-    return pst_obj
+    return pst
 
 
 # ------------------------------------------------------------------------------
