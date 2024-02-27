@@ -6,7 +6,7 @@ import radical.entk  as re
 import radical.pilot as rp
 
 from radical.entk.tools import (cache_darshan_env,
-                                darshan,
+                                with_darshan,
                                 enable_darshan,
                                 get_provenance_graph)
 
@@ -52,7 +52,7 @@ def get_stage_0():
 
 
 # --- enable Darshan for the whole "stage_1" using decorator
-@darshan
+@with_darshan
 def get_stage_1():
 
     # R/W data and task depends on the task from the previous stage

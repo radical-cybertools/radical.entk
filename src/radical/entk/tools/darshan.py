@@ -50,10 +50,10 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
 
 # ------------------------------------------------------------------------------
 # decorator to enable darshan for function that generates Pipeline, Stage, Task
-def darshan(func,
-            darshan_runtime_root: Optional[str] = None,
-            modules: Optional[List[str]] = None,
-            env: Optional[Dict[str, str]] = None):
+def with_darshan(func,
+                 darshan_runtime_root: Optional[str] = None,
+                 modules: Optional[List[str]] = None,
+                 env: Optional[Dict[str, str]] = None):
     def wrapper(*args, **kwargs):
         return enable_darshan(func(*args, **kwargs),
                               darshan_runtime_root=darshan_runtime_root,
