@@ -26,9 +26,9 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
     global _darshan_runtime_root
 
     if _darshan_runtime_root is None:
-        if (darshan_runtime_root
-                and not darshan_runtime_root.startswith('$')
-                and not darshan_runtime_root.startswith('/')):
+        if (darshan_runtime_root and
+                not darshan_runtime_root.startswith('$') and
+                not darshan_runtime_root.startswith('/')):
             raise RuntimeError('Darshan root directory should be set with '
                                'either env variable or an absolute path '
                                f'(provided path: {darshan_runtime_root})')
