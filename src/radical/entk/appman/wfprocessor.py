@@ -338,6 +338,14 @@ class WFprocessor(object):
                         if task.uid != deq_task.uid:
                             continue
 
+                        # due to the possibility of race condition with
+                        # AppManager._update_task(), we ensure that task
+                        # attributes "path" and "rts_uid" are set.
+                        if not task.path and deq_task.path:
+                            task.path = str(deq_task.path)
+                        if not task.rts_uid and deq_task.rts_uid:
+                            task.rts_uid = str(deq_task.rts_uid)
+
                         # If there is no exit code, we assume success
                         # We are only concerned about state of task and not
                         # deq_task
