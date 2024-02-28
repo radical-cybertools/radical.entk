@@ -43,7 +43,7 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
         for module in modules or []:
             _darshan_activation_cmds.append(f'module load {module}')
         for k, v in (env or {}).items():
-            _darshan_activation_cmds.append(f'export {k.upper()}={v}')
+            _darshan_activation_cmds.append(f'export {k.upper()}="{v}"')
 
         _darshan_env = ru.env_prep(pre_exec_cached=_darshan_activation_cmds)
 
