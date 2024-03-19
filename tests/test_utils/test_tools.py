@@ -65,7 +65,7 @@ class TestTools(TestCase):
 
         # enable darshan using decorator
         @re_darshan.with_darshan
-        def get_pipeline():
+        def get_pipelines():
             t1 = re.Task()
             t1.cpu_reqs   = {'cpu_processes': 1}
             t1.executable = 'test_exec1'
@@ -76,23 +76,24 @@ class TestTools(TestCase):
             s0.add_tasks([t1, t2])
             p0 = re.Pipeline()
             p0.add_stages(s0)
-            return p0
+            return [p0]
 
-        pipeline = get_pipeline()
-        for s in pipeline.stages:
-            for t in s.tasks:
-                self.assertTrue('LD_PRELOAD' in t.executable)
+        pipelines = get_pipelines()
+        for p in pipelines:
+            for s in p.stages:
+                for t in s.tasks:
+                    self.assertTrue('LD_PRELOAD' in t.executable)
 
-                non_mpi_statement = 'DARSHAN_ENABLE_NONMPI=1' in t.executable
-                if t.cpu_reqs.cpu_processes == 1:
-                    # non-MPI task
-                    self.assertTrue(non_mpi_statement)
-                else:
-                    self.assertFalse(non_mpi_statement)
+                    nonmpi_statement = 'DARSHAN_ENABLE_NONMPI=1' in t.executable
+                    if t.cpu_reqs.cpu_processes == 1:
+                        # non-MPI task
+                        self.assertTrue(nonmpi_statement)
+                    else:
+                        self.assertFalse(nonmpi_statement)
 
-                # darshan is already enabled
-                re_darshan.enable_darshan(t)
-                self.assertEqual(t.executable.count('LD_PRELOAD'), 1)
+                    # darshan is already enabled
+                    re_darshan.enable_darshan(t)
+                    self.assertEqual(t.executable.count('LD_PRELOAD'), 1)
 
     # --------------------------------------------------------------------------
     #

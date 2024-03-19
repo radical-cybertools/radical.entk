@@ -72,8 +72,9 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
 
     if not pst:
         raise ValueError('PST object is not provided')
-    elif isinstance(pst, list) and not isinstance(pst[0], Pipeline):
-        raise TypeError('List of Pipelines is not provided')
+    elif isinstance(pst, list):
+        if not isinstance(pst[0], Pipeline):
+            raise TypeError('List of Pipelines is not provided')
     elif not isinstance(pst, (Pipeline, Stage, Task)):
         raise TypeError('Non PST object provided')
 
