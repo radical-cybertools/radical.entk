@@ -128,6 +128,9 @@ def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
 
     data = set()
 
+    if not target_counters:
+        return data
+
     grep_patterns = '-e ' + ' -e '.join(ru.as_list(target_counters))
     parser_cmd    = (f'darshan-parser {log} | grep {grep_patterns} | '
                      "awk '{print $5\":\"$6}'")
@@ -135,10 +138,10 @@ def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
     if ret:
         print(f'[ERROR] Darshan not able to parse "{log}": {err}')
     else:
-        for o in out.split('\n'):
-            if not o:
+        for line in out.split('\n'):
+            if not line:
                 continue
-            value, file = o.split(':')
+            value, file = line.split(':', 1)
             try:               value = int(value)
             except ValueError: value = 0
             if value > 0 and file.startswith('/'):
