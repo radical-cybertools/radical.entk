@@ -6,7 +6,7 @@ __license__   = 'MIT'
 import argparse
 import sys
 
-from radical.entk.utils.provenance import extract_provenance_graph
+from radical.entk.tools import extract_provenance_graph
 
 
 # ------------------------------------------------------------------------------

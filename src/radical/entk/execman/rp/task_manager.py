@@ -255,12 +255,14 @@ class TaskManager(Base_TaskManager):
 
                     task = create_task_from_rp(rp_task, self._log, self._prof)
 
+                    # to AppManager
                     self._advance(task, 'Task', states.COMPLETED, 'cb-to-sync')
 
                     load_placeholder(task)
 
                     tdict = task.as_dict()
 
+                    # to WFprocessor
                     self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
                     self._log.info('Pushed task %s with state %s to completed',
                                    task.uid, task.state)
