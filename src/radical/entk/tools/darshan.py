@@ -3,6 +3,8 @@ __copyright__ = 'Copyright 2024, The RADICAL-Cybertools Team'
 __license__   = 'MIT'
 
 import glob
+import os
+import tempfile
 
 from typing import Optional, Dict, List, Union
 
@@ -10,11 +12,34 @@ import radical.utils as ru
 
 from .. import Pipeline, Stage, Task
 
-DARSHAN_LOG_DIR = '%(sandbox)s/darshan_logs'
+DARSHAN_LOG_FILE = '%(sandbox)s/%(uid)s.darshan'
 
 _darshan_activation_cmds = None
 _darshan_env             = None
 _darshan_runtime_root    = None
+_darshan_cfg_file_local  = None
+
+# use DARSHAN_CONFIG_PATH to set a path to the config
+DARSHAN_CONFIG = """
+# enable DXT modules if interested in fine-grained trace data
+MOD_ENABLE      DXT_POSIX,DXT_MPIIO
+
+# allocate 4096 file records for POSIX and MPI-IO modules
+# (darshan only allocates 1024 per-module by default)
+MAX_RECORDS     4096      POSIX,MPI-IO
+
+# the '*' specifier can be used to apply settings for all modules
+NAME_EXCLUDE    ^/lib,^/bin,^/usr   *
+NAME_EXCLUDE    ^/tmp,^/etc,^/sys   *
+NAME_EXCLUDE    .py$,.pyc$,.so$     *
+NAME_EXCLUDE    /site-packages      *
+
+# bump up Darshan's default memory usage to 8 MiB
+MODMEM  8
+
+# avoid generating logs for { git, ls, which, ld } binaries
+APP_EXCLUDE     git,ls,which,ld
+"""
 
 
 # ------------------------------------------------------------------------------
@@ -22,6 +47,25 @@ _darshan_runtime_root    = None
 def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
                       modules: Optional[List[str]] = None,
                       env: Optional[Dict[str, str]] = None) -> None:
+    """
+    Cache Darshan environment and corresponding setup parameters.
+
+    .. data:: darshan_runtime_root
+
+        [type: `str` | default: `None`] Absolute path or environment variable
+        that points to the Darshan root directory.
+
+    .. data:: modules
+
+        [type: `list` | default: `None`] List of required module names.
+        These modules will be loaded to set up Darshan environment.
+
+    .. data:: env
+
+        [type: `dict` | default: `None`] Dictionary of required environment
+        variables (variable names and values). These environment variables
+        will be exported to set up Darshan environment.
+    """
 
     global _darshan_runtime_root
 
@@ -47,13 +91,25 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
 
         _darshan_env = ru.env_prep(pre_exec_cached=_darshan_activation_cmds)
 
+    global _darshan_cfg_file_local
+
+    if _darshan_cfg_file_local is None:
+
+        fd, _darshan_cfg_file_local = tempfile.mkstemp(prefix='rct.darshan.cfg')
+        with os.fdopen(fd, 'w') as f:
+            f.write(DARSHAN_CONFIG)
+
 
 # ------------------------------------------------------------------------------
-# decorator to enable darshan for function that generates Pipeline, Stage, Task
+#
 def with_darshan(func,
                  darshan_runtime_root: Optional[str] = None,
                  modules: Optional[List[str]] = None,
                  env: Optional[Dict[str, str]] = None):
+    """
+    Decorator to enable Darshan for a corresponding function, which generates
+    either Pipeline (or list of Pipelines, a.k.a. workflow) or Stage or Task.
+    """
     def wrapper(*args, **kwargs):
         return enable_darshan(func(*args, **kwargs),
                               darshan_runtime_root=darshan_runtime_root,
@@ -69,6 +125,19 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
                    modules: Optional[List[str]] = None,
                    env: Optional[Dict[str, str]] = None
                    ) -> Union[Pipeline, Stage, Task]:
+    """
+    Enables Darshan for provided Pipeline (or list of Pipelines,
+    a.k.a. workflow) or Stage or Task.
+
+    .. data:: pst
+
+        [type: `Pipeline, Stage, Task, list[Pipeline]`] PST object,
+        which will be configured to enable Darshan.
+
+    .. data:: darshan_runtime_root, modules, env
+
+        See function `cache_darshan_env`.
+    """
 
     if not pst:
         raise ValueError('PST object is not provided')
@@ -80,6 +149,7 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
 
     cache_darshan_env(darshan_runtime_root, modules, env)
 
+    # --------------------------------------------------------------------------
     def _enable_darshan(src_task: Task):
 
         if not src_task.executable:
@@ -88,18 +158,23 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
             # Darshan is already enabled
             return
 
-        darshan_log_dir = DARSHAN_LOG_DIR % {'sandbox': '${RP_TASK_SANDBOX}'}
-        darshan_enable  = (f'LD_PRELOAD="{_darshan_runtime_root}'
-                           '/lib/libdarshan.so" ')
+        src_task.executable  = (f'env LD_PRELOAD="{_darshan_runtime_root}'
+                                f'/lib/libdarshan.so" {src_task.executable}')
 
-        if src_task.cpu_reqs.cpu_processes == 1:
-            darshan_enable += 'DARSHAN_ENABLE_NONMPI=1 '
-
-        src_task.executable  = darshan_enable + src_task.executable
-        src_task.pre_launch += [f'mkdir -p {darshan_log_dir}']
+        # prepare and move Darshan config file into task sandbox
+        src_task.upload_input_data.append(f'{_darshan_cfg_file_local} > '
+                                          '$SHARED/darshan.cfg')
+        darshan_cfg_file = '$RP_PILOT_SANDBOX/darshan.cfg'
+        darshan_log_file = DARSHAN_LOG_FILE % {'sandbox': '$RP_TASK_SANDBOX',
+                                               'uid'    : src_task.uid}
         src_task.pre_exec.extend(
             _darshan_activation_cmds +
-            [f'export DARSHAN_LOG_DIR_PATH={darshan_log_dir}'])
+            [f'export DARSHAN_CONFIG_PATH={darshan_cfg_file}',
+             f'export DARSHAN_LOGFILE={darshan_log_file}'])
+
+        if src_task.cpu_reqs.cpu_processes == 1:
+            src_task.pre_exec.append('export DARSHAN_ENABLE_NONMPI=1')
+    # --------------------------------------------------------------------------
 
     if isinstance(pst, list):
         for pipeline in pst:
@@ -125,6 +200,20 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
 # ------------------------------------------------------------------------------
 #
 def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
+
+    """
+    Extracts file names from parsed Darshan log according to target counters.
+
+    .. data:: log
+
+        [type: `str`] Full path of the Darshan log file.
+
+    .. data:: target_counters
+
+        [type: `str/list`] Target counter used to extract the name of the
+        associated IO file. Examples: 'POSIX_BYTES_WRITTEN', 'POSIX_BYTES_READ',
+        'STDIO_OPENS'.
+    """
 
     data = set()
 
@@ -154,10 +243,19 @@ def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
 #
 def annotate_task_with_darshan(task: Task) -> None:
 
+    """
+    Annotates a task with extracted IO files using Darshan logs.
+
+    .. data:: task
+
+        [type: `Task`] EnTK task to annotate.
+    """
+
     inputs  = set()
     outputs = set()
 
-    for log in glob.glob((DARSHAN_LOG_DIR % {'sandbox': task.path}) + '/*'):
+    for log in glob.glob(DARSHAN_LOG_FILE % {'sandbox': task.path,
+                                             'uid'    : '*'}):
 
         inputs.update(get_parsed_data(log, ['POSIX_BYTES_READ', 'STDIO_OPENS']))
         outputs.update(get_parsed_data(log, 'POSIX_BYTES_WRITTEN'))
