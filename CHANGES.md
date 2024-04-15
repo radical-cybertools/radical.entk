@@ -6,7 +6,7 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
-1.50.0 Release                                                        2024-04-15
+1.51.0 Release                                                        2024-04-15
 --------------------------------------------------------------------------------
 
   - fix for setuptools upgrade
@@ -479,3 +479,5 @@
 
 # ------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix the fix
+  - devel version bump
