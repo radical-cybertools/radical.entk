@@ -345,6 +345,8 @@ class WFprocessor(object):
                             task.path = str(deq_task.path)
                         if not task.rts_uid and deq_task.rts_uid:
                             task.rts_uid = str(deq_task.rts_uid)
+                        if deq_task.metadata:
+                            task.metadata.update(deq_task.metadata)
 
                         # If there is no exit code, we assume success
                         # We are only concerned about state of task and not
