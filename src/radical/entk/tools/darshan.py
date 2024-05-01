@@ -99,6 +99,10 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
 
         logpath_cmd = 'darshan-config --log-path'
         out, err, ret = ru.sh_callout(logpath_cmd, env=_darshan_env, shell=True)
+
+        if out is not None:
+            out = out.strip()
+
         if ret or not out:
             print(f'[WARNING] Darshan log path not set: "{err}"')
             _darshan_log_path = '%(sandbox)s/darshan_logs'
