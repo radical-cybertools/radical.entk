@@ -285,6 +285,7 @@ def annotate_task_with_darshan(task: Task) -> None:
         start_secs    = ((_start_datetime.hour * 3600) +
                          (_start_datetime.minute * 60) + _start_datetime.second)
 
+        username  = os.getenv('USER', os.getenv('USERNAME', ''))
         task_pids = set(task['metadata']['exec_pid'] +
                         task['metadata']['rank_pid'])
         for y in range(_start_datetime.year, stop_datetime.year + 1):
@@ -292,7 +293,7 @@ def annotate_task_with_darshan(task: Task) -> None:
                 for d in range(_start_datetime.day, stop_datetime.day + 1):
                     opts         = {'year': y, 'month': m, 'day': d}
                     logs_pattern = ((_darshan_log_path % opts) +
-                                    f'/{os.getlogin()}_*')
+                                    f'/{username}_*')
                     for log in glob.glob(logs_pattern):
                         p = re.search(DARSHAN_LOGS_PATTERN, log)
                         if p:
