@@ -80,14 +80,13 @@ def get_stage_1():
 def main():
 
     if 'polaris' in RESOURCE_DESCRIPTION['resource']:
-        cache_darshan_env(darshan_runtime_root='$DARSHAN_RUNTIME_ROOT',
-                          modules=['e4s/22.08/PrgEnv-gnu',
-                                   'darshan-runtime',
-                                   'darshan-util'])
+        cache_darshan_env(
+            darshan_runtime_root='/soft/perftools/darshan/darshan-3.4.4',
+            modules=['darshan/3.4.4'])
     elif 'frontier' in RESOURCE_DESCRIPTION['resource']:
-        cache_darshan_env(darshan_runtime_root='$OLCF_DARSHAN_RUNTIME_ROOT',
-                          modules=['darshan-runtime/3.4.0',
-                                   'darshan-util/3.4.0'])
+        cache_darshan_env(
+            darshan_runtime_root='$OLCF_DARSHAN_RUNTIME_ROOT',
+            modules=['darshan-runtime/3.4.0', 'darshan-util/3.4.0'])
 
     pipeline = re.Pipeline()
     pipeline.add_stages([get_stage_0(), get_stage_1()])

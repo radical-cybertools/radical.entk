@@ -4,20 +4,25 @@ __license__   = 'MIT'
 
 import glob
 import os
+import re
 import tempfile
 
+from datetime import datetime
 from typing import Optional, Dict, List, Union
 
 import radical.utils as ru
 
 from .. import Pipeline, Stage, Task
 
-DARSHAN_LOG_FILE = '%(sandbox)s/%(uid)s.darshan'
+DARSHAN_LOGS_PATTERN = (r'^.+_id[0-9]+-(?P<pid>[0-9]+)_'
+                        r'([0-9]{1,2})-([0-9]{1,2})-(?P<secs>[0-9]{1,5})-.+')
 
 _darshan_activation_cmds = None
 _darshan_env             = None
 _darshan_runtime_root    = None
+_darshan_log_path        = None
 _darshan_cfg_file_local  = None
+_start_datetime          = None
 
 # use DARSHAN_CONFIG_PATH to set a path to the config
 DARSHAN_CONFIG = """
@@ -80,6 +85,7 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
 
     global _darshan_activation_cmds
     global _darshan_env
+    global _darshan_log_path
 
     if _darshan_activation_cmds is None:
 
@@ -90,6 +96,18 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
             _darshan_activation_cmds.append(f'export {k.upper()}="{v}"')
 
         _darshan_env = ru.env_prep(pre_exec_cached=_darshan_activation_cmds)
+
+        logpath_cmd = 'darshan-config --log-path'
+        out, err, ret = ru.sh_callout(logpath_cmd, env=_darshan_env, shell=True)
+        if ret or not out:
+            print(f'[WARNING] Darshan log path not set: "{err}"')
+            _darshan_log_path = '%(sandbox)s/darshan_logs'
+
+        elif not ret and out:
+            _darshan_log_path = out + '/%(year)s/%(month)s/%(day)s'
+
+            global _start_datetime
+            _start_datetime = datetime.now()
 
     global _darshan_cfg_file_local
 
@@ -165,12 +183,14 @@ def enable_darshan(pst: Union[Pipeline, Stage, Task, List[Pipeline]],
         src_task.upload_input_data.append(f'{_darshan_cfg_file_local} > '
                                           '$SHARED/darshan.cfg')
         darshan_cfg_file = '$RP_PILOT_SANDBOX/darshan.cfg'
-        darshan_log_file = DARSHAN_LOG_FILE % {'sandbox': '$RP_TASK_SANDBOX',
-                                               'uid'    : src_task.uid}
         src_task.pre_exec.extend(
             _darshan_activation_cmds +
-            [f'export DARSHAN_CONFIG_PATH={darshan_cfg_file}',
-             f'export DARSHAN_LOGFILE={darshan_log_file}'])
+            [f'export DARSHAN_CONFIG_PATH={darshan_cfg_file}'])
+
+        if '%(sandbox)s' in _darshan_log_path:
+            log_dir = _darshan_log_path % {'sandbox': '${RP_TASK_SANDBOX}'}
+            src_task.pre_launch.append(f'mkdir -p {log_dir}')
+            src_task.pre_exec.append(f'export DARSHAN_LOG_DIR_PATH={log_dir}')
 
         if src_task.cpu_reqs.cpu_processes == 1:
             src_task.pre_exec.append('export DARSHAN_ENABLE_NONMPI=1')
@@ -254,9 +274,41 @@ def annotate_task_with_darshan(task: Task) -> None:
     inputs  = set()
     outputs = set()
 
-    for log in glob.glob(DARSHAN_LOG_FILE % {'sandbox': task.path,
-                                             'uid'    : '*'}):
+    log_files = []
+    if '%(sandbox)s' in _darshan_log_path:
+        for log in glob.glob(_darshan_log_path % {'sandbox': task.path}):
+            log_files.append(log)
+    else:
+        stop_datetime = datetime.now()
+        stop_secs     = ((stop_datetime.hour * 3600) +
+                         (stop_datetime.minute * 60) + stop_datetime.second)
+        start_secs    = ((_start_datetime.hour * 3600) +
+                         (_start_datetime.minute * 60) + _start_datetime.second)
 
+        task_pids = set(task['metadata']['exec_pid'] +
+                        task['metadata']['rank_pid'])
+        for y in range(_start_datetime.year, stop_datetime.year + 1):
+            for m in range(_start_datetime.month, stop_datetime.month + 1):
+                for d in range(_start_datetime.day, stop_datetime.day + 1):
+                    opts         = {'year': y, 'month': m, 'day': d}
+                    logs_pattern = ((_darshan_log_path % opts) +
+                                    f'/{os.getlogin()}_*')
+                    for log in glob.glob(logs_pattern):
+                        p = re.search(DARSHAN_LOGS_PATTERN, log)
+                        if p:
+                            if     (m == _start_datetime.month and
+                                    d == _start_datetime.day and
+                                    int(p.group('secs')) < start_secs):
+                                continue
+                            elif   (m == stop_datetime.month and
+                                    d == stop_datetime.day and
+                                    int(p.group('secs')) > stop_secs):
+                                continue
+                            elif int(p.group('pid')) not in task_pids:
+                                continue
+                            log_files.append(log)
+
+    for log in log_files:
         inputs.update(get_parsed_data(log, ['POSIX_BYTES_READ', 'STDIO_OPENS']))
         outputs.update(get_parsed_data(log, 'POSIX_BYTES_WRITTEN'))
 
