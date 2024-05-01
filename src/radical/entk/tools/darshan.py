@@ -291,8 +291,8 @@ def annotate_task_with_darshan(task: Task) -> None:
                          (_start_datetime.minute * 60) + _start_datetime.second)
 
         username  = os.getenv('USER', os.getenv('USERNAME', ''))
-        task_pids = set(task['metadata']['exec_pid'] +
-                        task['metadata']['rank_pid'])
+        task_pids = set(task.metadata.get('exec_pid', []) +
+                        task.metadata.get('rank_pid', []))
         for y in range(_start_datetime.year, stop_datetime.year + 1):
             for m in range(_start_datetime.month, stop_datetime.month + 1):
                 for d in range(_start_datetime.day, stop_datetime.day + 1):
