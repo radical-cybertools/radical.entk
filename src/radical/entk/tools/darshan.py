@@ -270,6 +270,8 @@ def annotate_task_with_darshan(task: Task) -> None:
 
         [type: `Task`] EnTK task to annotate.
     """
+    if _darshan_env is None:
+        return
 
     inputs  = set()
     outputs = set()
@@ -279,6 +281,9 @@ def annotate_task_with_darshan(task: Task) -> None:
         for log in glob.glob(_darshan_log_path % {'sandbox': task.path}):
             log_files.append(log)
     else:
+        if _start_datetime is None:
+            return
+
         stop_datetime = datetime.now()
         stop_secs     = ((stop_datetime.hour * 3600) +
                          (stop_datetime.minute * 60) + stop_datetime.second)
