@@ -182,6 +182,7 @@ class TestBase(TestCase):
         task.mem_per_process = 128
         task.stderr          = 'stderr'
         task.stdout          = 'stdout'
+        task.metadata        = {}
 
         task.annotations     = Annotations({'input'     : ['task.0001:f1.txt'],
                                             'output'    : [],
@@ -248,12 +249,13 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     def test_create_task_from_rp(self, mocked_logger, mocked_task):
 
-        test_td = mock.Mock()
-        test_td.name                = 'task.0000,task.0000,stage.0000,' \
-                                      'stage.0000,pipe.0000,pipe.0000'
-        test_td.uid                 = 'unit.0000'
-        test_td.state               = 'EXECUTING'
-        test_td.sandbox             = 'test_folder'
+        test_rp_task = mock.Mock()
+        test_rp_task.name                = 'task.0000,task.0000,stage.0000,' \
+                                           'stage.0000,pipe.0000,pipe.0000'
+        test_rp_task.uid                 = 'unit.0000'
+        test_rp_task.state               = 'EXECUTING'
+        test_rp_task.sandbox             = 'test_folder'
+        test_rp_task.description         = {}
 
         mocked_task.uid             = None
         mocked_task.name            = None
@@ -262,7 +264,7 @@ class TestBase(TestCase):
         mocked_task.path            = None
         mocked_task.rts_uid         = None
 
-        task = create_task_from_rp(test_td, mock.Mock())
+        task = create_task_from_rp(test_rp_task, mock.Mock())
 
         self.assertEqual(task.uid, 'task.0000')
         self.assertEqual(task.name, 'task.0000')
@@ -279,12 +281,13 @@ class TestBase(TestCase):
     @mock.patch('radical.utils.Logger')
     def test_issue_271(self, mocked_logger, mocked_task):
 
-        test_td = mock.Mock()
-        test_td.name                = 'task.0000,task.0000,stage.0000,' \
-                                      'stage.0000,pipe.0000,pipe.0000'
-        test_td.uid                 = 'unit.0000'
-        test_td.state               = 'DONE'
-        test_td.sandbox             = 'test_folder'
+        test_rp_task = mock.Mock()
+        test_rp_task.name                = 'task.0000,task.0000,stage.0000,' \
+                                           'stage.0000,pipe.0000,pipe.0000'
+        test_rp_task.uid                 = 'unit.0000'
+        test_rp_task.state               = 'DONE'
+        test_rp_task.sandbox             = 'test_folder'
+        test_rp_task.description         = {}
 
         mocked_task.uid             = None
         mocked_task.name            = None
@@ -292,16 +295,17 @@ class TestBase(TestCase):
         mocked_task.parent_pipeline = {}
         mocked_task.path            = None
         mocked_task.rts_uid         = None
+        mocked_task.metadata        = {}
 
-        task = create_task_from_rp(test_td, mock.Mock())
+        task = create_task_from_rp(test_rp_task, mock.Mock())
         self.assertEqual(task.exit_code, 0)
 
-        test_td.state = 'FAILED'
-        task = create_task_from_rp(test_td, mock.Mock())
+        test_rp_task.state = 'FAILED'
+        task = create_task_from_rp(test_rp_task, mock.Mock())
         self.assertEqual(task.exit_code, 1)
 
-        test_td.state = 'EXECUTING'
-        task = create_task_from_rp(test_td, mock.Mock())
+        test_rp_task.state = 'EXECUTING'
+        task = create_task_from_rp(test_rp_task, mock.Mock())
         self.assertIsNone(task.exit_code)
 
     # --------------------------------------------------------------------------

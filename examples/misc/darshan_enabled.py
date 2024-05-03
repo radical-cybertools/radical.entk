@@ -18,6 +18,14 @@ RESOURCE_DESCRIPTION = {
     'cpus'    : 32,
     'walltime': 15
 }
+# RESOURCE_DESCRIPTION = {
+#     # https://radicalpilot.readthedocs.io/en/stable/supported/frontier.html
+#     'resource': 'ornl.frontier',
+#     'project' : 'NNNMMM',
+#     'queue'   : 'batch',
+#     'cpus'    : 56,
+#     'walltime': 15
+# }
 
 os.environ['RADICAL_LOG_LVL'] = 'DEBUG'
 os.environ['RADICAL_REPORT']  = 'TRUE'
@@ -71,10 +79,14 @@ def get_stage_1():
 
 def main():
 
-    cache_darshan_env(darshan_runtime_root='$DARSHAN_RUNTIME_ROOT',
-                      modules=['e4s/22.08/PrgEnv-gnu',
-                               'darshan-runtime',
-                               'darshan-util'])
+    if 'polaris' in RESOURCE_DESCRIPTION['resource']:
+        cache_darshan_env(
+            darshan_runtime_root='/soft/perftools/darshan/darshan-3.4.4',
+            modules=['darshan/3.4.4'])
+    elif 'frontier' in RESOURCE_DESCRIPTION['resource']:
+        cache_darshan_env(
+            darshan_runtime_root='$OLCF_DARSHAN_RUNTIME_ROOT',
+            modules=['darshan-runtime/3.4.0', 'darshan-util/3.4.0'])
 
     pipeline = re.Pipeline()
     pipeline.add_stages([get_stage_0(), get_stage_1()])

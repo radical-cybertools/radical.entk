@@ -166,11 +166,11 @@ class TestBase(TestCase):
         self.assertEqual(stage_ins[0], [{'action': 'Transfer',
                                          'source': 'test/file1.txt',
                                          'target': 'file1.txt',
-                                         'flags' : 2},
+                                         'flags' : 1},
                                         {'action': 'Transfer',
                                          'source': 'file2.txt',
                                          'target': 'file2.txt',
-                                         'flags' : 2}
+                                         'flags' : 1}
                                         ])
 
         task_desc = rmgr._pilot.description['services'][0]
