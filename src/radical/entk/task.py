@@ -384,6 +384,10 @@ class Task(ru.TypedDict):
         [type: `Annotations` | default: `None`] Annotations to describe task's
         input and output files, and sets dependencies between tasks.
 
+    .. data:: metadata
+
+        [type: `dict` | default: `{}`] User/system defined metadata.
+
     Read-only attributes
     --------------------
 
@@ -434,7 +438,8 @@ class Task(ru.TypedDict):
         'rts_uid'              : str,
         'parent_stage'         : {str: None},
         'parent_pipeline'      : {str: None},
-        'annotations'          : Annotations
+        'annotations'          : Annotations,
+        'metadata'             : {str: None}
     }
 
     # guaranteed attributes with default non-initialized values
@@ -473,7 +478,8 @@ class Task(ru.TypedDict):
         'tags'                 : None,
         'rts_uid'              : None,
         'parent_stage'         : {'uid': None, 'name': None},
-        'parent_pipeline'      : {'uid': None, 'name': None}
+        'parent_pipeline'      : {'uid': None, 'name': None},
+        'metadata'             : {}
     }
 
     # --------------------------------------------------------------------------

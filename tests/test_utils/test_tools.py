@@ -18,7 +18,8 @@ class TestTools(TestCase):
 
     # --------------------------------------------------------------------------
     #
-    def test_cache_darshan_env(self):
+    @mock.patch('radical.utils.sh_callout', return_value=('', '', 0))
+    def test_cache_darshan_env(self, mocked_sh_callout):
 
         re_darshan._darshan_activation_cmds = None
         re_darshan._darshan_env             = None
@@ -39,9 +40,16 @@ class TestTools(TestCase):
 
         self.assertTrue('TEST_VAR' in re_darshan._darshan_env)
 
+        self.assertTrue(re_darshan._darshan_log_path.startswith('%(sandbox)s'))
+        self.assertTrue(os.path.basename(re_darshan._darshan_cfg_file_local).
+                        startswith('rct.darshan.cfg'))
+        # "_start_datetime" is not set, since we use user-defined logs path
+        self.assertIsNone(re_darshan._start_datetime)
+
     # --------------------------------------------------------------------------
     #
-    def test_enable_darshan(self):
+    @mock.patch('radical.utils.sh_callout', return_value=('', 'no log path', 1))
+    def test_enable_darshan(self, mocked_sh_callout):
 
         with self.assertRaises(ValueError):
             # empty or no object is provided
@@ -54,14 +62,6 @@ class TestTools(TestCase):
         with self.assertRaises(TypeError):
             # only PST objects are allowed
             re_darshan.enable_darshan(pst='random_string')
-
-        task = re.Task()
-        task.cpu_reqs = {'cpu_processes': 1}
-
-        task.executable = ''
-        re_darshan.enable_darshan(task)
-        # Darshan is not enabled for tasks with no executable
-        self.assertFalse(task.executable)
 
         # enable darshan using decorator
         @re_darshan.with_darshan
@@ -84,21 +84,35 @@ class TestTools(TestCase):
                 for t in s.tasks:
                     self.assertTrue('LD_PRELOAD' in t.executable)
 
-                    nonmpi_statement = 'DARSHAN_ENABLE_NONMPI=1' in t.executable
+                    nonmpi_flag = 'export DARSHAN_ENABLE_NONMPI=1' in t.pre_exec
                     if t.cpu_reqs.cpu_processes == 1:
                         # non-MPI task
-                        self.assertTrue(nonmpi_statement)
+                        self.assertTrue(nonmpi_flag)
                     else:
-                        self.assertFalse(nonmpi_statement)
+                        self.assertFalse(nonmpi_flag)
 
                     # darshan is already enabled
                     re_darshan.enable_darshan(t)
                     self.assertEqual(t.executable.count('LD_PRELOAD'), 1)
 
+        task = re.Task()
+        task.cpu_reqs = {'cpu_processes': 1}
+
+        task.executable = ''
+        re_darshan.enable_darshan(task)
+        # Darshan is not enabled for tasks with no executable
+        self.assertFalse(task.executable)
+
+        # get system defined path for logs
+        mocked_sh_callout.return_value = ('/tmp/darshan_logs', '', 0)
+        task.executable = 'task_exec'
+        re_darshan.enable_darshan(task)
+        self.assertFalse(
+            re_darshan._darshan_log_path.startswith('/tmp/darshan_logs'))
+
     # --------------------------------------------------------------------------
     #
-    @mock.patch('radical.utils.sh_callout',
-                return_value=['1:/tmp/test_file.txt\n0:random\n', '', 0])
+    @mock.patch('radical.utils.sh_callout')
     def test_annotate_task_with_darshan(self, mocked_sh_callout):
 
         tmp_dir = tempfile.gettempdir()
@@ -108,14 +122,20 @@ class TestTools(TestCase):
         # keeping inside log_dir a random file
         tempfile.mkstemp(dir=log_dir)
 
+        # use "_darshan_log_path" with "sandbox" parameter in it
+        mocked_sh_callout.return_value = ('', '', 0)
         task = re_darshan.enable_darshan(re.Task({
             'executable': 'test_exec',
             'arguments' : ['> arg_output.txt'],
             'cpu_reqs'  : {'cpu_processes': 1},
             'sandbox'   : tmp_dir,
-            'path'      : tmp_dir
+            'path'      : tmp_dir,
+            'metadata'  : {}
         }))
 
+        # "sh_callout" to parse Darshan log file
+        mocked_sh_callout.return_value = (
+            '1:/tmp/test_file.txt\n0:random\n', '', 0)
         re_darshan.annotate_task_with_darshan(task)
 
         ta = task.annotations

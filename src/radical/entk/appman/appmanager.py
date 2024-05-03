@@ -840,6 +840,9 @@ class AppManager(object):
                             self._logger.debug('Task %s rts_uid set to %s',
                                                task.uid, task.rts_uid)
 
+                        if completed_task.metadata:
+                            task.metadata.update(completed_task.metadata)
+
                         if task.state in [DONE, FAILED]:
                             self._logger.debug('No change on task state %s \
                                              in state %s', task.uid, task.state)

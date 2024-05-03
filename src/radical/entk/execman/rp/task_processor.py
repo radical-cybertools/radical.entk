@@ -480,8 +480,9 @@ def create_td_from_task(task, placeholders, task_hash_table, pkl_path, sid,
         td.post_launch    = task.post_launch
         td.stage_on_error = task.stage_on_error
 
+        td.metadata       = task.metadata
         if task.annotations:
-            td.metadata   = {'data': task.annotations.as_dict()}
+            td.metadata.update(data=task.annotations.as_dict())
 
         if task.parent_pipeline['uid']:
             td.tags = resolve_tags(
@@ -559,7 +560,8 @@ def create_task_from_rp(rp_task, logger, prof=None):
                                 'name': task_info_tuple[3].strip()},
             'parent_pipeline': {'uid' : task_info_tuple[4].strip(),
                                 'name': task_info_tuple[5].strip()},
-            'rts_uid'                 : rp_task.uid
+            'rts_uid'                 : rp_task.uid,
+            'metadata'                : rp_task.description.get('metadata', {})
         })
 
         if   rp_task.state == rp.DONE                  : task.exit_code = 0
