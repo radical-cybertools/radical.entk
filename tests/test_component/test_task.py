@@ -35,6 +35,7 @@ class TestTask(TestCase):
         self.assertIsInstance(t.pre_exec,    list)
         self.assertIsInstance(t.post_exec,   list)
         self.assertIsInstance(t.environment, dict)
+        self.assertIsInstance(t.metadata,    dict)
 
         self.assertIsNone(t.annotations)
 
@@ -371,7 +372,8 @@ class TestTask(TestCase):
             'parent_stage'        : {'uid' : 'stage.0000',
                                      'name': 'stage.0000'},
             'parent_pipeline'     : {'uid' : 'pipe.0000',
-                                     'name': 'pipe.0000'}}
+                                     'name': 'pipe.0000'},
+            'metadata'            : {}}
 
         task = Task(from_dict=expected_dict)
         self.assertEqual(task.as_dict(), expected_dict)
