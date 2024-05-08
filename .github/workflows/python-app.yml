@@ -27,6 +27,7 @@ jobs:
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
         python -m pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
+        python -m pip install git+https://github.com/radical-cybertools/radical.gtod.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
         python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
         python -m pip install --upgrade .
