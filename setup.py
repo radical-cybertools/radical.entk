@@ -18,7 +18,7 @@ from setuptools import setup, Command, find_namespace_packages
 
 # ------------------------------------------------------------------------------
 #
-base     = 'utils'
+base     = 'entk'
 name     = 'radical.%s'      % base
 mod_root = 'src/radical/%s/' % base
 
@@ -29,11 +29,12 @@ descr    = "RADICAL-Cybertools: Ensemble Workflow Execution Toolkit"
 keywords = ['radical', 'cybertools', 'utilities', 'ensemble', 'workflow']
 
 share    = 'share/%s' % name
-data     = [('%s/examples'             % share, glob('examples/*'           )),
-            ('%s/examples/user_guide/' % share, glob('examples/user_guide/*')),
+data     = [('%s/examples/advanced/'   % share, glob('examples/advanced/*'  )),
+            ('%s/examples/analytics/'  % share, glob('examples/analytics/*' )),
+            ('%s/examples/misc/'       % share, glob('examples/misc/*'      )),
             ('%s/examples/simple/'     % share, glob('examples/simple/*'    )),
-            ('%s/examples/advanced/'   % share, glob('examples/advanced/*'  )),
-            ('%s/examples/analytics/'  % share, glob('examples/analytics/*' ))
+            ('%s/examples/tutorial/'   % share, glob('examples/tutorial/*'  )),
+            ('%s/examples/user_guide/' % share, glob('examples/user_guide/*')),
 ]
 
 
