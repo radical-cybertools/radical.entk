@@ -1,60 +1,40 @@
-.. radical.entk documentation master file, created by
-   sphinx-quickstart on Sat May 27 18:34:32 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
+************************
 RADICAL-Ensemble Toolkit
-========================
+************************
 
-The Ensemble Toolkit is a Python library for developing and executing
-large-scale ensemble-based workflows. It is being developed by the
-`RADICAL Research Group <http://radical.rutgers.edu/>`_ at Rutgers University.
-Ensemble Toolkit is released under the
-`MIT License <http://opensource.org/licenses/MIT>`_.
-
-More details about the science enabled by EnTK can be found in the following publications:
-
-* Balasubramanian, Vivek, Matteo Turilli, Weiming Hu, Matthieu Lefebvre, Wenjie Lei, Guido Cervone, Jeroen Tromp, and Shantenu Jha. "Harnessing the Power of Many: Extensible Toolkit for Scalable Ensemble Applications." 32nd IEEE International Parallel and Distributed Processing Symposium, 2018 (https://arxiv.org/abs/1710.08491)
-
-* Balasubramanian, Vivekanandan, Antons Treikalis, Ole Weidner, and Shantenu Jha. "Ensemble toolkit: Scalable and flexible execution of ensembles of tasks." In Parallel Processing (ICPP), 2016 45th International Conference on, pp. 458-463. IEEE, 2016. (https://arxiv.org/abs/1602.00678v2)
-
-
-.. note:: Please use the following to reference Ensemble Toolkit
-
-   Balasubramanian, Vivekanandan, Antons Treikalis, Ole Weidner, and Shantenu
-   Jha. "Ensemble toolkit: Scalable and flexible execution of ensembles of
-   tasks." In Parallel Processing (ICPP), 2016 45th International Conference
-   on, pp. 458-463. IEEE, 2016.
-
-
-**Project Github Page:** https://github.com/radical-cybertools/radical.entk
-
-**Mailing Lists**
-
-* For users: https://groups.google.com/d/forum/ensemble-toolkit-users
-* For developers: https://groups.google.com/d/forum/ensemble-toolkit-dev
-
-**Badges**
-
-.. image:: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml/badge.svg
-               :target: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml
-               :alt: Build Status
-
-.. image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/devel/graph/badge.svg?token=dHn74ChzmX
-               :target: https://codecov.io/gh/radical-cybertools/radical.entk
-               :alt: Test Coverage
-
-.. image:: https://badge.fury.io/py/radical.entk.svg
-               :target: https://badge.fury.io/py/radical.entk
-               :alt: PyPI version
-
+.. image:: https://img.shields.io/pypi/v/radical.entk.svg
+   :target: https://pypi.python.org/pypi/radical.entk
+   :alt: PyPI Package
 .. image:: https://anaconda.org/conda-forge/radical.entk/badges/version.svg
-               :target: https://anaconda.org/conda-forge/radical.entk
-               :alt: Conda Version
+   :target: https://anaconda.org/conda-forge/radical.entk
+   :alt: Conda Version
+.. image:: https://img.shields.io/pypi/l/radical.entk.svg
+   :target: https://pypi.python.org/pypi/radical.entk
+   :alt: License
+.. image:: https://readthedocs.org/projects/radicalentk/badge/?version=stable
+   :target: https://radicalentk.readthedocs.io/en/stable/?badge=stable
+   :alt: Documentation Status
+.. image:: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml/badge.svg
+   :target: https://github.com/radical-cybertools/radical.entk/actions/workflows/python-app.yml
+   :alt: Build Status
+.. image:: https://codecov.io/gh/radical-cybertools/radical.entk/branch/devel/graph/badge.svg?token=dHn74ChzmX
+   :target: https://codecov.io/gh/radical-cybertools/radical.entk
+   :alt: Test Coverage
 
-.. image:: https://img.shields.io/pypi/pyversions/radical.entk.svg
-               :alt: Python version
+RADICAL Ensemble Toolkit (EnTK) is a Python library for developing and executing
+large-scale ensemble-based workflows. Different from a general-purpose workflow
+system, EnTK exposes a programming application interface (API) specifically
+designed to concisely describe applications in which compute tasks are grouped
+into concurrent or sequential pipelines. Each pipeline is a sequence of stages
+and each stage is a set of tasks. Tasks can be arbitrary executables or Python
+functions, requiring single/multi core/GPU/node or MPI/OpenMP. EnTK uses
+`RADICAL-Pilot <https://radicalpilot.readthedocs.io/en/devel/>`_, enabling the
+execution of workflows are scale on diverse HPC platforms. Ensemble-based
+workflows are common in many scientific domains, including drug discovery,
+molecular modeling, material engineering and climate science.
 
+* Repository: https://github.com/radical-cybertools/radical.entk
+* Issues: https://github.com/radical-cybertools/radical.entk/issues
 
 .. toctree::
    :maxdepth: 2
@@ -70,9 +50,21 @@ More details about the science enabled by EnTK can be found in the following pub
    exceptions
    dev_docs
 
-.. Indices and tables
-.. ==================
 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+   getting_started.ipynb
+   tutorials.rst
+   supported.rst
+   envs.rst
+   glossary.rst
+   internals.rst
+   apidoc.rst
+   release_notes.md
+
+
+.. note:: Please use the following to reference Ensemble Toolkit:
+
+   Balasubramanian, Vivek, Matteo Turilli, Weiming Hu, Matthieu Lefebvre, Wenjie
+   Lei, Ryan Modrak, Guido Cervone, Jeroen Tromp, and Shantenu Jha. "Harnessing
+   the power of many: Extensible toolkit for scalable ensemble applications." In
+   *2018 IEEE international parallel and distributed processing symposium
+   (IPDPS)*, pp. 536-545. IEEE, 2018.
