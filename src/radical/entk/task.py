@@ -333,6 +333,11 @@ class Task(ru.TypedDict):
         [type: `str` | default: `""`] The name of the file to store stderr. If
         not set then the name of the following format will be used: `<uid>.err`.
 
+    .. data:: error_is_fatal
+
+        [type: `bool` | default: `False`] Flag to indicate if workflow shouold
+        fail if the task got failed.
+
     .. data:: stage_on_error
 
         [type: `bool` | default: `False`] Flag to allow staging out data if
@@ -429,6 +434,7 @@ class Task(ru.TypedDict):
         'download_output_data' : [str],
         'stdout'               : str,
         'stderr'               : str,
+        'error_is_fatal'       : bool,
         'stage_on_error'       : bool,
         'exit_code'            : int,
         'exception'            : str,
@@ -470,6 +476,7 @@ class Task(ru.TypedDict):
         'download_output_data' : [],
         'stdout'               : '',
         'stderr'               : '',
+        'error_is_fatal'       : False,
         'stage_on_error'       : False,
         'exit_code'            : None,
         'exception'            : None,

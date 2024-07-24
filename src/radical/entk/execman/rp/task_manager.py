@@ -251,12 +251,16 @@ class TaskManager(Base_TaskManager):
                 self._log.debug('Task %s in state %s', rp_task.uid,
                                                        rp_task.state)
 
-                if rp_task.state in rp.FINAL:
+                if state in rp.FINAL:
 
                     task = create_task_from_rp(rp_task, self._log, self._prof)
 
+                    if state == rp.DONE    : target_state = states.DONE
+                    if state == rp.FAILED  : target_state = states.FAILED
+                    if state == rp.CANCELED: target_state = states.CANCELED
+
                     # to AppManager
-                    self._advance(task, 'Task', states.COMPLETED, 'cb-to-sync')
+                    self._advance(task, 'Task', target_state, 'cb-to-sync')
 
                     load_placeholder(task)
 
@@ -265,7 +269,7 @@ class TaskManager(Base_TaskManager):
                     # to WFprocessor
                     self._zmq_queue['put'].put(qname='completed', msgs=[tdict])
                     self._log.info('Pushed task %s with state %s to completed',
-                                   task.uid, task.state)
+                                   task.uid, state)
 
             except KeyboardInterrupt as ex:
                 self._log.exception('Execution interrupted (probably by Ctrl+C)'
