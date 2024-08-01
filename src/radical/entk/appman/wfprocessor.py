@@ -362,7 +362,6 @@ class WFprocessor(object):
                                 task_state = INITIAL
                             else:
                                 if task.error_is_fatal:
-                                    print('=== not resubmitting task')
                                     self._advance(stage, 'Stage', FAILED)
                                     self._advance(pipe, 'Pipeline', FAILED)
                                     return
