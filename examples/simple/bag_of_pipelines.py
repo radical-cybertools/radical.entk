@@ -48,7 +48,6 @@ def main():
         pipeline = re.Pipeline()
         pipelines.append(pipeline)
 
-        stages = list()
         for _ in range(n_stages):
 
             stage = re.Stage()
