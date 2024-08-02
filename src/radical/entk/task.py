@@ -335,7 +335,7 @@ class Task(ru.TypedDict):
 
     .. data:: error_is_fatal
 
-        [type: `bool` | default: `False`] Flag to indicate if workflow shouold
+        [type: `bool` | default: `False`] Flag to indicate if workflow should
         fail if the task got failed.
 
     .. data:: stage_on_error
