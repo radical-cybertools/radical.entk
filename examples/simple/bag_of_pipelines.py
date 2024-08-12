@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# pylint: disable=import-error
+
 import sys
 import time
 
