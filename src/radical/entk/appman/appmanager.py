@@ -693,6 +693,9 @@ class AppManager(object):
 
             for pipe in self._workflow:
 
+                if pipe.state == FAILED:
+                    raise EnTKError('Pipeline %s failed' % pipe.uid)
+
                 with pipe.lock:
 
                     if pipe.completed and \

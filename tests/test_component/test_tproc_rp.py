@@ -298,14 +298,6 @@ class TestBase(TestCase):
         mocked_task.metadata        = {}
 
         task = create_task_from_rp(test_rp_task, mock.Mock())
-        self.assertEqual(task.exit_code, 0)
-
-        test_rp_task.state = 'FAILED'
-        task = create_task_from_rp(test_rp_task, mock.Mock())
-        self.assertEqual(task.exit_code, 1)
-
-        test_rp_task.state = 'EXECUTING'
-        task = create_task_from_rp(test_rp_task, mock.Mock())
         self.assertIsNone(task.exit_code)
 
     # --------------------------------------------------------------------------

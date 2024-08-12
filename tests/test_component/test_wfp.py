@@ -404,30 +404,30 @@ class TestBase(TestCase):
         task.uid = 'task.0000'
         task.parent_pipeline = {'uid': 'pipe.0000'}
         task.parent_stage = {'uid': 'stage.0000'}
-        task.state = states.INITIAL
-        task.exit_code = 0
 
         stage.tasks = [task]
         pipe.stages = [stage]
-        wfp._workflow = set([pipe])
-
-        # Test for issue #271
-        wfp._update_dequeued_task(task)
-        self.assertEqual(global_advs[0], [task, 'Task', states.DONE])
-        self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
+        wfp._workflow = {pipe}
 
         task.state = states.INITIAL
-        task.exit_code = None
+
+        wfp._update_dequeued_task(task)
+        self.assertEqual(global_advs[0], [task, 'Task', states.INITIAL])
+        self.assertEqual(global_advs[1], [stage, 'Stage', states.DONE])
+
+        wfp._resubmit_failed = True
+        task.state           = states.FAILED
 
         wfp._update_dequeued_task(task)
         self.assertEqual(global_advs[2], [task, 'Task', states.INITIAL])
         self.assertEqual(global_advs[3], [stage, 'Stage', states.DONE])
 
-        task.exit_code = 1
+        wfp._resubmit_failed = False
+        task.error_is_fatal  = True
 
         wfp._update_dequeued_task(task)
-        self.assertEqual(global_advs[4], [task, 'Task', states.FAILED])
-        self.assertEqual(global_advs[5], [stage, 'Stage', states.DONE])
+        self.assertEqual(global_advs[4], [stage, 'Stage', states.FAILED])
+        self.assertEqual(global_advs[5], [pipe, 'Pipeline', states.FAILED])
 
     # ------------------------------------------------------------------------------
     #

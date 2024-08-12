@@ -102,9 +102,13 @@ class WFprocessor(object):
         self._report.ok('Update: ')
         self._report.info('%s state: %s\n' % (obj.luid, obj.state))
 
-        if obj_type == 'Task' and obj.state == FAILED:
-            self._report.error('task %s failed: %s\n%s\n'
-                              % (obj.uid, obj.exception, obj.exception_detail))
+        if obj.state == FAILED:
+            if obj_type == 'Task':
+                self._report.error('%s %s failed: %s\n%s\n'
+                                  % (obj_type, obj.uid, obj.exception,
+                                     obj.exception_detail))
+            else:
+                self._report.error('%s %s failed\n' % (obj_type, obj.uid))
 
         self._logger.info('Transition %s to state %s', obj.uid, new_state)
 
@@ -348,21 +352,20 @@ class WFprocessor(object):
                         if deq_task.metadata:
                             task.metadata.update(deq_task.metadata)
 
-                        # If there is no exit code, we assume success
-                        # We are only concerned about state of task and not
-                        # deq_task
-                        if deq_task.exit_code == 0:
-                            task_state = DONE
-                        elif deq_task.exit_code == 1:
-                            task_state = FAILED
-                        else:
-                            task_state = deq_task.state
+                        task_state = deq_task.state
 
                         task.exception        = deq_task.exception
                         task.exception_detail = deq_task.exception_detail
 
-                        if task.state == FAILED and self._resubmit_failed:
-                            task_state = INITIAL
+                        if task.state == FAILED:
+                            if self._resubmit_failed:
+                                task_state = INITIAL
+                            else:
+                                if task.error_is_fatal:
+                                    self._advance(stage, 'Stage', FAILED)
+                                    self._advance(pipe, 'Pipeline', FAILED)
+                                    return
+
                         self._advance(task, 'Task', task_state)
 
                         # Found the task and processed it -- no more
