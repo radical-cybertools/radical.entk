@@ -5,6 +5,7 @@ import pickle
 import radical.pilot as rp
 import radical.utils as ru
 
+from ...           import states
 from ...task       import Task
 from ...exceptions import EnTKTypeError, EnTKValueError
 
@@ -564,10 +565,8 @@ def create_task_from_rp(rp_task, logger, prof=None):
             'metadata'                : rp_task.description.get('metadata', {})
         })
 
-        if   rp_task.state == rp.DONE                  : task.exit_code = 0
-        elif rp_task.state in [rp.FAILED, rp.CANCELED] : task.exit_code = 1
-
         if rp_task.state == rp.FAILED:
+            task.state            = states.FAILED
             task.exception        = rp_task.exception
             task.exception_detail = rp_task.exception_detail
 

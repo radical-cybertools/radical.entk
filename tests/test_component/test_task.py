@@ -363,6 +363,7 @@ class TestTask(TestCase):
             'stderr'              : 'Hello World',
             'exception'           : '',
             'exception_detail'    : '',
+            'error_is_fatal'      : False,
             'stage_on_error'      : False,
             'exit_code'           : 0,
             'path'                : 'some_path',
