@@ -6,6 +6,12 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+1.62.0 Release                                                        2024-08-20
+--------------------------------------------------------------------------------
+
+  - ensure that failed tasks fail the workload - if so configured
+
+
 1.60.0 Release                                                        2024-07-01
 --------------------------------------------------------------------------------
 
