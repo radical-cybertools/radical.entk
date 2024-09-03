@@ -1,4 +1,4 @@
 
-radical.utils>=1.60
-radical.pilot>=1.60
+radical.utils~=1.80.0
+radical.pilot~=1.80.0
 
