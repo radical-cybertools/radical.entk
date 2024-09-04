@@ -7,7 +7,7 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
-1.80.0 Release                                                        2024-09-03
+1.81.0 Release                                                        2024-09-03
 --------------------------------------------------------------------------------
 
   - maintenance release
@@ -511,3 +511,4 @@
 
 # ------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
