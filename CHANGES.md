@@ -6,6 +6,19 @@
     https://github.com/radical-cybertools/radical.entk/ \
             issues?q=is%3Aissue+is%3Aopen+
 
+
+1.81.0 Release                                                        2024-09-03
+--------------------------------------------------------------------------------
+
+  - maintenance release
+
+
+1.62.0 Release                                                        2024-08-20
+--------------------------------------------------------------------------------
+
+  - ensure that failed tasks fail the workload - if so configured
+
+
 1.60.0 Release                                                        2024-07-01
 --------------------------------------------------------------------------------
 
@@ -498,3 +511,4 @@
 
 # ------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
