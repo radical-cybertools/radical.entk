@@ -103,7 +103,7 @@ def cache_darshan_env(darshan_runtime_root: Optional[str] = None,
         if out is not None:
             out = out.strip()
 
-        if ret or not out:
+        if ret or not out or 'DARSHAN_LOG_DIR_PATH' in out:
             print(f'[WARNING] Darshan log path not set: "{err}"')
             _darshan_log_path = '%(sandbox)s/darshan_logs'
 
@@ -245,8 +245,9 @@ def get_parsed_data(log: str, target_counters: Union[str, List[str]]) -> set:
         return data
 
     grep_patterns = '-e ' + ' -e '.join(ru.as_list(target_counters))
-    parser_cmd    = (f'darshan-parser {log} | grep {grep_patterns} | '
-                     "awk '{print $5\":\"$6}'")
+    parser_cmd    = (f'env LD_PRELOAD="{_darshan_runtime_root}'
+                     f'/lib/libdarshan-util.so" darshan-parser {log} | '
+                     f'grep {grep_patterns} | ' + "awk '{print $5\":\"$6}'")
     out, err, ret = ru.sh_callout(parser_cmd, env=_darshan_env, shell=True)
     if ret:
         print(f'[ERROR] Darshan not able to parse "{log}": {err}')
@@ -282,7 +283,7 @@ def annotate_task_with_darshan(task: Task) -> None:
 
     log_files = []
     if '%(sandbox)s' in _darshan_log_path:
-        for log in glob.glob(_darshan_log_path % {'sandbox': task.path}):
+        for log in glob.glob(_darshan_log_path % {'sandbox': task.path} + '/*'):
             log_files.append(log)
     else:
         if _start_datetime is None:
