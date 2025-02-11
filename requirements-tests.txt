@@ -8,6 +8,5 @@ flake8
 timeout-decorator
 coverage
 hypothesis
-mock==2.0.0.
 psutil
 
