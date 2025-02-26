@@ -7,6 +7,14 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
+1.92.0 Release                                                        2025-02-26
+--------------------------------------------------------------------------------
+
+  - fix CI configuration (py-ver)
+  - fix CI requirements
+  - fix flake8 config (same as for RP)
+
+
 1.90.0 Release                                                        2024-12-16
 --------------------------------------------------------------------------------
 
