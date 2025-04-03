@@ -15,9 +15,9 @@ Open a terminal and run:
 
 .. code-block:: bash
 
-        virtualenv $HOME/ve-entk -p python3.7
+        virtualenv $HOME/ve-entk -p python3.8
 
-- ``-p`` params indicates which python version you use, python3.7+ is required
+- ``-p`` params indicates which python version you use, python3.8+ is required
 
 Activate virtualenv by:
 
@@ -63,7 +63,7 @@ be printed.
 
         radical-stack
 
-          python               : 3.7.4
+          python               : 3.8
           pythonpath           :
           virtualenv           : /home/username/ve-entk
 
@@ -82,7 +82,7 @@ Open a terminal and run (assuming you have PATH to point to ``conda``):
 
 .. code-block:: bash
 
-        conda create -n conda-entk python=3.7 -c conda-forge -y
+        conda create -n conda-entk python=3.8 -c conda-forge -y
         conda activate conda-entk
 
 
@@ -167,5 +167,5 @@ If virtualenv **is not** installed on your system, you can try the following.
         wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-16.7.9.tar.gz
         tar xzf virtualenv-16.7.9.tar.gz
 
-        python virtualenv-16.7.9/virtualenv.py $HOME/ve-entk -p python3.7
+        python virtualenv-16.7.9/virtualenv.py $HOME/ve-entk -p python3.8
         source $HOME/ve-entk/bin/activate
