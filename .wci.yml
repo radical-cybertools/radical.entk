@@ -1,0 +1,22 @@
+name: RADICAL-EnTK
+icon: https://radical-cybertools.github.io/assets/radical-logo-transparent.png
+headline: Ensemble Toolkit
+description: |
+  RADICAL-EnTK (Ensemble Toolkit, EnTK) is a Python framework designed 
+  to simplify the development and execution of applications composed of many 
+  computational tasks, known as ensembles, on high-performance computing (HPC) 
+  systems. It provides high-level abstractions that separate the logical 
+  description of an application from the complexities of resource allocation 
+  and task scheduling.
+
+language: Python
+
+release:
+  version: 1.102.0
+  date: 2025-05-28
+  url: https://pypi.org/project/radical.entk/
+
+documentation:
+  general: https://radicalentk.readthedocs.io
+  tutorial: https://github.com/radical-cybertools/tutorials
+
